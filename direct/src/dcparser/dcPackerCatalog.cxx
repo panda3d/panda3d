@@ -328,7 +328,13 @@ update_switch_fields(const DCSwitchParameter *switch_parameter,
   // because we must have come across the DCSwitch when building the
   // catalog the first time.
   SwitchPrefixes::const_iterator pi = _switch_prefixes.find(switch_parameter);
-  nassertr(pi != _switch_prefixes.end(), NULL);
+  if (pi == _switch_prefixes.end()) {
+    // If it's not stored in the record, the switch must be hidden
+    // within some non-seekable object, like an array; in this case,
+    // never mind.
+    return this;
+  }
+
   string name_prefix = (*pi).second;
 
   // Start by creating a new DCPackerCatalog object that contains all

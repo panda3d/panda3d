@@ -116,6 +116,7 @@ dc_cleanup_parser() {
 
 %type <u.atomic> atomic_name
 %type <u.s_int> server_flags
+%type <u.s_int> no_server_flags
 %type <u.dclass> dclass_or_struct
 %type <u.dclass> dclass_name
 %type <u.dclass> dclass
@@ -303,6 +304,8 @@ dclass_fields:
 {
   if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
+  } else if ($2->get_number() < 0) {
+    yyerror("A non-network field cannot be stored on a dclass");
   }
 }
         ;
@@ -313,9 +316,10 @@ dclass_field:
   $$ = $1;
   $$->set_flags($2);
 }
-	| molecular_field
+	| molecular_field no_server_flags
 	| unnamed_parameter_with_default server_flags ';'
 {
+  yyerror("Unnamed parameters are not allowed on a dclass");
   $$ = $1;
   $$->set_flags($2);
 }
@@ -388,13 +392,13 @@ struct_fields:
         ;
 
 struct_field:
-	atomic_field
-	| molecular_field
-	| unnamed_parameter_with_default ';'
+	atomic_field no_server_flags
+	| molecular_field no_server_flags
+	| unnamed_parameter_with_default no_server_flags ';'
 {
   $$ = $1;
 }
-	| named_parameter_with_default
+	| named_parameter_with_default no_server_flags
 {
   $$ = $1;
 }
@@ -986,6 +990,16 @@ server_flags:
   $$ = $1 | DCAtomicField::F_airecv;
 }
         ;
+
+no_server_flags:
+        server_flags
+{
+  if ($1 != 0) {
+    yyerror("Server flags are not allowed here.");
+  }
+  $$ = $1;
+}
+	;
 
 molecular_field:
         IDENTIFIER ':'

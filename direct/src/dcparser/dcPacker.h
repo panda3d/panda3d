@@ -183,6 +183,8 @@ private:
   PyObject *unpack_class_object(const DCClass *dclass);
   void set_class_element(PyObject *class_def, PyObject *&object, 
                          const DCField *field);
+  void get_class_element(const DCClass *dclass, PyObject *object, 
+                         const DCField *field);
 #endif
 
 private:

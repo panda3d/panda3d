@@ -482,6 +482,14 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     string field_name = field->get_name();
 
     if (!PyObject_HasAttrString(distobj, (char *)field_name.c_str())) {
+      // If the attribute is not defined, but the field has a default
+      // value specified, quietly pack the default value.
+      if (field->has_default_value()) {
+        packer.pack_default_value();
+        return true;
+      }
+
+      // If there is no default value specified, it's an error.
       ostringstream strm;
       strm << "Data element " << field_name
            << ", required by dc file for dclass " << get_name()
@@ -503,7 +511,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
   const DCAtomicField *atom = field->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
     ostringstream strm;
-    strm << "Cannot pack non-atomic field " << field->get_name()
+    strm << "Cannot pack molecular field " << field->get_name()
          << " for generate";
     nassert_raise(strm.str());
     return false;
@@ -547,6 +555,14 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
   // Now we have to look up the getter on the distributed object
   // and call it.
   if (!PyObject_HasAttrString(distobj, (char *)getter_name.c_str())) {
+    // As above, if there's no getter but the field has a default
+    // value specified, quietly pack the default value.
+    if (field->has_default_value()) {
+      packer.pack_default_value();
+      return true;
+    }
+
+    // Otherwise, with no default value it's an error.
     ostringstream strm;
     strm << "Distributed class " << get_name()
          << " doesn't have getter named " << getter_name
@@ -671,10 +687,9 @@ ai_format_generate(PyObject *distobj, int do_id,
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields; i++) {
     DCField *field = get_inherited_field(i);
-    DCAtomicField *atom = field->as_atomic_field();
-    if (atom != (DCAtomicField *)NULL && atom->is_required()) {
-      packer.begin_pack(atom);
-      if (!pack_required_field(packer, distobj, atom)) {
+    if (field->is_required() && field->as_molecular_field() == NULL) {
+      packer.begin_pack(field);
+      if (!pack_required_field(packer, distobj, field)) {
         return Datagram();
       }
       packer.end_pack();

@@ -464,7 +464,6 @@ push() {
             length = DCPackerInterface::do_unpack_uint32
               (_unpack_data + _unpack_p);
             _unpack_p += 4;
-            _pop_marker = _unpack_p + length;
           } else {
             length = DCPackerInterface::do_unpack_uint16
               (_unpack_data + _unpack_p);
@@ -1122,17 +1121,12 @@ clear() {
 void DCPacker::
 pack_class_object(const DCClass *dclass, PyObject *object) {
   PyObject *str = PyObject_Str(object);
-  cerr << "pack_class_object(" << dclass->get_name() << ", " 
-       << PyString_AsString(str) << ")\n";
   Py_DECREF(str);
   push();
-  while (more_nested_fields()) {
+  while (more_nested_fields() && !_pack_error) {
     const DCField *field = get_current_field()->as_field();
     nassertv(field != (DCField *)NULL);
-
-    if (!dclass->pack_required_field(*this, object, field)) {
-      break;
-    }
+    get_class_element(dclass, object, field);
   }
   pop();
 }
@@ -1254,6 +1248,53 @@ set_class_element(PyObject *class_def, PyObject *&object,
     }
 
     Py_DECREF(element);
+  }
+}
+#endif  // HAVE_PYTHON
+
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_class_element
+//       Access: Private
+//  Description: Gets the current element from the Python object and
+//               packs it.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+get_class_element(const DCClass *dclass, PyObject *object, 
+                  const DCField *field) {
+  string field_name = field->get_name();
+  DCPackType pack_type = get_pack_type();
+
+  if (field_name.empty()) {
+    switch (pack_type) {
+    case PT_class:
+    case PT_switch:
+      // If the field has no name, but it is one of these container
+      // objects, we want to get its nested objects directly from
+      // the class.
+      push();
+      while (more_nested_fields() && !_pack_error) {
+        const DCField *field = get_current_field()->as_field();
+        nassertv(field != (DCField *)NULL);
+        get_class_element(dclass, object, field);
+      }
+      pop();
+      break;
+
+    default:
+      // Otherwise, we just pack the default value.
+      pack_default_value();
+    }
+
+  } else {
+    // If the field does have a name, we will want to get it from the
+    // class and pack it.  It just so happens that there's already a
+    // method that does this on DCClass.
+
+    if (!dclass->pack_required_field(*this, object, field)) {
+      _pack_error = true;
+    }
   }
 }
 #endif  // HAVE_PYTHON

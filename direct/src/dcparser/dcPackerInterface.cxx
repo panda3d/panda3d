@@ -350,12 +350,36 @@ bool DCPackerInterface::
 unpack_skip(const char *data, size_t length, size_t &p,
             bool &pack_error) const {
   if (_has_fixed_byte_size) {
+    // If this field has a fixed byte size, it's easy to skip.
     p += _fixed_byte_size;
     if (p > length) {
       pack_error = true;
     }
     return true;
   }
+
+  if (_has_nested_fields && _num_length_bytes != 0) {
+    // If we have a length prefix, use that for skipping.
+    if (p + _num_length_bytes > length) {
+      pack_error = true;
+      
+    } else {
+      if (_num_length_bytes == 4) {
+        size_t this_length = do_unpack_uint32(data + p);
+        p += this_length + 4;
+      } else {
+        size_t this_length = do_unpack_uint16(data + p);
+        p += this_length + 2;
+      }
+      if (p > length) {
+        pack_error = true;
+      }
+    }
+    return true;
+  }
+
+  // Otherwise, we don't know how to skip this field (presumably it
+  // can be skipped by skipping over its nested fields individually).
   return false;
 }
 
