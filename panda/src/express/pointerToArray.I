@@ -322,7 +322,7 @@ operator [](int n) const {
 //               a confusion with the pointer typecast operator.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE TYPENAME PointerToArray<Element>::const_reference PointerToArray<Element>::
+INLINE const Element &PointerToArray<Element>::
 get_element(size_type n) const {
   return (*this)[n];
 }
@@ -338,7 +338,7 @@ get_element(size_type n) const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_element(size_type n, const_reference value) {
+set_element(size_type n, const Element &value) {
   nassertv(n < ((To *)_void_ptr)->size());
   (*this)[n] = value;
 }
