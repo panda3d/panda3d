@@ -207,6 +207,7 @@ find_all_paths_to(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 reparent_to(const qpNodePath &other, int sort) {
+  nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
   nassertv_always(!other.is_empty());
@@ -227,6 +228,7 @@ reparent_to(const qpNodePath &other, int sort) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 wrt_reparent_to(const qpNodePath &other, int sort) {
+  nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
   nassertv_always(!other.is_empty());
@@ -255,6 +257,7 @@ wrt_reparent_to(const qpNodePath &other, int sort) {
 qpNodePath qpNodePath::
 instance_to(const qpNodePath &other, int sort) const {
   nassertr(verify_complete(), qpNodePath::fail());
+  nassertr(other.verify_complete(), qpNodePath::fail());
   nassertr_always(!is_empty(), qpNodePath::fail());
   nassertr(!other.is_empty(), qpNodePath::fail());
 
@@ -279,7 +282,11 @@ instance_to(const qpNodePath &other, int sort) const {
 qpNodePath qpNodePath::
 instance_under_node(const qpNodePath &other, const string &name, int sort) const {
   qpNodePath new_node = other.attach_new_node(name, sort);
-  instance_to(new_node);
+  qpNodePath instance = instance_to(new_node);
+  if (instance.is_empty()) {
+    new_node.remove_node();
+    return instance;
+  }
   return new_node;
 }
 
@@ -295,6 +302,7 @@ instance_under_node(const qpNodePath &other, const string &name, int sort) const
 qpNodePath qpNodePath::
 copy_to(const qpNodePath &other, int sort) const {
   nassertr(verify_complete(), fail());
+  nassertr(other.verify_complete(), fail());
   nassertr_always(!is_empty(), fail());
   nassertr(!other.is_empty(), fail());
 
@@ -2326,10 +2334,17 @@ verify_complete() const {
     nassertr(next_node != (const PandaNode *)NULL, false);
 
     if (node->find_parent(next_node) < 0) {
+      pgraph_cat.warning()
+        << *this << " is incomplete; " << *node << " is not a child of "
+        << *next_node << "\n";
       return false;
     }
 
     if (comp->get_length() != length) {
+      pgraph_cat.warning()
+        << *this << " is incomplete; length at " << *next_node
+        << " indicates " << comp->get_length() << " while length at "
+        << *node << " indicates " << length << "\n";
       return false;
     }
 
@@ -2339,7 +2354,14 @@ verify_complete() const {
   }
 
   // Now that we've reached the top, we should have no parents.
-  return length == 0 && node->get_num_parents() == 0;
+  if (length == 0 && node->get_num_parents() == 0) {
+    return true;
+  }
+
+  pgraph_cat.warning()
+    << *this << " is incomplete; top node " << *node << " indicates length "
+    << length << " with " << node->get_num_parents() << " parents.\n";
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

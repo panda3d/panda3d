@@ -64,7 +64,6 @@ private:
 
 public:
   virtual PandaNode *make_copy() const;
-  PT(PandaNode) copy_subgraph() const;
 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
@@ -80,6 +79,8 @@ public:
   virtual int get_next_visible_child(int n) const;
 
 PUBLISHED:
+  PT(PandaNode) copy_subgraph() const;
+
   INLINE int get_num_parents() const;
   INLINE PandaNode *get_parent(int n) const;
   INLINE int find_parent(PandaNode *node) const;
@@ -198,7 +199,7 @@ private:
                                               PandaNode *child);
   static PT(qpNodePathComponent) get_top_component(PandaNode *child,
                                                    bool force);
-  PT(qpNodePathComponent) get_generic_component();
+  PT(qpNodePathComponent) get_generic_component(bool accept_ambiguity);
   void delete_component(qpNodePathComponent *component);
   static void sever_connection(PandaNode *parent_node, PandaNode *child_node);
   static void new_connection(PandaNode *parent_node, PandaNode *child_node);

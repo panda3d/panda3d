@@ -44,7 +44,7 @@ qpNodePath(const string &top_node_name) :
   _error_type(ET_ok)
 {
   PandaNode *top_node = new PandaNode(top_node_name);
-  _head = top_node->get_generic_component();
+  _head = top_node->get_generic_component(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ qpNodePath(PandaNode *top_node) :
   _error_type(ET_ok)
 {
   if (top_node != (PandaNode *)NULL) {
-    _head = top_node->get_generic_component();
+    _head = top_node->get_generic_component(false);
   }
 }
 
@@ -232,7 +232,7 @@ get_error_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *qpNodePath::
 node() const {
-  nassertr(!is_empty(), (PandaNode *)NULL);
+  nassertr_always(!is_empty(), (PandaNode *)NULL);
   return _head->get_node();
 }
 

@@ -432,21 +432,6 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::copy_subgraph
-//       Access: Public
-//  Description: Allocates and returns a complete copy of this
-//               PandaNode and the entire scene graph rooted at this
-//               PandaNode.  Some data may still be shared from the
-//               original (e.g. vertex index tables), but nothing that
-//               will impede normal use of the PandaNode.
-////////////////////////////////////////////////////////////////////
-PT(PandaNode) PandaNode::
-copy_subgraph() const {
-  InstanceMap inst_map;
-  return r_copy_subgraph(inst_map);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::safe_to_flatten
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to flatten out
@@ -644,6 +629,21 @@ get_first_visible_child() const {
 int PandaNode::
 get_next_visible_child(int n) const {
   return n + 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::copy_subgraph
+//       Access: Published
+//  Description: Allocates and returns a complete copy of this
+//               PandaNode and the entire scene graph rooted at this
+//               PandaNode.  Some data may still be shared from the
+//               original (e.g. vertex index tables), but nothing that
+//               will impede normal use of the PandaNode.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PandaNode::
+copy_subgraph() const {
+  InstanceMap inst_map;
+  return r_copy_subgraph(inst_map);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1384,27 +1384,8 @@ detach(qpNodePathComponent *child) {
   // sort of thing.
   nassertv(child_node->find_parent(parent_node) >= 0);
   
-  // Break the qpNodePathComponent connection.
-  child->set_top_node();
-  
   CDWriter cdata_child(child_node->_cycler);
   CDWriter cdata_parent(parent_node->_cycler);
-  
-  // Any other components in the same child_node that previously
-  // referenced the same parent has now become invalid and must be
-  // collapsed into this one and removed from the paths set.
-  Paths::iterator pi;
-  pi = cdata_child->_paths.begin();
-  while (pi != cdata_child->_paths.end()) {
-    Paths::iterator pnext = pi;
-    ++pnext;
-    if ((*pi) != child && !(*pi)->is_top_node() && 
-        (*pi)->get_next()->get_node() == parent_node) {
-      (*pi)->collapse_with(child);
-      cdata_child->_paths.erase(pi);
-    }
-    pi = pnext;
-  }
   
   // Now look for the child and break the actual connection.
   
@@ -1412,8 +1393,6 @@ detach(qpNodePathComponent *child) {
   // list.
   int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
   nassertv(num_erased == 1);
-  
-  child_node->fix_path_lengths(cdata_child);
   
   // Now, look for and remove the child node from the parent's down
   // list.  We also check in the stashed list, in case the child node
@@ -1437,6 +1416,9 @@ detach(qpNodePathComponent *child) {
     }
   }
   nassertv(found);
+
+  // Finally, break the NodePathComponent connection.
+  sever_connection(parent_node, child_node);
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
@@ -1581,13 +1563,15 @@ get_top_component(PandaNode *child_node, bool force) {
 //     Function: PandaNode::get_generic_component
 //       Access: Private
 //  Description: Returns a qpNodePathComponent referencing this node as
-//               a path from the root.  It is only valid to call this
-//               if there is an unambiguous path from the root;
-//               otherwise, a warning will be issued and one path will
-//               be chosen arbitrarily.
+//               a path from the root.  
+//
+//               Unless accept_ambiguity is true, it is only valid to
+//               call this if there is an unambiguous path from the
+//               root; otherwise, a warning will be issued and one
+//               path will be chosen arbitrarily.
 ////////////////////////////////////////////////////////////////////
 PT(qpNodePathComponent) PandaNode::
-get_generic_component() {
+get_generic_component(bool accept_ambiguity) {
   int num_parents = get_num_parents();
   if (num_parents == 0) {
     // No parents; no ambiguity.  This is the root.
@@ -1597,18 +1581,22 @@ get_generic_component() {
   PT(qpNodePathComponent) result;
   if (num_parents == 1) {
     // Only one parent; no ambiguity.
-    PT(qpNodePathComponent) parent = get_parent(0)->get_generic_component();
+    PT(qpNodePathComponent) parent = 
+      get_parent(0)->get_generic_component(accept_ambiguity);
     result = get_component(parent, this);
 
   } else {
     // Oops, multiple parents; the NodePath is ambiguous.
-    pgraph_cat.warning()
-      << *this << " has " << num_parents
-      << " parents; choosing arbitrary path to root.\n";
+    if (!accept_ambiguity) {
+      pgraph_cat.warning()
+        << *this << " has " << num_parents
+        << " parents; choosing arbitrary path to root.\n";
+    }
   
-    PT(qpNodePathComponent) parent = get_parent(0)->get_generic_component();
+    PT(qpNodePathComponent) parent = 
+      get_parent(0)->get_generic_component(accept_ambiguity);
     result = get_component(parent, this);
-    nassertr(!unambiguous_graph, result);
+    nassertr(accept_ambiguity || !unambiguous_graph, result);
   }
 
   return result;
@@ -1658,7 +1646,7 @@ delete_component(qpNodePathComponent *component) {
 void PandaNode::
 sever_connection(PandaNode *parent_node, PandaNode *child_node) {
   CDWriter cdata_child(child_node->_cycler);
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+  PT(qpNodePathComponent) collapsed = (qpNodePathComponent *)NULL;
 
   Paths::iterator pi;
   pi = cdata_child->_paths.begin();
@@ -1679,10 +1667,11 @@ sever_connection(PandaNode *parent_node, PandaNode *child_node) {
           
         } else {
           // If the node still has one parent, all of its paths that
-          // referenced the old parent will be combined with the remaining
-          // parent.  If there are multiple parents, choose one arbitrarily
-          // to combine with.
-          collapsed = child_node->get_generic_component();
+          // referenced the old parent will be combined with the
+          // remaining parent.  If there are multiple parents, choose
+          // the first parent arbitrarily to combine with, and don't
+          // complain if there's ambiguity.
+          collapsed = child_node->get_generic_component(true);
         }
 
         if (collapsed == (qpNodePathComponent *)NULL) {
@@ -1732,7 +1721,7 @@ new_connection(PandaNode *parent_node, PandaNode *child_node) {
        pi != cdata_child->_paths.end();
        ++pi) {
     if ((*pi)->is_top_node()) {
-      (*pi)->set_next(parent_node->get_generic_component());
+      (*pi)->set_next(parent_node->get_generic_component(false));
     }
   }
   child_node->fix_path_lengths(cdata_child);

@@ -54,22 +54,26 @@ public:
   INLINE ~qpNodePathComponent();
   
   INLINE PandaNode *get_node() const;
-  INLINE int get_key() const;
-  INLINE bool is_top_node() const;
+  int get_key() const;
+  bool is_top_node() const;
   INLINE bool is_collapsed() const;
   
   qpNodePathComponent *get_next() const;
-  INLINE int get_length() const;
+  int get_length() const;
   INLINE qpNodePathComponent *get_collapsed() const;
 
   bool fix_length();
   qpNodePathComponent *uncollapse();
   
 private:
-  INLINE void set_next(qpNodePathComponent *next);
-  INLINE void set_top_node();
+  void set_next(qpNodePathComponent *next);
+  void set_top_node();
   INLINE void collapse_with(qpNodePathComponent *next);
 
+  // We don't have to cycle the _node and _key elements, since these
+  // are permanent properties of this object.  (Well, the _key is
+  // semi-permanent: it becomes permanent after it has been set the
+  // first time.)
   PT(PandaNode) _node;
   int _key;
 

@@ -101,41 +101,11 @@ INLINE qpNodePathComponent::
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *qpNodePathComponent::
 get_node() const {
+  // We don't have to bother checking if the component has been
+  // collapsed here, since the _node pointer will still be the same
+  // even if it has.
   nassertr(_node != (PandaNode *)NULL, _node);
   return _node;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::get_key
-//       Access: Public
-//  Description: Returns an index number that is guaranteed to be
-//               unique for this particular NodePathComponent, and not
-//               to be reused for the lifetime of the application
-//               (barring integer overflow).
-////////////////////////////////////////////////////////////////////
-INLINE int qpNodePathComponent::
-get_key() const {
-  if (_key == 0) {
-    // The first time someone asks for a particular component's key,
-    // we make it up on the spot.  This helps keep us from wasting
-    // index numbers generating a unique number for *every* component
-    // in the world (we only have 4.2 billion 32-bit integers, after
-    // all)
-    ((qpNodePathComponent *)this)->_key = _next_key++;
-  }
-  return _key;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::is_top_node
-//       Access: Public
-//  Description: Returns true if this component represents the top
-//               node in the path.
-////////////////////////////////////////////////////////////////////
-INLINE bool qpNodePathComponent::
-is_top_node() const {
-  CDReader cdata(_cycler);
-  return (cdata->_next == (qpNodePathComponent *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,18 +123,6 @@ is_collapsed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::get_length
-//       Access: Public
-//  Description: Returns the length of the path.
-////////////////////////////////////////////////////////////////////
-INLINE int qpNodePathComponent::
-get_length() const {
-  nassertr(!is_collapsed(), 0);
-  CDReader cdata(_cycler);
-  return cdata->_length;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathComponent::get_collapsed
 //       Access: Public
 //  Description: If is_collapsed() returns true, this is the component
@@ -176,32 +134,6 @@ get_collapsed() const {
   nassertr(is_collapsed(), (qpNodePathComponent *)NULL);
   CDReader cdata(_cycler);
   return cdata->_next;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::set_next
-//       Access: Private
-//  Description: Sets the next pointer in the path.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePathComponent::
-set_next(qpNodePathComponent *next) {
-  nassertv(!is_collapsed());
-  nassertv(next != (qpNodePathComponent *)NULL);
-  CDWriter cdata(_cycler);
-  cdata->_next = next;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::set_top_node
-//       Access: Private
-//  Description: Severs any connection to the next pointer in the
-//               path and makes this component a top node.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePathComponent::
-set_top_node() {
-  nassertv(!is_collapsed());
-  CDWriter cdata(_cycler);
-  cdata->_next = (qpNodePathComponent *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

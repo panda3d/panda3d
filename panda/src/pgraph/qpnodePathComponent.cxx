@@ -36,26 +36,83 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::get_key
+//       Access: Public
+//  Description: Returns an index number that is guaranteed to be
+//               unique for this particular NodePathComponent, and not
+//               to be reused for the lifetime of the application
+//               (barring integer overflow).
+////////////////////////////////////////////////////////////////////
+int qpNodePathComponent::
+get_key() const {
+  if (is_collapsed()) {
+    return get_collapsed()->get_key();
+  }
+  if (_key == 0) {
+    // The first time someone asks for a particular component's key,
+    // we make it up on the spot.  This helps keep us from wasting
+    // index numbers generating a unique number for *every* component
+    // in the world (we only have 4.2 billion 32-bit integers, after
+    // all)
+    ((qpNodePathComponent *)this)->_key = _next_key++;
+  }
+  return _key;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::is_top_node
+//       Access: Public
+//  Description: Returns true if this component represents the top
+//               node in the path.
+////////////////////////////////////////////////////////////////////
+bool qpNodePathComponent::
+is_top_node() const {
+  if (is_collapsed()) {
+    return get_collapsed()->is_top_node();
+  }
+  CDReader cdata(_cycler);
+  return (cdata->_next == (qpNodePathComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::get_length
+//       Access: Public
+//  Description: Returns the length of the path to this node.
+////////////////////////////////////////////////////////////////////
+int qpNodePathComponent::
+get_length() const {
+  if (is_collapsed()) {
+    return get_collapsed()->get_length();
+  }
+  CDReader cdata(_cycler);
+  return cdata->_length;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathComponent::get_next
 //       Access: Public
 //  Description: Returns the next component in the path.
 ////////////////////////////////////////////////////////////////////
 qpNodePathComponent *qpNodePathComponent::
 get_next() const {
+  if (is_collapsed()) {
+    return get_collapsed()->get_next();
+  }
+
   CDReader cdata(_cycler);
-  nassertr(!is_collapsed(), (qpNodePathComponent *)NULL);
-
   qpNodePathComponent *next = cdata->_next;
-
+  
   // If the next component has been collapsed, transparently update
   // the pointer to get the actual node, and store the new pointer,
   // before we return.  Collapsing can happen at any time to any
   // component in the path and we have to deal with it.
   if (next != (qpNodePathComponent *)NULL && next->is_collapsed()) {
     next = next->uncollapse();
-    ((qpNodePathComponent *)this)->set_next(next);
-  }
 
+    CDWriter cdata_w(((qpNodePathComponent *)this)->_cycler, cdata);
+    cdata_w->_next = next;
+  }
+  
   return next;
 }
 
@@ -103,4 +160,36 @@ uncollapse() {
   }
 
   return comp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::set_next
+//       Access: Private
+//  Description: Sets the next pointer in the path.
+////////////////////////////////////////////////////////////////////
+void qpNodePathComponent::
+set_next(qpNodePathComponent *next) {
+  if (is_collapsed()) {
+    get_collapsed()->set_next(next);
+  } else {
+    nassertv(next != (qpNodePathComponent *)NULL);
+    CDWriter cdata(_cycler);
+    cdata->_next = next;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::set_top_node
+//       Access: Private
+//  Description: Severs any connection to the next pointer in the
+//               path and makes this component a top node.
+////////////////////////////////////////////////////////////////////
+void qpNodePathComponent::
+set_top_node() {
+  if (is_collapsed()) {
+    get_collapsed()->set_top_node();
+  } else {
+    CDWriter cdata(_cycler);
+    cdata->_next = (qpNodePathComponent *)NULL;
+  }
 }
