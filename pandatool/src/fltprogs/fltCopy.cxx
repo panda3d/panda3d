@@ -68,7 +68,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::copy_file
 //       Access: Protected, Virtual
-//  Description: Called by import() if the timestamps indicate that a
+//  Description: Called by import() if verify_file() indicates that a
 //               file needs to be copied.  This does the actual copy
 //               of a file from source to destination.  If new_file is
 //               true, then dest does not already exist.

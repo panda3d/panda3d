@@ -396,8 +396,8 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
 CVSSourceDirectory *CVSSourceTree::
 ask_new(const string &filename, CVSSourceDirectory *dir) {
   while (true) {
-    nout << filename << " will be created at "
-	 << dir->get_path() + "/" + filename << ".\n";
+    nout << filename << " will be created in "
+	 << dir->get_path() << ".\n";
     string result = prompt("Create this file (y/n)? ");
     nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
     if (result.size() == 1) {

@@ -118,18 +118,24 @@ import(const Filename &source, void *extra_data,
     _tree.choose_directory(basename, suggested_dir, _force, _interactive);
   nassertr(dir != (CVSSourceDirectory *)NULL, dir);
 
-  nout << "Copying " << basename << " to " << dir->get_path() << "\n";
-
+  _copied_files[source] = dir;
   Filename dest = dir->get_fullpath() + "/" + basename;
 
-  _copied_files[source] = dir;
-
   bool new_file = !dest.exists();
-  if (!copy_file(source, dest, dir, extra_data, new_file)) {
-    return (CVSSourceDirectory *)NULL;
-  }
-  if (new_file) {
-    create_file(dest);
+  if (!new_file && verify_file(source, dest, dir, extra_data)) {
+    // The file is unchanged.
+    nout << dir->get_path() + "/" + basename << " is unchanged.\n";
+
+  } else {
+    // The file has changed.
+    nout << "Copying " << basename << " to " << dir->get_path() << "\n";
+
+    if (!copy_file(source, dest, dir, extra_data, new_file)) {
+      return (CVSSourceDirectory *)NULL;
+    }
+    if (new_file) {
+      create_file(dest);
+    }
   }
 
   return dir;
@@ -197,6 +203,67 @@ post_command_line() {
     }
   }
 
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::verify_file
+//       Access: Protected, Virtual
+//  Description: Verifies that the file is identical and does not need
+//               to be recopied.  Returns true if the files are
+//               identical, false if they differ.
+////////////////////////////////////////////////////////////////////
+bool CVSCopy::
+verify_file(const Filename &, const Filename &,
+	    CVSSourceDirectory *, void *) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::verify_binary_file
+//       Access: Protected
+//  Description: Verifies that the file is identical and does not need
+//               to be recopied.  Returns true if the files are
+//               identical, false if they differ.
+////////////////////////////////////////////////////////////////////
+bool CVSCopy::
+verify_binary_file(Filename source, Filename dest) {
+  source.set_binary();
+  dest.set_binary();
+
+  ifstream s, d;
+  if (!source.open_read(s)) {
+    return false;
+  }
+  if (!dest.open_read(d)) {
+    return false;
+  }
+
+  int cs, cd;
+  cs = s.get();
+  cd = d.get();
+  while (!s.eof() && !s.fail() && !d.eof() && !d.fail()) {
+    if (cs != cd) {
+      return false;
+    }
+    cs = s.get();
+    cd = d.get();
+  }
+
+  if (s.fail() || d.fail()) {
+    // If we had some read error, call the files different.
+    return false;
+  }
+
+  // If we haven't reached the end of one of the files yet, that file
+  // is longer than the other one, and the files are therefore
+  // different.
+  if (!s.eof() || !d.eof()) {
+    return false;
+  }
+
+  // Otherwise, the files are the same.
   return true;
 }
 

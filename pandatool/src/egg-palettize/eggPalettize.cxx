@@ -144,6 +144,13 @@ EggPalettize() : EggMultiFilter(true) {
      "achieve this.",
      &EggPalettize::dispatch_none, &_got_force_power_2);
   add_option
+    ("nolock", "", 0, 
+     "Don't attempt to lock the .pi file before rewriting it.  Use "
+     "with extreme caution, as multiple processes running on the same "
+     ".pi file may overwrite each other.  Use this only if the lock "
+     "cannot be achieved for some reason.",
+     &EggPalettize::dispatch_none, &_dont_lock_pi);
+  add_option
     ("k", "", 0, 
      "Kill lines from the attributes file that aren't used on any "
      "texture.",
@@ -555,7 +562,7 @@ run() {
       af.set_default_group(group);
     }
 
-    if (!af.grab_lock()) {
+    if (!_dont_lock_pi && !af.grab_lock()) {
       // Failing to grab the write lock on the attribute file is a
       // fatal error.
       exit(1);

@@ -32,10 +32,14 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
+  virtual bool verify_file(const Filename &source, const Filename &dest,
+			   CVSSourceDirectory *dest_dir,
+			   void *extra_data);
   virtual bool copy_file(const Filename &source, const Filename &dest,
 			 CVSSourceDirectory *dest_dir,
 			 void *extra_data, bool new_file)=0;
 
+  bool verify_binary_file(Filename source, Filename dest);
   bool copy_binary_file(Filename source, Filename dest);
 
   bool create_file(const Filename &filename);

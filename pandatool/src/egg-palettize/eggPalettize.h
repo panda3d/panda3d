@@ -66,6 +66,7 @@ public:
   bool _optimal_resize;
   bool _touch_eggs;
   bool _eggs_include_images;
+  bool _dont_lock_pi;
   bool _remove_unused_lines;
 
   bool _describe_input_file;
