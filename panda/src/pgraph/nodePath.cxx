@@ -1335,9 +1335,7 @@ get_relative_point(const NodePath &other, const LVecBase3f &point) {
 //       Access: Published
 //  Description: Sets the transform on this NodePath so that it
 //               rotates to face the indicated point in space, which
-//               is relative to the other NodePath.  This
-//               will overwrite any previously existing scale on the
-//               node, although it will preserve any translation.
+//               is relative to the other NodePath.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
