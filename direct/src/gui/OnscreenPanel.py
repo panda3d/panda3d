@@ -5,6 +5,19 @@ import Button
 import OnscreenText
 import types
 
+
+def findPanel(uniqueName):
+    """findPanel(string uniqueName)
+    
+    Returns the panel whose uniqueName is given.  This is mainly
+    useful for debugging, to get a pointer to the current onscreen
+    panel of a particular type.
+
+    """
+    if OnscreenPanel.AllPanels.has_key(uniqueName):
+        return OnscreenPanel.AllPanels[uniqueName]
+    return None
+
 class OnscreenPanel(PandaObject.PandaObject, NodePath):
     """OnscreenPanel:
 
@@ -22,18 +35,6 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         # initialize our NodePath essence.
         NodePath.__init__(self, aspect2d.attachNewNode(panelName))
-
-    def findPanel(self, uniqueName):
-        """findPanel(self, string uniqueName)
-
-        Returns the panel whose uniqueName is given.  This is mainly
-        useful for debugging, to get a pointer to the current onscreen
-        panel of a particular type.
-
-        """
-        if OnscreenPanel.AllPanels.has_key(uniqueName):
-            return OnscreenPanel.AllPanels[uniqueName]
-        return None
 
     def cleanupPanel(self, uniqueName):
         """cleanupPanel(self, string uniqueName)
@@ -108,8 +109,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelButtons = []
         self.panelText = []
 
-        centerX = (rect[0] + rect[1]) / 2
-        centerY = (rect[2] + rect[3]) / 2
+        centerX = (rect[0] + rect[1]) / 2.0
+        centerY = (rect[2] + rect[3]) / 2.0
         self.setPos(centerX, 0, centerY)
 
         if isinstance(geom, types.StringType):
@@ -120,12 +121,11 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             # Otherwise, it's a model to instance.
             self.panelGeom = geom.instanceTo(self)
 
-        # Scale and position the geometry to move it to fill up our
-        # desired rectangle.
+        # Scale and position the geometry to fill up our desired
+        # rectangle.
 
-        gCenterX = (geomRect[0] + geomRect[1]) / 2
-        gCenterY = (geomRect[2] + geomRect[3]) / 2
-
+        gCenterX = (geomRect[0] + geomRect[1]) / 2.0
+        gCenterY = (geomRect[2] + geomRect[3]) / 2.0
 
         self.panelGeom.setPos(-gCenterX, 0, -gCenterY)
         self.panelGeom.setScale((rect[1] - rect[0]) / (geomRect[1] - geomRect[0]), 1,
@@ -143,7 +143,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             # panel geometry fills up the depth buffer as it goes,
             # making it safe to put 3-d geometry in front of it.
             dw = DepthWriteTransition()
-            self.panelGeom.setY(10)
+            self.panelGeom.setY(100)
             self.panelGeom.arc().setTransition(dw, 2)
 
         # Set up the panel as its own mouse region so mouse clicks on
@@ -197,7 +197,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         Creates a button on the panel.  The return value is the button
         itself.  The position of the button is relative to the panel,
-        where (0, 0) is the direct center.
+        where (0, 0) is the center.
 
         The button will automatically be managed (i.e. made visible)
         unless manage is set to 0.
@@ -253,7 +253,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         Creates some text on the panel.  The return value is an
         OnscreenText object.  The position of the text is relative to
-        the panel, where (0, 0) is the direct center.
+        the panel, where (0, 0) is the center.
 
         The text need not be further managed by the derived class.  It
         will automatically be removed when cleanup() is called.
@@ -289,7 +289,10 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         Returns a name unique to this panel.  If no two instances of
         the same panel will ever be in existence at once, this can
-        simply be the panel name.
+        simply be the panel name.  If, for some reason, you want to
+        define a panel type that can have multiple instances, you
+        should redefine this function to return a unique name for each
+        instance.
 
         """
         
