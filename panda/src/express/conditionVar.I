@@ -50,8 +50,8 @@ INLINE ConditionVar::
 ////////////////////////////////////////////////////////////////////
 INLINE ConditionVar::
 ConditionVar(const ConditionVar &copy) : 
-  _mutex(*(Mutex *)NULL), 
-  _impl(*(MutexImpl *)NULL)
+  _mutex(copy._mutex), 
+  _impl(_mutex._impl)
 {
   nassertv(false);
 }
