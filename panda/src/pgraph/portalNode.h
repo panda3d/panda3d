@@ -23,6 +23,7 @@
 
 #include "portalMask.h"
 #include "pandaNode.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PortalNode 
@@ -61,6 +62,12 @@ PUBLISHED:
   INLINE void set_portal_geom(bool flag);
   INLINE bool get_portal_geom() const;
 
+  INLINE void clear_vertices();
+  INLINE void add_vertex(const LPoint3f &vertex);
+
+  INLINE int get_num_vertices() const;
+  INLINE const LPoint3f &get_vertex(int n) const;
+
 protected:
   virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
@@ -79,6 +86,9 @@ private:
     // Presently only 8 bits are written to the bam file.
   };
   int _flags;
+
+  typedef pvector<LPoint3f> Vertices;
+  Vertices _vertices;
 
 public:
   static void register_with_read_factory();

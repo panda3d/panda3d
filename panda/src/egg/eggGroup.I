@@ -467,6 +467,30 @@ get_direct_flag() const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_portal_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_portal_flag(bool flag) {
+  if (flag) {
+    _flags2 |= F2_portal_flag;
+  } else {
+    _flags2 &= ~F2_portal_flag;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_portal_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+get_portal_flag() const {
+  return ((_flags2 & F2_portal_flag) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_collide_mask
 //       Access: Public
 //  Description:

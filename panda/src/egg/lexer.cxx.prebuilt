@@ -710,11 +710,11 @@ char *yytext;
 #include "config_egg.h"
 #include "parser.h"
 
-#include <indent.h>
-#include <notify.h>
+#include "indent.h"
+#include "notify.h"
 
 #include <math.h>
-#include <pandabase.h>
+#include "pandabase.h"
 
 extern "C" int eggyywrap(void);  // declared below.
 

@@ -209,6 +209,10 @@ write(ostream &out, int indent_level) const {
   write_tags(out, indent_level + 2);
   write_render_mode(out, indent_level + 2);
 
+  if (get_portal_flag()) {
+    indent(out, indent_level) << "<Portal> { 1 }\n";
+  }
+
   // We have to write the children nodes before we write the vertex
   // references, since we might be referencing a vertex that's defined
   // in one of those children nodes!

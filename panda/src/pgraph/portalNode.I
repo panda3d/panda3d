@@ -124,3 +124,46 @@ INLINE bool PortalNode::
 get_portal_geom() const {
   return (_flags & F_portal_geom) != 0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::clear_vertices
+//       Access: Published
+//  Description: Resets the vertices of the portal to the empty list.
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::
+clear_vertices() {
+  _vertices.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::add_vertex
+//       Access: Published
+//  Description: Adds a new vertex to the portal polygon.  The
+//               vertices should be defined in a counterclockwise
+//               orientation when viewing through the portal.
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::
+add_vertex(const LPoint3f &vertex) {
+  _vertices.push_back(vertex);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::get_num_vertices
+//       Access: Published
+//  Description: Returns the number of vertices in the portal polygon.
+////////////////////////////////////////////////////////////////////
+INLINE int PortalNode::
+get_num_vertices() const {
+  return _vertices.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::get_vertex
+//       Access: Published
+//  Description: Returns the nth vertex of the portal polygon.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &PortalNode::
+get_vertex(int n) const {
+  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3f::zero());
+  return _vertices[n];
+}

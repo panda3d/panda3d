@@ -41,6 +41,7 @@
 #include "geomNode.h"
 #include "sequenceNode.h"
 #include "switchNode.h"
+#include "portalNode.h"
 #include "lodNode.h"
 #include "modelNode.h"
 #include "modelRoot.h"
@@ -1614,6 +1615,19 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       make_node(*ci, node);
     }
 
+  } else if (egg_group->get_portal_flag()) {
+    // Create a portal instead of a regular polyset.  Scan the
+    // children of this node looking for a polygon, similar to the
+    // collision polygon case, above.
+    PortalNode *pnode = new PortalNode(egg_group->get_name());
+    node = pnode;
+
+    set_portal_polygon(egg_group, pnode);
+    if (pnode->get_num_vertices() == 0) {
+      egg2pg_cat.warning()
+        << "Portal " << egg_group->get_name() << " has no vertices!\n";
+    }
+
   } else {
     // A normal group; just create a normal node, and traverse.
     node = new PandaNode(egg_group->get_name());
@@ -1752,6 +1766,61 @@ make_node(EggGroupNode *egg_group, PandaNode *parent) {
 
   parent->add_child(node);
   return node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::set_portal_polygon
+//       Access: Private
+//  Description: Defines the PortalNode from the first polygon found
+//               within this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
+  pnode->clear_vertices();
+
+  EggPolygon *poly = find_first_polygon(egg_group);
+  if (poly != (EggPolygon *)NULL) {
+    LMatrix4d mat = poly->get_vertex_to_node();
+
+    EggPolygon::const_iterator vi;
+    for (vi = poly->begin(); vi != poly->end(); ++vi) {
+      Vertexd vert = (*vi)->get_pos3() * mat;
+      pnode->add_vertex(LCAST(float, vert));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::find_first_polygon
+//       Access: Private
+//  Description: Returns the first EggPolygon found at or below the
+//               indicated node.
+////////////////////////////////////////////////////////////////////
+EggPolygon *EggLoader::
+find_first_polygon(EggGroup *egg_group) {
+  // Does this group have any polygons?
+  EggGroup::const_iterator ci;
+  for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+    if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
+      // Yes!  Return the polygon.
+      return DCAST(EggPolygon, (*ci));
+    }
+  }
+
+  // Well, the group had no polygons; look for a child group that
+  // does.
+  for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+    if ((*ci)->is_of_type(EggGroup::get_class_type())) {
+      EggGroup *child_group = DCAST(EggGroup, *ci);
+      EggPolygon *found = find_first_polygon(child_group);
+      if (found != NULL) {
+        return found;
+      }
+    }
+  }
+
+  // We got nothing.
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

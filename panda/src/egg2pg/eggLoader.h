@@ -51,6 +51,7 @@ class CollisionSolid;
 class CollisionNode;
 class CollisionPlane;
 class CollisionPolygon;
+class PortalNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggLoader
@@ -108,6 +109,9 @@ private:
                                    PandaNode *node);
   PandaNode *make_node(EggTable *egg_table, PandaNode *parent);
   PandaNode *make_node(EggGroupNode *egg_group, PandaNode *parent);
+
+  void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
+  EggPolygon *find_first_polygon(EggGroup *egg_group);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
