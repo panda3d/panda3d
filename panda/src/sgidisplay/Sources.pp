@@ -6,6 +6,7 @@
   #define TARGET sgidisplay
   #define UNIX_SYS_LIBS \
     Xsgivc
+  #define LOCAL_LIBS display
 
   #define SOURCES \
     config_sgidisplay.cxx config_sgidisplay.h sgiGraphicsPipe.cxx \

@@ -10,13 +10,16 @@
 
 #include "pStatFrameData.h"
 
+#include <clockObject.h>
+#include <vector_int.h>
+#include <luse.h>
+
+#ifdef HAVE_NET
 #include <connectionManager.h>
 #include <queuedConnectionReader.h>
 #include <connectionWriter.h>
 #include <netAddress.h>
-#include <clockObject.h>
-#include <vector_int.h>
-#include <luse.h>
+#endif
 
 class PStatServerControlMessage;
 class PStatCollector;
@@ -27,7 +30,12 @@ class PStatThread;
 // 	 Class : PStatClient
 // Description : Manages the communications to report statistics via a
 //               network connection to a remote PStatServer.
+//
+//               If HAVE_NET is not defined, we don't have a network
+//               interface, and therefore this class can't do very
+//               much.  It's therefore defined as a stub class.
 ////////////////////////////////////////////////////////////////////
+#ifdef HAVE_NET
 class EXPCL_PANDA PStatClient : public ConnectionManager {
 public:
   PStatClient();
@@ -133,4 +141,17 @@ private:
 
 #include "pStatClient.I"
 
+#else  // HAVE_NET
+
+class EXPCL_PANDA PStatClient {
+public:
+  PStatClient() { }
+  ~PStatClient() { }
+
+  static void main_tick() { }
+};
+
+#endif  // HAVE_NET
+
 #endif
+

@@ -69,19 +69,22 @@ void Fog::compute_density(void) {
   _density = 1.0f;
   float opaque_multiplier;
   switch (_mode) {
-    case M_linear: 
-      break;
-    case M_exponential:
-      // Multiplier = ln(2^bits)
-      opaque_multiplier = MathNumbers::ln2 * _hardware_bits;
-      _density = opaque_multiplier / (_opaque + _opaque_offset);
-      break;
-    case M_super_exponential:
-      // Multiplier = ln(squrt(2^bits))
-      opaque_multiplier = 0.5f * MathNumbers::ln2 * _hardware_bits;
-      opaque_multiplier *= opaque_multiplier;
-      _density = opaque_multiplier / (_opaque + _opaque_offset);
-      break;
+  case M_linear: 
+    break;
+  case M_exponential:
+    // Multiplier = ln(2^bits)
+    opaque_multiplier = MathNumbers::ln2 * _hardware_bits;
+    _density = opaque_multiplier / (_opaque + _opaque_offset);
+    break;
+  case M_super_exponential:
+    // Multiplier = ln(squrt(2^bits))
+    opaque_multiplier = 0.5f * MathNumbers::ln2 * _hardware_bits;
+    opaque_multiplier *= opaque_multiplier;
+    _density = opaque_multiplier / (_opaque + _opaque_offset);
+    break;
+  case M_spline:
+    // *** What's this?
+    break;
   }
 }
 
@@ -101,6 +104,8 @@ output(ostream &out) const {
   case M_super_exponential:
     out << "(" << _hardware_bits << "," << _density
 	<< "," << _opaque << "," << _opaque_offset << ")";
+    break;
+  case M_spline:
     break;
   };
 }

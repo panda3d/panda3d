@@ -12,7 +12,10 @@
 #include "pt_Event.h"
 
 #include <circBuffer.h>
+
+#ifdef HAVE_IPC
 #include <ipc_mutex.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EventQueue
@@ -42,7 +45,9 @@ protected:
   static void make_global_event_queue();
   static EventQueue *_global_event_queue;
 
+#ifdef HAVE_IPC
   mutex _lock;
+#endif
 };
 
 #include "eventQueue.I"

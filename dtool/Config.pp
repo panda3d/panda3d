@@ -137,7 +137,13 @@
 #define PYTHON_LPATH
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
-// Is NSPR installed, and where?
+// Is NSPR installed, and where?  This is the Netscape Portable
+// Runtime library, downloadable as part of the Mozilla package from
+// mozilla.org.  It provides portable threading and networking
+// services to Panda.  Panda should compile without it, although
+// without any threading or networking capabilities; eventually,
+// native support for these capabilities may be added for certain
+// platforms.  See also HAVE_IPC and HAVE_NET.
 #define NSPR_IPATH /usr/include/nspr
 #define NSPR_LPATH
 #define NSPR_LIBS nspr4
@@ -211,8 +217,16 @@
 #define MIKMOD_CONFIG libmikmod-config
 #defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
 
+// Do you want to build in support for threading (inter-process
+// control)?  What additional libraries are required?  Currently, this
+// requires NSPR to compile correctly.
+#define IPC_IPATH
+#define IPC_LPATH
+#define IPC_LIBS
+#defer HAVE_IPC $[HAVE_NSPR]
+
 // Do you want to build the network interface?  What additional libraries
-// are required?
+// are required?  Currently, this requires NSPR.
 #define NET_IPATH
 #define NET_LPATH
 #if $[eq $[PLATFORM],Win32]
@@ -220,7 +234,7 @@
 #else
   #define NET_LIBS
 #endif
-#define HAVE_NET 1
+#defer HAVE_NET $[HAVE_NSPR]
 
 // Do you want to build the audio interface?  What additional
 // libraries are required?

@@ -1,5 +1,7 @@
 #define DIRECTORY_IF_GTKMM yes
 #define USE_GTKMM yes
+#define DIRECTORY_IF_NET yes
+#define USE_NET yes
 
 #begin bin_target
   #define TARGET gtk-stats

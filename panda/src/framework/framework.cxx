@@ -80,7 +80,6 @@
 #include <orthoProjection.h>
 #include <transparencyTransition.h>
 #include <bamReader.h>
-#include <ipc_file.h>
 #include <collisionRay.h>
 #include <collisionNode.h>
 #include <collisionTraverser.h>
@@ -88,6 +87,7 @@
 #include <nodePath.h>
 
 #ifdef USE_IPC
+#include <ipc_file.h>
 #include <ipc_mutex.h>
 #include <ipc_thread.h>
 #endif
@@ -408,10 +408,12 @@ void event_esc(CPT_Event) {
   rib_pipe = NULL;
   rib_win = NULL;
 
+#ifdef HAVE_NET
   if (PStatClient::get_global_pstats()->is_connected()) {
     nout << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();
   }
+#endif
 
   exit(0);
 }
@@ -434,17 +436,25 @@ void event_f(CPT_Event) {
 }
 
 void event_S(CPT_Event) {
+#ifdef HAVE_NET
   nout << "Connecting to stats host" << endl;
   PStatClient::get_global_pstats()->connect();
+#else
+  nout << "Stats host not supported." << endl;
+#endif
 }
 
 void event_A(CPT_Event) {
+#ifdef HAVE_NET
   if (PStatClient::get_global_pstats()->is_connected()) {
     nout << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();
   } else {
     nout << "Stats host is already disconnected." << endl;
   }
+#else
+  nout << "Stats host not supported." << endl;
+#endif
 }
 
 void setup_framerate(void) {

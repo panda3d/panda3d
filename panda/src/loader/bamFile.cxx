@@ -59,12 +59,18 @@ open_read(const Filename &filename, bool report_errors) {
 
   loader_cat.info() << "Reading " << bam_filename << "\n";
 
-  _dfile.setFile(bam_filename.to_os_specific());
-  if (!_dfile.open(file::FILE_READ, _bam_header)) {
+  if (!_din.open(bam_filename)) {
+    loader_cat.error() << "Could not open " << bam_filename << "\n";
     return false;
   }
 
-  _reader = new BamReader(&_dfile);
+  string head = _din.read_header(_bam_header.size());
+  if (head != _bam_header) {
+    loader_cat.error() << bam_filename << " is not a valid BAM file.\n";
+    return false;
+  }
+
+  _reader = new BamReader(&_din);
   if (!_reader->init()) {
     close();
     return false;
@@ -129,12 +135,17 @@ open_write(const Filename &filename, bool) {
 
   loader_cat.info() << "Writing " << filename << "\n";
 
-  _dfile.setFile(filename.to_os_specific());
-  if (!_dfile.open(file::FILE_WRITE, _bam_header)) {
+  if (!_dout.open(filename)) {
+    loader_cat.error() << "Unable to open " << filename << "\n";
     return false;
   }
 
-  _writer = new BamWriter(&_dfile);
+  if (!_dout.write_header(_bam_header)) {
+    loader_cat.error() << "Unable to write to " << filename << "\n";
+    return false;
+  }
+
+  _writer = new BamWriter(&_dout);
 
   if (!_writer->init()) {
     close();
@@ -186,7 +197,8 @@ close() {
     delete _writer;
     _writer = NULL;
   }
-  _dfile.close();
+  _din.close();
+  _dout.close();
 }
 
 

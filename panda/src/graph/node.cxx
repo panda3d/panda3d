@@ -4,7 +4,6 @@
 
 #include "node.h"
 #include "nodeRelation.h"
-#include <nspr.h>
 #include <bamWriter.h>
 #include <bamReader.h>
 #include <datagramIterator.h>
@@ -187,7 +186,8 @@ get_parent(TypeHandle type, int index) const {
   UpRelations::const_iterator uri;
   uri = _parents.find(type);
   nassertr(uri != _parents.end(), (NodeRelation *)NULL);
-  nassertr(index >= 0 && index < (*uri).second.size(), (NodeRelation *)NULL);
+  nassertr(index >= 0 && index < (int)(*uri).second.size(),
+	   (NodeRelation *)NULL);
   return (*uri).second[index];
 }
 
@@ -220,7 +220,8 @@ get_child(TypeHandle type, int index) const {
   DownRelations::const_iterator dri;
   dri = _children.find(type);
   nassertr(dri != _children.end(), (NodeRelation *)NULL);
-  nassertr(index >= 0 && index < (*dri).second.size(), (NodeRelation *)NULL);
+  nassertr(index >= 0 && index < (int)(*dri).second.size(), 
+	   (NodeRelation *)NULL);
   return (*dri).second[index];
 }
 

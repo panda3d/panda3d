@@ -225,7 +225,7 @@ store(PNMImage &pnmimage) const {
 
   gobj_cat.error()
     << "Couldn't write image for " << get_name()
-    << "; inappropriate type " << _type << ".\n";
+    << "; inappropriate type " << (int)_type << ".\n";
   return false;
 }
 

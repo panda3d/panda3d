@@ -58,6 +58,9 @@ $[cdefine HAVE_RIB]
 /* Define if we want to use mikmod for audio.  */
 $[cdefine HAVE_MIKMOD]
 
+/* Define if we want to compile the ipc code.  */
+$[cdefine HAVE_IPC]
+
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
 

@@ -284,6 +284,9 @@ collect_statistics(Geom *geom) {
   case G_PER_VERTEX:
     _num_normals += num_verts;
     break;
+
+  case G_OFF:
+    break;
   }
 
   if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX) {
@@ -359,6 +362,10 @@ collect_statistics(Texture *texture) {
       case Texture::FT_nearest_mipmap_linear:
       case Texture::FT_linear_mipmap_linear:
 	is_mipmapped = true;
+	break;
+
+      default:
+	break;
       }
       
       if (is_mipmapped) {

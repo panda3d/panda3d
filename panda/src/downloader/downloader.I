@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void Downloader::
 set_bandwidth(float bytes) {
+#ifdef HAVE_IPC
   mutex_lock lock(_bandwidth_frequency_lock);
+#endif
   _bandwidth = bytes;
 }
 

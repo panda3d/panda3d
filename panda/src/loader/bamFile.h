@@ -8,7 +8,8 @@
 
 #include <pandabase.h>
 
-#include <ipc_file.h>
+#include <datagramInputFile.h>
+#include <datagramOutputFile.h>
 
 class BamReader;
 class BamWriter;
@@ -43,7 +44,8 @@ public:
   int get_current_minor_ver();
 
 private:
-  datagram_file _dfile;
+  DatagramInputFile _din;
+  DatagramOutputFile _dout;
   BamReader *_reader;
   BamWriter *_writer;
 };

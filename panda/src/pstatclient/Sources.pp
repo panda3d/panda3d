@@ -3,7 +3,7 @@
 #begin lib_target
   #define TARGET pstatclient
   #define LOCAL_LIBS \
-    net linmath putil
+    net linmath putil express
 
   #define SOURCES \
     config_pstats.cxx config_pstats.h pStatClient.I pStatClient.cxx \

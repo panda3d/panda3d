@@ -216,7 +216,7 @@ get_num_paths() const {
 ////////////////////////////////////////////////////////////////////
 NodePath NodePathCollection::
 get_path(int index) const {
-  nassertr(index >= 0 && index < _node_paths.size(), NodePath());
+  nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
 
   return NodePath(_node_paths[index]);
 }

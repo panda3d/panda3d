@@ -53,17 +53,17 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
-#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]\lib%$[dllext].lib]
+#define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].dll,$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+#define static_lib_targets $[active_target(static_lib_target):%=$[st_dir]\lib%$[dllext].lib]
 #define bin_targets \
-    $[TARGET(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
-    $[TARGET(sed_bin_target):%=$[st_dir]\%]
-#define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]\%.exe]
+    $[active_target(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
+    $[active_target(sed_bin_target):%=$[st_dir]\%]
+#define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]\%.exe]
 
 // And these variables will define the various things we need to
 // install.
-#define install_lib $[TARGET(metalib_target static_lib_target)] $[real_lib_targets]
-#define install_bin $[TARGET(bin_target)]
+#define install_lib $[active_target(metalib_target static_lib_target)] $[real_lib_targets]
+#define install_bin $[active_target(bin_target)]
 #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
 #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
 #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
@@ -214,13 +214,13 @@ cleanall : clean
        $[if $[install_config],$[install_config_dir]] \
        $[if $[install_igatedb],$[install_igatedb_dir]] \
      ] \
-     $[TARGET(metalib_target lib_target static_lib_target):%=install-lib%] \
-     $[TARGET(bin_target sed_bin_target):%=install-%] \
+     $[active_target(metalib_target lib_target static_lib_target):%=install-lib%] \
+     $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 
 install : all $[install_targets]
 
-uninstall : $[TARGET(metalib_target lib_target static_lib_target):%=uninstall-lib%] $[TARGET(bin_target):%=uninstall-%]
+uninstall : $[active_target(metalib_target lib_target static_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #if $[installed_files]
 	del /f $[sort $[installed_files]]
 #endif

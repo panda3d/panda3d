@@ -17,9 +17,11 @@ TypeHandle ClientBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ClientBase::
 ClientBase(const string &server) :
-  _sleep_time(1000000/60), _server(server),
-  _forked(false), _shutdown(false)
+  _sleep_time(1000000/60), _server(server), _forked(false)
 {
+#ifdef HAVE_IPC
+  _shutdown = false;
+#endif
 }
 
 
@@ -31,6 +33,7 @@ ClientBase(const string &server) :
 ClientBase::
 ~ClientBase()
 {
+#ifdef HAVE_IPC
   if (asynchronous_clients && _forked == true) {
     {
       //Make sure that you grab all locks before setting shutdown to
@@ -48,6 +51,7 @@ ClientBase::
     void *ret;
     _client_thread->join(&ret);
   }
+#endif
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::fork_asynchronous_thread
@@ -56,6 +60,7 @@ ClientBase::
 ////////////////////////////////////////////////////////////////////
 void ClientBase::
 fork_asynchronous_thread(void) {
+#ifdef HAVE_IPC
   if (asynchronous_clients) {
     _client_thread = thread::create(&st_callback, this);
     _forked = true;
@@ -65,6 +70,7 @@ fork_asynchronous_thread(void) {
 	<< endl;
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +85,7 @@ set_poll_time(float poll_time) {
 }
 
 
+#ifdef HAVE_IPC
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::st_callback
 //       Access: Private, static
@@ -117,6 +124,7 @@ callback(void) {
     ipc_traits::sleep(0, _sleep_time);
   }
 }
+#endif // HAVE_IPC
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::get_tracker_data
@@ -136,7 +144,9 @@ get_tracker_data(const string &tracker, int sensor) {
   }
 
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_tracker_lock);
+#endif
 
   if ((find(_trackers.begin(), _trackers.end(), tracker) != _trackers.end()) ||
       (find(_sensors[tracker].begin(), _sensors[tracker].end(), sensor) 
@@ -174,7 +184,9 @@ get_analog_data(const string &analog) {
   }
 
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_analog_lock);
+#endif
 
   if (find(_analogs.begin(), _analogs.end(), analog) != _analogs.end()) {
     if (_analog_datas.find(analog) != _analog_datas.end()) {
@@ -209,7 +221,9 @@ get_button_data(const string &button) {
   }
 
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_button_lock);
+#endif
 
   if (find(_buttons.begin(), _buttons.end(), button) != _buttons.end()) {
     if (_button_datas.find(button) != _button_datas.end()) {
@@ -242,7 +256,9 @@ get_dial_data(const string &dial) {
   }
 
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_dial_lock);
+#endif
 
   if (find(_dials.begin(), _dials.end(), dial) != _dials.end()) {
     if (_dial_datas.find(dial) != _dial_datas.end()) {
@@ -267,7 +283,9 @@ void ClientBase::
 push_tracker_position(const string &tracker, const int &sensor, const double &ptime,
 		      const LPoint3f &pos, const LVector4f &pquat) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_tracker_lock);  
+#endif
 
   _tracker_datas[tracker][sensor].ptime = ptime;
   _tracker_datas[tracker][sensor].position = pos;
@@ -284,7 +302,9 @@ void ClientBase::
 push_tracker_velocity(const string &tracker, int sensor, const double &vtime, 
 		      const LPoint3f &vel, const LVector4f &vquat, const float &dt) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_tracker_lock);  
+#endif
 
   _tracker_datas[tracker][sensor].vtime = vtime;
   _tracker_datas[tracker][sensor].velocity = vel;
@@ -302,7 +322,9 @@ void ClientBase::
 push_tracker_acceleration(const string &tracker, const int &sensor, const double &atime, 
 			  const LPoint3f &acc, const LVector4f &aquat, const float &dt) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_tracker_lock);  
+#endif
 
   _tracker_datas[tracker][sensor].atime = atime;
   _tracker_datas[tracker][sensor].acceleration = acc;
@@ -320,7 +342,9 @@ void ClientBase::
 push_analog(const string &analog, const float &atime, 
 	    const double *channels, int num_channels) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_analog_lock);  
+#endif
 
   _analog_datas[analog].atime = atime;
 
@@ -341,7 +365,9 @@ void ClientBase::
 push_button(const string &button, const float &btime, const int &button_id, 
 	    const int &state) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_button_lock);  
+#endif
 
   _button_datas[button].btime = btime;
   _button_datas[button].button_id = button_id;
@@ -358,7 +384,9 @@ void ClientBase::
 push_dial(const string &dial, const float &dtime, const int &dial_id, 
 	    const float &change) {
   //Make sure to prevent simultaneous write and read of device
+#ifdef HAVE_IPC
   mutex_lock lock(_dial_lock);  
+#endif
 
   _dial_datas[dial].dtime = dtime;
   _dial_datas[dial].dial_id = dial_id;

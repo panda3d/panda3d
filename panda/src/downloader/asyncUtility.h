@@ -11,10 +11,14 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 #include <notify.h>
+#include <typedef.h>
+
+#ifdef HAVE_IPC
 #include <ipc_mutex.h>
 #include <ipc_condition.h>
 #include <ipc_thread.h>
-#include <typedef.h>
+#endif
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncUtility 
@@ -41,11 +45,14 @@ protected:
   int _next_token;
   bool _shutdown;
   bool _threaded;
+  float _frequency;
+  bool _threads_enabled;
+
+#ifdef HAVE_IPC
   mutex _lock;
   condition_variable *_request_cond;
   thread *_thread;
-  float _frequency;
-  bool _threads_enabled;
+#endif
 };
 
 #include "asyncUtility.I"

@@ -58,11 +58,13 @@ is_right_handed(CoordinateSystem cs) {
   case CS_zup_left:
   case CS_yup_left:
     return false;
+
+  default:
+    linmath_cat.error()
+      << "Invalid coordinate system value: " << (int)cs << "\n";
+    nassertr(false, false);
+    return false;
   }
-  linmath_cat.error()
-    << "Invalid coordinate system value: " << (int)cs << "\n";
-  nassertr(false, false);
-  return false;
 }
 
 ostream &

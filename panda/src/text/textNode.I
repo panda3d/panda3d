@@ -936,7 +936,7 @@ get_upper_left_3d() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_upper_left_3d
+//     Function: TextNode::get_lower_right_3d
 //       Access: Public, Scheme
 //  Description: Returns the lower-right extent of the text object,
 //               after it has been transformed into 3-d space by

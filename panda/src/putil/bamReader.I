@@ -126,18 +126,6 @@ clear_queue(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::empty
-//       Access: Public
-//  Description: Returns if BamReader has read all that it can from
-//               the given DatagramGenerator
-////////////////////////////////////////////////////////////////////
-INLINE void BamReader::
-empty(void)
-{
-  _source->empty();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: parse_params
 //       Access: Private, Static
 //  Description: Takes in a FactoryParams, passed from a WriteableFactory

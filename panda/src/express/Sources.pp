@@ -10,7 +10,9 @@
     circBuffer.I circBuffer.h clockObject.I clockObject.cxx		\
     clockObject.h config_express.cxx config_express.h datagram.I	\
     datagram.cxx datagram.h datagramGenerator.I datagramGenerator.cxx	\
-    datagramGenerator.h datagramIterator.cxx datagramIterator.h		\
+    datagramGenerator.h datagramInputFile.I datagramInputFile.h		\
+    datagramInputFile.cxx datagramIterator.cxx datagramIterator.h	\
+    datagramOutputFile.I datagramOutputFile.h datagramOutputFile.cxx	\
     datagramSink.I datagramSink.cxx datagramSink.h			\
     get_config_path.cxx get_config_path.h				\
     indent.I indent.cxx indent.h littleEndian.I				\
@@ -27,7 +29,8 @@
   #define INSTALL_HEADERS						\
     bigEndian.I bigEndian.h buffer.I buffer.h circBuffer.I		\
     circBuffer.h clockObject.I clockObject.h config_express.h		\
-    datagram.I datagram.h datagramIterator.h				\
+    datagram.I datagram.h datagramInputFile.I datagramInputFile.h	\
+    datagramIterator.h datagramOutputFile.I datagramOutputFile.h	\
     datagramSink.I datagramSink.h datagramGenerator.I			\
     datagramGenerator.h get_config_path.h				\
     indent.I indent.h littleEndian.I littleEndian.h			\

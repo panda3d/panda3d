@@ -90,6 +90,18 @@
   #define gl_libs $[GL_LIBS]
 #endif
 
+#if $[HAVE_GLX]
+  #define glx_ipath $[wildcard $[GLX_IPATH]]
+  #define glx_lpath $[wildcard $[GLX_LPATH]]
+  #define glx_libs $[GLX_LIBS]
+#endif
+
+#if $[HAVE_GLUT]
+  #define glut_ipath $[wildcard $[GLUT_IPATH]]
+  #define glut_lpath $[wildcard $[GLUT_LPATH]]
+  #define glut_libs $[GLUT_LIBS]
+#endif
+
 #if $[HAVE_DX]
   #define dx_ipath $[wildcard $[DX_IPATH]]
   #define dx_lpath $[wildcard $[DX_LPATH]]
@@ -121,6 +133,12 @@
   #define maya_ipath $[MAYA_LOCATION]/include
   #define maya_lpath $[MAYA_LOCATION]/lib
   #define maya_ld $[MAYA_LOCATION]/bin/mayald
+#endif
+
+#if $[HAVE_IPC]
+  #define ipc_ipath $[wildcard $[IPC_IPATH]]
+  #define ipc_lpath $[wildcard $[IPC_LPATH]]
+  #define ipc_libs $[IPC_LIBS]
 #endif
 
 #if $[HAVE_NET]
@@ -156,6 +174,7 @@
      $[or $[not $[DIRECTORY_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[DIRECTORY_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[DIRECTORY_IF_MAYA]],$[HAVE_MAYA]], \
+     $[or $[not $[DIRECTORY_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[DIRECTORY_IF_NET]],$[HAVE_NET]], \
      $[or $[not $[DIRECTORY_IF_AUDIO]],$[HAVE_AUDIO]], \
       1 ]
@@ -180,6 +199,7 @@
      $[or $[not $[TARGET_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[TARGET_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[TARGET_IF_MAYA]],$[HAVE_MAYA]], \
+     $[or $[not $[TARGET_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[TARGET_IF_NET]],$[HAVE_NET]], \
      $[or $[not $[TARGET_IF_AUDIO]],$[HAVE_AUDIO]], \
       1 ]
@@ -194,6 +214,11 @@
 #defer active_libs $[active_local_libs] $[active_component_libs]
 
 
+// This variable, when evaluated within a target, will either be empty
+// string if the target is not to be built, or the target name if it
+// is.
+#defer active_target $[if $[build_target],$[TARGET]]
+
 // This subroutine will set up the sources variable to reflect the
 // complete set of sources for this target, and also set the
 // alt_cflags, alt_libs, etc. as appropriate according to how the
@@ -204,6 +229,8 @@
 #defer get_sources \
   $[SOURCES] \
   $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
+  $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
+  $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
   $[if $[HAVE_PYTHON],$[IF_PYTHON_SOURCES]]
 
 // This variable returns the set of sources that are to be
@@ -232,7 +259,7 @@
 // current metalib target should include one, or empty string if it
 // should not.
 #defer get_igatemscan \
-  $[if $[and $[run_interrogate],$[components $[IGATESCAN],$[COMPONENT_LIBS]]], \
+  $[if $[and $[run_interrogate],$[components $[IGATESCAN],$[active_component_libs]]], \
     $[TARGET]]
     
 
@@ -243,31 +270,40 @@
 #defun get_cflags
   #define alt_cflags $[nspr_cflags] $[python_cflags]
   
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[zlib_cflags]
   #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[gl_cflags]
   #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[glx_cflags]
+  #endif
+  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[glut_cflags]
+  #endif
+  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[dx_cflags]
   #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[soxst_cflags]
   #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[ipc_cflags]
+  #endif
+  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[net_cflags]
   #endif
-  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[audio_cflags]
   #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[mikmod_cflags]
   #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[gtkmm_cflags]
   #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[maya_cflags]
   #endif
 
@@ -281,31 +317,40 @@
 #defun get_ipath
   #define alt_ipath $[nspr_ipath] $[python_ipath]
   
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[zlib_ipath]
   #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[gl_ipath]
   #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[glx_ipath]
+  #endif
+  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[glut_ipath]
+  #endif
+  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[dx_ipath]
   #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[soxst_ipath]
   #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[ipc_ipath]
+  #endif
+  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[net_ipath]
   #endif
-  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[audio_ipath]
   #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[mikmod_ipath]
   #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[gtkmm_ipath]
   #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[maya_ipath]
   #endif
 
@@ -319,31 +364,40 @@
 #defun get_lpath
   #define alt_lpath $[nspr_lpath] $[python_lpath]
   
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[zlib_lpath]
   #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[gl_lpath]
   #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[glx_lpath]
+  #endif
+  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[glut_lpath]
+  #endif
+  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[dx_lpath]
   #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[soxst_lpath]
   #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[ipc_lpath]
+  #endif
+  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[net_lpath]
   #endif
-  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[audio_lpath]
   #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[mikmod_lpath]
   #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[gtkmm_lpath]
   #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[maya_lpath]
   #endif
 
@@ -358,35 +412,44 @@
 #defun get_libs
   #define alt_libs $[nspr_libs] $[python_libs]
   
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[zlib_libs]
   #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[gl_libs]
   #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[glx_libs]
+  #endif
+  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[glut_libs]
+  #endif
+  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[dx_libs]
   #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[soxst_libs]
   #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[ipc_libs]
+  #endif
+  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[net_libs]
   #endif
-  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[audio_libs]
   #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[mikmod_libs]
   #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[gtkmm_libs]
   #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LIBS]],]
+  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[maya_libs]
   #endif
   #if $[UNIX_PLATFORM]
-    #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[COMPONENT_LIBS]]
+    #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[active_component_libs]]
   #endif
 
   $[alt_libs]

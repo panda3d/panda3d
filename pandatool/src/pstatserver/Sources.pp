@@ -1,3 +1,6 @@
+#define DIRECTORY_IF_NET yes
+#define USE_NET yes
+
 #begin lib_target
   #define TARGET pstatserver
   #define LOCAL_LIBS pandatoolbase

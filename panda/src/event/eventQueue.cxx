@@ -34,7 +34,9 @@ EventQueue::
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 queue_event(CPT_Event event) {
+#ifdef HAVE_IPC
   mutex_lock lock(_lock);
+#endif
   if (_queue.is_full()) {
     event_cat.error()
       << "Ignoring event " << *event << "; event queue full.\n";

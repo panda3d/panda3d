@@ -78,7 +78,7 @@ void AnimChannelScalarTable::
 set_table(const CPTA_float &table) {
   int num_frames = _root->get_num_frames();
 
-  if (table.size() > 1 && table.size() < num_frames) {
+  if (table.size() > 1 && (int)table.size() < num_frames) {
     // The new table has an invalid number of frames--it doesn't match
     // the bundle's requirement.
     return;
@@ -122,7 +122,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   if (!quantize_bam_channels) {
     // Write out everything the old way, as floats.
     me.add_uint16(_table.size());
-    for(int i = 0; i < _table.size(); i++) {
+    for(int i = 0; i < (int)_table.size(); i++) {
       me.add_float64(_table[i]);
     }
 
@@ -131,7 +131,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
     // We quantize morphs within the range -100 .. 100.
     me.add_uint16(_table.size());
-    for(int i = 0; i < _table.size(); i++) {
+    for(int i = 0; i < (int)_table.size(); i++) {
       me.add_int16((int)max(min(_table[i] * 32767.0 / 100.0, 32767.0), -32767.0));
     }
   }

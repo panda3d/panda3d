@@ -190,7 +190,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   NamedNode::write_datagram(manager, me);
   me.add_uint16(_solids.size());
 
-  for(i = 0; i < _solids.size(); i++)
+  for(i = 0; i < (int)_solids.size(); i++)
   {
     manager->write_pointer(me, _solids[i]);
   }

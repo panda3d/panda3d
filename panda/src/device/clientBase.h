@@ -15,11 +15,14 @@
 
 #include <typedReferenceCount.h>
 #include <luse.h>
+#include <vector_string.h>
+#include <vector_int.h>
+
+#ifdef HAVE_IPC
 #include <ipc_mutex.h>
 #include <ipc_condition.h>
 #include <ipc_thread.h>
-#include <vector_string.h>
-#include <vector_int.h>
+#endif
 
 #include <map>
 
@@ -60,7 +63,9 @@ protected:
 private:
   int _sleep_time;
   const string _server;
- 
+  bool _forked;
+
+#ifdef HAVE_IPC
   //Device locks and conditionals
   mutex _tracker_lock; 
   mutex _analog_lock; 
@@ -69,11 +74,11 @@ private:
 
   //Thread variables and functions
   thread *_client_thread;
-  bool _forked;
   bool _shutdown;
 
   static void* st_callback(void *arg);
   void callback(void);
+#endif
 
 protected:
  //Device polling functions

@@ -4,6 +4,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatClient.h"
+
+#ifdef HAVE_NET 
+// This file only defines anything interesting if we have a network
+// interface, in which case the PStatClient actually does something.
+// If we don't have a network interface, there's nothing to define
+// here.
+
 #include "pStatClientControlMessage.h"
 #include "pStatServerControlMessage.h"
 #include "pStatCollector.h"
@@ -312,7 +319,7 @@ make_collector(int parent_index, const string &fullname) {
 
   string name = fullname.substr(start);
 
-  nassertr(parent_index >= 0 && parent_index < _collectors.size(),
+  nassertr(parent_index >= 0 && parent_index < (int)_collectors.size(),
 	   PStatCollector());
 
   Collector &parent = _collectors[parent_index];
@@ -329,7 +336,7 @@ make_collector(int parent_index, const string &fullname) {
   if (ni != parent._children.end()) {
     // We already had a collector by this name; return it.
     int index = (*ni).second;
-    nassertr(index >= 0 && index < _collectors.size(), PStatCollector());
+    nassertr(index >= 0 && index < (int)_collectors.size(), PStatCollector());
     return PStatCollector(this, (*ni).second);
   }
 
@@ -363,7 +370,7 @@ make_collector(int parent_index, const string &fullname,
 	       const RGBColorf &suggested_color, int sort) {
   PStatCollector c = make_collector(parent_index, fullname);
   nassertr(c._client == this, PStatCollector());
-  nassertr(c._index >= 0 && c._index < _collectors.size(), PStatCollector());
+  nassertr(c._index >= 0 && c._index < (int)_collectors.size(), PStatCollector());
 
   PStatCollectorDef *def = _collectors[c._index]._def;
   nassertr(def != (PStatCollectorDef *)NULL, PStatCollector());
@@ -399,7 +406,7 @@ make_thread(const string &name) {
   if (ni != _threads_by_name.end()) {
     // We already had a thread by this name; return it.
     int index = (*ni).second;
-    nassertr(index >= 0 && index < _threads.size(), PStatThread());
+    nassertr(index >= 0 && index < (int)_threads.size(), PStatThread());
     return PStatThread(this, (*ni).second);
   }
 
@@ -484,7 +491,7 @@ start(int collector_index, int thread_index, double as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index, double as_of) {
-  nassertv(collector_index >= 0 && collector_index < _collectors.size());
+  nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
 
   if (_threads[thread_index]._is_active) {
@@ -753,3 +760,5 @@ connection_reset(const PT(Connection) &connection) {
       << "Ignoring spurious connection_reset() message\n";
   }
 }
+
+#endif // HAVE_NET

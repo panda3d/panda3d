@@ -94,7 +94,7 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 PartGroup *PartGroup::
 get_child(int n) const {
-  nassertr(n >= 0 && n < _children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), NULL);
   return _children[n];
 }
 
@@ -265,20 +265,18 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     }
   }
 
-  while (i < get_num_children()) {
-    PartGroup *pc = get_child(i);
+  if (i < get_num_children()) {
+    // There's at least one extra part.
     if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
       return false;
     }
-    i++;
   }
   
-  while (j < anim->get_num_children()) {
-    AnimGroup *ac = anim->get_child(j);
+  if (j < anim->get_num_children()) {
+    // There's at least one extra anim channel.
     if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
       return false;
     }
-    j++;
   }
 
   return true;
@@ -399,7 +397,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   int i;
   me.add_string(get_name());
   me.add_uint16(_children.size());
-  for(i = 0; i < _children.size(); i++)
+  for(i = 0; i < (int)_children.size(); i++)
   {
     manager->write_pointer(me, _children[i]);
   }

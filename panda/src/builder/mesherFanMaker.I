@@ -102,8 +102,8 @@ compute_angle() const {
 
   Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
-    Normalf v1 = (Vertexf &)(*ei)->_a->get_coord_value(*_bucket) - v0;
-    Normalf v2 = (Vertexf &)(*ei)->_b->get_coord_value(*_bucket) - v0;
+    Normalf v1 = (*ei)->_a->get_coord_value(*_bucket) - v0;
+    Normalf v2 = (*ei)->_b->get_coord_value(*_bucket) - v0;
     
     v1 = normalize(v1);
     v2 = normalize(v2);

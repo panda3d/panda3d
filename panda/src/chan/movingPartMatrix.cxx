@@ -38,7 +38,7 @@ get_blend_value(const PartBundle *root) {
     AnimControl *control = (*blend.begin()).first;
 
     int channel_index = control->get_channel_index();
-    nassertv(channel_index >= 0 && channel_index < _channels.size());
+    nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
     ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
     nassertv(channel != NULL);
     
@@ -59,7 +59,7 @@ get_blend_value(const PartBundle *root) {
 	nassertv(effect != 0.0);
 	
 	int channel_index = control->get_channel_index();
-	nassertv(channel_index >= 0 && channel_index < _channels.size());
+	nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
 	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
 	nassertv(channel != NULL);
 	
@@ -90,7 +90,7 @@ get_blend_value(const PartBundle *root) {
 	nassertv(effect != 0.0);
 	
 	int channel_index = control->get_channel_index();
-	nassertv(channel_index >= 0 && channel_index < _channels.size());
+	nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
 	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
 	nassertv(channel != NULL);
 	

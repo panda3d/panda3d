@@ -18,9 +18,12 @@
 #include <list>
 #include <errno.h>
 
-#if !defined(WIN32)
+#if !defined(WIN32_VC)
 // #define errno wsaGetLastError()
   #include <sys/time.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -247,7 +250,9 @@ request_download(const string &file_name, const Filename &file_dest,
     }
 
     // We need to grab the lock in order to signal the condition variable
+#ifdef HAVE_IPC
     _lock.lock();
+#endif
 
       if (_token_board->_waiting.is_full()) {
         downloader_cat.error()
@@ -265,9 +270,10 @@ request_download(const string &file_name, const Filename &file_dest,
 					partial_content);
       _token_board->_waiting.insert(tok);
 
+#ifdef HAVE_IPC
       _request_cond->signal();
-
     _lock.unlock();
+#endif
 
   } else {
     // If we're not running asynchronously, process the load request
@@ -480,9 +486,13 @@ download(const string &file_name, Filename file_dest,
   for (;;) {
     if (_download_enabled) { 
       // Ensure that these don't change while we're computing read_size
+#ifdef HAVE_IPC
       _bandwidth_frequency_lock.lock();
+#endif
  	int read_size = (int)(_bandwidth * _frequency);	
+#ifdef HAVE_IPC
       _bandwidth_frequency_lock.unlock();
+#endif
 
       // Ensure we have enough room in the buffer to download read_size
       // If we don't have enough room, write the buffer to disk

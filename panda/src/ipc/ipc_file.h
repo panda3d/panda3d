@@ -31,29 +31,6 @@ private:
   file_class* _file;
 };
 
-class datagram_file : public DatagramGenerator, public DatagramSink, public base_file {
-public:
-  INLINE datagram_file() : base_file(), _valid(false) {}
-  INLINE datagram_file(const string& file) : base_file(file) {}
-  virtual ~datagram_file(void){};
-
-  INLINE bool open(file_mode mode, string header = "");
-  INLINE bool empty(void);
-
-  INLINE bool get_datagram(Datagram& dataBlock);
-  INLINE bool put_datagram(const Datagram& dataBlock);
-  INLINE bool is_valid(void);
-
-protected:
-  //When someone has a datagram_file, they shouldn't be directly reading from or 
-  //writing to the file
-  INLINE int readin(string& buffer, int numBytes) {return base_file::readin(buffer, numBytes);}
-  INLINE int writeout(const string& buffer) {return base_file::writeout(buffer);}
-private:
-  file_mode _mode;
-  bool _valid;
-};
-
 typedef base_file file;
 typedef file::file_mode file_mode;
 

@@ -4,7 +4,6 @@
 
 #include <pandabase.h>
 #include <notify.h>
-#include <nspr.h>
 
 #include "bam.h"
 #include "bamReader.h"
@@ -49,7 +48,7 @@ init(void)
 {
   Datagram header;
 
-  if (!_source->is_valid())
+  if (_source->is_error())
   {
     return false;
   }
@@ -176,7 +175,7 @@ read_object(void)
   //  return TypedWriteable::Null;
   //}
 
-  if (!_source->is_valid())
+  if (_source->is_error())
   {
     return TypedWriteable::Null;
   }

@@ -1,3 +1,6 @@
+#define DIRECTORY_IF_NET yes
+#define USE_NET yes
+
 #begin bin_target
   #define TARGET text-stats
   #define LOCAL_LIBS \

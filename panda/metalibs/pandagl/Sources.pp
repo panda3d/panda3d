@@ -10,7 +10,9 @@
 #define BUILDING_DLL BUILDING_PANDAGL
 
 #define COMPONENT_LIBS \
-    glgsg glxdisplay wgldisplay // sgiglxdisplay
+    glgsg glxdisplay wgldisplay glutdisplay \
+    sgidisplay sgiglxdisplay sgiglutdisplay
+
 #define LOCAL_LIBS gsgbase display express
 #define OTHER_LIBS dtool
 

@@ -8,9 +8,10 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramGenerator::Destructor
-//       Access: Public
+//       Access: Public, Virtual>
 //  Description: Does nothing since this is class is just
 //               the definition of an interface
 ////////////////////////////////////////////////////////////////////
-DatagramGenerator::~DatagramGenerator(void){
+DatagramGenerator::
+~DatagramGenerator() {
 }

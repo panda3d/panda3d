@@ -250,7 +250,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   //Write out all of the Geom objects that this node
   //stores
   me.add_uint16(_geoms.size());
-  for(int i = 0; i < _geoms.size(); i++)
+  for(int i = 0; i < (int)_geoms.size(); i++)
   {
     manager->write_pointer(me, _geoms[i]);
   }

@@ -63,7 +63,7 @@ get_num_types() const {
 ////////////////////////////////////////////////////////////////////
 LoaderFileType *LoaderFileTypeRegistry::
 get_type(int n) const {
-  nassertr(n >= 0 && n < _types.size(), NULL);
+  nassertr(n >= 0 && n < (int)_types.size(), NULL);
   return _types[n];
 }
 

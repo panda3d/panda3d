@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramGenerator {
 public:
-  INLINE DatagramGenerator(void);
-  virtual ~DatagramGenerator(void);
+  INLINE DatagramGenerator();
+  virtual ~DatagramGenerator();
   
   virtual bool get_datagram(Datagram& dataBlock) = 0;
-  virtual bool empty(void) = 0;
-  virtual bool is_valid(void) = 0;
+  virtual bool is_eof() = 0;
+  virtual bool is_error() = 0;
 };
 
 #include "datagramGenerator.I"

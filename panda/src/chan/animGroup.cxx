@@ -52,7 +52,7 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 AnimGroup *AnimGroup::
 get_child(int n) const {
-  nassertr(n >= 0 && n < _children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), NULL);
   return _children[n];
 }
 
@@ -149,7 +149,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   //Write out the root
   manager->write_pointer(me, this->_root);
   me.add_uint16(_children.size());
-  for(int i = 0; i < _children.size(); i++)
+  for(int i = 0; i < (int)_children.size(); i++)
   {
     manager->write_pointer(me, _children[i]);
   }

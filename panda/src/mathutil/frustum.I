@@ -212,11 +212,12 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   case CS_yup_left:
     return LMatrix4<P_numtype>::convert_mat(CS_yup_right, CS_yup_left) *
       get_perspective_projection_mat(CS_yup_right);
+   
+  default:
+    mathutil_cat.error()
+      << "Invalid coordinate system!\n";
+    return LMatrix4<P_numtype>::ident_mat();
   }
-
-  mathutil_cat.error()
-    << "Invalid coordinate system!\n";
-  return LMatrix4<P_numtype>::ident_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,9 +259,10 @@ get_ortho_projection_mat(CoordinateSystem cs) const {
   case CS_yup_left:
     return LMatrix4<P_numtype>::convert_mat(CS_yup_right, CS_yup_left) *
       get_ortho_projection_mat(CS_yup_right);
-  }
 
-  mathutil_cat.error()
-    << "Invalid coordinate system!\n";
-  return LMatrix4<P_numtype>::ident_mat();
+  default:
+    mathutil_cat.error()
+      << "Invalid coordinate system!\n";
+    return LMatrix4<P_numtype>::ident_mat();
+  }
 }

@@ -7,7 +7,6 @@
 
 #include <pandabase.h>
 #include <notify.h>
-#include <nspr.h>
 
 #include "typedWriteable.h"
 #include "datagramSink.h"

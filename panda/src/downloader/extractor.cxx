@@ -106,7 +106,9 @@ request_extract(const Filename &source_file, const string &event_name,
     }
 
     // We need to grab the lock in order to signal the condition variable
+#ifdef HAVE_IPC
     _lock.lock();
+#endif
 
       if (_token_board->_waiting.is_full()) {
         downloader_cat.error()
@@ -123,9 +125,10 @@ request_extract(const Filename &source_file, const string &event_name,
 						rel_path);
       _token_board->_waiting.insert(tok);
 
+#ifdef HAVE_IPC
       _request_cond->signal();
-
     _lock.unlock();
+#endif
 
   } else {
     // If we're not running asynchronously, process the load request
@@ -239,7 +242,6 @@ extract(Filename &source_file, const Filename &rel_path) {
       handled_all_input = true;
 
     nap();
-
   }
 
   read_stream.close();

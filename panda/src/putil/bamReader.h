@@ -7,7 +7,6 @@
 
 #include <pandabase.h>
 #include <notify.h>
-#include <nspr.h>
 
 #include "typedWriteable.h"
 #include "datagramGenerator.h"
@@ -60,8 +59,6 @@ public:
   INLINE BamReader(DatagramGenerator *generator);
   ~BamReader(void);
 
-  INLINE void empty(void);
-  
   bool init(void);
   TypedWriteable* read_object(void);
   //When a client class asks BamReader to read out an object that it

@@ -16,8 +16,12 @@
 #include <buffer.h>
 #include "asyncUtility.h"
 
-#if defined(WIN32)
+#if defined(WIN32_VC)
   #include <winsock2.h>
+#else
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <resolv.h>
 #endif
 
 class DownloaderToken;
@@ -91,7 +95,10 @@ private:
 
   bool _connected;
 
+#ifdef HAVE_IPC
   mutex _bandwidth_frequency_lock;
+#endif
+
   int _socket;
   PT(Buffer) _buffer;
   float _bandwidth;

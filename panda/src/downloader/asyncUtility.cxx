@@ -32,7 +32,10 @@ AsyncUtility(float frequency) : _frequency(frequency) {
   _shutdown = false;
   _threaded = false;
   _threads_enabled = true;
+
+#ifdef HAVE_IPC
   _request_cond = new condition_variable(_lock);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +45,9 @@ AsyncUtility(float frequency) : _frequency(frequency) {
 ////////////////////////////////////////////////////////////////////
 AsyncUtility::
 ~AsyncUtility() {
+#ifdef HAVE_IPC
   delete _request_cond;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,12 +57,14 @@ AsyncUtility::
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 create_thread(void) {
+#ifdef HAVE_IPC
   if (_threaded == false && _threads_enabled == true) {
     downloader_cat.debug() 
       << "AsyncUtility::create_thread()" << endl;
     _thread = thread::create(&st_callback, this);
     _threaded = true;
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +74,7 @@ create_thread(void) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 destroy_thread(void) {
+#ifdef HAVE_IPC
   if (_threaded == false)
     return;
  
@@ -81,6 +89,7 @@ destroy_thread(void) {
   // thread returns.
   void *ret;
   _thread->join(&ret);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,8 +106,10 @@ destroy_thread(void) {
 ////////////////////////////////////////////////////////////////////
 void* AsyncUtility::
 st_callback(void *arg) {
+#ifdef HAVE_IPC
   nassertr(arg != NULL, NULL);
   ((AsyncUtility *)arg)->callback();
+#endif
   return NULL;
 }
 
@@ -110,12 +121,14 @@ st_callback(void *arg) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 callback(void) {
+#ifdef HAVE_IPC
   while (process_request()) {
     // Sleep until a signal arrives
     _lock.lock();
       _request_cond->wait();
     _lock.unlock();
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,6 +138,7 @@ callback(void) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 nap(void) const {
+#ifdef HAVE_IPC
 #ifdef WIN32
   _sleep(1000 * _frequency);
 #else
@@ -133,4 +147,5 @@ nap(void) const {
   tv.tv_usec = (long)(1000000 * _frequency);
   select(0, NULL, NULL, NULL, &tv);
 #endif
+#endif  // HAVE_IPC
 }

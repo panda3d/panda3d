@@ -149,7 +149,7 @@ void AnimChannelMatrixXfmTable::
 set_table(char table_id, const CPTA_float &table) {
   int num_frames = _root->get_num_frames();
 
-  if (table.size() > 1 && table.size() < num_frames) {
+  if (table.size() > 1 && (int)table.size() < num_frames) {
     // The new table has an invalid number of frames--it doesn't match
     // the bundle's requirement.
     return;
@@ -231,7 +231,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     // Write out everything the old way, as floats.
     for(int i = 0; i < num_tables; i++) {
       me.add_uint16(_tables[i].size());
-      for(int j = 0; j < _tables[i].size(); j++) {
+      for(int j = 0; j < (int)_tables[i].size(); j++) {
 	me.add_float64(_tables[i][j]);
       }
     }
@@ -243,7 +243,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     int i;
     for(i = 0; i < 3; i++) {
       me.add_uint16(_tables[i].size());
-      for(int j = 0; j < _tables[i].size(); j++) {
+      for(int j = 0; j < (int)_tables[i].size(); j++) {
 	me.add_uint16((int)max(min(_tables[i][j]*256.0, 65535.0), 0.0));
       }
     }
@@ -251,7 +251,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     // Now, write out the joint angles.  These are in the range 0 .. 360.
     for(i = 3; i < 6; i++) {
       me.add_uint16(_tables[i].size());
-      for(int j = 0; j < _tables[i].size(); j++) {
+      for(int j = 0; j < (int)_tables[i].size(); j++) {
 	me.add_uint16((unsigned int)(_tables[i][j] * 65536.0 / 360.0));
       }
     }
@@ -260,7 +260,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     // -1000 .. 1000.
     for(i = 6; i < 9; i++) {
       me.add_uint16(_tables[i].size());
-      for(int j = 0; j < _tables[i].size(); j++) {
+      for(int j = 0; j < (int)_tables[i].size(); j++) {
 	me.add_int16((int)max(min(_tables[i][j] * 32767.0 / 1000.0, 32767.0), -32767.0));
       }
     }

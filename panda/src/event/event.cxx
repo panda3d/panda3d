@@ -82,7 +82,7 @@ get_num_parameters() const {
 ////////////////////////////////////////////////////////////////////
 EventParameter Event::
 get_parameter(int n) const {
-  nassertr(n >= 0 && n < _parameters.size(), EventParameter(0));
+  nassertr(n >= 0 && n < (int)_parameters.size(), EventParameter(0));
   return _parameters[n];
 }
 

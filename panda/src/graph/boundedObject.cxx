@@ -47,7 +47,7 @@ recompute_bound() {
 
   default:
     graph_cat.error()
-      << "Unexpected _bound_type: " << _bound_type 
+      << "Unexpected _bound_type: " << (int)_bound_type 
       << " in BoundedObject::recompute_bound()\n";
     _bound = NULL;
   }

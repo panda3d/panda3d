@@ -50,7 +50,7 @@ write_datagram(BamWriter *, Datagram &me)
 
   default:
     gobj_cat.error()
-      << "Unsupported bam-texture-mode: " << bam_texture_mode << "\n";
+      << "Unsupported bam-texture-mode: " << (int)bam_texture_mode << "\n";
   }
 
   me.add_string(filename);

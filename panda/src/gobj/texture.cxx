@@ -196,7 +196,6 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
   Contexts::iterator ci;
   ci = _contexts.find(gsg);
   if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
     _contexts.erase(ci);
   } else {
     // If this assertion fails, clear_gsg() was called on a GSG which

@@ -48,7 +48,7 @@ describe_data_verbose(ostream &out, const NodeAttributes &state,
 	}
 	
 	indent(out, indent_level) << name;
-	if (name.length() < data_indent_level) {
+	if ((int)name.length() < data_indent_level) {
 	  indent(out, data_indent_level - name.length());
 	} else {
 	  out << "  ";
