@@ -1066,7 +1066,8 @@ class LevelEditor(NodePath, PandaObject):
         obj = self.targetDNAObject
         if obj:
             classType = obj.__class__.getClassType()
-            if classType.eq(DNAWall.getClassType()):
+            if (classType.eq(DNAWall.getClassType()) |
+                classType.eq(DNAProp.getClassType())):
                 tag = 'wallColor:'
             elif classType.eq(DNAWindows.getClassType()):
                 tag = 'windowColor:'
