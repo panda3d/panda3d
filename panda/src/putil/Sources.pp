@@ -35,7 +35,7 @@
     ioPtaDatagramShort.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
     modifierButtons.I modifierButtons.h mouseButton.h \
-    mouseData.h nameUniquifier.I nameUniquifier.h \
+    mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
@@ -104,8 +104,8 @@
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \
-    modifierButtons.h mouseButton.h mouseData.h nameUniquifier.I \
-    nameUniquifier.h \
+    modifierButtons.h mouseButton.h mouseData.I mouseData.h \
+    nameUniquifier.I nameUniquifier.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \

@@ -19,7 +19,7 @@
 #ifndef MOUSEDATA_H
 #define MOUSEDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "modifierButtons.h"
 
@@ -33,15 +33,17 @@ class EXPCL_PANDA MouseData {
 PUBLISHED:
   MouseData();
 
-  INLINE int get_x() const {return _xpos;};
-  INLINE int get_y() const {return _ypos;};
-  INLINE bool get_in_window() const {return _in_window;};
+  INLINE int get_x() const;
+  INLINE int get_y() const;
+  INLINE bool get_in_window() const;
 
 public:
   bool _in_window;
   int _xpos;
   int _ypos;
 };
+
+#include "mouseData.I"
 
 #endif
 
