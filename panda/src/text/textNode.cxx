@@ -469,9 +469,11 @@ rebuild() {
   // Now flatten our hierarchy to get rid of the transforms we put in,
   // applying them to the vertices.
 
-  SceneGraphReducer gr(RenderRelation::get_class_type());
-  gr.apply_transitions(_root);
-  gr.flatten(_root, true);
+  if (flatten_text) {
+    SceneGraphReducer gr(RenderRelation::get_class_type());
+    gr.apply_transitions(_root);
+    gr.flatten(_root, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

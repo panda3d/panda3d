@@ -7,10 +7,12 @@
 #define CONFIG_TEXT_H
 
 #include <pandabase.h>
-#include <notify.h>
+#include <notifyCategoryProxy.h>
 
-// Configure variables for text package.
+class DSearchPath;
 
-extern NotifyCategory &text_cat;
+NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
+
+extern const bool flatten_text;
 
 #endif

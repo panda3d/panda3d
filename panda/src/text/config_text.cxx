@@ -9,10 +9,10 @@
 #include <dconfig.h>
 
 Configure(config_text);
-
-NotifyCategory &text_cat = *Notify::ptr()->get_category(":text");
+NotifyCategoryDef(text, "");
 
 ConfigureFn(config_text) {
   TextNode::init_type();
 }
 
+const bool flatten_text = config_text.GetBool("flatten-text", true);
