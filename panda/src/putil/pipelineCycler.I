@@ -41,7 +41,7 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
-  PipelineCyclerBase(copy)
+  PipelineCyclerBase(copy._data->make_copy(), copy)
 {
 }
 
@@ -129,7 +129,7 @@ cheat() const {
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(Pipeline *pipeline) :
-  PipelineCyclerBase(&_data, pipeline)
+  PipelineCyclerBase(&_typed_data, pipeline)
 {
 }
 
@@ -141,8 +141,8 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
-  PipelineCyclerBase(copy),
-  _data(copy._data)
+  PipelineCyclerBase(&_typed_data, copy),
+  _typed_data(copy._typed_data)
 {
 }
 
@@ -155,7 +155,7 @@ template<class CycleDataType>
 INLINE void PipelineCycler<CycleDataType>::
 operator = (const PipelineCycler<CycleDataType> &copy) {
   PipelineCyclerBase::operator = (copy);
-  _data = copy._data;
+  _typed_data = copy._typed_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 template<class CycleDataType>
 INLINE const CycleDataType *PipelineCycler<CycleDataType>::
 read() const {
-  return &_data;
+  return &_typed_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ read() const {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 write() {
-  return &_data;
+  return &_typed_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +188,7 @@ write() {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 elevate_read(const CycleDataType *) {
-  return &_data;
+  return &_typed_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ elevate_read(const CycleDataType *) {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 write_stage(int) {
-  return &_data;
+  return &_typed_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ write_stage(int) {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 cheat() const {
-  return (CycleDataType *)&_data;
+  return (CycleDataType *)&_typed_data;
 }
 
 

@@ -44,8 +44,8 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerBase::
-PipelineCyclerBase(const PipelineCyclerBase &copy) :
-  _data(copy._data->make_copy()),
+PipelineCyclerBase(CycleData *initial_data, const PipelineCyclerBase &copy) :
+  _data(initial_data),
   _pipeline(copy._pipeline),
   _read_count(0),
   _write_count(0)
@@ -312,7 +312,13 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerBase::
-PipelineCyclerBase(const PipelineCyclerBase &) {
+PipelineCyclerBase(CycleData *initial_data, const PipelineCyclerBase &) {
+  // The copy constructor for the DO_PIPELINING case is 
+#ifdef SIMPLE_STRUCT_POINTERS
+  nassertv(initial_data == (CycleData *)this);
+#else
+  _data = initial_data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -322,6 +328,8 @@ PipelineCyclerBase(const PipelineCyclerBase &) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerBase::
 operator = (const PipelineCyclerBase &) {
+  // We don't reassign the _data pointer here; we assume it was set
+  // correctly previously.
 }
 
 ////////////////////////////////////////////////////////////////////

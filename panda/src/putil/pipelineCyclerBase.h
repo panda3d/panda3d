@@ -39,7 +39,7 @@
 struct EXPCL_PANDA PipelineCyclerBase {
 public:
   INLINE PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
-  INLINE PipelineCyclerBase(const PipelineCyclerBase &copy);
+  INLINE PipelineCyclerBase(CycleData *initial_data, const PipelineCyclerBase &copy);
   INLINE void operator = (const PipelineCyclerBase &copy);
   INLINE ~PipelineCyclerBase();
 

@@ -73,7 +73,7 @@ public:
 private:
   // If we are *not* compiling in support for pipelining, we just
   // store the CycleData object right here.  No pointers needed.
-  CycleDataType _data;
+  CycleDataType _typed_data;
 #endif  // !DO_PIPELINING
 };
 
