@@ -68,11 +68,11 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)        
 
         # listen for the scroll buttons
-        self.accept(self.name + "-left", self.handleLeftButton)
-        self.accept(self.name + "-right", self.handleRightButton)
+        #self.accept(self.name + "-left", self.handleLeftButton)
+        #self.accept(self.name + "-right", self.handleRightButton)
         
         # listen for keyboard hits
-        self.setKeyFocus(0)
+        #self.setKeyFocus(0)
 
         # set list to first element
         self.setItem(self.item)
@@ -157,10 +157,29 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame.recompute()
         
     def manage(self):
+        # listen for the scroll buttons
+        self.accept(self.name + "-left", self.handleLeftButton)
+        self.accept(self.name + "-right", self.handleRightButton)
+
         self.frame.manage()
+        self.setKeyFocus(0)
+
+	return None
 
     def unmanage(self):
+        # ignore keyboard hits
+        self.ignore("left-up")
+        self.ignore("right-up")            
+
+        # ignore events
+        self.ignore(self.name + "-left")
+        self.ignore(self.name + "-right")
+	self.ignore(self.name + "-rollover")
+        self.setKeyFocus(0)
+
         self.frame.unmanage()
+
+	return None
         
     def handleLeftButton(self):
         # update the current item and the scroll label

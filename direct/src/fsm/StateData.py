@@ -11,7 +11,7 @@ class StateData(DirectObject):
         """__init__(self, Event)
         """
 	self.doneEvent = doneEvent
-  	self.doneStatus = 0
+  	self.doneStatus = None
 	self.isLoaded = 0
 	self.isEntered = 0
 	return None

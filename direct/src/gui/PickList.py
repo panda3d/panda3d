@@ -20,9 +20,9 @@ class PickList(PandaObject.PandaObject):
         self.frame = Frame.Frame(name)
         
         # listen for keyboard events
-        self.accept("up-up", self.__decrementChoice)
-        self.accept("down-up", self.__incrementChoice)
-        self.accept("enter-up", self.__makeChoice, [1])
+        #self.accept("up-up", self.__decrementChoice)
+        #self.accept("down-up", self.__incrementChoice)
+        #self.accept("enter-up", self.__makeChoice, [1])
 
         # initialization
         self.choice = -1
@@ -54,6 +54,7 @@ class PickList(PandaObject.PandaObject):
             # reset the display
             self.frame.unmanage()
 	    self.frame = None
+	    self.choiceList = []
 	return None
         
     # accessing
@@ -79,15 +80,15 @@ class PickList(PandaObject.PandaObject):
             # set the rollover-up event
             eventName = self.name + "-up-" + str(choiceIndex)
             button.button.setUpRolloverEvent(eventName)
-            self.accept(eventName, self.__updateButtonChoice, [choiceIndex])
+            #self.accept(eventName, self.__updateButtonChoice, [choiceIndex])
             # set the rollover-down event
             eventName = self.name + "-down-" + str(choiceIndex)
             button.button.setDownRolloverEvent(eventName)
-            self.accept(eventName, self.__makeChoice)
+            #self.accept(eventName, self.__makeChoice)
             # set exit event
             eventName = self.name + "-exit-" + str(choiceIndex)
             button.button.setUpEvent(eventName)
-            self.accept(eventName, self.__exitChoice)
+            #self.accept(eventName, self.__exitChoice)
             # keep a list of the choice buttons
             self.frame.addItem(button)
             self.choiceList.append(button)
@@ -96,11 +97,45 @@ class PickList(PandaObject.PandaObject):
         self.frame.makeWideAsWidest()
         self.frame.makeVertical()
 
+	return None
+
     def manage(self):
+        # listen for keyboard events
+        self.accept("up-up", self.__decrementChoice)
+        self.accept("down-up", self.__incrementChoice)
+        self.accept("enter-up", self.__makeChoice, [1])
+
+        for choice in self.choiceList:
+            choiceIndex = self.choiceList.index(choice)
+            # set the rollover-up event
+            eventName = self.name + "-up-" + str(choiceIndex)
+            self.accept(eventName, self.__updateButtonChoice, [choiceIndex])
+            # set the rollover-down event
+            eventName = self.name + "-down-" + str(choiceIndex)
+            self.accept(eventName, self.__makeChoice)
+            # set exit event
+            eventName = self.name + "-exit-" + str(choiceIndex)
+            self.accept(eventName, self.__exitChoice)
+
         self.frame.manage()
 
+	return None
+
     def unmanage(self):
+        # remove keyboard events
+        self.ignore("up-up")
+        self.ignore("down-up")
+        self.ignore("enter-up")
+
+        # ignore all the buttons
+        for item in self.frame.getItems():
+       	    self.ignore(item.getGuiItem().getUpEvent())
+    	    self.ignore(item.getGuiItem().getUpRolloverEvent())
+       	    self.ignore(item.getGuiItem().getDownRolloverEvent())
+
         self.frame.unmanage()
+
+	return None
 
     def recompute(self):
         self.frame.recompute()
