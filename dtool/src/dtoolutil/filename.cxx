@@ -518,6 +518,76 @@ make_absolute(const Filename &start_directory) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::make_canonical
+//       Access: Public
+//  Description: Converts this filename to a canonical name by
+//               replacing the directory part with the fully-qualified
+//               directory part.  This is done by changing to that
+//               directory and calling getcwd().
+//
+//               This has the effect of (a) converting relative paths
+//               to absolute paths (but see make_absolute() if this is
+//               the only effect you want), and (b) always resolving a
+//               given directory name to the same string, even if
+//               different symbolic links are traversed, and (c)
+//               changing nice symbolic-link paths like
+//               /fit/people/drose to ugly NFS automounter names like
+//               /hosts/dimbo/usr2/fit/people/drose.  This can be
+//               troubling, but sometimes this is exactly what you
+//               want, particularly if you're about to call
+//               make_relative_to() between two filenames.
+//
+//               The return value is true if successful, or false on
+//               failure (usually because the directory name does not
+//               exist or cannot be chdir'ed into).
+////////////////////////////////////////////////////////////////////
+bool Filename::
+make_canonical() {
+  if (empty()) {
+    // An empty filename is a special case.  This doesn't name
+    // anything.
+    return false;
+  }
+
+  // Temporarily save the current working directory.
+  Filename cwd = ExecutionEnvironment::get_cwd();
+  
+  if (is_directory()) {
+    // If the filename itself represents a directory and not a
+    // filename, cd to the named directory, not the one above it.
+    string dirname = get_fullpath();
+
+    if (chdir(dirname.c_str()) < 0) {
+      return false;
+    }
+    (*this) = ExecutionEnvironment::get_cwd();
+
+  } else {
+    // Otherwise, if the filename represents a regular file (or
+    // doesn't even exist), cd to the directory above.
+    string dirname = get_dirname();
+
+    if (dirname.empty()) {
+      // No dirname means the file is in this directory.
+      set_dirname(cwd);
+      return true;
+    }
+
+    if (chdir(dirname.c_str()) < 0) {
+      return false;
+    }
+    set_dirname(ExecutionEnvironment::get_cwd().get_fullpath());
+  }
+
+  // Now restore the current working directory.
+  if (chdir(cwd.c_str()) < 0) {
+    cerr << "Error!  Cannot change back to " << cwd << "\n";
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::to_os_specific
 //       Access: Public
 //  Description: Converts the filename from our generic Unix-like
@@ -776,6 +846,10 @@ resolve_filename(const DSearchPath &searchpath,
 //               fully-specified directory indicated (which must also
 //               begin with, and may or may not end with, a slash--a
 //               terminating slash is ignored).
+//
+//               This only performs a string comparsion, so it may be
+//               wise to call make_canonical() on both filenames
+//               before calling make_relative_to().
 //
 //               If allow_backups is false, the filename will only be
 //               adjusted to be made relative if it is already
@@ -1061,32 +1135,42 @@ rename_to(const Filename &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Filename::mkdir
+//     Function: Filename::make_dir
 //       Access: Public
 //  Description: Creates all the directories in the path to the file
-//		 specified in the filename (useful for writing).
+//		 specified in the filename, except for the basename
+//		 itself.  This assumes that the Filename contains the
+//		 name of a file, not a directory name; it ensures that
+//		 the directory containing the file exists.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_dir() const {
-  size_t p = 0;
-  while (p < _filename.length()) {
-    size_t slash = _filename.find('/', p);
-    if (slash != string::npos) {
-      string component = _filename.substr(0, slash);
-      if (!(component == ".") || 
-          !(component == "..")) {
+  Filename path = *this;
+  path.standardize();
+  string dirname = path.get_dirname();
+
+  // First, make sure everything up to the last path is known.  We
+  // don't care too much if any of these fail; maybe they failed
+  // because the directory was already there.
+  size_t slash = dirname.find('/');
+  while (slash != string::npos) {
+    string component = dirname.substr(0, slash);
 #ifndef WIN32_VC
-        mkdir(component.c_str(), 0xffff);
+    mkdir(component.c_str(), 0777);
 #else
-	mkdir(component.c_str());
+    mkdir(component.c_str());
 #endif
-      }
-    }
-    p = slash;
-    while (p < _filename.length() && _filename[p] == '/')
-      p++;
+    slash = dirname.find('/', slash + 1);
   }
-  return true;
+
+  // Now make the last one, and check the return value.
+#ifndef WIN32_VC
+  int result = mkdir(dirname.c_str(), 0777);
+#else
+  int result = mkdir(component.c_str());
+#endif
+
+  return (result == 0);
 }
 
 

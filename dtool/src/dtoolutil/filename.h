@@ -119,6 +119,8 @@ public:
   void make_absolute();
   void make_absolute(const Filename &start_directory);
 
+  bool make_canonical();
+
   string to_os_specific() const;
 
   bool exists() const;
