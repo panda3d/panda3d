@@ -122,7 +122,9 @@ add_level(int index, float level) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PStatFrameData::
 get_start() const {
-  nassertr(!is_empty(), 0.0);
+  if (is_empty()) {
+    return 0.0;
+  }
 
   return _time_data.front()._value;
 }
