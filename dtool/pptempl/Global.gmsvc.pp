@@ -82,8 +82,10 @@
   #define OPTFLAGS /O2 /Ob1 /G6
   #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
   #define RELEASEFLAGS /MD
-  #define EXTRA_LIBPATH
-  #define EXTRA_INCPATH  
+  
+// in case we have mixed intel/msvc build
+  #define EXTRA_LIBPATH /ia32/lib
+  #define EXTRA_INCPATH /ia32/include    
 #elif $[eq $[USE_COMPILER], BOUNDS]
   #define COMPILER nmcl
   #define LINKER nmlink
@@ -99,7 +101,8 @@
   #define LINKER xilink
   #define LIBBER xilib
   #define COMMONFLAGS /Gi-
-  #define OPTFLAGS /O3 /Ob1 /Ogity /G6 /Qip
+//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
+  #define OPTFLAGS /O3 /G6 /Qvc6
   #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG]
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
@@ -128,7 +131,7 @@
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG]
-#defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG]
+#defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG] 
 #defer LDFLAGS_OPT3 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
 #defer LDFLAGS_OPT4 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
 
