@@ -90,7 +90,7 @@ as_switch() {
 //               is nonzero.
 ////////////////////////////////////////////////////////////////////
 int DCPackerInterface::
-calc_num_nested_fields(size_t length_bytes) const {
+calc_num_nested_fields(size_t) const {
   return 0;
 }
 
@@ -103,7 +103,7 @@ calc_num_nested_fields(size_t length_bytes) const {
 //               the range 0 <= n < get_num_nested_fields()).
 ////////////////////////////////////////////////////////////////////
 DCPackerInterface *DCPackerInterface::
-get_nested_field(int n) const {
+get_nested_field(int) const {
   return NULL;
 }
 
