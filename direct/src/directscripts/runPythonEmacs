@@ -1,5 +1,7 @@
 #! /bin/sh
 
+#debug=1
+
 # Under Windows/Cygwin, we have to de-cygwinify the semicolon 
 # separated PYTHONPATH
 
@@ -19,62 +21,76 @@ export PYTHONPATH
 # Lets also de-cygwinify the Project variables (so you can use file name 
 # completion)  This is hardcoded for the most popular trees
 if [ "$DTOOL" ]; then
+    if [ "$debug" ]; then echo "DTOOL     $DTOOL"; fi
     DTOOL=`cygpath -w $DTOOL`
     export DTOOL
 fi
 if [ "$PANDA" ]; then
+    if [ "$debug" ]; then echo "PANDA     $PANDA"; fi
     PANDA=`cygpath -w $PANDA`
     export PANDA
 fi
 if [ "$DIRECT" ]; then
+    if [ "$debug" ]; then echo "DIRECT    $DIRECT"; fi
     DIRECT=`cygpath -w $DIRECT`
     export DIRECT
 fi
 if [ "$TOONTOWN" ]; then
+    if [ "$debug" ]; then echo "TOONTOWN  $TOONTOWN"; fi
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
 fi
 if [ "$TOONTAG" ]; then
+    if [ "$debug" ]; then echo "TOONTAG   $TOONTAG"; fi
     TOONTAG=`cygpath -w $TOONTAG`
     export TOONTAG
 fi
 if [ "$BARTOP" ]; then
+    if [ "$debug" ]; then echo "BARTOP    $BARTOP"; fi
     BARTOP=`cygpath -w $BARTOP`
     export BARTOP
 fi
 if [ "$TTRADER" ]; then
+    if [ "$debug" ]; then echo "TTRADER   $TTRADER"; fi
     TTRADER=`cygpath -w $TTRADER`
     export TTRADER
 fi
 if [ "$VRIDE" ]; then
+    if [ "$debug" ]; then echo "VRIDE     $VRIDE"; fi
     VRIDE=`cygpath -w $VRIDE`
     export VRIDE
 fi
 if [ "$WINTOOLS" ]; then
+    if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
 fi
 if [ "$PANDATOOL" ]; then
+    if [ "$debug" ]; then echo "PANDATOOL $PANDATOOL"; fi
     PANDATOOL=`cygpath -w $PANDATOOL`
     export PANDATOOL
 fi
 if [ "$PANDAAPP" ]; then
+    if [ "$debug" ]; then echo "PANDAAPP  $PANDAAPP"; fi
     PANDAAPP=`cygpath -w $PANDAAPP`
     export PANDAAPP
 fi
 
 # Panda will now tolerate the colon in the de-cygpath version of the model trees
 if [ "DMODELS" ]; then
+    if [ "$debug" ]; then echo "DMODELS   $DMODELS"; fi
     DMODELS=`cygpath -w $DMODELS`
     export DMODELS
 fi
 
 if [ "$TTMODELS" ]; then
+    if [ "$debug" ]; then echo "TTMODELS  $TTMODELS"; fi
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS
 fi
 
 if [ "$BARMODELS" ]; then
+    if [ "$debug" ]; then echo "BARMODELS $BARMODELS"; fi
     BARMODELS=`cygpath -w $BARMODELS`
     export BARMODELS
 fi
