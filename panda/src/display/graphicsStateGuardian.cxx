@@ -859,7 +859,7 @@ issue_light(const LightAttrib *attrib) {
         light->bind(this, cur_light_id);
 
       } else if (cur_light_id == -1) {
-        display_cat.warning()
+        gsg_cat.warning()
           << "Failed to bind " << *light << " to id.\n";
       }
     }
@@ -1358,11 +1358,11 @@ read_priorities(void) {
       ConfigString type_name = (*i).Val();
       TypeHandle type = TypeRegistry::ptr()->find_type(type_name);
       if (type == TypeHandle::none()) {
-        display_cat.warning()
+        gsg_cat.warning()
           << "Unknown type requested for GSG preference: " << type_name
           << "\n";
       } else {
-        display_cat.debug()
+        gsg_cat.debug()
           << "Specifying type " << type << " for GSG preference.\n";
         factory.add_preferred(type);
       }

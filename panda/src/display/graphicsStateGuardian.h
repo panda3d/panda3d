@@ -38,6 +38,7 @@
 #include "colorWriteAttrib.h"
 #include "colorBlendAttrib.h"
 #include "transparencyAttrib.h"
+#include "config_display.h"
 
 #include "notify.h"
 #include "pvector.h"

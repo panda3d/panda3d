@@ -74,6 +74,12 @@ get_scene() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 modify_state(const RenderState *state) {
+#ifndef NDEBUG
+  if (gsg_cat.is_spam()) {
+    gsg_cat.spam() << "Modifying GSG state with:\n";
+    state->write(gsg_cat.spam(false), 2);
+  }
+#endif
   _state = _state->issue_delta_modify(state, this);
 }
 
@@ -91,6 +97,12 @@ modify_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 set_state(const RenderState *state) {
+#ifndef NDEBUG
+  if (gsg_cat.is_spam()) {
+    gsg_cat.spam() << "Setting GSG state to:\n";
+    state->write(gsg_cat.spam(false), 2);
+  }
+#endif
   _state = _state->issue_delta_set(state, this);
 }
 
