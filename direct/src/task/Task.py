@@ -126,10 +126,10 @@ def make_sequence(taskList):
     task.index = 0
     return task
 
-def resetSequenceOrLoop(task):
+def resetSequence(task):
     # Should this automatically be done as part of spawnTaskNamed?
     # Or should one have to create a new task instance every time
-    # one wishes to spawn a task (currently sequences and loops can
+    # one wishes to spawn a task (currently sequences and can
     # only be fired off once
     task.index = 0
     task.prevIndex = -1
