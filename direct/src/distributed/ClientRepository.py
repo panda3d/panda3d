@@ -3,6 +3,7 @@
 from PandaModules import *
 from TaskManagerGlobal import *
 from MsgTypes import *
+from ShowBaseGlobal import *
 import Task
 import DirectNotifyGlobal
 import ClientDistClass
@@ -43,8 +44,11 @@ class ClientRepository(DirectObject.DirectObject):
 
     def connect(self, serverName, serverPort):
         self.qcm=QueuedConnectionManager()
+        gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
+                                                 20000)
+        # A big old 20 second timeout.
         self.tcpConn = self.qcm.openTCPClientConnection(
-            serverName, serverPort, 1000)
+            serverName, serverPort, gameServerTimeoutMs)
         # Test for bad connection
         if self.tcpConn == None:
             return None
