@@ -1884,7 +1884,6 @@ for pkg in (PACKAGES + ["extras"]):
 if (sys.platform == "win32"):
     CopyTree(PREFIX+'/python', 'thirdparty/win-python')
     CopyFile(PREFIX+'/bin/',   'thirdparty/win-python/python22.dll')
-    CopyTree(PREFIX+'/python/lib/epydoc', THIRDPARTY+'/epydoc')
 
 ########################################################################
 ##
