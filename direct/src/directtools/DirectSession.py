@@ -173,7 +173,13 @@ class DirectSession(PandaObject):
             import TkGlobal
             self.panel = DirectSessionPanel(parent = tkroot)
 
-        self.clusterMode = base.config.GetString("cluster-mode", '')
+        try:
+            # Has the clusterMode been set externally (i.e. via the
+            # bootstrap application?
+            self.clusterMode = clusterMode
+        except NameError:
+            # Has the clusterMode been set via a config variable?
+            self.clusterMode = base.config.GetString("cluster-mode", '')
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
