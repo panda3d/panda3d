@@ -11,7 +11,7 @@ NEWPYTHONPATH=
 # To iterate, temporarily change the semicolons into spaces
 for path in `echo $PYTHONPATH | sed 'y/;/ /'`; do
     # Then for each entry run it through the cygwin filter
-    NEWPYTHONPATH=$NEWPYTHONPATH\;`cygpath -w $path`
+    NEWPYTHONPATH=$NEWPYTHONPATH\;`cygpath -m $path`
 done
 
 # Export the new PYTHONPATH
@@ -22,102 +22,102 @@ export PYTHONPATH
 # completion)  This is hardcoded for the most popular trees
 if [ "$DTOOL" ]; then
     if [ "$debug" ]; then echo "DTOOL     $DTOOL"; fi
-    DTOOL=`cygpath -w $DTOOL`
+    DTOOL=`cygpath -m $DTOOL`
     export DTOOL
 fi
 if [ "$PANDA" ]; then
     if [ "$debug" ]; then echo "PANDA     $PANDA"; fi
-    PANDA=`cygpath -w $PANDA`
+    PANDA=`cygpath -m $PANDA`
     export PANDA
 fi
 if [ "$DIRECT" ]; then
     if [ "$debug" ]; then echo "DIRECT    $DIRECT"; fi
-    DIRECT=`cygpath -w $DIRECT`
+    DIRECT=`cygpath -m $DIRECT`
     export DIRECT
 fi
 if [ "$TOONTOWN" ]; then
     if [ "$debug" ]; then echo "TOONTOWN  $TOONTOWN"; fi
-    TOONTOWN=`cygpath -w $TOONTOWN`
+    TOONTOWN=`cygpath -m $TOONTOWN`
     export TOONTOWN
 fi
 if [ "$TOONTAG" ]; then
     if [ "$debug" ]; then echo "TOONTAG   $TOONTAG"; fi
-    TOONTAG=`cygpath -w $TOONTAG`
+    TOONTAG=`cygpath -m $TOONTAG`
     export TOONTAG
 fi
 if [ "$BARTOP" ]; then
     if [ "$debug" ]; then echo "BARTOP    $BARTOP"; fi
-    BARTOP=`cygpath -w $BARTOP`
+    BARTOP=`cygpath -m $BARTOP`
     export BARTOP
 fi
 if [ "$TTRADER" ]; then
     if [ "$debug" ]; then echo "TTRADER   $TTRADER"; fi
-    TTRADER=`cygpath -w $TTRADER`
+    TTRADER=`cygpath -m $TTRADER`
     export TTRADER
 fi
 if [ "$VRIDE" ]; then
     if [ "$debug" ]; then echo "VRIDE     $VRIDE"; fi
-    VRIDE=`cygpath -w $VRIDE`
+    VRIDE=`cygpath -m $VRIDE`
     export VRIDE
 fi
 if [ "$FOURD" ]; then
     if [ "$debug" ]; then echo "FOURD   $FOURD"; fi
-    FOURD=`cygpath -w $FOURD`
+    FOURD=`cygpath -m $FOURD`
     export FOURD
 fi
 if [ "$MRM" ]; then
     if [ "$debug" ]; then echo "MRM   $MRM"; fi
-    MRM=`cygpath -w $MRM`
+    MRM=`cygpath -m $MRM`
     export MRM
 fi
 if [ "$PARALLAX" ]; then
     if [ "$debug" ]; then echo "PARALLAX   $PARALLAX"; fi
-    PARALLAX=`cygpath -w $PARALLAX`
+    PARALLAX=`cygpath -m $PARALLAX`
     export PARALLAX
 fi
 if [ "$MRM" ]; then
     if [ "$debug" ]; then echo "MRM   $MRM"; fi
-    MRM=`cygpath -w $MRM`
+    MRM=`cygpath -m $MRM`
     export MRM
 fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
-    WINTOOLS=`cygpath -w $WINTOOLS`
+    WINTOOLS=`cygpath -m $WINTOOLS`
     export WINTOOLS
 fi
 if [ "$PANDATOOL" ]; then
     if [ "$debug" ]; then echo "PANDATOOL $PANDATOOL"; fi
-    PANDATOOL=`cygpath -w $PANDATOOL`
+    PANDATOOL=`cygpath -m $PANDATOOL`
     export PANDATOOL
 fi
 if [ "$PANDAAPP" ]; then
     if [ "$debug" ]; then echo "PANDAAPP  $PANDAAPP"; fi
-    PANDAAPP=`cygpath -w $PANDAAPP`
+    PANDAAPP=`cygpath -m $PANDAAPP`
     export PANDAAPP
 fi
 
 # Panda will now tolerate the colon in the de-cygpath version of the model trees
 if [ "$DMODELS" ]; then
     if [ "$debug" ]; then echo "DMODELS   $DMODELS"; fi
-    DMODELS=`cygpath -w $DMODELS`
+    DMODELS=`cygpath -m $DMODELS`
     export DMODELS
 fi
 
 if [ "$TTMODELS" ]; then
     if [ "$debug" ]; then echo "TTMODELS  $TTMODELS"; fi
-    TTMODELS=`cygpath -w $TTMODELS`
+    TTMODELS=`cygpath -m $TTMODELS`
     export TTMODELS
 fi
 
 if [ "$BARMODELS" ]; then
     if [ "$debug" ]; then echo "BARMODELS $BARMODELS"; fi
-    BARMODELS=`cygpath -w $BARMODELS`
+    BARMODELS=`cygpath -m $BARMODELS`
     export BARMODELS
 fi
 
 
 # Export the proper home environment variable
-HOME=`cygpath -w $HOME`
+HOME=`cygpath -m $HOME`
 export HOME
 
 # Now start up emacs
