@@ -24,6 +24,10 @@
 
 #include <stdlib.h>
 
+#ifdef WIN32_VC
+#include <process.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaSavePview::Constructor
 //       Access: Public
@@ -49,12 +53,27 @@ doIt(const MArgList &) {
   }
 
   MString filename = MFileIO::currentFile();
+
+#ifdef WIN32_VC
+  // On Windows, we use the spawn function to run pview
+  // asynchronously.
+  int retval = _spawnlp(_P_DETACH, "pview", 
+                        "pview", "-cl", filename.asChar(), NULL);
+  if (retval == -1) {
+    return MS::kFailure;
+  }
+
+#else  // WIN32_VC
+  // On non-Windows (e.g. Unix), we just use the system function,
+  // which runs synchronously.  We could fork a process, but no one's
+  // asked for this yet.
   MString command = MString("pview -c \"") + filename + MString("\"");
 
   int command_result = system(command.asChar());
   if (command_result != 0) {
     return MS::kFailure;
   }
+#endif // WIN32_VC
 
   return MS::kSuccess;
 }
