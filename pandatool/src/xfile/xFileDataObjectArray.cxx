@@ -23,6 +23,32 @@
 TypeHandle XFileDataObjectArray::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectArray::is_complex_object
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of data object is a complex
+//               object that can hold nested data elements, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObjectArray::
+is_complex_object() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectArray::add_element
+//       Access: Public, Virtual
+//  Description: Adds the indicated element as a nested data element,
+//               if this data object type supports it.  Returns true
+//               if added successfully, false if the data object type
+//               does not support nested data elements.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObjectArray::
+add_element(XFileDataObject *element) {
+  _nested_elements.push_back(element);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObjectArray::write_data
 //       Access: Public, Virtual
 //  Description: Writes a suitable representation of this node to an
@@ -31,7 +57,7 @@ TypeHandle XFileDataObjectArray::_type_handle;
 void XFileDataObjectArray::
 write_data(ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
-    if (_nested_elements.front()->size() != 0) {
+    if (_nested_elements.front()->is_complex_object()) {
       // If we have a complex nested structure, output one per line.
       for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
         _nested_elements[i]->write_data(out, indent_level, ",");
@@ -47,20 +73,6 @@ write_data(ostream &out, int indent_level, const char *separator) const {
       out << *_nested_elements.back() << separator << "\n";
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectArray::add_element
-//       Access: Public, Virtual
-//  Description: Adds the indicated element as a nested data element,
-//               if this data object type supports it.  Returns true
-//               if added successfully, false if the data object type
-//               does not support nested data elements.
-////////////////////////////////////////////////////////////////////
-bool XFileDataObjectArray::
-add_element(XFileDataObject *element) {
-  _nested_elements.push_back(element);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

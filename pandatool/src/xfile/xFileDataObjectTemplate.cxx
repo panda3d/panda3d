@@ -37,6 +37,111 @@ XFileDataObjectTemplate(XFile *x_file, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::is_complex_object
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of data object is a complex
+//               object that can hold nested data elements, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObjectTemplate::
+is_complex_object() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::add_parse_double
+//       Access: Public
+//  Description: Adds the indicated list of doubles as a data element
+//               encountered in the parser.  It will later be
+//               processed by finalize_parse_data().
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectTemplate::
+add_parse_double(PTA_double double_list) {
+  XFileParseData pdata;
+  pdata._double_list = double_list;
+  pdata._parse_flags = XFileParseData::PF_double;
+
+  _parse_data_list._list.push_back(pdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::add_parse_int
+//       Access: Public
+//  Description: Adds the indicated list of ints as a data element
+//               encountered in the parser.  It will later be
+//               processed by finalize_parse_data().
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectTemplate::
+add_parse_int(PTA_int int_list) {
+  XFileParseData pdata;
+  pdata._int_list = int_list;
+  pdata._parse_flags = XFileParseData::PF_int;
+
+  _parse_data_list._list.push_back(pdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::add_parse_string
+//       Access: Public
+//  Description: Adds the indicated string as a data element
+//               encountered in the parser.  It will later be
+//               processed by finalize_parse_data().
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectTemplate::
+add_parse_string(const string &str) {
+  XFileParseData pdata;
+  pdata._string = str;
+  pdata._parse_flags = XFileParseData::PF_string;
+
+  _parse_data_list._list.push_back(pdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::finalize_parse_data
+//       Access: Public
+//  Description: Processes all of the data elements added by
+//               add_parse_*(), checks them for syntactic and semantic
+//               correctness against the Template definition, and
+//               stores the appropriate child data elements.  Returns
+//               true on success, false if there is a mismatch.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObjectTemplate::
+finalize_parse_data() {
+  // Recursively walk through our template definition, while
+  // simultaneously walking through the list of parse data elements we
+  // encountered, and re-pack them as actual nested elements.
+  PrevData prev_data;
+  size_t index = 0;
+  size_t sub_index = 0;
+
+  if (!_template->repack_data(this, _parse_data_list, 
+                              prev_data, index, sub_index)) {
+    return false;
+  }
+
+  if (index != _parse_data_list._list.size()) {
+    xyyerror("Too many data elements in structure.");
+    return false;
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectTemplate::add_element
+//       Access: Public, Virtual
+//  Description: Adds the indicated element as a nested data element,
+//               if this data object type supports it.  Returns true
+//               if added successfully, false if the data object type
+//               does not support nested data elements.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObjectTemplate::
+add_element(XFileDataObject *element) {
+  _nested_elements.push_back(element);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObjectTemplate::write_text
 //       Access: Public, Virtual
 //  Description: Writes a suitable representation of this node to an
@@ -70,7 +175,7 @@ write_text(ostream &out, int indent_level) const {
 void XFileDataObjectTemplate::
 write_data(ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
-    if (_nested_elements.front()->size() != 0) {
+    if (_nested_elements.front()->is_complex_object()) {
       // If we have a complex nested structure, output one per line.
       for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
         _nested_elements[i]->write_data(out, indent_level, ";");
@@ -88,177 +193,6 @@ write_data(ostream &out, int indent_level, const char *separator) const {
       out << *_nested_elements.back() << ";" << separator << "\n";
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_parse_object
-//       Access: Public
-//  Description: Adds the indicated object as a nested object
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
-void XFileDataObjectTemplate::
-add_parse_object(XFileDataObjectTemplate *object, bool reference) {
-  XFileParseData pdata;
-  pdata._object = object;
-  pdata._parse_flags = XFileParseData::PF_object;
-  if (reference) {
-    pdata._parse_flags |= XFileParseData::PF_reference;
-  }
-
-  _parse_data_list._list.push_back(pdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_parse_double
-//       Access: Public
-//  Description: Adds the indicated list of doubles as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
-void XFileDataObjectTemplate::
-add_parse_double(PTA_double double_list, char separator) {
-  XFileParseData pdata;
-  pdata._double_list = double_list;
-  pdata._parse_flags = XFileParseData::PF_double;
-  switch (separator) {
-  case ',':
-    pdata._parse_flags |= XFileParseData::PF_comma;
-    break;
-
-  case ';':
-    pdata._parse_flags |= XFileParseData::PF_semicolon;
-    break;
-  }
-
-  _parse_data_list._list.push_back(pdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_parse_int
-//       Access: Public
-//  Description: Adds the indicated list of ints as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
-void XFileDataObjectTemplate::
-add_parse_int(PTA_int int_list, char separator) {
-  XFileParseData pdata;
-  pdata._int_list = int_list;
-  pdata._parse_flags = XFileParseData::PF_int;
-  switch (separator) {
-  case ',':
-    pdata._parse_flags |= XFileParseData::PF_comma;
-    break;
-
-  case ';':
-    pdata._parse_flags |= XFileParseData::PF_semicolon;
-    break;
-  }
-
-  _parse_data_list._list.push_back(pdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_parse_string
-//       Access: Public
-//  Description: Adds the indicated string as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
-void XFileDataObjectTemplate::
-add_parse_string(const string &str, char separator) {
-  XFileParseData pdata;
-  pdata._string = str;
-  pdata._parse_flags = XFileParseData::PF_string;
-  switch (separator) {
-  case ',':
-    pdata._parse_flags |= XFileParseData::PF_comma;
-    break;
-
-  case ';':
-    pdata._parse_flags |= XFileParseData::PF_semicolon;
-    break;
-  }
-
-  _parse_data_list._list.push_back(pdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_parse_separator
-//       Access: Public
-//  Description: Adds the indicated separator character as an isolated
-//               separator encountered in the parser.  It will later
-//               be processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
-void XFileDataObjectTemplate::
-add_parse_separator(char separator) {
-  XFileParseData pdata;
-  pdata._parse_flags = 0;
-  switch (separator) {
-  case ',':
-    pdata._parse_flags |= XFileParseData::PF_comma;
-    break;
-
-  case ';':
-    pdata._parse_flags |= XFileParseData::PF_semicolon;
-    break;
-  }
-
-  _parse_data_list._list.push_back(pdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::finalize_parse_data
-//       Access: Public
-//  Description: Processes all of the data elements added by
-//               add_parse_*(), checks them for syntactic and semantic
-//               correctness against the Template definition, and
-//               stores the appropriate child data elements.  Returns
-//               true on success, false if there is a mismatch.
-////////////////////////////////////////////////////////////////////
-bool XFileDataObjectTemplate::
-finalize_parse_data() {
-  // Recursively walk through our template definition, while
-  // simultaneously walking through the list of parse data elements we
-  // encountered, and re-pack them as actual nested elements.
-  PrevData prev_data;
-  size_t index = 0;
-  size_t sub_index = 0;
-
-  if (!_template->repack_data(this, _parse_data_list, 
-                              prev_data, index, sub_index)) {
-    return false;
-  }
-
-  // Quietly allow an extra semicolon at the end of the structure.
-  // (Why is this sometimes here?)
-  if (index < _parse_data_list._list.size() &&
-      _parse_data_list._list[index]._parse_flags == XFileParseData::PF_semicolon) {
-    index++;
-  }
-
-  if (index != _parse_data_list._list.size()) {
-    cerr << "flags = " << hex << _parse_data_list._list[index]._parse_flags << dec << "\n";
-    xyyerror("Too many data elements in structure.");
-    return false;
-  }
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::add_element
-//       Access: Public, Virtual
-//  Description: Adds the indicated element as a nested data element,
-//               if this data object type supports it.  Returns true
-//               if added successfully, false if the data object type
-//               does not support nested data elements.
-////////////////////////////////////////////////////////////////////
-bool XFileDataObjectTemplate::
-add_element(XFileDataObject *element) {
-  _nested_elements.push_back(element);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

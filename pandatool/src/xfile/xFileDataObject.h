@@ -39,6 +39,8 @@ public:
 
   INLINE const XFileDataDef *get_data_def() const;
 
+  virtual bool is_complex_object() const;
+
   INLINE int i() const;
   INLINE double d() const;
   INLINE string s() const;

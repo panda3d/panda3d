@@ -30,10 +30,12 @@ class XFileDataObjectArray : public XFileDataObject {
 public:
   INLINE XFileDataObjectArray(const XFileDataDef *data_def);
 
-  virtual void write_data(ostream &out, int indent_level,
-                          const char *separator) const;
+  virtual bool is_complex_object() const;
 
   virtual bool add_element(XFileDataObject *element);
+
+  virtual void write_data(ostream &out, int indent_level,
+                          const char *separator) const;
 
 protected:
   virtual int get_num_elements() const;

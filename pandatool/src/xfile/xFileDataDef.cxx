@@ -172,7 +172,6 @@ repack_data(XFileDataObject *object,
     // Expected integer data.
     data_value = unpack_value(parse_data_list, 0,
                               prev_data, index, sub_index,
-                              XFileParseData::PF_semicolon,
                               &XFileDataDef::unpack_integer_value);
     break;
 
@@ -180,14 +179,12 @@ repack_data(XFileDataObject *object,
   case T_double:
     data_value = unpack_value(parse_data_list, 0,
                               prev_data, index, sub_index,
-                              XFileParseData::PF_semicolon,
                               &XFileDataDef::unpack_double_value);
     break;
 
   case T_template:
     data_value = unpack_value(parse_data_list, 0,
                               prev_data, index, sub_index,
-                              XFileParseData::PF_semicolon,
                               &XFileDataDef::unpack_template_value);
     break;
 
@@ -222,8 +219,7 @@ repack_data(XFileDataObject *object,
 PT(XFileDataObject) XFileDataDef::
 unpack_integer_value(const XFileParseDataList &parse_data_list,
                      const XFileDataDef::PrevData &prev_data,
-                     size_t &index, size_t &sub_index,
-                     int separator_mask) const {
+                     size_t &index, size_t &sub_index) const {
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
@@ -237,33 +233,6 @@ unpack_integer_value(const XFileParseDataList &parse_data_list,
     if (sub_index >= parse_data._int_list.size()) {
       index++;
       sub_index = 0;
-    }
-
-    if (separator_mask != 0) {
-      // Now consume a separator character.  These may be defined
-      // implicitly on an integer list.
-      if ((parse_data._parse_flags & separator_mask) == 0) {
-        // The separator we were looking for wasn't what was being
-        // used to delimit the list.  As a special exception, if we
-        // just reached the end of the list and the next token is a
-        // standalone separator that matches what we expect, take that
-        // one.
-        if (sub_index == 0 && index < parse_data_list._list.size() &&
-            parse_data_list._list[index]._parse_flags == separator_mask) {
-          // Bingo!  This is the special case--we incremented past
-          // the end of the list to a standalone separator.
-          index++;
-
-        } else {
-          // Some other case; the separator character we were
-          // expecting isn't to be found.
-          if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
-            parse_data.yyerror("Semicolon expected.");
-          } else {
-            parse_data.yyerror("Comma expected.");
-          }
-        }
-      }
     }
 
   } else {
@@ -282,52 +251,31 @@ unpack_integer_value(const XFileParseDataList &parse_data_list,
 PT(XFileDataObject) XFileDataDef::
 unpack_double_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
-                    size_t &index, size_t &sub_index,
-                    int separator_mask) const {
+                    size_t &index, size_t &sub_index) const {
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
 
   if ((parse_data._parse_flags & XFileParseData::PF_double) != 0) {
-    if (separator_mask != 0 &&
-        (parse_data._parse_flags & separator_mask) == 0) {
-      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
-        parse_data.yyerror("Semicolon expected.");
-      } else {
-        parse_data.yyerror("Comma expected.");
-      }
-
-    } else {
-      nassertr(sub_index < parse_data._double_list.size(), false);
-      double value = parse_data._double_list[sub_index];
-      data_value = new XFileDataObjectDouble(this, value);
-      
-      sub_index++;
-      if (sub_index >= parse_data._double_list.size()) {
-        index++;
-        sub_index = 0;
-      }
+    nassertr(sub_index < parse_data._double_list.size(), false);
+    double value = parse_data._double_list[sub_index];
+    data_value = new XFileDataObjectDouble(this, value);
+    
+    sub_index++;
+    if (sub_index >= parse_data._double_list.size()) {
+      index++;
+      sub_index = 0;
     }
 
   } else if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
-    if (separator_mask != 0 &&
-        (parse_data._parse_flags & separator_mask) == 0) {
-      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
-        parse_data.yyerror("Semicolon expected.");
-      } else {
-        parse_data.yyerror("Comma expected.");
-      }
-
-    } else {
-      nassertr(sub_index < parse_data._int_list.size(), false);
-      int value = parse_data._int_list[sub_index];
-      data_value = new XFileDataObjectDouble(this, value);
-      
-      sub_index++;
-      if (sub_index >= parse_data._int_list.size()) {
-        index++;
-        sub_index = 0;
-      }
+    nassertr(sub_index < parse_data._int_list.size(), false);
+    int value = parse_data._int_list[sub_index];
+    data_value = new XFileDataObjectDouble(this, value);
+    
+    sub_index++;
+    if (sub_index >= parse_data._int_list.size()) {
+      index++;
+      sub_index = 0;
     }
 
   } else {
@@ -345,8 +293,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
 PT(XFileDataObject) XFileDataDef::
 unpack_template_value(const XFileParseDataList &parse_data_list,
                       const XFileDataDef::PrevData &prev_data,
-                      size_t &index, size_t &sub_index,
-                      int separator_mask) const {
+                      size_t &index, size_t &sub_index) const {
   PT(XFileDataObjectTemplate) data_value = 
     new XFileDataObjectTemplate(get_x_file(), get_name(), _template);
 
@@ -354,30 +301,6 @@ unpack_template_value(const XFileParseDataList &parse_data_list,
   if (!_template->repack_data(data_value, parse_data_list, 
                               nested_prev_data, index, sub_index)) {
     return NULL;
-  }
-  
-  if (separator_mask != 0) {
-    // Also expect a trailing semicolon or comma.
-    if (index >= parse_data_list._list.size()) {
-      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
-        xyyerror("Semicolon expected.");
-      } else {
-        xyyerror("Comma expected.");
-      }
-      return NULL;
-    }
-
-    const XFileParseData &new_parse_data = parse_data_list._list[index];
-    if ((new_parse_data._parse_flags & XFileParseData::PF_any_data) != 0 ||
-        (new_parse_data._parse_flags & separator_mask) == 0) {
-      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
-        new_parse_data.yyerror("Semicolon expected.");
-      } else {
-        new_parse_data.yyerror("Comma expected.");
-      }
-      return false;
-    }
-    index++;
   }
 
   return data_value.p();
@@ -394,30 +317,25 @@ unpack_template_value(const XFileParseDataList &parse_data_list,
 PT(XFileDataObject) XFileDataDef::
 unpack_value(const XFileParseDataList &parse_data_list, int array_index,
              const XFileDataDef::PrevData &prev_data,
-             size_t &index, size_t &sub_index, int separator_mask,
+             size_t &index, size_t &sub_index, 
              XFileDataDef::UnpackMethod unpack_method) const {
   PT(XFileDataObject) data_value;
   
   if (array_index == (int)_array_def.size()) {
     data_value = (this->*unpack_method)(parse_data_list, prev_data,
-                                        index, sub_index, separator_mask);
+                                        index, sub_index);
 
   } else {
     data_value = new XFileDataObjectArray(this);
     int array_size = _array_def[array_index].get_size(prev_data);
 
-    for (int i = 0; i < array_size - 1; i++) {
+    for (int i = 0; i < array_size; i++) {
       PT(XFileDataObject) array_element = 
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,
-                     XFileParseData::PF_comma, unpack_method);
+                     unpack_method);
       data_value->add_element(array_element);
     }
-    PT(XFileDataObject) array_element = 
-      unpack_value(parse_data_list, array_index + 1,
-                   prev_data, index, sub_index,
-                   separator_mask, unpack_method);
-    data_value->add_element(array_element);
   }
 
   return data_value;

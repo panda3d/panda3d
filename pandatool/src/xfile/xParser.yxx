@@ -98,7 +98,6 @@ x_cleanup_parser() {
 %type <str> string
 %type <guid> class_id
 %type <guid> optional_class_id
-%type <u.separator> list_separator
 %type <u.node> data_reference
 
 %%
@@ -374,25 +373,22 @@ data_part:
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
-  current_template->add_parse_int($1, $<u.separator>1);
+  current_template->add_parse_int($1);
 }
         | realnum_list
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
-  current_template->add_parse_double($1, $<u.separator>1);
+  current_template->add_parse_double($1);
 }
 	| string list_separator
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
-  current_template->add_parse_string($1, $2);
+  current_template->add_parse_string($1);
 }
         | list_separator
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
-  current_template->add_parse_separator($1);
 }
         ;
         
@@ -410,13 +406,7 @@ string:
 
 list_separator:
 	TOKEN_SEMICOLON
-{
-  $$ = ';';
-}
 	| TOKEN_COMMA
-{
-  $$ = ',';
-}
 	;
 
 data_reference:

@@ -45,7 +45,6 @@ public:
     int number;
     XFileNode *node;
     XFileDataDef::Type primitive_type;
-    char separator;  // This is filled in for double_list and int_list.
   } u;
   string str;
   WindowsGuid guid;

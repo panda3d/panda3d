@@ -349,16 +349,15 @@ scan_guid_string() {
 
 // Parses the text into a list of integers and returns them.
 static PTA_int
-parse_int_list(const string &text, char delimiter) {
+parse_int_list(const string &text) {
   PTA_int result;
 
   vector_string words;
+  tokenize(text, words, ",;");
 
-  // The last character of text might be the delimiter.
-  if (!text.empty() && text[text.size() - 1] == delimiter) {
-    tokenize(text.substr(0, text.size() - 1), words, string(1, delimiter));
-  } else {
-    tokenize(text, words, string(1, delimiter));
+  // The last word might be empty.
+  if (!words.empty() && words.back().empty()) {
+    words.pop_back();
   }
 
   vector_string::const_iterator wi;
@@ -373,16 +372,15 @@ parse_int_list(const string &text, char delimiter) {
 
 // Parses the text into a list of doubles and returns them.
 static PTA_double
-parse_double_list(const string &text, char delimiter) {
+parse_double_list(const string &text) {
   PTA_double result;
 
   vector_string words;
+  tokenize(text, words, ",;");
 
-  // The last character of text might be the delimiter.
-  if (!text.empty() && text[text.size() - 1] == delimiter) {
-    tokenize(text.substr(0, text.size() - 1), words, string(1, delimiter));
-  } else {
-    tokenize(text, words, string(1, delimiter));
+  // The last word might be empty.
+  if (!words.empty() && words.back().empty()) {
+    words.pop_back();
   }
 
   vector_string::const_iterator wi;
@@ -556,56 +554,34 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return TOKEN_INTEGER;
 }
 
-({INTEGERNUM};)+ { 
-  // An integer as part of a semicolon-delimited list.
+({INTEGERNUM}[;,])+ { 
+  // An integer as part of a semicolon- or comma-delimited list.
   accept();
-  xyylval.int_list = parse_int_list(xyytext, ';');
-  xyylval.u.separator = ';';
+  xyylval.int_list = parse_int_list(xyytext);
 
   return TOKEN_INTEGER_LIST;
 }
 
-({REALNUM};)+ { 
-  // A floating-point number as part of a semicolon-delimited list.
+({INTEGERNUM}[;,])+{INTEGERNUM} { 
+  // An integer as part of a semicolon- or comma-delimited list.
+  accept();
+  xyylval.int_list = parse_int_list(xyytext);
+
+  return TOKEN_INTEGER_LIST;
+}
+
+({REALNUM}[;,])+ { 
+  // A floating-point number as part of a semicolon- or comma-delimited list.
   accept(); 
-  xyylval.double_list = parse_double_list(xyytext, ';');
-  xyylval.u.separator = ';';
+  xyylval.double_list = parse_double_list(xyytext);
 
   return TOKEN_REALNUM_LIST;
 }
 
-({INTEGERNUM},)+ { 
-  // An integer as part of a comma-delimited list.
-  accept();
-  xyylval.int_list = parse_int_list(xyytext, ',');
-  xyylval.u.separator = ',';
-
-  return TOKEN_INTEGER_LIST;
-}
-
-({REALNUM},)+ { 
-  // A floating-point number as part of a comma-delimited list.
+({REALNUM}[;,])+{REALNUM} { 
+  // A floating-point number as part of a semicolon- or comma-delimited list.
   accept(); 
-  xyylval.double_list = parse_double_list(xyytext, ',');
-  xyylval.u.separator = ',';
-
-  return TOKEN_REALNUM_LIST;
-}
-
-({INTEGERNUM},)+{INTEGERNUM} { 
-  // An integer as part of a comma-delimited list.
-  accept();
-  xyylval.int_list = parse_int_list(xyytext, ',');
-  xyylval.u.separator = ',';
-
-  return TOKEN_INTEGER_LIST;
-}
-
-({REALNUM},)+{REALNUM} { 
-  // A floating-point number as part of a comma-delimited list.
-  accept(); 
-  xyylval.double_list = parse_double_list(xyytext, ',');
-  xyylval.u.separator = ',';
+  xyylval.double_list = parse_double_list(xyytext);
 
   return TOKEN_REALNUM_LIST;
 }

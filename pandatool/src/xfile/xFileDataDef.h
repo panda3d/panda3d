@@ -77,29 +77,25 @@ private:
   typedef PT(XFileDataObject) 
     (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list, 
                                   const PrevData &prev_data,
-                                  size_t &index, size_t &sub_index,
-                                  int separator_mask) const;
+                                  size_t &index, size_t &sub_index) const;
 
   PT(XFileDataObject) 
     unpack_integer_value(const XFileParseDataList &parse_data_list,
                          const PrevData &prev_data,
-                         size_t &index, size_t &sub_index,
-                         int separator_mask) const;
+                         size_t &index, size_t &sub_index) const;
   PT(XFileDataObject) 
     unpack_double_value(const XFileParseDataList &parse_data_list,
                         const PrevData &prev_data,
-                        size_t &index, size_t &sub_index,
-                        int separator_mask) const;
+                        size_t &index, size_t &sub_index) const;
   PT(XFileDataObject) 
     unpack_template_value(const XFileParseDataList &parse_data_list,
                           const PrevData &prev_data,
-                          size_t &index, size_t &sub_index,
-                          int separator_mask) const;
+                          size_t &index, size_t &sub_index) const;
 
   PT(XFileDataObject) 
     unpack_value(const XFileParseDataList &parse_data_list, int array_index,
                  const PrevData &prev_data,
-                 size_t &index, size_t &sub_index, int separator_mask,
+                 size_t &index, size_t &sub_index,
                  UnpackMethod unpack_method) const;
     
 private:

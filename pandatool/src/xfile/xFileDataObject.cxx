@@ -31,6 +31,18 @@ XFileDataObject::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::is_complex_object
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of data object is a complex
+//               object that can hold nested data elements, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObject::
+is_complex_object() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::add_element
 //       Access: Public, Virtual
 //  Description: Adds the indicated element as a nested data element,

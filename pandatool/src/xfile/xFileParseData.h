@@ -47,8 +47,6 @@ public:
     PF_int        = 0x008,
     PF_string     = 0x010,
     PF_any_data   = 0x01f,
-    PF_comma      = 0x020,
-    PF_semicolon  = 0x040,
   };
 
   PT(XFileDataObject) _object;

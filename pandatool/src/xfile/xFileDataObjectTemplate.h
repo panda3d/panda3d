@@ -43,19 +43,18 @@ public:
 
   INLINE XFileTemplate *get_template() const;
 
-  virtual void write_text(ostream &out, int indent_level) const;
-  virtual void write_data(ostream &out, int indent_level,
-                          const char *separator) const;
+  virtual bool is_complex_object() const;
 
-public:
-  void add_parse_object(XFileDataObjectTemplate *object, bool reference);
-  void add_parse_double(PTA_double double_list, char separator);
-  void add_parse_int(PTA_int int_list, char separator);
-  void add_parse_string(const string &str, char separator);
-  void add_parse_separator(char separator);
+  void add_parse_double(PTA_double double_list);
+  void add_parse_int(PTA_int int_list);
+  void add_parse_string(const string &str);
   bool finalize_parse_data();
 
   virtual bool add_element(XFileDataObject *element);
+
+  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_data(ostream &out, int indent_level,
+                          const char *separator) const;
 
 protected:
   virtual int get_num_elements() const;
