@@ -28,8 +28,7 @@ TypeHandle ForceNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ForceNode(const string &name) :
-  PandaNode(name) 
-{
+  PandaNode(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +72,9 @@ add_forces_from(const ForceNode &other) {
   _forces.insert(_forces.end(),
                  other._forces.begin(), other._forces.end());
 
-  for (; last != _forces.end(); last++)
+  for (; last != _forces.end(); last++) {
     (*last)->_force_node = this;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
