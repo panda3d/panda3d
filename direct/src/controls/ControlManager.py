@@ -121,6 +121,7 @@ class ControlManager:
                 self.currentControls.setCollisionsActive(1)
                 if self.isEnabled:
                     self.currentControls.enableAvatarControls()
+                messenger.send('use-%s-controls'%(name,), [avatar])
             #else:
             #    print "Controls are already", name
         else:
