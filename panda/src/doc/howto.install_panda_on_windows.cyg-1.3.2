@@ -57,32 +57,44 @@ Step 1: Install Visual C++ (v6.0)
   
 Step 2: Install MS Platform SDK to get updated VC libs and headers
   - Install MS Platform SDK MSDN CD in default location. 
-  - Run v:\platform-sdk\setup.exe, or install from a (Feb/Jul/Oct) 2000 Platform SDK CD
-    Do not use a Feb 2001 or newer release, since it will be missing DX7 d3dim.lib
-    This should prepend the Platform SDK paths to your PATH,INCLUDE, and
-    LIB dirs.  Building libpandadx requires this step (needs DX7 headers/libs)
+  - Run v:\platform-sdk\setup.exe, or install from a (Feb/Jul/Oct) 2000 
+    Platform SDK CD. Do not use a Feb 2001 or newer release, since it will 
+    be missing DX7 d3dim.lib.  This should prepend the Platform SDK paths 
+    to your PATH,INCLUDE, and LIB dirs.  Building libpandadx requires this 
+    step (needs DX7 headers/libs)
 
-Step 3: Install Cygwin (v1.0)
-  - Install Cygwin by running V:\cygwin-1.0\setup.exe, or from CD
+Step 3: Install Cygwin (v1.3.2)
+  - Install Cygwin by running V:\cygwin-1.3.2\setup.exe, and selecting 
+    'install from local directory' (or go to cygwin.com and run setup.exe
+     from the link there to install the latest version from the internet)
   - Open up a shell by running (and, if you desire, creating a shortcut to)
     tcsh.exe in: 
-       C:/Cygwin/contrib/bin 
+       C:/Cygwin/bin 
     Alternately, you can run a bash shell by going to the "Start"
     button at the bottom left of your screen, selecting "Programs",
     "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt to make 
     things easier.  
   - Set up the Cygwin environment:
+    - Cygwin 1.3.2 comes with tcsh 6.10.00, which has a bug preventing
+      files on the path like 'CL.EXE' from being recognized as executable 
+      when the shell is outside of their directory.  For now we must revert
+      to tcsh 6.09, do 'copy V:\cygwin-1.3.2\tcsh.exe c:\cygwin\bin'.  Also
+      copy more.exe from the same location, this seems to be missing in the
+      latest cygwin install.
+
+    - all of the commands below have been collected in V:\win\install\wintools\etc\setup_env.csh.  cd V:\win\install\wintools\etc, run tcsh, and 
+do 'source setup_env.csh' to do all of the below automatically
+
     - Check for directories /bin /etc /tmp /usr and create them using 
       mkdir if they don't exist.  
     - Make the following directories:
       > mkdir /c /f /g /h /i /j /v
       > mkdir /msvc98 /mscommon /mspsdk
-      > mkdir /usr/local
-      > mkdir /usr/local/bin
-      > mkdir /usr/local/etc
+      > mkdir /usr/local /usr/local/bin /usr/local/etc
+
     - Create some links expected by the attach scripts:
-      > ln -s /contrib/bin/tcsh /bin/csh
-      > ln -s /contrib/bin/perl /usr/local/bin/perl
+      > ln -s /bin/tcsh /bin/csh
+      > ln -s /bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
     - Connect the network drives:
       > net use f: "\\nufat\fat" /persistent:yes
@@ -140,7 +152,7 @@ Step 4: Create your home directory
         to use "edit.exe" in order to generate the correct "newline"
         character (^M).
     - Note: We've seen a problem where we can't source ~/.cshrc if the home
-      directory /usr/<yourname> does not match the user name exactly. 
+      directory /usr/<yourname> does not match the user name %USERNAME% windows env var.
       To be safe, be sure and name your home directory to be /usr/<yourname>.
   - Copy important startup files into your home directory:
     > cd /v/win/install/wintools/panda
@@ -207,7 +219,8 @@ Step 8: (Optional) Build $PANDA
     a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
     you run "demo".
 
-Step 9: Install Emacs
+Step 9: Install Emacs   
+  (note: this emacs does not use Cygwin paths, "/" represents the real root not "C:\Cygwin".)
   - get the tarball from /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz 
   - untar/install (This will install emacs into C:/emacs-20.7, 
     do not attempt to install it under a directory containing a space,
