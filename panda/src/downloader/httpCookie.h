@@ -78,8 +78,8 @@ private:
 
   string _name;
   string _value;
-  string _domain;
   string _path;
+  string _domain;
   HTTPDate _expires;
   bool _secure;
 };
