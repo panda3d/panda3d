@@ -104,7 +104,8 @@ struct LevelCollectorProperties {
 };
 
 static TimeCollectorProperties time_properties[] = {
-  { 1, "App",                              { 0.0, 1.0, 1.0 },  1.0 / 30.0 },
+  { 1, "Swap buffers",                     { 0.5, 1.0, 0.8 } },
+  { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
   { 1, "App:Animation",                    { 1.0, 0.0, 1.0 } },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
@@ -133,7 +134,6 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Quick",                       { 1.0, 0.0, 0.8 } },
   { 1, "Draw:Direct",                      { 0.0, 0.4, 1.0 } },
   { 1, "Draw:Cull",                        { 0.4, 1.0, 0.0 } },
-  { 1, "Draw:Swap buffers",                { 0.5, 1.0, 0.8 } },
   { 0, "Draw:Clear",                       { 0.5, 0.7, 0.7 } },
   { 0, "Draw:Show fps",                    { 0.5, 0.8, 1.0 } },
   { 0, "Draw:Make current",                { 1.0, 0.6, 0.3 } },

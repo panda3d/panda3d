@@ -37,7 +37,7 @@ GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 #ifndef CPPPARSER
 PStatCollector GraphicsWindow::_app_pcollector("App");
 PStatCollector GraphicsWindow::_show_code_pcollector("App:Show code");
-PStatCollector GraphicsWindow::_swap_pcollector("Draw:Swap buffers");
+PStatCollector GraphicsWindow::_swap_pcollector("Swap buffers");
 PStatCollector GraphicsWindow::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsWindow::_show_fps_pcollector("Draw:Show fps");
 PStatCollector GraphicsWindow::_make_current_pcollector("Draw:Make current");
