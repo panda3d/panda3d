@@ -1,0 +1,7 @@
+// Filename: guiListBox.I
+// Created by:  cary (18Jan01)
+// 
+////////////////////////////////////////////////////////////////////
+
+INLINE GuiListBox::GuiListBox(void) {}
+
