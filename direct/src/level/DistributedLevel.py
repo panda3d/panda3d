@@ -29,7 +29,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.titleText = OnscreenText.OnscreenText(
             "",
             fg = self.titleColor,
-            font = ToontownGlobals.getSignFont(),
+            shadow = (0,0,0,1),
+            font = ToontownGlobals.getSuitFont(),
             pos = (0,-0.5),
             scale = 0.16,
             drawOrder = 0,
@@ -39,12 +40,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.smallTitleText = OnscreenText.OnscreenText(
             "",
             fg = self.titleColor,
-            font = ToontownGlobals.getSignFont(),
-            pos = (0.4,0.9),
+            font = ToontownGlobals.getSuitFont(),
+            pos = (0.65,0.9),
             scale = 0.08,
             drawOrder = 0,
             mayChange = 1,
             bg = (.5,.5,.5,.5),
+            align = TextNode.ARight,
             )
         self.zonesEnteredList = []
 
@@ -412,7 +414,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
             return None
 
         description = getDescription(self.lastToonZone)
-        if description:
+        if description and description != '':
+            taskMgr.remove("titleText")
             self.smallTitleText.setText(description)
             self.titleText.setText(description)
             self.titleText.setColor(Vec4(*self.titleColor))
