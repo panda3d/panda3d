@@ -73,6 +73,8 @@ PUBLISHED:
 
   static Filename from_os_specific(const string &os_specific, 
 				   Type type = T_general);
+  static Filename temporary(const string &dirname, const string &prefix,
+			    Type type = T_general);
 
   // Assignment is via the = operator.
   INLINE Filename &operator = (const string &filename);

@@ -16,7 +16,8 @@
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 
-#include <stdio.h>  // For rename()
+#include <stdio.h>  // For rename() and tempnam()
+#include <time.h>   // for clock() and time()
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -278,6 +279,50 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   filename.set_type(type);
   return filename;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::temporary
+//       Access: Public
+//  Description: Generates a temporary filename within the indicated
+//               directory, using the indicated prefix.  If the
+//               directory is empty, a system-defined directory is
+//               chosen instead.
+//
+//               The generated filename did not exist when the
+//               Filename checked, but since it does not specifically
+//               create the file, it is possible that another process
+//               could simultaneously create a file by the same name.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+temporary(const string &dirname, const string &prefix, Type type) {
+  if (dirname.empty()) {
+    // If we are not given a dirname, use the system tempnam()
+    // function to create a system-defined temporary filename.
+    char *name = tempnam(NULL, prefix.c_str());
+    Filename result(name);
+    free(name);
+    result.set_type(type);
+    return result;
+  }
+
+  // If we *are* given a dirname, then use our own algorithm to make
+  // up a filename within that dirname.  We do that because the system
+  // tempnam() (for instance, under Windows) may ignore the dirname.
+
+  Filename result(dirname, "");
+  result.set_type(type);
+  do {
+    // We take the time of day and multiply it by the process time.
+    // This will give us a very large number, of which we take the
+    // bottom 24 bits and generate a 6-character hex code.
+    int hash = (clock() * time(NULL)) & 0xffffff;
+    char hex_code[10];
+    sprintf(hex_code, "%06x", hash);
+    result.set_basename(prefix + hex_code);
+  } while (result.exists());
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -608,8 +608,7 @@ run() {
   if (dirname.empty()) {
     dirname = ".";
   }
-  char *name = tempnam(dirname.c_str(), "pi");
-  Filename temp_filename(name);
+  Filename temp_filename = Filename::temporary(dirname, "pi");
 
   if (!state_file.open_write(temp_filename) ||
       !state_file.write_object(pal)) {
@@ -620,6 +619,7 @@ run() {
   }
 
   state_file.close();
+  state_filename.unlink();
   if (!temp_filename.rename_to(state_filename)) {
     nout << "Unable to rename temporary file " 
 	 << FilenameUnifier::make_user_filename(temp_filename) << " to "
