@@ -60,6 +60,8 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in AudioPool::ns_load_sound" << endl;
   filename.resolve_filename(get_sound_path());
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "resolved filename is '" << filename << "'" << endl;
 
   SoundMap::const_iterator si;
   si = _sounds.find(filename);

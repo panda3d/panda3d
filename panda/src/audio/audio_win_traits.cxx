@@ -620,6 +620,7 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   fdesc.guidClass = CLSID_DirectMusicSegment;
   fdesc.dwSize = sizeof(DMUS_OBJECTDESC);
   // MULTI_TO_WIDE(filename.to_os_specific().c_str(), fdesc.wszFileName);
+/*
   if (!(filename.resolve_filename(get_sound_path()))) {
     audio_cat->error() << "could not find '" << filename << "' on sound path"
 		       << endl;
@@ -628,6 +629,7 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     ret = (WinMusic*)0L;
     return ret;
   }
+*/
   MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
   if (filename.is_local())
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
