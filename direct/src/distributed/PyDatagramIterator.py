@@ -27,6 +27,8 @@ class PyDatagramIterator(DatagramIterator):
         STBlob32 : DatagramIterator.getString32,
         }
 
+    getChannel = DatagramIterator.getUint64
+
     def getArg(self, subatomicType, divisor=1):
         # Import the type numbers
         if divisor == 1:

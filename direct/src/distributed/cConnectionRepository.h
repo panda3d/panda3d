@@ -21,6 +21,8 @@
 
 #include "directbase.h"
 #include "pointerTo.h"
+
+#include "dcbase.h"
 #include "dcFile.h"
 #include "dcField.h"  // to pick up Python.h
 
@@ -78,8 +80,8 @@ PUBLISHED:
   bool check_datagram();
   INLINE void get_datagram(Datagram &dg);
   INLINE void get_datagram_iterator(DatagramIterator &di);
-  INLINE unsigned int get_msg_channel() const;
-  INLINE unsigned int get_msg_sender() const;
+  INLINE CHANNEL_TYPE get_msg_channel() const;
+  INLINE CHANNEL_TYPE get_msg_sender() const;
   INLINE unsigned char get_sec_code() const;
   INLINE unsigned int get_msg_type() const;
 
@@ -122,8 +124,8 @@ private:
 
   Datagram _dg;
   DatagramIterator _di;
-  unsigned int _msg_channel;
-  unsigned int _msg_sender;
+  CHANNEL_TYPE _msg_channel;
+  CHANNEL_TYPE _msg_sender;
   unsigned char _sec_code;
   unsigned int _msg_type;
 

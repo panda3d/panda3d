@@ -27,6 +27,9 @@ class PyDatagram(Datagram):
         STBlob32 : (Datagram.addString32, None),
         }
 
+        
+    addChannel = Datagram.addUint64
+    
     def putArg(self, arg, subatomicType, divisor=1):
         if (divisor == 1):
             funcSpecs = self.FuncDict.get(subatomicType)

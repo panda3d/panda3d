@@ -151,6 +151,11 @@ PUBLISHED:
   INLINE void raw_pack_float64(double value);
   INLINE void raw_pack_string(const string &value);
 
+// this is a hack to allw me to get in and out of 32bit Mode Faster
+// need to agree with channel_type in dcbase.h
+#define RAW_PACK_CHANNEL(in)  raw_pack_int64(in)
+  
+
   INLINE int raw_unpack_int8();
   INLINE int raw_unpack_int16();
   INLINE int raw_unpack_int32();

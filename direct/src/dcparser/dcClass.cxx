@@ -635,7 +635,7 @@ client_format_update(const string &field_name, int do_id,
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_format_update(const string &field_name, int do_id, 
-                 int to_id, int from_id, PyObject *args) const {
+                 CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
     ostringstream strm;
@@ -663,12 +663,14 @@ ai_format_update(const string &field_name, int do_id,
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_format_generate(PyObject *distobj, int do_id, 
-                   int zone_id, int district_id, int from_channel_id,
+                   int zone_id, CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                    PyObject *optional_fields) const {
+
   DCPacker packer;
 
-  packer.raw_pack_uint32(district_id);
-  packer.raw_pack_uint32(from_channel_id);
+
+  packer.RAW_PACK_CHANNEL(district_channel_id);
+  packer.RAW_PACK_CHANNEL(from_channel_id);
   packer.raw_pack_uint8('A');
 
   bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
@@ -678,7 +680,7 @@ ai_format_generate(PyObject *distobj, int do_id,
   } else {
     packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
   }
-
+  
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number);
   packer.raw_pack_uint32(do_id);

@@ -516,11 +516,11 @@ client_format_update(int do_id, PyObject *args) const {
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
 Datagram DCField::
-ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
+ai_format_update(int do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCPacker packer;
 
-  packer.raw_pack_uint32(to_id);
-  packer.raw_pack_uint32(from_id);
+  packer.RAW_PACK_CHANNEL(to_id);
+  packer.RAW_PACK_CHANNEL(from_id);
   packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
   packer.raw_pack_uint32(do_id);

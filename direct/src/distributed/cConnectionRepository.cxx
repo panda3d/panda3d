@@ -133,8 +133,8 @@ check_datagram() {
     _di = DatagramIterator(_dg);
 
     if (!_client_datagram) {
-      _msg_channel = _di.get_uint32();
-      _msg_sender = _di.get_uint32();
+      _msg_channel = _di.get_uint64();
+      _msg_sender = _di.get_uint64();
       _sec_code = _di.get_uint8();
       
 #ifdef HAVE_PYTHON
@@ -142,7 +142,9 @@ check_datagram() {
       // structure, to support legacy code that expects to find it
       // there.
       if (_python_repository != (PyObject *)NULL) {
+          // Dave Needs to fix interage.. 
         PyObject *value = PyInt_FromLong(_msg_sender);
+//        PyObject *value = PyLong_FromUnsignedLongLong(_msg_sender);
         PyObject_SetAttrString(_python_repository, "msgSender", value);
         Py_DECREF(value);
       }

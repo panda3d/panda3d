@@ -78,12 +78,13 @@ PUBLISHED:
                            const DCField *field) const;
 
 
+
   Datagram client_format_update(const string &field_name,
                                 int do_id, PyObject *args) const;
   Datagram ai_format_update(const string &field_name, int do_id, 
-                            int to_id, int from_id, PyObject *args) const;
+                            CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
   Datagram ai_format_generate(PyObject *distobj, int do_id, int zone_id,
-                              int district_id, int from_channel_id,
+                              CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                               PyObject *optional_fields) const;
 #endif 
 

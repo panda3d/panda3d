@@ -79,7 +79,7 @@ PUBLISHED:
   void receive_update(DCPacker &packer, PyObject *distobj) const;
 
   Datagram client_format_update(int do_id, PyObject *args) const;
-  Datagram ai_format_update(int do_id, int to_id, int from_id,
+  Datagram ai_format_update(int do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
                             PyObject *args) const;
 #endif 
 
