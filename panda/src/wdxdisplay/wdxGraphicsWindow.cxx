@@ -435,18 +435,29 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       return DefWindowProc(hwnd, msg, wparam, lparam);
 
     case WM_DISPLAYCHANGE:
+
+        #ifdef _DEBUG
+          width = LOWORD(lparam);  height = HIWORD(lparam);        
+          wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
+        #endif
+        
         if(!dx_full_screen) {
             wdxdisplay_cat.fatal() << "WM_DISPLAYCHANGE received:  fatal error, desktop bitdepth change not handled\n";
             exit(1);
         }
 
     case WM_SIZE: {
-        if(_mwindow==NULL)
+        if((_mwindow==NULL) || (wparam == SIZE_RESTORED))  // added SIZE_RESTORED to handle 3dfx case
            return DefWindowProc(hwnd, msg, wparam, lparam);
 
 		width = LOWORD(lparam);  height = HIWORD(lparam);
 #ifdef _DEBUG
-        wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << endl;
+        if(msg==WM_SIZE) {
+            wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " << 
+            ((wparam == SIZE_MAXHIDE)? "SIZE_MAXHIDE " : "") << ((wparam == SIZE_MAXSHOW)? "SIZE_MAXSHOW " : "") <<
+            ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
+            ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
+        }
 #endif
         if (_props._xsize != width || _props._ysize != height) {
         	DXGraphicsStateGuardian* dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
@@ -494,6 +505,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	  if (_dx_ready && _mouse_entry_enabled) 
           handle_mouse_entry(MOUSE_EXITED,hMouseCrossIcon);
       return 0;
+
 
     default:
       return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -1190,6 +1202,22 @@ HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID 
     return DDENUMRET_OK;    
 }
 
+BOOL WINAPI DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName, 
+                                VOID *argptr, HMONITOR hm) {
+    if(hm!=NULL)  // skip over non-primary display devices
+        return DDENUMRET_OK;
+
+    // primary display driver will have NULL guid
+    // ignore that and save any non-null value, whic
+    // indicates a secondary driver, which is usually voodoo1/2
+    if(pGUID!=NULL) {
+        memcpy(argptr,pGUID,sizeof(GUID));
+    }
+
+    return DDENUMRET_OK;
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_setup
 //  Description: Set up the DirectX environment.  The size of the
@@ -1208,6 +1236,7 @@ dx_setup()
       LPDIRECTDRAW7		    pDD;
       RECT view_rect;
       int i;
+      HRESULT hr;
       DX_DECLARE_CLEAN( DDSURFACEDESC2, SurfaceDesc );    
 
       // Check for DirectX 7 by looking for DirectDrawCreateEx
@@ -1222,9 +1251,25 @@ dx_setup()
       	   wdxdisplay_cat.fatal() << "wdxGraphicsWindow::config() - Panda currently requires DirectX 7.0!" << endl;
            exit(1);
        }
-    
+
+      GUID DriverGUID;
+      ZeroMemory(&DriverGUID,sizeof(GUID));
+
+      // search for early voodoo-type non-primary display drivers
+      // if they exist, use them for 3D  (could examine 3D devices on all
+      // drivers and pick the best one, but I'll assume the computer setuper knows what he's doing)
+      if( hr = DirectDrawEnumerateEx( DriverEnumCallback, &DriverGUID, DDENUM_NONDISPLAYDEVICES )) {
+    	  wdxdisplay_cat.fatal()   << "wdxGraphicsWindow::config() - DirectDrawEnumerateEx failed : result = " << ConvD3DErrorToString(hr) << endl;
+    	  exit(1);
+      }
+
+      GUID *pOurDriverGUID=NULL;
+      if(DriverGUID.Data1 != 0x0) {  // assumes no driver guid ever starts with 0, so 0 means Enum found no voodoo-type device
+          pOurDriverGUID=&DriverGUID;
+      }
+
       // Create the Direct Draw Object
-      HRESULT hr = DirectDrawCreateEx(NULL, (void **)&pDD, IID_IDirectDraw7, NULL);
+      hr = DirectDrawCreateEx(pOurDriverGUID, (void **)&pDD, IID_IDirectDraw7, NULL);
       if (hr != DD_OK) {
     	  wdxdisplay_cat.fatal()
           << "wdxGraphicsWindow::config() - DirectDrawCreateEx failed : result = " << ConvD3DErrorToString(hr) << endl;
@@ -1365,17 +1410,19 @@ dx_setup()
         }
 #endif
 
+        if( FAILED( hr = pDD->SetDisplayMode( dwRenderWidth, dwRenderHeight,
+                        dwFullScreenBitDepth, 0L, 0L ))) {
+            wdxdisplay_cat.fatal() << "wdxGraphicsWindow::CreateFullscreenBuffers() - Can't set display mode : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        }
+
+
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, DDSCL_FPUSETUP | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT ))) {
              wdxdisplay_cat.fatal()
              << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              exit(1);
         }
 
-	    if( FAILED( hr = pDD->SetDisplayMode( dwRenderWidth, dwRenderHeight,
-								dwFullScreenBitDepth, 0L, 0L ))) {
-			wdxdisplay_cat.fatal() << "wdxGraphicsWindow::CreateFullscreenBuffers() - Can't set display mode : result = " << ConvD3DErrorToString(hr) << endl;
-			exit(1);
-        }
 
 #ifdef _DEBUG
 		wdxdisplay_cat.debug() << "wdxGraphicsWindow::setting displaymode to " << dwRenderWidth << "x" << dwRenderHeight << " at "<< dwFullScreenBitDepth  << "bpp" <<endl;
