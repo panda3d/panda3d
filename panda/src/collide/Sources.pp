@@ -70,7 +70,9 @@
     collisionSphere.I collisionSphere.h \
     collisionTraverser.I collisionTraverser.h \
     collisionTube.I collisionTube.h \
-    collisionVisualizer.I collisionVisualizer.h
+    collisionVisualizer.I collisionVisualizer.h \
+    config_collide.h
+
 
   #define IGATESCAN all
 

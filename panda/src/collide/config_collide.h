@@ -24,8 +24,8 @@
 
 NotifyCategoryDecl(collide, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool respect_prev_transform;
-extern const bool respect_effective_normal;
+extern EXPCL_PANDA const bool respect_prev_transform;
+extern EXPCL_PANDA const bool respect_effective_normal;
 
 extern EXPCL_PANDA void init_libcollide();
 
