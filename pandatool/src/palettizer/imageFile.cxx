@@ -229,6 +229,7 @@ set_filename(const string &dirname, const string &basename) {
   Filename orig_alpha_filename = _alpha_filename;
   
   _filename = Filename(dirname, basename);
+  _filename.standardize();
 
   // Since we use set_extension() here, if the file already contains a
   // filename extension it will be lost.
