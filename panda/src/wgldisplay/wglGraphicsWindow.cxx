@@ -432,10 +432,10 @@ void wglGraphicsWindow::config() {
       DWORD dwFullScreenBitDepth=cur_bitdepth;
 
       #define LOWVIDMEMTHRESHOLD 3500000
-      if (GetAvailVidMem() < LOWVIDMEMTHRESHOLD) {
+      if (gl_do_vidmemsize_check && (GetAvailVidMem() < LOWVIDMEMTHRESHOLD)) {
           _bIsLowVidMemCard = true;
           wgldisplay_cat.debug() << "small video memory card detect, switching fullscreen to minimum 640x480x16 config\n";
-          // we're going to need  640x480 at 16 bit to save enough tex vidmem
+          // we're going to need 640x480 at 16 bit to save enough tex vidmem
           dwFullScreenBitDepth=16;
           dwWidth=640;
           dwHeight=480;

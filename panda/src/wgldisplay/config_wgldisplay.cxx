@@ -47,6 +47,9 @@ bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("respon
 // will crab out WireGL.
 bool support_wiregl = config_wgldisplay.GetBool("support-wiregl", false);
 
+// if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
+bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("do-vidmemsize-check", true);
+
 // For now, set this true to use the IME correctly on Win2000, or
 // false on Win98.  This is temporary; once we have been able to
 // verify that this distinction is actually necessary, we can replace

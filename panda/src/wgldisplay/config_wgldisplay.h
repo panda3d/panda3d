@@ -36,6 +36,7 @@ extern float gl_fps_meter_update_interval;
 extern bool gl_sync_video;
 extern int gl_forced_pixfmt;
 extern bool bResponsive_minimized_fullscreen_window;
+extern bool gl_do_vidmemsize_check;
 extern bool support_wiregl;
 extern bool ime_composition_w;
 extern bool wgl_force_sw_renderer;
