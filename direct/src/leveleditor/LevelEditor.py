@@ -4050,20 +4050,24 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addWiggleFloater.set(0)
                 self.addStumbleFloater.set(0)
                 self.addStompFloater.set(0)
+
                 self.bigFirstLetterIntVar.set(0)
+                self.setBigFirstLetter();
+                
                 self.allCapsIntVar.set(0)
+                self.setAllCaps()
+                
                 self.dropShadowIntVar.set(0)
+                self.setDropShadow()
 
                 self.fontMenu.selectitem(0)
+                self.setSignBaslineFont('')
+                
                 self.addXFloater.set(0)
                 self.addZFloater.set(0)
                 self.addScaleXFloater.set(1)
                 self.addScaleZFloater.set(1)
                 self.addRollFloater.set(0)
-
-                self.bigFirstLetterIntVar.set(0)
-                self.allCapsIntVar.set(0)
-                self.dropShadowIntVar.set(0)
                 
                 self.updateSelectedObjColor(Vec4(1.0))
                 
@@ -4089,14 +4093,23 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addStumbleFloater.set(float(settings['stumble']))
             if settings['stomp']:
                 self.addStompFloater.set(float(settings['stomp']))
-            if settings['flags']:
-                flags=settings['flags']
-                self.bigFirstLetterIntVar.set('b' in flags)
-                self.allCapsIntVar.set('c' in flags)
-                self.dropShadowIntVar.set('d' in flags)
 
-            if settings['code']:
-                self.fontMenu.selectitem(settings['code'])
+            flags=settings['flags']
+            if flags:
+                self.bigFirstLetterIntVar.set('b' in flags)
+                self.setBigFirstLetter();
+                
+                self.allCapsIntVar.set('c' in flags)
+                self.setAllCaps()
+                
+                self.dropShadowIntVar.set('d' in flags)
+                self.setDropShadow()
+
+            code = settings['code']
+            if code:
+                self.fontMenu.selectitem(code)
+                self.setSignBaslineFont(code)
+            
             if settings['x']:
                 self.addXFloater.set(float(settings['x']))
             if settings['z']:
@@ -4136,7 +4149,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                  # Remove the flag:
                  flags=string.join(flags.split(flagChar), '')
                  baseline.setFlags(flags)
-            s=self.baselineString.get()
+            s=self.baselineString.get()#skyler
             self.setBaselineString(s)
     
     def setBigFirstLetter(self):
