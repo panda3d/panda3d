@@ -7,11 +7,13 @@
 
 #include <pandabase.h>
 
+#include "mesherConfig.h"
 #include "mesherFanMaker.h"
 #include "mesherEdge.h"
 #include "mesherStrip.h"
 #include "mesherTempl.h"
 #include "builderPrim.h"
+
 
 #ifdef SUPPORT_FANS
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, MesherFanMaker<BuilderPrim>);

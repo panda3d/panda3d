@@ -7,6 +7,7 @@
 
 #include <pandabase.h>
 
+#include "mesherConfig.h"
 #include "builderBucket.h"
 #include "mesherEdge.h"
 #include "mesherStrip.h"

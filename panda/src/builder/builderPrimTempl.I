@@ -559,7 +559,7 @@ get_num_verts() const {
 template <class VTX>
 INLINE BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
 get_vertex(int n) {
-  nassertr(n >= 0 && n < _verts.size(), *(new Vertex));
+  nassertr(n >= 0 && n < (int)_verts.size(), *(new Vertex));
   return _verts[n];
 }
 
@@ -572,7 +572,7 @@ get_vertex(int n) {
 template <class VTX>
 INLINE const BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < _verts.size(), *(new Vertex));
+  nassertr(n >= 0 && n < (int)_verts.size(), *(new Vertex));
   return _verts[n];
 }
 
@@ -634,7 +634,7 @@ get_num_components() const {
 template <class VTX>
 INLINE BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
 get_component(int n) {
-  nassertr(n >= 0 && n < _components.size(), *(new DAttrib));
+  nassertr(n >= 0 && n < (int)_components.size(), *(new DAttrib));
   return _components[n];
 }
 
@@ -649,7 +649,7 @@ get_component(int n) {
 template <class VTX>
 INLINE const BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
 get_component(int n) const {
-  nassertr(n >= 0 && n < _components.size(), *(new DAttrib));
+  nassertr(n >= 0 && n < (int)_components.size(), *(new DAttrib));
   return _components[n];
 }
 
@@ -698,12 +698,12 @@ sort_value() const {
   // Furthermore, if one polygon has vertex normals and another is
   // flat shaded, they shouldn't be stripped together.
   return
-    ((has_vertex_normal()!=0) << 5) |
-    ((has_vertex_color()!=0) << 4) |
-    ((has_any_texcoord()!=0) << 3) |
-    ((has_any_normal()!=0) << 2) |
-    ((has_any_color()!=0) << 1) |
-    ((has_pixel_size()!=0) << 0);
+    ((has_vertex_normal() ? 1:0) << 5) |
+    ((has_vertex_color() ? 1:0) << 4) |
+    ((has_any_texcoord() ? 1:0) << 3) |
+    ((has_any_normal() ? 1:0) << 2) |
+    ((has_any_color() ? 1:0) << 1) |
+    ((has_pixel_size() ? 1:0) << 0);
 }
 
 

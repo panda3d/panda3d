@@ -54,10 +54,7 @@
 
 #include "builderPrimTempl.h"
 #include "builderBucket.h"
-#include "pta_BuilderV.h"
-#include "pta_BuilderN.h"
-#include "pta_BuilderTC.h"
-#include "pta_BuilderC.h"
+#include "builderTypes.h"
 
 #include <pta_ushort.h>
 #include <geom.h>

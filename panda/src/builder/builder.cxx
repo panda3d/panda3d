@@ -117,7 +117,7 @@ build(const string &default_name) {
        ++i) {
     BuilderBucket *bucket = (*i).get_bucket();
     NamedNode *node = bucket->_node;
-    const string &name = bucket->get_name();
+    //    const string &name = bucket->get_name();
     GeomNode *geom_node = NULL;
 
     if (node!=NULL && node->is_of_type(GeomNode::get_class_type())) {

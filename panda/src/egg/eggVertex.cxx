@@ -44,9 +44,9 @@ EggVertex() {
 EggVertex::
 EggVertex(const EggVertex &copy) 
   : EggObject(copy), EggAttributes(copy),
+    _dxyzs(copy._dxyzs),
     _pos(copy._pos),
-    _num_dimensions(copy._num_dimensions),
-    _dxyzs(copy._dxyzs)
+    _num_dimensions(copy._num_dimensions)
 {
   _pool = NULL;
   _index = -1;

@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 CharacterMaker::
 CharacterMaker(EggGroup *root, EggLoader &loader)
-  : _egg_root(root), _loader(loader) {
+  : _loader(loader), _egg_root(root) {
 
   _character_node = new Character(_egg_root->get_name());
   _bundle = _character_node->get_bundle();
@@ -63,7 +63,7 @@ egg_to_part(EggNode *egg_node) const {
     // character, just return the root of the character.
     return _bundle;
   }
-  nassertr(index < _parts.size(), NULL);
+  nassertr(index < (int)_parts.size(), NULL);
   return _parts[index];
 }
 
@@ -172,8 +172,6 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
 	new CharacterJoint(part, egg_group->get_name(), matf);
       index = _parts.size();
       _parts.push_back(joint);
-
-      PartGroup *pgroup = (PartGroup *)joint;
 
       if (egg_group->get_dcs_flag()) {
 	// If the joint requested an explicit DCS, create a node for

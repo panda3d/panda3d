@@ -38,6 +38,9 @@ write(ostream &out, int indent_level) const {
     case CS_yup_left:
       out << "Y-Up-Left";
       break;
+
+    default:
+      out << "/* Invalid coordinate system " << (int)get_value() << " */";
     }
     out << " }\n\n";
   }

@@ -272,23 +272,23 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   }
   
   if (egg_prim->has_normal()) {
-    bprim.set_normal(egg_prim->get_normal() * mat);
+    bprim.set_normal(LCAST(float, egg_prim->get_normal() * mat));
   }
   if (egg_prim->has_color() && !egg_false_color) {
-    bprim.set_color(egg_prim->get_color());
+    bprim.set_color(LCAST(float, egg_prim->get_color()));
   }
 
   bool has_vert_color = true;
   EggPrimitive::const_iterator vi;
   for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
     EggVertex *egg_vert = *vi;
-    BuilderVertex bvert(egg_vert->get_pos3() * mat);
+    BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
     
     if (egg_vert->has_normal()) {
-      bvert.set_normal(egg_vert->get_normal() * mat);
+      bvert.set_normal(LCAST(float, egg_vert->get_normal() * mat));
     }
     if (egg_vert->has_color() && !egg_false_color) {
-      bvert.set_color(egg_vert->get_color());
+      bvert.set_color(LCAST(float, egg_vert->get_color()));
     } else {
       // If any vertex doesn't have a color, we can't use any of the
       // vertex colors.
@@ -301,7 +301,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
 	// If we have a texture matrix, apply it.
 	uv = uv * egg_prim->get_texture()->get_transform();
       }
-      bvert.set_texcoord(uv);
+      bvert.set_texcoord(LCAST(float, uv));
     }
     
     bprim.add_vertex(bvert);
@@ -543,6 +543,10 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_wrapu(Texture::WM_clamp);
     }
     break;
+
+  default:
+    cerr << "Unexpected texture wrap flag: "
+	 << (int)egg_tex->determine_wrap_u() << "\n";
   }
 
   switch (egg_tex->determine_wrap_v()) {
@@ -559,6 +563,10 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_wrapv(Texture::WM_clamp);
     }
     break;
+
+  default:
+    cerr << "Unexpected texture wrap flag: "
+	 << (int)egg_tex->determine_wrap_v() << "\n";
   }
 
   switch (egg_tex->get_minfilter()) {
@@ -786,6 +794,10 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
     case EggTexture::ET_decal:
       apply->set_mode(TextureApplyProperty::M_decal);
       break;
+
+    default:
+      cerr << "Invalid texture environment "
+	   << (int)egg_tex->get_env_type() << "\n";
     }
   }
 }

@@ -228,7 +228,7 @@ BuilderBucket(int) {
   _show_qsheets = false;
   _show_quads = false;
   _show_normals = false;
-  _normal_color._v.set(1.0, 0.0, 0.0, 1.0);
+  _normal_color.set(1.0, 0.0, 0.0, 1.0);
   _normal_scale = 1.0;
   _subdivide_polys = true;
   _coplanar_threshold = 0.01;

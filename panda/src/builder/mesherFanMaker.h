@@ -10,6 +10,7 @@
 
 #include <pandabase.h>
 
+#include "mesherConfig.h"
 #include "builderAttrib.h"
 #include "builderVertex.h"
 #include "builderBucket.h"

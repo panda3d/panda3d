@@ -57,7 +57,7 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
   // Now, go through and extract out all the data.
   int num_rows = convert_from.get_num_rows();
   for (int row = 0; row < num_rows; row++) {
-    for (int col = 0; col < subtables.size(); col++) {
+    for (int col = 0; col < (int)subtables.size(); col++) {
       EggSAnimData *sanim = subtables[col];
       if (sanim->get_num_rows() == 1) {
 	add_data(sanim->get_value(0));

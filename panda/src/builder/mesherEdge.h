@@ -8,6 +8,7 @@
 
 #include <pandabase.h>
 
+#include "mesherConfig.h"
 #include "builderBucket.h"
 
 #include <list>

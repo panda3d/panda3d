@@ -8,8 +8,8 @@
 template <class PrimType>
 INLINE MesherStrip<PrimType>::
 MesherStrip(const MesherStrip &copy) : 
-  _edges(copy._edges),
   _prims(copy._prims),
+  _edges(copy._edges),
   _verts(copy._verts),
   _type(copy._type),
   _index(copy._index),
@@ -923,11 +923,11 @@ convex_quad(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   nassertr(a!=NULL && b!=NULL, false);
 
   Vertexf a3, b3, c3, d3;
-  a3 = a->get_coord_value(bucket)._v;
-  b3 = b->get_coord_value(bucket)._v;
+  a3 = a->get_coord_value(bucket);
+  b3 = b->get_coord_value(bucket);
 
-  c3 = common_edge->_a->get_coord_value(bucket)._v;
-  d3 = common_edge->_b->get_coord_value(bucket)._v;
+  c3 = common_edge->_a->get_coord_value(bucket);
+  d3 = common_edge->_b->get_coord_value(bucket);
 
   // Project both edges into the 2-d axis plane most nearly
   // perpendicular to the normal.  We're assuming both tris have the

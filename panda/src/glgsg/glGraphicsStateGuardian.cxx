@@ -1163,8 +1163,8 @@ draw_polygon(const GeomPolygon *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -1233,8 +1233,8 @@ draw_tri(const GeomTri *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -1299,8 +1299,8 @@ draw_quad(const GeomQuad *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -1366,8 +1366,8 @@ draw_tristrip(const GeomTristrip *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -1454,8 +1454,8 @@ draw_trifan(const GeomTrifan *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);

@@ -3,7 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "mesher.h"
 #include "builderMisc.h"
 #include "mesherStrip.h"
 #include "mesherFanMaker.h"
@@ -314,8 +313,8 @@ finalize() {
   if (!_colors.empty()) {
     // Create an array in the bucket we might use to add to geoms.
     PTA_Colorf colors(_colors.size());
-    for (int i = 0; i < _colors.size(); i++) {
-      colors[i] = _colors[i]._v;
+    for (int i = 0; i < (int)_colors.size(); i++) {
+      colors[i] = _colors[i];
     }
     _bucket->set_colors(colors);
 

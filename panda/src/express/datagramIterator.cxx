@@ -221,7 +221,7 @@ get_float32() {
   nassertr(_current_index < _datagram.get_length(), 0.0);
 
   float tempvar;
-  BigEndian s = 
+  LittleEndian s = 
     _datagram.get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0.0);

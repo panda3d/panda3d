@@ -1119,7 +1119,7 @@ group_vertex_ref:
     PTA_double nums = $3;
     double membership = $4;
 
-    for (int i = 0; i < nums.size(); i++) {
+    for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_vertex(index);
       if (vertex == NULL) {
@@ -1581,7 +1581,7 @@ primitive_vertex_ref:
     EggPrimitive *prim = DCAST(EggPrimitive, egg_stack.back());
     PTA_double nums = $3;
 
-    for (int i = 0; i < nums.size(); i++) {
+    for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_vertex(index);
       if (vertex == NULL) {
@@ -1629,7 +1629,7 @@ nurbs_surface_uknots_body:
   PTA_double nums = $1;
 
   nurbs->set_num_u_knots(nums.size());
-  for (int i = 0; i < nums.size(); i++) {
+  for (int i = 0; i < (int)nums.size(); i++) {
     nurbs->set_u_knot(i, nums[i]);
   }
 }
@@ -1649,7 +1649,7 @@ nurbs_surface_vknots_body:
   PTA_double nums = $1;
 
   nurbs->set_num_v_knots(nums.size());
-  for (int i = 0; i < nums.size(); i++) {
+  for (int i = 0; i < (int)nums.size(); i++) {
     nurbs->set_v_knot(i, nums[i]);
   }
 }
@@ -1726,7 +1726,7 @@ nurbs_curve_knots_body:
   PTA_double nums = $1;
 
   nurbs->set_num_knots(nums.size());
-  for (int i = 0; i < nums.size(); i++) {
+  for (int i = 0; i < (int)nums.size(); i++) {
     nurbs->set_knot(i, nums[i]);
   }
 }
