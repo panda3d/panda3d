@@ -578,8 +578,15 @@
 // How to install a data file or executable file.  $[local] is the
 // local name of the file to install, and $[dest] is the name of the
 // directory to put it in.
-#defer INSTALL install -m 666 $[local] $[dest]
-#defer INSTALL_PROG install -m 777 $[local] $[dest]
+
+// On Unix systems, we strongly prefer using the install program to
+// install files.  This has nice features like automatically setting
+// the permissions bits, and also is usually clever enough to install
+// a running program without crashing the running instance.  However,
+// it doesn't understanding installing a program from a subdirectory,
+// so we have to cd into the source directory first.
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m 666 $[notdir $[local]] $[dest]
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m 777 $[notdir $[local]] $[dest]
 
 // Variable definitions for building with the Irix MIPSPro compiler.
 #if $[eq $[USE_COMPILER], MIPS]

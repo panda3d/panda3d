@@ -345,9 +345,9 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 $[install_lib_dir]/lib$[TARGET].so : $[ODIR]/lib$[TARGET].so
-#define local lib$[TARGET].so
+#define local $[ODIR]/lib$[TARGET].so
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]
+$[TAB] $[INSTALL]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -365,7 +365,7 @@ $[TAB] cp -f $[ODIR]/$[local] $[dest]
 $[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%] : $[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -457,9 +457,9 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 $[install_lib_dir]/lib$[TARGET]$[dllext].a : $[ODIR]/lib$[TARGET]$[dllext].a
-#define local lib$[TARGET]$[dllext].a
+#define local $[ODIR]/lib$[TARGET]$[dllext].a
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]
+$[TAB] $[INSTALL]
 
 #end static_lib_target
 
@@ -491,10 +491,10 @@ uninstall-$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-#define local $[TARGET]
+#define local $[ODIR]/$[TARGET]
 #define dest $[install_bin_dir]
 $[install_bin_dir]/$[TARGET] : $[ODIR]/$[TARGET]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]
+$[TAB] $[INSTALL_PROG]
 
 #end sed_bin_target
 
@@ -540,9 +540,9 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 $[install_bin_dir]/$[TARGET] : $[ODIR]/$[TARGET]
-#define local $[TARGET]
+#define local $[ODIR]/$[TARGET]
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]
+$[TAB] $[INSTALL_PROG]
 
 #end bin_target
 
@@ -674,35 +674,35 @@ $[TAB] $[COMPILE_C++]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL_PROG]
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 #end file
 
 #foreach file $[install_parser_inc]
 $[install_parser_inc_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_parser_inc_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 #end file
 
 #foreach file $[install_data]
 $[install_data_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 #end file
 
 // Finally, all the special targets.  These are commands that just need
@@ -849,7 +849,7 @@ $[TAB] @test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
 $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-$[TAB] cp -f $[local] $[dest]
+$[TAB] $[INSTALL]
 #endif
 
 #end Makefile
