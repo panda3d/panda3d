@@ -548,32 +548,69 @@ class ParticlePanel(AppShell):
         # Sprite #
         spritePage = self.rendererNotebook.add('SpriteParticleRenderer')
         f = Frame(spritePage)
+        Label(f, width = 12, text = 'Texture Type:').pack(side = LEFT)
+        self.rendererSpriteSourceType = IntVar()
+        self.rendererSpriteSourceType.set(SpriteParticleRenderer.STTexture)
+        self.rendererSpriteSTTexture = self.createRadiobutton(
+            f, 'left',
+            'Sprite Renderer', 'Texture Type',
+            'Sprite particle renderer created from texture file',
+            self.rendererSpriteSourceType, SpriteParticleRenderer.STTexture,
+            self.setSpriteSourceType)
+        self.rendererSpriteSTTexture = self.createRadiobutton(
+            f, 'left',
+            'Sprite Renderer', 'NodePath Type',
+            'Sprite particle renderer created from node path',
+            self.rendererSpriteSourceType, SpriteParticleRenderer.STFromNode,
+            self.setSpriteSourceType)
         f.pack(fill = X)
-        Label(f, width = 12, text = 'Texture').pack(side = LEFT)
+        f = Frame(spritePage)
+        Label(f, width = 6, text = 'Texture:').pack(side = LEFT)
         self.rendererSpriteTexture = StringVar()
         self.rendererSpriteTexture.set('phase_3/maps/eyes.jpg')
         self.rendererSpriteTextureEntry = Entry(
             f, width = 12,
             textvariable = self.rendererSpriteTexture)
-        self.rendererSpriteTextureEntry.bind(
-            '<Return>', self.setRendererSpriteTexture)
-        self.rendererSpriteTextureEntry.pack(
-            side = LEFT, expand = 1, fill = X)
+        self.rendererSpriteTextureEntry.pack(side = LEFT, expand = 1, fill = X)
+        f.pack(fill = X)
+        f = Frame(spritePage)
+        Label(f, width = 6, text = 'File:').pack(side = LEFT)
+        self.rendererSpriteFile = StringVar()
+        self.rendererSpriteFile.set(SpriteParticleRenderer.sourceFileName)
+        self.rendererSpriteFileEntry = Entry(
+            f, width = 12,
+            textvariable = self.rendererSpriteFile)
+        self.rendererSpriteFileEntry.pack(side = LEFT, expand = 1, fill = X)
+        Label(f, width = 6, text = 'Node:').pack(side = LEFT)
+        self.rendererSpriteNode = StringVar()
+        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
+        self.rendererSpriteNodeEntry = Entry(
+            f, width = 6,
+            textvariable = self.rendererSpriteNode)
+        self.rendererSpriteNodeEntry.pack(side = LEFT, expand = 1, fill = X)
+        f.pack(fill = X)
+        # Init entries
+        self.setSpriteSourceType()
+        self.setTextureButton = Button(spritePage, text = 'Set Texture',
+                                       command = self.setRendererSpriteTexture)
+        self.setTextureButton.pack(fill = X)
+        f = Frame(spritePage)
         self.createCheckbutton(
-            spritePage, 'Sprite Renderer', 'X Scale',
+            f, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
              "Off: stays as start_X_Scale"),
-            self.toggleRendererSpriteXScale, 0)
+            self.toggleRendererSpriteXScale, 0, side = LEFT)
         self.createCheckbutton(
-            spritePage, 'Sprite Renderer', 'Y Scale',
+            f, 'Sprite Renderer', 'Y Scale',
             ("On: y scale is interpolated over particle's life; " +
              "Off: stays as start_Y_Scale"),
-            self.toggleRendererSpriteYScale, 0)
+            self.toggleRendererSpriteYScale, 0, side = LEFT)
         self.createCheckbutton(
-            spritePage, 'Sprite Renderer', 'Anim Angle',
+            f, 'Sprite Renderer', 'Anim Angle',
             ("On: particles that are set to spin on the Z axis will " +
              "spin appropriately"),
-            self.toggleRendererSpriteAnimAngle, 0)
+            self.toggleRendererSpriteAnimAngle, 0, side = LEFT)
+        f.pack(fill = X)
         self.createFloater(spritePage, 'Sprite Renderer',
                            'Initial X Scale',
                            'Initial X scaling factor',
@@ -663,14 +700,14 @@ class ParticlePanel(AppShell):
 
     ### WIDGET UTILITY FUNCTIONS ###
     def createCheckbutton(self, parent, category, text,
-                          balloonHelp, command, initialState):
+                          balloonHelp, command, initialState, side = 'top'):
         bool = BooleanVar()
         bool.set(initialState)
         widget = Checkbutton(parent, text = text, anchor = W,
                          variable = bool)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
-        widget.pack(fill = X)
+        widget.pack(fill = X, side = side)
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         self.variableDict[category + '-' + text] = bool
@@ -1521,12 +1558,31 @@ class ParticlePanel(AppShell):
             lScale = SparkleParticleRenderer.SPSCALE
 	self.particles.renderer.setLifeScale(lScale)
     # Sprite #
-    def setRendererSpriteTexture(self, event):
-	t = loader.loadTexture(self.rendererSpriteTexture.get())
-	if (t != None):
-	    self.particles.renderer.setTexture(t)
-	else:
-	    print "Couldn't find rendererSpriteTexture"
+    def setSpriteSourceType(self):
+        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
+            self.rendererSpriteTextureEntry['state'] = 'normal'
+            self.rendererSpriteFileEntry['state'] = 'disabled'
+            self.rendererSpriteNodeEntry['state'] = 'disabled'
+            self.rendererSpriteTextureEntry['background'] = 'SystemWindow'
+            self.rendererSpriteFileEntry['background'] = '#C0C0C0'            
+            self.rendererSpriteNodeEntry['background'] = '#C0C0C0'            
+        else:
+            self.rendererSpriteTextureEntry['state'] = 'disabled'
+            self.rendererSpriteFileEntry['state'] = 'normal'
+            self.rendererSpriteNodeEntry['state'] = 'normal'
+            self.rendererSpriteTextureEntry['background'] = '#C0C0C0'
+            self.rendererSpriteFileEntry['background'] = 'SystemWindow'
+            self.rendererSpriteNodeEntry['background'] = 'SystemWindow'
+    def setRendererSpriteTexture(self):
+        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
+            t = loader.loadTexture(self.rendererSpriteTexture.get())
+            if (t != None):
+                self.particles.renderer.setTexture(t)
+            else:
+                print "Couldn't find rendererSpriteTexture"
+        else:
+            self.particles.renderer.setTextureFromNode(
+                self.rendererSpriteFile.get(), self.rendererSpriteNode.get())
     def toggleRendererSpriteXScale(self):
 	self.particles.renderer.setXScaleFlag(
             self.getVariable('Sprite Renderer', 'X Scale').get())

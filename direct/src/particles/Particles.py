@@ -27,9 +27,6 @@ import string
 import os
 import DirectNotifyGlobal
 
-SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
-SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
-
 class Particles(ParticleSystem.ParticleSystem):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('Particles')
@@ -143,11 +140,17 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
 	elif (type == "SpriteParticleRenderer"):
 	    self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
-	    t = loader.loadTexture('phase_3/maps/eyes.jpg')
-	    if (t == None):
-		print "Couldn't find default texture: evil_eye.rgb!"
-		return None
-	    self.renderer.setTexture(t)
+            if (self.renderer.getSourceType() ==
+                SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
+                t = loader.loadTexture('phase_3/maps/eyes.jpg')
+                if (t == None):
+                    print "Couldn't find default texture: evil_eye.rgb!"
+                    return None
+                self.renderer.setTexture(t)
+            else:
+                # Use default model file and node
+                # See SpriteParticleRenderer-extensions.py
+                self.renderer.setTextureFromNode()
 	else:
 	    print "unknown renderer type: %s" % type
 	    return None
@@ -340,8 +343,14 @@ class Particles(ParticleSystem.ParticleSystem):
 	    file.write(targ + '.renderer.setLifeScale(SparkleParticleRenderer.' + lScale + ')\n')
 	elif (self.rendererType == "SpriteParticleRenderer"):
 	    file.write('# Sprite parameters\n')
-	    tex = self.renderer.getTexture()
-	    file.write(targ + '.renderer.setTexture(loader.loadTexture(\'' + tex.getName() + '\'))\n')
+            if (self.renderer.getSourceType() ==
+                SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
+                tex = self.renderer.getTexture()
+                file.write(targ + '.renderer.setTexture(loader.loadTexture(\'' + tex.getName() + '\'))\n')
+            else:
+                modelName = self.renderer.getSourceFileName()
+                nodeName = self.renderer.getSourceNodeName()
+                file.write(targ + '.renderer.setTextureFromNode(%s, %s)' % (modelName, nodeName))
 	    sColor = self.renderer.getColor()
 	    file.write((targ + '.renderer.setColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
 	    file.write(targ + '.renderer.setXScaleFlag(%d)\n' % self.renderer.getXScaleFlag())
