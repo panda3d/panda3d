@@ -1637,9 +1637,13 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
     DWORD DeviceId=_dxgsg->scrn.DXDeviceID.DeviceId;
     switch(VendorId) {
         case 0x8086:  // Intel
+            /*for now, just validate all the intel cards at these resolutions.
+              I dont have a complete list of deviceIDs (missing 82830, 845, etc)
             // Intel i810,i815,82810
             if((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
-               (DeviceId==0x1132)) {
+               (DeviceId==0x1132)) 
+             */
+            {
                 if((xsize==800)&&(ysize==600))
                     return true;
                 if((xsize==1024)&&(ysize==768))
