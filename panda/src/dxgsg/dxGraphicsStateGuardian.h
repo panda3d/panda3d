@@ -32,7 +32,7 @@
 #include <depthTestProperty.h>
 #include <stencilProperty.h>
 #include <fog.h>
-
+#include <renderModeProperty.h>
 #include <colorMatrixTransition.h>
 #include <alphaTransformTransition.h>
 #include <pointerToArray.h>
@@ -64,7 +64,43 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
     ZeroMemory(&var, sizeof(type));  \
     var.dwSize = sizeof(type);
 
-#define RELEASE(OBJECT) if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {(OBJECT)->Release(); (OBJECT) = NULL;}
+// #define DEBUG_RELEASES
+
+// this is bDoDownToZero argument to RELEASE()
+#define RELEASE_DOWN_TO_ZERO true
+
+#ifdef DEBUG_RELEASES
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
+   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {         \
+        refcnt = (OBJECT)->Release();                           \
+        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
+        if((bDoDownToZero) && (refcnt>0)) {                     \
+              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
+              do {                                \
+                refcnt = (OBJECT)->Release();     \
+              } while(refcnt>0);                  \
+        }                                         \
+        (OBJECT) = NULL;                          \
+      } else {                                    \
+        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
+      } 
+
+#define PRINTREFCNT(OBJECT,STR)  {  (OBJECT)->AddRef();  dxgsg_cat.debug() << STR << " refcnt = " << (OBJECT)->Release() << endl; }
+#else
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)     \
+   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) { \
+        refcnt=(OBJECT)->Release();                     \
+        if((bDoDownToZero) && (refcnt>0)) {             \
+              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
+              do {                                \
+                refcnt = (OBJECT)->Release();     \
+              } while(refcnt>0);                  \
+        }                                         \
+        (OBJECT) = NULL;                          \
+   }
+
+#define PRINTREFCNT(OBJECT,STR)  
+#endif    
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
 #ifdef _DEBUG
@@ -215,7 +251,7 @@ protected:
 
   RECT                _view_rect;
   RECT                clip_rect;
-  HDC               _hdc;
+  HDC               _front_hdc;
   int               _cNumTexPixFmts;
   LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
@@ -362,6 +398,8 @@ protected:
   bool _alpha_test_enabled;
   int _decal_level;
 
+  RenderModeProperty::Mode _current_fill_mode;  //poinr/wireframe/solid
+
   GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
@@ -400,6 +438,13 @@ protected:
   DWORD _start_frame_count;
   DWORD _cur_frame_count;
   float _current_fps;
+  DWORD *_fpsmeter_verts;
+  DWORD _fpsmeter_fvfflags;
+  LPDIRECTDRAWSURFACE7 _fpsmeter_font_surf;
+  float _fps_u_usedwidth,_fps_v_usedheight;  // fraction of fps font texture actually used
+  DWORD _fps_vertexsize;   // size of verts used to render fps meter
+  void  SetFPSMeterPosition(RECT &view_rect);
+  void  FillFPSMeterTexture(void);
 
 public:
   static GraphicsStateGuardian*
@@ -414,7 +459,7 @@ public:
   LPDIRECTDRAW7 GetDDInterface()  {  return _pDD; }
   LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return _back; }
   LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
-  INLINE void  Set_HDC(HDC hdc)  {  _hdc = hdc;  }
+  INLINE void  Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
   INLINE bool GetDXReady(void)  { return _dx_ready;}
@@ -436,11 +481,14 @@ public:
           LPDIRECT3D7          d3d,
           LPDIRECT3DDEVICE7    d3dDevice,
           RECT  viewrect);
-   friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
+  
+  friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
 
 private:
   static TypeHandle _type_handle;
 };
+
+#define ISPOW2(X) (((X) & ((X)-1))==0)
 
 #include "dxGraphicsStateGuardian.I"
 

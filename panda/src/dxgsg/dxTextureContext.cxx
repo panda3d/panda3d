@@ -1054,8 +1054,6 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     ddsd.dwWidth         = dwOrigWidth;
     ddsd.dwHeight        = dwOrigHeight;
 
-#define ISPOW2(X) (((X) & ((X)-1))==0)
-
     if(!ISPOW2(ddsd.dwWidth) || !ISPOW2(ddsd.dwHeight)) {
         dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "!!!!! \n";
 #ifdef _DEBUG
@@ -1581,6 +1579,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         goto error_exit;
     }
 
+
 #ifdef _DEBUG
     dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";
 #endif
@@ -1870,9 +1869,22 @@ DeleteTexture( ) {
     if(dxgsg_cat.is_spam()) {
         dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
     }
-    if(_surface) 
-       _surface->Release();
-    _surface = NULL;
+
+    ULONG refcnt;
+
+#ifdef DEBUG_RELEASES
+    if(_surface) {
+        LPDIRECTDRAW7 pDD;
+        _surface->GetDDInterface( (VOID**)&pDD );
+        pDD->Release();
+
+        PRINTREFCNT(pDD,"before DeleteTex, IDDraw7");
+        RELEASE(_surface,dxgsg,"texture",false);
+        PRINTREFCNT(pDD,"after DeleteTex, IDDraw7");
+    }
+#else
+    RELEASE(_surface,dxgsg,"texture",false);
+#endif
 }
 
 
@@ -1885,9 +1897,9 @@ DXTextureContext::
 DXTextureContext(Texture *tex) :
 TextureContext(tex) {
 //#ifdef NDEBUG
-//    if(dxgsg_cat.is_spam()) {
+    if(dxgsg_cat.is_spam()) {
        dxgsg_cat.spam() << "Creating DX texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
-//    }
+    }
 //#endif
     _surface = NULL;
     _bHasMipMaps = FALSE;

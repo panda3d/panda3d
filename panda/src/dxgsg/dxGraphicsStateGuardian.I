@@ -284,7 +284,7 @@ call_dxAlphaFunc(D3DCMPFUNC func, DWORD ref)
     _alpha_func = func;
     _alpha_func_ref = ref;
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "glAlphaFunc(";
+    dxgsg_cat.debug() << "dxAlphaFunc(";
     switch (func) {
     case D3DCMP_NEVER:
       dxgsg_cat.debug(false) << "D3DCMP_NEVER, ";

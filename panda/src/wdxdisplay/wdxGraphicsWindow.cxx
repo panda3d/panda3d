@@ -441,6 +441,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     
                     LPDIRECTDRAWSURFACE7 pddsDummy = NULL, pddsDummyZ = NULL;
                     HRESULT hr;
+                    ULONG refcnt;
     
                     DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsd );
     
@@ -483,8 +484,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                         << "Resize failed to set render target to temporary surface, result = " << ConvD3DErrorToString(hr) << endl;
                         exit(1);
                     }
-                    RELEASE(pddsDummyZ);
-                    RELEASE(pddsDummy);
+                    RELEASE(pddsDummyZ,wdxdisplay,"dummy resize zbuffer",false);
+                    RELEASE(pddsDummy,wdxdisplay,"dummy resize rendertarget buffer",false);
                 }
 
                 handle_reshape(true);
@@ -815,6 +816,7 @@ void wdxGraphicsWindow::config(void) {
     _window_inactive = false;
     _return_control_to_app = false;
     _active_minimized_fullscreen = false;
+    _bIsLowVidMemCard = false;
 
     _hOldForegroundWindow=GetForegroundWindow();
 
@@ -1014,6 +1016,9 @@ BOOL WINAPI DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,
 
     return DDENUMRET_OK;
 }
+
+//void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
+//}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_setup

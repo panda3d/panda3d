@@ -77,6 +77,9 @@ public:
   virtual void begin_frame( void );
   void show_frame();
   DXGraphicsStateGuardian *_dxgsg;
+  
+//  virtual void resize(unsigned int xsize,unsigned int ysize);
+//  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:
   ButtonHandle lookup_key(WPARAM wparam) const;
@@ -98,6 +101,7 @@ private:
   HPALETTE          _colormap;
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType _WindowAdjustingType;
+  bool              _bIsLowVidMemCard;
   HCURSOR _hMouseCursor;
   bool    _bSizeIsMaximized;
   bool              _mouse_input_enabled;
