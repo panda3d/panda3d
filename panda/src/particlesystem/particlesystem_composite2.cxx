@@ -7,8 +7,9 @@
 #include "discEmitter.cxx"
 #include "lineEmitter.cxx"
 #include "lineParticleRenderer.cxx"
-#include "orientedParticle.cxx"
-#include "orientedParticleFactory.cxx"
+// oriented particles unimplemented
+//#include "orientedParticle.cxx"
+//#include "orientedParticleFactory.cxx"
 #include "particleSystem.cxx"
 #include "particleSystemManager.cxx"
 
