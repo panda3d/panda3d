@@ -45,18 +45,23 @@
 
 #end lib_target
 
-// #begin lib_target
-//   #define TARGET audio_load_st
-//   #define LOCAL_LIBS \
-//     audio
-// 
-//   #define SOURCES \
-//     audio_load_st.cxx
-// 
-// #end lib_target
+#begin lib_target
+  #define TARGET audio_load_st
+  #define USE_SOXST yes
+  #define LOCAL_LIBS \
+    audio
+
+  #define SOURCES \
+    audio_load_st.cxx
+
+#end lib_target
 
 #begin test_bin_target
   #define TARGET test_audio
+  #define LOCAL_LIBS \
+    audio
+  #define OTHER_LIBS \
+    $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_audio.cxx

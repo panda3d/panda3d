@@ -12,6 +12,9 @@
 #include <ipc_thread.h>
 #include <ipc_mutex.h>
 #include <set>
+#include <fcntl.h>
+#include <sys/soundcard.h>
+#include <sys/ioctl.h>
 
 typedef set<Buffer*> BufferSet;
 
@@ -21,11 +24,11 @@ static byte* buffer1;
 static byte* buffer2;
 static byte* current_buffer;
 static byte* back_buffer;
-static byte* zero_buffer;
+byte* zero_buffer;
 static byte* scratch_buffer;
 static byte* fetch_buffer;
-static int want_buffers, have_buffers;
-static bool initializing = false;
+static int want_buffers = 0, have_buffers = 0;
+static bool initializing = true;
 static int output_fd;
 static thread* update_thread;
 static int sample_size = sizeof(short);
@@ -98,8 +101,8 @@ static void mix_in(byte* buf, byte* from, float vol, float pan) {
     signed short in_right = read_buffer(from, i+1);
 
     // figure out panning at some point
-    in_left *= vol;
-    in_right *= vol;
+    in_left = (short int)(in_left * vol);
+    in_right = (short int)(in_right * vol);
 
     // compute mixed values
     left = sound_clamp(left+in_left);
@@ -115,7 +118,7 @@ static void mix_buffer(byte* buf) {
   memcpy(scratch_buffer, zero_buffer, audio_buffer_size);
   // do stuff
   for (BufferSet::iterator i=buffers.begin(); i!=buffers.end(); ++i)
-    min_in(scratch, (*i)->get_buffer(fetch_buffer), 1., 0.);
+    mix_in(scratch_buffer, (*i)->get_buffer(fetch_buffer), 1., 0.);
   BufferSet to_del;
   for (BufferSet::iterator j=buffers.begin(); j!=buffers.end(); ++j)
     if ((*j)->is_done())
@@ -149,6 +152,9 @@ static void update_linux(void) {
     // mix 2 buffers and put them in place.
     mix_buffer(current_buffer);
     mix_buffer(back_buffer);
+    if (initializing)
+      audio_cat->debug() << "mixed 2 buffers, want is currently at ("
+			 << want_buffers << ")" << endl;
     initializing = false;
     break;
   default:
@@ -157,7 +163,7 @@ static void update_linux(void) {
 }
 
 static void internal_update(void*) {
-  if ((output_fd = open(audio_device, O_WRONLY, 0)) == -1) {
+  if ((output_fd = open(audio_device->c_str(), O_WRONLY, 0)) == -1) {
     audio_cat->error() << "could not open '" << audio_device << "'" << endl;
     return;
   }
@@ -221,7 +227,7 @@ static void initialize(void) {
 
   audio_cat->info() << "spawning internal update thread" << endl;
   update_thread = thread::create(internal_update, (void*)0L,
-				 thread_PRIORITY_NORMAL);
+				 thread::PRIORITY_NORMAL);
 
   AudioManager::set_update_func(update_linux);
   have_initialized = true;

@@ -55,15 +55,11 @@ public:
 #ifdef PENV_WIN32
 #define AUDIO_USE_WIN32
 #else /* PENV_WIN32 */
-/*
 #ifdef PENV_LINUX
 #define AUDIO_USE_LINUX
-#else /* PENV_LINUX *
-*/
+#else /* PENV_LINUX */
 #define AUDIO_USE_NULL
-/*
-#endif /* PENV_LINUX *
-*/
+#endif /* PENV_LINUX */
 #endif /* PENV_WIN32 */
 #endif /* HAVE_MIKMOD */
 

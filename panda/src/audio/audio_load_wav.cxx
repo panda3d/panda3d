@@ -60,7 +60,7 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
   *sample = (AudioTraits::SampleClass*)0L;
-  *player = (audioTraits::PlayerClass*)0L;
+  *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroyWav;
 }
 

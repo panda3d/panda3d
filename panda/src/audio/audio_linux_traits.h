@@ -11,7 +11,14 @@
 #ifndef __AUDIO_LINUX_TRAITS_H__
 #define __AUDIO_LINUX_TRAITS_H__
 
+#include "config_audio.h"
+
+#ifndef HAVE_DEFINED_BYTE
 typedef unsigned char byte;
+#define HAVE_DEFINED_BYTE
+#endif /* HAVE_DEFINED_BYTE */
+
+extern byte* zero_buffer;
 
 class EXPCL_PANDA Buffer {
 private:
@@ -19,15 +26,21 @@ private:
   unsigned long _size;
   unsigned long _pos;
   bool _done;
+
+  INLINE unsigned long buffer_min(unsigned long a, unsigned long b) {
+    return (a<b)?a:b;
+  }
 public:
   INLINE Buffer(byte* data, unsigned long size) : _data(data), _size(size),
 						  _pos(0), _done(false) {}
   INLINE byte* get_buffer(byte* buf) {
-    memcpy(buf, &_data[_pos], audio_buffer_size);
-    _pos += audio_buffer_size;
-    if (_pos > _size) {
+    unsigned long copy_size = buffer_min(_size-_pos, audio_buffer_size);
+    unsigned long residue = audio_buffer_size - copy_size;
+    memcpy(buf, &_data[_pos], copy_size);
+    _pos += copy_size;
+    if (residue != 0) {
       _pos -= _size;
-      memcpy(&buf[audio_buffer_size-_pos-1], zero_buffer, _pos);
+      memcpy(&buf[copy_size], zero_buffer, residue);
       _done = true;
     }
     return buf;
@@ -36,7 +49,7 @@ public:
     return _done;
   }
   INLINE unsigned long get_size(void) const {
-    return _size
+    return _size;
   }
   INLINE void reset(void) {
     _done = false;
@@ -57,7 +70,7 @@ public:
   static void destroy(AudioTraits::SampleClass*);
 public:
   // used by the loader
-  static LinuxSample* load_raw(byte*, unsigned long)
+  static LinuxSample* load_raw(byte*, unsigned long);
   // used by the players
   INLINE Buffer* get_data(void);
 };
