@@ -485,6 +485,7 @@ set_collide_mask(CollideMask mask) {
 INLINE void EggGroup::
 clear_collide_mask() {
   _flags2 &= ~F2_collide_mask;
+  _collide_mask = CollideMask::all_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,7 +505,6 @@ has_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CollideMask EggGroup::
 get_collide_mask() const {
-  nassertr(has_collide_mask(), CollideMask());
   return _collide_mask;
 }
 
@@ -527,6 +527,7 @@ set_from_collide_mask(CollideMask mask) {
 INLINE void EggGroup::
 clear_from_collide_mask() {
   _flags2 &= ~F2_from_collide_mask;
+  _from_collide_mask = CollideMask::all_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -546,7 +547,6 @@ has_from_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CollideMask EggGroup::
 get_from_collide_mask() const {
-  nassertr(has_from_collide_mask(), CollideMask());
   return _from_collide_mask;
 }
 
@@ -569,6 +569,7 @@ set_into_collide_mask(CollideMask mask) {
 INLINE void EggGroup::
 clear_into_collide_mask() {
   _flags2 &= ~F2_into_collide_mask;
+  _into_collide_mask = CollideMask::all_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -588,7 +589,6 @@ has_into_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CollideMask EggGroup::
 get_into_collide_mask() const {
-  nassertr(has_into_collide_mask(), CollideMask());
   return _into_collide_mask;
 }
 

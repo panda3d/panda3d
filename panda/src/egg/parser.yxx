@@ -906,11 +906,11 @@ group_body:
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     group->set_bin(strval);
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
-    group->set_collide_mask(ulong_value);
+    group->set_collide_mask(group->get_collide_mask() | ulong_value);
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
-    group->set_from_collide_mask(ulong_value);
+    group->set_from_collide_mask(group->get_from_collide_mask() | ulong_value);
   } else if (cmp_nocase_uh(name, "into_collide_mask") == 0) {
-    group->set_into_collide_mask(ulong_value);
+    group->set_into_collide_mask(group->get_into_collide_mask() | ulong_value);
   } else {
     eggyywarning("Unknown group scalar " + name);
   }
