@@ -164,6 +164,8 @@ for x in $RPM_BUILD_ROOT/usr/share/panda3d/direct/src/* ; do
     python -c "import compileall; compileall.compile_dir('$x')"
   fi
 done
+python -c "import compileall ; compileall.compile_dir('$RPM_BUILD_ROOT/usr/share/panda3d/Pmw');"
+python -c "import compileall ; compileall.compile_dir('$RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor');"
 
 chmod -R 555 $RPM_BUILD_ROOT/usr/share/panda3d
 
