@@ -138,6 +138,7 @@ process_events() {
     process_1_event();
   }
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::set_properties_now
 //       Access: Public, Virtual
@@ -1138,8 +1139,6 @@ process_1_event() {
     //    DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn
   }
-
-  // consider DWORD msg.time for time of keypress/keyrelease event.
 
   // Translate virtual key messages
   TranslateMessage(&msg);
