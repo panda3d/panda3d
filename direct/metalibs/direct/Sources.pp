@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_DIRECT
 
 #define COMPONENT_LIBS \
-   directbase dcparse showbase
+   directbase dcparse showbase deadrec
 
 #define OTHER_LIBS panda pandaexpress dtool
 
