@@ -15,6 +15,7 @@ from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
+WantInterestPrintout = base.config.GetInt("want-interest-printout", 0)
 
 class DoInterestManager(DirectObject.DirectObject):
     """
@@ -127,7 +128,7 @@ class DoInterestManager(DirectObject.DirectObject):
                 if DoInterestManager._interests[handle][3] == "PendingDel":
                     del DoInterestManager._interests[handle]
 
-    if __debug__:
+    if __debug__ and WantInterestPrintout:
         def printInterests(self):
             """
             Part of the new otp-server code.
