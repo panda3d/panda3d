@@ -1,5 +1,5 @@
 // Filename: patchfile.cxx
-// Created by:  mike, darren (09Jan97)
+// Created by:  darren, mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 // Copyright (C) 1992,93,94,95,96,97,98
@@ -19,16 +19,12 @@
 #include "patchfile.h"
 #include "config_express.h"
 #include "error_utils.h"
+#include "crypto_utils.h" // MD5 stuff
 
 #include <stdio.h> // for tempnam
 
 // this actually slows things down...
-//#define USE_MD5_HASH
-
-#ifdef USE_MD5_HASH
-#include "crypto_utils.h"
-#include "hashVal.h"
-#endif
+//#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
 // Patch File Format ///////////////////////////////////////////////
 ///// IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
@@ -36,6 +32,8 @@
 // [ HEADER ]
 //   4 bytes  0xfeebfaab ("magic number")
 //   4 bytes  length of resulting patched file
+//  16 bytes  MD5 of resultant patched file
+const int _header_length = sizeof(PN_uint32) + sizeof(PN_uint32) + (4*sizeof(PN_uint32));
 //
 // [ ADD/COPY pairs; repeated N times ]
 //   2 bytes  AL = ADD length
@@ -133,7 +131,7 @@ cleanup(void) {
 ///// PATCH FILE APPLY MEMBER FUNCTIONS
 /////
 ////////////////////
-///// NOTE: this patch-application functionality is unfortunately
+///// NOTE: this patch-application functionality unfortunately has to be
 /////       duplicated in the Installer. It is contained in the file
 /////       installerApplyPatch.cxx
 /////       PLEASE MAKE SURE THAT THAT FILE GETS UPDATED IF ANY OF THIS
@@ -149,8 +147,6 @@ cleanup(void) {
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
 initiate(Filename &patch_file, Filename &file) {
-  const int _header_length = sizeof(PN_uint32) + sizeof(PN_uint32);
-
   if (true == _initiated) {
     express_cat.error()
       << "Patchfile::initiate() - Patching has already been initiated"
@@ -214,6 +210,12 @@ initiate(Filename &patch_file, Filename &file) {
 
   // get the length of the patched result file
   _result_file_length = di.get_uint32();
+
+  // get the MD5 of the resultant patched file
+  _MD5_ofResult.set_value(0, di.get_uint32());
+  _MD5_ofResult.set_value(1, di.get_uint32());
+  _MD5_ofResult.set_value(2, di.get_uint32());
+  _MD5_ofResult.set_value(3, di.get_uint32());
 
   express_cat.debug()
     << "Patchfile::initiate() - valid patchfile" << endl;
@@ -324,11 +326,24 @@ run(void) {
 
       //cout << _result_file_length << " " << _total_bytes_processed << endl;
 
+      // check the MD5 from the patch file against the newly patched file
+      {
+        HashVal MD5_actual;
+        md5_a_file(_temp_file, MD5_actual);
+        if (memcmp((const void*)&_MD5_ofResult, (const void*)&MD5_actual, sizeof(HashVal))) {
+          // delete the temp file and the patch file
+          _temp_file.unlink();
+          _patch_file.unlink();
+          // return "invalid checksum"
+          return EU_error_invalid_checksum;
+        }
+      }
+
       // delete the patch file and the original file
       _patch_file.unlink();
       _orig_file.unlink();
 
-      // rename the temp file
+      // rename the temp file to the original file name
       if (!_temp_file.rename_to(_orig_file)) {
         express_cat.error()
           << "Patchfile::run() failed to rename temp file to: " << _orig_file
@@ -374,7 +389,7 @@ apply(Filename &patch_file, Filename &file) {
 ////////////////////////////////////////////////////////////////////
 PN_uint16 Patchfile::
 calc_hash(const char *buffer) {
-#ifdef USE_MD5_HASH
+#ifdef USE_MD5_FOR_HASHTABLE_INDEX_VALUES
   HashVal hash;
 
   md5_a_buffer((const unsigned char*)buffer, (int)_footprint_length, hash);
@@ -386,7 +401,7 @@ calc_hash(const char *buffer) {
   PN_uint16 hash_value = 0;
 
   for(int i = 0; i < (int)_footprint_length; i++) {
-    // this is probably not such a good hash. to be replaced
+    // this is probably not such a good hash. to be replaced --> TRIED MD5, was not worth it for the execution-time hit on 800Mhz PC
     hash_value ^= (*buffer) << (i % 8);
     buffer++;
   }
@@ -641,6 +656,16 @@ build(Filename &file_orig, Filename &file_new) {
   _datagram.clear();
   _datagram.add_uint32(_magic_number);
   _datagram.add_uint32(length_new);
+  {
+    // calc MD5 of resultant patched file
+    HashVal md5New;
+    md5_a_buffer((const unsigned char*)buffer_new, (int)length_new, md5New);
+    // add it to the header
+    _datagram.add_uint32(md5New.get_value(0));
+    _datagram.add_uint32(md5New.get_value(1));
+    _datagram.add_uint32(md5New.get_value(2));
+    _datagram.add_uint32(md5New.get_value(3));
+  }
   string msg = _datagram.get_message();
   write_stream.write((char *)msg.data(), msg.length());
 

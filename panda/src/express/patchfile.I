@@ -1,5 +1,5 @@
 // Filename: patchfile.I
-// Created by:  mike, darren (09Jan97)
+// Created by:  darren, mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 

@@ -1,5 +1,5 @@
 // Filename: patchfile.h
-// Created by:  mike, darren (09Jan97)
+// Created by:  darren, mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -19,6 +19,7 @@
 #include "datagramIterator.h"
 #include "buffer.h"
 #include "pointerTo.h"
+#include "hashVal.h" // MD5 stuff
 
 #include <algorithm>
 
@@ -86,6 +87,8 @@ protected:
 
   // async patch apply state variables
   bool _initiated;
+
+  HashVal _MD5_ofResult;
 
   PN_uint32 _result_file_length;
   int _total_bytes_processed;

@@ -16,7 +16,7 @@ enum ErrorUtilCode {
   EU_network_no_data = 5,
 
   EU_write_ram = 4,
-  EU_write = 3, 
+  EU_write = 3,
   EU_ok = 2,
   EU_success = 1,
 
@@ -24,6 +24,7 @@ enum ErrorUtilCode {
   EU_error_abort = -1,
   EU_error_file_empty = -2,
   EU_error_file_invalid = -3,
+  EU_error_invalid_checksum = -4,
 
   // General network errors
   EU_error_network_dead = -30,

@@ -89,6 +89,8 @@ error_to_text(int err) {
       return "EU_error_file_empty";
     case EU_error_file_invalid:
       return "EU_error_file_invalid";
+    case EU_error_invalid_checksum:
+      return "EU_error_invalid_checksum";
     case EU_error_network_dead:
       return "EU_error_network_dead";
     case EU_error_network_unreachable:
