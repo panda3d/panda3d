@@ -9,6 +9,8 @@ $WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\pandabuilds\\win";
 
 # $DEBUG_TREECOPY = 1;
 
+# $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
+
 $BLD_DTOOL_ONLY=0;
 $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
@@ -185,6 +187,40 @@ sub make_bsc_file() {
     &mychdir($CYGBLDROOT);
 }
 
+sub gen_python_code() {
+
+    # ETC_PATH required by generatePythonCode
+    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc';
+    my $origpath=$ENV{'PATH'};
+    $ENV{'PATH'}="/usr/lib:/c/python16:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/c/PROGRA~1/TCL/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin::/usr/local/panda/bin:/home/builder/scripts";
+    my $directsrcroot=$WINBLDROOT."\\direct\\src";
+    $ENV{'PYTHONPATH'}=$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\direct\\lib;".$WINBLDROOT."\\dtool\\lib;".$directsrcroot."\\leveleditor;".$directsrcroot."\\tkpanels;".$directsrcroot."\\tkwidgets;".$directsrcroot."\\directutil;".$directsrcroot."\\showbase;".$directsrcroot."\\distributed;".$directsrcroot."\\actor;".$directsrcroot."\\ffi;";
+    $ENV{'TCSH_NO_CHANGEPATH'}='1';
+
+    &logmsg($ENV{'PYTHONPATH'}."\n");
+
+    &mychdir($CYGBLDROOT."/direct/bin");
+
+    my $genpyth_str;
+
+    if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
+       $genpyth_str="python_d ";
+    } else {
+       $genpyth_str="python ";
+    }
+
+    $outputdir = $WINBLDROOT."\\direct\\lib\\py\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
+    &mymkdir($outputdir);
+
+    $genpyth_str.="generatePythonCode -v -d '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtool libpandaexpress libpanda libdirect";
+    
+    &myexecstr($genpyth_str,"generate python code failed!!!","DO_LOG","NO_PANDA_ATTACH");
+    
+    $ENV{'PATH'}=$origpath;
+    delete $ENV{'TCSH_NO_CHANGEPATH'};
+    &mychdir($CYGBLDROOT);
+}
+
 sub buildall() {
 
     # DTOOL ppremake may have already run by DTOOL 'initialize make'
@@ -300,10 +336,12 @@ $ENV{'PATH'}="/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'P
 # want build to pick up python dll's from /usr/lib before /c/python16
 $ENV{'PATH'}="/usr/lib".$DIRPATH_SEPARATOR.$ENV{'PATH'};
 
-#goto 'AFTER_DBGBUILD';
-
 if($DEBUG_TREECOPY) {
-    goto DBGTREECOPY;
+    goto 'DBGTREECOPY';
+}
+
+if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+    goto 'AFTER_DBGBUILD';
 }
 
 # goto 'SKIP_REMOVE';
@@ -318,6 +356,8 @@ foreach my $dir1 (@dirstodolist) {
 }
 
 if($existing_module_str ne "") {
+    &myexecstr("( for /D /R . %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+
     &logmsg("*** REMOVING ALL FILES IN OLD SRC TREES ***");
     # use cvs update to grab new copy
     # note: instead of blowing these away, may want to rename and save them
@@ -329,6 +369,7 @@ if($existing_module_str ne "") {
     &myexecstr("cvs update -d -R ".$existing_module_str." |& egrep -v 'Updating|^\\?'",
                "cvs update failed!","DO_LOG","NO_PANDA_ATTACH");
 }
+
 
 if($nonexisting_module_str ne "") {
     &myexecstr("cvs checkout -R ".$nonexisting_module_str." |& egrep -v 'Updating|^\\?'",
@@ -367,6 +408,11 @@ if(-e $CYGBLDROOT."/debug") {
 
 AFTER_DBGBUILD:
 
+&gen_python_code();
+
+&myexecstr("cvs checkout -R ".$dirstodostr." |& egrep -v 'Updating|^\\?'",
+          "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
+
 # tmp save debug build in "debug subdir"
 # we can only hold 1 dbg and 1 opt build in same src tree and these are used by opt2 & opt4, so 
 # move current tree to local dir until we are finished building, when we can copy it
@@ -386,6 +432,8 @@ delete $ENV{'USE_BROWSEINFO'};
 $ENV{'PANDA_OPTIMIZE'}='2';
 &buildall("*** Starting Install Build (Opt=2) at ".&gettimestr()." ***");
 
+&gen_python_code();
+
 # opt2 creates .sbr files when it should not
 #foreach my $dir1 (@dirstodolist) {
 #   &mychdir($CYGBLDROOT."/".$dir1);
@@ -397,6 +445,8 @@ $ENV{'PANDA_OPTIMIZE'}='2';
 
 $ENV{'PANDA_OPTIMIZE'}='4';
 &buildall("*** Starting Release Build (Opt=4) at ".&gettimestr()." ***");
+
+&gen_python_code();
 
 # opt2 creates .sbr files when it should not
 #foreach my $dir1 (@dirstodolist) {
@@ -488,5 +538,7 @@ exit(0);
 # TODO:
 # possibly auto delete or compress old archived blds
 # build DLLs with version stamp set by this script
-
+# implement no-archive mode
+# implement build-specific opttype mode
+# generate python code
 
