@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullFaceTransition.h"
-#include "cullFaceAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle CullFaceTransition::_type_handle;
 NodeTransition *CullFaceTransition::
 make_copy() const {
   return new CullFaceTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullFaceTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated CullFaceAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *CullFaceTransition::
-make_attrib() const {
-  return new CullFaceAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

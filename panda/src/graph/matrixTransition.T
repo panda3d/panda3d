@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "matrixAttribute.h"
-
-#include <indent.h>
 
 template<class Matrix>
 TypeHandle MatrixTransition<Matrix>::_type_handle;
@@ -128,34 +125,6 @@ invert() const {
   Matrix inverted;
   inverted.invert_from(_matrix);
   return make_with_matrix(inverted);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MatrixTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-template<class Matrix>
-NodeAttribute *MatrixTransition<Matrix>::
-apply(const NodeAttribute *attrib) const {
-
-  MatrixAttribute<Matrix> *result;
-  DCAST_INTO_R(result, make_attrib(), NULL);
-
-  if (attrib == (const NodeAttribute *)NULL) {
-    result->_matrix = _matrix;
-    return result;
-  }
-
-  const MatrixAttribute<Matrix> *at;
-  DCAST_INTO_R(at, attrib, NULL);
-
-  result->_matrix = _matrix * at->_matrix;
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,7 +25,6 @@
 #include "luse.h"
 #include "renderRelation.h"
 #include "transformTransition.h"
-#include "allAttributesWrapper.h"
 #include "allTransitionsWrapper.h"
 #include "nodeTransitionWrapper.h"
 #include "renderTraverser.h"

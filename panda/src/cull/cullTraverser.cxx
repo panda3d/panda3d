@@ -19,7 +19,6 @@
 
 #include "cullTraverser.h"
 #include "geomBinTransition.h"
-#include "geomBinAttribute.h"
 #include "cullStateSubtree.h"
 #include "geomBinNormal.h"
 #include "geomBinFixed.h"

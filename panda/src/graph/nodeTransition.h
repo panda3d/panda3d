@@ -26,12 +26,9 @@
 #include <typedWritableReferenceCount.h>
 
 class Node;
-class NodeAttribute;
-class NodeAttributes;
 class NodeTransitions;
 class NodeRelation;
 class RenderTraverser;
-class AllAttributesWrapper;
 class AllTransitionsWrapper;
 class BamWriter;
 class BamReader;
@@ -46,9 +43,18 @@ class GraphicsStateGuardianBase;
 //               request that is stored on the arcs of the scene
 //               graph.
 //
-//               See the comments at the beginning of NodeAttribute
-//               for a fuller description of the purpose of this
-//               class.
+//               In general, the scene graph represents state by
+//               encoding transitions between various states on the
+//               arcs of the graph.  The state of a particular node is
+//               determined by the composition of all the transitions
+//               on arcs between that node and the root.
+//
+//               A NodeTransition represents a particular state, or a
+//               change from any one state to another.  For example,
+//               it might represent the change from the untextured
+//               state to rendering with a particular texture, which
+//               can also be thought of as representing the state of
+//               rendering with that texture.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeTransition : public TypedWritableReferenceCount {
 protected:
@@ -75,14 +81,12 @@ PUBLISHED:
 
 public:
   virtual NodeTransition *make_copy() const=0;
-  virtual NodeAttribute *make_attrib() const=0;
   virtual NodeTransition *make_initial() const;
 
   virtual TypeHandle get_handle() const;
 
   virtual NodeTransition *compose(const NodeTransition *other) const=0;
   virtual NodeTransition *invert() const=0;
-  virtual NodeAttribute *apply(const NodeAttribute *attrib) const=0;
 
   virtual bool sub_render(NodeRelation *arc,
                           const AllTransitionsWrapper &input_trans,

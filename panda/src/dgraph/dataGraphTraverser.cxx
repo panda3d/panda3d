@@ -31,7 +31,7 @@
 //  Description: The recursive implementation of traverse().
 ////////////////////////////////////////////////////////////////////
 void DataGraphTraverser::
-r_traverse(Node *node, NodeAttributes &data, bool has_spam_mode) {
+r_traverse(Node *node, AllTransitionsWrapper &data, bool has_spam_mode) {
   DataNode *data_node = (DataNode *)NULL;
   if (node->is_of_type(DataNode::get_class_type())) {
     DCAST_INTO_V(data_node, node);
@@ -79,7 +79,7 @@ r_traverse(Node *node, NodeAttributes &data, bool has_spam_mode) {
 //               Node::transmit_data().
 ////////////////////////////////////////////////////////////////////
 void DataGraphTraverser::
-r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
+r_traverse_below(Node *node, AllTransitionsWrapper &data, bool has_spam_mode) {
   DataNode *data_node = (DataNode *)NULL;
   if (node->is_of_type(DataNode::get_class_type())) {
     DCAST_INTO_V(data_node, node);
@@ -92,12 +92,17 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
   int num_children = node->get_num_children(DataRelation::get_class_type());
 
   if (num_children > 0) {
-    // For the first n - 1 children we need to make a copy of our
-    // NodeAttributes for each one--this allows our children to modify
-    // the set freely without affecting its siblings.
+    // For the first n - 1 children need to make a copy of our
+    // AllTransitionsWrapper for each one--this allows our children to
+    // modify the set freely without affecting its siblings.
+
+    // Note that this is so far just a pointer copy.  The contents
+    // themselves are not necessarily copied, until the data node
+    // attempts to modify the data, which will then cause a
+    // copy-on-write.
 
     for (int i = 0; i < num_children - 1; i++) {
-      NodeAttributes copy = data;
+      AllTransitionsWrapper copy(data);
       if (data_node != (DataNode *)NULL) {
         data_node->transmit_data_per_child(copy, i);
       }
@@ -116,10 +121,6 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
     NodeRelation *arc =
       node->get_child(DataRelation::get_class_type(), num_children - 1);
 
-    if (dgraph_cat.is_spam()) {
-      dgraph_cat.spam() << "Traversing " << *arc << "\n";
-    }
-
     r_traverse(arc->get_child(), data, has_spam_mode);
   }
 }
@@ -134,7 +135,7 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
 //               queue.
 ////////////////////////////////////////////////////////////////////
 void DataGraphTraverser::
-save(Node *node, const NodeAttributes &data, bool has_spam_mode,
+save(Node *node, const AllTransitionsWrapper &data, bool has_spam_mode,
      int num_parents) {
 
   States::iterator si;
@@ -142,7 +143,7 @@ save(Node *node, const NodeAttributes &data, bool has_spam_mode,
 
   if (si != _saved_states.end()) {
     SavedState &state = (*si).second;
-    state._data.merge_from(state._data, data);
+    state._data.compose_from(state._data, data);
     state._has_spam_mode = state._has_spam_mode || has_spam_mode;
     state._num_parents_so_far++;
 

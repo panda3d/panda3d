@@ -27,13 +27,9 @@
 #include <camera.h>
 #include <renderBuffer.h>
 #include <transformTransition.h>
-#include <transformAttribute.h>
 #include <colorTransition.h>
-#include <colorAttribute.h>
 #include <textureTransition.h>
-#include <textureAttribute.h>
 #include <lightTransition.h>
-#include <lightAttribute.h>
 #include <geom.h>
 #include <geomprimitives.h>
 #include <geomIssuer.h>
@@ -92,7 +88,7 @@ static void
 issue_color_rib(const Geom *geom, Geom::ColorIterator &ci,
                 const GraphicsStateGuardianBase *) {
   // RIB only cares about three-component color, so we have to convert
-  // the four-component color attribute to three-component color here.
+  // the four-component color transition to three-component color here.
   rib_colors.push_back((const RGBColorf &)geom->get_next_color(ci));
 }
 
@@ -205,7 +201,7 @@ prepare_display_region() {
 //               pre- and post-processing.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-render_frame(const AllAttributesWrapper &initial_state) {
+render_frame(const AllTransitionsWrapper &initial_state) {
   _win->begin_frame();
   assert(_output != NULL);
   _indent_level += 2;
@@ -256,7 +252,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 render_scene(Node *root, ProjectionNode *projnode,
-             const AllAttributesWrapper &initial_state) {
+             const AllTransitionsWrapper &initial_state) {
   _current_root_node = root;
 
   render_subgraph(_render_traverser, root, projnode,
@@ -275,7 +271,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 void RIBGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
                 Node *subgraph, ProjectionNode *projnode,
-                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
   ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
@@ -375,7 +371,7 @@ render_subgraph(RenderTraverser *traverser,
 void RIBGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
                 Node *subgraph,
-                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
   nassertv(traverser != (RenderTraverser *)NULL);
   traverser->traverse(subgraph, initial_state, net_trans);
@@ -412,8 +408,8 @@ wants_colors() const {
   // If we have scene graph color enabled, return false to indicate we
   // shouldn't bother issuing geometry color commands.
 
-  const ColorAttribute *catt;
-  if (!get_attribute_into(catt, _state, ColorTransition::get_class_type())) {
+  const ColorTransition *catt;
+  if (!get_transition_into(catt, _state, ColorTransition::get_class_type())) {
     // No scene graph color at all.
     return true;
   }
@@ -641,7 +637,7 @@ copy_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &) {
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *, const DisplayRegion *,
-        const NodeAttributes &) {
+        const NodeTransitions &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -651,7 +647,7 @@ draw_pixel_buffer(PixelBuffer *, const DisplayRegion *,
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &,
-        const NodeAttributes &) {
+        const NodeTransitions &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -660,7 +656,7 @@ draw_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-issue_transform(const TransformAttribute *attrib) {
+issue_transform(const TransformTransition *attrib) {
   reset_transform(attrib->get_matrix());
 }
 
@@ -671,7 +667,7 @@ issue_transform(const TransformAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-issue_color(const ColorAttribute *attrib) {
+issue_color(const ColorTransition *attrib) {
   if (attrib->is_on() && attrib->is_real()) {
     const Colorf c = attrib->get_color();
     set_color(RGBColorf(c[0], c[1], c[2]));
@@ -684,7 +680,7 @@ issue_color(const ColorAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-issue_texture(const TextureAttribute *attrib) {
+issue_texture(const TextureTransition *attrib) {
   if (attrib->is_off()) {
     // If no textures are enabled, we can use the nontextured shader.
     new_line()
@@ -715,7 +711,7 @@ issue_texture(const TextureAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-issue_light(const LightAttribute *attrib) {
+issue_light(const LightTransition *attrib) {
   nassertv(attrib->get_properties_is_on());
   int num_enabled = attrib->size();
   if (num_enabled == 0) {
@@ -742,7 +738,7 @@ issue_light(const LightAttribute *attrib) {
     // If some lights are enabled, we'll turn off the ones that were
     // enabled from before, and turn on the ones we need.
 
-    LightAttribute::const_iterator li;
+    LightTransition::const_iterator li;
     for (li = attrib->begin(); li != attrib->end(); ++li) {
       Light *light = (*li);
       LightIDs::const_iterator ii = _light_ids.find(light);
@@ -873,7 +869,7 @@ set_color(const RGBColorf &color) {
 //               front in RIB.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-get_rib_stuff(Node *root, const AllAttributesWrapper &initial_state) {
+get_rib_stuff(Node *root, const AllTransitionsWrapper &initial_state) {
   RibStuffTraverser trav(this);
   df_traverse(root, trav, initial_state, NullLevelState(),
               RenderRelation::get_class_type());

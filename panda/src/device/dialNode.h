@@ -25,7 +25,7 @@
 #include "clientDialDevice.h"
 
 #include <dataNode.h>
-#include <nodeAttributes.h>
+#include <allTransitionsWrapper.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -59,9 +59,9 @@ PUBLISHED:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
+  AllTransitionsWrapper _attrib;
 
 private:
   PT(ClientDialDevice) _dial;

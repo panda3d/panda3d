@@ -18,18 +18,13 @@
 
 #include "nodeRelation.h"
 #include "onOffTransition.h"
-#include "onOffAttribute.h"
 #include "onTransition.h"
-#include "onAttribute.h"
 #include "namedNode.h"
 #include "pt_NamedNode.h"
 #include "wrt.h"
 #include "nodeTransitionWrapper.h"
-#include "nodeAttributeWrapper.h"
 #include "allTransitionsWrapper.h"
-#include "allAttributesWrapper.h"
 #include "nullTransitionWrapper.h"
-#include "nullAttributeWrapper.h"
 #include "traverserVisitor.h"
 #include "dftraverser.h"
 #include "multiTransition.h"
@@ -43,10 +38,8 @@ typedef int TestType;
 
 #ifdef USE_ONOFF
 typedef OnOffTransition BaseTransition;
-typedef OnOffAttribute BaseAttribute;
 #else
 typedef OnTransition BaseTransition;
-typedef OnAttribute BaseAttribute;
 #endif
 
 class TestTransition : public BaseTransition {
@@ -58,7 +51,6 @@ public:
 #endif
 
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
 
   TestType get_value() const;
 
@@ -88,39 +80,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-class TestAttribute : public BaseAttribute {
-public:
-  virtual TypeHandle get_handle() const;
-
-  virtual NodeAttribute *make_copy() const;
-  virtual NodeAttribute *make_initial() const;
-
-protected:
-  virtual void set_value_from(const BaseTransition *other);
-  virtual int compare_values(const BaseAttribute *other) const;
-  virtual void output_value(ostream &out) const;
-  virtual void write_value(ostream &out, int indent_level) const;
-
-  TestType _value;
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    BaseAttribute::init_type();
-    register_type(_type_handle, "TestAttribute",
-                  BaseAttribute::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
 class Test2Transition : public TestTransition {
 public:
   Test2Transition();
@@ -130,7 +89,6 @@ public:
 #endif
 
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -150,31 +108,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-class Test2Attribute : public TestAttribute {
-public:
-  virtual TypeHandle get_handle() const;
-
-  virtual NodeAttribute *make_copy() const;
-  virtual NodeAttribute *make_initial() const;
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TestAttribute::init_type();
-    register_type(_type_handle, "Test2Attribute",
-                  TestAttribute::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
 class TestMName {
 public:
   static string get_class_name() {
@@ -182,51 +115,11 @@ public:
   }
 };
 
-class TestMAttribute : public MultiAttribute<TestType, TestMName> {
-protected:
-  virtual NodeAttribute *make_copy() const {
-    return new TestMAttribute(*this);
-  }
-  virtual NodeAttribute *make_initial() const {
-    return new TestMAttribute();
-  }
-
-  virtual TypeHandle get_handle() const;
-
-  virtual void output_property(ostream &out, const TestType &prop) const {
-    out << prop;
-  }
-  virtual void write_property(ostream &out, const TestType &prop,
-                              int indent_level) const {
-    indent(out, indent_level) << prop << "\n";
-  }
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    MultiAttribute<TestType, TestMName>::init_type();
-    register_type(_type_handle, "TestMAttribute",
-                  MultiAttribute<TestType, TestMName>::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
 class TestMTransition : public MultiTransition<TestType, TestMName> {
 protected:
 
   virtual NodeTransition *make_copy() const {
     return new TestMTransition(*this);
-  }
-  virtual NodeAttribute *make_attrib() const {
-    return new TestMAttribute;
   }
   virtual NodeTransition *make_identity() const {
     return new TestMTransition;
@@ -257,9 +150,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-TypeHandle TestMAttribute::get_handle() const {
-  return TestMTransition::get_class_type();
-}
 
 template<class TW>
 class PrintNodes : public TraverserVisitor<TW, NullLevelState> {
@@ -267,13 +157,13 @@ public:
   PrintNodes() {
     _indent_level = 0;
   }
-  bool reached_node(Node *node, AttributeWrapper &state, NullLevelState &) {
+  bool reached_node(Node *node, TransitionWrapper &state, NullLevelState &) {
     indent(nout, _indent_level)
       << "Reached " << *node << ", state is " << state << "\n";
     return true;
   }
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                   AttributeWrapper &pre, AttributeWrapper &post,
+                   TransitionWrapper &pre, TransitionWrapper &post,
                    NullLevelState &) {
     //    indent(nout, _indent_level + 1)
     //      << "Passing " << *arc << ", trans is " << trans << "\n";
@@ -281,7 +171,7 @@ public:
     return true;
   }
   void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                    AttributeWrapper &pre, AttributeWrapper &post,
+                    TransitionWrapper &pre, TransitionWrapper &post,
                     const NullLevelState &) {
     _indent_level -= 2;
   }
@@ -315,11 +205,6 @@ make_copy() const {
   return new TestTransition(*this);
 }
 
-NodeAttribute *TestTransition::
-make_attrib() const {
-  return new TestAttribute;
-}
-
 TestType TestTransition::
 get_value() const {
   return _value;
@@ -349,45 +234,6 @@ write_value(ostream &out, int indent_level) const {
   indent(out, indent_level) << _value << "\n";
 }
 
-TypeHandle TestAttribute::
-get_handle() const {
-  return TestTransition::get_class_type();
-}
-
-NodeAttribute *TestAttribute::
-make_copy() const {
-  return new TestAttribute(*this);
-}
-
-NodeAttribute *TestAttribute::
-make_initial() const {
-  return new TestAttribute;
-}
-
-void TestAttribute::
-set_value_from(const BaseTransition *other) {
-  const TestTransition *ot;
-  DCAST_INTO_V(ot, other);
-  _value = ot->get_value();
-}
-
-int TestAttribute::
-compare_values(const BaseAttribute *other) const {
-  const TestAttribute *ot;
-  DCAST_INTO_R(ot, other, false);
-  return _value - ot->_value;
-}
-
-void TestAttribute::
-output_value(ostream &out) const {
-  out << _value;
-}
-
-void TestAttribute::
-write_value(ostream &out, int indent_level) const {
-  indent(out, indent_level) << _value << "\n";
-}
-
 Test2Transition::
 Test2Transition() {
 }
@@ -410,41 +256,15 @@ make_copy() const {
   return new Test2Transition(*this);
 }
 
-NodeAttribute *Test2Transition::
-make_attrib() const {
-  return new Test2Attribute;
-}
-
-TypeHandle Test2Attribute::
-get_handle() const {
-  return Test2Transition::get_class_type();
-}
-
-NodeAttribute *Test2Attribute::
-make_copy() const {
-  return new Test2Attribute(*this);
-}
-
-NodeAttribute *Test2Attribute::
-make_initial() const {
-  return new Test2Attribute;
-}
-
 TypeHandle TestTransition::_type_handle;
-TypeHandle TestAttribute::_type_handle;
 TypeHandle Test2Transition::_type_handle;
-TypeHandle Test2Attribute::_type_handle;
 TypeHandle TestMTransition::_type_handle;
-TypeHandle TestMAttribute::_type_handle;
 
 
 int main() {
   TestTransition::init_type();
-  TestAttribute::init_type();
   Test2Transition::init_type();
-  Test2Attribute::init_type();
   TestMTransition::init_type();
-  TestMAttribute::init_type();
 
   PT_NamedNode r = new NamedNode("r");
 
@@ -509,7 +329,7 @@ int main() {
     nout << "\n";
     PrintNodes<NullTransitionWrapper> pn;
     df_traverse(r, pn,
-                NullAttributeWrapper(),
+                NullTransitionWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     nout << "\n";
@@ -557,7 +377,7 @@ int main() {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
     df_traverse(r, pn,
-                NodeAttributeWrapper(TestTransition::get_class_type()),
+                NodeTransitionWrapper(TestTransition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     nout << "\n";
@@ -605,7 +425,7 @@ int main() {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
     df_traverse(r, pn,
-                NodeAttributeWrapper(Test2Transition::get_class_type()),
+                NodeTransitionWrapper(Test2Transition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     nout << "\n";
@@ -653,7 +473,7 @@ int main() {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
     df_traverse(r, pn,
-                NodeAttributeWrapper(TestMTransition::get_class_type()),
+                NodeTransitionWrapper(TestMTransition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     nout << "\n";
@@ -701,7 +521,7 @@ int main() {
     nout << "\n";
     PrintNodes<AllTransitionsWrapper> pn;
     df_traverse(r, pn,
-                AllAttributesWrapper(),
+                AllTransitionsWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     nout << "\n";

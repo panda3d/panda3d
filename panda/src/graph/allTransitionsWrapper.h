@@ -20,9 +20,8 @@
 #define ALLTRANSITIONSWRAPPER_H
 
 //
-// There are several flavors of TransitionWrappers (and their
-// corresponding AttributeWrappers).  These are classes that represent
-// one or a number of transitions (or attributes) simultaneously and
+// There are several flavors of TransitionWrappers.  These are classes
+// that represent one or a number of transitions simultaneously and
 // are passed to template functions like df_traverse() and wrt() so
 // that the same functions can be used to operate on either one
 // transition type or a number of them.
@@ -43,8 +42,6 @@
 
 class Node;
 class NodeRelation;
-class NodeAttribute;
-class AllAttributesWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AllTransitionsWrapper
@@ -56,7 +53,6 @@ class AllAttributesWrapper;
 class EXPCL_PANDA AllTransitionsWrapper {
 public:
   typedef AllTransitionsWrapper TransitionWrapper;
-  typedef AllAttributesWrapper AttributeWrapper;
   typedef GraphHashGenerator HashGenerator;
 
   INLINE_GRAPH AllTransitionsWrapper();
@@ -66,16 +62,16 @@ public:
 
   INLINE_GRAPH static AllTransitionsWrapper
   init_from(const AllTransitionsWrapper &other);
-  INLINE_GRAPH static AllTransitionsWrapper
-  init_from(const AllAttributesWrapper &attrib);
 
   INLINE_GRAPH bool is_empty() const;
-  INLINE_GRAPH PT(NodeTransition) set_transition(TypeHandle handle,
-                                           NodeTransition *trans);
+  PT(NodeTransition) set_transition(TypeHandle handle,
+                                    NodeTransition *trans);
   INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
-  INLINE_GRAPH PT(NodeTransition) clear_transition(TypeHandle handle);
+  PT(NodeTransition) clear_transition(TypeHandle handle);
   INLINE_GRAPH bool has_transition(TypeHandle handle) const;
   INLINE_GRAPH NodeTransition *get_transition(TypeHandle handle) const;
+
+  INLINE_GRAPH void clear();
 
   INLINE_GRAPH const NodeTransitionCache &get_transitions() const;
 
@@ -130,7 +126,6 @@ private:
   // empty.  It's used just so we can have a sensible return value
   // from begin() and end() when our pointer is NULL.
   static NodeTransitionCache _empty_cache;
-  friend class AllAttributesWrapper;
 };
 
 EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const AllTransitionsWrapper &ntw);

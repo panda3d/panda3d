@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "alphaTransformTransition.h"
-#include "alphaTransformAttribute.h"
 
 #include "graphicsStateGuardianBase.h"
 #include "indent.h"
@@ -33,16 +32,6 @@ TypeHandle AlphaTransformTransition::_type_handle;
 NodeTransition *AlphaTransformTransition::
 make_copy() const {
   return new AlphaTransformTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTransformTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated AlphaTransformAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *AlphaTransformTransition::
-make_attrib() const {
-  return new AlphaTransformAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

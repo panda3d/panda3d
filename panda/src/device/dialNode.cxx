@@ -72,7 +72,7 @@ DialNode::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DialNode::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _dial->poll();
 

@@ -18,14 +18,13 @@
 
 #include "trackball.h"
 
-#include <compose_matrix.h>
-#include <mouse.h>
-#include <mouseData.h>
-#include <modifierButtons.h>
-#include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
-#include <mouseButton.h>
-#include <get_rel_pos.h>
+#include "compose_matrix.h"
+#include "mouse.h"
+#include "mouseData.h"
+#include "modifierButtons.h"
+#include "buttonEventDataTransition.h"
+#include "mouseButton.h"
+#include "get_rel_pos.h"
 
 TypeHandle Trackball::_type_handle;
 
@@ -62,9 +61,9 @@ Trackball(const string &name) : DataNode(name) {
   _mods.add_button(MouseButton::two());
   _mods.add_button(MouseButton::three());
 
-  _transform = new MatrixDataAttribute;
+  _transform = new MatrixDataTransition;
   _transform->set_value(LMatrix4f::ident_mat());
-  _attrib.set_attribute(_transform_type, _transform);
+  _attrib.set_transition(_transform_type, _transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -482,18 +481,18 @@ recompute() {
 //  Description: Convert mouse data into a trackball matrix
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // First, update our modifier buttons.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
     b->update_mods(_mods);
   }
 
   // Now, check for mouse motion.
-  const NodeAttribute *pixel_xyz = data.get_attribute(_pixel_xyz_type);
+  const NodeTransition *pixel_xyz = data.get_transition(_pixel_xyz_type);
 
-  if (pixel_xyz != (NodeAttribute *)NULL) {
-    LVecBase3f p = DCAST(Vec3DataAttribute, pixel_xyz)->get_value();
+  if (pixel_xyz != (NodeTransition *)NULL) {
+    LVecBase3f p = DCAST(Vec3DataTransition, pixel_xyz)->get_value();
     float this_x = p[0];
     float this_y = p[1];
     int this_button = 0;

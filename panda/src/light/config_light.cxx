@@ -21,7 +21,6 @@
 #include "directionalLight.h"
 #include "light.h"
 #include "lightTransition.h"
-#include "lightAttribute.h"
 #include "pointLight.h"
 #include "spotlight.h"
 
@@ -35,7 +34,6 @@ ConfigureFn(config_light) {
   DirectionalLight::init_type();
   Light::init_type();
   LightTransition::init_type();
-  LightAttribute::init_type();
   PointLight::init_type();
   Spotlight::init_type();
 }

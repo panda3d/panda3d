@@ -37,15 +37,15 @@ DataNode(const string &name) : NamedNode(name) {
 //  Description: Should be overridden in a derived class that wants to
 //               send a different data stream to each child.
 //               Normally, a node only overrides transmit_data(),
-//               which takes a set of input data attributes and
-//               generates a set of output data attributes.  A node
+//               which takes a set of input data transitions and
+//               generates a set of output data transitions.  A node
 //               may also override transmit_data_per_child(), which is
 //               called after transmit_data(), once per child; this
 //               function may be used to send individual data
-//               attributes to each child.
+//               transitions to each child.
 ////////////////////////////////////////////////////////////////////
 void DataNode::
-transmit_data_per_child(NodeAttributes &, int) {
+transmit_data_per_child(AllTransitionsWrapper &, int) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,21 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "immediateTransition.h"
-#include "immediateAttribute.h"
 
 #include <indent.h>
 
 TypeHandle ImmediateTransition::_type_handle;
-
-////////////////////////////////////////////////////////////////////
-//     Function: ImmediateTransition::make_attrib
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ImmediateTransition::
-make_attrib() const {
-  return new ImmediateAttribute;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateTransition::compose
@@ -60,20 +49,6 @@ compose(const NodeTransition *) const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ImmediateTransition::
 invert() const {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ImmediateTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ImmediateTransition::
-apply(const NodeAttribute *) const {
   return NULL;
 }
 

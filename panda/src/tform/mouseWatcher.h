@@ -26,7 +26,6 @@
 
 #include "dataNode.h"
 #include "vec3DataTransition.h"
-#include "vec3DataAttribute.h"
 #include "luse.h"
 #include "nodeRelation.h"
 #include "pointerTo.h"
@@ -147,7 +146,7 @@ private:
 public:
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
   // inputs & outputs
   static TypeHandle _xyz_type;

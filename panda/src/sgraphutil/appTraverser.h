@@ -25,7 +25,6 @@
 #include <traverserVisitor.h>
 #include <nodeRelation.h>
 #include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
 #include <nullLevelState.h>
 
 class Node;

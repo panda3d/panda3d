@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pointShapeTransition.h"
-#include "pointShapeAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle PointShapeTransition::_type_handle;
 NodeTransition *PointShapeTransition::
 make_copy() const {
   return new PointShapeTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Pointshapetransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated pointShapeattribute
-////////////////////////////////////////////////////////////////////
-NodeAttribute *PointShapeTransition::
-make_attrib() const {
-  return new PointShapeAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorTransition.h"
-#include "colorAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle ColorTransition::_type_handle;
 NodeTransition *ColorTransition::
 make_copy() const {
   return new ColorTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated ColorAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ColorTransition::
-make_attrib() const {
-  return new ColorAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fogTransition.h"
-#include "fogAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle FogTransition::_type_handle;
 NodeTransition *FogTransition::
 make_copy() const {
   return new FogTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FogTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated FogAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *FogTransition::
-make_attrib() const {
-  return new FogAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

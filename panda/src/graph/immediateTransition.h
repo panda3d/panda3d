@@ -23,7 +23,6 @@
 
 #include "nodeTransition.h"
 
-class NodeAttribute;
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,12 +39,6 @@ class NodeRelation;
 //               do nothing.  Presumably any transitions that inherit
 //               from ImmediateTransition will redefine sub_render()
 //               to do something suitably interesting.
-//
-//               Classes that derive from ImmediateTransition need not
-//               also define a corresponding derivation from
-//               ImmediateAttribute; since the attribute does not
-//               represent any actual state, you may use
-//               ImmediateAttribute directly (without extending it).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImmediateTransition : public NodeTransition {
 protected:
@@ -54,11 +47,8 @@ protected:
   INLINE_GRAPH void operator = (const ImmediateTransition &copy);
 
 public:
-  virtual NodeAttribute *make_attrib() const;
-
   virtual NodeTransition *compose(const NodeTransition *other) const;
   virtual NodeTransition *invert() const;
-  virtual NodeAttribute *apply(const NodeAttribute *attrib) const;
 
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const;

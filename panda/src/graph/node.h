@@ -29,9 +29,7 @@
 #include <referenceCount.h>
 #include <luse.h>
 
-class NodeAttributes;
 class RenderTraverser;
-class AllAttributesWrapper;
 class AllTransitionsWrapper;
 class BamWriter;
 class BamReader;

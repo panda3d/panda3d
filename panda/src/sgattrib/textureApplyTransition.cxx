@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureApplyTransition.h"
-#include "textureApplyAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle TextureApplyTransition::_type_handle;
 NodeTransition *TextureApplyTransition::
 make_copy() const {
   return new TextureApplyTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TextureApplyAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TextureApplyTransition::
-make_attrib() const {
-  return new TextureApplyAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

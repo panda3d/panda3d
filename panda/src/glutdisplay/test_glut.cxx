@@ -20,7 +20,6 @@
 //#include "glutGraphicsWindow.h"
 #include <graphicsPipe.h>
 #include <interactiveGraphicsPipe.h>
-#include <allAttributesWrapper.h>
 #include <pt_NamedNode.h>
 
 #include <notify.h>
@@ -28,14 +27,13 @@
 PT(GraphicsPipe) main_pipe;
 PT(GraphicsWindow) main_win;
 PT_NamedNode render;
-NodeAttributes initial_state;
 
 void render_frame(GraphicsPipe *pipe) {
   GraphicsPipe::wins_iterator wi;
   for (wi = pipe->get_win_begin();
        wi != pipe->get_win_end();
        ++wi) {
-    (*wi)->get_gsg()->render_frame(render, initial_state);
+    (*wi)->get_gsg()->render_frame(render);
   }
 }
 

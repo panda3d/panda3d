@@ -26,7 +26,6 @@
 #include "geomBinBackToFront.h"
 
 #include <indent.h>
-#include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
 #include <string_utils.h>
 

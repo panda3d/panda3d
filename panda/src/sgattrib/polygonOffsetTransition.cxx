@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "polygonOffsetTransition.h"
-#include "polygonOffsetAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle PolygonOffsetTransition::_type_handle;
 NodeTransition *PolygonOffsetTransition::
 make_copy() const {
   return new PolygonOffsetTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PolygonOffsetTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated PolygonOffsetAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *PolygonOffsetTransition::
-make_attrib() const {
-  return new PolygonOffsetAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

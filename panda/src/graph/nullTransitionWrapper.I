@@ -57,16 +57,6 @@ init_from(const NullTransitionWrapper &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NullTransitionWrapper::init_from
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NullTransitionWrapper NullTransitionWrapper::
-init_from(const NullAttributeWrapper &) {
-  return NullTransitionWrapper();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::is_identity
 //       Access: Public
 //  Description:

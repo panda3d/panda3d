@@ -37,7 +37,6 @@
 #include <nodeTransitionWrapper.h>
 #include <switchNode.h>
 #include <decalTransition.h>
-#include <decalAttribute.h>
 #include <config_sgattrib.h>   // for support_decals
 #include <pStatTimer.h>
 

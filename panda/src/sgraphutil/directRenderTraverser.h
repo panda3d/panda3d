@@ -35,7 +35,6 @@
 class Node;
 class GraphicsStateGuardian;
 class GeometricBoundingVolume;
-class NodeAttributes;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DirectRenderTraverser

@@ -18,7 +18,6 @@
 
 
 #include "geomBinTransition.h"
-#include "geomBinAttribute.h"
 #include <indent.h>
 #include <string.h>
 
@@ -33,16 +32,6 @@ TypeHandle GeomBinTransition::_type_handle;
 NodeTransition *GeomBinTransition::
 make_copy() const {
   return new GeomBinTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomBinTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated GeomBinAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *GeomBinTransition::
-make_attrib() const {
-  return new GeomBinAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lightTransition.h"
-#include "lightAttribute.h"
 
 #include <indent.h>
 
@@ -60,16 +59,6 @@ LightTransition::
 NodeTransition *LightTransition::
 make_copy() const {
   return new LightTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LightTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated LightAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *LightTransition::
-make_attrib() const {
-  return new LightAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "texGenTransition.h"
-#include "texGenAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle TexGenTransition::_type_handle;
 NodeTransition *TexGenTransition::
 make_copy() const {
   return new TexGenTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TexGenAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TexGenTransition::
-make_attrib() const {
-  return new TexGenAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

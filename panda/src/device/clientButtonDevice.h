@@ -25,7 +25,7 @@
 
 #include <buttonHandle.h>
 #include <buttonEvent.h>
-#include <buttonEventDataAttribute.h>
+#include <buttonEventDataTransition.h>
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ public:
   INLINE bool get_button_state(int index) const;
   INLINE bool is_button_known(int index) const;
 
-  INLINE ButtonEventDataAttribute *get_button_events() const;
+  INLINE ButtonEventDataTransition *get_button_events() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -81,7 +81,7 @@ protected:
   typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
 
-  PT(ButtonEventDataAttribute) _button_events;
+  PT(ButtonEventDataTransition) _button_events;
 
 public:
   static TypeHandle get_class_type() {

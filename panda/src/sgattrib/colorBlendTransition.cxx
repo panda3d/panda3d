@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorBlendTransition.h"
-#include "colorBlendAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle ColorBlendTransition::_type_handle;
 NodeTransition *ColorBlendTransition::
 make_copy() const {
   return new ColorBlendTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated ColorBlendAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ColorBlendTransition::
-make_attrib() const {
-  return new ColorBlendAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

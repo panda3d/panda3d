@@ -58,8 +58,8 @@ ButtonNode(ClientBase *client, const string &device_name) :
   _button = DCAST(ClientButtonDevice, device);
 
   if (_button != (ClientButtonDevice *)NULL) {
-    _button_events = new ButtonEventDataAttribute();
-    _attrib.set_attribute(_button_events_type, _button_events);
+    _button_events = new ButtonEventDataTransition();
+    _attrib.set_transition(_button_events_type, _button_events);
   }
 }
 
@@ -115,7 +115,7 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void ButtonNode::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _button->poll();
     _button->lock();
@@ -124,7 +124,7 @@ transmit_data(NodeAttributes &data) {
     _button->unlock();
 
     if (device_cat.is_debug()) {
-      device_cat.debug() << "ButtonNode:attributes" << endl;
+      device_cat.debug() << "ButtonNode:transitions" << endl;
       _attrib.write(device_cat.debug(false), 3);
     }
   }

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "transparencyTransition.h"
-#include "transparencyAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle TransparencyTransition::_type_handle;
 NodeTransition *TransparencyTransition::
 make_copy() const {
   return new TransparencyTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TransparencyAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TransparencyTransition::
-make_attrib() const {
-  return new TransparencyAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -103,7 +103,6 @@ public:
 
   virtual NodeTransition *compose(const NodeTransition *other) const;
   virtual NodeTransition *invert() const;
-  virtual NodeAttribute *apply(const NodeAttribute *attrib) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

@@ -28,16 +28,12 @@
 //
 // tmap_* functions
 //
-// The SetTransition and SetAttribute classes are implemented with the
-// help of a handful of template functions that operate on
-// NodeTransition and NodeAttribute maps.
+// The SetTransition classes are implemented with the help of a
+// handful of template functions that operate on NodeTransition maps.
 //
 // Each of these follows the standard STL calling conventions for
 // operating on one or two sequences, and/or storing the results into
 // an output sequence.
-//
-// Some of the following functions can work on either a NodeTransition
-// or a NodeAttribute map; most are specialized for one or the other.
 //
 ////////////////////////////////////////////////////////////////////
 

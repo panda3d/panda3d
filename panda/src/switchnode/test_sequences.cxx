@@ -38,7 +38,6 @@ ConfigureFn(sequences) {
 
 //Framework extern variables and functions
 extern PT_NamedNode render;
-extern NodeAttributes initial_state;
 extern RenderRelation* first_arc;
 extern PT_NamedNode lights;
 extern PT_NamedNode root;

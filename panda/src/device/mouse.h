@@ -25,12 +25,10 @@
 
 #include "dataNode.h"
 #include "vec3DataTransition.h"
-#include "vec3DataAttribute.h"
 #include "buttonEventDataTransition.h"
-#include "buttonEventDataAttribute.h"
 #include "graphicsWindow.h"
 #include "pointerTo.h"
-#include "nodeAttributes.h"
+#include "allTransitionsWrapper.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -52,7 +50,7 @@ const int MIN_MOVE = 2;
 //               Mouse data is sent down the data graph as an x,y
 //               position as well as the set of buttons currently
 //               being held down; keyboard data is sent down as a set
-//               of keypress events in an EventDataAttribute.  To
+//               of keypress events in an EventDataTransition.  To
 //               throw these events to the system, you must child an
 //               EventThrower to the MouseAndKeyboard object;
 //               otherwise, the events will be discarded.
@@ -63,14 +61,14 @@ PUBLISHED:
                    const string& name = "");
 
 public:
-  virtual void transmit_data(NodeAttributes &data);
+  virtual void transmit_data(AllTransitionsWrapper &data);
 
 public:
-  NodeAttributes _got_mouse_attrib;
-  NodeAttributes _no_mouse_attrib;
-  PT(Vec3DataAttribute) _pixel_xyz;
-  PT(Vec3DataAttribute) _xyz;
-  PT(ButtonEventDataAttribute) _button_events;
+  AllTransitionsWrapper _got_mouse_attrib;
+  AllTransitionsWrapper _no_mouse_attrib;
+  PT(Vec3DataTransition) _pixel_xyz;
+  PT(Vec3DataTransition) _xyz;
+  PT(ButtonEventDataTransition) _button_events;
 
   static TypeHandle _mods_type;
   static TypeHandle _pixel_xyz_type;

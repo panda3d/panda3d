@@ -20,7 +20,6 @@
 #include "geomBinGroup.h"
 #include "cullTraverser.h"
 #include <indent.h>
-#include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
 
 TypeHandle GeomBinGroup::_type_handle;

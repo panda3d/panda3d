@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "onTransition.h"
-#include "onAttribute.h"
 
 #include <indent.h>
 
@@ -62,39 +61,6 @@ compose(const NodeTransition *other) const {
 NodeTransition *OnTransition::
 invert() const {
   return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OnTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *OnTransition::
-apply(const NodeAttribute *attrib) const {
-  OnAttribute *result;
-  if (attrib == (const NodeAttribute *)NULL) {
-    DCAST_INTO_R(result, make_attrib(), NULL);
-  } else {
-    DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
-  }
-
-  if (_priority < result->_priority) {
-    // The priority is too low to affect the attribute.
-    return result;
-  }
-
-  if (result->get_ref_count() > 1) {
-    // Copy on write.
-    DCAST_INTO_R(result, result->make_copy(), NULL);
-  }
-
-  result->_priority = _priority;
-  result->set_value_from(this);
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

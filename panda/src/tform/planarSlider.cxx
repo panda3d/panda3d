@@ -23,7 +23,7 @@
 #include <mouseData.h>
 #include <modifierButtons.h>
 #include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
+#include <buttonEventDataTransition.h>
 #include <mouseButton.h>
 #include <get_rel_pos.h>
 
@@ -46,8 +46,8 @@ PlanarSlider(const string &name) : DataNode(name) {
   _mouse_pos.set(0.0, 0.0);
   _transform_mat = LMatrix4f::ident_mat();
 
-  _transform = new MatrixDataAttribute;
-  _attrib.set_attribute(_transform_type, _transform);
+  _transform = new MatrixDataTransition;
+  _attrib.set_transition(_transform_type, _transform);
 
   _mods.add_button(MouseButton::one());
 }
@@ -161,19 +161,19 @@ get_mouse_pos() const {
 //  Description: Convert mouse data into a planarSlider matrix
 ////////////////////////////////////////////////////////////////////
 void PlanarSlider::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // First, update our modifier buttons.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
     b->update_mods(_mods);
   }
 
   // Now look for a mouse position.
-  const NodeAttribute *xyz = data.get_attribute(_xyz_type);
+  const NodeTransition *xyz = data.get_transition(_xyz_type);
 
-  if (xyz != (NodeAttribute *)NULL) {
+  if (xyz != (NodeTransition *)NULL) {
     if (_mods.is_any_down()) {
-      LVecBase3f p = DCAST(Vec3DataAttribute, xyz)->get_value();
+      LVecBase3f p = DCAST(Vec3DataTransition, xyz)->get_value();
       set_mouse_pos(LPoint2f(p[0], p[1]));
     }
   }

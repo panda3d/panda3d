@@ -354,35 +354,6 @@ cached_compose(const NodeTransitionCacheEntry &a,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionCacheEntry::apply
-//       Access: Public, Static
-//  Description: Returns a new NodeAttribute (or possibly the same
-//               NodeAttribute) that represents the indicated
-//               transition applied to the attribute.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NodeAttribute *NodeTransitionCacheEntry::
-apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b) {
-  if (b.is_identity()) {
-    return (NodeAttribute *)a;
-  }
-
-  return b._trans->apply(a);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionCacheEntry::make_attrib
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NodeAttribute *NodeTransitionCacheEntry::
-make_attrib() const {
-  if (_trans == (NodeTransition *)NULL) {
-    return NULL;
-  }
-  return _trans->make_attrib();
-}
-
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCacheEntry &e) {
   e.output(out);
   return out;

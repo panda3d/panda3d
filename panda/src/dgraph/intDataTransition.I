@@ -22,17 +22,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IntDataTransition::
-IntDataTransition() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: IntDataTransition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE IntDataTransition::
-IntDataTransition(int scale, int offset) :
-  NumericDataTransition<int>(scale, offset)
+IntDataTransition(int value) :
+  NumericDataTransition<int>(value)
 {
 }
 

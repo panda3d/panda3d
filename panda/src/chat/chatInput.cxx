@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "chatInput.h"
-#include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
-#include <buttonEvent.h>
-#include <keyboardButton.h>
-#include <throw_event.h>
+
+#include "buttonEventDataTransition.h"
+#include "buttonEvent.h"
+#include "keyboardButton.h"
+#include "throw_event.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -63,11 +63,11 @@ reset() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void ChatInput::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // Look for keyboard events.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
-    ButtonEventDataAttribute::const_iterator bi;
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
+    ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
 

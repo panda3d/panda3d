@@ -19,9 +19,9 @@
 #ifndef DESCRIBE_DATA_VERBOSE_H
 #define DESCRIBE_DATA_VERBOSE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-class NodeAttributes;
+class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: describe_data_verbose
@@ -29,7 +29,7 @@ class NodeAttributes;
 //               nicely-formatted, multi-line description of all the
 //               data values included in the indicated state.
 ////////////////////////////////////////////////////////////////////
-void describe_data_verbose(ostream &out, const NodeAttributes &state,
+void describe_data_verbose(ostream &out, const AllTransitionsWrapper &state,
                            int indent_level = 0);
 
 #endif

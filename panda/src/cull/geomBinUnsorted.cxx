@@ -19,7 +19,6 @@
 #include "geomBinUnsorted.h"
 #include "cullTraverser.h"
 #include <indent.h>
-#include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
 #include <pStatTimer.h>
 

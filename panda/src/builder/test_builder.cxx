@@ -28,7 +28,6 @@
 #include <traverserVisitor.h>
 #include <renderRelation.h>
 #include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
 #include <nullLevelState.h>
 #include <pta_Vertexf.h>
 #include <pta_Normalf.h>
@@ -48,11 +47,11 @@ extern int num_polys;
 class ReportGeoms :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
-  bool reached_node(Node *node, const NullAttributeWrapper &, NullLevelState &);
+  bool reached_node(Node *node, const NullTransitionWrapper &, NullLevelState &);
 };
 
 bool ReportGeoms::
-reached_node(Node *node, const NullAttributeWrapper &, NullLevelState &) {
+reached_node(Node *node, const NullTransitionWrapper &, NullLevelState &) {
   if (node->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geomNode = (GeomNode *)node;
     nout << "\n" << *geomNode << ", " << geomNode->get_num_geoms()
@@ -107,11 +106,11 @@ main(void) {
   nout << "Built " << (void *)gn << "\n";
   if (gn != NULL) {
     NullLevelState level_state;
-    rg.reached_node(gn, NullAttributeWrapper(), level_state);
+    rg.reached_node(gn, NullTransitionWrapper(), level_state);
   }
 
   nout << "\nTraversing root:\n";
-  df_traverse(root, rg, NullAttributeWrapper(), NullLevelState(),
+  df_traverse(root, rg, NullTransitionWrapper(), NullLevelState(),
               RenderRelation::get_class_type());
 
 #else

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "linesmoothTransition.h"
-#include "linesmoothAttribute.h"
 
 TypeHandle LinesmoothTransition::_type_handle;
 
@@ -30,16 +29,6 @@ TypeHandle LinesmoothTransition::_type_handle;
 NodeTransition *LinesmoothTransition::
 make_copy() const {
   return new LinesmoothTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LinesmoothTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated LinesmoothAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *LinesmoothTransition::
-make_attrib() const {
-  return new LinesmoothAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

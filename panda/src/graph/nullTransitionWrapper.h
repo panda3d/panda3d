@@ -20,9 +20,8 @@
 #define NULLTRANSITIONWRAPPER_H
 
 //
-// There are several flavors of TransitionWrappers (and their
-// corresponding AttributeWrappers).  These are classes that represent
-// one or a number of transitions (or attributes) simultaneously and
+// There are several flavors of TransitionWrappers.  These are classes
+// that represent one or a number of transitions simultaneously and
 // are passed to template functions like df_traverse() and wrt() so
 // that the same functions can be used to operate on either one
 // transition type or a number of them.
@@ -39,8 +38,6 @@
 
 class Node;
 class NodeRelation;
-class NodeAttribute;
-class NullAttributeWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NullTransitionWrapper
@@ -53,7 +50,6 @@ class NullAttributeWrapper;
 class EXPCL_PANDA NullTransitionWrapper {
 public:
   typedef NullTransitionWrapper TransitionWrapper;
-  typedef NullAttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH NullTransitionWrapper();
   INLINE_GRAPH NullTransitionWrapper(const NullTransitionWrapper &copy);
@@ -61,8 +57,6 @@ public:
 
   INLINE_GRAPH static NullTransitionWrapper
   init_from(const NullTransitionWrapper &other);
-  INLINE_GRAPH static NullTransitionWrapper
-  init_from(const NullAttributeWrapper &attrib);
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const NullTransitionWrapper &other) const;

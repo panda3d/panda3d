@@ -20,9 +20,8 @@
 #include "dataGraphTraversal.h"
 #include "describe_data_verbose.h"
 
-#include <indent.h>
-
-#include <nodeAttributes.h>
+#include "indent.h"
+#include "allTransitionsWrapper.h"
 
 // The number of columns in from the start of the name to print the
 // data value.
@@ -35,13 +34,13 @@ static const int data_indent_level = 12;
 //               data values included in the indicated state.
 ////////////////////////////////////////////////////////////////////
 void
-describe_data_verbose(ostream &out, const NodeAttributes &state,
+describe_data_verbose(ostream &out, const AllTransitionsWrapper &state,
                       int indent_level) {
-  NodeAttributes::const_iterator nai;
+  AllTransitionsWrapper::const_iterator nai;
 
   for (nai = state.begin(); nai != state.end(); ++nai) {
-    const PT(NodeAttribute) &attrib = (*nai).second;
-    if (attrib != (NodeAttribute *)NULL) {
+    const PT(NodeTransition) &attrib = (*nai).second;
+    if (attrib != (NodeTransition *)NULL) {
       // Now extract the type name out of the type flag.
       TypeHandle type = (*nai).first;
       string actual_name = type.get_name();

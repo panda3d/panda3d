@@ -32,7 +32,8 @@ ButtonEventDataTransition() {
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEventDataTransition::
 ButtonEventDataTransition(const ButtonEventDataTransition &copy) :
-  NodeTransition(copy)
+  NodeTransition(copy),
+  _buttons(copy._buttons)
 {
 }
 
@@ -44,4 +45,45 @@ ButtonEventDataTransition(const ButtonEventDataTransition &copy) :
 INLINE void ButtonEventDataTransition::
 operator = (const ButtonEventDataTransition &copy) {
   NodeTransition::operator = (copy);
+  _buttons = copy._buttons;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::begin
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataTransition::const_iterator ButtonEventDataTransition::
+begin() const {
+  return _buttons.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::end
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataTransition::const_iterator ButtonEventDataTransition::
+end() const {
+  return _buttons.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::clear
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataTransition::
+clear() {
+  _buttons.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::clear
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataTransition::
+push_back(const ButtonEvent &event) {
+  _buttons.push_back(event);
 }

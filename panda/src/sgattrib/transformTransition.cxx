@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "transformTransition.h"
-#include "transformAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle TransformTransition::_type_handle;
 NodeTransition *TransformTransition::
 make_copy() const {
   return new TransformTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TransformAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TransformTransition::
-make_attrib() const {
-  return new TransformAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,8 +20,8 @@
 #include "dataGraphTraversal.h"
 #include "dataGraphTraverser.h"
 
-#include <pStatTimer.h>
-#include <pStatCollector.h>
+#include "pStatTimer.h"
+#include "pStatCollector.h"
 
 #ifndef CPPPARSER
 PStatCollector _dgraph_pcollector("App:Data graph");

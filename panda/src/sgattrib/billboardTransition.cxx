@@ -18,7 +18,6 @@
 
 #include "billboardTransition.h"
 #include "transformTransition.h"
-#include "transformAttribute.h"
 #include "renderRelation.h"
 
 #include <graphicsStateGuardian.h>

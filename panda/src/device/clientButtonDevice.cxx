@@ -32,7 +32,7 @@ ClientButtonDevice::
 ClientButtonDevice(ClientBase *client, const string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
-  _button_events = new ButtonEventDataAttribute();
+  _button_events = new ButtonEventDataTransition();
 }
 
 

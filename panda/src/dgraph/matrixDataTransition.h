@@ -27,7 +27,7 @@
 
 // We need to define this temporary macro so we can pass a parameter
 // containing a comma through the macro.
-#define VECTORDATATRANSITION_LMATRIX4F VectorDataTransition<LMatrix4f, LMatrix4f>
+#define VECTORDATATRANSITION_LMATRIX4F VectorDataTransition<LMatrix4f>
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATATRANSITION_LMATRIX4F);
 
 ////////////////////////////////////////////////////////////////////
@@ -35,13 +35,11 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATATRANSITION_LMATRIX4F);
 // Description : A VectorDataTransition templated on LMatrix4f.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MatrixDataTransition :
-  public VectorDataTransition<LMatrix4f, LMatrix4f> {
+  public VectorDataTransition<LMatrix4f> {
 public:
-  INLINE MatrixDataTransition();
-  INLINE MatrixDataTransition(const LMatrix4f &matrix);
+  INLINE MatrixDataTransition(const LMatrix4f &value = LMatrix4f::ident_mat());
 
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -52,9 +50,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    VectorDataTransition<LMatrix4f, LMatrix4f>::init_type();
+    VectorDataTransition<LMatrix4f>::init_type();
     register_type(_type_handle, "MatrixDataTransition",
-                  VectorDataTransition<LMatrix4f, LMatrix4f>::get_class_type());
+                  VectorDataTransition<LMatrix4f>::get_class_type());
   }
 
 private:

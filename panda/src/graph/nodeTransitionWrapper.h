@@ -20,9 +20,8 @@
 #define NODETRANSITIONWRAPPER_H
 
 //
-// There are several flavors of TransitionWrappers (and their
-// corresponding AttributeWrappers).  These are classes that represent
-// one or a number of transitions (or attributes) simultaneously and
+// There are several flavors of TransitionWrappers.  These are classes
+// that represent one or a number of transitions simultaneously and
 // are passed to template functions like df_traverse() and wrt() so
 // that the same functions can be used to operate on either one
 // transition type or a number of them.
@@ -39,8 +38,6 @@
 
 class Node;
 class NodeRelation;
-class NodeAttribute;
-class NodeAttributeWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeTransitionWrapper
@@ -52,7 +49,6 @@ class NodeAttributeWrapper;
 class EXPCL_PANDA NodeTransitionWrapper {
 public:
   typedef NodeTransitionWrapper TransitionWrapper;
-  typedef NodeAttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH NodeTransitionWrapper(TypeHandle handle);
   INLINE_GRAPH NodeTransitionWrapper(const NodeTransitionWrapper &copy);
@@ -60,7 +56,6 @@ public:
 
   INLINE_GRAPH static NodeTransitionWrapper
   init_from(const NodeTransitionWrapper &other);
-  static NodeTransitionWrapper init_from(const NodeAttributeWrapper &attrib);
 
   INLINE_GRAPH TypeHandle get_handle() const;
   INLINE_GRAPH bool has_trans() const;
@@ -93,7 +88,6 @@ public:
 private:
   TypeHandle _handle;
   NodeTransitionCacheEntry _entry;
-  friend class NodeAttributeWrapper;
 };
 
 EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw);

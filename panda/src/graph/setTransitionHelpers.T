@@ -51,7 +51,7 @@ tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_override_union
-//  Description: Accepts two NodeTransition or NodeAttribute maps, and
+//  Description: Accepts two NodeTransition maps, and
 //               builds a new map which is the union of the first two.
 //               If an element appears in both maps, the entry from
 //               the second is preferred.
@@ -72,50 +72,6 @@ tmap_override_union(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       *result = *first2;
-      ++first1;
-      ++first2;
-      ++result;
-    }
-  }
-
-  while (first1 != last1) {
-    *result = *first1;
-    ++first1;
-    ++result;
-  }
-
-  while (first2 != last2) {
-    *result = *first2;
-    ++first2;
-    ++result;
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: tmap_merge_union
-//  Description: Accepts two NodeAttribute maps, and builds a new map
-//               which is the union of the first two.  If an element
-//               appears in both maps, the two are merged, preferring
-//               the second.
-////////////////////////////////////////////////////////////////////
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-OutputIterator
-tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
-                 InputIterator2 first2, InputIterator2 last2,
-                 OutputIterator result) {
-  while (first1 != last1 && first2 != last2) {
-    if ((*first1).first < (*first2).first) {
-      *result = *first1;
-      ++first1;
-      ++result;
-    } else if ((*first2).first < (*first1).first) {
-      *result = *first2;
-      ++first2;
-      ++result;
-    } else {
-      PT(NodeAttribute) c = (*first1).second->merge((*first2).second);
-      *result = pair<TypeHandle,  PT(NodeAttribute) >((*first1).first, c);
       ++first1;
       ++first2;
       ++result;
@@ -716,55 +672,6 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: tmap_apply
-//  Description: Accepts a NodeAttribute map and a NodeTransition map,
-//               and builds a new list (a NodeAttribute map) which
-//               represents the memberwise application of the two
-//               input maps.
-////////////////////////////////////////////////////////////////////
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-OutputIterator
-tmap_apply(InputIterator1 first1, InputIterator1 last1,
-           InputIterator2 first2, InputIterator2 last2,
-           OutputIterator result) {
-  while (first1 != last1 && first2 != last2) {
-    if ((*first1).first < (*first2).first) {
-      *result = *first1;
-      ++first1;
-      ++result;
-    } else if ((*first2).first < (*first1).first) {
-      *result = pair<TypeHandle,  PT(NodeAttribute) >
-        ((*first2).first,
-         NodeTransitionCacheEntry::apply(NULL, (*first2).second));
-      ++first2;
-      ++result;
-    } else {
-      *result = pair<TypeHandle,  PT(NodeAttribute) >
-        ((*first1).first,
-         NodeTransitionCacheEntry::apply((*first1).second, (*first2).second));
-      ++first1;
-      ++first2;
-      ++result;
-    }
-  }
-
-  while (first1 != last1) {
-    *result = *first1;
-    ++first1;
-    ++result;
-  }
-
-  while (first2 != last2) {
-    *result = pair<TypeHandle,  PT(NodeAttribute) >
-      ((*first2).first,
-       NodeTransitionCacheEntry::apply(NULL, (*first2).second));
-    ++first2;
-    ++result;
-  }
-  return result;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_invert
@@ -835,58 +742,6 @@ tmap_equiv_trans(InputIterator1 first1, InputIterator1 last1,
   return true;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: tmap_equiv_attr
-//  Description: Accepts a pair of NodeAttribute maps, and returns
-//               true if they are equivalent, false otherwise.  Two
-//               NodeAttributes maps are defined to be equivalent if
-//               all non-NULL members present in one set are present
-//               and equivalent in the other set,
-////////////////////////////////////////////////////////////////////
-template<class InputIterator1, class InputIterator2>
-bool
-tmap_equiv_attr(InputIterator1 first1, InputIterator1 last1,
-                InputIterator2 first2, InputIterator2 last2) {
-  while (first1 != last1 && first2 != last2) {
-    if ((*first1).first < (*first2).first) {
-      if ((*first1).second != (NodeAttribute *)NULL) {
-        return false;
-      }
-      ++first1;
-    } else if ((*first2).first < (*first1).first) {
-      if ((*first2).second != (NodeAttribute *)NULL) {
-        return false;
-      }
-      ++first2;
-    } else {
-      if ((*first1).second != (*first2).second) {
-        if ((*first1).second == (NodeAttribute *)NULL ||
-            (*first2).second == (NodeAttribute *)NULL ||
-            (*first1).second->compare_to((*first2).second) != 0) {
-          return false;
-        }
-      }
-      ++first1;
-      ++first2;
-    }
-  }
-
-  while (first1 != last1) {
-    if ((*first1).second != (NodeAttribute *)NULL) {
-      return false;
-    }
-    ++first1;
-  }
-
-  while (first2 != last2) {
-    if ((*first2).second != (NodeAttribute *)NULL) {
-      return false;
-    }
-    ++first2;
-  }
-  return true;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_compare_cache
@@ -998,65 +853,6 @@ tmap_compare_trans(InputIterator1 first1, InputIterator1 last1,
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: tmap_compare_attr
-//  Description: Accepts a pair of NodeAttribute maps, and returns
-//               -1 if the first one sorts before the second one,
-//               1 if it sorts after, or 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
-template<class InputIterator1, class InputIterator2>
-int
-tmap_compare_attr(InputIterator1 first1, InputIterator1 last1,
-                  InputIterator2 first2, InputIterator2 last2) {
-  while (first1 != last1 && first2 != last2) {
-    if ((*first1).first < (*first2).first) {
-      if ((*first1).second != (NodeAttribute *)NULL) {
-        return 1;
-      }
-      ++first1;
-    } else if ((*first2).first < (*first1).first) {
-      if ((*first2).second != (NodeAttribute *)NULL) {
-        return -1;
-      }
-      ++first2;
-    } else {
-      if ((*first1).second != (*first2).second) {
-        if ((*first1).second == (NodeAttribute *)NULL) {
-          return -1;
-        } else if ((*first2).second == (NodeAttribute *)NULL) {
-          return 1;
-        } else {
-          int result;
-          result = (*first1).second->compare_to(*(*first2).second);
-          if (result != 0) {
-            return result;
-          }
-        }
-      }
-      ++first1;
-      ++first2;
-    }
-  }
-
-  while (first1 != last1) {
-    if ((*first1).second != (NodeAttribute *)NULL) {
-      // list1 is longer.
-      return -1;
-    }
-    ++first1;
-  }
-
-  while (first2 != last2) {
-    if ((*first2).second != (NodeAttribute *)NULL) {
-      // list2 is longer.
-      return 1;
-    }
-    ++first2;
-  }
-
-  return 0;
-}
-
 
 
 ////////////////////////////////////////////////////////////////////
@@ -1077,28 +873,10 @@ tmap_is_identity(InputIterator first, InputIterator last) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: tmap_is_initial
-//  Description: Accepts a NodeAttribute map, and returns true if all
-//               elements in the map correspond to the initial
-//               attribute, false otherwise.
-////////////////////////////////////////////////////////////////////
-template<class InputIterator>
-bool
-tmap_is_initial(InputIterator first, InputIterator last) {
-  while (first != last) {
-    if (!(*first).second.is_initial()) {
-      return false;
-    }
-    ++first;
-  }
-  return true;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_output
-//  Description: Accepts a NodeTransition or NodeAttribute map and
+//  Description: Accepts a NodeTransition map and
 //               writes each element to the given output stream with a
 //               single space separating them.
 ////////////////////////////////////////////////////////////////////

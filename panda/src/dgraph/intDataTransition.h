@@ -32,11 +32,9 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, NumericDataTransition<int>);
 class EXPCL_PANDA IntDataTransition :
   public NumericDataTransition<int> {
 public:
-  INLINE IntDataTransition();
-  INLINE IntDataTransition(int scale, int offset);
+  INLINE IntDataTransition(int value = 0);
 
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
 
 public:
   virtual TypeHandle get_type() const {

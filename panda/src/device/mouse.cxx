@@ -43,15 +43,15 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) :
   _window(window),
   _device(device)
 {
-  _pixel_xyz = new Vec3DataAttribute(LPoint3f(0, 0, 0));
-  _xyz = new Vec3DataAttribute(LPoint3f(0, 0, 0));
-  _button_events = new ButtonEventDataAttribute();
+  _pixel_xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
+  _xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
+  _button_events = new ButtonEventDataTransition();
 
-  _got_mouse_attrib.set_attribute(_pixel_xyz_type, _pixel_xyz);
-  _got_mouse_attrib.set_attribute(_xyz_type, _xyz);
-  _got_mouse_attrib.set_attribute(_button_events_type, _button_events);
+  _got_mouse_attrib.set_transition(_pixel_xyz_type, _pixel_xyz);
+  _got_mouse_attrib.set_transition(_xyz_type, _xyz);
+  _got_mouse_attrib.set_transition(_button_events_type, _button_events);
 
-  _no_mouse_attrib.set_attribute(_button_events_type, _button_events);
+  _no_mouse_attrib.set_transition(_button_events_type, _button_events);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void MouseAndKeyboard::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // Fill up the button events.
   _button_events->clear();
   while (_window->has_button_event(_device)) {

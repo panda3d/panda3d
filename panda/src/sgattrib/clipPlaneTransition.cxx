@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "clipPlaneTransition.h"
-#include "clipPlaneAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle ClipPlaneTransition::_type_handle;
 NodeTransition *ClipPlaneTransition::
 make_copy() const {
   return new ClipPlaneTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated ClipPlaneAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ClipPlaneTransition::
-make_attrib() const {
-  return new ClipPlaneAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

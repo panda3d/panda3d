@@ -25,11 +25,11 @@
 #include <clockObject.h>
 #include <modifierButtons.h>
 #include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
+#include <buttonEventDataTransition.h>
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <dataGraphTraverser.h>
-#include <allAttributesWrapper.h>
+#include <allTransitionsWrapper.h>
 #include <dataRelation.h>
 
 TypeHandle DriveInterface::_type_handle;
@@ -142,9 +142,9 @@ DriveInterface(const string &name) : DataNode(name) {
   _mods.add_button(MouseButton::two());
   _mods.add_button(MouseButton::three());
 
-  _transform = new MatrixDataAttribute;
+  _transform = new MatrixDataTransition;
   _transform->set_value(_mat);
-  _attrib.set_attribute(_transform_type, _transform);
+  _attrib.set_transition(_transform_type, _transform);
 }
 
 
@@ -410,7 +410,7 @@ recompute() {
 //  Description: Convert mouse data into a driveInterface matrix
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
 
   // Look for mouse activity.
   double x = 0.0;
@@ -418,8 +418,8 @@ transmit_data(NodeAttributes &data) {
 
   bool got_mouse = false;
 
-  const Vec3DataAttribute *xyz;
-  if (get_attribute_into(xyz, data, _xyz_type)) {
+  const Vec3DataTransition *xyz;
+  if (get_transition_into(xyz, data, _xyz_type)) {
     LVecBase3f p = xyz->get_value();
     x = p[0];
     y = p[1];
@@ -428,9 +428,9 @@ transmit_data(NodeAttributes &data) {
   }
 
   // Look for keyboard events.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
-    ButtonEventDataAttribute::const_iterator bi;
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
+    ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
       if (be._down) {

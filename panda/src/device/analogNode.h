@@ -25,9 +25,9 @@
 #include "clientAnalogDevice.h"
 
 #include <dataNode.h>
-#include <nodeAttributes.h>
+#include <allTransitionsWrapper.h>
 #include <vec3DataTransition.h>
-#include <vec3DataAttribute.h>
+#include <vec3DataTransition.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -85,10 +85,10 @@ private:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
-  PT(Vec3DataAttribute) _xyz;
+  AllTransitionsWrapper _attrib;
+  PT(Vec3DataTransition) _xyz;
 
   static TypeHandle _xyz_type;
 

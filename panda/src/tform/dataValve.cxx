@@ -18,10 +18,9 @@
 
 #include "dataValve.h"
 
-#include <dataRelation.h>
-#include <buttonEventDataAttribute.h>
-#include <buttonEventDataTransition.h>
-#include <nodeAttributes.h>
+#include "dataRelation.h"
+#include "buttonEventDataTransition.h"
+#include "allTransitionsWrapper.h"
 
 TypeHandle DataValve::_type_handle;
 
@@ -299,10 +298,10 @@ ensure_child_index(int child_index) {
 //               to process its inputs.
 ////////////////////////////////////////////////////////////////////
 void DataValve::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // Update our modifier buttons during the overall pass.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
     b->update_mods(_mods);
   }
 }
@@ -313,15 +312,15 @@ transmit_data(NodeAttributes &data) {
 //  Description: Should be overridden in a derived class that wants to
 //               send a different data stream to each child.
 //               Normally, a node only overrides transmit_data(),
-//               which takes a set of input data attributes and
-//               generates a set of output data attributes.  A node
+//               which takes a set of input data transitions and
+//               generates a set of output data transitions.  A node
 //               may also override transmit_data_per_child(), which is
 //               called after transmit_data(), once per child; this
 //               function may be used to send individual data
-//               attributes to each child.
+//               transitions to each child.
 ////////////////////////////////////////////////////////////////////
 void DataValve::
-transmit_data_per_child(NodeAttributes &data, int child_index) {
+transmit_data_per_child(AllTransitionsWrapper &data, int child_index) {
   // Consider which data this child wants to see.
   static const FineControls empty_controls;
 
@@ -350,7 +349,7 @@ transmit_data_per_child(NodeAttributes &data, int child_index) {
         Control *fcontrol = (*fci).second;
 
         if (!fcontrol->is_on(*this)) {
-          data.clear_attribute(data_type);
+          data.clear_transition(data_type);
         }
       }
     }
@@ -364,7 +363,7 @@ transmit_data_per_child(NodeAttributes &data, int child_index) {
     } else {
       // The control is off, and we have some fine-tuning.  Any data
       // type explicitly "on" should be preserved.
-      NodeAttributes temp;
+      AllTransitionsWrapper temp;
 
       FineControls::const_iterator fci;
       for (fci = fine_controls->begin(); fci != fine_controls->end(); ++fci) {
@@ -372,9 +371,9 @@ transmit_data_per_child(NodeAttributes &data, int child_index) {
         Control *fcontrol = (*fci).second;
 
         if (fcontrol->is_on(*this)) {
-          NodeAttribute *attrib = data.get_attribute(data_type);
-          if (attrib != (NodeAttribute *)NULL) {
-            temp.set_attribute(data_type, attrib);
+          NodeTransition *attrib = data.get_transition(data_type);
+          if (attrib != (NodeTransition *)NULL) {
+            temp.set_transition(data_type, attrib);
           }
         }
       }

@@ -28,7 +28,6 @@
 #include <dftraverser.h>
 #include <traverserVisitor.h>
 #include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
 #include <pointerTo.h>
 #include <nullLevelState.h>
 
@@ -38,20 +37,20 @@ public:
   PrintNodes() {
     _indent_level = 0;
   }
-  bool reached_node(Node *node, AttributeWrapper &state, NullLevelState &) {
+  bool reached_node(Node *node, TransitionWrapper &state, NullLevelState &) {
     indent(nout, _indent_level)
       << *node << ", state is:\n";
     state.write(nout, _indent_level);
     return true;
   }
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                   AttributeWrapper &pre, AttributeWrapper &post,
+                   TransitionWrapper &pre, TransitionWrapper &post,
                    NullLevelState &) {
     _indent_level += 2;
     return true;
   }
   void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                    AttributeWrapper &pre, AttributeWrapper &post,
+                    TransitionWrapper &pre, TransitionWrapper &post,
                     const NullLevelState &) {
     _indent_level -= 2;
   }
@@ -136,17 +135,17 @@ main(int argc, char *argv[]) {
   nout << "\n";
   PrintNodes pn;
   df_traverse(r, pn,
-              AllAttributesWrapper(), NullLevelState(),
+              AllTransitionsWrapper(), NullLevelState(),
               NodeRelation::get_class_type());
   nout << "\n";
 
   CullTraverser ct(NULL, NodeRelation::get_class_type());
 
-  ct.traverse(r, AllAttributesWrapper(), AllTransitionsWrapper());
+  ct.traverse(r, AllTransitionsWrapper(), AllTransitionsWrapper());
   ct.write(nout, 0);
 
   nout << "\nframe 2:\n";
-  ct.traverse(r, AllAttributesWrapper(), AllTransitionsWrapper());
+  ct.traverse(r, AllTransitionsWrapper(), AllTransitionsWrapper());
   ct.write(nout, 0);
 
   return (0);

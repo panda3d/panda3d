@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-/* okcircular */
-#include "multiAttribute.h"
-
 template<class Property, class NameClass>
 TypeHandle MultiTransition<Property, NameClass>::_type_handle;
 
@@ -359,75 +356,6 @@ invert() const {
   dmap_invert(_properties.begin(), _properties.end(),
               back_inserter(result->_properties),
               (Element *)NULL);
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MultiTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-template<class Property, class NameClass>
-NodeAttribute *MultiTransition<Property, NameClass>::
-apply(const NodeAttribute *attrib) const {
-
-  MultiAttribute<Property, NameClass> *result;
-  if (attrib == (const NodeAttribute *)NULL) {
-    DCAST_INTO_R(result, make_attrib(), NULL);
-  } else {
-    DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
-  }
-
-  if (_priority < result->_priority || is_identity()) {
-    // The priority is too low to affect the attribute, or we're
-    // identity.
-    return result;
-  }
-
-  if (result->get_ref_count() > 1) {
-    // Copy on write.
-    DCAST_INTO_R(result, result->make_copy(), NULL);
-  }
-
-  result->_priority = _priority;
-
-  MultiAttribute<Property, NameClass>::Properties temp;
-  if (_default_dir == TD_identity) {
-    // In this case, the normal case, the transition does not specify
-    // completely what the attributes should be.
-    bmap_apply(result->_properties.begin(), result->_properties.end(),
-               _properties.begin(), _properties.end(),
-               false, TD_on,
-               inserter(temp, temp.begin()));
-    result->_properties_is_on = true;
-
-  } else if (_default_dir == TD_off) {
-    // In this case, the transition completely specifies what the
-    // attributes should be; any property not explicitly mentioned by
-    // the transition should be turned off.
-    bmap_apply(result->_properties.begin(), result->_properties.end(),
-               _properties.begin(), _properties.end(),
-               true, TD_on,
-               inserter(temp, temp.begin()));
-    result->_properties_is_on = true;
-
-  } else { // _default_dir == TD_on
-    // In this case, the transition completely specifies what the
-    // attributes should be; any property not explicitly mentioned by
-    // the transition should be turned on.
-    bmap_apply(result->_properties.begin(), result->_properties.end(),
-               _properties.begin(), _properties.end(),
-               true, TD_off,
-               inserter(temp, temp.begin()));
-    result->_properties_is_on = false;
-  }
-
-  result->_properties.swap(temp);
 
   return result;
 }

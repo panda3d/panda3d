@@ -19,51 +19,39 @@
 #ifndef VECTORDATATRANSITION_H
 #define VECTORDATATRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <nodeTransition.h>
-#include <luse.h>
-#include <indent.h>
-#include <pointerTo.h>
+#include "onTransition.h"
+#include "luse.h"
+#include "indent.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VectorDataTransition
-// Description : A VectorDataAttribute is a special data graph
+// Description : A VectorDataTransition is a special data graph
 //               attribute that is used to pass around a complex
-//               number like a vector or a matrix.  The Transition
-//               isn't often used, but it may contain a matrix that
-//               modifies the vector in the attribute.  (Note that a
-//               LMatrix4DataAttribute actually derives from
-//               VectorDataAttribute, even though its base type is a
-//               matrix, not a vector.)
+//               number like a vector or a matrix.  Matrices do not
+//               accumulate; each matrix replaces the one before.
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-class VectorDataTransition : public NodeTransition {
+template<class VecType>
+class VectorDataTransition : public OnTransition {
 public:
-  INLINE VectorDataTransition();
-  INLINE VectorDataTransition(const MatType &matrix);
-  INLINE VectorDataTransition(const VectorDataTransition<VecType, MatType> &copy);
-  INLINE void operator = (const VectorDataTransition<VecType, MatType> &copy);
+  INLINE VectorDataTransition(const VecType &value);
+  INLINE VectorDataTransition(const VectorDataTransition<VecType> &copy);
+  INLINE void operator = (const VectorDataTransition<VecType> &copy);
 
 public:
-
-  INLINE bool is_identity() const;
-
-  INLINE void set_matrix(const MatType &matrix);
-  INLINE const MatType &get_matrix() const;
-
-  virtual NodeTransition *compose(const NodeTransition *other) const;
-  virtual NodeTransition *invert() const;
-  virtual NodeAttribute *apply(const NodeAttribute *attrib) const;
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  INLINE void set_value(const VecType &value);
+  INLINE const VecType &get_value() const;
 
 protected:
-  virtual int internal_compare_to(const NodeTransition *other) const;
+  virtual void set_value_from(const OnTransition *other);
+  virtual int compare_values(const OnTransition *other) const;
+  virtual void output_value(ostream &out) const;
+  virtual void write_value(ostream &out, int indent_level) const;
 
 private:
-  MatType _matrix;
+  VecType _value;
 
 public:
   virtual TypeHandle get_type() const {
@@ -74,14 +62,12 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    NodeTransition::init_type();
+    OnTransition::init_type();
     do_init_type(VecType);
-    do_init_type(MatType);
     register_type(_type_handle,
                   string("VectorDataTransition<") +
-                  get_type_handle(VecType).get_name() + "," +
-                  get_type_handle(MatType).get_name() + ">",
-                  NodeTransition::get_class_type());
+                  get_type_handle(VecType).get_name() + ">",
+                  OnTransition::get_class_type());
   }
 
 private:

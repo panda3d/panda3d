@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorMaskTransition.h"
-#include "colorMaskAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle ColorMaskTransition::_type_handle;
 NodeTransition *ColorMaskTransition::
 make_copy() const {
   return new ColorMaskTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorMaskTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated ColorMaskAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ColorMaskTransition::
-make_attrib() const {
-  return new ColorMaskAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

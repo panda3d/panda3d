@@ -19,9 +19,9 @@
 #include "buttonThrower.h"
 
 #include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
+#include <buttonEventDataTransition.h>
 #include <buttonEvent.h>
-#include <nodeAttributes.h>
+#include <allTransitionsWrapper.h>
 #include <throw_event.h>
 
 TypeHandle ButtonThrower::_type_handle;
@@ -121,10 +121,10 @@ set_modifier_buttons(const ModifierButtons &mods) {
 //               element.
 ////////////////////////////////////////////////////////////////////
 void ButtonThrower::
-transmit_data(NodeAttributes &data) {
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
-    ButtonEventDataAttribute::const_iterator bi;
+transmit_data(AllTransitionsWrapper &data) {
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
+    ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
       string event_name = _prefix + be._button.get_name();

@@ -19,7 +19,6 @@
 #include "config_sgattrib.h"
 
 #include "textureTransition.h"
-#include "textureAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -38,16 +37,6 @@ TypeHandle TextureTransition::_type_handle;
 NodeTransition *TextureTransition::
 make_copy() const {
   return new TextureTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TextureAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TextureTransition::
-make_attrib() const {
-  return new TextureAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

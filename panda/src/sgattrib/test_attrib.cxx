@@ -25,7 +25,6 @@
 #include <traverserVisitor.h>
 #include <wrt.h>
 #include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
 #include <nullLevelState.h>
 
 
@@ -35,7 +34,7 @@ public:
   PrintNodes() {
     _indent_level = 0;
   }
-  bool reached_node(Node *node, AttributeWrapper &state,
+  bool reached_node(Node *node, TransitionWrapper &state,
                     NullLevelState &) {
     indent(cerr, _indent_level)
       << "\nReached " << *node << ", state is:\n";
@@ -43,13 +42,13 @@ public:
     return true;
   }
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                   AttributeWrapper &pre, AttributeWrapper &post,
+                   TransitionWrapper &pre, TransitionWrapper &post,
                    NullLevelState &) {
     _indent_level += 2;
     return true;
   }
   void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                    AttributeWrapper &pre, AttributeWrapper &post,
+                    TransitionWrapper &pre, TransitionWrapper &post,
                     const NullLevelState &) {
     _indent_level -= 2;
   }
@@ -106,7 +105,7 @@ main(int argc, char *argv[]) {
     cerr << "\n";
     PrintNodes pn;
     df_traverse(r, pn,
-                AllAttributesWrapper(),
+                AllTransitionsWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());
     cerr << "\n";

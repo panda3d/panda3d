@@ -56,8 +56,8 @@ TrackerNode(ClientBase *client, const string &device_name) :
   _tracker = DCAST(ClientTrackerDevice, device);
 
   if (_tracker != (ClientTrackerDevice *)NULL) {
-    _transform_attrib = new MatrixDataAttribute;
-    _attrib.set_attribute(_transform_type, _transform_attrib);
+    _transform_attrib = new MatrixDataTransition;
+    _attrib.set_transition(_transform_type, _transform_attrib);
   }
 }
 
@@ -79,7 +79,7 @@ TrackerNode::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void TrackerNode::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _tracker->poll();
     _tracker->lock();
@@ -92,7 +92,7 @@ transmit_data(NodeAttributes &data) {
     _transform_attrib->set_value(_transform);
 
     if (device_cat.is_debug()) {
-      device_cat.debug() << "TrackerNode:attributes" << endl;
+      device_cat.debug() << "TrackerNode:transitions" << endl;
       _attrib.write(device_cat.debug(false), 3);
     }
   }

@@ -122,7 +122,7 @@ is_button_known(int index) const {
 //               This must be periodically cleared, or the buttons
 //               will accumulate.
 ////////////////////////////////////////////////////////////////////
-INLINE ButtonEventDataAttribute *ClientButtonDevice::
+INLINE ButtonEventDataTransition *ClientButtonDevice::
 get_button_events() const {
   return _button_events;
 }

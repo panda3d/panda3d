@@ -67,7 +67,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  friend class DirectRenderAttribute;
 };
 
 #include "directRenderTransition.I"

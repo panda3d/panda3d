@@ -19,9 +19,9 @@
 #ifndef TRANSFORM2SG_H
 #define TRANSFORM2SG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <dataNode.h>
+#include "dataNode.h"
 
 class NodeRelation;
 
@@ -30,7 +30,7 @@ class NodeRelation;
 // Description : input: Transform (matrix)
 //
 //               output: none, but applies the matrix as the transform
-//               attribute for a given arc of the scene graph.
+//               transition for a given arc of the scene graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Transform2SG : public DataNode {
 PUBLISHED:
@@ -48,7 +48,7 @@ private:
 public:
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
   // inputs
   static TypeHandle _transform_type;

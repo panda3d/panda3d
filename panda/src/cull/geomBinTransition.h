@@ -40,7 +40,6 @@ PUBLISHED:
 
 public:
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
   virtual NodeTransition *make_initial() const;
 
 protected:
@@ -77,7 +76,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  friend class GeomBinAttribute;
 };
 
 #include "geomBinTransition.I"

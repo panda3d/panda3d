@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "bitMaskAttribute.h"
 
 template<class MaskType>
 TypeHandle BitMaskTransition<MaskType>::_type_handle;
@@ -154,40 +153,6 @@ template<class MaskType>
 NodeTransition *BitMaskTransition<MaskType>::
 invert() const {
   return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMaskTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-template<class MaskType>
-NodeAttribute *BitMaskTransition<MaskType>::
-apply(const NodeAttribute *attrib) const {
-  BitMaskAttribute<MaskType> *result;
-  DCAST_INTO_R(result, make_attrib(), NULL);
-
-  if (attrib == (const NodeAttribute *)NULL) {
-    // If there is no root attribute, the default attribute is always
-    // all bits on.
-    result->_mask = (MaskType::all_on() & _and) | _or;
-    return result;
-  }
-
-  if (_priority < result->_priority) {
-    // The priority is too low to affect the attribute.
-    return result;
-  }
-
-  const BitMaskAttribute<MaskType> *at;
-  DCAST_INTO_R(at, attrib, NULL);
-
-  result->_mask = (at->_mask & _and) | _or;
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

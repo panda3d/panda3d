@@ -24,6 +24,59 @@
 NodeTransitionCache AllTransitionsWrapper::_empty_cache;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::set_transition
+//       Access: Public
+//  Description: This flavor of set_transition() accepts a specific
+//               TypeHandle, indicating the type of transition that we
+//               are setting, and a NodeTransition pointer indicating
+//               the value of the transition.  The NodeTransition may
+//               be NULL indicating that the transition should be
+//               cleared.  If the NodeTransition is not NULL, it must
+//               match the type indicated by the TypeHandle.
+//
+//               The return value is a pointer to the *previous*
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+PT(NodeTransition) AllTransitionsWrapper::
+set_transition(TypeHandle handle, NodeTransition *trans) {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    _cache = new NodeTransitionCache;
+
+  } else if (_cache->get_ref_count() != 1) {
+    // Copy-on-write.
+    _cache = new NodeTransitionCache(*_cache);
+  }
+
+  _all_verified.clear();
+  return _cache->set_transition(handle, trans);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::clear_transition
+//       Access: Public
+//  Description: Removes any transition associated with the indicated
+//               handle from the set.
+//
+//               The return value is a pointer to the previous
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+PT(NodeTransition) AllTransitionsWrapper::
+clear_transition(TypeHandle handle) {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return NULL;
+
+  } else if (_cache->get_ref_count() != 1) {
+    // Copy-on-write.
+    _cache = new NodeTransitionCache(*_cache);
+  }
+
+  _all_verified.clear();
+  return _cache->clear_transition(handle);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::output
 //       Access: Public, Virtual
 //  Description:

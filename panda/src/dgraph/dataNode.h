@@ -38,22 +38,22 @@
 // the scene graph.
 //
 // In a normal scene graph, the arcs transmit state, and each node
-// inherits a collection of NodeAttribute values that are defined by
+// inherits a collection of NodeTransition values that are defined by
 // the total set of arcs above it.  In a data graph, the arcs transmit
 // data instead of state, and each piece of data is stored in a
-// NodeAttribute value.  Thus, each data node still inherits a
-// collection of NodeAttribute values, but now those values contain
+// NodeTransition value.  Thus, each data node still inherits a
+// collection of NodeTransition values, but now those values contain
 // data instead of state information.  In addition, a data node may
-// retransmit a different set of NodeAttribute values further down the
+// retransmit a different set of NodeTransition values further down the
 // chain.  This is implemented via the transmit_data() function, below.
 //
 // Each data node may define its own set of input values and output
-// values, each with its own unique attribute type.  This could be
-// done by subclassing a different kind of NodeAttribute for each
+// values, each with its own unique transition type.  This could be
+// done by subclassing a different kind of NodeTransition for each
 // different input or output value, but this quickly gets unwieldy.
 // Instead, you may find it convenient to use the function
 // register_data_transition(), below, which creates a new TypeHandle
-// associated with some existing NodeAttribute type, based on the
+// associated with some existing NodeTransition type, based on the
 // unique name you give it.  This allows producers and consumers to
 // match their corresponding data values up by TypeHandle number (and
 // hence by name); this matching happens more or less transparently by
@@ -65,7 +65,7 @@
 
 #include <namedNode.h>
 
-class NodeAttributes;
+class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DataNode
@@ -81,10 +81,10 @@ public:
   DataNode(const string &name = "");
 
   virtual void
-  transmit_data(NodeAttributes &data)=0;
+  transmit_data(AllTransitionsWrapper &data)=0;
 
   virtual void
-  transmit_data_per_child(NodeAttributes &data, int child_index);
+  transmit_data_per_child(AllTransitionsWrapper &data, int child_index);
 
 PUBLISHED:
   void set_spam_mode(bool flag);

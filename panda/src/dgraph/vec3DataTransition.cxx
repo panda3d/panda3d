@@ -18,7 +18,6 @@
 
 
 #include "vec3DataTransition.h"
-#include "vec3DataAttribute.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
@@ -35,14 +34,4 @@ TypeHandle Vec3DataTransition::_type_handle;
 NodeTransition *Vec3DataTransition::
 make_copy() const {
   return new Vec3DataTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Vec3DataTransition::make_attrib
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-NodeAttribute *Vec3DataTransition::
-make_attrib() const {
-  return new Vec3DataAttribute;
 }

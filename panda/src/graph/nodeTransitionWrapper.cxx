@@ -17,22 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeTransitionWrapper.h"
-#include "nodeAttributeWrapper.h"
 #include "nodeRelation.h"
 
 #include <indent.h>
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionWrapper::init_from
-//       Access: Public, Static
-//  Description: This is a named constructor that creates an empty
-//               NodeTransitionWrapper ready to access the same type
-//               of NodeTransition as the other.
-////////////////////////////////////////////////////////////////////
-NodeTransitionWrapper NodeTransitionWrapper::
-init_from(const NodeAttributeWrapper &attrib) {
-  return NodeTransitionWrapper(attrib.get_handle());
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::output

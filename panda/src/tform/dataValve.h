@@ -19,12 +19,12 @@
 #ifndef DATAVALVE_H
 #define DATAVALVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <dataNode.h>
-#include <modifierButtons.h>
-#include <referenceCount.h>
-#include <pointerTo.h>
+#include "dataNode.h"
+#include "modifierButtons.h"
+#include "referenceCount.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DataValve
@@ -111,10 +111,10 @@ private:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
   virtual void
-  transmit_data_per_child(NodeAttributes &data, int child_index);
+  transmit_data_per_child(AllTransitionsWrapper &data, int child_index);
 
   // inputs
   static TypeHandle _button_events_type;

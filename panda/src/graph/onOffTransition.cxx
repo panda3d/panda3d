@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "onOffTransition.h"
-#include "onOffAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -82,51 +81,6 @@ invert() const {
   // Invalid direction flag.
   nassertr(false, NULL);
   return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OnOffTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *OnOffTransition::
-apply(const NodeAttribute *attrib) const {
-  if (_direction == TD_identity) {
-    // The transition is identity; it has no effect.
-    return (NodeAttribute *)attrib;
-  }
-
-  OnOffAttribute *result;
-  if (attrib == (const NodeAttribute *)NULL) {
-    DCAST_INTO_R(result, make_attrib(), NULL);
-  } else {
-    DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
-  }
-
-  if (_priority < result->_priority || _direction == TD_identity) {
-    // The priority is too low to affect the attribute, or the
-    // transition is identity.
-    return result;
-  }
-
-  if (result->get_ref_count() > 1) {
-    // Copy on write.
-    DCAST_INTO_R(result, result->make_copy(), NULL);
-  }
-
-  result->_priority = _priority;
-
-  if (_direction == TD_on) {
-    result->_is_on = true;
-    result->set_value_from(this);
-  } else {
-    result->_is_on = false;
-  }
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

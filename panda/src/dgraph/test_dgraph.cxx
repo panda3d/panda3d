@@ -22,9 +22,7 @@
 #include "dataRelation.h"
 #include "dataGraphTraversal.h"
 #include "doubleDataTransition.h"
-#include "doubleDataAttribute.h"
 #include "vec3DataTransition.h"
-#include "vec3DataAttribute.h"
 
 #include <pt_NamedNode.h>
 
@@ -40,11 +38,11 @@ public:
   Producer(const string &name);
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
-  PT(DoubleDataAttribute) _t;
-  PT(Vec3DataAttribute) _xyz;
+  AllTransitionsWrapper _attrib;
+  PT(DoubleDataTransition) _t;
+  PT(Vec3DataTransition) _xyz;
 
   static TypeHandle _t_type;
   static TypeHandle _xyz_type;
@@ -82,18 +80,18 @@ TypeHandle Producer::_xyz_type;
 
 Producer::
 Producer(const string &name) : DataNode(name) {
-  _t = new DoubleDataAttribute(0.0);
-  _xyz = new Vec3DataAttribute(LPoint3f(0.0, 0.0, 0.0));
+  _t = new DoubleDataTransition(0.0);
+  _xyz = new Vec3DataTransition(LPoint3f(0.0, 0.0, 0.0));
 
   // Set up our _attrib member to directly reference our data members.
   // This way we can simply return a reference to our _attrib member,
   // without bothering to construct a new one each time.
-  _attrib.set_attribute(_t_type, _t);
-  _attrib.set_attribute(_xyz_type, _xyz);
+  _attrib.set_transition(_t_type, _t);
+  _attrib.set_transition(_xyz_type, _xyz);
 }
 
 void Producer::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   nout << get_name() << " sending xyz " << *_xyz << " t " << *_t << "\n";
   data = _attrib;
 }
@@ -112,7 +110,7 @@ public:
   Consumer(const string &name) : DataNode(name) { }
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
 
   static TypeHandle _s_type;
@@ -154,14 +152,14 @@ TypeHandle Consumer::_t_type;
 TypeHandle Consumer::_xyz_type;
 
 void Consumer::
-transmit_data(NodeAttributes &data) {
-  const DoubleDataAttribute *s;
-  const DoubleDataAttribute *t;
-  const Vec3DataAttribute *xyz;
+transmit_data(AllTransitionsWrapper &data) {
+  const DoubleDataTransition *s;
+  const DoubleDataTransition *t;
+  const Vec3DataTransition *xyz;
 
-  if (get_attribute_into(s, data, _s_type) &&
-      get_attribute_into(t, data, _t_type) &&
-      get_attribute_into(xyz, data, _xyz_type)) {
+  if (get_transition_into(s, data, _s_type) &&
+      get_transition_into(t, data, _t_type) &&
+      get_transition_into(xyz, data, _xyz_type)) {
     nout << get_name() << " got xyz " << *xyz << " s " << *s
          << " t " << *t << "\n";
   } else {

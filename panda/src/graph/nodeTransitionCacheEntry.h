@@ -85,11 +85,6 @@ public:
                  const NodeTransitionCacheEntry &b,
                  UpdateSeq now);
 
-  INLINE_GRAPH static NodeAttribute *
-  apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b);
-
-  INLINE_GRAPH NodeAttribute *make_attrib() const;
-
 public:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

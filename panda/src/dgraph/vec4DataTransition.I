@@ -22,16 +22,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Vec4DataTransition::
-Vec4DataTransition() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Vec4DataTransition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Vec4DataTransition::
-Vec4DataTransition(const LMatrix4f &matrix) :
-  VectorDataTransition<LPoint4f, LMatrix4f>(matrix)
+Vec4DataTransition(const LPoint4f &value) :
+  VectorDataTransition<LPoint4f>(value)
 {
 }

@@ -27,8 +27,8 @@
 
 #include <dataNode.h>
 #include <matrixDataTransition.h>
-#include <matrixDataAttribute.h>
-#include <nodeAttributes.h>
+#include <matrixDataTransition.h>
+#include <allTransitionsWrapper.h>
 #include <luse.h>
 #include <lmatrix.h>
 #include <pointerTo.h>
@@ -58,10 +58,10 @@ PUBLISHED:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
-  PT(MatrixDataAttribute) _transform_attrib;
+  AllTransitionsWrapper _attrib;
+  PT(MatrixDataTransition) _transform_attrib;
 
   // outputs
   static TypeHandle _transform_type;

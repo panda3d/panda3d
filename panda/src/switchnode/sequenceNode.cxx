@@ -26,7 +26,6 @@
 #include "config_switchnode.h"
 
 #include <graphicsStateGuardian.h>
-#include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
 #include <renderRelation.h>
 #include <renderTraverser.h>

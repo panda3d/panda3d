@@ -22,10 +22,9 @@
 ////////////////////////////////////////////////////////////////////
 //
 // This file defines the typedef for GraphHashGenerator, which defines
-// the kind of HashGenerator used by all the NodeTransitions and
-// NodeAttributes.  By changing this typedef we can change the
-// fundamental hash generation mechanism for these things, if
-// necessary.
+// the kind of HashGenerator used by all the NodeTransitions.  By
+// changing this typedef we can change the fundamental hash generation
+// mechanism for these things, if necessary.
 //
 // These hash codes are used to uniquify NodeTransitions, particularly
 // in the cull traverser, but only if the hashtable based extensions

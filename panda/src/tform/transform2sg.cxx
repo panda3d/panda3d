@@ -18,11 +18,10 @@
 
 #include "transform2sg.h"
 
-#include <nodeRelation.h>
-#include <transformTransition.h>
-#include <matrixDataTransition.h>
-#include <matrixDataAttribute.h>
-#include <nodeAttributes.h>
+#include "nodeRelation.h"
+#include "transformTransition.h"
+#include "matrixDataTransition.h"
+#include "allTransitionsWrapper.h"
 
 
 TypeHandle Transform2SG::_type_handle;
@@ -68,11 +67,11 @@ get_arc() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Transform2SG::
-transmit_data(NodeAttributes &data) {
-  const NodeAttribute *transform = data.get_attribute(_transform_type);
+transmit_data(AllTransitionsWrapper &data) {
+  const NodeTransition *transform = data.get_transition(_transform_type);
 
-  if (transform != (NodeAttribute *)NULL && _arc != (NodeRelation *)NULL) {
-    const LMatrix4f &mat = DCAST(MatrixDataAttribute, transform)->get_value();
+  if (transform != (NodeTransition *)NULL && _arc != (NodeRelation *)NULL) {
+    const LMatrix4f &mat = DCAST(MatrixDataTransition, transform)->get_value();
     _arc->set_transition(new TransformTransition(mat));
   }
 

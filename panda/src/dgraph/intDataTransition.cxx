@@ -18,7 +18,6 @@
 
 
 #include "intDataTransition.h"
-#include "intDataAttribute.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
@@ -35,14 +34,4 @@ TypeHandle IntDataTransition::_type_handle;
 NodeTransition *IntDataTransition::
 make_copy() const {
   return new IntDataTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: IntDataTransition::make_attrib
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-NodeAttribute *IntDataTransition::
-make_attrib() const {
-  return new IntDataAttribute;
 }

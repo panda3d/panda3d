@@ -53,7 +53,6 @@ public:
   INLINE PT(Texture) get_texture() const;
 
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
   virtual NodeTransition *make_initial() const;
 
   virtual void issue(GraphicsStateGuardianBase *gsgbase);
@@ -92,7 +91,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  friend class TextureAttribute;
 };
 
 #include "textureTransition.I"

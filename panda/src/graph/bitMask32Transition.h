@@ -22,7 +22,6 @@
 #include <pandabase.h>
 
 #include "bitMaskTransition.h"
-#include "bitMaskAttribute.h"
 
 #include <bitMask.h>
 
@@ -34,10 +33,8 @@
 ////////////////////////////////////////////////////////////////////
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, BitMaskTransition<BitMask32>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, BitMaskAttribute<BitMask32>);
 
 typedef BitMaskTransition<BitMask32> BitMask32Transition;
-typedef BitMaskAttribute<BitMask32> BitMask32Attribute;
 
 #ifdef __GNUC__
 #pragma interface

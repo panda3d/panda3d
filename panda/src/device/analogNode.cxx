@@ -55,8 +55,8 @@ AnalogNode(ClientBase *client, const string &device_name) :
 
   _analog = DCAST(ClientAnalogDevice, device);
 
-  _xyz = new Vec3DataAttribute(LPoint3f(0, 0, 0));
-  _attrib.set_attribute(_xyz_type, _xyz);
+  _xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
+  _attrib.set_transition(_xyz_type, _xyz);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AnalogNode::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _analog->poll();
 

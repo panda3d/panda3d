@@ -29,7 +29,6 @@
 #include <luse.h>
 
 class GraphicsStateGuardianBase;
-class AllAttributesWrapper;
 class GeomNodeContext;
 
 ////////////////////////////////////////////////////////////////////

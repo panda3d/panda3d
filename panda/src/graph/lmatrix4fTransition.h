@@ -22,7 +22,6 @@
 #include <pandabase.h>
 
 #include "matrixTransition.h"
-#include "matrixAttribute.h"
 
 #include <luse.h>
 
@@ -34,10 +33,8 @@
 ////////////////////////////////////////////////////////////////////
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MatrixTransition<LMatrix4f>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MatrixAttribute<LMatrix4f>);
 
 typedef MatrixTransition<LMatrix4f> LMatrix4fTransition;
-typedef MatrixAttribute<LMatrix4f> LMatrix4fAttribute;
 
 #ifdef __GNUC__
 #pragma interface

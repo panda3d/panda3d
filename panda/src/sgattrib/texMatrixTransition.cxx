@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "texMatrixTransition.h"
-#include "texMatrixAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle TexMatrixTransition::_type_handle;
 NodeTransition *TexMatrixTransition::
 make_copy() const {
   return new TexMatrixTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated TexMatrixAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *TexMatrixTransition::
-make_attrib() const {
-  return new TexMatrixAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

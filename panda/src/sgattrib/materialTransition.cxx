@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "materialTransition.h"
-#include "materialAttribute.h"
 #include "config_sgattrib.h"
 
 #include <indent.h>
@@ -37,16 +36,6 @@ TypeHandle MaterialTransition::_type_handle;
 NodeTransition *MaterialTransition::
 make_copy() const {
   return new MaterialTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated MaterialAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *MaterialTransition::
-make_attrib() const {
-  return new MaterialAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

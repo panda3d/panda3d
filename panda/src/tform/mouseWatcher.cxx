@@ -23,7 +23,6 @@
 #include "mouse.h"
 #include "mouseData.h"
 #include "buttonEventDataTransition.h"
-#include "buttonEventDataAttribute.h"
 #include "mouseButton.h"
 #include "throw_event.h"
 #include "eventParameter.h"
@@ -461,10 +460,10 @@ global_keyboard_release(const MouseWatcherParameter &param) {
 //  Description: Convert mouse data into a mouseWatcher matrix
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-transmit_data(NodeAttributes &data) {
+transmit_data(AllTransitionsWrapper &data) {
   // Get the current mouse position.
-  const Vec3DataAttribute *xyz;
-  if (!get_attribute_into(xyz, data, _xyz_type)) {
+  const Vec3DataTransition *xyz;
+  if (!get_transition_into(xyz, data, _xyz_type)) {
     if (_has_mouse) {
       // Hide the mouse pointer.
       if (!_geometry.is_null()) {
@@ -512,9 +511,9 @@ transmit_data(NodeAttributes &data) {
   }
 
   // Look for button events.
-  const ButtonEventDataAttribute *b;
-  if (get_attribute_into(b, data, _button_events_type)) {
-    ButtonEventDataAttribute::const_iterator bi;
+  const ButtonEventDataTransition *b;
+  if (get_transition_into(b, data, _button_events_type)) {
+    ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
       _mods.add_event(be);
@@ -537,8 +536,8 @@ transmit_data(NodeAttributes &data) {
     // really only want to suppress the mouse position information.
     // Button events must still get through.
 
-    data.clear_attribute(_xyz_type);
-    data.clear_attribute(_pixel_xyz_type);
+    data.clear_transition(_xyz_type);
+    data.clear_transition(_pixel_xyz_type);
   }
 }
 

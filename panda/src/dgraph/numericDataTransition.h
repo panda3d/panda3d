@@ -19,50 +19,36 @@
 #ifndef NUMERICDATATRANSITION_H
 #define NUMERICDATATRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <nodeTransition.h>
-#include <indent.h>
+#include "onTransition.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NumericDataTransition
-// Description : A NumericDataAttribute is a special data graph
+// Description : A NumericDataTransition is a special data graph
 //               attribute that is used to pass around a single
-//               number.  A NumericDataTransition isn't often used,
-//               but when it is it may transform the number by a scale
-//               and/or offset.
+//               number.
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
-class NumericDataTransition : public NodeTransition {
+class NumericDataTransition : public OnTransition {
 public:
-  INLINE NumericDataTransition();
-  INLINE NumericDataTransition(NumType scale, NumType offset);
+  INLINE NumericDataTransition(NumType value);
   INLINE NumericDataTransition(const NumericDataTransition<NumType> &copy);
   INLINE void operator = (const NumericDataTransition<NumType> &copy);
 
 public:
-
-  INLINE bool is_identity() const;
-
-  INLINE void set_scale(NumType scale);
-  INLINE NumType get_scale() const;
-
-  INLINE void set_offset(NumType offset);
-  INLINE NumType get_offset() const;
-
-  virtual NodeTransition *compose(const NodeTransition *other) const;
-  virtual NodeTransition *invert() const;
-  virtual NodeAttribute *apply(const NodeAttribute *attrib) const;
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  INLINE void set_value(NumType value);
+  INLINE NumType get_value() const;
 
 protected:
-  virtual int internal_compare_to(const NodeTransition *other) const;
+  virtual void set_value_from(const OnTransition *other);
+  virtual int compare_values(const OnTransition *other) const;
+  virtual void output_value(ostream &out) const;
+  virtual void write_value(ostream &out, int indent_level) const;
 
 private:
-  NumType _scale;
-  NumType _offset;
+  NumType _value;
 
 public:
   virtual TypeHandle get_type() const {
@@ -73,11 +59,11 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    NodeTransition::init_type();
+    OnTransition::init_type();
     register_type(_type_handle,
                   string("NumericDataTransition<") +
                   get_type_handle(NumType).get_name() + ">",
-                  NodeTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

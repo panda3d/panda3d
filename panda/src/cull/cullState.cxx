@@ -23,8 +23,6 @@
 #include <indent.h>
 #include <graphicsStateGuardian.h>
 
-#include <allAttributesWrapper.h>
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::check_currency
 //       Access: Public

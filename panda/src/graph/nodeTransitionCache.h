@@ -39,6 +39,8 @@ public:
   typedef GraphHashGenerator HashGenerator;
 
   NodeTransitionCache();
+  NodeTransitionCache(const NodeTransitionCache &copy);
+  void operator = (const NodeTransitionCache &copy);
   NodeTransitionCache(const NodeTransitions &nt);
   ~NodeTransitionCache();
 
@@ -127,8 +129,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class NodeAttributes;
 };
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCache &ntc);

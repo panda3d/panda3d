@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorMatrixTransition.h"
-#include "colorMatrixAttribute.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -36,16 +35,6 @@ TypeHandle ColorMatrixTransition::_type_handle;
 NodeTransition *ColorMatrixTransition::
 make_copy() const {
   return new ColorMatrixTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorMatrixTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated ColorMatrixAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ColorMatrixTransition::
-make_attrib() const {
-  return new ColorMatrixAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

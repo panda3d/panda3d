@@ -32,7 +32,7 @@
 //               This is a DataNode which is intended to be parented
 //               to the data graph below a device which is generating
 //               a sequence of button events as stored in an
-//               ButtonEventDataAttributes data member.  It simply
+//               ButtonEventDataTransitions data member.  It simply
 //               takes each button it finds and throws a corresponding
 //               event based on the button name via the throw_event()
 //               call.
@@ -58,7 +58,7 @@ protected:
 public:
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
   // inputs
   static TypeHandle _button_events_type;

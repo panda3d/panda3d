@@ -28,7 +28,6 @@
 
 #include <pointerTo.h>
 
-class NodeAttribute;
 class NodeRelation;
 
 // We need to define this temporary macro so we can pass a parameter

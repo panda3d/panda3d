@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stencilTransition.h"
-#include "stencilAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle StencilTransition::_type_handle;
 NodeTransition *StencilTransition::
 make_copy() const {
   return new StencilTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated StencilAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *StencilTransition::
-make_attrib() const {
-  return new StencilAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

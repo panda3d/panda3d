@@ -18,7 +18,6 @@
 
 
 #include "matrixDataTransition.h"
-#include "matrixDataAttribute.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
@@ -35,14 +34,4 @@ TypeHandle MatrixDataTransition::_type_handle;
 NodeTransition *MatrixDataTransition::
 make_copy() const {
   return new MatrixDataTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MatrixDataTransition::make_attrib
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-NodeAttribute *MatrixDataTransition::
-make_attrib() const {
-  return new MatrixDataAttribute;
 }

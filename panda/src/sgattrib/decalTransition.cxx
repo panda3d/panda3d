@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "decalTransition.h"
-#include "decalAttribute.h"
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
@@ -34,16 +33,6 @@ TypeHandle DecalTransition::_type_handle;
 NodeTransition *DecalTransition::
 make_copy() const {
   return new DecalTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DecalTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated DecalAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *DecalTransition::
-make_attrib() const {
-  return new DecalAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,10 +1,6 @@
 
-#include "buttonEventDataAttribute.cxx"
 #include "buttonEventDataTransition.cxx"
 #include "config_dgraph.cxx"
-#include "matrixDataAttribute.cxx"
 #include "matrixDataTransition.cxx"
-#include "vec3DataAttribute.cxx"
 #include "vec3DataTransition.cxx"
-#include "vec4DataAttribute.cxx"
 #include "vec4DataTransition.cxx"

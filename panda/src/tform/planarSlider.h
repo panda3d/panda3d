@@ -23,10 +23,8 @@
 
 #include <dataNode.h>
 #include <vec3DataTransition.h>
-#include <vec3DataAttribute.h>
 #include <matrixDataTransition.h>
-#include <matrixDataAttribute.h>
-#include <nodeAttributes.h>
+#include <allTransitionsWrapper.h>
 #include <luse.h>
 #include <lmatrix.h>
 #include <modifierButtons.h>
@@ -68,10 +66,10 @@ private:
 public:
 
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
-  PT(MatrixDataAttribute) _transform;
+  AllTransitionsWrapper _attrib;
+  PT(MatrixDataTransition) _transform;
 
   // inputs
   static TypeHandle _xyz_type;

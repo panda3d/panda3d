@@ -1,5 +1,5 @@
 // Filename: buttonEventDataTransition.cxx
-// Created by:  drose (09Feb99)
+// Created by:  drose (27Mar00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,9 +18,30 @@
 
 
 #include "buttonEventDataTransition.h"
-#include "buttonEventDataAttribute.h"
+#include "buttonEventDataTransition.h"
+
+#include "indent.h"
+#include "modifierButtons.h"
+
+#include <algorithm>
 
 TypeHandle ButtonEventDataTransition::_type_handle;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::update_mods
+//       Access: Public
+//  Description: Updates the indicated ModifierButtons object with all
+//               of the button up/down transitions indicated in the
+//               queue.
+////////////////////////////////////////////////////////////////////
+void ButtonEventDataTransition::
+update_mods(ModifierButtons &mods) const {
+  Buttons::const_iterator bi;
+  for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
+    mods.add_event(*bi);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::make_copy
@@ -33,36 +54,44 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonEventDataTransition::make_attrib
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-NodeAttribute *ButtonEventDataTransition::
-make_attrib() const {
-  return new ButtonEventDataAttribute;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::compose
 //       Access: Public, Virtual
-//  Description: Returns a new transition that corresponds to the
-//               composition of this transition with the second
-//               transition (which must be of an equivalent type).
-//               This may return the same pointer as either source
-//               transition.  Applying the transition returned from
-//               this function to an attribute attribute will produce
-//               the same effect as applying each transition
-//               separately.
+//  Description: Attempts to compose this transition with the other one,
+//               if that makes sense to do.  Returns a new
+//               NodeTransition pointer that represents the compose, or
+//               if the compose is not possible, returns the "other"
+//               pointer unchanged (which is the result of the compose).
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ButtonEventDataTransition::
-compose(const NodeTransition *) const {
-  return NULL;
+compose(const NodeTransition *other) const {
+  const ButtonEventDataTransition *oa;
+  DCAST_INTO_R(oa, other, NULL);
+
+  if (_buttons.empty()) {
+    return (ButtonEventDataTransition *)oa;
+
+  } else if (oa->_buttons.empty()) {
+    return (ButtonEventDataTransition *)this;
+
+  } else {
+    // We have to create a new data transition that includes both sets
+    // of buttons.
+    ButtonEventDataTransition *new_attrib =
+      new ButtonEventDataTransition(*this);
+
+    new_attrib->_buttons.insert(new_attrib->_buttons.end(),
+                                oa->_buttons.begin(), oa->_buttons.end());
+    return new_attrib;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::invert
 //       Access: Public, Virtual
-//  Description:
+//  Description: Returns a new transition that corresponds to the
+//               inverse of this transition.  If the transition was
+//               identity, this may return the same pointer.  Returns
+//               NULL if the transition cannot be inverted.
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ButtonEventDataTransition::
 invert() const {
@@ -70,17 +99,29 @@ invert() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonEventDataTransition::apply
+//     Function: ButtonEventDataTransition::output
 //       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-NodeAttribute *ButtonEventDataTransition::
-apply(const NodeAttribute *attrib) const {
-  return (NodeAttribute *)attrib;
+void ButtonEventDataTransition::
+output(ostream &out) const {
+  Buttons::const_iterator bi;
+  for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
+    if (bi != _buttons.begin()) {
+      out << ", ";
+    }
+    out << *bi;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ButtonEventDataTransition::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << (*this) << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,6 +130,20 @@ apply(const NodeAttribute *attrib) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int ButtonEventDataTransition::
-internal_compare_to(const NodeTransition *) const {
-  return 0;
+internal_compare_to(const NodeTransition *other) const {
+  const ButtonEventDataTransition *ot;
+  DCAST_INTO_R(ot, other, false);
+
+#ifdef WIN32_VC
+  if (ot->_buttons == _buttons)
+    return 0;
+  else if (lexicographical_compare(_buttons.begin(), _buttons.end(),
+                                ot->_buttons.begin(), ot->_buttons.end()))
+    return -1;
+  else
+    return 1;
+#else
+  return lexicographical_compare_3way(_buttons.begin(), _buttons.end(),
+                                      ot->_buttons.begin(), ot->_buttons.end());
+#endif
 }

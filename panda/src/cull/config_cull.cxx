@@ -25,7 +25,6 @@
 #include "geomBinGroup.h"
 #include "geomBinNormal.h"
 #include "geomBinTransition.h"
-#include "geomBinAttribute.h"
 #include "geomBinFixed.h"
 #include "directRenderTransition.h"
 
@@ -42,7 +41,6 @@ ConfigureFn(config_cull) {
   GeomBinGroup::init_type();
   GeomBinNormal::init_type();
   GeomBinTransition::init_type();
-  GeomBinAttribute::init_type();
   GeomBinFixed::init_type();
   DirectRenderTransition::init_type();
 

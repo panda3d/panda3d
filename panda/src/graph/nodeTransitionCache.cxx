@@ -36,6 +36,28 @@ NodeTransitionCache() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitionCache::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+NodeTransitionCache::
+NodeTransitionCache(const NodeTransitionCache &copy) :
+  _cache(copy._cache)
+{
+  MemoryUsage::update_type(this, get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitionCache::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void NodeTransitionCache::
+operator = (const NodeTransitionCache &copy) {
+  _cache = copy._cache;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::Constructor from NodeTransitions
 //       Access: Public
 //  Description: Adds an entry into the cache for each non-identity

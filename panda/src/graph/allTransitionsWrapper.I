@@ -72,18 +72,6 @@ init_from(const AllTransitionsWrapper &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AllTransitionsWrapper::init_from
-//       Access: Public, Static
-//  Description: This is a named constructor that creates an empty
-//               AllTransitionsWrapper ready to access the same type
-//               of NodeTransition as the other.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH AllTransitionsWrapper AllTransitionsWrapper::
-init_from(const AllAttributesWrapper &) {
-  return AllTransitionsWrapper();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::is_empty
 //       Access: Public
 //  Description: Returns true if there are no Transitions stored in
@@ -95,30 +83,6 @@ is_empty() const {
   return
     (_cache == (NodeTransitionCache *)NULL) ||
     _cache->is_empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AllTransitionsWrapper::set_transition
-//       Access: Public
-//  Description: This flavor of set_transition() accepts a specific
-//               TypeHandle, indicating the type of transition that we
-//               are setting, and a NodeTransition pointer indicating
-//               the value of the transition.  The NodeTransition may
-//               be NULL indicating that the transition should be
-//               cleared.  If the NodeTransition is not NULL, it must
-//               match the type indicated by the TypeHandle.
-//
-//               The return value is a pointer to the *previous*
-//               transition in the set, if any, or NULL if there was
-//               none.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH PT(NodeTransition) AllTransitionsWrapper::
-set_transition(TypeHandle handle, NodeTransition *trans) {
-  if (_cache == (NodeTransitionCache *)NULL) {
-    _cache = new NodeTransitionCache;
-  }
-  _all_verified.clear();
-  return _cache->set_transition(handle, trans);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,25 +100,6 @@ set_transition(NodeTransition *trans) {
   nassertr(trans != (NodeTransition *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
   return set_transition(trans->get_handle(), trans);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AllTransitionsWrapper::clear_transition
-//       Access: Public
-//  Description: Removes any transition associated with the indicated
-//               handle from the set.
-//
-//               The return value is a pointer to the previous
-//               transition in the set, if any, or NULL if there was
-//               none.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH PT(NodeTransition) AllTransitionsWrapper::
-clear_transition(TypeHandle handle) {
-  if (_cache == (NodeTransitionCache *)NULL) {
-    return NULL;
-  }
-  _all_verified.clear();
-  return _cache->clear_transition(handle);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,6 +130,17 @@ get_transition(TypeHandle handle) const {
     return NULL;
   }
   return _cache->get_transition(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::clear
+//       Access: Public
+//  Description: Completely empties the set of Transitions stored in
+//               the wrapper.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void AllTransitionsWrapper::
+clear() {
+  _cache = (NodeTransitionCache *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderModeTransition.h"
-#include "renderModeAttribute.h"
 
 #include <indent.h>
 
@@ -32,16 +31,6 @@ TypeHandle RenderModeTransition::_type_handle;
 NodeTransition *RenderModeTransition::
 make_copy() const {
   return new RenderModeTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderModeTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated RenderModeAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *RenderModeTransition::
-make_attrib() const {
-  return new RenderModeAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

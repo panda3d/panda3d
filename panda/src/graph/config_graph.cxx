@@ -23,13 +23,9 @@
 #include "nodeRelation.h"
 #include "nodeTransition.h"
 #include "nodeTransitionCache.h"
-#include "nodeAttribute.h"
 #include "onOffTransition.h"
-#include "onOffAttribute.h"
 #include "multiNodeTransition.h"
-#include "multiNodeAttribute.h"
 #include "immediateTransition.h"
-#include "immediateAttribute.h"
 
 #include <dconfig.h>
 
@@ -95,13 +91,9 @@ init_libgraph() {
   NodeRelation::init_type();
   NodeTransition::init_type();
   NodeTransitionCache::init_type();
-  NodeAttribute::init_type();
   OnOffTransition::init_type();
-  OnOffAttribute::init_type();
   MultiNodeTransition::init_type();
-  MultiNodeAttribute::init_type();
   ImmediateTransition::init_type();
-  ImmediateAttribute::init_type();
 
   NodeRelation::register_with_factory();
 

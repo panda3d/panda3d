@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthTestTransition.h"
-#include "depthTestAttribute.h"
 
 #include <datagram.h>
 #include <datagramIterator.h>
@@ -36,16 +35,6 @@ TypeHandle DepthTestTransition::_type_handle;
 NodeTransition *DepthTestTransition::
 make_copy() const {
   return new DepthTestTransition(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthTestTransition::make_attrib
-//       Access: Public, Virtual
-//  Description: Returns a newly allocated DepthTestAttribute.
-////////////////////////////////////////////////////////////////////
-NodeAttribute *DepthTestTransition::
-make_attrib() const {
-  return new DepthTestAttribute;
 }
 
 ////////////////////////////////////////////////////////////////////

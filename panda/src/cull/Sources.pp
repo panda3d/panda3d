@@ -14,7 +14,6 @@
      cullStateLookup.h cullStateSubtree.I cullStateSubtree.h  \
      cullTraverser.I cullTraverser.h directRenderTransition.I  \
      directRenderTransition.h geomBin.I geomBin.h  \
-     geomBinAttribute.I geomBinAttribute.N geomBinAttribute.h  \
      geomBinBackToFront.I geomBinBackToFront.h geomBinFixed.I  \
      geomBinFixed.h geomBinGroup.I geomBinGroup.h geomBinNormal.h  \
      geomBinTransition.I geomBinTransition.h geomBinUnsorted.I  \
@@ -23,7 +22,7 @@
   #define INCLUDED_SOURCES \
      config_cull.cxx cullState.cxx cullStateLookup.cxx  \
      cullStateSubtree.cxx cullTraverser.cxx  \
-     directRenderTransition.cxx geomBin.cxx geomBinAttribute.cxx  \
+     directRenderTransition.cxx geomBin.cxx \
      geomBinBackToFront.cxx geomBinFixed.cxx geomBinGroup.cxx  \
      geomBinNormal.cxx geomBinTransition.cxx geomBinUnsorted.cxx 
 
@@ -32,7 +31,7 @@
     cullStateLookup.I cullStateLookup.h cullStateSubtree.I \
     cullStateSubtree.h cullTraverser.I cullTraverser.h \
     directRenderTransition.I directRenderTransition.h geomBin.I \
-    geomBin.h geomBinAttribute.I geomBinAttribute.h \
+    geomBin.h \
     geomBinBackToFront.I geomBinBackToFront.h geomBinFixed.I \
     geomBinFixed.h geomBinGroup.I geomBinGroup.h geomBinNormal.h \
     geomBinTransition.I geomBinTransition.h geomBinUnsorted.I \

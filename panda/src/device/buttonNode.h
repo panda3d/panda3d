@@ -25,7 +25,7 @@
 #include "clientButtonDevice.h"
 
 #include <dataNode.h>
-#include <nodeAttributes.h>
+#include <allTransitionsWrapper.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -67,10 +67,10 @@ public:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
-  transmit_data(NodeAttributes &data);
+  transmit_data(AllTransitionsWrapper &data);
 
-  NodeAttributes _attrib;
-  PT(ButtonEventDataAttribute) _button_events;
+  AllTransitionsWrapper _attrib;
+  PT(ButtonEventDataTransition) _button_events;
 
   // outputs
   static TypeHandle _button_events_type;

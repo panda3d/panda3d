@@ -16,32 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-/* okcircular */
-#include "vectorDataAttribute.h"
-
-template<class VecType, class MatType>
-TypeHandle VectorDataTransition<VecType, MatType>::_type_handle;
+template<class VecType>
+TypeHandle VectorDataTransition<VecType>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-INLINE VectorDataTransition<VecType, MatType>::
-VectorDataTransition() {
-  _matrix = MatType::ident_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-INLINE VectorDataTransition<VecType, MatType>::
-VectorDataTransition(const MatType &matrix) :
-  _matrix(matrix)
+template<class VecType>
+INLINE VectorDataTransition<VecType>::
+VectorDataTransition(const VecType &value) :
+  _value(value)
 {
 }
 
@@ -50,11 +36,11 @@ VectorDataTransition(const MatType &matrix) :
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-INLINE VectorDataTransition<VecType, MatType>::
-VectorDataTransition(const VectorDataTransition<VecType, MatType> &copy) :
-  NodeTransition(copy),
-  _matrix(copy._matrix)
+template<class VecType>
+INLINE VectorDataTransition<VecType>::
+VectorDataTransition(const VectorDataTransition<VecType> &copy) :
+  OnTransition(copy),
+  _value(copy._value)
 {
 }
 
@@ -63,165 +49,84 @@ VectorDataTransition(const VectorDataTransition<VecType, MatType> &copy) :
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-INLINE void VectorDataTransition<VecType, MatType>::
-operator = (const VectorDataTransition<VecType, MatType> &copy) {
-  NodeTransition::operator = (copy);
-  _matrix = copy._matrix;
+template<class VecType>
+INLINE void VectorDataTransition<VecType>::
+operator = (const VectorDataTransition<VecType> &copy) {
+  OnTransition::operator = (copy);
+  _value = copy._value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::is_identity
-//       Access: Public, Virtual
-//  Description: Returns true if this transition does not affect any
-//               numbers going through it.
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-INLINE bool VectorDataTransition<VecType, MatType>::
-is_identity() const {
-  return _matrix.almost_equal(MatType::ident_mat());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::set_matrix
+//     Function: VectorDataTransition::set_value
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-void VectorDataTransition<VecType, MatType>::
-set_matrix(const MatType &matrix) {
-  _matrix = matrix;
+template<class VecType>
+INLINE void VectorDataTransition<VecType>::
+set_value(const VecType &value) {
+  _value = value;
   state_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::get_matrix
+//     Function: VectorDataTransition::get_value
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-const MatType &VectorDataTransition<VecType, MatType>::
-get_matrix() const {
-  return _matrix;
+template<class VecType>
+INLINE const VecType &VectorDataTransition<VecType>::
+get_value() const {
+  return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::compose
+//     Function: VectorDataTransition::set_value_from
 //       Access: Public, Virtual
-//  Description: Returns a new transition that corresponds to the
-//               composition of this transition with the second
-//               transition (which must be of an equivalent type).
-//               This may return the same pointer as either source
-//               transition.  Applying the transition returned from
-//               this function to an attribute attribute will produce
-//               the same effect as applying each transition
-//               separately.
+//  Description: Copies the value from the other transition pointer,
+//               which is guaranteed to be another VectorDataTransition.
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-NodeTransition *VectorDataTransition<VecType, MatType>::
-compose(const NodeTransition *other) const {
-  const VectorDataTransition<VecType, MatType> *ot;
-  DCAST_INTO_R(ot, other, NULL);
-
-  if (is_identity()) {
-    return (VectorDataTransition<VecType, MatType> *)ot;
-
-  } else if (ot->is_identity()) {
-    return (VectorDataTransition<VecType, MatType> *)this;
-
-  } else {
-    NodeTransition *c = make_copy();
-    VectorDataTransition<VecType, MatType> *result;
-    DCAST_INTO_R(result, c, NULL);
-
-    result->_matrix = ot->_matrix * _matrix;
-    return result;
-  }
+template<class VecType>
+void VectorDataTransition<VecType>::
+set_value_from(const OnTransition *other) {
+  const VectorDataTransition<VecType> *ot;
+  DCAST_INTO_V(ot, other);
+  _value = ot->_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::invert
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-NodeTransition *VectorDataTransition<VecType, MatType>::
-invert() const {
-  if (is_identity()) {
-    return (VectorDataTransition<VecType, MatType> *)this;
-
-  } else {
-    PT(NodeTransition) c = make_copy();
-    VectorDataTransition<VecType, MatType> *result;
-    DCAST_INTO_R(result, c, NULL);
-
-    bool invertible = result->_matrix.invert_from(_matrix);
-    if (!invertible) {
-      return NULL;
-    }
-    return result;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::apply
-//       Access: Public, Virtual
-//  Description: Returns a new attribute (or possibly the same
-//               attribute) that represents the effect of applying this
-//               indicated transition to the indicated attribute.  The
-//               source attribute may be NULL, indicating the initial
-//               attribute.
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-NodeAttribute *VectorDataTransition<VecType, MatType>::
-apply(const NodeAttribute *attrib) const {
-  const VectorDataAttribute<VecType, MatType> *at;
-  DCAST_INTO_R(at, attrib, NULL);
-
-  if (is_identity()) {
-    return (VectorDataAttribute<VecType, MatType> *)attrib;
-  }
-
-  NodeAttribute *c = make_attrib();
-  VectorDataAttribute<VecType, MatType> *result;
-  DCAST_INTO_R(result, c, NULL);
-
-  result->_value = at->_value * _matrix;
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-void VectorDataTransition<VecType, MatType>::
-output(ostream &out) const {
-  out << _matrix;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-void VectorDataTransition<VecType, MatType>::
-write(ostream &out, int indent_level) const {
-  _matrix.write(out, indent_level);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VectorDataTransition::internal_compare_to
+//     Function: VectorDataTransition::compare_values
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-template<class VecType, class MatType>
-int VectorDataTransition<VecType, MatType>::
-internal_compare_to(const NodeTransition *other) const {
-  const VectorDataTransition<VecType, MatType> *ot;
+template<class VecType>
+int VectorDataTransition<VecType>::
+compare_values(const OnTransition *other) const {
+  const VectorDataTransition<VecType> *ot;
   DCAST_INTO_R(ot, other, false);
+  return _value.compare_to(ot->_value);
+}
 
-  return _matrix.compare_to(ot->_matrix);
+////////////////////////////////////////////////////////////////////
+//     Function: VectorDataTransition::output_value
+//       Access: Protected, Virtual
+//  Description: Formats the value for human consumption on one line.
+////////////////////////////////////////////////////////////////////
+template<class VecType>
+void VectorDataTransition<VecType>::
+output_value(ostream &out) const {
+  out << _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VectorDataTransition::write_value
+//       Access: Protected, Virtual
+//  Description: Formats the value for human consumption on multiple
+//               lines if necessary.
+////////////////////////////////////////////////////////////////////
+template<class VecType>
+void VectorDataTransition<VecType>::
+write_value(ostream &out, int indent_level) const {
+  // Oops, this isn't defined for vectors.
+  //  _value.write(out, indent_level);
+  indent(out, indent_level) << _value << "\n";
 }

@@ -47,7 +47,6 @@ PUBLISHED:
 
 public:
   virtual NodeTransition *make_copy() const;
-  virtual NodeAttribute *make_attrib() const;
   virtual NodeTransition *make_initial() const;
 
   virtual bool has_sub_render() const;
@@ -72,7 +71,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  friend class DecalAttribute;
 };
 
 #include "decalTransition.I"

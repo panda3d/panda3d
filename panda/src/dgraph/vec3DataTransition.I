@@ -22,17 +22,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Vec3DataTransition::
-Vec3DataTransition() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Vec3DataTransition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Vec3DataTransition::
-Vec3DataTransition(const LMatrix4f &matrix) :
-  VectorDataTransition<LPoint3f, LMatrix4f>(matrix)
+Vec3DataTransition(const LPoint3f &value) :
+  VectorDataTransition<LPoint3f>(value)
 {
 }
 
