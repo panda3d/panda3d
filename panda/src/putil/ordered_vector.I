@@ -768,7 +768,7 @@ insert(const ordered_vector<Key, Compare>::value_type &key) {
 template<class Key, class Compare>
 INLINE void ov_set<Key, Compare>::
 sort() {
-  return ordered_vector<Key, Compare>::sort_unique();
+  ordered_vector<Key, Compare>::sort_unique();
 }
 
 ////////////////////////////////////////////////////////////////////
