@@ -2,8 +2,8 @@ HOW TO FIX TRANSPARENCY ISSUES
 
 Usually transparency works as expected in Panda automatically, but
 sometimes it just seems to go awry, where a semitransparent object in
-the foreground seems to partially obscure a semitransparent object
-behind it.  This is especially likely to happen with large flat
+the background seems to partially obscure a semitransparent object in
+front of it.  This is especially likely to happen with large flat
 polygon cutouts, or when a transparent object is contained within
 another transparent object, or when parts of a transparent object can
 be seen behind other parts of the same object.
@@ -14,10 +14,10 @@ drawing everything in order from farthest away to nearest.  This means
 sorting each polygon--actually, each pixel, for true correctness--into
 back-to-front order before drawing the scene.
 
-It is, of course, too expensive to split up every transparent object
-into individual pixels or polygons for sorting individually, so Panda
-sorts objects at the Geom level, according to the center of the
-bounding volume.  This works well 95% of the time.
+It is, of course, impossible to split up every transparent object into
+individual pixels or polygons for sorting individually, so Panda sorts
+objects at the Geom level, according to the center of the bounding
+volume.  This works well 95% of the time.
 
 You run into problems with large flat polygons, though, since these
 tend to have parts that are far away from the center of their bounding
@@ -42,7 +42,7 @@ slightly more expensive rendering mode than the default of M_alpha, so
 it's not enabled by default in Panda.  But egg-palettize will turn it
 on automatically for a particular model if it detects textures that
 appear to be cutouts of the appropriate nature, which is another
-reason to use egg-palettize if you are not already.
+reason to use egg-palettize if you are not using it already.
 
 Second, an easy thing to do is to chop up one or both competing models
 into smaller pieces, each of which can be sorted independently by
@@ -70,14 +70,14 @@ You should be careful only to disable depth write on the transparent
 pieces, and not on the opaque parts.
 
 A final option is to make explicit sorting requests to Panda.  This is
-often the last resort because it is more difficult, but it does have
-the advantage of not adding additional performance penalties to your
-scene.  It only works well when the transparent objects can be sorted
-reliably with respect to everything else behind them.  For instance,
-clouds in the sky can reliably be drawn before almost everything else
-in the scene, except the sky itself.  Similarly, a big flat that is up
-against an opaque wall can reliably be drawn after all of the opaque
-objects, but before any other transparent object, regardless of where
-the camera happens to be placed in the scene.  See
-howto.control_render_order.txt for more information about explicitly
-controlling the rendering order.
+often the last resort because it is more difficult, and doesn't
+generalize well, but it does have the advantage of not adding
+additional performance penalties to your scene.  It only works well
+when the transparent objects can be sorted reliably with respect to
+everything else behind them.  For instance, clouds in the sky can
+reliably be drawn before almost everything else in the scene, except
+the sky itself.  Similarly, a big flat that is up against an opaque
+wall can reliably be drawn after all of the opaque objects, but before
+any other transparent object, regardless of where the camera happens
+to be placed in the scene.  See howto.control_render_order.txt for
+more information about explicitly controlling the rendering order.

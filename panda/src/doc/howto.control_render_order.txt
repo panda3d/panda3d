@@ -32,16 +32,17 @@ farthest object, or "front-to-back" ordering.
 
 Finally, regardless of the rendering optimizations described above, a
 particular sorting order is required to render transparency properly
-(in the absence of specialized hardware support that few graphics
-cards provide).  Transparent and semitransparent objects are normally
-rendered by blending their semitransparent parts with what has already
-been drawn to the framebuffer, which means that it is important that
-everything that will appear behind a semitransparent object must have
-already been drawn before the object itself is drawn.  This implies
-that all semitransparent objects must be drawn in order from farthest
-away to nearest, or in "back-to-front" ordering, and furthermore that
-the opaque objects should all be drawn before any of the
-semitransparent objects.
+(in the absence of the specialized transparency support that only a
+few graphics cards provide).  Transparent and semitransparent objects
+are normally rendered by blending their semitransparent parts with
+what has already been drawn to the framebuffer, which means that it is
+important that everything that will appear behind a semitransparent
+object must have already been drawn before the semitransparent parts
+of the occluding object is drawn.  This implies that all
+semitransparent objects must be drawn in order from farthest away to
+nearest, or in "back-to-front" ordering, and furthermore that the
+opaque objects should all be drawn before any of the semitransparent
+objects.
 
 Panda achieves these sometimes conflicting sorting requirements
 through the use of bins.
