@@ -43,8 +43,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoSurfaceParameter.I"
-
 #endif
 
   

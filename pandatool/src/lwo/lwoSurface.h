@@ -31,8 +31,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoSurface.I"
-
 #endif
 
   

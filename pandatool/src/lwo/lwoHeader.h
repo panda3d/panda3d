@@ -40,8 +40,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoHeader.I"
-
 #endif
 
   

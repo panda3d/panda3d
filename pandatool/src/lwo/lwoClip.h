@@ -29,8 +29,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoClip.I"
-
 #endif
 
   

@@ -42,8 +42,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoStillImage.I"
-
 #endif
 
   
