@@ -114,7 +114,7 @@ enable_dither(bool val) {
   if (_dither_enabled != val) {
     _dither_enabled = val;
 
-  #ifdef NDEBUG
+  #ifdef _DEBUG
     {
         if(val && (_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER))
            dxgsg_cat.error() << "no HW support for color dithering!!\n";

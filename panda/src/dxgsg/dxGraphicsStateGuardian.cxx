@@ -412,15 +412,16 @@ init_dx(  LPDIRECTDRAW7     context,
 
     SetRect(&clip_rect, 0,0,0,0);     // no clip rect set
 
-    _d3dDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-
     // Lighting, let's turn it off by default
     _lighting_enabled = true;
     enable_lighting(false);
 
-    // Dither, let's turn it off
-    _dither_enabled = true;
-    enable_dither(false);
+    // turn on dithering if the rendertarget is < 8bits/color channel
+    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
+    _back->GetSurfaceDesc(&ddsd_back);
+    _dither_enabled = ((ddsd_back.ddpfPixelFormat.dwRGBBitCount < 24) &&
+                       (_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER));
+   _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, _dither_enabled);
 
     // Stencil test is off by default
     _stencil_test_enabled = false;
@@ -430,6 +431,8 @@ init_dx(  LPDIRECTDRAW7     context,
     // Antialiasing.
     enable_line_smooth(false);
 //  enable_multisample(true);
+
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
 
     // technically DX7's front-end has no limit on the number of lights, but it's simpler for
     // this implementation to set a small GL-like limit to make the light array traversals short
@@ -448,6 +451,9 @@ init_dx(  LPDIRECTDRAW7     context,
         _available_light_ids[i] = NULL;
         _light_enabled[i] = false;
     }
+
+    if(dx_auto_normalize_lighting)
+         _d3dDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
 
     // Set up the clip plane id map
     _max_clip_planes = D3DMAXUSERCLIPPLANES;
@@ -511,9 +517,11 @@ init_dx(  LPDIRECTDRAW7     context,
     if(dx_full_screen_antialiasing) {
       if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) {
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS,D3DANTIALIAS_SORTINDEPENDENT);
-        dxgsg_cat.debug() << "enabling full-screen anti-aliasing\n";
+        if(dxgsg_cat.is_debug()) 
+            dxgsg_cat.debug() << "enabling full-screen anti-aliasing\n";
       } else {
-        dxgsg_cat.debug() << "device doesnt support full-screen anti-aliasing\n";
+        if(dxgsg_cat.is_debug()) 
+            dxgsg_cat.debug() << "device doesnt support full-screen anti-aliasing\n";
       }
     }
 
@@ -524,13 +532,12 @@ init_dx(  LPDIRECTDRAW7     context,
              _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
       } else {
           dx_force_backface_culling=0;
-          dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
+          if(dxgsg_cat.is_debug()) 
+              dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
       }
     }
 #endif
 
-     if(dx_auto_normalize_lighting)
-         _d3dDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1728,6 +1735,19 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     D3DMATRIX OldD3DWorldMatrix;
     _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
 
+    // ATI sez:  most applications ignore the fact that since alpha blended primitives
+    // combine the data in the frame buffer with the data in the current pixel, pixels 
+    // can be dithered multiple times and accentuate the dither pattern. This is particularly
+    // true in particle systems which rely on the cumulative visual effect of many overlapping
+    // alpha blended primitives.
+
+    bool bReEnableDither=_dither_enabled;
+    if(bReEnableDither) {
+        enable_dither(false);
+    }
+
+    _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
+
     Geom::VertexIterator vi = geom->make_vertex_iterator();
     Geom::ColorIterator ci = geom->make_color_iterator();
 
@@ -2018,6 +2038,9 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // restore the matrices
     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
+
+    if(bReEnableDither)
+        enable_dither(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5358,33 +5381,59 @@ void DXGraphicsStateGuardian::init_type(void) {
 //  Description: Clean up the DirectX environment.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-dx_cleanup() {
+dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
 
     release_all_textures();
     release_all_geoms();
 
-    // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
-    if (_d3dDevice!=NULL) {
-        if (0 < _d3dDevice->Release()) {
-            dxgsg_cat.error() << "DXGraphicsStateGuardian::destructor - d3dDevice reference count > 0" << endl;
+    ULONG refcnt;
+
+    // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
+    // msg already delivered to d3d.dll and it's unloaded itself
+    if(!bAtExitFnCalled) {
+        // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
+        // if we're called from exit(), _d3dDevice may already have been released
+        if (_d3dDevice!=NULL) {
+            if (0 < (refcnt =  _d3dDevice->Release())) {
+                dxgsg_cat.error() << "dx_cleanup - d3dDevice reference count = " <<  refcnt << ", should be zero!\n";
+            }
         }
+    
         _d3dDevice = NULL;  // clear the pointer in the Gsg
+    
+        // Release the DDraw and D3D objects used by the app
+        RELEASE(_zbuf);
+        RELEASE(_back);
+        RELEASE(_pri);
+    
+        RELEASE(_d3d);
     }
 
-    // Release the DDraw and D3D objects used by the app
-    RELEASE(_zbuf);
-    RELEASE(_back);
-    RELEASE(_pri);
-
-    RELEASE(_d3d);
+    // for some reason, DLL_PROCESS_DETACH has not yet been sent to ddraw, so we can still call its fns
 
     // Do a safe check for releasing DDRAW. RefCount should be zero.
     if (_pDD!=NULL) {
-        int val;
-        if (0 < (val = _pDD->Release())) {
-            dxgsg_cat.error()
-            << "DXGraphicsStateGuardian::destructor -  IDDraw Obj reference count = " << val << ", should be zero!\n";
+        if(bRestoreDisplayMode) {
+          HRESULT hr = _pDD->RestoreDisplayMode(); 
+          if(dxgsg_cat.is_spam())
+                dxgsg_cat.spam() << "dx_cleanup -  Restoring original desktop DisplayMode\n";
+          if(FAILED(hr)) {
+                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed, hr = " << ConvD3DErrorToString(hr) << endl;
+          }
         }
+
+        refcnt = _pDD->Release();
+
+        if(bAtExitFnCalled) {
+            // refcnt may be > 1
+           while (refcnt>0) {
+               refcnt = _pDD->Release();
+           }
+        } else {
+            if(refcnt>0)
+                dxgsg_cat.error() << "dx_cleanup - IDDraw Obj reference count = " << refcnt << ", should be zero!\n";
+        }
+
         _pDD  = NULL;
     }
 }
@@ -5591,12 +5640,14 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
       // This means that mode changes had taken place, surfaces
       // were lost but still we are in the original mode, so we
       // simply restore all surfaces and keep going.
-      _dx_ready = FALSE;
 
 #ifdef _DEBUG
-      if(dxgsg_cat.is_spam())
+      if(dxgsg_cat.is_spam() && _dx_ready) {
           dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
+      }
 #endif
+
+      _dx_ready = FALSE;
 
       Sleep( 500 ); // Dont consume CPU.
       throw_event("PandaPaused");   // throw panda event to invoke network-only processing

@@ -65,7 +65,7 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
     ZeroMemory(&var, sizeof(type));  \
     var.dwSize = sizeof(type);
 
-#define RELEASE(object) if (object!=NULL) {object->Release(); object = NULL;}
+#define RELEASE(OBJECT) if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {(OBJECT)->Release(); (OBJECT) = NULL;}
 
 #if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
 // This function now serves both to print a debug message to the
@@ -412,7 +412,8 @@ public:
   INLINE bool GetDXReady(void)  { return _dx_ready;}
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
 
-  void  dx_cleanup();
+  void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
+
   void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
   void  show_frame();
   void  show_full_screen_frame();
@@ -425,6 +426,7 @@ public:
           LPDIRECT3DDEVICE7    d3dDevice,
           RECT  viewrect);
    friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
+
 private:
   static TypeHandle _type_handle;
 };
