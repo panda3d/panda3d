@@ -151,7 +151,7 @@
   #define TARGET test_zstream
   #define USE_PACKAGES zlib
   #define LOCAL_LIBS $[LOCAL_LIBS] express
-  #define OTHER_LIBS pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_zstream.cxx
