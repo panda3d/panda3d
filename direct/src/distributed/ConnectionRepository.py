@@ -64,9 +64,9 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             print '-'*len(title)
             for distObj in self.doId2do.values():
                 print format%(
-                    distObj.parentId,
-                    distObj.zoneId,
-                    distObj.doId,
+                    distObj.__dict__.get("parentId"),
+                    distObj.__dict__.get("zoneId"),
+                    distObj.__dict__.get("doId"),
                     distObj.dclass.getName(),
                     distObj.__dict__.get("name"))
 
