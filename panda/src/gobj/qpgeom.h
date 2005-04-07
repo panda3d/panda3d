@@ -66,8 +66,34 @@ PUBLISHED:
   // Temporary.
   virtual Geom *make_copy() const;
 
+  enum PointRendering {
+    // If there are any points at all.
+    PR_point          = 0x0001,
+
+    // If the points are all the same size, other than 1 pixel.
+    PR_uniform_size   = 0x0002,
+
+    // If the points have a per-vertex size designation.
+    PR_per_point_size = 0x0004,
+
+    // If the points' size is specified in camera units rather than
+    // screen pixels.
+    PR_perspective    = 0x0008,
+
+    // If the points have a non-square aspect ratio.
+    PR_aspect_ratio   = 0x0010,
+
+    // If the points are rotated off the orthonormal axis.
+    PR_rotate         = 0x0020,
+
+    // If the points require texture coordinates interpolated across
+    // their face, to render textures as sprites.
+    PR_sprite         = 0x0040,
+  };
+
   INLINE qpGeomPrimitive::PrimitiveType get_primitive_type() const;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+  INLINE int get_point_rendering() const;
 
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
   PT(qpGeomVertexData) modify_vertex_data();
@@ -126,7 +152,8 @@ private:
   // to avoid cache bloat.
   class CacheEntry : public qpGeomCacheEntry {
   public:
-    INLINE CacheEntry(const qpGeomMunger *modifier);
+    INLINE CacheEntry(const qpGeomVertexData *source_data,
+                      const qpGeomMunger *modifier);
     INLINE bool operator < (const CacheEntry &other) const;
 
     virtual void evict_callback();
@@ -134,6 +161,7 @@ private:
     virtual void output(ostream &out) const;
 
     qpGeom *_source;
+    CPT(qpGeomVertexData) _source_data;
     CPT(qpGeomMunger) _modifier;
     CPT(qpGeom) _geom_result;
     CPT(qpGeomVertexData) _data_result;
@@ -153,6 +181,7 @@ private:
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
     qpGeomPrimitive::PrimitiveType _primitive_type;
+    int _point_rendering;
     qpGeomUsageHint::UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
@@ -164,6 +193,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
   void reset_usage_hint(CDWriter &cdata);
+  void reset_point_rendering(CDWriter &cdata);
 
   static UpdateSeq _next_modified;
 

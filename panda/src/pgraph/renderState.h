@@ -27,6 +27,8 @@
 #include "ordered_vector.h"
 #include "updateSeq.h"
 #include "pStatCollector.h"
+#include "renderModeAttrib.h"
+#include "texGenAttrib.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -36,6 +38,7 @@ class ColorAttrib;
 class ColorScaleAttrib;
 class TextureAttrib;
 class TexGenAttrib;
+class RenderModeAttrib;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -122,6 +125,9 @@ PUBLISHED:
   INLINE const ColorScaleAttrib *get_color_scale() const;
   INLINE const TextureAttrib *get_texture() const;
   INLINE const TexGenAttrib *get_tex_gen() const;
+  INLINE const RenderModeAttrib *get_render_mode() const;
+
+  INLINE int get_point_rendering(int geom_point_rendering) const;
 
 public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
@@ -162,6 +168,7 @@ private:
   void determine_color_scale();
   void determine_texture();
   void determine_tex_gen();
+  void determine_render_mode();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -239,6 +246,7 @@ private:
   const ColorScaleAttrib *_color_scale;
   const TextureAttrib *_texture;
   const TexGenAttrib *_tex_gen;
+  const RenderModeAttrib *_render_mode;
 
   enum Flags {
     F_checked_bin_index    = 0x0001,
@@ -249,6 +257,7 @@ private:
     F_checked_color_scale  = 0x0020,
     F_checked_texture      = 0x0040,
     F_checked_tex_gen      = 0x0080,
+    F_checked_render_mode  = 0x0100,
     F_is_destructing       = 0x8000,
   };
   unsigned short _flags;

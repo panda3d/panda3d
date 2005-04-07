@@ -25,7 +25,8 @@
 INLINE EggPoint::
 EggPoint(const string &name) : 
   EggPrimitive(name),
-  _has_thick(false)
+  _flags(0),
+  _thick(1.0)
 {
 }
 
@@ -37,8 +38,8 @@ EggPoint(const string &name) :
 INLINE EggPoint::
 EggPoint(const EggPoint &copy) : 
   EggPrimitive(copy),
-  _thick(copy._thick),
-  _has_thick(copy._has_thick)
+  _flags(copy._flags),
+  _thick(copy._thick)
 {
 }
 
@@ -50,8 +51,8 @@ EggPoint(const EggPoint &copy) :
 INLINE EggPoint &EggPoint::
 operator = (const EggPoint &copy) {
   EggPrimitive::operator = (copy);
+  _flags = copy._flags;
   _thick = copy._thick;
-  _has_thick = copy._has_thick;
   return *this;
 }
 
@@ -62,41 +63,85 @@ operator = (const EggPoint &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPoint::
 has_thick() const {
-  return _has_thick;
+  return (_flags & F_has_thick) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPoint::get_thick
 //       Access: Published
-//  Description: Returns the thick set on this particular attribute.
-//               If there is no thick set, returns white.
+//  Description: Returns the thickness set on this particular point.
+//               If there is no thickness set, returns 1.0.
 ////////////////////////////////////////////////////////////////////
 INLINE double EggPoint::
 get_thick() const {
-  if (has_thick()) {
-    return _thick;
-  } else {
-    return 1.0;
-  }
+  return _thick;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggPoint::
+//     Function: EggPoint::set_thick
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPoint::
 set_thick(double thick) {
   _thick = thick;
-  _has_thick = true;
+  _flags |= F_has_thick;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggPoint::
+//     Function: EggPoint::clear_thick
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPoint::
 clear_thick() {
-  _has_thick = false;
+  _thick = 1.0;
+  _flags &= ~F_has_thick;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::has_perspective
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggPoint::
+has_perspective() const {
+  return (_flags & F_has_perspective) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::get_perspective
+//       Access: Published
+//  Description: Returns the perspective flag set on this particular
+//               point.  If there is no perspective flag set, returns
+//               false.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggPoint::
+get_perspective() const {
+  return (_flags & F_perspective) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::set_perspective
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggPoint::
+set_perspective(bool perspective) {
+  if (perspective) {
+    _flags |= F_perspective;
+  } else {
+    _flags &= ~F_perspective;
+  }
+  _flags |= F_has_perspective;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::clear_perspective
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggPoint::
+clear_perspective() {
+  _flags &= ~(F_has_perspective | F_perspective);
 }

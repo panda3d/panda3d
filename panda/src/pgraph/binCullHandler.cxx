@@ -26,6 +26,6 @@
 //               discovered by the CullTraverser.
 ////////////////////////////////////////////////////////////////////
 void BinCullHandler::
-record_object(CullableObject *object) {
-  _cull_result->add_object(object);
+record_object(CullableObject *object, const CullTraverser *traverser) {
+  _cull_result->add_object(object, traverser);
 }

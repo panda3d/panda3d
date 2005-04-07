@@ -28,7 +28,6 @@
 #include "qpgeomLines.h"
 #include "qpgeomLinestrips.h"
 #include "qpgeomPoints.h"
-#include "qpgeomSprites.h"
 #include "qpgeomVertexReader.h"
 #include "graphicsWindow.h"
 #include "lens.h"
@@ -2278,6 +2277,18 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     }
   }
 
+  if (_vertex_data->is_vertex_transformed()) {
+    // If the vertex data claims to be already transformed into clip
+    // coordinates, wipe out the current projection and modelview
+    // matrix (so we don't attempt to transform it again).
+    GLP(MatrixMode)(GL_PROJECTION);
+    GLP(PushMatrix)();
+    GLP(LoadIdentity)();
+    GLP(MatrixMode)(GL_MODELVIEW);
+    GLP(PushMatrix)();
+    GLP(LoadIdentity)();
+  }
+
   if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
       _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
@@ -2335,18 +2346,16 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   int start;
   int stride;
 
-  if (_vertex_data->get_array_info(InternalName::get_vertex(),
-                                   array_data, num_values, numeric_type, 
-                                   start, stride)) {
+  if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type, 
+                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(VertexPointer)(num_values, get_numeric_type(numeric_type), 
                        stride, client_pointer + start);
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
   }
 
-  if (_vertex_data->get_array_info(InternalName::get_normal(),
-                                   array_data, num_values, numeric_type, 
-                                   start, stride)) {
+  if (_vertex_data->get_normal_info(array_data, numeric_type, 
+                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
                        client_pointer + start);
@@ -2355,8 +2364,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GLP(DisableClientState)(GL_NORMAL_ARRAY);
   }
 
-  if (_vertex_data->get_array_info(InternalName::get_color(),
-                                   array_data, num_values, numeric_type, 
+  if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
                                    start, stride) &&
       numeric_type != qpGeomVertexColumn::NT_packed_dabc) {
     const unsigned char *client_pointer = setup_array_data(array_data);
@@ -2555,169 +2563,6 @@ draw_points(const qpGeomPoints *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_sprites
-//       Access: Public, Virtual
-//  Description: Draws a series of rectangular sprite polygons.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_sprites(const qpGeomSprites *primitive) {
-  bool has_rotate = _vertex_data->has_column(InternalName::get_rotate());
-  bool has_scale_x = _vertex_data->has_column(InternalName::get_scale_x());
-  bool has_scale_y = _vertex_data->has_column(InternalName::get_scale_y());
-  if (!_supports_point_sprite || 
-      has_rotate || has_scale_x || has_scale_y) {
-    // In this case, we have to draw the sprites as a series of
-    // polygons, because either the GL doesn't support the
-    // point_sprite extension, or the vertex data requires some
-    // nonstandard adjustments not covered by point_sprite.
-
-    // This is kind of a shame because we have already prepared the
-    // vertex buffer, and it turns out we're not going to use it.  Oh
-    // well, too bad.
-
-    // Now clear the projection and modelview matrices, since we'll do
-    // the transformation to camera space ourselves.
-    GLP(MatrixMode)(GL_PROJECTION);
-    GLP(PushMatrix)();
-    GLP(LoadIdentity)();
-    GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(PushMatrix)();
-    GLP(LoadIdentity)();
-
-    bool has_color = _vertex_data->has_column(InternalName::get_color());
-
-    // First, get all of the points in eye space.
-    const LMatrix4f &modelview = _transform->get_mat();
-    qpGeomVertexReader vertex(_vertex_data, InternalName::get_vertex());
-    qpGeomVertexReader color(_vertex_data, InternalName::get_color());
-    qpGeomVertexReader rotate(_vertex_data, InternalName::get_rotate());
-    qpGeomVertexReader scale_x(_vertex_data, InternalName::get_scale_x());
-    qpGeomVertexReader scale_y(_vertex_data, InternalName::get_scale_y());
-
-    int num_sprites = primitive->get_num_vertices();
-    SpriteData *sprites = (SpriteData *)alloca(num_sprites * sizeof(SpriteData));
-    SpriteData **sprite_pointers = (SpriteData **)alloca(num_sprites * sizeof(SpriteData *));
-
-    SpriteData *sd = sprites;
-    SpriteData *sd_end = sprites + num_sprites;
-    SpriteData **sdp = sprite_pointers;
-    SpriteData **sdp_end = sprite_pointers + num_sprites;
-
-    for (int i = 0; i < num_sprites; ++i) {
-      int vi = primitive->get_vertex(i);
-
-      nassertv(sd < sd_end && sdp < sdp_end);
-      if (has_color) {
-        color.set_vertex(vi);
-        sd->_color = color.get_data4f();
-      }
-      if (has_rotate) {
-        rotate.set_vertex(vi);
-        sd->_rotate = rotate.get_data1f();
-      }
-      if (has_scale_x) {
-        scale_x.set_vertex(vi);
-        sd->_scale_x = scale_x.get_data1f();
-      } else {
-        sd->_scale_x = 1.0f;
-      }
-      if (has_scale_y) {
-        scale_y.set_vertex(vi);
-        sd->_scale_y = scale_y.get_data1f();
-      } else {
-        sd->_scale_y = 1.0f;
-      }
-
-      // The point in eye-space coordinates.
-      vertex.set_vertex(vi);
-      sd->_eye = modelview.xform_point(vertex.get_data3f());
-      (*sdp) = sd;
-      ++sd;
-      ++sdp;
-    }
-
-    // Now sort the sprites in order from back-to-front so they will
-    // render properly with transparency, at least with each other.
-    ::sort(sprite_pointers, sprite_pointers + num_sprites,
-           IndirectLess<SpriteData>());
-
-    // Point radius, converted from pixels into camera space.
-    float rx = _gl_point_size / _viewport_width;
-    float ry = _gl_point_size / _viewport_height;
-
-    // Go through the sprites, now in sorted order, and render a quad
-    // for each one.
-    GLP(Begin)(GL_QUADS);
-    for (sdp = sprite_pointers; sdp < sdp_end; ++sdp) {
-      sd = (*sdp);
-      if (has_color) {
-        GLP(Color4fv)(sd->_color.get_data());
-      }
-      // The point in eye-space coordinates.
-      const LPoint3f &eye = sd->_eye;
-
-      // The point in camera-space coordinates.
-      LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * _projection_mat;
-      LPoint3f c(p4[0] / p4[3], p4[1] / p4[3], p4[2] / p4[3]);
-
-      // Define the first two corners based on the scales in X and Y.
-      LPoint2f c0(sd->_scale_x, sd->_scale_y);
-      LPoint2f c1(-sd->_scale_x, sd->_scale_y);
-
-      if (has_rotate) {
-        // If we have a rotate factor, apply it to those two corners.
-        LMatrix3f mat = LMatrix3f::rotate_mat(sd->_rotate);
-        c0 = c0 * mat;
-        c1 = c1 * mat;
-      }
-
-      // Now scale the corners to compensate for the aspect ratio of
-      // the viewport (as well as applying the current
-      // RenderModeAttrib's thickness, i.e. point size).
-      c0.set(c0[0] * rx, c0[1] * ry);
-      c1.set(c1[0] * rx, c1[1] * ry);
-
-      if (_point_perspective) {
-        // If _point_perspective is in effect, we should divide the
-        // radius by the distance from the camera plane (which is
-        // -eye[2]), to emulate the glPointParameters() behavior.
-        float scale = (-1.0f / eye[2]);
-        c0 *= scale;
-        c1 *= scale;
-      }
-
-      GLP(TexCoord2f)(1.0f, 0.0f);
-      GLP(Vertex3f)(c[0] + c0[0], c[1] + c0[1], c[2]);
-      GLP(TexCoord2f)(0.0f, 0.0f);
-      GLP(Vertex3f)(c[0] + c1[0], c[1] + c1[1], c[2]);
-      GLP(TexCoord2f)(0.0f, 1.0f);
-      GLP(Vertex3f)(c[0] - c0[0], c[1] - c0[1], c[2]);
-      GLP(TexCoord2f)(1.0f, 1.0f);
-      GLP(Vertex3f)(c[0] - c1[0], c[1] - c1[1], c[2]);
-    }
-    GLP(End)();
-
-    GLP(MatrixMode)(GL_PROJECTION);
-    GLP(PopMatrix)();
-    GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(PopMatrix)();
-
-  } else {
-    // In this case, the sprites are simple squares, so we can take
-    // advantage of the point_sprite extension to draw them quickly.
-    _vertices_other_pcollector.add_level(primitive->get_num_vertices());
-    const unsigned short *client_pointer = setup_primitive(primitive);
-    
-    _glDrawRangeElements(GL_POINTS, 
-                         primitive->get_min_vertex(),
-                         primitive->get_max_vertex(),
-                         primitive->get_num_vertices(),
-                         GL_UNSIGNED_SHORT, client_pointer);
-  }
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()
@@ -2747,6 +2592,14 @@ end_draw_primitives() {
   if (_transform_stale) {
     GLP(MatrixMode)(GL_MODELVIEW);
     GLP(LoadMatrixf)(_transform->get_mat().get_data());
+  }
+
+  if (_vertex_data->is_vertex_transformed()) {
+    // Restore the matrices that we pushed above.
+    GLP(MatrixMode)(GL_PROJECTION);
+    GLP(PopMatrix)();
+    GLP(MatrixMode)(GL_MODELVIEW);
+    GLP(PopMatrix)();
   }
 
   GraphicsStateGuardian::end_draw_primitives();
@@ -3627,6 +3480,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   _render_mode = attrib->get_mode();
   _point_size = attrib->get_thickness();
   _point_perspective = attrib->get_perspective();
+  _point_perspective = true;
 
   switch (_render_mode) {
   case RenderModeAttrib::M_unchanged:
@@ -3649,6 +3503,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 
   // The thickness affects both the line width and the point size.
   GLP(LineWidth)(_point_size);
+  GLP(PointSize)(_point_size);
   report_my_gl_errors();
 
   do_point_size();
@@ -4055,8 +3910,8 @@ wants_texcoords() const {
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
 //               traversal; it will compute the distance to the
-//               indicated point, assumed to be in modelview
-//               coordinates, from the camera plane.
+//               indicated point, assumed to be in eye coordinates,
+//               from the camera plane.
 ////////////////////////////////////////////////////////////////////
 float CLP(GraphicsStateGuardian)::
 compute_distance_to(const LPoint3f &point) const {
@@ -5968,6 +5823,10 @@ finish_modify_state() {
           GLP(PopMatrix)();
         }
         break;
+
+      case TexGenAttrib::M_point_sprite:
+        // TODO.
+        break;
       }
     }
 
@@ -6276,8 +6135,6 @@ do_point_size() {
   if (!_point_perspective) {
     // Normal, constant-sized points.  Here _point_size is a width in
     // pixels.
-    GLP(PointSize)(_point_size);
-    _gl_point_size = _point_size;
     static LVecBase3f constant(1.0f, 0.0f, 0.0f);
     _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant.get_data());
 
@@ -6286,25 +6143,11 @@ do_point_size() {
     // units.  To arrange that, we need to figure out the appropriate
     // scaling factor based on the current viewport and projection
     // matrix.
-    LVector3f width(_point_size, 0.0f, 1.0f);
-    width = width * _projection_mat;
-    _gl_point_size = width[0] * _viewport_width;
-
-    if (!_supports_point_parameters) {
-      // Actually, this OpenGL driver doesn't support the
-      // glPointParameter() extension.  That means we can't get
-      // perspective correct points anyway.  Maybe we should render
-      // them as sprites?  As a stopgap, we'll just ask for 1-pixel
-      // points.
-      GLP(PointSize)(1.0f);
-
-    } else {
-      // This driver does support the extension, so get the
-      // appropriate width.
-      GLP(PointSize)(width[0] * _viewport_width);
-      static LVecBase3f square(0.0f, 0.0f, 1.0f);
-      _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, square.get_data());
-    }
+    LVector3f height(0.0f, _point_size, 1.0f);
+    height = height * _projection_mat;
+    float s = height[1] * _viewport_height / _point_size;
+    LVecBase3f square(0.0f, 0.0f, 1.0f / (s * s));
+    _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, square.get_data());
   }
 
   report_my_gl_errors();

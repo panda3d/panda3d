@@ -362,9 +362,10 @@ fill_state(EggPrimitive *egg_prim) {
   } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
     _primitive_type = qpGeomPrimitive::PT_points;
     EggPoint *egg_point = DCAST(EggPoint, egg_prim);
-    if (egg_point->get_thick() != 1.0) {
+    if (egg_point->get_thick() != 1.0 || egg_point->get_perspective()) {
       add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 
-                                        egg_point->get_thick()));
+                                        egg_point->get_thick(),
+                                        egg_point->get_perspective()));
     }
   } else {
     _primitive_type = qpGeomPrimitive::PT_polygons;
@@ -476,6 +477,9 @@ get_tex_gen(const EggTexture *egg_tex) {
 
   case EggTexture::TG_eye_position:
     return TexGenAttrib::M_eye_position;
+
+  case EggTexture::TG_point_sprite:
+    return TexGenAttrib::M_point_sprite;
   };
 
   return TexGenAttrib::M_off;

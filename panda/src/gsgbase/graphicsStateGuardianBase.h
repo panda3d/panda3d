@@ -55,7 +55,6 @@ class qpGeomTrifans;
 class qpGeomLines;
 class qpGeomLinestrips;
 class qpGeomPoints;
-class qpGeomSprites;
 class qpGeomMunger;
 
 class PreparedGraphicsObjects;
@@ -121,6 +120,7 @@ class Lens;
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 public:
   virtual bool get_supports_multisample() const=0;
+  virtual int get_supported_point_rendering() const=0;
 
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
@@ -154,9 +154,9 @@ public:
 
   // This function may only be called during a render traversal; it
   // will compute the distance to the indicated point, assumed to be
-  // in modelview coordinates, from the camera plane.  This is a
-  // virtual function because different GSG's may define the modelview
-  // coordinate space differently.
+  // in eye coordinates, from the camera plane.  This is a virtual
+  // function because different GSG's may define the eye coordinate
+  // space differently.
   virtual float compute_distance_to(const LPoint3f &point) const=0;
 
   // These are used to implement decals.  If depth_offset_decals()
@@ -197,7 +197,6 @@ public:
   virtual void draw_lines(const qpGeomLines *primitive)=0;
   virtual void draw_linestrips(const qpGeomLinestrips *primitive)=0;
   virtual void draw_points(const qpGeomPoints *primitive)=0;
-  virtual void draw_sprites(const qpGeomSprites *primitive)=0;
   virtual void end_draw_primitives()=0;
 
   virtual void framebuffer_copy_to_texture

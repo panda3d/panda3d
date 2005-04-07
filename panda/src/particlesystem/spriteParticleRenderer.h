@@ -29,7 +29,7 @@
 #include "geom.h"
 #include "geomSprite.h"
 #include "qpgeomVertexData.h"
-#include "qpgeomSprites.h"
+#include "qpgeomPoints.h"
 
 class NodePath;
 
@@ -56,11 +56,12 @@ PUBLISHED:
 
   INLINE SourceType get_source_type() const;
 
-  void set_from_node(const NodePath &node_path);
+  void set_from_node(const NodePath &node_path, bool size_from_texels = true);
 
-  INLINE void set_texture(Texture *tex);
+  INLINE void set_texture(Texture *tex, float texels_per_unit = 1.0);
   INLINE void set_ll_uv(const TexCoordf &ll_uv);
   INLINE void set_ur_uv(const TexCoordf &ur_uv);
+  INLINE void set_size(float width, float height);
   INLINE void set_color(const Colorf &color);
   INLINE void set_x_scale_flag(bool animate_x_ratio);
   INLINE void set_y_scale_flag(bool animate_y_ratio);
@@ -76,6 +77,8 @@ PUBLISHED:
   INLINE Texture *get_texture() const;
   INLINE const TexCoordf &get_ll_uv() const;
   INLINE const TexCoordf &get_ur_uv() const;
+  INLINE float get_width() const;
+  INLINE float get_height() const;
   INLINE Colorf get_color() const;
   INLINE bool get_x_scale_flag() const;
   INLINE bool get_y_scale_flag() const;
@@ -93,7 +96,7 @@ PUBLISHED:
 
 private:
   PT(Geom) _sprite_primitive;
-  PT(qpGeomSprites) _sprites;
+  PT(qpGeomPoints) _sprites;
   PT(Texture) _texture;
 
   PTA_Vertexf _vertex_array;
@@ -107,12 +110,13 @@ private:
   Colorf _color;
 
   TexCoordf _ll_uv, _ur_uv;
+  float _height;
+  float _width;
   float _initial_x_scale;
   float _final_x_scale;
   float _initial_y_scale;
   float _final_y_scale;
   float _theta;
-  float _base_x_scale;
   float _base_y_scale;
   float _aspect_ratio;
 

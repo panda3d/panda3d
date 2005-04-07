@@ -87,7 +87,7 @@ protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
                                                     const qpGeomVertexAnimationSpec &animation);
   virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
-  virtual void munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
+  virtual bool munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
   virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 

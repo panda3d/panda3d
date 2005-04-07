@@ -36,16 +36,27 @@ PUBLISHED:
 
   INLINE bool has_thick() const;
   INLINE double get_thick() const;
-  INLINE void set_thick(const double thick);
+  INLINE void set_thick(double thick);
   INLINE void clear_thick();
+
+  INLINE bool has_perspective() const;
+  INLINE bool get_perspective() const;
+  INLINE void set_perspective(bool perspective);
+  INLINE void clear_perspective();
 
   virtual bool cleanup();
 
   virtual void write(ostream &out, int indent_level) const;
 
 private:
+  enum Flags {
+    F_has_thick       = 0x0001,
+    F_perspective     = 0x0002,
+    F_has_perspective = 0x0004,
+  };
+
+  int _flags;
   double _thick;
-  bool _has_thick;
 
 public:
 

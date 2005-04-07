@@ -68,8 +68,8 @@ has_thick() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLine::get_thick
 //       Access: Published
-//  Description: Returns the thick set on this particular attribute.
-//               If there is no thick set, returns white.
+//  Description: Returns the thickness set on this particular line.
+//               If there is no thickness set, returns 1.0.
 ////////////////////////////////////////////////////////////////////
 INLINE double EggLine::
 get_thick() const {
@@ -81,7 +81,7 @@ get_thick() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggLine::
+//     Function: EggLine::set_thick
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ set_thick(double thick) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggLine::
+//     Function: EggLine::clear_thick
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////

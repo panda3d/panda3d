@@ -29,15 +29,25 @@ get_source_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : SpriteParticleRenderer::set_texture
-//   Access : public
+//    Function : SpriteParticleRenderer::set_texture
+//      Access : Published
+// Description : Sets the renderer up to render the entire texture
+//               image.  The scale of each particle is based on the
+//               size of the texture in each dimension, modified by
+//               texels_per_unit.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_texture(Texture *tex) {
+set_texture(Texture *tex, float texels_per_unit) {
   _texture = tex;
   set_ll_uv(TexCoordf(0.0f, 0.0f));
   set_ur_uv(TexCoordf(1.0f, 1.0f));
   _source_type = ST_texture;
+
+  // We scale the particle size by the size of the texture.
+  if (_texture != (Texture *)NULL) {
+    set_size(_texture->get_x_size() / texels_per_unit,
+             _texture->get_y_size() / texels_per_unit);
+  }
 
   init_geoms();
 }
@@ -66,6 +76,18 @@ set_ll_uv(const TexCoordf &ll_uv) {
 INLINE void SpriteParticleRenderer::
 set_ur_uv(const TexCoordf &ur_uv) {
   _ur_uv = ur_uv;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::set_size
+//      Access : public
+// Description : Sets the size of each particle in world units.
+////////////////////////////////////////////////////////////////////
+INLINE void SpriteParticleRenderer::
+set_size(float width, float height) {
+  _width = width;
+  _height = height;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -220,6 +242,26 @@ get_ll_uv() const {
 INLINE const TexCoordf &SpriteParticleRenderer::
 get_ur_uv() const {
   return _ur_uv;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::get_width
+//      Access : public
+// Description : Returns the width of each particle in world units.
+////////////////////////////////////////////////////////////////////
+INLINE float SpriteParticleRenderer::
+get_width() const {
+  return _width;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::get_height
+//      Access : public
+// Description : Returns the height of each particle in world units.
+////////////////////////////////////////////////////////////////////
+INLINE float SpriteParticleRenderer::
+get_height() const {
+  return _height;
 }
 
 ////////////////////////////////////////////////////////////////////

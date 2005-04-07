@@ -346,7 +346,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   
   CullableObject *object = new CullableObject(geom, state,
                                               data._render_transform);
-  trav->get_cull_handler()->record_object(object);
+  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -408,7 +408,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   
   CullableObject *object = new CullableObject(geom, data._state,
                                               data._render_transform);
-  trav->get_cull_handler()->record_object(object);
+  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -477,7 +477,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   
   CullableObject *object = new CullableObject(geom, data._state,
                                               data._render_transform);
-  trav->get_cull_handler()->record_object(object);
+  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -557,7 +557,7 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
 
   CullableObject *object = new CullableObject(geom, data._state,
                                               data._render_transform);
-  trav->get_cull_handler()->record_object(object);
+  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,6 +49,19 @@ get_usage_hint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_point_rendering
+//       Access: Published
+//  Description: Returns the set of PointRendering bits that represent
+//               the rendering properties required to properly render
+//               the points (if any) represented within this Geom.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeom::
+get_point_rendering() const {
+  CDReader cdata(_cycler);
+  return cdata->_point_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_vertex_data
 //       Access: Published
 //  Description: Returns a const pointer to the GeomVertexData,
@@ -129,7 +142,8 @@ get_modified() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::CacheEntry::
-CacheEntry(const qpGeomMunger *modifier) :
+CacheEntry(const qpGeomVertexData *source_data, const qpGeomMunger *modifier) :
+  _source_data(source_data),
   _modifier(modifier)
 {
 }
@@ -142,7 +156,13 @@ CacheEntry(const qpGeomMunger *modifier) :
 INLINE bool qpGeom::CacheEntry::
 operator < (const CacheEntry &other) const {
   if (_modifier != other._modifier) {
-    return (_modifier->geom_compare_to(*other._modifier) < 0);
+    int compare = _modifier->geom_compare_to(*other._modifier);
+    if (compare != 0) {
+      return (compare < 0);
+    }
+  }
+  if (_source_data != other._source_data) {
+    return (_source_data < other._source_data);
   }
   return 0;
 }
@@ -156,6 +176,7 @@ operator < (const CacheEntry &other) const {
 INLINE qpGeom::CData::
 CData() :
   _primitive_type(qpGeomPrimitive::PT_none),
+  _point_rendering(0),
   _usage_hint(qpGeomUsageHint::UH_static),
   _got_usage_hint(false)
 {
@@ -171,6 +192,7 @@ CData(const qpGeom::CData &copy) :
   _data(copy._data),
   _primitives(copy._primitives),
   _primitive_type(copy._primitive_type),
+  _point_rendering(copy._point_rendering),
   _usage_hint(copy._usage_hint),
   _got_usage_hint(copy._got_usage_hint),
   _modified(copy._modified)

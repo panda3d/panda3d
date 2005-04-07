@@ -45,6 +45,7 @@ PUBLISHED:
   enum Contents {
     C_other,        // Arbitrary meaning, leave it alone
     C_point,        // A point in 3-space or 4-space
+    C_clip_point,   // A point pre-transformed into clip coordinates
     C_vector,       // A surface normal, tangent, or binormal
     C_texcoord,     // A texture coordinate
     C_color,        // 3- or 4-component color, ordered R, G, B, [A]

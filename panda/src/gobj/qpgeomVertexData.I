@@ -286,6 +286,57 @@ animate_vertices_cull() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::has_vertex
+//       Access: Public
+//  Description: Returns true if the data has a "vertex" column, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::
+has_vertex() const {
+  return (_format->get_vertex_column() != (qpGeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::is_vertex_transformed
+//       Access: Public
+//  Description: Returns true if the data has a "vertex" column and it
+//               is indicated as having been transformed into clip
+//               coordinates, false if there is no vertex column or if
+//               it contains ordinary 3-d pre-transformation points.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::
+is_vertex_transformed() const {
+  const qpGeomVertexColumn *column = _format->get_vertex_column();
+  if (column != (qpGeomVertexColumn *)NULL) {
+    return column->get_contents() == qpGeomVertexColumn::C_clip_point;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::has_normal
+//       Access: Public
+//  Description: Returns true if the data has a "normal" column, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::
+has_normal() const {
+  return (_format->get_normal_column() != (qpGeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::has_color
+//       Access: Public
+//  Description: Returns true if the data has a "color" column, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::
+has_color() const {
+  return (_format->get_color_column() != (qpGeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::pack_abcd
 //       Access: Public, Static
 //  Description: Packs four values in a DirectX-style NT_packed_abcd

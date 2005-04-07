@@ -23,9 +23,11 @@
 #include "dcast.h"
 #include "geomSprite.h"
 #include "qpgeom.h"
+#include "qpgeomVertexReader.h"
 #include "qpgeomVertexWriter.h"
 #include "renderModeAttrib.h"
 #include "texMatrixAttrib.h"
+#include "texGenAttrib.h"
 #include "textureAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -106,9 +108,14 @@ make_copy() {
 //               referenced by the indicated NodePath.  This should be
 //               a reference to a GeomNode; it extracts out the
 //               Texture and UV range from the GeomNode.
+//
+//               If size_from_texels is true, the particle size is
+//               based on the number of texels in the source image;
+//               otherwise, it is based on the size of the polygon
+//               found in the GeomNode.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path) {
+set_from_node(const NodePath &node_path, bool size_from_texels) {
   nassertv(!node_path.is_empty());
 
   // The bottom node must be a GeomNode.  If it is not, find the first
@@ -137,44 +144,114 @@ set_from_node(const NodePath &node_path) {
   nassertv(gnode->get_num_geoms() > 0);
   const Geom *geom = gnode->get_geom(0);
 
-  PTA_TexCoordf texcoords;
-  GeomBindType bind;
-  PTA_ushort tindex;
-  geom->get_texcoords(texcoords, bind, tindex);
-  if (bind != G_PER_VERTEX) {
-    particlesystem_cat.error()
-      << geom_node_path << " has no UV's in its first Geom.\n";
-    return;
-  }
+  TexCoordf min_uv, max_uv;
+  Vertexf min_xyz, max_xyz;
 
-  int num_verts = geom->get_num_vertices();
-  if (num_verts == 0) {
-    particlesystem_cat.error()
-      << geom_node_path << " has no vertices in its first Geom.\n";
-    return;
-  }
+  if (geom->is_of_type(qpGeom::get_class_type())) {
+    const qpGeom *qpgeom = DCAST(qpGeom, geom);
+    qpGeomVertexReader texcoord(qpgeom->get_vertex_data());
+    qpGeomVertexReader vertex(qpgeom->get_vertex_data());
 
-  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
+    bool found_any = false;
+    for (int pi = 0; pi < qpgeom->get_num_primitives(); ++pi) {
+      const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
+      for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
+        int vert = primitive->get_vertex(vi);
+        texcoord.set_vertex(vert);
+        vertex.set_vertex(vert);
 
-  const TexCoordf &first_texcoord = geom->get_next_texcoord(ti);
-  TexCoordf min_uv = first_texcoord;
-  TexCoordf max_uv = first_texcoord;
+        if (!found_any) {
+          min_uv = max_uv = texcoord.get_data2f();
+          min_xyz = max_xyz = vertex.get_data3f();
 
-  for (int v = 1; v < num_verts; v++) {
-    const TexCoordf &texcoord = geom->get_next_texcoord(ti);    
+        } else {
+          const LVecBase2f &uv = texcoord.get_data2f();
+          const LVecBase3f &xyz = vertex.get_data3f();
 
-    min_uv[0] = min(min_uv[0], texcoord[0]);
-    max_uv[0] = max(max_uv[0], texcoord[0]);
-    min_uv[1] = min(min_uv[1], texcoord[1]);
-    max_uv[1] = max(max_uv[1], texcoord[1]);
+          min_uv[0] = min(min_uv[0], uv[0]);
+          max_uv[0] = max(max_uv[0], uv[0]);
+          min_uv[1] = min(min_uv[1], uv[1]);
+          max_uv[1] = max(max_uv[1], uv[1]);
+
+          min_xyz[0] = min(min_xyz[0], xyz[0]);
+          max_xyz[0] = max(max_xyz[0], xyz[0]);
+          min_xyz[1] = min(min_xyz[1], xyz[1]);
+          max_xyz[1] = max(max_xyz[1], xyz[1]);
+          min_xyz[2] = min(min_xyz[2], xyz[2]);
+          max_xyz[2] = max(max_xyz[2], xyz[2]);
+        }
+      }
+    }
+
+  } else {
+    PTA_TexCoordf texcoords;
+    GeomBindType bind;
+    PTA_ushort tindex;
+    geom->get_texcoords(texcoords, bind, tindex);
+    if (bind != G_PER_VERTEX) {
+      particlesystem_cat.error()
+        << geom_node_path << " has no UV's in its first Geom.\n";
+      return;
+    }
+    
+    int num_verts = geom->get_num_vertices();
+    if (num_verts == 0) {
+      particlesystem_cat.error()
+        << geom_node_path << " has no vertices in its first Geom.\n";
+      return;
+    }
+    
+    Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
+    Geom::VertexIterator vi = geom->make_vertex_iterator();
+    
+    const TexCoordf &first_texcoord = geom->get_next_texcoord(ti);
+    const Vertexf &first_vertex = geom->get_next_vertex(vi);
+    min_uv = first_texcoord;
+    max_uv = first_texcoord;
+    min_xyz = first_vertex;
+    max_xyz = first_vertex;
+    
+    for (int v = 1; v < num_verts; v++) {
+      const TexCoordf &texcoord = geom->get_next_texcoord(ti);    
+      const Vertexf &vertex = geom->get_next_vertex(vi);    
+      
+      min_uv[0] = min(min_uv[0], texcoord[0]);
+      max_uv[0] = max(max_uv[0], texcoord[0]);
+      min_uv[1] = min(min_uv[1], texcoord[1]);
+      max_uv[1] = max(max_uv[1], texcoord[1]);
+
+      min_xyz[0] = min(min_xyz[0], vertex[0]);
+      max_xyz[0] = max(max_xyz[0], vertex[0]);
+      min_xyz[1] = min(min_xyz[1], vertex[1]);
+      max_xyz[1] = max(max_xyz[1], vertex[1]);
+      min_xyz[2] = min(min_xyz[2], vertex[2]);
+      max_xyz[2] = max(max_xyz[2], vertex[2]);
+    }
   }
 
   // We don't really pay attention to orientation of UV's here; a
   // minor flaw.  We assume the minimum is in the lower-left, and the
   // maximum is in the upper-right.
-  set_texture(tex);
+  _texture = tex;
   set_ll_uv(min_uv);
   set_ur_uv(max_uv);
+
+  float width = max_xyz[0] - min_xyz[0];
+  float height = max(max_xyz[1] - min_xyz[1],
+                     max_xyz[2] - min_xyz[2]);
+
+  if (size_from_texels) {
+    // If size_from_texels is true, we get the particle size from the
+    // number of texels in the source image.
+    float y_texels = _texture->get_y_size() * fabs(_ur_uv[1] - _ll_uv[1]);
+    set_size(y_texels * width / height, y_texels);
+
+  } else {
+    // If size_from_texels is false, we get the particle size from
+    // the size of the polygon.
+    set_size(width, height);
+  }
+
   _source_type = ST_from_node;
 
   init_geoms();
@@ -252,29 +329,23 @@ init_geoms() {
          qpGeomVertexColumn::C_other);
     }
 
-    _base_x_scale = _initial_x_scale;
-    _base_y_scale = _base_x_scale;
+    _base_y_scale = _initial_y_scale;
+    _aspect_ratio = _width / _height;
 
-    // We also scale the particle size by the number of texels used,
-    // by established convention.
-    float texel_scale = 1.0f;
-    if (_texture != (Texture *)NULL) {
-      float x_texels = _texture->get_x_size() * fabs(_ur_uv[0] - _ll_uv[0]);
-      float y_texels = _texture->get_y_size() * fabs(_ur_uv[1] - _ll_uv[1]);
-      texel_scale = x_texels;
-      _base_y_scale = _base_x_scale / y_texels * x_texels;
-    }
+    float final_x_scale = _animate_x_ratio ? _final_x_scale : _initial_x_scale;
+    float final_y_scale = _animate_y_ratio ? _final_y_scale : _initial_y_scale;
 
-    if (_animate_x_ratio) {
-      _base_x_scale = max(_initial_x_scale, _final_x_scale);
+    if (_animate_y_ratio) {
+      _base_y_scale = max(_initial_y_scale, _final_y_scale);
       array_format->add_column
-        (InternalName::get_scale_x(), 1, qpGeomVertexColumn::NT_float32,
+        (InternalName::get_size(), 1, qpGeomVertexColumn::NT_float32,
          qpGeomVertexColumn::C_other);
     }
 
-    if (_animate_y_ratio || _initial_y_scale != _base_y_scale) {
+    if (_aspect_ratio * _initial_x_scale != _initial_y_scale ||
+        _aspect_ratio * final_x_scale != final_y_scale) {
       array_format->add_column
-        (InternalName::get_scale_y(), 1, qpGeomVertexColumn::NT_float32,
+        (InternalName::get_aspect_ratio(), 1, qpGeomVertexColumn::NT_float32,
          qpGeomVertexColumn::C_other);
     }
 
@@ -284,27 +355,28 @@ init_geoms() {
     _vdata = new qpGeomVertexData
       ("particles", format, qpGeomUsageHint::UH_dynamic);
     qpgeom->set_vertex_data(_vdata);
-    _sprites = new qpGeomSprites(qpGeomUsageHint::UH_dynamic);
+    _sprites = new qpGeomPoints(qpGeomUsageHint::UH_dynamic);
     qpgeom->add_primitive(_sprites);
 
-    state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_x_scale * texel_scale, true));
+    state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
 
     if (_texture != (Texture *)NULL) {
       state = state->add_attrib(TextureAttrib::make(_texture));
+      state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
+
+      // Build a matrix to convert the texture coordinates to the ll, ur
+      // space.
+      LPoint2f ul(_ll_uv[0], _ur_uv[1]);
+      LPoint2f lr(_ur_uv[0], _ll_uv[1]);
+      LVector2f sc = lr - ul;
+      
+      LMatrix4f mat
+        (sc[0], 0.0f, 0.0f, 0.0f,
+         0.0f, sc[1], 0.0f, 0.0f,
+         0.0f, 0.0f,  1.0f, 0.0f,
+         ul[0], ul[1], 0.0f, 1.0f);
+      state = state->add_attrib(TexMatrixAttrib::make(mat));
     }
-
-    // Build a matrix to convert the texture coordinates to the ll, ur
-    // space.
-    LPoint2f ul(_ll_uv[0], _ur_uv[1]);
-    LPoint2f lr(_ur_uv[0], _ll_uv[1]);
-    LVector2f sc = lr - ul;
-
-    LMatrix4f mat
-      (sc[0], 0.0f, 0.0f, 0.0f,
-       0.0f, sc[1], 0.0f, 0.0f,
-       0.0f, 0.0f,  1.0f, 0.0f,
-       ul[0], ul[1], 0.0f, 1.0f);
-    state = state->add_attrib(TexMatrixAttrib::make(mat));
 
   } else {
     PT(GeomSprite) sprite = new GeomSprite(get_texture());
@@ -366,8 +438,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
   qpGeomVertexWriter color(_vdata, InternalName::get_color());
   qpGeomVertexWriter rotate(_vdata, InternalName::get_rotate());
-  qpGeomVertexWriter scale_x(_vdata, InternalName::get_scale_x());
-  qpGeomVertexWriter scale_y(_vdata, InternalName::get_scale_y());
+  qpGeomVertexWriter size(_vdata, InternalName::get_size());
+  qpGeomVertexWriter aspect_ratio(_vdata, InternalName::get_aspect_ratio());
 
   if (!use_qpgeom) {
     if (!_animate_x_ratio)
@@ -435,32 +507,30 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       vertex.add_data3f(position);
       color.add_data4f(c);
 
-      if (_animate_x_ratio) {
-        float t = cur_particle->get_parameterized_age();
-        
-        if (_blend_method == PP_BLEND_CUBIC)
-          t = CUBIC_T(t);
-        
-        float scale = (_initial_x_scale +
-                       (t * (_final_x_scale - _initial_x_scale)));
-        scale_x.add_data1f(scale / _base_x_scale);
+      float current_x_scale = _initial_x_scale;
+      float current_y_scale = _initial_y_scale;
 
-      } else if (scale_x.has_column()) {
-        scale_x.add_data1f(_initial_x_scale / _base_x_scale);
+      if (_animate_x_ratio || _animate_y_ratio) {
+        float t = cur_particle->get_parameterized_age();
+        if (_blend_method == PP_BLEND_CUBIC) {
+          t = CUBIC_T(t);
+        }
+
+        if (_animate_x_ratio) {
+          current_x_scale = (_initial_x_scale +
+                             (t * (_final_x_scale - _initial_x_scale)));
+        }
+        if (_animate_y_ratio) {
+          current_y_scale = (_initial_y_scale +
+                             (t * (_final_y_scale - _initial_y_scale)));
+        }
       }
-
-      if (_animate_y_ratio) {
-        float t = cur_particle->get_parameterized_age();
-        
-        if (_blend_method == PP_BLEND_CUBIC)
-          t = CUBIC_T(t);
-        
-        float scale = (_initial_y_scale +
-                       (t * (_final_y_scale - _initial_y_scale)));
-        scale_y.add_data1f(scale / _base_y_scale);
-
-      } else if (scale_y.has_column()) {
-        scale_y.add_data1f(_initial_y_scale / _base_y_scale);
+       
+      if (size.has_column()) {
+        size.add_data1f(current_y_scale * _height);
+      }
+      if (aspect_ratio.has_column()) {
+        aspect_ratio.add_data1f(_aspect_ratio * current_x_scale / current_y_scale);
       }
 
       if (_animate_theta) {

@@ -31,6 +31,9 @@
 #include "referenceCount.h"
 #include "geomNode.h"
 #include "cullTraverserData.h"
+#include "pStatCollector.h"
+
+class CullTraverser;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullableObject
@@ -54,7 +57,7 @@ public:
 
   INLINE bool has_decals() const;
 
-  void munge_geom(const qpGeomMunger *munger);
+  void munge_geom(const qpGeomMunger *munger, const CullTraverser *traverser);
   INLINE void draw(GraphicsStateGuardianBase *gsg);
 
 public:
@@ -80,8 +83,27 @@ public:
   CullableObject *_next;
 
 private:
+  void munge_points_to_quads(const CullTraverser *traverser);
+
+private:
+  // This class is used internally by munge_points_to_quads().
+  class PointData {
+  public:
+    LPoint3f _eye;
+    float _dist;
+  };
+  class SortPoints {
+  public:
+    INLINE SortPoints(const PointData *array);
+    INLINE bool operator ()(unsigned short a, unsigned short b) const;
+
+    const PointData *_array;
+  };
+
   static CullableObject *_deleted_chain;
   static int _num_ever_allocated;
+
+  static PStatCollector _munge_points_pcollector;
 
 public:
   static TypeHandle get_class_type() {

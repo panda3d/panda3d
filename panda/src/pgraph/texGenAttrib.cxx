@@ -23,6 +23,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "dcast.h"
 
 CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
@@ -54,6 +55,17 @@ make() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::make
+//       Access: Published, Static
+//  Description: Constructs a TexGenAttrib that generates just the
+//               indicated stage.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TexGenAttrib::
+make(TextureStage *stage, TexGenAttrib::Mode mode) {
+  return DCAST(TexGenAttrib, make())->add_stage(stage, mode);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::add_stage
 //       Access: Published, Static
 //  Description: Returns a new TexGenAttrib just like this one,
@@ -67,6 +79,9 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
   attrib->_stages[stage] = mode;
   if (mode != M_off) {
     attrib->_no_texcoords.insert(stage);
+    if (mode == M_point_sprite) {
+      attrib->_num_point_sprites++;
+    }
   }
   return return_new(attrib);
 }
@@ -79,9 +94,19 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
 remove_stage(TextureStage *stage) const {
+  Stages::const_iterator si;
+  si = _stages.find(stage);
+  if (si == _stages.end()) {
+    return this;
+  }
+
+  Mode mode = (*si).second;
   TexGenAttrib *attrib = new TexGenAttrib(*this);
   attrib->_stages.erase(stage);
   attrib->_no_texcoords.erase(stage);
+  if (mode == M_point_sprite) {
+    attrib->_num_point_sprites--;
+  }
   return return_new(attrib);
 }
 
@@ -184,6 +209,10 @@ output(ostream &out) const {
       break;
     case M_eye_position:
       out << "eye_position";
+      break;
+
+    case M_point_sprite:
+      out << "point_sprite";
       break;
     }
     out << ")";

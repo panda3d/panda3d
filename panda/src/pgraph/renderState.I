@@ -231,6 +231,45 @@ get_tex_gen() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_render_mode
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a RenderModeAttrib on this state.  It returns a
+//               pointer to the RenderModeAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderModeAttrib *RenderState::
+get_render_mode() const {
+  if ((_flags & F_checked_render_mode) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal render_mode cache.
+    ((RenderState *)this)->determine_render_mode();
+  }
+  return _render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_point_rendering
+//       Access: Published
+//  Description: Returns the union of the Geom::PointRendering bits
+//               that will be required once this RenderState is
+//               applied to a geom which includes the indicated
+//               geom_point_rendering bits.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_point_rendering(int geom_point_rendering) const {
+  if (get_render_mode() != (const RenderModeAttrib *)NULL) {
+    geom_point_rendering = _render_mode->get_point_rendering(geom_point_rendering);
+  }
+  if (get_tex_gen() != (const TexGenAttrib *)NULL) {
+    geom_point_rendering = _tex_gen->get_point_rendering(geom_point_rendering);
+  }
+
+  return geom_point_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the

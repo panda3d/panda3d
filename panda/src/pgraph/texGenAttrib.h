@@ -26,6 +26,7 @@
 #include "textureStage.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "qpgeom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexGenAttrib
@@ -76,6 +77,13 @@ PUBLISHED:
     M_world_position,
     M_object_position,
     M_eye_position,
+
+    // With M_point_sprite, texture coordinates will be generated for
+    // large points in the range (0,0) - (1,1) from upper-left to
+    // lower-right across the point's face.  Without this, each point
+    // will have just a single uniform texture coordinate value across
+    // its face.
+    M_point_sprite,
   };
 
 protected:
@@ -87,6 +95,7 @@ public:
 
 PUBLISHED:
   static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make(TextureStage *stage, Mode mode);
 
   CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode) const;
   CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
@@ -94,6 +103,8 @@ PUBLISHED:
   bool is_empty() const;
   bool has_stage(TextureStage *stage) const;
   Mode get_mode(TextureStage *stage) const;
+
+  INLINE int get_point_rendering(int geom_point_rendering) const;
 
 public:
   INLINE const Geom::NoTexCoordStages &get_no_texcoords() const;
@@ -122,6 +133,8 @@ private:
   // no meaningful value any other time.
   pvector<Mode> _read_modes;
 
+  int _num_point_sprites;
+  
   static CPT(RenderAttrib) _empty_attrib;
 
 public:

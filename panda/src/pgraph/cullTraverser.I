@@ -18,6 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_gsg
+//       Access: Public
+//  Description: Returns the GraphicsStateGuardian in effect.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardianBase *CullTraverser::
+get_gsg() const {
+  return _gsg;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_scene
 //       Access: Public
 //  Description: Sets the SceneSetup object that indicates the initial

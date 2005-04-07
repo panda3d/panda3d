@@ -1576,6 +1576,21 @@ determine_tex_gen() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_render_mode
+//       Access: Private
+//  Description: This is the private implementation of get_render_mode().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_render_mode() {
+  const RenderAttrib *attrib = get_attrib(RenderModeAttrib::get_class_type());
+  _render_mode = (const RenderModeAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _render_mode = DCAST(RenderModeAttrib, attrib);
+  }
+  _flags |= F_checked_render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

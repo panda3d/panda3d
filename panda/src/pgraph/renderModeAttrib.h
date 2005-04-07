@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "renderAttrib.h"
+#include "qpgeom.h"
 
 class FactoryParams;
 
@@ -48,6 +49,8 @@ PUBLISHED:
   INLINE Mode get_mode() const;
   INLINE float get_thickness() const;
   INLINE bool get_perspective() const;
+
+  INLINE int get_point_rendering(int geom_point_rendering) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;

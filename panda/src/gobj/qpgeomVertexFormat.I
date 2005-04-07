@@ -415,6 +415,96 @@ get_v3n3c4t2() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_vertex_array_index
+//       Access: Public
+//  Description: Returns the array index of the array including the
+//               "vertex" column, or -1 if there is no such array.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_vertex_array_index() const {
+  nassertr(_is_registered, -1);
+  return _vertex_array_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_vertex_column
+//       Access: Public
+//  Description: Returns the column definition of the "vertex" column,
+//               or NULL if there is no such column.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const qpGeomVertexColumn *qpGeomVertexFormat::
+get_vertex_column() const {
+  nassertr(_is_registered, NULL);
+  return _vertex_column;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_normal_array_index
+//       Access: Public
+//  Description: Returns the array index of the array including the
+//               "normal" column, or -1 if there is no such array.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_normal_array_index() const {
+  nassertr(_is_registered, -1);
+  return _normal_array_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_normal_column
+//       Access: Public
+//  Description: Returns the column definition of the "normal" column,
+//               or NULL if there is no such column.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const qpGeomVertexColumn *qpGeomVertexFormat::
+get_normal_column() const {
+  nassertr(_is_registered, NULL);
+  return _normal_column;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_color_array_index
+//       Access: Public
+//  Description: Returns the array index of the array including the
+//               "color" column, or -1 if there is no such array.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_color_array_index() const {
+  nassertr(_is_registered, -1);
+  return _color_array_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_color_column
+//       Access: Public
+//  Description: Returns the column definition of the "color" column,
+//               or NULL if there is no such column.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const qpGeomVertexColumn *qpGeomVertexFormat::
+get_color_column() const {
+  nassertr(_is_registered, NULL);
+  return _color_column;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_registry
 //       Access: Private
 //  Description: Returns the global registry object.

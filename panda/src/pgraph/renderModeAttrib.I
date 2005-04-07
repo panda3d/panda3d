@@ -71,3 +71,27 @@ INLINE bool RenderModeAttrib::
 get_perspective() const {
   return _perspective;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::get_point_rendering
+//       Access: Published
+//  Description: Returns the union of the Geom::PointRendering bits
+//               that will be required once this RenderModeAttrib is
+//               applied to a geom which includes the indicated
+//               geom_point_rendering bits.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderModeAttrib::
+get_point_rendering(int geom_point_rendering) const {
+  if (_mode == M_point) {
+    geom_point_rendering |= qpGeom::PR_point;
+  }
+  if ((geom_point_rendering & qpGeom::PR_point) != 0) {
+    if (_perspective) {
+      geom_point_rendering |= (qpGeom::PR_perspective | qpGeom::PR_uniform_size);
+    } else if (_thickness != 1.0f) {
+      geom_point_rendering |= qpGeom::PR_uniform_size;
+    }
+  }
+
+  return geom_point_rendering;
+}

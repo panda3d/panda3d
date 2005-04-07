@@ -24,11 +24,68 @@
 ////////////////////////////////////////////////////////////////////
 INLINE SceneSetup::
 SceneSetup() {
+  _display_region = NULL;
+  _viewport_width = 0;
+  _viewport_height = 0;
   _inverted = false;
   _initial_state = RenderState::make_empty();
   _camera_transform = TransformState::make_identity();
   _world_transform = TransformState::make_identity();
   _cs_transform = TransformState::make_identity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_display_region
+//       Access: Public
+//  Description: Specifies the display region for the scene.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_display_region(DisplayRegion *display_region) {
+  _display_region = display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_display_region
+//       Access: Public
+//  Description: Returns the display region for the scene.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *SceneSetup::
+get_display_region() const {
+  return _display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_viewport_size
+//       Access: Public
+//  Description: Specifies the size of the viewport (display region),
+//               in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_viewport_size(int width, int height) {
+  _viewport_width = width;
+  _viewport_height = height;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_viewport_width
+//       Access: Public
+//  Description: Returns the width of the viewport (display region) in
+//               pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int SceneSetup::
+get_viewport_width() const {
+  return _viewport_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_viewport_height
+//       Access: Public
+//  Description: Returns the height of the viewport (display region) in
+//               pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int SceneSetup::
+get_viewport_height() const {
+  return _viewport_height;
 }
 
 ////////////////////////////////////////////////////////////////////

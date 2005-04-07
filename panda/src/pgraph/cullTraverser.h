@@ -32,6 +32,7 @@
 #include "typedObject.h"
 #include "pStatCollector.h"
 
+class GraphicsStateGuardian;
 class PandaNode;
 class CullHandler;
 class CullableObject;
@@ -49,8 +50,10 @@ class NodePath;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullTraverser : public TypedObject {
 public:
-  CullTraverser();
+  CullTraverser(GraphicsStateGuardianBase *gsg);
   CullTraverser(const CullTraverser &copy);
+
+  INLINE GraphicsStateGuardianBase *get_gsg() const;
 
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
@@ -103,6 +106,7 @@ private:
   CullableObject *r_get_decals(CullTraverserData &data,
                                CullableObject *decals);
 
+  GraphicsStateGuardianBase *_gsg;
   PT(SceneSetup) _scene_setup;
   DrawMask _camera_mask;
   bool _has_tag_state_key;

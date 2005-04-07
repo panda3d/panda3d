@@ -23,6 +23,8 @@
 #include "cullableObject.h"
 #include "graphicsStateGuardianBase.h"
 
+class CullTraverser;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CullHandler
 // Description : This defines the abstract interface for an object
@@ -34,7 +36,8 @@ class EXPCL_PANDA CullHandler {
 public:
   virtual ~CullHandler();
 
-  virtual void record_object(CullableObject *object);
+  virtual void record_object(CullableObject *object, 
+                             const CullTraverser *traverser);
 
   INLINE static void draw(CullableObject *object,
                           GraphicsStateGuardianBase *gsg);

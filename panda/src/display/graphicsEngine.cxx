@@ -1054,6 +1054,8 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     initial_state = initial_state->compose(get_invert_polygon_state());
   }
 
+  scene_setup->set_display_region(dr);
+  scene_setup->set_viewport_size(dr->get_pixel_width(), dr->get_pixel_height());
   scene_setup->set_scene_root(scene_root);
   scene_setup->set_camera_path(camera);
   scene_setup->set_camera_node(camera_node);
@@ -1077,7 +1079,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   // Statistics
   PStatTimer timer(_cull_pcollector);
 
-  CullTraverser trav;
+  CullTraverser trav(gsg);
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
   trav.set_scene(scene_setup);

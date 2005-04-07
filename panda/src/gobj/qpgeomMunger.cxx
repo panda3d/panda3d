@@ -163,10 +163,11 @@ munge_data_impl(const qpGeomVertexData *data) {
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
-void qpGeomMunger::
+bool qpGeomMunger::
 munge_geom_impl(CPT(qpGeom) &, CPT(qpGeomVertexData) &) {
   // The default implementation does nothing (the work has already
   // been done in munge_format_impl() and munge_data_impl()).
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,10 +186,12 @@ compare_to_impl(const qpGeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::geom_compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
+//  Description: Compares two GeomMungers, considering only whether
+//               they would produce a different answer to
+//               munge_format(), munge_data(), or munge_geom().  (They
+//               still might be different in other ways, but if they
+//               would produce the same answer, this function consider
+//               them to be the same.)
 ////////////////////////////////////////////////////////////////////
 int qpGeomMunger::
 geom_compare_to_impl(const qpGeomMunger *other) const {

@@ -474,8 +474,8 @@ wants_texcoords() const {
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
 //               traversal; it will compute the distance to the
-//               indicated point, assumed to be in modelview
-//               coordinates, from the camera plane.
+//               indicated point, assumed to be in eye coordinates,
+//               from the camera plane.
 ////////////////////////////////////////////////////////////////////
 INLINE float DXGraphicsStateGuardian8::
 compute_distance_to(const LPoint3f &point) const {

@@ -428,7 +428,9 @@ write_with_data(ostream &out, int indent_level,
 //  Description: Quickly looks up the indicated column within all
 //               of the nested arrays and sets array_index and
 //               column appropriately.  Returns true if the data
-//               type exists in this format, false if it does not.
+//               type exists in this format, false if it does not.  If
+//               it returns false, array_index is set to -1, and
+//               column is set to NULL.
 //
 //               This may only be called after the format has been
 //               registered.
@@ -445,6 +447,10 @@ get_array_info(const InternalName *name, int &array_index,
     column = _arrays[array_index]->get_column((*ai).second._column_index);
     return true;
   }
+
+  array_index = -1;
+  column = NULL;
+
   return false;
 }
 
@@ -576,6 +582,13 @@ do_register() {
 
 
   _is_registered = true;
+
+  get_array_info(InternalName::get_vertex(), _vertex_array_index,
+                 _vertex_column);
+  get_array_info(InternalName::get_normal(), _normal_array_index,
+                 _normal_column);
+  get_array_info(InternalName::get_color(), _color_array_index,
+                 _color_column);
 }
  
 ////////////////////////////////////////////////////////////////////

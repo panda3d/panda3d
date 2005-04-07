@@ -116,6 +116,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_multisample = false;
   _supports_generate_mipmap = false;
   _supports_render_texture = false;
+
+  _supported_point_rendering = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +145,23 @@ GraphicsStateGuardian::
 bool GraphicsStateGuardian::
 get_supports_multisample() const {
   return _supports_multisample;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supported_point_rendering
+//       Access: Published, Virtual
+//  Description: Returns the union of Geom::PointRendering values that
+//               this particular GSG can support directly.  If a point
+//               needs to be rendered that requires some additional
+//               properties, the StandardMunger will convert it into
+//               quads instead.
+//
+//               This method is declared virtual solely so that it can
+//               be queried from cullableObject.cxx.
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardian::
+get_supported_point_rendering() const {
+  return _supported_point_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -679,7 +698,8 @@ begin_draw_primitives(const qpGeom *, const qpGeomMunger *munger,
                       const qpGeomVertexData *data) {
   _munger = munger;
   _vertex_data = data;
-  return true;
+
+  return _vertex_data->has_vertex();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -746,15 +766,6 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_points(const qpGeomPoints *) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_sprites
-//       Access: Public, Virtual
-//  Description: Draws a series of rectangular sprite polygons.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_sprites(const qpGeomSprites *) {
 }
 
 ////////////////////////////////////////////////////////////////////

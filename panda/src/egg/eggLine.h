@@ -39,7 +39,7 @@ PUBLISHED:
 
   INLINE bool has_thick() const;
   INLINE double get_thick() const;
-  INLINE void set_thick(const double thick);
+  INLINE void set_thick(double thick);
   INLINE void clear_thick();
 
 protected:

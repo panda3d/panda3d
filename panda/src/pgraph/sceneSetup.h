@@ -38,6 +38,13 @@ class EXPCL_PANDA SceneSetup : public ReferenceCount {
 public:
   INLINE SceneSetup();
 
+  INLINE void set_display_region(DisplayRegion *display_region);
+  INLINE DisplayRegion *get_display_region() const;
+
+  INLINE void set_viewport_size(int width, int height);
+  INLINE int get_viewport_width() const;
+  INLINE int get_viewport_height() const;
+
   INLINE void set_scene_root(const NodePath &scene_root);
   INLINE const NodePath &get_scene_root() const;
 
@@ -70,6 +77,9 @@ public:
   INLINE const TransformState *get_render_transform() const;
 
 private:
+  DisplayRegion *_display_region;
+  int _viewport_width;
+  int _viewport_height;
   NodePath _scene_root;
   NodePath _camera_path;
   PT(Camera) _camera_node;

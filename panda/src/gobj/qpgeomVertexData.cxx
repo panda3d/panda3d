@@ -886,6 +886,84 @@ get_array_info(const InternalName *name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_vertex_info
+//       Access: Public
+//  Description: A shortcut to get_array_info() for the "vertex"
+//               column.
+////////////////////////////////////////////////////////////////////
+bool qpGeomVertexData::
+get_vertex_info(const qpGeomVertexArrayData *&array_data,
+                int &num_values, 
+                qpGeomVertexColumn::NumericType &numeric_type, 
+                int &start, int &stride) const {
+  int array_index = _format->get_vertex_array_index();
+  if (array_index >= 0) {
+    const qpGeomVertexColumn *column = _format->get_vertex_column();
+
+    CDReader cdata(_cycler);
+    array_data = cdata->_arrays[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_normal_info
+//       Access: Public
+//  Description: A shortcut to get_array_info() for the "normal"
+//               column.  Note that there is no num_values return,
+//               since normals should always have three values.
+////////////////////////////////////////////////////////////////////
+bool qpGeomVertexData::
+get_normal_info(const qpGeomVertexArrayData *&array_data,
+                qpGeomVertexColumn::NumericType &numeric_type, 
+                int &start, int &stride) const {
+  int array_index = _format->get_normal_array_index();
+  if (array_index >= 0) {
+    const qpGeomVertexColumn *column = _format->get_normal_column();
+    nassertr(column->get_num_values() == 3, false);
+
+    CDReader cdata(_cycler);
+    array_data = cdata->_arrays[array_index];
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_color_info
+//       Access: Public
+//  Description: A shortcut to get_array_info() for the "color"
+//               column.
+////////////////////////////////////////////////////////////////////
+bool qpGeomVertexData::
+get_color_info(const qpGeomVertexArrayData *&array_data,
+                int &num_values, 
+                qpGeomVertexColumn::NumericType &numeric_type, 
+                int &start, int &stride) const {
+  int array_index = _format->get_color_array_index();
+  if (array_index >= 0) {
+    const qpGeomVertexColumn *column = _format->get_color_column();
+
+    CDReader cdata(_cycler);
+    array_data = cdata->_arrays[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::do_animate_vertices
 //       Access: Private
 //  Description: This is the private implementation of

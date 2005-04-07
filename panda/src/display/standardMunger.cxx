@@ -45,6 +45,7 @@ StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
   _gsg = DCAST(GraphicsStateGuardian, gsg);
   _color = state->get_color();
   _color_scale = state->get_color_scale();
+  _render_mode = state->get_render_mode();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,6 +150,9 @@ compare_to_impl(const qpGeomMunger *other) const {
   if (_color_scale != om->_color_scale) {
     return _color_scale < om->_color_scale ? -1 : 1;
   }
+  if (_render_mode != om->_render_mode) {
+    return _render_mode < om->_render_mode ? -1 : 1;
+  }
 
   return qpGeomMunger::compare_to_impl(other);
 }
@@ -156,10 +160,12 @@ compare_to_impl(const qpGeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: StandardMunger::geom_compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
+//  Description: Compares two GeomMungers, considering only whether
+//               they would produce a different answer to
+//               munge_format(), munge_data(), or munge_geom().  (They
+//               still might be different in other ways, but if they
+//               would produce the same answer, this function consider
+//               them to be the same.)
 ////////////////////////////////////////////////////////////////////
 int StandardMunger::
 geom_compare_to_impl(const qpGeomMunger *other) const {

@@ -1821,6 +1821,12 @@ primitive_body:
     } else {
       eggyywarning("scalar thick is only meaningful for points and lines.");
     }
+  } else if (cmp_nocase_uh(name, "perspective") == 0) {
+    if (primitive->is_of_type(EggPoint::get_class_type())) {
+      DCAST(EggPoint, primitive)->set_perspective(value);
+    } else {
+      eggyywarning("scalar perspective is only meaningful for points.");
+    }
   } else {
     eggyywarning("Unknown scalar " + name);
   }

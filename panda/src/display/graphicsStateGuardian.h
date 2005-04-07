@@ -96,6 +96,8 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_render_texture() const;
 
+  virtual int get_supported_point_rendering() const;
+
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
@@ -160,7 +162,6 @@ public:
   virtual void draw_lines(const qpGeomLines *primitive);
   virtual void draw_linestrips(const qpGeomLinestrips *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
-  virtual void draw_sprites(const qpGeomSprites *primitive);
   virtual void end_draw_primitives();
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
@@ -325,6 +326,7 @@ protected:
   bool _supports_multisample;
   bool _supports_generate_mipmap;
   bool _supports_render_texture;
+  int _supported_point_rendering;
 
 public:
   // Statistics

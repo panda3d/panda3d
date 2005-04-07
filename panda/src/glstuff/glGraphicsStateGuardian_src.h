@@ -101,7 +101,6 @@ public:
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void draw_lines(const qpGeomLines *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
-  virtual void draw_sprites(const qpGeomSprites *primitive);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
@@ -317,7 +316,6 @@ protected:
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
   float _point_size;
-  float _gl_point_size;
   bool _point_perspective;
 
   bool _transform_stale;
@@ -391,17 +389,6 @@ public:
   Mutex _lock;
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
-
-  // This class is used internally by draw_sprites().
-  class SpriteData {
-  public:
-    INLINE bool operator < (const SpriteData &other) const;
-    Vertexf _eye;
-    Colorf _color;
-    float _rotate;
-    float _scale_x;
-    float _scale_y;
-  };
 
 public:
   static GraphicsStateGuardian *

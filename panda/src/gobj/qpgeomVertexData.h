@@ -154,6 +154,24 @@ public:
                       qpGeomVertexColumn::NumericType &numeric_type, 
                       int &start, int &stride) const;
 
+  INLINE bool has_vertex() const;
+  INLINE bool is_vertex_transformed() const;
+  bool get_vertex_info(const qpGeomVertexArrayData *&array_data,
+                       int &num_values,
+                       qpGeomVertexColumn::NumericType &numeric_type, 
+                       int &start, int &stride) const;
+
+  INLINE bool has_normal() const;
+  bool get_normal_info(const qpGeomVertexArrayData *&array_data,
+                       qpGeomVertexColumn::NumericType &numeric_type, 
+                       int &start, int &stride) const;
+
+  INLINE bool has_color() const;
+  bool get_color_info(const qpGeomVertexArrayData *&array_data,
+                      int &num_values,
+                      qpGeomVertexColumn::NumericType &numeric_type, 
+                      int &start, int &stride) const;
+
   static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
                                     unsigned int c, unsigned int d);
   static INLINE unsigned int unpack_abcd_a(PN_uint32 data);

@@ -20,7 +20,6 @@
 #include "qpgeomLines.cxx"
 #include "qpgeomLinestrips.cxx"
 #include "qpgeomPoints.cxx"
-#include "qpgeomSprites.cxx"
 #include "qpgeomVertexArrayData.cxx"
 #include "qpgeomVertexArrayFormat.cxx"
 #include "qpgeomCacheEntry.cxx"

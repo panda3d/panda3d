@@ -191,7 +191,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           CullableObject *object = 
             new CullableObject(sphere, empty_state, xform_data._render_transform);
           
-          trav->get_cull_handler()->record_object(object);
+          trav->get_cull_handler()->record_object(object, trav);
         }
 
         // Draw the normal vector at the surface point.
@@ -209,7 +209,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           CullableObject *object = 
             new CullableObject(line, empty_state, xform_data._render_transform);
           
-          trav->get_cull_handler()->record_object(object);
+          trav->get_cull_handler()->record_object(object, trav);
         }
       }
     }

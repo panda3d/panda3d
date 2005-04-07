@@ -163,3 +163,25 @@ INLINE int CullableObject::
 get_num_ever_allocated() {
   return _num_ever_allocated;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::SortPoints::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullableObject::SortPoints::
+SortPoints(const CullableObject::PointData *array) :
+  _array(array)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::SortPoints::operator ()
+//       Access: Public
+//  Description: Orders the points from back-to-front for correct
+//               transparency sorting in munge_points_to_quads
+////////////////////////////////////////////////////////////////////
+INLINE bool CullableObject::SortPoints::
+operator () (unsigned short a, unsigned short b) const {
+  return _array[a]._dist > _array[b]._dist;
+}

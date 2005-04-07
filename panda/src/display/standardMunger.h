@@ -24,6 +24,7 @@
 #include "graphicsStateGuardian.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
+#include "renderModeAttrib.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +56,7 @@ private:
   CPT(GraphicsStateGuardian) _gsg;
   CPT(ColorAttrib) _color;
   CPT(ColorScaleAttrib) _color_scale;
+  CPT(RenderModeAttrib) _render_mode;
 
 public:
   static TypeHandle get_class_type() {

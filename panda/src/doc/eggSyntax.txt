@@ -287,6 +287,7 @@ appear before they are referenced.
       WORLD_POSITION
       OBJECT_POSITION
       EYE_POSITION
+      POINT_SPRITE
 
   <Scalar> stage-name { name }
 
@@ -696,8 +697,15 @@ GEOMETRY ENTRIES
 
     This specifies the size of the PointLight (or the width of a
     line), in pixels, when it is rendered.  This may be a
-    floating-point number, which is meaningful only when antialiasing
-    is in effect.  The default is 1.0.
+    floating-point number, but the fractional part is meaningful only
+    when antialiasing is in effect.  The default is 1.0.
+
+  <Scalar> perspective { boolean-value }
+
+    If this is specified, then the thickness, above, is to interpreted
+    as a size in 3-d spatial units, rather than a size in pixels, and
+    the point should be scaled according to its distance from the
+    viewer normally.
 
 
 
@@ -715,11 +723,11 @@ GEOMETRY ENTRIES
   vertex 1, vertex 1 and vertex 2, etc.  The line is not implicitly
   closed; if you wish to represent a loop, you must repeat vertex 0 at
   the end.  As with a PointLight, normals, textures, colors,
-  draw_order, and the "thick" attribute are all valid.  Also, since a
-  Line (with more than two vertices) is made up of multiple line
-  segments, it may contain a number of <Component> entries, to set a
-  different color and/or normal for each line segment, as in
-  TriangleStrip, below.
+  draw_order, and the "thick" attribute are all valid (but not
+  "perspective").  Also, since a Line (with more than two vertices) is
+  made up of multiple line segments, it may contain a number of
+  <Component> entries, to set a different color and/or normal for each
+  line segment, as in TriangleStrip, below.
 
 
 <TriangleStrip> name { 

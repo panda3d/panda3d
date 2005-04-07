@@ -33,6 +33,7 @@
 
 
 class GraphicsStateGuardianBase;
+class CullTraverser;
 class TransformState;
 class RenderState;
 
@@ -56,7 +57,7 @@ public:
 
   INLINE CullBin *get_bin(int bin_index);
 
-  void add_object(CullableObject *object);
+  void add_object(CullableObject *object, const CullTraverser *traverser);
   void finish_cull();
   void draw();
 

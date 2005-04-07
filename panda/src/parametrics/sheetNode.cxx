@@ -334,7 +334,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
 
     CullableObject *object = new CullableObject(geom, data._state,
                                                 data._render_transform);
-    trav->get_cull_handler()->record_object(object);
+    trav->get_cull_handler()->record_object(object, trav);
 
   } else {
     PTA_Vertexf verts;
@@ -404,7 +404,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
   
     CullableObject *object = new CullableObject(geom, data._state,
                                                 data._render_transform);
-    trav->get_cull_handler()->record_object(object);
+    trav->get_cull_handler()->record_object(object, trav);
   }
 }
 

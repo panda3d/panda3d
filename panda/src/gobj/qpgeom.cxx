@@ -138,6 +138,7 @@ set_vertex_data(const qpGeomVertexData *data) {
   CDWriter cdata(_cycler);
   cdata->_data = (qpGeomVertexData *)data;
   mark_bound_stale();
+  reset_point_rendering(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +173,11 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
     }
   }
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
-  cdata->_primitive_type = primitive->get_primitive_type();
+  qpGeomPrimitive::PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  if (new_primitive_type != cdata->_primitive_type) {
+    cdata->_primitive_type = new_primitive_type;
+    reset_point_rendering(cdata);
+  }
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -197,7 +202,11 @@ add_primitive(const qpGeomPrimitive *primitive) {
            cdata->_primitive_type == primitive->get_primitive_type());
 
   cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
-  cdata->_primitive_type = primitive->get_primitive_type();
+  qpGeomPrimitive::PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  if (new_primitive_type != cdata->_primitive_type) {
+    cdata->_primitive_type = new_primitive_type;
+    reset_point_rendering(cdata);
+  }
 
   if (cdata->_got_usage_hint) {
     cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
@@ -224,6 +233,7 @@ remove_primitive(int i) {
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
     cdata->_primitive_type = qpGeomPrimitive::PT_none;
+    reset_point_rendering(cdata);
   }
   cdata->_modified = qpGeom::get_next_modified();
 }
@@ -242,6 +252,7 @@ clear_primitives() {
   CDWriter cdata(_cycler);
   cdata->_primitives.clear();
   cdata->_primitive_type = qpGeomPrimitive::PT_none;
+  reset_point_rendering(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,17 +327,19 @@ transform_vertices(const LMatrix4f &mat) {
 void qpGeom::
 munge_geom(const qpGeomMunger *munger,
            CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const {
+  CPT(qpGeomVertexData) source_data = data;
+
   // Look up the munger in our cache--maybe we've recently applied it.
   {
     CDReader cdata(_cycler);
-    CacheEntry temp_entry(munger);
+    CacheEntry temp_entry(source_data, munger);
     temp_entry.ref();  // big ugly hack to allow a stack-allocated ReferenceCount object.
     Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
     if (ci != cdata->_cache.end()) {
       CacheEntry *entry = (*ci);
 
       if (get_modified() <= entry->_geom_result->get_modified() &&
-          get_vertex_data()->get_modified() <= entry->_data_result->get_modified()) {
+          data->get_modified() <= entry->_data_result->get_modified()) {
         // The cache entry is still good; use it.
 
         // Record a cache hit, so this element will stay in the cache a
@@ -354,7 +367,6 @@ munge_geom(const qpGeomMunger *munger,
   PStatTimer timer(qpGeomMunger::_munge_pcollector);
 
   result = this;
-  data = get_vertex_data();
   if (munger != (qpGeomMunger *)NULL) {
     data = munger->munge_data(data);
     ((qpGeomMunger *)munger)->munge_geom_impl(result, data);
@@ -365,7 +377,7 @@ munge_geom(const qpGeomMunger *munger,
     CacheEntry *entry;
     {
       CDWriter cdata(((qpGeom *)this)->_cycler);
-      entry = new CacheEntry(munger);
+      entry = new CacheEntry(source_data, munger);
       entry->_source = (qpGeom *)this; 
       entry->_geom_result = result;
       entry->_data_result = data;
@@ -628,6 +640,29 @@ reset_usage_hint(qpGeom::CDWriter &cdata) {
     cdata->_usage_hint = min(cdata->_usage_hint, (*pi)->get_usage_hint());
   }
   cdata->_got_usage_hint = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::reset_point_rendering
+//       Access: Private
+//  Description: Rederives the _point_rendering member.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+reset_point_rendering(qpGeom::CDWriter &cdata) {
+  cdata->_point_rendering = 0;
+  if (cdata->_primitive_type == qpGeomPrimitive::PT_points) {
+    cdata->_point_rendering |= PR_point;
+
+    if (cdata->_data->has_column(InternalName::get_size())) {
+      cdata->_point_rendering |= PR_per_point_size;
+    }
+    if (cdata->_data->has_column(InternalName::get_aspect_ratio())) {
+      cdata->_point_rendering |= PR_aspect_ratio;
+    }
+    if (cdata->_data->has_column(InternalName::get_rotate())) {
+      cdata->_point_rendering |= PR_rotate;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

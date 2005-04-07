@@ -49,7 +49,9 @@ TypeHandle CullTraverser::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
-CullTraverser() {
+CullTraverser(GraphicsStateGuardianBase *gsg) :
+  _gsg(gsg)
+{
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
@@ -65,6 +67,7 @@ CullTraverser() {
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 CullTraverser(const CullTraverser &copy) :
+  _gsg(copy._gsg),
   _scene_setup(copy._scene_setup),
   _camera_mask(copy._camera_mask),
   _has_tag_state_key(copy._has_tag_state_key),
@@ -217,7 +220,7 @@ traverse_below(CullTraverserData &data) {
       _geoms_pcollector.add_level(num_geoms);
       for (int i = 0; i < num_geoms; i++) {
         CullableObject *object = new CullableObject(data, geom_node, i);
-        _cull_handler->record_object(object);
+        _cull_handler->record_object(object, this);
       }
     }
 
@@ -273,12 +276,12 @@ show_bounds(CullTraverserData &data) {
     CullableObject *outer_viz = 
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
                          data._render_transform);
-    _cull_handler->record_object(outer_viz);
+    _cull_handler->record_object(outer_viz, this);
 
     CullableObject *inner_viz = 
       new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
                          data._render_transform);
-    _cull_handler->record_object(inner_viz);
+    _cull_handler->record_object(inner_viz, this);
   }
 }
 
@@ -483,7 +486,7 @@ start_decal(const CullTraverserData &data) {
     // Finally, send the whole list down to the CullHandler for
     // processing.  The first Geom in the node now represents the
     // overall state.
-    _cull_handler->record_object(object);
+    _cull_handler->record_object(object, this);
   }
 }
 

@@ -192,29 +192,29 @@ get_rotate() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_scale_x
+//     Function: InternalName::get_size
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "scale_x".
+//  Description: Returns the standard InternalName "size".
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
-get_scale_x() {
-  if (_scale_x == (InternalName *)NULL) {
-    _scale_x = InternalName::make("scale_x");
+get_size() {
+  if (_size == (InternalName *)NULL) {
+    _size = InternalName::make("size");
   }
-  return _scale_x;
+  return _size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_scale_y
+//     Function: InternalName::get_aspect_ratio
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "scale_y".
+//  Description: Returns the standard InternalName "aspect_ratio".
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
-get_scale_y() {
-  if (_scale_y == (InternalName *)NULL) {
-    _scale_y = InternalName::make("scale_y");
+get_aspect_ratio() {
+  if (_aspect_ratio == (InternalName *)NULL) {
+    _aspect_ratio = InternalName::make("aspect_ratio");
   }
-  return _scale_y;
+  return _aspect_ratio;
 }
 
 ////////////////////////////////////////////////////////////////////

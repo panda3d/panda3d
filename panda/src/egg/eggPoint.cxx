@@ -53,6 +53,11 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> thick { " << get_thick() << " }\n";
   }
 
+  if (has_perspective()) {
+    indent(out, indent_level + 2) 
+      << "<Scalar> perspective { " << get_perspective() << " }\n";
+  }
+
   write_body(out, indent_level + 2);
   indent(out, indent_level) << "}\n";
 }

@@ -147,6 +147,13 @@ public:
                       int &array_index,
                       const qpGeomVertexColumn *&column) const;
 
+  INLINE int get_vertex_array_index() const;
+  INLINE const qpGeomVertexColumn *get_vertex_column() const;
+  INLINE int get_normal_array_index() const;
+  INLINE const qpGeomVertexColumn *get_normal_column() const;
+  INLINE int get_color_array_index() const;
+  INLINE const qpGeomVertexColumn *get_color_column() const;
+
   int compare_to(const qpGeomVertexFormat &other) const;
 
 private:
@@ -172,6 +179,13 @@ private:
 
   typedef pmap<const InternalName *, DataTypeRecord> DataTypesByName;
   DataTypesByName _columns_by_name;
+
+  int _vertex_array_index;
+  const qpGeomVertexColumn *_vertex_column;
+  int _normal_array_index;
+  const qpGeomVertexColumn *_normal_column;
+  int _color_array_index;
+  const qpGeomVertexColumn *_color_column;
 
   typedef pvector< CPT(InternalName) > Columns;
   Columns _points;
