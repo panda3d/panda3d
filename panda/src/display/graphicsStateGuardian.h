@@ -184,7 +184,7 @@ public:
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
-  INLINE CoordinateSystem get_internal_coordinate_system() const;
+  virtual CoordinateSystem get_internal_coordinate_system() const;
 
   INLINE const TransformState *get_cs_transform() const;
 

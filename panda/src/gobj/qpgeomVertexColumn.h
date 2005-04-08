@@ -95,6 +95,8 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexColumn &obj);
+ostream &operator << (ostream &out, qpGeomVertexColumn::NumericType numeric_type);
+ostream &operator << (ostream &out, qpGeomVertexColumn::Contents contents);
 
 #include "qpgeomVertexColumn.I"
 

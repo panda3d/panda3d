@@ -83,6 +83,7 @@ qpGeomVertexReader::Reader *qpGeomVertexReader::
 make_reader() const {
   switch (_column->get_contents()) {
   case qpGeomVertexColumn::C_point:
+  case qpGeomVertexColumn::C_clip_point:
   case qpGeomVertexColumn::C_texcoord:
     // These types are read as a 4-d homogeneous point.
     switch (_column->get_numeric_type()) {

@@ -417,7 +417,10 @@ write(ostream &out, int indent_level) const {
   for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
     const qpGeomVertexColumn *column = (*dti);
     indent(out, indent_level + 2)
-      << *column << " start at " << column->get_start() << "\n";
+      << *column 
+      << " " << column->get_numeric_type()
+      << " " << column->get_contents()
+      << " start at " << column->get_start() << "\n";
   }
 }
 

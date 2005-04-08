@@ -68,3 +68,56 @@ void qpGeomVertexColumn::
 output(ostream &out) const {
   out << *get_name() << "(" << get_num_components() << ")";
 }
+
+ostream &
+operator << (ostream &out, qpGeomVertexColumn::NumericType numeric_type) {
+  switch (numeric_type) {
+  case qpGeomVertexColumn::NT_uint8:
+    return out << "uint8";
+    
+  case qpGeomVertexColumn::NT_uint16:
+    return out << "uint16";
+    
+  case qpGeomVertexColumn::NT_packed_dcba:
+    return out << "packed_dcba";
+    
+  case qpGeomVertexColumn::NT_packed_dabc:
+    return out << "packed_dabc";
+    
+  case qpGeomVertexColumn::NT_float32:
+    return out << "float32";
+  }
+
+  return out << "**invalid numeric type (" << (int)numeric_type << ")**";
+}
+
+ostream &
+operator << (ostream &out, qpGeomVertexColumn::Contents contents) {
+  switch (contents) {
+  case qpGeomVertexColumn::C_other:
+    return out << "other";
+
+  case qpGeomVertexColumn::C_point:
+    return out << "point";
+
+  case qpGeomVertexColumn::C_clip_point:
+    return out << "clip_point";
+
+  case qpGeomVertexColumn::C_vector:
+    return out << "vector";
+
+  case qpGeomVertexColumn::C_texcoord:
+    return out << "texcoord";
+
+  case qpGeomVertexColumn::C_color:
+    return out << "color";
+
+  case qpGeomVertexColumn::C_index:
+    return out << "index";
+
+  case qpGeomVertexColumn::C_morph_delta:
+    return out << "morph_delta";
+  }
+
+  return out << "**invalid contents (" << (int)contents << ")**";
+}

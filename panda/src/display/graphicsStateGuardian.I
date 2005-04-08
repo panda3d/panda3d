@@ -541,23 +541,6 @@ get_coordinate_system() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_internal_coordinate_system
-//       Access: Public
-//  Description: Returns the coordinate system used internally by the
-//               GSG, if any one particular coordinate system is used.
-//               The default, CS_default, indicates that the GSG can
-//               use any coordinate system.
-//
-//               If this returns other than CS_default, the
-//               GraphicsEngine will automatically convert all
-//               transforms into the indicated coordinate system.
-////////////////////////////////////////////////////////////////////
-INLINE CoordinateSystem GraphicsStateGuardian::
-get_internal_coordinate_system() const {
-  return _coordinate_system;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_cs_transform
 //       Access: Public
 //  Description: Returns a transform that converts from the GSG's

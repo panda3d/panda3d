@@ -843,6 +843,24 @@ set_coordinate_system(CoordinateSystem cs) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_internal_coordinate_system
+//       Access: Public, Virtual
+//  Description: Returns the coordinate system used internally by the
+//               GSG.  This may be the same as the external coordinate
+//               system reported by get_coordinate_system(), or it may
+//               be something different.
+//
+//               In any case, vertices that have been transformed
+//               before being handed to the GSG (that is, vertices
+//               with a contents value of C_clip_point) will be
+//               expected to be in this coordinate system.
+////////////////////////////////////////////////////////////////////
+CoordinateSystem GraphicsStateGuardian::
+get_internal_coordinate_system() const {
+  return _internal_coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics

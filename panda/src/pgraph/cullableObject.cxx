@@ -215,7 +215,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
   const Lens *lens = scene->get_lens();
   const LMatrix4f &lens_mat = lens->get_projection_mat();
   LMatrix4f projection =
-    LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
+    LMatrix4f::convert_mat(gsg->get_internal_coordinate_system(), 
+                           lens->get_coordinate_system()) *
     lens_mat;
 
   LMatrix4f render_transform;

@@ -46,20 +46,18 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   new_format->set_animation(animation);
   PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
 
-  const qpGeomVertexColumn *vertex_type = 
-    orig->get_column(InternalName::get_vertex());
-  const qpGeomVertexColumn *normal_type = 
-    orig->get_column(InternalName::get_normal());
-  const qpGeomVertexColumn *color_type = 
-    orig->get_column(InternalName::get_color());
+  const qpGeomVertexColumn *vertex_type = orig->get_vertex_column();
+  const qpGeomVertexColumn *normal_type = orig->get_normal_column(); 
+  const qpGeomVertexColumn *color_type = orig->get_color_column();
   const qpGeomVertexColumn *texcoord_type = 
     orig->get_column(InternalName::get_texcoord());
 
   if (vertex_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
       (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_point);
+       vertex_type->get_contents());
     new_format->remove_column(vertex_type->get_name());
+
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;

@@ -54,6 +54,7 @@
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "qpgeomLines.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
 #include "dxVertexBufferContext8.h"
@@ -2693,13 +2694,32 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       _vertex_blending_enabled = false;
     }
 
-    if (_transform_stale) {
+    if (_transform_stale && !_vertex_data->is_vertex_transformed()) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_transform->get_mat().get_data();
       _pD3DDevice->SetTransform(D3DTS_WORLD, d3d_mat);
       _transform_stale = false;
     }
   }
 
+  if (_vertex_data->is_vertex_transformed()) {
+    // If the vertex data claims to be already transformed into clip
+    // coordinates, wipe out the current projection and modelview
+    // matrix (so we don't attempt to transform it again).
+
+    // It's tempting just to use the D3DFVF_XYZRHW specification on
+    // these vertices, but that turns out to be a bigger hammer than
+    // we want: that also prevents lighting calculations and user clip
+    // planes.
+    _pD3DDevice->SetTransform(D3DTS_WORLD, &matIdentity);
+    static const LMatrix4f rescale_mat
+      (1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 0.5, 0,
+       0, 0, 0.5, 1);
+    _transform_stale = true;
+
+    _pD3DDevice->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
+  }
 
   return true;
 }
@@ -2819,6 +2839,38 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_lines
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected line segments.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_lines(const qpGeomLines *primitive) {
+  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  if (_vbuffer_active) {
+    IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+    nassertv(ibc != (IndexBufferContext *)NULL);
+    apply_index_buffer(ibc);
+
+    _pD3DDevice->DrawIndexedPrimitive
+      (D3DPT_LINELIST,
+       primitive->get_min_vertex(),
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       0, primitive->get_num_primitives());
+
+  } else {
+    _pD3DDevice->DrawIndexedPrimitiveUP
+      (D3DPT_LINELIST, 
+       primitive->get_min_vertex(),
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_num_primitives(), 
+       primitive->get_flat_first_vertices(),
+       D3DFMT_INDEX16,
+       _vertex_data->get_array(0)->get_data(),
+       _vertex_data->get_format()->get_array(0)->get_stride());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()
@@ -2827,8 +2879,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 end_draw_primitives() {
-  GraphicsStateGuardian::end_draw_primitives();
-
   // Turn off vertex blending--it seems to cause problems if we leave
   // it on.
   if (_vertex_blending_enabled) {
@@ -2836,6 +2886,13 @@ end_draw_primitives() {
     _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
     _vertex_blending_enabled = false;
   }
+
+  if (_vertex_data->is_vertex_transformed()) {
+    // Restore the projection matrix that we wiped out above.
+    prepare_lens();
+  }
+
+  GraphicsStateGuardian::end_draw_primitives();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3579,7 +3636,7 @@ issue_tex_gen(const TexGenAttrib *attrib) {
     //enable_texturing(false);
     // reset the texcoordindex lookup to 0
     //_pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
+    //_pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
     _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
 
   } else if (attrib->get_mode(TextureStage::get_default()) == TexGenAttrib::M_eye_sphere_map) {

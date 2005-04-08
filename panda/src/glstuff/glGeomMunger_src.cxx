@@ -49,8 +49,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
   new_format->set_animation(animation);
 
-  const qpGeomVertexColumn *color_type = 
-    orig->get_column(InternalName::get_color());
+  const qpGeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (qpGeomVertexColumn *)NULL &&
       color_type->get_numeric_type() == qpGeomVertexColumn::NT_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
