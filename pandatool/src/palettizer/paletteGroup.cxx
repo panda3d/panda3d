@@ -685,7 +685,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //               other pointers being valid.
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
-finalize() {
+finalize(BamReader *) {
   // Now we can copy the pages into the actual map.
   pvector<PalettePage *>::const_iterator pi;
   for (pi = _load_pages.begin(); pi != _load_pages.end(); ++pi) {

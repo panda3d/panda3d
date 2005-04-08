@@ -115,7 +115,6 @@ private:
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     PTA_uchar _data;
@@ -129,6 +128,9 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  static void write_raw_data(Datagram &dg, const PTA_uchar &data);
+  static PTA_uchar read_raw_data(DatagramIterator &source);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
@@ -152,6 +154,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class qpGeomCacheManager;
+  friend class qpGeomVertexData;
   friend class PreparedGraphicsObjects;
 };
 

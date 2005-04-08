@@ -317,9 +317,61 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritable::write_datagram(manager, dg);
+  TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _array_format);
+  dg.add_uint8(_usage_hint);
 
   manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::write_raw_data
+//       Access: Public, Static
+//  Description: Called by CData::write_datagram to write the raw data
+//               of the array to the indicated datagram.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+write_raw_data(Datagram &dg, const PTA_uchar &data) {
+  // TODO: account for endianness of host.
+  dg.add_uint32(data.size());
+  dg.append_data(data, data.size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::read_raw_data
+//       Access: Public, Static
+//  Description: Called by CData::fillin to read the raw data
+//               of the array from the indicated datagram.
+////////////////////////////////////////////////////////////////////
+PTA_uchar qpGeomVertexArrayData::
+read_raw_data(DatagramIterator &scan) {
+  // TODO: account for endianness of host.
+
+  size_t size = scan.get_uint32();
+  PTA_uchar data = PTA_uchar::empty_array(size);
+  const unsigned char *source_data = 
+    (const unsigned char *)scan.get_datagram().get_data();
+  memcpy(data, source_data + scan.get_current_index(), size);
+  scan.skip_bytes(size);
+
+  return data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int qpGeomVertexArrayData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  _array_format = DCAST(qpGeomVertexArrayFormat, p_list[pi++]);
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,7 +403,10 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritable::fillin(scan, manager);
+  TypedWritableReferenceCount::fillin(scan, manager);
+
+  manager->read_pointer(scan);
+  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -374,20 +429,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int qpGeomVertexArrayData::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  return pi;
+  WRITE_PTA(manager, dg, write_raw_data, _data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,4 +441,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  READ_PTA(manager, scan, read_raw_data, _data);
+
+  _modified = qpGeom::get_next_modified();
 }

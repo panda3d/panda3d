@@ -161,7 +161,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
-  virtual void finalize();
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

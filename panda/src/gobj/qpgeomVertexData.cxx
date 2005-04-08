@@ -208,30 +208,6 @@ set_array(int i, const qpGeomVertexArrayData *array) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::modify_transform_palette
-//       Access: Published
-//  Description: Returns a modifiable pointer to the current
-//               TransformPalette on this vertex data, if any, or
-//               NULL if there is not a TransformPalette.  See
-//               get_transform_palette().
-////////////////////////////////////////////////////////////////////
-TransformPalette *qpGeomVertexData::
-modify_transform_palette() {
-  // Perform copy-on-write: if the reference count on the palette is
-  // greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
-  CDWriter cdata(_cycler);
-
-  if (cdata->_transform_palette->get_ref_count() > 1) {
-    cdata->_transform_palette = new TransformPalette(*cdata->_transform_palette);
-  }
-  cdata->_modified = qpGeom::get_next_modified();
-  cdata->_animated_vertices_modified = UpdateSeq();
-
-  return cdata->_transform_palette;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::set_transform_palette
 //       Access: Published
 //  Description: Replaces the TransformPalette on this vertex
@@ -242,6 +218,8 @@ modify_transform_palette() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 set_transform_palette(const TransformPalette *palette) {
+  nassertv(palette == (TransformPalette *)NULL || palette->is_registered());
+
   CDWriter cdata(_cycler);
   cdata->_transform_palette = (TransformPalette *)palette;
   cdata->_modified = qpGeom::get_next_modified();
@@ -287,30 +265,6 @@ set_transform_blend_palette(const TransformBlendPalette *palette) {
   cdata->_transform_blend_palette = (TransformBlendPalette *)palette;
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::modify_slider_table
-//       Access: Published
-//  Description: Returns a modifiable pointer to the current
-//               SliderTable on this vertex data, if any, or
-//               NULL if there is not a SliderTable.  See
-//               get_slider_table().
-////////////////////////////////////////////////////////////////////
-SliderTable *qpGeomVertexData::
-modify_slider_table() {
-  // Perform copy-on-write: if the reference count on the table is
-  // greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
-  CDWriter cdata(_cycler);
-
-  if (cdata->_slider_table->get_ref_count() > 1) {
-    cdata->_slider_table = new SliderTable(*cdata->_slider_table);
-  }
-  cdata->_modified = qpGeom::get_next_modified();
-  cdata->_animated_vertices_modified = UpdateSeq();
-
-  return cdata->_slider_table;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1368,7 +1322,11 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritable::write_datagram(manager, dg);
+  TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  dg.add_string(_name);
+  manager->write_pointer(dg, _format);
+  dg.add_uint8(_usage_hint);
 
   manager->write_cdata(dg, _cycler);
 }
@@ -1389,8 +1347,76 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   object->fillin(scan, manager);
+  manager->register_finalize(object);
 
   return object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int qpGeomVertexData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  _format = DCAST(qpGeomVertexFormat, p_list[pi++]);
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+finalize(BamReader *manager) {
+  // Now we need to register the format that we have read from the bam
+  // file (since it doesn't come out of the bam file automatically
+  // registered).  This may change the format's pointer, which we
+  // should then update our own data to reflect.  But since this may
+  // cause the unregistered object to destruct, we have to also tell
+  // the BamReader to return the new object from now on.
+
+  // This extends to the nested array datas, as well as the transform
+  // palette and slider tables, as well.
+
+  CDWriter cdata(_cycler);
+
+  CPT(qpGeomVertexFormat) new_format = 
+    qpGeomVertexFormat::register_format(_format);
+
+  for (size_t i = 0; i < cdata->_arrays.size(); ++i) {
+    CPT(qpGeomVertexArrayFormat) new_array_format = new_format->get_array(i);
+    CPT(qpGeomVertexArrayFormat) old_array_format = _format->get_array(i);
+    nassertv(cdata->_arrays[i]->_array_format == old_array_format);
+
+    manager->change_pointer(old_array_format, new_array_format);
+    cdata->_arrays[i]->_array_format = new_array_format;
+  }
+
+  manager->change_pointer(_format, new_format);
+  _format = new_format;
+
+  if (cdata->_transform_palette != (TransformPalette *)NULL) {
+    CPT(TransformPalette) new_transform_palette = 
+      TransformPalette::register_palette(cdata->_transform_palette);
+    manager->change_pointer(cdata->_transform_palette, new_transform_palette);
+    cdata->_transform_palette = new_transform_palette;
+  }
+
+  if (cdata->_slider_table != (SliderTable *)NULL) {
+    CPT(SliderTable) new_slider_table = 
+      SliderTable::register_table(cdata->_slider_table);
+    manager->change_pointer(cdata->_slider_table, new_slider_table);
+    cdata->_slider_table = new_slider_table;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1402,7 +1428,11 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritable::fillin(scan, manager);
+  TypedWritableReferenceCount::fillin(scan, manager);
+
+  _name = scan.get_string();
+  manager->read_pointer(scan);
+  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -1425,6 +1455,15 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint16(_arrays.size());
+  Arrays::const_iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    manager->write_pointer(dg, *ai);
+  }
+
+  manager->write_pointer(dg, _transform_palette);
+  manager->write_pointer(dg, _transform_blend_palette);
+  manager->write_pointer(dg, _slider_table);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1438,6 +1477,17 @@ int qpGeomVertexData::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
+  Arrays::iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    (*ai) = DCAST(qpGeomVertexArrayData, p_list[pi++]);    
+  }
+
+  _transform_palette = DCAST(TransformPalette, p_list[pi++]);
+  _transform_blend_palette = DCAST(TransformBlendPalette, p_list[pi++]);
+  _slider_table = DCAST(SliderTable, p_list[pi++]);
+
+  _modified = qpGeom::get_next_modified();
+
   return pi;
 }
 
@@ -1450,4 +1500,14 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  size_t num_arrays = scan.get_uint16();
+  _arrays.reserve(num_arrays);
+  for (size_t i = 0; i < num_arrays; ++i) {
+    manager->read_pointer(scan);
+    _arrays.push_back(NULL);
+  }
+
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
 }

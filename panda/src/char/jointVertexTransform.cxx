@@ -154,6 +154,8 @@ register_with_read_factory() {
 void JointVertexTransform::
 write_datagram(BamWriter *manager, Datagram &dg) {
   VertexTransform::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _joint);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,6 +168,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int JointVertexTransform::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = VertexTransform::complete_pointers(p_list, manager);
+
+  _joint = DCAST(CharacterJoint, p_list[pi++]);    
 
   return pi;
 }
@@ -200,4 +204,7 @@ make_from_bam(const FactoryParams &params) {
 void JointVertexTransform::
 fillin(DatagramIterator &scan, BamReader *manager) {
   VertexTransform::fillin(scan, manager);
+
+  manager->read_pointer(scan);
+  _matrix_stale = true;
 }

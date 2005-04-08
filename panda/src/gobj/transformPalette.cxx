@@ -176,9 +176,36 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TransformPalette::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritable::write_datagram(manager, dg);
+  TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  dg.add_uint16(_transforms.size());
+  for (Transforms::const_iterator ti = _transforms.begin();
+       ti != _transforms.end();
+       ++ti) {
+    manager->write_pointer(dg, *ti);
+  }
 
   manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformPalette::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int TransformPalette::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  for (Transforms::iterator ti = _transforms.begin();
+       ti != _transforms.end();
+       ++ti) {
+    (*ti) = DCAST(VertexTransform, p_list[pi++]);
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,7 +237,14 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TransformPalette::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritable::fillin(scan, manager);
+  TypedWritableReferenceCount::fillin(scan, manager);
+
+  size_t num_transforms = scan.get_uint16();
+  _transforms.reserve(num_transforms);
+  for (size_t i = 0; i < num_transforms; ++i) {
+    manager->read_pointer(scan);
+    _transforms.push_back(NULL);
+  }
 
   manager->read_cdata(scan, _cycler);
 }
@@ -236,20 +270,6 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int TransformPalette::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TransformPalette::CData::fillin
 //       Access: Public, Virtual
 //  Description: This internal function is called by make_from_bam to
@@ -258,4 +278,5 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void TransformPalette::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _modified = VertexTransform::get_next_modified();
 }

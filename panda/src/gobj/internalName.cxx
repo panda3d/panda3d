@@ -78,6 +78,8 @@ InternalName::
 ////////////////////////////////////////////////////////////////////
 PT(InternalName) InternalName::
 append(const string &name) {
+  test_ref_count_integrity();
+
   if (name.empty()) {
     return this;
   }
@@ -129,6 +131,8 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 int InternalName::
 find_ancestor(const string &basename) const {
+  test_ref_count_integrity();
+
   if (_basename == basename) {
     return 0;
 
@@ -152,6 +156,8 @@ find_ancestor(const string &basename) const {
 ////////////////////////////////////////////////////////////////////
 const InternalName *InternalName::
 get_ancestor(int n) const {
+  test_ref_count_integrity();
+
   if (n == 0) {
     return this;
 
@@ -217,11 +223,12 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::finalize
 //       Access: Public, Virtual
-//  Description: Method to ensure that any necessary clean up tasks
-//               that have to be performed by this object are performed
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void InternalName::
-finalize() {
+finalize(BamReader *) {
   // Unref the pointer that we explicitly reffed in make_from_bam().
   unref();
 

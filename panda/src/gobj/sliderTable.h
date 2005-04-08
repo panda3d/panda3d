@@ -53,7 +53,7 @@ PUBLISHED:
   virtual ~SliderTable();
 
   INLINE bool is_registered() const;
-  INLINE static CPT(SliderTable) register_table(SliderTable *table);
+  INLINE static CPT(SliderTable) register_table(const SliderTable *table);
 
   INLINE const VertexSlider *get_slider(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
@@ -73,8 +73,11 @@ private:
 private:
   bool _is_registered;
 
-  typedef pmap< const InternalName *, PT(VertexSlider) > Sliders;
+  typedef pmap< CPT(InternalName), PT(VertexSlider) > Sliders;
   Sliders _sliders;
+
+  // This is only filled in while reading from the bam stream.
+  size_t _num_sliders;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -83,7 +86,6 @@ private:
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     UpdateSeq _modified;
@@ -96,6 +98,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

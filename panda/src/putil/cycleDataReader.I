@@ -32,6 +32,7 @@ CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
 {
   _pointer = _cycler->read();
   _write_pointer = (CycleDataType *)NULL;
+  nassertv(_pointer != (const CycleDataType *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

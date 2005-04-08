@@ -142,7 +142,7 @@ protected:
 
 public:
   static void register_with_read_factory(void);
-  virtual void finalize();
+  virtual void finalize(BamReader *manager);
 
   static TypedWritable *make_PartBundle(const FactoryParams &params);
 

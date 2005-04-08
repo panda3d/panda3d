@@ -223,6 +223,12 @@ void TransformBlendPalette::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
+  dg.add_uint16(_blends.size());
+  Blends::const_iterator bi;
+  for (bi = _blends.begin(); bi != _blends.end(); ++bi) {
+    (*bi).write_datagram(manager, dg);
+  }
+
   manager->write_cdata(dg, _cycler);
 }
 
@@ -236,6 +242,12 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int TransformBlendPalette::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  Blends::iterator bi;
+  for (bi = _blends.begin(); bi != _blends.end(); ++bi) {
+    pi += (*bi).complete_pointers(p_list + pi, manager);
+  }
+
   return pi;
 }
 
@@ -270,6 +282,15 @@ void TransformBlendPalette::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
+  size_t num_blends = scan.get_uint16();
+  _blends.reserve(num_blends);
+  size_t i;
+  for (i = 0; i < num_blends; ++i) {
+    TransformBlend blend;
+    blend.fillin(scan, manager);
+    _blends.push_back(blend);
+  }
+
   manager->read_cdata(scan, _cycler);
 }
 
@@ -281,4 +302,27 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 CycleData *TransformBlendPalette::CData::
 make_copy() const {
   return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendPalette::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void TransformBlendPalette::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendPalette::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new TransformBlendPalette.
+////////////////////////////////////////////////////////////////////
+void TransformBlendPalette::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _modified = VertexTransform::get_next_modified();
+  _global_modified = VertexTransform::get_global_modified();
 }

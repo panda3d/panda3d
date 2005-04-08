@@ -23,6 +23,12 @@
 #include "internalName.h"
 #include "pointerTo.h"
 
+class TypedWritable;
+class BamWriter;
+class BamReader;
+class Datagram;
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexColumn
 // Description : This defines how a single column is interleaved
@@ -53,9 +59,12 @@ PUBLISHED:
     C_morph_delta,  // A delta from some base value, defining a blend shape
   };
 
+private:
+  INLINE qpGeomVertexColumn();
+PUBLISHED:
   INLINE qpGeomVertexColumn(const InternalName *name, int num_components,
-                              NumericType numeric_type, Contents contents,
-                              int start);
+                            NumericType numeric_type, Contents contents,
+                            int start);
   INLINE qpGeomVertexColumn(const qpGeomVertexColumn &copy);
   INLINE void operator = (const qpGeomVertexColumn &copy);
 
@@ -84,6 +93,14 @@ public:
   INLINE bool operator < (const qpGeomVertexColumn &other) const;
 
 private:
+  void setup();
+
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg);
+  int complete_pointers(TypedWritable **plist, BamReader *manager);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+private:
   CPT(InternalName) _name;
   int _num_components;
   int _num_values;
@@ -92,6 +109,8 @@ private:
   int _start;
   int _component_bytes;
   int _total_bytes;
+
+  friend class qpGeomVertexArrayFormat;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexColumn &obj);

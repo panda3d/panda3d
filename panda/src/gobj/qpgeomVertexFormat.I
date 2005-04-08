@@ -52,8 +52,8 @@ is_registered() const {
 //               this point on.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(qpGeomVertexFormat) qpGeomVertexFormat::
-register_format(qpGeomVertexFormat *format) {
-  return get_registry()->register_format(format);
+register_format(const qpGeomVertexFormat *format) {
+  return get_registry()->register_format((qpGeomVertexFormat *)format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,8 +63,8 @@ register_format(qpGeomVertexFormat *format) {
 //               one-array vertex format from the array definition.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(qpGeomVertexFormat) qpGeomVertexFormat::
-register_format(qpGeomVertexArrayFormat *format) {
-  return get_registry()->register_format(format);
+register_format(const qpGeomVertexArrayFormat *format) {
+  return register_format(new qpGeomVertexFormat(format));
 }
 
 ////////////////////////////////////////////////////////////////////

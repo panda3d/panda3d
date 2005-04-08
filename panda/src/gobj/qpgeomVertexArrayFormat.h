@@ -29,6 +29,8 @@ class qpGeomVertexFormat;
 class qpGeomVertexData;
 class InternalName;
 class FactoryParams;
+class BamWriter;
+class BamReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexArrayFormat
@@ -126,19 +128,16 @@ private:
   void do_register();
 
   bool _is_registered;
-  const qpGeomVertexFormat *_root_format;
-  const qpGeomVertexFormat *_parent_format;
-
   int _stride;
   int _total_bytes;
   int _pad_to;
 
-  typedef pvector<qpGeomVertexColumn *> DataTypes;
-  DataTypes _columns;
+  typedef pvector<qpGeomVertexColumn *> Columns;
+  Columns _columns;
   bool _columns_unsorted;
 
-  typedef pmap<const InternalName *, qpGeomVertexColumn *> DataTypesByName;
-  DataTypesByName _columns_by_name;
+  typedef pmap<const InternalName *, qpGeomVertexColumn *> ColumnsByName;
+  ColumnsByName _columns_by_name;
 
 public:
   static void register_with_read_factory();

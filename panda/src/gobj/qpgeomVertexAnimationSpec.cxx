@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexAnimationSpec.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexAnimationSpec::output
@@ -39,4 +41,31 @@ output(ostream &out) const {
         << _indexed_transforms << ")";
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexAnimationSpec::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexAnimationSpec::
+write_datagram(BamWriter *, Datagram &dg) {
+  dg.add_uint8(_animation_type);
+  dg.add_uint16(_num_transforms);
+  dg.add_bool(_indexed_transforms);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexAnimationSpec::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new qpGeomVertexAnimationSpec.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexAnimationSpec::
+fillin(DatagramIterator &scan, BamReader *) {
+  _animation_type = (AnimationType)scan.get_uint8();
+  _num_transforms = scan.get_uint16();
+  _indexed_transforms = scan.get_bool();
 }

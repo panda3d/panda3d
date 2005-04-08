@@ -1696,8 +1696,8 @@ change_this(TypedWritable *old_ptr, BamReader *manager) {
 //               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void RenderState::
-finalize() {
-  // Unref the pointer that we explicitly reffed in make_from_bam().
+finalize(BamReader *) {
+  // Unref the pointer that we explicitly reffed in change_this().
   unref();
 
   // We should never get back to zero after unreffing our own count,

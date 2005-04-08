@@ -293,7 +293,19 @@ resolve() {
         
         // Does the pointer need to change?
         if (created_obj._change_this != NULL) {
-          created_obj._ptr = created_obj._change_this(object_ptr, this);
+          TypedWritable *new_ptr = created_obj._change_this(object_ptr, this);
+          if (new_ptr != object_ptr) {
+            // Also update the reverse
+            vector_int &old_refs = _created_objs_by_pointer[object_ptr];
+            vector_int &new_refs = _created_objs_by_pointer[new_ptr];
+            for (vector_int::const_iterator oi = old_refs.begin();
+                 oi != old_refs.end();
+                 ++oi) {
+              new_refs.push_back(*oi);
+            }
+            _created_objs_by_pointer.erase(object_ptr);
+          }
+          created_obj._ptr = new_ptr;
           created_obj._change_this = NULL;
         }
         any_completed_this_pass = true;
@@ -355,6 +367,52 @@ resolve() {
 
   return all_completed;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::change_pointer
+//       Access: Public
+//  Description: Indicates that an object recently read from the bam
+//               stream should be replaced with a new object.  Any
+//               future occurrences of the original object in the
+//               stream will henceforth return the new object instead.
+//
+//               The return value is true if the replacement was
+//               successfully made, or false if the object was not
+//               read from the stream (or if change_pointer had
+//               already been called on it).
+////////////////////////////////////////////////////////////////////
+bool BamReader::
+change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_pointer) {
+  if (orig_pointer == new_pointer) {
+    return false;
+  }
+  CreatedObjsByPointer::iterator ci = _created_objs_by_pointer.find(orig_pointer);
+  if (ci == _created_objs_by_pointer.end()) {
+    // No record of this object.
+    return false;
+  }
+
+  const vector_int &old_refs = (*ci).second;
+  vector_int &new_refs = _created_objs_by_pointer[new_pointer];
+
+  for (vector_int::const_iterator oi = old_refs.begin(); 
+       oi != old_refs.end();
+       ++oi) {
+    int object_id = (*oi);
+
+    CreatedObjs::iterator ci = _created_objs.find(object_id);
+    nassertr(ci != _created_objs.end(), false);
+    nassertr((*ci).second._ptr == orig_pointer, false);
+
+    (*ci).second._ptr = (TypedWritable *)new_pointer;
+    new_refs.push_back(object_id);
+  }
+
+  _created_objs_by_pointer.erase(ci);
+
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_handle
@@ -546,10 +604,9 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
 //               all the objects and pointers in the Bam file are
 //               completely read.
 //
-//               This provides a hook for objects (like Characters)
-//               that need to do any additional finalization work
-//               after all of their related pointers are guaranteed to
-//               be filled in.
+//               This provides a hook for objects that need to do any
+//               additional finalization work after all of their
+//               related pointers are guaranteed to be filled in.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 register_finalize(TypedWritable *whom) {
@@ -613,7 +670,7 @@ finalize_now(TypedWritable *whom) {
   Finalize::iterator fi = _finalize_list.find(whom);
   if (fi != _finalize_list.end()) {
     _finalize_list.erase(fi);
-    whom->finalize();
+    whom->finalize(this);
   }
 }
 
@@ -717,6 +774,7 @@ free_object_ids(DatagramIterator &scan) {
           << " before removing from table.\n";
       }
 
+      _created_objs_by_pointer.erase((*ci).second._ptr);
       _created_objs.erase(ci);
     }
   }
@@ -874,6 +932,8 @@ p_read_object() {
         created_obj._change_this = NULL;
       }
     }
+
+    _created_objs_by_pointer[created_obj._ptr].push_back(object_id);
 
     // Just some sanity checks
     if (object == (TypedWritable *)NULL) {
@@ -1059,7 +1119,7 @@ finalize() {
     TypedWritable *object = (*fi);
     nassertv(object != (TypedWritable *)NULL);
     _finalize_list.erase(fi);
-    object->finalize();
+    object->finalize(this);
 
     fi = _finalize_list.begin();
   }

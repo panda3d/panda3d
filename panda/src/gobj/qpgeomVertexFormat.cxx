@@ -44,7 +44,7 @@ qpGeomVertexFormat() :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexFormat::
-qpGeomVertexFormat(qpGeomVertexArrayFormat *array_format) :
+qpGeomVertexFormat(const qpGeomVertexArrayFormat *array_format) :
   _is_registered(false)
 {
   add_array(array_format);
@@ -120,10 +120,10 @@ modify_array(int array) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
-set_array(int array, qpGeomVertexArrayFormat *format) {
+set_array(int array, const qpGeomVertexArrayFormat *format) {
   nassertv(!_is_registered);
   nassertv(array >= 0 && array < (int)_arrays.size());
-  _arrays[array] = format;
+  _arrays[array] = (qpGeomVertexArrayFormat *)format;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,11 +154,11 @@ remove_array(int array) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexFormat::
-add_array(qpGeomVertexArrayFormat *array_format) {
+add_array(const qpGeomVertexArrayFormat *array_format) {
   nassertr(!_is_registered, -1);
 
   int new_array = (int)_arrays.size();
-  _arrays.push_back(array_format);
+  _arrays.push_back((qpGeomVertexArrayFormat *)array_format);
   return new_array;
 }
 
@@ -174,11 +174,11 @@ add_array(qpGeomVertexArrayFormat *array_format) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
-insert_array(int array, qpGeomVertexArrayFormat *array_format) {
+insert_array(int array, const qpGeomVertexArrayFormat *array_format) {
   nassertv(!_is_registered);
   nassertv(array >= 0 && array <= (int)_arrays.size());
 
-  _arrays.insert(_arrays.begin() + array, array_format);
+  _arrays.insert(_arrays.begin() + array, (qpGeomVertexArrayFormat *)array_format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,7 +516,7 @@ do_register() {
       result = _columns_by_name.insert(DataTypesByName::value_type(column->get_name(), DataTypeRecord()));
       if (!result.second) {
         gobj_cat.warning()
-          << "Column " << column->get_name() << " repeated in format.\n";
+          << "Column " << *column->get_name() << " repeated in format.\n";
       } else {
         DataTypeRecord &record = (*result.first).second;
         record._array_index = array;
@@ -627,6 +627,14 @@ register_with_read_factory() {
 void qpGeomVertexFormat::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  _animation.write_datagram(manager, dg);
+
+  dg.add_uint16(_arrays.size());
+  Arrays::const_iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    manager->write_pointer(dg, *ai);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -640,6 +648,11 @@ int qpGeomVertexFormat::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
+  Arrays::iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    (*ai) = DCAST(qpGeomVertexArrayFormat, p_list[pi++]);
+  }
+
   return pi;
 }
 
@@ -649,8 +662,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //  Description: This function is called by the BamReader's factory
 //               when a new object of type qpGeomVertexFormat is
 //               encountered in the Bam file.  It should create the
-//               qpGeomVertexFormat and extract its information from
-//               the file.
+//               qpGeomVertexFormat and extract its information
+//               from the file.
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomVertexFormat::
 make_from_bam(const FactoryParams &params) {
@@ -674,6 +687,15 @@ make_from_bam(const FactoryParams &params) {
 void qpGeomVertexFormat::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
+
+  _animation.fillin(scan, manager);
+
+  int num_arrays = scan.get_uint16();
+  _arrays.reserve(num_arrays);
+  for (int i = 0; i < num_arrays; i++) {
+    manager->read_pointer(scan);
+    _arrays.push_back(NULL);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

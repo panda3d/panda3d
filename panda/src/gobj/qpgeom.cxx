@@ -784,6 +784,16 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  manager->write_pointer(dg, _data);
+
+  dg.add_uint16(_primitives.size());
+  Primitives::const_iterator pi;
+  for (pi = _primitives.begin(); pi != _primitives.end(); ++pi) {
+    manager->write_pointer(dg, *pi);
+  }
+
+  dg.add_uint8(_primitive_type);
+  dg.add_uint16(_point_rendering);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -797,6 +807,13 @@ int qpGeom::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
+  _data = DCAST(qpGeomVertexData, p_list[pi++]);
+
+  Primitives::iterator pri;
+  for (pri = _primitives.begin(); pri != _primitives.end(); ++pri) {
+    (*pri) = DCAST(qpGeomPrimitive, p_list[pi++]);
+  }
+
   return pi;
 }
 
@@ -809,4 +826,17 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_pointer(scan);
+
+  int num_primitives = scan.get_uint16();
+  _primitives.reserve(num_primitives);
+  for (int i = 0; i < num_primitives; ++i) {
+    manager->read_pointer(scan);
+    _primitives.push_back(NULL);
+  }
+
+  _primitive_type = (qpGeomPrimitive::PrimitiveType)scan.get_uint8();
+  _point_rendering = scan.get_uint16();
+  _got_usage_hint = false;
+  _modified = qpGeom::get_next_modified();
 }

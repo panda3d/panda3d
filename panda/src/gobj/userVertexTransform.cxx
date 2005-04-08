@@ -130,6 +130,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  _matrix.write_datagram(dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,4 +142,5 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _matrix.read_datagram(scan);
 }

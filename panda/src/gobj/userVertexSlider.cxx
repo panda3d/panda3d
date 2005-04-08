@@ -131,6 +131,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void UserVertexSlider::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_float32(_slider);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,4 +143,5 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void UserVertexSlider::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _slider = scan.get_float32();
 }

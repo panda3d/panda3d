@@ -101,7 +101,6 @@ PUBLISHED:
   void set_array(int i, const qpGeomVertexArrayData *array);
 
   INLINE const TransformPalette *get_transform_palette() const;
-  TransformPalette *modify_transform_palette();
   void set_transform_palette(const TransformPalette *palette);
   INLINE void clear_transform_palette();
 
@@ -111,7 +110,6 @@ PUBLISHED:
   INLINE void clear_transform_blend_palette();
 
   INLINE const SliderTable *get_slider_table() const;
-  SliderTable *modify_slider_table();
   void set_slider_table(const SliderTable *palette);
   INLINE void clear_slider_table();
 
@@ -218,9 +216,9 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Arrays _arrays;
-    PT(TransformPalette) _transform_palette;
+    CPT(TransformPalette) _transform_palette;
     PT(TransformBlendPalette) _transform_blend_palette;
-    PT(SliderTable) _slider_table;
+    CPT(SliderTable) _slider_table;
     PT(qpGeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
@@ -247,6 +245,9 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

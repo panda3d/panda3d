@@ -1004,6 +1004,8 @@ void qpGeomPrimitive::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
+  dg.add_uint8(_usage_hint);
+
   manager->write_cdata(dg, _cycler);
 }
 
@@ -1017,6 +1019,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void qpGeomPrimitive::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
+
+  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -1079,20 +1083,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-}
+  dg.add_uint8(_shade_model);
 
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int qpGeomPrimitive::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  return pi;
+  WRITE_PTA(manager, dg, IPD_ushort::write_datagram, _vertices);
+  WRITE_PTA(manager, dg, IPD_int::write_datagram, _ends);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1104,4 +1098,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _shade_model = (ShadeModel)scan.get_uint8();
+  
+  READ_PTA(manager, scan, IPD_ushort::read_datagram, _vertices);
+  READ_PTA(manager, scan, IPD_int::read_datagram, _ends);
+
+  _modified = qpGeom::get_next_modified();
+  _got_minmax = false;
 }

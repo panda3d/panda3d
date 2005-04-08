@@ -428,13 +428,13 @@ recompute_net_blend() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::finalize
-//       Access: Public
-//  Description: Method to ensure that any necessary clean up tasks
-//               that have to be performed by this object are performed
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-finalize(void)
-{
+finalize(BamReader *) {
   do_update(this, NULL, true, true);
 }
 

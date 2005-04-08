@@ -166,7 +166,36 @@ void SliderTable::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
+  dg.add_uint16(_sliders.size());
+  Sliders::const_iterator si;
+  for (si = _sliders.begin(); si != _sliders.end(); ++si) {
+    manager->write_pointer(dg, (*si).first);
+    manager->write_pointer(dg, (*si).second);
+  }
+
   manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int SliderTable::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  for (size_t i = 0; i < _num_sliders; ++i) {
+    CPT(InternalName) name = DCAST(InternalName, p_list[pi++]);
+    PT(VertexSlider) slider = DCAST(VertexSlider, p_list[pi++]);
+
+    bool inserted = _sliders.insert(Sliders::value_type(name, slider)).second;
+    nassertr(inserted, pi);
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -200,6 +229,12 @@ void SliderTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
+  _num_sliders = scan.get_uint16();
+  for (size_t i = 0; i < _num_sliders; ++i) {
+    manager->read_pointer(scan);
+    manager->read_pointer(scan);
+  }
+
   manager->read_cdata(scan, _cycler);
 }
 
@@ -224,20 +259,6 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int SliderTable::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::CData::fillin
 //       Access: Public, Virtual
 //  Description: This internal function is called by make_from_bam to
@@ -246,4 +267,5 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void SliderTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _modified = VertexTransform::get_next_modified();
 }

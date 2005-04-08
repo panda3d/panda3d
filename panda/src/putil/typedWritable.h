@@ -50,7 +50,7 @@ public:
 
   virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
 
-  virtual void finalize();
+  virtual void finalize(BamReader *manager);
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);

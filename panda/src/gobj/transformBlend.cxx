@@ -251,6 +251,13 @@ clear_result() {
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint16(_entries.size());
+
+  Entries::const_iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    manager->write_pointer(dg, (*ei)._transform);
+    dg.add_float32((*ei)._weight);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,7 +269,18 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 int TransformBlend::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  return 0;
+  int pi = 0;
+
+  Entries::iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    (*ei)._transform = DCAST(VertexTransform, p_list[pi++]);
+  }
+
+  // Now that we have actual pointers, we can sort the list of
+  // entries.
+  _entries.sort();
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,6 +292,14 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  size_t num_entries = scan.get_uint16();
+  _entries.reserve(num_entries);
+  for (size_t i = 0; i < num_entries; ++i) {
+    TransformEntry entry;
+    manager->read_pointer(scan);
+    entry._weight = scan.get_float32();
+    _entries.push_back(entry);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -67,14 +67,14 @@ class qpGeomMunger;
 class EXPCL_PANDA qpGeomVertexFormat : public TypedWritableReferenceCount {
 PUBLISHED:
   qpGeomVertexFormat();
-  qpGeomVertexFormat(qpGeomVertexArrayFormat *array_format);
+  qpGeomVertexFormat(const qpGeomVertexArrayFormat *array_format);
   qpGeomVertexFormat(const qpGeomVertexFormat &copy);
   void operator = (const qpGeomVertexFormat &copy);
   virtual ~qpGeomVertexFormat();
 
   INLINE bool is_registered() const;
-  INLINE static CPT(qpGeomVertexFormat) register_format(qpGeomVertexFormat *format);
-  INLINE static CPT(qpGeomVertexFormat) register_format(qpGeomVertexArrayFormat *format);
+  INLINE static CPT(qpGeomVertexFormat) register_format(const qpGeomVertexFormat *format);
+  INLINE static CPT(qpGeomVertexFormat) register_format(const qpGeomVertexArrayFormat *format);
 
   INLINE const qpGeomVertexAnimationSpec &get_animation() const;
   INLINE void set_animation(const qpGeomVertexAnimationSpec &animation);
@@ -82,10 +82,10 @@ PUBLISHED:
   INLINE int get_num_arrays() const;
   INLINE const qpGeomVertexArrayFormat *get_array(int array) const;
   qpGeomVertexArrayFormat *modify_array(int array);
-  void set_array(int array, qpGeomVertexArrayFormat *format);
+  void set_array(int array, const qpGeomVertexArrayFormat *format);
   void remove_array(int array);
-  int add_array(qpGeomVertexArrayFormat *array_format);
-  void insert_array(int array, qpGeomVertexArrayFormat *array_format);
+  int add_array(const qpGeomVertexArrayFormat *array_format);
+  void insert_array(int array, const qpGeomVertexArrayFormat *array_format);
   void clear_arrays();
 
   int get_num_columns() const;

@@ -93,6 +93,8 @@ register_with_read_factory() {
 void CharacterVertexSlider::
 write_datagram(BamWriter *manager, Datagram &dg) {
   VertexSlider::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _char_slider);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +107,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int CharacterVertexSlider::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = VertexSlider::complete_pointers(p_list, manager);
+
+  _char_slider = DCAST(CharacterSlider, p_list[pi++]);    
 
   return pi;
 }
@@ -139,4 +143,6 @@ make_from_bam(const FactoryParams &params) {
 void CharacterVertexSlider::
 fillin(DatagramIterator &scan, BamReader *manager) {
   VertexSlider::fillin(scan, manager);
+
+  manager->read_pointer(scan);
 }

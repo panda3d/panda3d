@@ -52,7 +52,7 @@ PUBLISHED:
   virtual ~TransformPalette();
 
   INLINE bool is_registered() const;
-  INLINE static CPT(TransformPalette) register_palette(TransformPalette *palette);
+  INLINE static CPT(TransformPalette) register_palette(const TransformPalette *palette);
 
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
@@ -82,7 +82,6 @@ private:
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     UpdateSeq _modified;
@@ -95,6 +94,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

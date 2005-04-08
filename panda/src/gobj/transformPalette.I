@@ -48,7 +48,7 @@ is_registered() const {
 //               this point on.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformPalette) TransformPalette::
-register_palette(TransformPalette *palette) {
+register_palette(const TransformPalette *palette) {
   // We don't actually bother adding the palette object to a registry.
   // This means there may be multiple copies of identical registered
   // TransformPalettes.  Big deal.  We can always go back and make a
@@ -57,7 +57,7 @@ register_palette(TransformPalette *palette) {
     return palette;
   }
 
-  palette->do_register();
+  ((TransformPalette *)palette)->do_register();
   return palette;
 }
 

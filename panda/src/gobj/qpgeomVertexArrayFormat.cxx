@@ -151,7 +151,7 @@ qpGeomVertexArrayFormat(const qpGeomVertexArrayFormat &copy) :
   _pad_to(copy._pad_to),
   _columns_unsorted(copy._columns_unsorted)
 {
-  DataTypes::const_iterator dti;
+  Columns::const_iterator dti;
   for (dti = copy._columns.begin(); dti != copy._columns.end(); ++dti) {
     add_column(*(*dti));
   }
@@ -172,7 +172,7 @@ operator = (const qpGeomVertexArrayFormat &copy) {
   _columns.clear();
   _columns_by_name.clear();
   _columns_unsorted = false;
-  DataTypes::const_iterator dti;
+  Columns::const_iterator dti;
   for (dti = copy._columns.begin(); dti != copy._columns.end(); ++dti) {
     add_column(*(*dti));
   }
@@ -185,9 +185,9 @@ operator = (const qpGeomVertexArrayFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 ~qpGeomVertexArrayFormat() {
-  DataTypes::iterator dti;
-  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
-    delete (*dti);
+  Columns::iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    delete (*ci);
   }
 }
 
@@ -263,7 +263,7 @@ add_column(const qpGeomVertexColumn &column) {
 
   int new_index = (int)_columns.size();
   _columns.push_back(new_column);
-  _columns_by_name.insert(DataTypesByName::value_type(new_column->get_name(), new_column));
+  _columns_by_name.insert(ColumnsByName::value_type(new_column->get_name(), new_column));
 
   return new_index;
 }
@@ -277,16 +277,16 @@ add_column(const qpGeomVertexColumn &column) {
 void qpGeomVertexArrayFormat::
 remove_column(const InternalName *name) {
   nassertv(!_is_registered);
-  DataTypesByName::iterator ni;
+  ColumnsByName::iterator ni;
   ni = _columns_by_name.find(name);
   if (ni != _columns_by_name.end()) {
     qpGeomVertexColumn *column = (*ni).second;
     _columns_by_name.erase(ni);
 
-    DataTypes::iterator dti;
-    dti = find(_columns.begin(), _columns.end(), column);
-    nassertv(dti != _columns.end());
-    _columns.erase(dti);
+    Columns::iterator ci;
+    ci = find(_columns.begin(), _columns.end(), column);
+    nassertv(ci != _columns.end());
+    _columns.erase(ci);
 
     delete column;
 
@@ -326,7 +326,7 @@ clear_columns() {
 ////////////////////////////////////////////////////////////////////
 const qpGeomVertexColumn *qpGeomVertexArrayFormat::
 get_column(const InternalName *name) const {
-  DataTypesByName::const_iterator ni;
+  ColumnsByName::const_iterator ni;
   ni = _columns_by_name.find(name);
   if (ni != _columns_by_name.end()) {
     return (*ni).second;
@@ -344,9 +344,9 @@ get_column(const InternalName *name) const {
 const qpGeomVertexColumn *qpGeomVertexArrayFormat::
 get_column(int start_byte, int num_bytes) const {
   consider_sort_columns();
-  DataTypes::const_iterator dti;
-  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
-    const qpGeomVertexColumn *column = (*dti);
+  Columns::const_iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    const qpGeomVertexColumn *column = (*ci);
     if (column->overlaps_with(start_byte, num_bytes)) {
       return column;
     }
@@ -394,10 +394,10 @@ is_data_subset_of(const qpGeomVertexArrayFormat &other) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayFormat::
 output(ostream &out) const {
-  DataTypes::const_iterator dti;
+  Columns::const_iterator ci;
   out << "[";
-  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
-    const qpGeomVertexColumn *column = (*dti);
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    const qpGeomVertexColumn *column = (*ci);
     out << " " << *column;
   }
   out << " ]";
@@ -413,9 +413,9 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Array format (stride = " << get_stride() << "):\n";
   consider_sort_columns();
-  DataTypes::const_iterator dti;
-  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
-    const qpGeomVertexColumn *column = (*dti);
+  Columns::const_iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    const qpGeomVertexColumn *column = (*ci);
     indent(out, indent_level + 2)
       << *column 
       << " " << column->get_numeric_type()
@@ -441,9 +441,9 @@ write_with_data(ostream &out, int indent_level,
     indent(out, indent_level)
       << "vertex index " << i << ":\n";
     reader.set_vertex(i);
-    DataTypes::const_iterator dti;
-    for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
-      const qpGeomVertexColumn *column = (*dti);
+    Columns::const_iterator ci;
+    for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+      const qpGeomVertexColumn *column = (*ci);
       int num_values = min(column->get_num_values(), 4);
       reader.set_column(array_index, column);
       const LVecBase4f &d = reader.get_data4f();
@@ -532,6 +532,19 @@ register_with_read_factory() {
 void qpGeomVertexArrayFormat::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  dg.add_uint16(_stride);
+  dg.add_uint16(_total_bytes);
+  dg.add_uint8(_pad_to);
+
+  consider_sort_columns();
+
+  dg.add_uint16(_columns.size());
+  Columns::iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    qpGeomVertexColumn *column = (*ci);
+    column->write_datagram(manager, dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -545,6 +558,12 @@ int qpGeomVertexArrayFormat::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
+  Columns::iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    qpGeomVertexColumn *column = (*ci);
+    pi += column->complete_pointers(p_list + pi, manager);
+  }
+
   return pi;
 }
 
@@ -554,8 +573,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //  Description: This function is called by the BamReader's factory
 //               when a new object of type qpGeomVertexArrayFormat is
 //               encountered in the Bam file.  It should create the
-//               qpGeomVertexArrayFormat and extract its information from
-//               the file.
+//               qpGeomVertexArrayFormat and extract its information
+//               from the file.
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomVertexArrayFormat::
 make_from_bam(const FactoryParams &params) {
@@ -579,4 +598,18 @@ make_from_bam(const FactoryParams &params) {
 void qpGeomVertexArrayFormat::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
+  nassertv(!_is_registered);
+
+  _stride = scan.get_uint16();
+  _total_bytes = scan.get_uint16();
+  _pad_to = scan.get_uint8();
+
+  int num_columns = scan.get_uint16();
+  _columns.reserve(num_columns);
+  for (int i = 0; i < num_columns; ++i) {
+    qpGeomVertexColumn *column = new qpGeomVertexColumn;
+    column->fillin(scan, manager);
+    _columns.push_back(column);
+  }
+  _columns_unsorted = false;
 }

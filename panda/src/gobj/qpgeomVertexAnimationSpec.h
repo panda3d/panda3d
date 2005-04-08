@@ -21,6 +21,11 @@
 
 #include "pandabase.h"
 
+class BamWriter;
+class BamReader;
+class Datagram;
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexAnimationSpec
 // Description : This object describes how the vertex animation, if
@@ -67,6 +72,10 @@ public:
   INLINE bool operator == (const qpGeomVertexAnimationSpec &other) const;
   INLINE bool operator != (const qpGeomVertexAnimationSpec &other) const;
   INLINE int compare_to(const qpGeomVertexAnimationSpec &other) const;
+
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:  
   AnimationType _animation_type;

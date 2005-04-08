@@ -105,6 +105,8 @@ public:
   INLINE bool is_eof() const;
   bool resolve();
 
+  bool change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_pointer);
+
   INLINE int get_file_major_ver() const;
   INLINE int get_file_minor_ver() const;
 
@@ -183,6 +185,10 @@ private:
   // This is the pointer to the current PipelineCycler we are reading,
   // if we are within a read_cdata() call.
   PipelineCyclerBase *_reading_cycler;
+
+  // This is the reverse lookup into the above map.
+  typedef phash_map<const TypedWritable *, vector_int, pointer_hash> CreatedObjsByPointer;
+  CreatedObjsByPointer _created_objs_by_pointer;
 
   // This records all the objects that still need their pointers
   // completed, along with the object ID's of the pointers they need,

@@ -48,7 +48,7 @@ is_registered() const {
 //               this point on.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(SliderTable) SliderTable::
-register_table(SliderTable *table) {
+register_table(const SliderTable *table) {
   // We don't actually bother adding the table object to a registry.
   // This means there may be multiple copies of identical registered
   // SliderTables.  Big deal.  We can always go back and make a
@@ -57,7 +57,7 @@ register_table(SliderTable *table) {
     return table;
   }
 
-  table->do_register();
+  ((SliderTable *)table)->do_register();
   return table;
 }
 

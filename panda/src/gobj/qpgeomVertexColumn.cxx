@@ -17,26 +17,32 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexColumn.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexColumn::Constructor
+//     Function: qpGeomVertexColumn::output
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomVertexColumn::
-qpGeomVertexColumn(const InternalName *name, int num_components,
-                   NumericType numeric_type, Contents contents,
-                   int start) :
-  _name(name),
-  _num_components(num_components),
-  _num_values(num_components),
-  _numeric_type(numeric_type),
-  _contents(contents),
-  _start(start)
-{
-  nassertv(num_components > 0 && start >= 0);
+void qpGeomVertexColumn::
+output(ostream &out) const {
+  out << *get_name() << "(" << get_num_components() << ")";
+}
 
-  switch (numeric_type) {
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::setup
+//       Access: Private
+//  Description: Called once at construction time (or at bam-reading
+//               time) to initialize the internal dependent values.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexColumn::
+setup() {
+  nassertv(_num_components > 0 && _start >= 0);
+
+  _num_values = _num_components;
+
+  switch (_numeric_type) {
   case NT_uint16:
     _component_bytes = 2;  // sizeof(PN_uint16)
     break;
@@ -60,13 +66,53 @@ qpGeomVertexColumn(const InternalName *name, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexColumn::output
-//       Access: Published
-//  Description: 
+//     Function: qpGeomVertexColumn::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexColumn::
-output(ostream &out) const {
-  out << *get_name() << "(" << get_num_components() << ")";
+write_datagram(BamWriter *manager, Datagram &dg) {
+  manager->write_pointer(dg, _name);
+  dg.add_uint8(_num_components);
+  dg.add_uint8(_numeric_type);
+  dg.add_uint8(_contents);
+  dg.add_uint16(_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::complete_pointers
+//       Access: Public
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int qpGeomVertexColumn::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = 0;
+
+  _name = DCAST(InternalName, p_list[pi++]);
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new qpGeomVertexColumn.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexColumn::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_pointer(scan);
+
+  _num_components = scan.get_uint8();
+  _numeric_type = (NumericType)scan.get_uint8();
+  _contents = (Contents)scan.get_uint8();
+  _start = scan.get_uint16();
+
+  setup();
 }
 
 ostream &

@@ -228,7 +228,6 @@ private:
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     ShadeModel _shade_model;

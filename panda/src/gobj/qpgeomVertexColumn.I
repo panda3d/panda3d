@@ -18,6 +18,34 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Default Constructor
+//       Access: Private
+//  Description: Creates an invalid column.  Used on when constructing
+//               from a bam file.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexColumn::
+qpGeomVertexColumn() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexColumn::
+qpGeomVertexColumn(const InternalName *name, int num_components,
+                   NumericType numeric_type, Contents contents,
+                   int start) :
+  _name(name),
+  _num_components(num_components),
+  _numeric_type(numeric_type),
+  _contents(contents),
+  _start(start)
+{
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexColumn::Copy Constructor
 //       Access: Published
 //  Description: 

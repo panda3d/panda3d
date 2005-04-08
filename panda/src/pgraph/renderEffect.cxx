@@ -397,12 +397,13 @@ change_this(TypedWritable *old_ptr, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffect::finalize
 //       Access: Public, Virtual
-//  Description: Method to ensure that any necessary clean up tasks
-//               that have to be performed by this object are performed
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void RenderEffect::
-finalize() {
-  // Unref the pointer that we explicitly reffed in make_from_bam().
+finalize(BamReader *) {
+  // Unref the pointer that we explicitly reffed in change_this().
   unref();
 
   // We should never get back to zero after unreffing our own count,

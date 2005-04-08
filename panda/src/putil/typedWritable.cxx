@@ -83,7 +83,7 @@ complete_pointers(TypedWritable **, BamReader *) {
 //               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void TypedWritable::
-finalize() {
+finalize(BamReader *) {
 }
 
 

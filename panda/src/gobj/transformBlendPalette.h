@@ -99,6 +99,8 @@ private:
     INLINE CData();
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     UpdateSeq _modified;
     UpdateSeq _global_modified;

@@ -31,6 +31,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
   _cycler(&cycler)
 {
   _pointer = _cycler->write();
+  nassertv(_pointer != (CycleDataType *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

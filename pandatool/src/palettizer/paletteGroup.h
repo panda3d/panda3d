@@ -110,7 +110,7 @@ public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
   virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
-  virtual void finalize();
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_PaletteGroup(const FactoryParams &params);
