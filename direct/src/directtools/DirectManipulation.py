@@ -36,7 +36,8 @@ class DirectManipulationControl(PandaObject):
             ['i', self.plantSelectedNodePath],
             ]
         self.optionalSkipFlags = 0
-
+        self.unmovableTagList = []
+        
     def manipulationStart(self, modifiers):
         # Start out in select mode
         self.mode = 'select'
@@ -172,7 +173,13 @@ class DirectManipulationControl(PandaObject):
 
     def manipulateObject(self):
         # Only do this if something is selected
-        if direct.selected:
+        selectedList = direct.selected.getSelectedAsList()
+        # See if any of the selected in the don't manipulate tag list
+        for tag in self.unmovableTagList:
+            for selected in selectedList:
+                if selected.hasTag(tag):
+                    return
+        if selectedList:
             # Remove the task to keep the widget attached to the object
             taskMgr.remove('followSelectedNodePath')
             # and the task to highlight the widget
@@ -262,6 +269,13 @@ class DirectManipulationControl(PandaObject):
             direct.selected.moveWrtWidgetAll()
         # Continue
         return Task.cont
+
+    def addTag(self, tag):
+        if tag not in self.unmovableTagList:
+            self.unmovableTagList.append(tag)
+
+    def removeTag(self, tag):
+        self.unmovableTagList.remove(tag)
 
     ### WIDGET MANIPULATION METHODS ###
     def xlate1D(self, state):
