@@ -52,6 +52,9 @@ PUBLISHED:
   INLINE const Colorf& get_head_color() const;
   INLINE const Colorf& get_tail_color() const;
   
+  INLINE void set_line_scale_factor(float sf);
+  INLINE float get_line_scale_factor() const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
@@ -70,6 +73,8 @@ private:
 
   LPoint3f _aabb_min;
   LPoint3f _aabb_max;
+
+  float _line_scale_factor;
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);

@@ -34,6 +34,8 @@ LineParticleRenderer() :
   _head_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _tail_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
 
+  _line_scale_factor = 1.0f;
+
   resize_pool(0);
 }
 
@@ -243,14 +245,19 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     if (use_qpgeom) {
       vertex.add_data3f(position);
-      vertex.add_data3f(cur_particle->get_last_position());
+      LPoint3f last_position = position + 
+        (cur_particle->get_last_position() - position) * _line_scale_factor;
+      vertex.add_data3f(last_position);
       color.add_data4f(head_color);
       color.add_data4f(tail_color);
       _lines->add_next_vertices(2);
       _lines->close_primitive();
     } else {
+      LPoint3f last_position = position + 
+        (cur_particle->get_last_position() - position) * _line_scale_factor;
+
       *cur_vert++ = position;
-      *cur_vert++ = cur_particle->get_last_position();
+      *cur_vert++ = last_position;
 
       *cur_color++ = head_color;
       *cur_color++ = tail_color;

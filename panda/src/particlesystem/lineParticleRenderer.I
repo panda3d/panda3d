@@ -51,3 +51,22 @@ INLINE const Colorf& LineParticleRenderer::
 get_tail_color() const {
   return _tail_color;
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_line_scale_factor
+// Description : accessor
+////////////////////////////////////////////////////////////////////
+INLINE void LineParticleRenderer::
+set_line_scale_factor(float sf) {
+  _line_scale_factor = sf;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_line_scale_factor
+// Description : accessor
+////////////////////////////////////////////////////////////////////
+INLINE float LineParticleRenderer::
+get_line_scale_factor() const {
+  return _line_scale_factor;
+}
+
