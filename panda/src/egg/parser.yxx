@@ -1823,7 +1823,7 @@ primitive_body:
     }
   } else if (cmp_nocase_uh(name, "perspective") == 0) {
     if (primitive->is_of_type(EggPoint::get_class_type())) {
-      DCAST(EggPoint, primitive)->set_perspective(value);
+      DCAST(EggPoint, primitive)->set_perspective(value != 0);
     } else {
       eggyywarning("scalar perspective is only meaningful for points.");
     }
