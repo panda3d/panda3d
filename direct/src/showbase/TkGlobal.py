@@ -24,4 +24,5 @@ def spawnTkLoop():
     # Spawn this task
     taskMgr.add(tkLoop, "tkLoop")
 
-
+taskMgr.remove('tkLoop')
+spawnTkLoop()
