@@ -109,6 +109,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = VertexSlider::complete_pointers(p_list, manager);
 
   _char_slider = DCAST(CharacterSlider, p_list[pi++]);    
+  _char_slider->_vertex_sliders.insert(this);
 
   return pi;
 }

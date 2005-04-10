@@ -170,6 +170,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = VertexTransform::complete_pointers(p_list, manager);
 
   _joint = DCAST(CharacterJoint, p_list[pi++]);    
+  _joint->_vertex_transforms.insert(this);
 
   return pi;
 }
