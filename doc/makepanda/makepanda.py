@@ -196,7 +196,7 @@ VERSION="0.0.0"
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
+          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -590,6 +590,7 @@ if (os.path.isdir("sdks")):
     MAXSDK["MAX7"]   = "sdks/maxsdk7"
     MAYASDK["MAYA5"] = "sdks/maya5"
     MAYASDK["MAYA6"] = "sdks/maya6"
+    MAYASDK["MAYA65"] = "sdks/maya65"
 
 ########################################################################
 ##
@@ -620,10 +621,15 @@ if sys.platform == "win32" and DIRECTXSDK is None:
 ##
 ########################################################################
 
-for ver in ["MAYA5","MAYA6"]:
+MAYAVERSIONS=[("MAYA5",  "SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath"),
+              ("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
+              ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath")
+];
+
+for (ver,key) in MAYAVERSIONS:
     if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
         if (sys.platform == "win32"):
-            MAYASDK[ver]=GetRegistryKey("SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath","MAYA_INSTALL_LOCATION")
+            MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
             if (MAYASDK[ver] == 0):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
                 WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
@@ -1181,13 +1187,13 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             cmd = "cl.exe /Fo" + wobj + " /nologo /c"
             cmd = cmd + " /I" + PREFIX + "/python/include"
             if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
-            if (opts.count("MAYA5")): cmd = cmd + ' /I"' + MAYASDK["MAYA5"] + '/include"'
-            if (opts.count("MAYA6")): cmd = cmd + ' /I"' + MAYASDK["MAYA6"] + '/include"'
+            for ver in ["MAYA5","MAYA6","MAYA65"]:
+              if (opts.count(ver)): cmd = cmd + ' /I"' + MAYASDK[ver] + '/include"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if (PkgSelected(opts,max)):
                     cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
             for pkg in PACKAGES:
-                if (pkg != "MAYA5") and (pkg != "MAYA6") and PkgSelected(opts,pkg):
+                if (pkg[:4] != "MAYA") and PkgSelected(opts,pkg):
                     cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
@@ -1311,8 +1317,8 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + MAYASDK["MAYA5"] + '/include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + MAYASDK["MAYA6"] + '/include"'
+        for ver in ["MAYA5","MAYA6","MAYA65"]:
+          if ((COMPILER=="MSVC7") and opts.count(ver)): cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oslocalcmd(src, cmd)
         updatefiledate(outd)
@@ -1467,7 +1473,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (PkgSelected(opts,"FFTW")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
-            for maya in ["MAYA5","MAYA6"]:
+            for maya in ["MAYA5","MAYA6","MAYA65"]:
                 if (PkgSelected(opts,maya)):
                     cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
                     cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMaya.lib"'
@@ -5589,7 +5595,7 @@ CompileLink(dll='lwo2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/maya/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -5600,7 +5606,7 @@ for VER in ["5","6"]:
 # DIRECTORY: pandatool/src/mayaegg/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -5734,7 +5740,7 @@ CompileLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count('MAYA'+VER)==0):
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
