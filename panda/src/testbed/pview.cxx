@@ -204,7 +204,7 @@ help() {
     "      until all models are loaded.\n\n"
 
     "  -s filename\n"
-    "      After displaying the models, immediately take a screenshot and
+    "      After displaying the models, immediately take a screenshot and\n"
     "      exit.\n\n"
     
     "  -h\n"
