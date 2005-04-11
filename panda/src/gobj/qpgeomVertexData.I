@@ -430,7 +430,9 @@ CData() {
 INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
   _arrays(copy._arrays),
+  _transform_palette(copy._transform_palette),
   _transform_blend_palette(copy._transform_blend_palette),
+  _slider_table(copy._slider_table),
   _animated_vertices(copy._animated_vertices),
   _animated_vertices_modified(copy._animated_vertices_modified),
   _modified(copy._modified)

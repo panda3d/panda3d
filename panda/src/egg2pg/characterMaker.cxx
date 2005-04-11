@@ -168,12 +168,14 @@ part_to_node(PartGroup *part, const string &name) const {
     // GeomNode.  Look for a child of this node.  If it doesn't have a
     // child yet, add a GeomNode and return it.  Otherwise, if it
     // already has a child, return that.
-    if (node->is_geom_node() && node->get_name() == name) {
+    if (node->is_geom_node() && 
+        (name.empty() || node->get_name() == name)) {
       return node;
     }
     for (int i = 0; i < node->get_num_children(); i++) {
       PandaNode *child = node->get_child(i);
-      if (child->is_geom_node() && child->get_name() == name) {
+      if (child->is_geom_node() && 
+          (name.empty() || child->get_name() == name)) {
         return child;
       }
     }
@@ -683,8 +685,9 @@ determine_bin_home(EggBin *egg_bin) {
     CharacterJoint *joint;
     DCAST_INTO_R(joint, egg_to_part(egg_group), home);
     egg_group->set_dcs_type(EggGroup::DC_default);
-    PT(GeomNode) geom_node = new GeomNode(egg_group->get_name());
-    joint->_geom_node = geom_node.p();
+
+    PT(PandaNode) geom_node = new PandaNode(egg_group->get_name());
+    joint->_geom_node = geom_node;
   }
 
   return home;

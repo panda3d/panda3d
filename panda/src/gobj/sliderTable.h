@@ -55,13 +55,17 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(SliderTable) register_table(const SliderTable *table);
 
-  INLINE const VertexSlider *get_slider(const InternalName *name) const;
+  INLINE int get_num_sliders() const;
+  INLINE const VertexSlider *get_slider(int n) const;
+
+  INLINE const VertexSlider *find_slider(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
   INLINE UpdateSeq get_modified() const;
 
-  void remove_slider(const InternalName *name);
-  void add_slider(VertexSlider *slider);
+  void set_slider(int n, const VertexSlider *slider);
+  void remove_slider(int n);
+  int add_slider(const VertexSlider *slider);
 
   void write(ostream &out) const;
 
@@ -73,11 +77,11 @@ private:
 private:
   bool _is_registered;
 
-  typedef pmap< CPT(InternalName), PT(VertexSlider) > Sliders;
+  typedef pvector< CPT(VertexSlider) > Sliders;
   Sliders _sliders;
 
-  // This is only filled in while reading from the bam stream.
-  size_t _num_sliders;
+  typedef pmap< CPT(InternalName), const VertexSlider *> SlidersByName;
+  SlidersByName _sliders_by_name;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {

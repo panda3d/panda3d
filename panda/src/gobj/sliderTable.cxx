@@ -41,7 +41,8 @@ SliderTable() :
 SliderTable::
 SliderTable(const SliderTable &copy) :
   _is_registered(false),
-  _sliders(copy._sliders)
+  _sliders(copy._sliders),
+  _sliders_by_name(copy._sliders_by_name)
 {
 }
 
@@ -54,6 +55,7 @@ void SliderTable::
 operator = (const SliderTable &copy) {
   nassertv(!_is_registered);
   _sliders = copy._sliders;
+  _sliders_by_name = copy._sliders_by_name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,33 +71,73 @@ SliderTable::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::remove_slider
+//     Function: SliderTable::set_slider
 //       Access: Published
-//  Description: Removes the named slider.  Only valid for
+//  Description: Replaces the nth slider.  Only valid for
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
 void SliderTable::
-remove_slider(const InternalName *name) {
+set_slider(int n, const VertexSlider *slider) {
   nassertv(!_is_registered);
+  nassertv(n >= 0 && n < (int)_sliders.size());
 
-  Sliders::iterator si = _sliders.find(name);
-  if (si != _sliders.end()) {
-    _sliders.erase(si);
+  if (_sliders[n]->get_name() != slider->get_name()) {
+    // Not allowed to move a slider this way.
+    nassertv(!has_slider(slider->get_name()));
   }
+
+  _sliders[n] = slider;
+  _sliders_by_name[slider->get_name()] = slider;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::remove_slider
+//       Access: Published
+//  Description: Removes the nth slider.  Only valid for
+//               unregistered tables.
+////////////////////////////////////////////////////////////////////
+void SliderTable::
+remove_slider(int n) {
+  nassertv(!_is_registered);
+  nassertv(n >= 0 && n < (int)_sliders.size());
+
+  SlidersByName::iterator si = _sliders_by_name.find(_sliders[n]->get_name());
+  nassertv(si != _sliders_by_name.end());
+  _sliders_by_name.erase(si);
+
+  _sliders.erase(_sliders.begin() + n);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::add_slider
 //       Access: Published
 //  Description: Adds a new slider to the table, or replaces an
-//               existing slider with the same name.  Only valid for
+//               existing slider with the same name, and returns the
+//               index number of the new slider.  Only valid for
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
-void SliderTable::
-add_slider(VertexSlider *slider) {
-  nassertv(!_is_registered);
+int SliderTable::
+add_slider(const VertexSlider *slider) {
+  nassertr(!_is_registered, -1);
 
-  _sliders[slider->get_name()] = slider;
+  SlidersByName::iterator sni = _sliders_by_name.find(slider->get_name());
+  if (sni != _sliders_by_name.end()) {
+    // We've already got a slider with this name; replace it.
+    CPT(VertexSlider) orig_slider = (*sni).second;
+    Sliders::iterator si = find(_sliders.begin(), _sliders.end(), orig_slider);
+    nassertr(si != _sliders.end(), -1);
+    (*si) = slider;
+    (*sni).second = slider;
+    
+    return si - _sliders.begin();
+  }
+
+  // This is the first slider with this name.
+  int new_index = (int)_sliders.size();
+  _sliders.push_back(slider);
+  _sliders_by_name[slider->get_name()] = slider;
+
+  return new_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,9 +147,8 @@ add_slider(VertexSlider *slider) {
 ////////////////////////////////////////////////////////////////////
 void SliderTable::
 write(ostream &out) const {
-  Sliders::const_iterator si;
-  for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    out << *(*si).second << "\n";
+  for (size_t i = 0; i < _sliders.size(); ++i) {
+    out << i << ". " << *_sliders[i] << "\n";
   }
 }
 
@@ -122,7 +163,8 @@ do_register() {
 
   Sliders::iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    bool inserted = (*si).second->_tables.insert(this).second;
+    const VertexSlider *slider = (*si);
+    bool inserted = ((VertexSlider *)slider)->_tables.insert(this).second;
     nassertv(inserted);
   }
   _is_registered = true;
@@ -140,7 +182,8 @@ do_unregister() {
 
   Sliders::iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    (*si).second->_tables.erase(this);
+    const VertexSlider *slider = (*si);
+    ((VertexSlider *)slider)->_tables.erase(this);
   }
   _is_registered = false;
 }
@@ -169,8 +212,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_sliders.size());
   Sliders::const_iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    manager->write_pointer(dg, (*si).first);
-    manager->write_pointer(dg, (*si).second);
+    manager->write_pointer(dg, (*si)->get_name());
+    manager->write_pointer(dg, (*si));
   }
 
   manager->write_cdata(dg, _cycler);
@@ -187,11 +230,14 @@ int SliderTable::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
-  for (size_t i = 0; i < _num_sliders; ++i) {
+  Sliders::iterator si;
+  for (si = _sliders.begin(); si != _sliders.end(); ++si) {
     CPT(InternalName) name = DCAST(InternalName, p_list[pi++]);
     PT(VertexSlider) slider = DCAST(VertexSlider, p_list[pi++]);
 
-    bool inserted = _sliders.insert(Sliders::value_type(name, slider)).second;
+    (*si) = slider;
+
+    bool inserted = _sliders_by_name.insert(SlidersByName::value_type(name, slider)).second;
     nassertr(inserted, pi);
   }
 
@@ -229,10 +275,12 @@ void SliderTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
-  _num_sliders = scan.get_uint16();
-  for (size_t i = 0; i < _num_sliders; ++i) {
+  size_t num_sliders = scan.get_uint16();
+  _sliders.reserve(num_sliders);
+  for (size_t i = 0; i < num_sliders; ++i) {
     manager->read_pointer(scan);
     manager->read_pointer(scan);
+    _sliders.push_back(NULL);
   }
 
   manager->read_cdata(scan, _cycler);

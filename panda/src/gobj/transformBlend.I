@@ -178,6 +178,30 @@ get_weight(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::set_transform
+//       Access: Published
+//  Description: Replaces the nth transform stored in the blend
+//               object.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+set_transform(int n, const VertexTransform *transform) {
+  nassertv(n >= 0 && n < (int)_entries.size());
+  _entries[n]._transform = transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::set_weight
+//       Access: Published
+//  Description: Replaces the weight associated with the nth transform
+//               stored in the blend object.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+set_weight(int n, float weight) {
+  nassertv(n >= 0 && n < (int)_entries.size());
+  _entries[n]._weight = weight;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::update_blend
 //       Access: Published
 //  Description: Recomputes the internal representation of the blend

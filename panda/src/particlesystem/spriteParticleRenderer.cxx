@@ -152,33 +152,35 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
     qpGeomVertexReader texcoord(qpgeom->get_vertex_data());
     qpGeomVertexReader vertex(qpgeom->get_vertex_data());
 
-    bool found_any = false;
-    for (int pi = 0; pi < qpgeom->get_num_primitives(); ++pi) {
-      const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
-      for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
-        int vert = primitive->get_vertex(vi);
-        texcoord.set_vertex(vert);
-        vertex.set_vertex(vert);
-
-        if (!found_any) {
-          min_uv = max_uv = texcoord.get_data2f();
-          min_xyz = max_xyz = vertex.get_data3f();
-
-        } else {
-          const LVecBase2f &uv = texcoord.get_data2f();
-          const LVecBase3f &xyz = vertex.get_data3f();
-
-          min_uv[0] = min(min_uv[0], uv[0]);
-          max_uv[0] = max(max_uv[0], uv[0]);
-          min_uv[1] = min(min_uv[1], uv[1]);
-          max_uv[1] = max(max_uv[1], uv[1]);
-
-          min_xyz[0] = min(min_xyz[0], xyz[0]);
-          max_xyz[0] = max(max_xyz[0], xyz[0]);
-          min_xyz[1] = min(min_xyz[1], xyz[1]);
-          max_xyz[1] = max(max_xyz[1], xyz[1]);
-          min_xyz[2] = min(min_xyz[2], xyz[2]);
-          max_xyz[2] = max(max_xyz[2], xyz[2]);
+    if (texcoord.has_column() && vertex.has_column()) {
+      bool found_any = false;
+      for (int pi = 0; pi < qpgeom->get_num_primitives(); ++pi) {
+        const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
+        for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
+          int vert = primitive->get_vertex(vi);
+          texcoord.set_vertex(vert);
+          vertex.set_vertex(vert);
+          
+          if (!found_any) {
+            min_uv = max_uv = texcoord.get_data2f();
+            min_xyz = max_xyz = vertex.get_data3f();
+            
+          } else {
+            const LVecBase2f &uv = texcoord.get_data2f();
+            const LVecBase3f &xyz = vertex.get_data3f();
+            
+            min_uv[0] = min(min_uv[0], uv[0]);
+            max_uv[0] = max(max_uv[0], uv[0]);
+            min_uv[1] = min(min_uv[1], uv[1]);
+            max_uv[1] = max(max_uv[1], uv[1]);
+            
+            min_xyz[0] = min(min_xyz[0], xyz[0]);
+            max_xyz[0] = max(max_xyz[0], xyz[0]);
+            min_xyz[1] = min(min_xyz[1], xyz[1]);
+            max_xyz[1] = max(max_xyz[1], xyz[1]);
+            min_xyz[2] = min(min_xyz[2], xyz[2]);
+            max_xyz[2] = max(max_xyz[2], xyz[2]);
+          }
         }
       }
     }

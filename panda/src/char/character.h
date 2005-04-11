@@ -22,12 +22,16 @@
 #include "pandabase.h"
 
 #include "computedVertices.h"
-
+#include "characterJoint.h"
+#include "characterSlider.h"
 #include "partBundleNode.h"
 #include "vector_PartGroupStar.h"
 #include "pointerTo.h"
 #include "geom.h"
 #include "pStatCollector.h"
+#include "transformPalette.h"
+#include "transformBlendPalette.h"
+#include "sliderTable.h"
 
 class CharacterJointBundle;
 class ComputedVertices;
@@ -59,6 +63,9 @@ PUBLISHED:
   INLINE int get_num_parts() const;
   INLINE PartGroup *get_part(int n) const;
 
+  INLINE CharacterJoint *find_joint(const string &name) const;
+  INLINE CharacterSlider *find_slider(const string &name) const;
+
   INLINE void write_parts(ostream &out) const;
   INLINE void write_part_values(ostream &out) const;
 
@@ -77,6 +84,9 @@ private:
                    const Character *from, NodeMap &node_map);
   PT(Geom) copy_geom(const Geom *source, const Character *from);
   void copy_node_pointers(const Character *from, const NodeMap &node_map);
+  CPT(TransformPalette) redirect_transform_palette(const TransformPalette *source);
+  CPT(TransformBlendPalette) redirect_transform_blend_palette(const TransformBlendPalette *source);
+  CPT(SliderTable) redirect_slider_table(const SliderTable *source);
 
   // These are the actual dynamic vertex pools for this Character's
   // ComputedVertices--the vertices that it will recompute each frame

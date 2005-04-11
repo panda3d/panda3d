@@ -69,6 +69,8 @@ PUBLISHED:
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
   INLINE float get_weight(int n) const;
+  INLINE void set_transform(int n, const VertexTransform *transform);
+  INLINE void set_weight(int n, float weight);
 
   INLINE void update_blend() const;
 

@@ -377,49 +377,69 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) Character::
 copy_geom(const Geom *source, const Character *from) {
-  GeomBindType bind;
-  PTA_ushort index;
-
-  PTA_Vertexf coords;
-  PTA_Normalf norms;
-  PTA_Colorf colors;
-  PTA_TexCoordf texcoords;
-
-  PT(Geom) dest = (Geom *)source;
-
-  source->get_coords(coords, index);
-  if ((coords != (void *)NULL) && (coords == (from->_cv._coords))) {
-    if (dest == source) {
-      dest = source->make_copy();
+  if (source->is_of_type(qpGeom::get_class_type())) {
+    CPT(qpGeom) qpsource = DCAST(qpGeom, source);
+    CPT(qpGeomVertexFormat) format = qpsource->get_vertex_data()->get_format();
+    if (format->get_animation().get_animation_type() ==
+        qpGeomVertexAnimationSpec::AT_none) {
+      // Not animated, so never mind.
+      return (Geom *)source;
     }
-    dest->set_coords(_cv._coords, index);
-  }
 
-  source->get_normals(norms, bind, index);
-  if (bind != G_OFF && norms == from->_cv._norms) {
-    if (dest == source) {
-      dest = source->make_copy();
+    PT(qpGeom) dest = new qpGeom(*qpsource);
+    PT(qpGeomVertexData) vdata = dest->modify_vertex_data();
+
+    vdata->set_transform_palette(redirect_transform_palette(vdata->get_transform_palette()));
+    vdata->set_transform_blend_palette(redirect_transform_blend_palette(vdata->get_transform_blend_palette()));
+    vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table()));
+
+    return dest.p();
+
+  } else {
+    GeomBindType bind;
+    PTA_ushort index;
+
+    PTA_Vertexf coords;
+    PTA_Normalf norms;
+    PTA_Colorf colors;
+    PTA_TexCoordf texcoords;
+    
+    PT(Geom) dest = (Geom *)source;
+    
+    source->get_coords(coords, index);
+    if ((coords != (void *)NULL) && (coords == (from->_cv._coords))) {
+      if (dest == source) {
+        dest = source->make_copy();
+      }
+      dest->set_coords(_cv._coords, index);
     }
-    dest->set_normals(_cv._norms, bind, index);
-  }
-
-  source->get_colors(colors, bind, index);
-  if (bind != G_OFF && colors == from->_cv._colors) {
-    if (dest == source) {
-      dest = source->make_copy();
+    
+    source->get_normals(norms, bind, index);
+    if (bind != G_OFF && norms == from->_cv._norms) {
+      if (dest == source) {
+        dest = source->make_copy();
+      }
+      dest->set_normals(_cv._norms, bind, index);
     }
-    dest->set_colors(_cv._colors, bind, index);
-  }
-
-  source->get_texcoords(texcoords, bind, index);
-  if (bind != G_OFF && texcoords == from->_cv._texcoords) {
-    if (dest == source) {
-      dest = source->make_copy();
+    
+    source->get_colors(colors, bind, index);
+    if (bind != G_OFF && colors == from->_cv._colors) {
+      if (dest == source) {
+        dest = source->make_copy();
+      }
+      dest->set_colors(_cv._colors, bind, index);
     }
-    dest->set_texcoords(_cv._texcoords, bind, index);
+    
+    source->get_texcoords(texcoords, bind, index);
+    if (bind != G_OFF && texcoords == from->_cv._texcoords) {
+      if (dest == source) {
+        dest = source->make_copy();
+      }
+      dest->set_texcoords(_cv._texcoords, bind, index);
+    }
+    
+    return dest;
   }
-
-  return dest;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -478,6 +498,103 @@ copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Character::redirect_transform_palette
+//       Access: Public
+//  Description: Creates a new TransformPalette, similar to the
+//               indicated one, with the joint and slider pointers
+//               redirected into this object.
+////////////////////////////////////////////////////////////////////
+CPT(TransformPalette) Character::
+redirect_transform_palette(const TransformPalette *source) {
+  if (source == (TransformPalette *)NULL) {
+    return NULL;
+  }
+
+  PT(TransformPalette) dest = new TransformPalette(*source);
+
+  int num_transforms = dest->get_num_transforms();
+  for (int i = 0; i < num_transforms; ++i) {
+    const VertexTransform *vt = dest->get_transform(i);
+    if (vt->is_of_type(JointVertexTransform::get_class_type())) {
+      const JointVertexTransform *jvt = DCAST(JointVertexTransform, vt);
+      CharacterJoint *joint = find_joint(jvt->get_joint()->get_name());
+      if (joint != (CharacterJoint *)NULL) {
+        CPT(JointVertexTransform) new_jvt = new JointVertexTransform(joint);
+        dest->set_transform(i, new_jvt);
+      }
+    }
+  }
+
+  return TransformPalette::register_palette(dest);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::redirect_transform_blend_palette
+//       Access: Public
+//  Description: Creates a new TransformBlendPalette, similar to the
+//               indicated one, with the joint and slider pointers
+//               redirected into this object.
+////////////////////////////////////////////////////////////////////
+CPT(TransformBlendPalette) Character::
+redirect_transform_blend_palette(const TransformBlendPalette *source) {
+  if (source == (TransformBlendPalette *)NULL) {
+    return NULL;
+  }
+
+  PT(TransformBlendPalette) dest = new TransformBlendPalette(*source);
+
+  int num_blends = dest->get_num_blends();
+  for (int i = 0; i < num_blends; ++i) {
+    TransformBlend blend = dest->get_blend(i);
+    int num_transforms = blend.get_num_transforms();
+    for (int j = 0; j < num_transforms; ++j) {
+      const VertexTransform *vt = blend.get_transform(j);
+      if (vt->is_of_type(JointVertexTransform::get_class_type())) {
+        const JointVertexTransform *jvt = DCAST(JointVertexTransform, vt);
+        CharacterJoint *joint = find_joint(jvt->get_joint()->get_name());
+        if (joint != (CharacterJoint *)NULL) {
+          CPT(JointVertexTransform) new_jvt = new JointVertexTransform(joint);
+          blend.set_transform(j, new_jvt);
+        }
+      }
+    }
+    dest->set_blend(i, blend);
+  }
+
+  return dest;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::redirect_slider_table
+//       Access: Public
+//  Description: Creates a new SliderTable, similar to the
+//               indicated one, with the joint and slider pointers
+//               redirected into this object.
+////////////////////////////////////////////////////////////////////
+CPT(SliderTable) Character::
+redirect_slider_table(const SliderTable *source) {
+  if (source == (SliderTable *)NULL) {
+    return NULL;
+  }
+
+  PT(SliderTable) dest = new SliderTable(*source);
+
+  int num_sliders = dest->get_num_sliders();
+  for (int i = 0; i < num_sliders; ++i) {
+    const VertexSlider *vs = dest->get_slider(i);
+    if (vs->is_of_type(CharacterVertexSlider::get_class_type())) {
+      const CharacterVertexSlider *cvs = DCAST(CharacterVertexSlider, vs);
+      CharacterSlider *slider = find_slider(cvs->get_char_slider()->get_name());
+      if (slider != (CharacterSlider *)NULL) {
+        CPT(CharacterVertexSlider) new_cvs = new CharacterVertexSlider(slider);
+        dest->set_slider(i, new_cvs);
+      }
+    }
+  }
+
+  return SliderTable::register_table(dest);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::register_with_read_factory

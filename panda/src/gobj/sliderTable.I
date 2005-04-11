@@ -62,17 +62,38 @@ register_table(const SliderTable *table) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::get_num_sliders
+//       Access: Published
+//  Description: Returns the number of sliders in the palette.
+////////////////////////////////////////////////////////////////////
+INLINE int SliderTable::
+get_num_sliders() const {
+  return _sliders.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::get_slider
+//       Access: Published
+//  Description: Returns the nth slider in the palette.
+////////////////////////////////////////////////////////////////////
+INLINE const VertexSlider *SliderTable::
+get_slider(int n) const {
+  nassertr(n >= 0 && n < (int)_sliders.size(), NULL);
+  return _sliders[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::find_slider
 //       Access: Published
 //  Description: Returns the slider with the indicated name, or NULL
 //               if no slider in the table has that name.
 ////////////////////////////////////////////////////////////////////
 INLINE const VertexSlider *SliderTable::
-get_slider(const InternalName *name) const {
-  Sliders::const_iterator si;
-  si = _sliders.find(name);
-  if (si != _sliders.end()) {
-    return (*si).second;
+find_slider(const InternalName *name) const {
+  SlidersByName::const_iterator sni;
+  sni = _sliders_by_name.find(name);
+  if (sni != _sliders_by_name.end()) {
+    return (*sni).second;
   }
   return NULL;
 }
@@ -85,7 +106,7 @@ get_slider(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool SliderTable::
 has_slider(const InternalName *name) const {
-  return (get_slider(name) != (VertexSlider *)NULL);
+  return (find_slider(name) != (VertexSlider *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

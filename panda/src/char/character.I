@@ -63,6 +63,42 @@ get_part(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::find_joint
+//       Access: Published
+//  Description: Returns a pointer to the joint with the given name,
+//               if there is such a joint, or NULL if there is no such
+//               joint.  This will not return a pointer to a slider.
+////////////////////////////////////////////////////////////////////
+INLINE CharacterJoint *Character::
+find_joint(const string &name) const {
+  PartGroup *part = get_bundle()->find_child(name);
+  if (part != (PartGroup *)NULL &&
+      part->is_of_type(CharacterJoint::get_class_type())) {
+    return DCAST(CharacterJoint, part);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::find_slider
+//       Access: Published
+//  Description: Returns a pointer to the slider with the given name,
+//               if there is such a slider, or NULL if there is no such
+//               slider.  This will not return a pointer to a joint.
+////////////////////////////////////////////////////////////////////
+INLINE CharacterSlider *Character::
+find_slider(const string &name) const {
+  PartGroup *part = get_bundle()->find_child(name);
+  if (part != (PartGroup *)NULL &&
+      part->is_of_type(CharacterSlider::get_class_type())) {
+    return DCAST(CharacterSlider, part);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::write_parts
 //       Access: Published
 //  Description: Writes a list of the Character's joints and sliders,

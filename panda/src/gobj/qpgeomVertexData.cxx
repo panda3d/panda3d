@@ -1174,7 +1174,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
     int num_morphs = _format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
       CPT(InternalName) slider_name = _format->get_morph_slider(mi);
-      const VertexSlider *slider = table->get_slider(slider_name);
+      const VertexSlider *slider = table->find_slider(slider_name);
       if (slider != (VertexSlider *)NULL) {
         float slider_value = slider->get_slider();
         if (slider_value != 0.0f) {
