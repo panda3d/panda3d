@@ -59,7 +59,7 @@ public:
   PartGroup *egg_to_part(EggNode *egg_node) const;
   VertexTransform *egg_to_transform(EggNode *egg_node);
   int egg_to_index(EggNode *egg_node) const;
-  PandaNode *part_to_node(PartGroup *part) const;
+  PandaNode *part_to_node(PartGroup *part, const string &name) const;
 
   int create_slider(const string &name);
   VertexSlider *egg_to_slider(const string &name);

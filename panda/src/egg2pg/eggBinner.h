@@ -55,6 +55,9 @@ public:
   virtual int
   get_bin_number(const EggNode *node);
 
+  virtual string
+  get_bin_name(int bin_number, const EggNode *child);
+
   virtual bool
   sorts_less(int bin_number, const EggNode *a, const EggNode *b);
 

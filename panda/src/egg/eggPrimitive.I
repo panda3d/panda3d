@@ -73,6 +73,25 @@ INLINE EggPrimitive::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::get_sort_name
+//       Access: Published
+//  Description: Returns the name of the primitive for the purposes of
+//               sorting primitives into different groups, if there is
+//               one.
+//
+//               Presently, this is defined as the primitive name
+//               itself, unless it begins with a digit.
+////////////////////////////////////////////////////////////////////
+INLINE string EggPrimitive::
+get_sort_name() const {
+  const string &name = get_name();
+  if (!name.empty() && !isdigit(name[0])) {
+    return name;
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear_connected_shading
 //       Access: Published
 //  Description: Resets the connected_shading member in this

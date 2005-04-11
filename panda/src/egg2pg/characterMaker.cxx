@@ -152,7 +152,7 @@ egg_to_index(EggNode *egg_node) const {
 //               the character's top node.
 ////////////////////////////////////////////////////////////////////
 PandaNode *CharacterMaker::
-part_to_node(PartGroup *part) const {
+part_to_node(PartGroup *part, const string &name) const {
   PandaNode *node = _character_node;
 
   if (part->is_of_type(CharacterJoint::get_class_type())) {
@@ -166,18 +166,18 @@ part_to_node(PartGroup *part) const {
     // We should always return a GeomNode, so that all polysets
     // created at the same level will get added into the same
     // GeomNode.  Look for a child of this node.  If it doesn't have a
-    // child yet, add a GeomNode and it.  Otherwise, if it already has
-    // a child, return that.
-    if (node->is_geom_node()) {
+    // child yet, add a GeomNode and return it.  Otherwise, if it
+    // already has a child, return that.
+    if (node->is_geom_node() && node->get_name() == name) {
       return node;
     }
     for (int i = 0; i < node->get_num_children(); i++) {
       PandaNode *child = node->get_child(i);
-      if (child->is_geom_node()) {
+      if (child->is_geom_node() && child->get_name() == name) {
         return child;
       }
     }
-    PT(GeomNode) geom_node = new GeomNode("");
+    PT(GeomNode) geom_node = new GeomNode(name);
     node->add_child(geom_node);
     return geom_node;
 
@@ -404,7 +404,7 @@ make_qpgeometry(EggNode *egg_node) {
         is_dynamic = false;
       }
 
-      PandaNode *parent = part_to_node(egg_to_part(bin_home));
+      PandaNode *parent = part_to_node(egg_to_part(bin_home), egg_bin->get_name());
       LMatrix4d transform =
         egg_bin->get_vertex_frame() *
         bin_home->get_node_frame_inv();
@@ -431,7 +431,7 @@ make_qpgeometry(EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
-  PandaNode *node = part_to_node(egg_to_part(prim_home));
+  PandaNode *node = part_to_node(egg_to_part(prim_home), string());
 
   // We need this funny transform to convert from the coordinate
   // space of the original vertices to that of the new joint node.
@@ -450,7 +450,7 @@ make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
-  PandaNode *node = part_to_node(egg_to_part(prim_home));
+  PandaNode *node = part_to_node(egg_to_part(prim_home), string());
 
   LMatrix4d transform =
     egg_primitive->get_vertex_frame() *

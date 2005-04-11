@@ -176,10 +176,18 @@ build_graph() {
   _data->get_connected_shading();
   _data->unify_attributes(true, true);
 
+  // Sequences and switches have special needs.  Make sure that
+  // primitives parented directly to a sequence or switch are sorted
+  // into sub-groups first, to prevent them being unified into a
+  // single polyset.
+  separate_switches(_data);
+
   // Then bin up the polysets and LOD nodes.
   _data->remove_invalid_primitives(true);
   EggBinner binner(*this);
   binner.make_bins(_data);
+
+  //  ((EggGroupNode *)_data)->write(cerr, 0);
 
   // Now build up the scene graph.
   _root = new ModelRoot(_data->get_egg_filename().get_basename());
@@ -1472,6 +1480,49 @@ setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::separate_switches
+//       Access: Private
+//  Description: Walks the tree recursively, looking for EggPrimitives
+//               that are children of sequence or switch nodes.  If
+//               any are found, they are moved within their own group
+//               to protect them from being flattened with their
+//               neighbors.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+separate_switches(EggNode *egg_node) {
+  bool parent_has_switch = false;
+  if (egg_node->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *egg_group = DCAST(EggGroup, egg_node);
+    parent_has_switch = egg_group->get_switch_flag();
+  }
+
+  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
+
+    EggGroupNode::iterator ci;
+    ci = egg_group->begin();
+    while (ci != egg_group->end()) {
+      EggGroupNode::iterator cnext;
+      cnext = ci;
+      ++cnext;
+
+      PT(EggNode) child = (*ci);
+      if (parent_has_switch && 
+          child->is_of_type(EggPrimitive::get_class_type())) {
+        // Move this child under a new node.
+        PT(EggGroup) new_group = new EggGroup(child->get_name());
+        egg_group->replace(ci, new_group.p());
+        new_group->add_child(child);
+      }
+
+      separate_switches(child);
+
+      ci = cnext;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node
 //       Access: Private
 //  Description:
@@ -1727,7 +1778,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     bool all_polysets = false;
     bool any_hidden = false;
     if (use_qpgeom) {
-      check_for_polysets(egg_group, all_polysets, any_hidden);
+      //      check_for_polysets(egg_group, all_polysets, any_hidden);
     }
 
     if (all_polysets && !any_hidden) {

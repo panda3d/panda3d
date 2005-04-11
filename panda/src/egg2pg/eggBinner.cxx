@@ -79,6 +79,21 @@ get_bin_number(const EggNode *node) {
   return (int)BN_none;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinner::get_bin_name
+//       Access: Public, Virtual
+//  Description: May be overridden in derived classes to define a name
+//               for each new bin, based on its bin number, and a
+//               sample child.
+////////////////////////////////////////////////////////////////////
+string EggBinner::
+get_bin_name(int bin_number, const EggNode *child) { 
+  if (bin_number == BN_polyset) {
+    return DCAST(EggPrimitive, child)->get_sort_name();
+  }
+
+  return string();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::sorts_less
@@ -96,14 +111,16 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
 
       // Different render states are binned separately.
       const EggRenderState *rsa, *rsb;
-      DCAST_INTO_R(rsa, a->get_user_data(EggRenderState::get_class_type()), false);
-      DCAST_INTO_R(rsb, b->get_user_data(EggRenderState::get_class_type()), false);
+      DCAST_INTO_R(rsa, pa->get_user_data(EggRenderState::get_class_type()), false);
+      DCAST_INTO_R(rsb, pb->get_user_data(EggRenderState::get_class_type()), false);
       int compare = rsa->compare_to(*rsb);
       if (compare != 0) {
         return (compare < 0);
       }
 
-      return false;
+      // Also, if the primitive was given a name (that does not begin
+      // with a digit), it gets binned with similar-named primitives.
+      return pa->get_sort_name() < pb->get_sort_name();
     }
 
   case BN_lod:

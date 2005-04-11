@@ -130,6 +130,8 @@ private:
   void setup_bucket(BuilderBucket &bucket, BakeInUVs &bake_in_uvs,
                     PandaNode *parent, EggPrimitive *egg_prim);
 
+  void separate_switches(EggNode *egg_node);
+
   PandaNode *make_node(EggNode *egg_node, PandaNode *parent);
   PandaNode *make_node(EggBin *egg_bin, PandaNode *parent);
   PandaNode *make_polyset(EggBin *egg_bin, PandaNode *parent);

@@ -135,11 +135,33 @@ collapse_group(const EggGroup *, int) {
 //     Function: EggBinMaker::get_bin_name
 //       Access: Public, Virtual
 //  Description: May be overridden in derived classes to define a name
-//               for each new bin, based on its bin number.
+//               for each new bin, based on its bin number, and a
+//               sample child.
 ////////////////////////////////////////////////////////////////////
 string EggBinMaker::
-get_bin_name(int) {
+get_bin_name(int, const EggNode *) { 
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinMaker::make_bin
+//       Access: Public, Virtual
+//  Description: May be overridden in derived classes to construct a
+//               new EggBin object (or some derived class, if needed),
+//               and preload some initial data into as required.
+//
+//               child is an arbitrary child of the bin, and
+//               collapse_from is the group the bin is being collapsed
+//               with, if any (implying collapse_group() returned
+//               true), or NULL if not.
+////////////////////////////////////////////////////////////////////
+PT(EggBin) EggBinMaker::
+make_bin(int, const EggNode *, EggGroup *collapse_from) {
+  if (collapse_from == (EggGroup *)NULL) {
+    return new EggBin;
+  } else {
+    return new EggBin(*collapse_from);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,8 +290,11 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
   }
 
   if (collapse) {
-    EggBin *bin = new EggBin(*DCAST(EggGroup, group));
-    setup_bin(bin, bins.front());
+    const Nodes &nodes = bins.front();
+    nassertv(!nodes.empty());
+    int bin_number = get_bin_number(nodes.front());
+    PT(EggBin) bin = make_bin(bin_number, nodes.front(), DCAST(EggGroup, group));
+    setup_bin(bin, nodes);
 
     EggGroupNode *parent = group->get_parent();
     parent->remove_child(group);
@@ -278,8 +303,11 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
   } else {
     Bins::const_iterator bi;
     for (bi = bins.begin(); bi != bins.end(); ++bi) {
-      EggBin *bin = new EggBin;
-      setup_bin(bin, *bi);
+      const Nodes &nodes = (*bi);
+      nassertv(!nodes.empty());
+      int bin_number = get_bin_number(nodes.front());
+      PT(EggBin) bin = make_bin(bin_number, nodes.front(), NULL);
+      setup_bin(bin, nodes);
 
       group->add_child(bin);
     }
@@ -299,7 +327,7 @@ setup_bin(EggBin *bin, const Nodes &nodes) {
   int bin_number = get_bin_number(nodes.front());
   bin->set_bin_number(bin_number);
 
-  string bin_name = get_bin_name(bin_number);
+  string bin_name = get_bin_name(bin_number, nodes.front());
   if (!bin_name.empty()) {
     bin->set_name(bin_name);
   }

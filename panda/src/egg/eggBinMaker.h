@@ -190,7 +190,7 @@
 //    behavior is never to collapse nodes.
 //
 //
-// virtual string get_bin_name(int bin_number);
+// virtual string get_bin_name(int bin_number, EggNode *child);
 //
 //    This function is called as each new bin is created, to
 //    optionally define a name for the new node.  If it returns the
@@ -275,7 +275,10 @@ PUBLISHED:
   collapse_group(const EggGroup *group, int bin_number);
 
   virtual string
-  get_bin_name(int bin_number);
+  get_bin_name(int bin_number, const EggNode *child);
+
+  virtual PT(EggBin) 
+  make_bin(int bin_number, const EggNode *child, EggGroup *collapse_from);
 
 private:
   // The logic is two-pass.  First, we make a scene graph traversal

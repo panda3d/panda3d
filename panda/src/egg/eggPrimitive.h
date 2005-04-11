@@ -87,6 +87,8 @@ PUBLISHED:
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
 
+  INLINE string get_sort_name() const;
+
   virtual Shading get_shading() const;
   INLINE void clear_connected_shading();
   INLINE Shading get_connected_shading() const;
