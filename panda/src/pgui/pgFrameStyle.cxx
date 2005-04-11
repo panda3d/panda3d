@@ -192,10 +192,16 @@ generate_flat_geom(const LVecBase4f &frame) {
       ("PGFrame", format, qpGeomUsageHint::UH_static);
 
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter color(vdata, InternalName::get_color());
     vertex.add_data3f(left, 0.0f, top);
     vertex.add_data3f(left, 0.0f, bottom);
     vertex.add_data3f(right, 0.0f, top);
     vertex.add_data3f(right, 0.0f, bottom);
+
+    color.add_data4f(_color);
+    color.add_data4f(_color);
+    color.add_data4f(_color);
+    color.add_data4f(_color);
 
     if (has_texture()) {
       // Generate UV's.
