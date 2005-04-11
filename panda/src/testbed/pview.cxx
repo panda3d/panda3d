@@ -43,6 +43,21 @@ ConfigVariableBool pview_test_hack
  "Enable the '0' key in pview to run whatever hacky test happens to be in "
  "there right now.");
 
+bool
+output_screenshot(Filename &fn)
+{
+  // Only one frame crashes.
+  framework.do_frame();
+  framework.do_frame();
+
+  WindowFramework *wf = framework.get_window(0);
+  bool ok = wf->get_graphics_window()->save_screenshot(fn);
+  if (!ok) {
+    cerr << "Could not generate screenshot " << fn << "\n";
+  }
+  return ok;
+}
+
 void
 event_W(CPT_Event, void *) {
   // shift-W: open a new window on the same scene.
@@ -87,7 +102,7 @@ event_Enter(CPT_Event, void *) {
 
   // set the toggle
   props.set_fullscreen(!props.get_fullscreen());
-
+  
   WindowFramework *window = framework.open_window(props, pipe, gsg);
   if (window != (WindowFramework *)NULL) {
     window->enable_keyboard();
@@ -188,6 +203,10 @@ help() {
     "      displayed in the window.  The default is not to open the window\n"
     "      until all models are loaded.\n\n"
 
+    "  -s filename\n"
+    "      After displaying the models, immediately take a screenshot and
+    "      exit.\n\n"
+    
     "  -h\n"
     "      Display this help text.\n\n";
 }
@@ -199,10 +218,12 @@ main(int argc, char *argv[]) {
 
   bool auto_center = false;
   bool show_loading = false;
+  bool auto_screenshot = false;
+  Filename screenshotfn;
 
-  //  extern char *optarg;
+  extern char *optarg;
   extern int optind;
-  static const char *optflags = "clh";
+  static const char *optflags = "clhs:";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -218,9 +239,16 @@ main(int argc, char *argv[]) {
     case 'h':
       help();
       return 1;
+      
+    case 's':
+      auto_screenshot = true;
+      screenshotfn = optarg;
+      break;
+
     case '?':
       usage();
       return 1;
+
     default:
       cerr << "Unhandled switch: " << flag << endl;
       break;
@@ -268,6 +296,10 @@ main(int argc, char *argv[]) {
 
     if (auto_center) {
       window->center_trackball(framework.get_models());
+    }
+
+    if (auto_screenshot) {
+      return(output_screenshot(screenshotfn) ? 0:1);
     }
 
     framework.enable_default_keys();
