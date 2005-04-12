@@ -586,7 +586,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   int old_color_array = _format->get_array_with(InternalName::get_color());
   if (old_color_array == -1) {
     // Oops, no color anyway.
-    return this;
+    return set_color(color_scale, num_components, numeric_type, contents);
   }
 
   int num_vertices = get_num_vertices();
