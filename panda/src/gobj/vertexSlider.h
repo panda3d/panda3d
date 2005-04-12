@@ -60,9 +60,10 @@ PUBLISHED:
 protected:
   void mark_modified();
 
-private:
+protected:
   CPT(InternalName) _name;
 
+private:
   typedef pset<SliderTable *> Tables;
   Tables _tables;
 

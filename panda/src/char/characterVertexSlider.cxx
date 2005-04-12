@@ -110,6 +110,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _char_slider = DCAST(CharacterSlider, p_list[pi++]);    
   _char_slider->_vertex_sliders.insert(this);
+  _name = InternalName::make(_char_slider->get_name());
 
   return pi;
 }
