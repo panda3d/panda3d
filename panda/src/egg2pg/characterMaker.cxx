@@ -686,8 +686,9 @@ determine_bin_home(EggBin *egg_bin) {
     DCAST_INTO_R(joint, egg_to_part(egg_group), home);
     egg_group->set_dcs_type(EggGroup::DC_default);
 
-    PT(PandaNode) geom_node = new PandaNode(egg_group->get_name());
-    joint->_geom_node = geom_node;
+    PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
+    geom_node->set_preserve_transform(ModelNode::PT_local);
+    joint->_geom_node = geom_node.p();
   }
 
   return home;
