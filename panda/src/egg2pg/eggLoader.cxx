@@ -1778,7 +1778,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     bool all_polysets = false;
     bool any_hidden = false;
     if (use_qpgeom) {
-      //      check_for_polysets(egg_group, all_polysets, any_hidden);
+      check_for_polysets(egg_group, all_polysets, any_hidden);
     }
 
     if (all_polysets && !any_hidden) {

@@ -387,6 +387,51 @@ fill_state(EggPrimitive *egg_prim) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggRenderState::int compare_to
+//       Access: Public
+//  Description: Provides a unique ordering for different
+//               EggRenderState objects, so that primitives of similar
+//               state can be grouped together by the EggBinner.
+////////////////////////////////////////////////////////////////////
+int EggRenderState::
+compare_to(const EggRenderState &other) const {
+  if (_state != other._state) {
+    return _state < other._state ? -1 : 1;
+  }
+  if (_hidden != other._hidden) {
+    return (int)_hidden - (int)other._hidden;
+  }
+  if (_flat_shaded != other._flat_shaded) {
+    return (int)_flat_shaded - (int)other._flat_shaded;
+  }
+  if (_primitive_type != other._primitive_type) {
+    return (int)_primitive_type - (int)other._primitive_type;
+  }
+
+  if (_bake_in_uvs.size() != other._bake_in_uvs.size()) {
+    return (int)_bake_in_uvs.size() - (int)other._bake_in_uvs.size();
+  }
+
+  BakeInUVs::const_iterator ai, bi;
+  ai = _bake_in_uvs.begin();
+  bi = other._bake_in_uvs.begin();
+  while (ai != _bake_in_uvs.end()) {
+    nassertr(bi != other._bake_in_uvs.end(), false);
+    if ((*ai).first != (*bi).first) {
+      return (*ai).first < (*bi).first ? -1 : 1;
+    }
+    if ((*ai).second != (*bi).second) {
+      return (*ai).second < (*bi).second ? -1 : 1;
+    }
+    ++ai;
+    ++bi;
+  }
+  nassertr(bi == other._bake_in_uvs.end(), false);
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggRenderState::get_material_attrib
 //       Access: Private
 //  Description: Returns a RenderAttrib suitable for enabling the

@@ -42,27 +42,3 @@ INLINE void EggRenderState::
 add_attrib(const RenderAttrib *attrib) {
   _state = _state->add_attrib(attrib);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::int compare_to
-//       Access: Public
-//  Description: Provides a unique ordering for different
-//               EggRenderState objects, so that primitives of similar
-//               state can be grouped together by the EggBinner.
-////////////////////////////////////////////////////////////////////
-INLINE int EggRenderState::
-compare_to(const EggRenderState &other) const {
-  if (_state != other._state) {
-    return _state < other._state ? -1 : 1;
-  }
-  if (_hidden != other._hidden) {
-    return (int)_hidden - (int)other._hidden;
-  }
-  if (_flat_shaded != other._flat_shaded) {
-    return (int)_flat_shaded - (int)other._flat_shaded;
-  }
-  if (_primitive_type != other._primitive_type) {
-    return (int)_primitive_type - (int)other._primitive_type;
-  }
-  return 0;
-}

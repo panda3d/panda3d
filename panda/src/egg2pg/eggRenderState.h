@@ -50,7 +50,7 @@ public:
 
   void fill_state(EggPrimitive *egg_prim);
 
-  INLINE int compare_to(const EggRenderState &other) const;
+  int compare_to(const EggRenderState &other) const;
 
 private:
   CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
