@@ -66,6 +66,12 @@ PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+  INLINE ValueType get_value() const {
+    return _value;
+  }
+  INLINE ValueType get_initial_value() const {
+    return _initial_value;
+  }
 public:
   static void init_type() {
     MovingPartBase::init_type();
