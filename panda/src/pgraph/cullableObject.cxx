@@ -72,7 +72,7 @@ munge_geom(const qpGeomMunger *munger, const CullTraverser *traverser) {
         // These vertices were CPU-animated, so flash them.
         static const double flash_rate = 1.0;  // 1 state change per second
         int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
-        if ((cycle & 2) == 0) {
+        if ((cycle & 1) == 0) {
           static Colorf flash_color(0.8f, 0.2f, 0.2f, 1.0f);
           if (animated_vertices->has_color()) {
             animated_vertices = animated_vertices->set_color(flash_color);
