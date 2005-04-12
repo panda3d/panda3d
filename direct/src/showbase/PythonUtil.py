@@ -706,6 +706,14 @@ def printProfile(filename=PyUtilProfileDefaultFilename,
             s.print_callees(lines)
             s.print_callers(lines)
 
+def getSetterName(valueName, prefix='set'):
+    # getSetterName('color') -> 'setColor'
+    # getSetterName('color', 'get') -> 'getColor'
+    return '%s%s%s' % (prefix, string.upper(valueName[0]), valueName[1:])
+def getSetter(targetObj, valueName, prefix='set'):
+    # getSetter(smiley, 'pos') -> smiley.setPos
+    return getattr(targetObj, getSetterName(valueName, prefix))
+
 class Functor:
     def __init__(self, function, *args, **kargs):
         assert callable(function), "function should be a callable obj"
