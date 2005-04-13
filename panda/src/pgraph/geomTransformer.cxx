@@ -28,7 +28,21 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
-GeomTransformer() {
+GeomTransformer() :
+  // The default value here comes from the Config file.
+  _max_collect_vertices(max_collect_vertices)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+GeomTransformer::
+GeomTransformer(const GeomTransformer &copy) :
+  _max_collect_vertices(copy._max_collect_vertices)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,6 +518,120 @@ apply_state(GeomNode *node, const RenderState *state) {
     CPT(RenderState) new_state = state->compose(entry._state);
     if (entry._state != new_state) {
       entry._state = new_state;
+      any_changed = true;
+    }
+  }
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::collect_vertex_data
+//       Access: Public
+//  Description: Transforms the vertices and the normals in the
+//               indicated Geom by the indicated matrix.  Returns true
+//               if the Geom was changed, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+collect_vertex_data(Geom *geom, bool keep_names) {
+  if (!geom->is_of_type(qpGeom::get_class_type())) {
+    return false;
+  }
+
+  qpGeom *qpgeom = DCAST(qpGeom, geom);
+
+  const qpGeomVertexData *vdata = qpgeom->get_vertex_data();
+
+  if (vdata->get_num_vertices() > _max_collect_vertices) {
+    // Don't even bother.
+    return false;
+  }
+
+  const qpGeomVertexFormat *format = vdata->get_format();
+
+  NewCollectedKey key;
+  if (keep_names) {
+    key._name = vdata->get_name();
+  }
+  key._format = format;
+  key._usage_hint = vdata->get_usage_hint();
+
+  AlreadyCollected::const_iterator ai;
+  ai = _already_collected.find(vdata);
+  if (ai != _already_collected.end()) {
+    // We've previously collected this vertex data; reuse it.
+    const AlreadyCollectedData &acd = (*ai).second;
+    qpgeom->offset_vertices(acd._data, acd._offset);
+    return true;
+  }
+
+  // We haven't collected this vertex data yet; append the vertices
+  // onto the new data.
+
+  NewCollectedData::iterator ni = _new_collected_data.find(key);
+  PT(qpGeomVertexData) new_data;
+  if (ni != _new_collected_data.end()) {
+    new_data = (*ni).second;
+  } else {
+    new_data = new qpGeomVertexData(vdata->get_name(), format, 
+                                    vdata->get_usage_hint());
+    _new_collected_data[key] = new_data;
+  }
+
+  int offset = new_data->get_num_vertices();
+  int new_num_vertices = offset + vdata->get_num_vertices();
+  if (new_num_vertices > _max_collect_vertices) {
+    // Whoa, hold the phone!  Too many vertices going into this one
+    // GeomVertexData object; we'd better start over.
+    new_data = new qpGeomVertexData(vdata->get_name(), format, 
+                                    vdata->get_usage_hint());
+    _new_collected_data[key] = new_data;
+    offset = 0;
+    new_num_vertices = vdata->get_num_vertices();
+  }
+
+  new_data->set_num_vertices(new_num_vertices);
+
+  for (int i = 0; i < vdata->get_num_arrays(); ++i) {
+    qpGeomVertexArrayData *new_array = new_data->modify_array(i);
+    const qpGeomVertexArrayData *old_array = vdata->get_array(i);
+    int stride = format->get_array(i)->get_stride();
+    int start_byte = offset * stride;
+    int copy_bytes = old_array->get_data_size_bytes();
+    nassertr(start_byte + copy_bytes == new_array->get_data_size_bytes(), false);
+
+    memcpy(new_array->modify_data() + start_byte,
+           old_array->get_data(), copy_bytes);
+  }
+
+  qpgeom->offset_vertices(new_data, offset);
+  AlreadyCollectedData &acd = _already_collected[vdata];
+  acd._data = new_data;
+  acd._offset = offset;
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::collect_vertex_data
+//       Access: Public
+//  Description: Collects together individual GeomVertexData
+//               structures that share the same format into one big
+//               GeomVertexData structure.  This is designed to
+//               minimize context switches on the graphics card.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+collect_vertex_data(GeomNode *node, bool keep_names) {
+  bool any_changed = false;
+
+  GeomNode::CDWriter cdata(node->_cycler);
+  GeomNode::Geoms::iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomNode::GeomEntry &entry = (*gi);
+    PT(Geom) new_geom = entry._geom->make_copy();
+    if (collect_vertex_data(new_geom, keep_names)) {
+      entry._geom = new_geom;
       any_changed = true;
     }
   }

@@ -119,6 +119,7 @@ PUBLISHED:
   void add_next_vertices(int num_vertices);
   bool close_primitive();
   void clear_vertices();
+  void offset_vertices(int offset);
 
   int get_num_primitives() const;
   int get_primitive_start(int n) const;

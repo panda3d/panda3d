@@ -159,7 +159,7 @@ set_column(const InternalName *name) {
 //               The return value is true if the data type is valid,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool qpGeomVertexRewriter::
+INLINE bool qpGeomVertexRewriter::
 set_column(int array, const qpGeomVertexColumn *column) {
   // It's important to invoke the writer first, then the reader.  See
   // set_vertex().

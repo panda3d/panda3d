@@ -546,6 +546,11 @@ do_register() {
       _vectors.push_back(column->get_name());
       break;
 
+    case qpGeomVertexColumn::C_texcoord:
+      // It's a texcoord.
+      _texcoords.push_back(column->get_name());
+      break;
+
     case qpGeomVertexColumn::C_morph_delta:
       {
         // It's a morph description.
@@ -604,6 +609,7 @@ do_unregister() {
   _columns_by_name.clear();
   _points.clear();
   _vectors.clear();
+  _texcoords.clear();
   _morphs.clear();
 }
 

@@ -154,6 +154,14 @@ ConfigVariableBool auto_break_cycles
           "is false, you must explicitly call TransformState.clear_cache() "
           "from time to time to prevent gradual memory bloat."));
 
+ConfigVariableInt max_collect_vertices
+("max-collect-vertices", 4096,
+ PRC_DESC("Specifies the maximum number of vertices that are allowed to be "
+          "accumulated into any one GeomVertexData structure as a result "
+          "of collecting objects together during a flatten operation.  This "
+          "does not impose a limit on the original size of any one "
+          "GeomVertexData structure."));
+
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

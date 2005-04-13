@@ -142,6 +142,45 @@ set_vertex_data(const qpGeomVertexData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::offset_vertices
+//       Access: Published
+//  Description: Replaces a Geom's vertex table with a new table, and
+//               simultaneously adds the indicated offset to all
+//               vertex references within the Geom's primitives.  This
+//               is intended to be used to combine multiple
+//               GeomVertexDatas from different Geoms into a single
+//               big buffer, with each Geom referencing a subset of
+//               the vertices in the buffer.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+offset_vertices(const qpGeomVertexData *data, int offset) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_data = (qpGeomVertexData *)data;
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    (*pi)->offset_vertices(offset);
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_got_usage_hint = false;
+  cdata->_modified = qpGeom::get_next_modified();
+  mark_bound_stale();
+  reset_point_rendering(cdata);
+
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::set_primitive
 //       Access: Published
 //  Description: Replaces the ith GeomPrimitive object stored within

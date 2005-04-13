@@ -198,6 +198,37 @@ get_vector(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_num_texcoords
+//       Access: Published
+//  Description: Returns the number of columns within the format
+//               that represent texture coordinates.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_num_texcoords() const {
+  nassertr(_is_registered, 0);
+  return _texcoords.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_texcoord
+//       Access: Published
+//  Description: Returns the name of the nth texcoord column.  This
+//               represents a texture coordinate.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_texcoord(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_texcoords.size(), NULL);
+  return _texcoords[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_num_morphs
 //       Access: Published
 //  Description: Returns the number of columns within the format

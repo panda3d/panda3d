@@ -23,6 +23,7 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 #include "configVariableDouble.h"
 #include "configVariableList.h"
 
@@ -40,6 +41,7 @@ extern ConfigVariableBool paranoid_compose;
 extern ConfigVariableBool compose_componentwise;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
+extern ConfigVariableInt max_collect_vertices;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;

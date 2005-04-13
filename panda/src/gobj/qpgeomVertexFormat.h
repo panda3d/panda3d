@@ -104,6 +104,9 @@ PUBLISHED:
   INLINE int get_num_vectors() const;
   INLINE const InternalName *get_vector(int n) const;
 
+  INLINE int get_num_texcoords() const;
+  INLINE const InternalName *get_texcoord(int n) const;
+
   INLINE int get_num_morphs() const;
   INLINE const InternalName *get_morph_slider(int n) const;
   INLINE const InternalName *get_morph_base(int n) const;
@@ -190,6 +193,7 @@ private:
   typedef pvector< CPT(InternalName) > Columns;
   Columns _points;
   Columns _vectors;
+  Columns _texcoords;
 
   class MorphRecord {
   public:

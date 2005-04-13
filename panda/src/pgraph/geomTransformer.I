@@ -18,6 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::get_max_collect_vertices
+//       Access: Public
+//  Description: Returns the maximum number of vertices that may be
+//               put into a single GeomVertexData as a result of
+//               collecting multiple objects in collect_vertex_data().
+////////////////////////////////////////////////////////////////////
+INLINE int GeomTransformer::
+get_max_collect_vertices() const {
+  return _max_collect_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::set_max_collect_vertices
+//       Access: Public
+//  Description: Specifies the maximum number of vertices that may be
+//               put into a single GeomVertexData as a result of
+//               collecting multiple objects in collect_vertex_data().
+////////////////////////////////////////////////////////////////////
+INLINE void GeomTransformer::
+set_max_collect_vertices(int max_collect_vertices) {
+  _max_collect_vertices = max_collect_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::qpSourceVertices::Ordering Operator
 //       Access: Public
 //  Description:
@@ -112,4 +136,20 @@ operator < (const GeomTransformer::SourceColors &other) const {
     return _colors < other._colors;
   }
   return (_scale.compare_to(other._scale) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedKey::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::NewCollectedKey::
+operator < (const GeomTransformer::NewCollectedKey &other) const {
+  if (_format != other._format) {
+    return _format < other._format;
+  }
+  if (_usage_hint != other._usage_hint) {
+    return (int)_usage_hint < (int)other._usage_hint;
+  }
+  return _name < other._name;
 }

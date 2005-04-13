@@ -19,7 +19,7 @@
 #include "sceneGraphReducer.h"
 #include "config_pgraph.h"
 #include "accumulatedAttribs.h"
-
+#include "modelNode.h"
 #include "pointerTo.h"
 #include "plist.h"
 #include "pmap.h"
@@ -563,4 +563,48 @@ choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
   if (got_name) {
     preserve->set_name(name);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_collect_vertex_data
+//       Access: Private
+//  Description: The recursive implementation of
+//               collect_vertex_data().
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+r_collect_vertex_data(PandaNode *node, int collect_bits,
+                      GeomTransformer &transformer) {
+  int num_collected = 0;
+
+  if ((collect_bits & CVD_model) != 0 &&
+      node->is_of_type(ModelNode::get_class_type())) {
+    // When we come to a model node, start a new collection.
+    GeomTransformer new_transformer(transformer);
+
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
+    for (int i = 0; i < num_children; ++i) {
+      num_collected += 
+        r_collect_vertex_data(children.get_child(i), collect_bits, new_transformer);
+    }
+    return num_collected;
+  }
+
+  if (node->is_geom_node()) {
+    // When we come to geom node, collect.
+    bool keep_names = ((collect_bits & SceneGraphReducer::CVD_name) != 0);
+    if (transformer.collect_vertex_data(DCAST(GeomNode, node), keep_names)) {
+      ++num_collected;
+    }
+  }
+
+  // Then recurse.
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    num_collected +=
+      r_collect_vertex_data(children.get_child(i), collect_bits, transformer);
+  }
+
+  return num_collected;
 }

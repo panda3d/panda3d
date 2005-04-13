@@ -2494,6 +2494,10 @@ draw_tristrips(const qpGeomTristrips *primitive) {
   const unsigned short *client_pointer = setup_primitive(primitive);
 
   if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
+    GLCAT.debug()
+      << "Connected triangle strips\n";
+    primitive->write(GLCAT.debug(), 2);
+
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
@@ -2504,6 +2508,10 @@ draw_tristrips(const qpGeomTristrips *primitive) {
                          GL_UNSIGNED_SHORT, client_pointer);
 
   } else {
+    GLCAT.debug()
+      << "Separate triangle strips\n";
+    primitive->write(GLCAT.debug(), 2);
+
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();

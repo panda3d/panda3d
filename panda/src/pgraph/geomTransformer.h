@@ -48,7 +48,11 @@ class InternalName;
 class EXPCL_PANDA GeomTransformer {
 public:
   GeomTransformer();
+  GeomTransformer(const GeomTransformer &copy);
   ~GeomTransformer();
+
+  INLINE int get_max_collect_vertices() const;
+  INLINE void set_max_collect_vertices(int max_collect_vertices);
 
   bool transform_vertices(Geom *geom, const LMatrix4f &mat);
   bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
@@ -68,7 +72,12 @@ public:
 
   bool apply_state(GeomNode *node, const RenderState *state);
 
+  bool collect_vertex_data(Geom *geom, bool keep_names);
+  bool collect_vertex_data(GeomNode *node, bool keep_names);
+
 private:
+  int _max_collect_vertices;
+
   class qpSourceVertices {
   public:
     INLINE bool operator < (const qpSourceVertices &other) const;
@@ -153,6 +162,25 @@ private:
   };
   typedef pmap<SourceColors, PTA_Colorf> TColors;
   TColors _tcolors;
+
+  class AlreadyCollectedData {
+  public:
+    CPT(qpGeomVertexData) _data;
+    int _offset;
+  };
+  typedef pmap< CPT(qpGeomVertexData), AlreadyCollectedData> AlreadyCollected;
+  AlreadyCollected _already_collected;
+
+  class NewCollectedKey {
+  public:
+    INLINE bool operator < (const NewCollectedKey &other) const;
+
+    string _name;
+    CPT(qpGeomVertexFormat) _format;
+    qpGeomUsageHint::UsageHint _usage_hint;
+  };
+  typedef pmap< NewCollectedKey, PT(qpGeomVertexData) > NewCollectedData;
+  NewCollectedData _new_collected_data;
 };
 
 #include "geomTransformer.I"

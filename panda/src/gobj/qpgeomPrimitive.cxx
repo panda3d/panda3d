@@ -275,6 +275,28 @@ clear_vertices() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::offset_vertices
+//       Access: Published
+//  Description: Adds the indicated offset to all vertices used by the
+//               primitive.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+offset_vertices(int offset) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+  cdata->_rotated_vertices.clear();
+  cdata->_mins.clear();
+  cdata->_maxs.clear();
+  cdata->_got_minmax = false;
+
+  PTA_ushort::iterator vi;
+  for (vi = cdata->_vertices.begin(); vi != cdata->_vertices.end(); ++vi) {
+    (*vi) += offset;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_num_primitives
 //       Access: Published
 //  Description: Returns the number of individual primitives stored

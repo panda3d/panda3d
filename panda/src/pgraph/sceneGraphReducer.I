@@ -73,3 +73,22 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
               int attrib_types, GeomTransformer &transformer) {
   r_apply_attribs(node, attribs, attrib_types, transformer);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::collect_vertex_data
+//       Access: Published
+//  Description: Collects all different GeomVertexData blocks that
+//               have compatible formats at this node and below into a
+//               single, unified block (or at least multiple larger
+//               blocks).  This is intended to reduce rendering
+//               overhead incurred by switching vertex buffers.
+//
+//               The set of bits passed in collect_bits indicates
+//               which properties are used to differentiate
+//               GeomVertexData blocks.  If it is 0, then more blocks
+//               will be combined together than if it is nonzero.
+////////////////////////////////////////////////////////////////////
+INLINE int SceneGraphReducer::
+collect_vertex_data(PandaNode *root, int collect_bits) {
+  return r_collect_vertex_data(root, collect_bits, _transformer);
+}

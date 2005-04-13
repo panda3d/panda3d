@@ -61,11 +61,18 @@ PUBLISHED:
     CS_recurse         = 0x004,
   };
 
+  enum CollectVertexData {
+    CVD_name           = 0x001,
+    CVD_model          = 0x002,
+  };
+
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
 
   int flatten(PandaNode *root, int combine_siblings_bits);
+
+  INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
 
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
@@ -91,6 +98,9 @@ protected:
                                bool siblings);
   void choose_name(PandaNode *preserve, PandaNode *source1, 
                    PandaNode *source2);
+
+  int r_collect_vertex_data(PandaNode *node, int collect_bits,
+                            GeomTransformer &transformer);
 
 private:
   GeomTransformer _transformer;
