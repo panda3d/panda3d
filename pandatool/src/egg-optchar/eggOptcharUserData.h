@@ -47,6 +47,7 @@ public:
     F_top      = 0x0008,
     F_remove   = 0x0010,
     F_expose   = 0x0020,
+    F_suppress = 0x0040,
   };
   int _flags;
   LMatrix4d _static_mat;

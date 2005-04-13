@@ -92,6 +92,15 @@ EggOptchar() {
      &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
 
   add_option
+    ("suppress", "joint[,joint...]", 0,
+     "The opposite of suppress, this prevents the named joints from "
+     "being created with an implicit DCS attribute, even if they contain "
+     "rigid geometry.  The default is to create an implicit node for any "
+     "joint that contains rigid geometry, to take advantage of display "
+     "list and/or vertex buffer caching.  This does not imply -keep.",
+     &EggOptchar::dispatch_vector_string_comma, NULL, &_suppress_components);
+
+  add_option
     ("flag", "node[,node...][=name]", 0,
      "Assign the indicated name to the geometry within the given nodes.  "
      "This will make the geometry visible as a node in the resulting "
@@ -471,6 +480,7 @@ determine_removed_components() {
   Names keep_names;
   Names drop_names;
   Names expose_names;
+  Names suppress_names;
   Names names_used;
 
   vector_string::const_iterator si;
@@ -483,6 +493,9 @@ determine_removed_components() {
   for (si = _expose_components.begin(); si != _expose_components.end(); ++si) {
     keep_names.insert(*si);
     expose_names.insert(*si);
+  }
+  for (si = _suppress_components.begin(); si != _suppress_components.end(); ++si) {
+    suppress_names.insert(*si);
   }
 
   // We always keep the root joint, which has no name.
@@ -502,6 +515,13 @@ determine_removed_components() {
       nassertv(user_data != (EggOptcharUserData *)NULL);
 
       const string &name = comp_data->get_name();
+      if (suppress_names.find(name) != suppress_names.end()) {
+        // If this component is not dropped, it will not be implicitly
+        // exposed.
+        names_used.insert(name);
+        user_data->_flags |= EggOptcharUserData::F_suppress;
+      }
+
       if (drop_names.find(name) != drop_names.end()) {
         // Remove this component by user request.
         names_used.insert(name);
@@ -552,6 +572,12 @@ determine_removed_components() {
     }
   }
   for (si = _expose_components.begin(); si != _expose_components.end(); ++si) {
+    const string &name = (*si);
+    if (names_used.find(name) == names_used.end()) {
+      nout << "No such component: " << name << "\n";
+    }
+  }
+  for (si = _suppress_components.begin(); si != _suppress_components.end(); ++si) {
     const string &name = (*si);
     if (names_used.find(name) == names_used.end()) {
       nout << "No such component: " << name << "\n";
@@ -649,6 +675,8 @@ process_joints() {
         joint_data->reparent_to(best_parent);
         if ((user_data->_flags & EggOptcharUserData::F_expose) != 0) {
           joint_data->expose();
+        } else if ((user_data->_flags & EggOptcharUserData::F_suppress) != 0) {
+          joint_data->expose(EggGroup::DC_none);
         }
         num_kept++;
       }

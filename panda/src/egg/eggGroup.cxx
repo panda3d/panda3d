@@ -306,7 +306,7 @@ write_collide_flags(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 write_model_flags(ostream &out, int indent_level) const {
-  if (get_dcs_type() != DC_none) {
+  if (get_dcs_type() != DC_unspecified) {
     indent(out, indent_level) 
       << "<DCS> { " << get_dcs_type() << " }\n";
   }
@@ -783,19 +783,21 @@ string_dart_type(const string &string) {
 //     Function: EggGroup::string_dcs_type
 //       Access: Public, Static
 //  Description: Returns the DCSType value associated with the given
-//               string representation, or DC_none if the string
-//               does not match any known DCSType value.
+//               string representation, or DC_unspecified if the
+//               string does not match any known DCSType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::DCSType EggGroup::
 string_dcs_type(const string &string) {
-  if (cmp_nocase_uh(string, "local") == 0) {
+  if (cmp_nocase_uh(string, "none") == 0) {
+    return DC_none;
+  } else if (cmp_nocase_uh(string, "local") == 0) {
     return DC_local;
   } else if (cmp_nocase_uh(string, "net") == 0) {
     return DC_net;
   } else if (cmp_nocase_uh(string, "default") == 0) {
     return DC_default;
   } else {
-    return DC_none;
+    return DC_unspecified;
   }
 }
 
@@ -1163,6 +1165,8 @@ ostream &operator << (ostream &out, EggGroup::DartType t) {
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::DCSType t) {
   switch (t) {
+  case EggGroup::DC_unspecified:
+    return out << "unspecified";
   case EggGroup::DC_none:
     return out << "none";
   case EggGroup::DC_local:

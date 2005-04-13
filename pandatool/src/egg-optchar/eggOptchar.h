@@ -100,6 +100,7 @@ private:
   vector_string _keep_components;
   vector_string _drop_components;
   vector_string _expose_components;
+  vector_string _suppress_components;
 
   class DoubleString {
   public:

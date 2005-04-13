@@ -59,10 +59,11 @@ PUBLISHED:
   };
   enum DCSType {
     // The bits here must correspond to those in Flags2, below.
-    DC_none                  = 0x00000000,
-    DC_local                 = 0x00000010,
-    DC_net                   = 0x00000020,
-    DC_default               = 0x00000030,
+    DC_unspecified           = 0x00000000,
+    DC_none                  = 0x00000010,
+    DC_local                 = 0x00000020,
+    DC_net                   = 0x00000030,
+    DC_default               = 0x00000040,
   };
   enum BillboardType {
     // The bits here must correspond to those in Flags, below.
@@ -147,6 +148,7 @@ PUBLISHED:
 
   INLINE void set_dcs_type(DCSType type);
   INLINE DCSType get_dcs_type() const;
+  INLINE bool has_dcs_type() const;
 
   INLINE void set_dart_type(DartType type);
   INLINE DartType get_dart_type() const;
@@ -279,11 +281,11 @@ private:
     F2_into_collide_mask     = 0x00000004,
     F2_billboard_center      = 0x00000008,
 
-    F2_dcs_type              = 0x00000030,
-    F2_portal_flag           = 0x00000040,
-    F2_polylight_flag        = 0x00000080,
-    F2_indexed_flag          = 0x00000100,
-    F2_has_indexed_flag      = 0x00000200,
+    F2_dcs_type              = 0x00000070,
+    F2_portal_flag           = 0x00000080,
+    F2_polylight_flag        = 0x00000100,
+    F2_indexed_flag          = 0x00000200,
+    F2_has_indexed_flag      = 0x00000400,
   };
 
   int _flags;

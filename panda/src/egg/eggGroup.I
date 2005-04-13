@@ -239,6 +239,18 @@ get_dcs_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::has_dcs_type
+//       Access: Public
+//  Description: Returns true if the specified DCS type is not
+//               DC_none and not DC_unspecified.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+has_dcs_type() const {
+  DCSType type = get_dcs_type();
+  return (type != DC_none && type != DC_unspecified);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_dart_type
 //       Access: Public
 //  Description:

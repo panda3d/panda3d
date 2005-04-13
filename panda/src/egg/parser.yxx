@@ -1209,7 +1209,7 @@ group_body:
   string strval = $4;
 
   EggGroup::DCSType f = EggGroup::string_dcs_type(strval);
-  if (f == EggGroup::DC_none) {
+  if (f == EggGroup::DC_unspecified) {
     eggyywarning("Unknown DCS type " + strval);
   } else {
     group->set_dcs_type(f);

@@ -1747,8 +1747,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       make_node(*ci, node);
     }
 
-  } else if (egg_group->get_model_flag() || 
-             egg_group->get_dcs_type() != EggGroup::DC_none) {
+  } else if (egg_group->get_model_flag() || egg_group->has_dcs_type()) {
     // A model or DCS flag; create a model node.
     node = new ModelNode(egg_group->get_name());
     switch (egg_group->get_dcs_type()) {
@@ -1762,6 +1761,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       break;
 
     case EggGroup::DC_none:
+    case EggGroup::DC_unspecified:
       break;
     }
 

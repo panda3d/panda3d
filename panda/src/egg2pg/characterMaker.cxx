@@ -287,7 +287,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
       index = _parts.size();
       _parts.push_back(joint);
 
-      if (egg_group->get_dcs_type() != EggGroup::DC_none) {
+      if (egg_group->has_dcs_type()) {
         // If the joint requested an explicit DCS, create a node for
         // it.
         PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
@@ -556,7 +556,7 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
 
   if (egg_group != (EggGroup *)NULL &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
-      egg_group->get_dcs_type() == EggGroup::DC_none) {
+      !egg_group->has_dcs_type()) {
     // If the home is a joint without a <DCS> flag--this is the normal
     // case--we'll move the polygon under the character node and
     // animate it from there explicitly.
@@ -673,15 +673,21 @@ determine_bin_home(EggBin *egg_bin) {
 
   if (egg_group != (EggGroup *)NULL &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
-      egg_group->get_dcs_type() == EggGroup::DC_none) {
+      !egg_group->has_dcs_type()) {
     // If we have rigid geometry that is assigned to a joint without a
     // <DCS> flag, which means the joint didn't get created as its own
     // node, go ahead and make an implicit node for the joint.
-    
-    // The alternative is to return NULL to treat the geometry as
-    // dynamic (and animate it by animating its vertices), but display
-    // lists and vertex buffers will perform better if as much
-    // geometry as possible is rigid.
+
+    if (egg_group->get_dcs_type() == EggGroup::DC_none) {
+      // Unless the user specifically forbade exposing the joint by
+      // putting an explicit "<DCS> { none }" entry in the joint.  In
+      // this case, we return NULL to treat the geometry as dynamic
+      // (and animate it by animating its vertices), but display lists
+      // and vertex buffers will perform better if as much geometry as
+      // possible is rigid.
+      return NULL;
+    }
+
     CharacterJoint *joint;
     DCAST_INTO_R(joint, egg_to_part(egg_group), home);
     egg_group->set_dcs_type(EggGroup::DC_default);

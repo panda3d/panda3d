@@ -931,14 +931,13 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       break;
       
     case TT_model:
-      if (!egg_group->get_model_flag() &&
-          egg_group->get_dcs_type() == EggGroup::DC_none) {
+      if (!egg_group->get_model_flag() && !egg_group->has_dcs_type()) {
         return;
       }
       break;
       
     case TT_dcs: 
-      if (egg_group->get_dcs_type() == EggGroup::DC_none) {
+      if (!egg_group->has_dcs_type()) {
         return;
       }
       break;
