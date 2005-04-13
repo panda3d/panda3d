@@ -1429,10 +1429,15 @@ class ShowBase(DirectObject.DirectObject):
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
-            self.oobeMode = 0            
+            self.oobeMode = 0
+            bboard.post('oobeEnabled', False)
         else:
-            # Make oobeCamera be a sibling of wherever camera is now.
-            cameraParent = self.camera.getParent()
+            bboard.post('oobeEnabled', True)
+            try:
+                cameraParent = localAvatar
+            except:
+                # Make oobeCamera be a sibling of wherever camera is now.
+                cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.clearMat()
 
