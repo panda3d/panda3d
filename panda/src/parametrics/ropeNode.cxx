@@ -253,6 +253,38 @@ recompute_internal_bound() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::get_format
+//       Access: Private
+//  Description: Returns the appropriate GeomVertexFormat for
+//               rendering, according to the user-specified
+//               requirements.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexFormat) RopeNode::
+get_format(bool support_normals) const {
+  PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat
+    (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
+     qpGeomVertexColumn::C_point);
+
+  if (support_normals && get_normal_mode() == NM_vertex) {
+    array_format->add_column
+      (InternalName::get_normal(), 3, qpGeomVertexColumn::NT_float32,
+       qpGeomVertexColumn::C_vector);
+  }
+  if (get_use_vertex_color()) {
+    array_format->add_column
+      (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
+       qpGeomVertexColumn::C_color);
+  }
+  if (get_uv_mode() != UV_none) {
+    array_format->add_column
+      (InternalName::get_texcoord(), 2, qpGeomVertexColumn::NT_float32,
+       qpGeomVertexColumn::C_texcoord);
+  }
+
+  return qpGeomVertexFormat::register_format(array_format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::do_recompute_bound
 //       Access: Private
 //  Description: Does the actual internal recompute.
@@ -303,50 +335,80 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   CurveSegments curve_segments;
   get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  if (use_qpgeom) {
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
 
-  PTA_Vertexf verts;
-  PTA_TexCoordf uvs;
-  PTA_Colorf colors;
+    compute_thread_vertices(vdata, curve_segments);
+    
+    PT(qpGeomLinestrips) strip = new qpGeomLinestrips(qpGeomUsageHint::UH_stream);
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      strip->add_next_vertices(segment.size());
+      strip->close_primitive();
+    }
 
-  compute_thread_vertices(verts, uvs, colors, curve_segments);
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
 
-  // Finally, build the lengths array to make them into proper
-  // line strips.
+    CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
+    CPT(RenderState) state = data._state->add_attrib(thick);
+    
+    CullableObject *object = new CullableObject(geom, state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
 
-  PTA_int lengths;
-  int num_prims = 0;
-
-  CurveSegments::const_iterator si;
-  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
-    const CurveSegment &segment = (*si);
-
-    lengths.push_back(segment.size());
-    num_prims++;
-  }
-  
-  PT(GeomLinestrip) geom = new GeomLinestrip;
-  geom->set_num_prims(num_prims);
-  geom->set_coords(verts);
-  if (get_uv_mode() != UV_none) {
-    geom->set_texcoords(uvs, G_PER_VERTEX);
-  }
-
-  if (get_use_vertex_color()) {
-    geom->set_colors(colors, G_PER_VERTEX);
   } else {
-    geom->set_colors(colors, G_OVERALL);
-  }
-  geom->set_lengths(lengths);
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    PTA_Vertexf verts;
+    PTA_TexCoordf uvs;
+    PTA_Colorf colors;
+    
+    compute_thread_vertices(verts, uvs, colors, curve_segments);
 
-  CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
-  CPT(RenderState) state = data._state->add_attrib(thick);
-  
-  CullableObject *object = new CullableObject(geom, state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object, trav);
+    // Finally, build the lengths array to make them into proper
+    // line strips.
+    
+    PTA_int lengths;
+    int num_prims = 0;
+    
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      lengths.push_back(segment.size());
+      num_prims++;
+    }
+    
+    PT(GeomLinestrip) geom = new GeomLinestrip;
+    geom->set_num_prims(num_prims);
+    geom->set_coords(verts);
+    if (get_uv_mode() != UV_none) {
+      geom->set_texcoords(uvs, G_PER_VERTEX);
+    }
+    
+    if (get_use_vertex_color()) {
+      geom->set_colors(colors, G_PER_VERTEX);
+    } else {
+      geom->set_colors(colors, G_OVERALL);
+    }
+    geom->set_lengths(lengths);
+    
+    CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
+    CPT(RenderState) state = data._state->add_attrib(thick);
+    
+    CullableObject *object = new CullableObject(geom, state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,50 +427,79 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   CurveSegments curve_segments;
   get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  if (use_qpgeom) {
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
 
-  PTA_Vertexf verts;
-  PTA_TexCoordf uvs;
-  PTA_Colorf colors;
+    compute_billboard_vertices(vdata, -get_tube_up(), 
+                               curve_segments, result);
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      strip->add_next_vertices(segment.size() * 2);
+      strip->close_primitive();
+    }
 
-  compute_billboard_vertices(verts, uvs, colors, -get_tube_up(), 
-                             curve_segments, result);
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
 
-  // Finally, build the lengths array to make them into proper
-  // triangle strips.  We don't need a vindex array here, since the
-  // vertices just happened to end up in tristrip order.
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
 
-  PTA_int lengths;
-  int num_prims = 0;
-
-  CurveSegments::const_iterator si;
-  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
-    const CurveSegment &segment = (*si);
-
-    lengths.push_back(segment.size() * 2);
-    num_prims++;
-  }
-
-  // And create a Geom for the rendering.
-  
-  PT(Geom) geom = new GeomTristrip;
-  geom->set_num_prims(num_prims);
-  geom->set_coords(verts);
-  if (get_uv_mode() != UV_none) {
-    geom->set_texcoords(uvs, G_PER_VERTEX);
-  }
-  if (get_use_vertex_color()) {
-    geom->set_colors(colors, G_PER_VERTEX);
   } else {
-    geom->set_colors(colors, G_OVERALL);
-  }
-  geom->set_lengths(lengths);
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    
+    PTA_Vertexf verts;
+    PTA_TexCoordf uvs;
+    PTA_Colorf colors;
+    
+    compute_billboard_vertices(verts, uvs, colors, -get_tube_up(), 
+                               curve_segments, result);
+    
+    // Finally, build the lengths array to make them into proper
+    // triangle strips.  We don't need a vindex array here, since the
+    // vertices just happened to end up in tristrip order.
+    
+    PTA_int lengths;
+    int num_prims = 0;
+    
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      lengths.push_back(segment.size() * 2);
+      num_prims++;
+    }
+
+    // And create a Geom for the rendering.
   
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object, trav);
+    PT(Geom) geom = new GeomTristrip;
+    geom->set_num_prims(num_prims);
+    geom->set_coords(verts);
+    if (get_uv_mode() != UV_none) {
+      geom->set_texcoords(uvs, G_PER_VERTEX);
+    }
+    if (get_use_vertex_color()) {
+      geom->set_colors(colors, G_PER_VERTEX);
+    } else {
+      geom->set_colors(colors, G_OVERALL);
+    }
+    geom->set_lengths(lengths);
+    
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,50 +525,79 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   CurveSegments curve_segments;
   get_connected_segments(curve_segments, result);
 
-  // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  if (use_qpgeom) {
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
 
-  PTA_Vertexf verts;
-  PTA_TexCoordf uvs;
-  PTA_Colorf colors;
+    compute_billboard_vertices(vdata, camera_vec, 
+                               curve_segments, result);
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      strip->add_next_vertices(segment.size() * 2);
+      strip->close_primitive();
+    }
 
-  compute_billboard_vertices(verts, uvs, colors, camera_vec, 
-                             curve_segments, result);
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
 
-  // Finally, build the lengths array to make them into proper
-  // triangle strips.  We don't need a vindex array here, since the
-  // vertices just happened to end up in tristrip order.
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
 
-  PTA_int lengths;
-  int num_prims = 0;
-
-  CurveSegments::const_iterator si;
-  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
-    const CurveSegment &segment = (*si);
-
-    lengths.push_back(segment.size() * 2);
-    num_prims++;
-  }
-
-  // And create a Geom for the rendering.
-  
-  PT(Geom) geom = new GeomTristrip;
-  geom->set_num_prims(num_prims);
-  geom->set_coords(verts);
-  if (get_uv_mode() != UV_none) {
-    geom->set_texcoords(uvs, G_PER_VERTEX);
-  }
-  if (get_use_vertex_color()) {
-    geom->set_colors(colors, G_PER_VERTEX);
   } else {
-    geom->set_colors(colors, G_OVERALL);
+    // Now we have stored one or more sequences of vertices down the
+    // center strips.  Go back through and calculate the vertices on
+    // either side.
+    
+    PTA_Vertexf verts;
+    PTA_TexCoordf uvs;
+    PTA_Colorf colors;
+    
+    compute_billboard_vertices(verts, uvs, colors, camera_vec, 
+                               curve_segments, result);
+    
+    // Finally, build the lengths array to make them into proper
+    // triangle strips.  We don't need a vindex array here, since the
+    // vertices just happened to end up in tristrip order.
+    
+    PTA_int lengths;
+    int num_prims = 0;
+    
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      lengths.push_back(segment.size() * 2);
+      num_prims++;
+    }
+    
+    // And create a Geom for the rendering.
+    
+    PT(Geom) geom = new GeomTristrip;
+    geom->set_num_prims(num_prims);
+    geom->set_coords(verts);
+    if (get_uv_mode() != UV_none) {
+      geom->set_texcoords(uvs, G_PER_VERTEX);
+    }
+    if (get_use_vertex_color()) {
+      geom->set_colors(colors, G_PER_VERTEX);
+    } else {
+      geom->set_colors(colors, G_OVERALL);
+    }
+    geom->set_lengths(lengths);
+    
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
   }
-  geom->set_lengths(lengths);
-  
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -501,63 +621,101 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   int num_slices = get_num_slices();
   int num_verts_per_slice;
 
-  PTA_Vertexf verts;
-  PTA_Normalf normals;
-  PTA_TexCoordf uvs;
-  PTA_Colorf colors;
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("rope", get_format(true), qpGeomUsageHint::UH_stream);
 
-  compute_tube_vertices(verts, normals, uvs, colors,
-                        num_verts_per_slice, curve_segments, result);
-
-  // Finally, go back one more time and build up the vindex array, to
-  // tie all the triangle strips together.
-
-  PTA_ushort vindex;
-  PTA_int lengths;
-
-  int num_prims = 0;
-  int vi = 0;
-  CurveSegments::const_iterator si;
-  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
-    const CurveSegment &segment = (*si);
-
-    for (int s = 0; s < num_slices; ++s) {
-      int s1 = (s + 1) % num_verts_per_slice;
-
-      for (size_t j = 0; j < segment.size(); ++j) {
-        vindex.push_back((vi + j) * num_verts_per_slice + s);
-        vindex.push_back((vi + j) * num_verts_per_slice + s1);
+    compute_tube_vertices(vdata,
+                          num_verts_per_slice, curve_segments, result);
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    // Finally, go through build up the index array, to tie all the
+    // triangle strips together.
+    int vi = 0;
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      for (int s = 0; s < num_slices; ++s) {
+        int s1 = (s + 1) % num_verts_per_slice;
+        
+        for (size_t j = 0; j < segment.size(); ++j) {
+          strip->add_vertex((vi + j) * num_verts_per_slice + s);
+          strip->add_vertex((vi + j) * num_verts_per_slice + s1);
+        }
+        
+        strip->close_primitive();
       }
-
-      lengths.push_back(segment.size() * 2);
-      num_prims++;
+      vi += (int)segment.size();
     }
-    vi += (int)segment.size();
-  }
 
-  // And create a Geom for the rendering.
-  
-  PT(Geom) geom = new GeomTristrip;
-  geom->set_num_prims(num_prims);
-  geom->set_coords(verts, vindex);
-  if (get_uv_mode() != UV_none) {
-    geom->set_texcoords(uvs, G_PER_VERTEX, vindex);
-  }
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
 
-  if (get_normal_mode() == NM_vertex) {
-    geom->set_normals(normals, G_PER_VERTEX, vindex);
-  }
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
 
-  if (get_use_vertex_color()) {
-    geom->set_colors(colors, G_PER_VERTEX, vindex);
   } else {
-    geom->set_colors(colors, G_OVERALL);
+    PTA_Vertexf verts;
+    PTA_Normalf normals;
+    PTA_TexCoordf uvs;
+    PTA_Colorf colors;
+    
+    compute_tube_vertices(verts, normals, uvs, colors,
+                          num_verts_per_slice, curve_segments, result);
+    
+    // Finally, go back one more time and build up the vindex array, to
+    // tie all the triangle strips together.
+    
+    PTA_ushort vindex;
+    PTA_int lengths;
+    
+    int num_prims = 0;
+    int vi = 0;
+    CurveSegments::const_iterator si;
+    for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+      const CurveSegment &segment = (*si);
+      
+      for (int s = 0; s < num_slices; ++s) {
+        int s1 = (s + 1) % num_verts_per_slice;
+        
+        for (size_t j = 0; j < segment.size(); ++j) {
+          vindex.push_back((vi + j) * num_verts_per_slice + s);
+          vindex.push_back((vi + j) * num_verts_per_slice + s1);
+        }
+        
+        lengths.push_back(segment.size() * 2);
+        num_prims++;
+      }
+      vi += (int)segment.size();
+    }
+    
+    // And create a Geom for the rendering.
+    
+    PT(Geom) geom = new GeomTristrip;
+    geom->set_num_prims(num_prims);
+    geom->set_coords(verts, vindex);
+    if (get_uv_mode() != UV_none) {
+      geom->set_texcoords(uvs, G_PER_VERTEX, vindex);
+    }
+    
+    if (get_normal_mode() == NM_vertex) {
+      geom->set_normals(normals, G_PER_VERTEX, vindex);
+    }
+    
+    if (get_use_vertex_color()) {
+      geom->set_colors(colors, G_PER_VERTEX, vindex);
+    } else {
+      geom->set_colors(colors, G_OVERALL);
+    }
+    geom->set_lengths(lengths);
+    
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object, trav);
   }
-  geom->set_lengths(lengths);
-
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object, trav);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -619,6 +777,186 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       curve_segment->push_back(vtx);
 
       last_point = vtx._p;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_thread_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_thread render.  This
+//               just copies the vertices more-or-less directly into
+//               the array.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_thread_vertices(qpGeomVertexData *vdata,
+                        const RopeNode::CurveSegments &curve_segments) const {
+  qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(vdata, InternalName::get_color());
+  qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  bool use_vertex_color = get_use_vertex_color();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      vertex.add_data3f(segment[j]._p);
+
+      if (use_vertex_color) {
+        color.add_data4f(segment[j]._c);
+      }
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      if (uv_mode != UV_none) {
+        if (u_dominant) {
+          texcoord.add_data2f(uv_t, 0.0f);
+        } else {
+          texcoord.add_data2f(0.0f, uv_t);
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_billboard_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_billboard render.  This
+//               puts a pair of vertices on either side of each
+//               computed point in curve_segments.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_billboard_vertices(qpGeomVertexData *vdata,
+                           const LVector3f &camera_vec,
+                           const RopeNode::CurveSegments &curve_segments,
+                           NurbsCurveResult *result) const {
+  qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(vdata, InternalName::get_color());
+  qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+
+  float thickness = get_thickness();
+  float radius = thickness * 0.5f;
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  bool use_vertex_color = get_use_vertex_color();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      LVector3f tangent;
+      compute_tangent(tangent, segment, j, result);
+
+      LVector3f norm = cross(tangent, camera_vec);
+      norm.normalize();
+
+      vertex.add_data3f(segment[j]._p + norm * radius);
+      vertex.add_data3f(segment[j]._p - norm * radius);
+
+      if (use_vertex_color) {
+        color.add_data4f(segment[j]._c);
+        color.add_data4f(segment[j]._c);
+      }
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      if (uv_mode != UV_none) {
+        if (u_dominant) {
+          texcoord.add_data2f(uv_t, 1.0f);
+          texcoord.add_data2f(uv_t, 0.0f);
+        } else {
+          texcoord.add_data2f(1.0f, uv_t);
+          texcoord.add_data2f(0.0f, uv_t);
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_tube_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_tube render.  This
+//               puts a ring of vertices around each computed point in
+//               curve_segments.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_tube_vertices(qpGeomVertexData *vdata,
+                      int &num_verts_per_slice,
+                      const RopeNode::CurveSegments &curve_segments,
+                      NurbsCurveResult *result) const {
+  qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  qpGeomVertexWriter normal(vdata, InternalName::get_normal());
+  qpGeomVertexWriter color(vdata, InternalName::get_color());
+  qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+
+  int num_slices = get_num_slices();
+  num_verts_per_slice = num_slices;
+
+  float thickness = get_thickness();
+  float radius = thickness * 0.5f;
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  NormalMode normal_mode = get_normal_mode();
+  bool use_vertex_color = get_use_vertex_color();
+
+  // If we are generating UV's, we will need to duplicate the vertices
+  // along the seam so that the UV's go through the whole range of
+  // 0..1 instead of reflecting in the last polygon before the seam.
+  if (uv_mode != UV_none) {
+    ++num_verts_per_slice;
+  }
+
+  LVector3f up = get_tube_up();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      LVector3f tangent;
+      compute_tangent(tangent, segment, j, result);
+
+      LVector3f norm = cross(tangent, up);
+      norm.normalize();
+      up = cross(norm, tangent);
+
+      LMatrix3f rotate = LMatrix3f::rotate_mat(360.0f / (float)num_slices,
+                                               tangent);
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      for (int s = 0; s < num_verts_per_slice; ++s) {
+        vertex.add_data3f(segment[j]._p + norm * radius);
+
+        if (normal_mode == NM_vertex) {
+          normal.add_data3f(norm);
+        }
+
+        if (use_vertex_color) {
+          color.add_data4f(segment[j]._c);
+        }
+
+        norm = norm * rotate;
+
+        if (uv_mode != UV_none) {
+          float uv_s = (float)s / (float)num_slices;
+          if (u_dominant) {
+            texcoord.add_data2f(uv_t, uv_s);
+          } else {
+            texcoord.add_data2f(uv_s, uv_t);
+          }
+        }
+      }
     }
   }
 }
