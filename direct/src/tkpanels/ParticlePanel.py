@@ -519,6 +519,9 @@ class ParticlePanel(AppShell):
         self.createColorEntry(linePage, 'Line Renderer', 'Tail Color',
                                 'Tail color of line',
                                 command = self.setRendererLineTailColor)
+        self.createFloater(linePage, 'Line Renderer', 'Line Scale Factor',
+                           'Scale Factor applied to length of line',
+                           command = self.setRendererLineScaleFactor)
         # Geom page #
         geomPage = self.rendererNotebook.add('GeomParticleRenderer')
         f = Frame(geomPage)
@@ -1442,6 +1445,8 @@ class ParticlePanel(AppShell):
             tailColor = renderer.getTailColor() * 255.0
             self.getWidget('Line Renderer', 'Tail Color').set(
                 [tailColor[0], tailColor[1], tailColor[2], tailColor[3]])
+            self.getWidget('Line Renderer', 'Line Scale Factor').set(
+                renderer.getLineScaleFactor())
         elif isinstance(renderer, GeomParticleRenderer):
             pass
         elif isinstance(renderer, PointParticleRenderer):
@@ -1565,6 +1570,8 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setTailColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+    def setRendererLineScaleFactor(self, sf):
+        self.particles.renderer.setLineScaleFactor(sf)
     # Geom #
     def setRendererGeomNode(self, event):
         node = None
