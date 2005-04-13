@@ -2601,7 +2601,7 @@ case 76:
   string strval = yyvsp[-1]._string;
 
   EggGroup::DCSType f = EggGroup::string_dcs_type(strval);
-  if (f == EggGroup::DC_none) {
+  if (f == EggGroup::DC_unspecified) {
     eggyywarning("Unknown DCS type " + strval);
   } else {
     group->set_dcs_type(f);
