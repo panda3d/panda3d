@@ -502,7 +502,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
         }
         
         clear_transform_blend_palette();
-        set_transform_palette(transform_palette);
+        set_transform_palette(TransformPalette::register_palette(transform_palette));
       }
     }
   }
