@@ -212,9 +212,10 @@ collect_nodes(EggGroupNode *group) {
 
       // And remove it from the scene graph.
       group->erase(i);
+    }
 
-    } else if (node->is_of_type(EggGroupNode::get_class_type())) {
-      // Here's a normal group node, not to be binned.  Traverse.
+    if (node->is_of_type(EggGroupNode::get_class_type())) {
+      // Recursively traverse.
       collect_nodes(DCAST(EggGroupNode, node));
     }
 

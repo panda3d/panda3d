@@ -84,6 +84,9 @@ private:
   static bool _twindow_class_registered;
 
 public:
+  bool _supports_swap_control;
+  PFNWGLSWAPINTERVALEXTPROC _wglSwapIntervalEXT;
+
   bool _supports_pbuffer;
   PFNWGLCREATEPBUFFERARBPROC _wglCreatePbufferARB;
   PFNWGLGETPBUFFERDCARBPROC _wglGetPbufferDCARB;

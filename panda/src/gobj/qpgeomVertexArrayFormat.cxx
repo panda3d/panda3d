@@ -25,6 +25,7 @@
 #include "bamWriter.h"
 #include "indirectLess.h"
 
+qpGeomVertexArrayFormat::Registry *qpGeomVertexArrayFormat::_registry = NULL;
 TypeHandle qpGeomVertexArrayFormat::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -185,6 +186,9 @@ operator = (const qpGeomVertexArrayFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 ~qpGeomVertexArrayFormat() {
+  if (is_registered()) {
+    get_registry()->unregister_format(this);
+  }
   Columns::iterator ci;
   for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
     delete (*ci);
@@ -502,6 +506,18 @@ sort_columns() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::make_registry
+//       Access: Private
+//  Description: Returns the global registry object.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayFormat::
+make_registry() {
+  if (_registry == (Registry *)NULL) {
+    _registry = new Registry;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayFormat::do_register
 //       Access: Private
 //  Description: Called internally when the format is registered.
@@ -510,6 +526,17 @@ void qpGeomVertexArrayFormat::
 do_register() {
   nassertv(!_is_registered);
   _is_registered = true;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::do_unregister
+//       Access: Private
+//  Description: Called internally when the format is unregistered.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayFormat::
+do_unregister() {
+  nassertv(_is_registered);
+  _is_registered = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,4 +639,65 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _columns.push_back(column);
   }
   _columns_unsorted = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::Registry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+qpGeomVertexArrayFormat::Registry::
+Registry() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::Registry::register_format
+//       Access: Public
+//  Description: Adds the indicated format to the registry, if there
+//               is not an equivalent format already there; in either
+//               case, returns the pointer to the equivalent format
+//               now in the registry.
+//
+//               This must be called before a format may be used in a
+//               Geom.  After this call, you should discard the
+//               original pointer you passed in (which may or may not
+//               now be invalid) and let its reference count decrement
+//               normally; you should use only the returned value from
+//               this point on.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexArrayFormat) qpGeomVertexArrayFormat::Registry::
+register_format(qpGeomVertexArrayFormat *format) {
+  if (format->is_registered()) {
+    return format;
+  }
+
+  // Save the incoming pointer in a local PointerTo, so that if it has
+  // a zero reference count and is not added into the map below, it
+  // will be automatically deleted when this function returns.
+  PT(qpGeomVertexArrayFormat) pt_format = format;
+
+  ArrayFormats::iterator fi = _formats.insert(format).first;
+
+  qpGeomVertexArrayFormat *new_format = (*fi);
+  if (!new_format->is_registered()) {
+    new_format->do_register();
+  }
+
+  return new_format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::Registry::unregister_format
+//       Access: Public
+//  Description: Removes the indicated format from the registry.
+//               Normally this should not be done until the format is
+//               destructing.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayFormat::Registry::
+unregister_format(qpGeomVertexArrayFormat *format) {
+  nassertv(format->is_registered());
+  ArrayFormats::iterator fi = _formats.find(format);
+  nassertv(fi != _formats.end());
+  _formats.erase(fi);
+  format->do_unregister();
 }

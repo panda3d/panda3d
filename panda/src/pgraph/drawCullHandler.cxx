@@ -35,7 +35,7 @@ void DrawCullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
-  object->munge_geom(_gsg->get_geom_munger(object->_state), traverser);
+  object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state), traverser);
 
   // And draw the object, then dispense with it.
   draw(object, _gsg);

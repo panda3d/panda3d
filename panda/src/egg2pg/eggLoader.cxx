@@ -1493,7 +1493,7 @@ separate_switches(EggNode *egg_node) {
   bool parent_has_switch = false;
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_node);
-    parent_has_switch = egg_group->get_switch_flag();
+    parent_has_switch = egg_group->get_switch_flag() || egg_group->has_lod();
   }
 
   if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
@@ -1778,7 +1778,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     bool all_polysets = false;
     bool any_hidden = false;
     if (use_qpgeom) {
-      check_for_polysets(egg_group, all_polysets, any_hidden);
+      // We don't want to ever create a GeomNode under a "decal" flag,
+      // since that can confuse the decal reparenting.
+      if (!egg_group->determine_decal()) {
+        check_for_polysets(egg_group, all_polysets, any_hidden);
+      }
     }
 
     if (all_polysets && !any_hidden) {

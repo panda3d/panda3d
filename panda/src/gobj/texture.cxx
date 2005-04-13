@@ -1460,10 +1460,19 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
-  bool has_rawdata = (bam_texture_mode == BTM_rawdata);
-
   Filename filename = get_filename();
   Filename alpha_filename = get_alpha_filename();
+
+  // Write out the texture's raw pixel data if (a) the current Bam
+  // Texture Mode requires that, or (b) there's no filename, so the
+  // file can't be loaded up from disk, but the raw pixel data is
+  // currently available in RAM.
+
+  // Otherwise, we just write out the filename, and assume whoever
+  // loads the bam file later will have access to the image file on
+  // disk.
+  bool has_rawdata = 
+    (bam_texture_mode == BTM_rawdata || (has_ram_image() && filename.empty()));
 
   switch (bam_texture_mode) {
   case BTM_unchanged:

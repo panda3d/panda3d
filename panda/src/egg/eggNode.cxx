@@ -198,6 +198,26 @@ determine_indexed() {
   return _parent->determine_indexed();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::determine_decal
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               at this level or above that has the "decal" flag
+//               set.  Returns the value of the decal flag if it
+//               is found, or false if it is not.
+//
+//               In other words, returns true if the "decal" flag is
+//               in effect for the indicated node, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+determine_decal() {
+  if (_parent == (EggGroupNode *)NULL) {
+    // Too bad; we're done.
+    return false;
+  }
+  return _parent->determine_decal();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::parse_egg

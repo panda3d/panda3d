@@ -127,23 +127,38 @@ void wglGraphicsStateGuardian::
 reset() {
   GLGraphicsStateGuardian::reset();
 
-  _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
-  _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
-  _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
-  _supports_render_texture = has_extension("WGL_ARB_render_texture");
+  _supports_swap_control = has_extension("WGL_EXT_swap_control");
 
-  _wglCreatePbufferARB = 
-    (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
-  _wglGetPbufferDCARB = 
-    (PFNWGLGETPBUFFERDCARBPROC)wglGetProcAddress("wglGetPbufferDCARB");
-  _wglReleasePbufferDCARB = 
-    (PFNWGLRELEASEPBUFFERDCARBPROC)wglGetProcAddress("wglReleasePbufferDCARB");
-  _wglDestroyPbufferARB = 
-    (PFNWGLDESTROYPBUFFERARBPROC)wglGetProcAddress("wglDestroyPbufferARB");
-  _wglQueryPbufferARB = 
-    (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB");
+  if (_supports_swap_control) {
+    _wglSwapIntervalEXT = 
+      (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    if (_wglSwapIntervalEXT == NULL) {
+      wgldisplay_cat.error()
+        << "Driver claims to support WGL_EXT_swap_control extension, but does not define all functions.\n";
+      _supports_swap_control = false;
+    }
+  }
+
+  if (_supports_swap_control) {
+    // Set the video-sync setting up front, if we have the extension
+    // that supports it.
+    _wglSwapIntervalEXT(sync_video ? 1 : 0);
+  }
+
+  _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
 
   if (_supports_pbuffer) {
+    _wglCreatePbufferARB = 
+      (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
+    _wglGetPbufferDCARB = 
+      (PFNWGLGETPBUFFERDCARBPROC)wglGetProcAddress("wglGetPbufferDCARB");
+    _wglReleasePbufferDCARB = 
+      (PFNWGLRELEASEPBUFFERDCARBPROC)wglGetProcAddress("wglReleasePbufferDCARB");
+    _wglDestroyPbufferARB = 
+      (PFNWGLDESTROYPBUFFERARBPROC)wglGetProcAddress("wglDestroyPbufferARB");
+    _wglQueryPbufferARB = 
+      (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB");
+    
     if (_wglCreatePbufferARB == NULL ||
         _wglGetPbufferDCARB == NULL ||
         _wglReleasePbufferDCARB == NULL ||
@@ -155,14 +170,16 @@ reset() {
     }
   }
 
-  _wglGetPixelFormatAttribivARB =
-    (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribivARB");
-  _wglGetPixelFormatAttribfvARB =
-    (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribfvARB");
-  _wglChoosePixelFormatARB =
-    (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+  _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
 
   if (_supports_pixel_format) {
+    _wglGetPixelFormatAttribivARB =
+      (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribivARB");
+    _wglGetPixelFormatAttribfvARB =
+      (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribfvARB");
+    _wglChoosePixelFormatARB =
+      (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+
     if (_wglGetPixelFormatAttribivARB == NULL ||
         _wglGetPixelFormatAttribfvARB == NULL ||
         _wglChoosePixelFormatARB == NULL) {
@@ -172,14 +189,17 @@ reset() {
     }
   }
 
-  _wglBindTexImageARB = 
-    (PFNWGLBINDTEXIMAGEARBPROC)wglGetProcAddress("wglBindTexImageARB");
-  _wglReleaseTexImageARB = 
-    (PFNWGLRELEASETEXIMAGEARBPROC)wglGetProcAddress("wglReleaseTexImageARB");
-  _wglSetPbufferAttribARB = 
-    (PFNWGLSETPBUFFERATTRIBARBPROC)wglGetProcAddress("wglSetPbufferAttribARB");
+  _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
+
+  _supports_render_texture = has_extension("WGL_ARB_render_texture");
 
   if (_supports_render_texture) {
+    _wglBindTexImageARB = 
+      (PFNWGLBINDTEXIMAGEARBPROC)wglGetProcAddress("wglBindTexImageARB");
+    _wglReleaseTexImageARB = 
+      (PFNWGLRELEASETEXIMAGEARBPROC)wglGetProcAddress("wglReleaseTexImageARB");
+    _wglSetPbufferAttribARB = 
+      (PFNWGLSETPBUFFERATTRIBARBPROC)wglGetProcAddress("wglSetPbufferAttribARB");
     if (_wglBindTexImageARB == NULL ||
         _wglReleaseTexImageARB == NULL ||
         _wglSetPbufferAttribARB == NULL) {

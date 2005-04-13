@@ -365,7 +365,7 @@ write_object_types(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_decal_flags
 //       Access: Public
-//  Description: Writes the flags related to decalling, if any.
+//  Description: Writes the flags related to decaling, if any.
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 write_decal_flags(ostream &out, int indent_level) const {
@@ -542,6 +542,25 @@ determine_indexed() {
     return get_indexed_flag();
   }
   return EggGroupNode::determine_indexed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_decal
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               at this level or above that has the "decal" flag
+//               set.  Returns the value of the decal flag if it
+//               is found, or false if it is not.
+//
+//               In other words, returns true if the "decal" flag is
+//               in effect for the indicated node, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+determine_decal() {
+  if (get_decal_flag()) {
+    return true;
+  }
+  return EggGroupNode::determine_decal();
 }
 
 ////////////////////////////////////////////////////////////////////

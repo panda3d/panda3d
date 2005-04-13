@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexColumn.h"
+#include "indirectCompareTo.h"
 #include "pvector.h"
 #include "pmap.h"
 
@@ -90,6 +91,7 @@ PUBLISHED:
   ~qpGeomVertexArrayFormat();
 
   INLINE bool is_registered() const;
+  INLINE static CPT(qpGeomVertexArrayFormat) register_format(const qpGeomVertexArrayFormat *format);
 
   INLINE int get_stride() const;
   INLINE void set_stride(int stride);
@@ -123,9 +125,15 @@ public:
   int compare_to(const qpGeomVertexArrayFormat &other) const;
 
 private:
+  class Registry;
+  INLINE static Registry *get_registry();
+  static void make_registry();
+
+  void do_register();
+  void do_unregister();
+
   INLINE void consider_sort_columns() const;
   void sort_columns();
-  void do_register();
 
   bool _is_registered;
   int _stride;
@@ -138,6 +146,19 @@ private:
 
   typedef pmap<const InternalName *, qpGeomVertexColumn *> ColumnsByName;
   ColumnsByName _columns_by_name;
+
+  // This is the global registry of all currently-in-use array formats.
+  typedef pset<qpGeomVertexArrayFormat *, IndirectCompareTo<qpGeomVertexArrayFormat> > ArrayFormats;
+  class EXPCL_PANDA Registry {
+  public:
+    Registry();
+    CPT(qpGeomVertexArrayFormat) register_format(qpGeomVertexArrayFormat *format);
+    void unregister_format(qpGeomVertexArrayFormat *format);
+
+    ArrayFormats _formats;
+  };
+
+  static Registry *_registry;
 
 public:
   static void register_with_read_factory();

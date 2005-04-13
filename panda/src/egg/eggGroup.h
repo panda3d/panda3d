@@ -120,6 +120,7 @@ PUBLISHED:
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
   virtual bool determine_indexed();
+  virtual bool determine_decal();
 
   void set_group_type(GroupType type);
   INLINE GroupType get_group_type() const;

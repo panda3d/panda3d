@@ -57,7 +57,8 @@ public:
 
   INLINE bool has_decals() const;
 
-  void munge_geom(const qpGeomMunger *munger, const CullTraverser *traverser);
+  void munge_geom(GraphicsStateGuardianBase *gsg,
+                  const qpGeomMunger *munger, const CullTraverser *traverser);
   INLINE void draw(GraphicsStateGuardianBase *gsg);
 
 public:

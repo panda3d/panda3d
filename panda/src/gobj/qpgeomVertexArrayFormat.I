@@ -31,6 +31,25 @@ is_registered() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::register_format
+//       Access: Published, Static
+//  Description: Adds the indicated format to the registry, if there
+//               is not an equivalent format already there; in either
+//               case, returns the pointer to the equivalent format
+//               now in the registry.
+//
+//               This is similar to
+//               GeomVertexFormat::register_format(), except that you
+//               generally need not call it explicitly.  Calling
+//               GeomVertexFormat::register_format() automatically
+//               registers all of the nested array formats.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeomVertexArrayFormat) qpGeomVertexArrayFormat::
+register_format(const qpGeomVertexArrayFormat *format) {
+  return get_registry()->register_format((qpGeomVertexArrayFormat *)format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayFormat::get_stride
 //       Access: Published
 //  Description: Returns the total number of bytes reserved in the
@@ -111,6 +130,19 @@ get_column(int i) const {
 INLINE bool qpGeomVertexArrayFormat::
 has_column(const InternalName *name) const {
   return (get_column(name) != (qpGeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::get_registry
+//       Access: Private
+//  Description: Returns the global registry object.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexArrayFormat::Registry *qpGeomVertexArrayFormat::
+get_registry() {
+  if (_registry == (Registry *)NULL) {
+    make_registry();
+  }
+  return _registry;
 }
 
 ////////////////////////////////////////////////////////////////////

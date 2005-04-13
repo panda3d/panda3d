@@ -503,9 +503,10 @@ do_register() {
   nassertv(_columns_by_name.empty());
 
   for (int array = 0; array < (int)_arrays.size(); ++array) {
-    const qpGeomVertexArrayFormat *array_format = _arrays[array];
+    CPT(qpGeomVertexArrayFormat) array_format = _arrays[array];
     if (!array_format->is_registered()) {
-      ((qpGeomVertexArrayFormat *)array_format)->do_register();
+      array_format = qpGeomVertexArrayFormat::register_format(array_format);
+      _arrays[array] = (qpGeomVertexArrayFormat *)array_format.p();
     }
 
     // Now add the names to the index.
@@ -579,7 +580,6 @@ do_register() {
       break;
     }
   }
-
 
   _is_registered = true;
 

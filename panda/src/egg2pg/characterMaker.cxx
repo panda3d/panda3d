@@ -238,7 +238,6 @@ egg_to_slider(const string &name) {
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root);
-  _bundle->sort_descendants();
 
   if (use_qpgeom) {
     // The new, experimental Geom system.
@@ -251,8 +250,9 @@ make_bundle() {
     _character_node->_computed_vertices =
       _comp_verts_maker.make_computed_vertices(_character_node, *this);
   }
+  _bundle->sort_descendants();
   parent_joint_nodes(_skeleton_root);
-    
+
   return _bundle;
 }
 

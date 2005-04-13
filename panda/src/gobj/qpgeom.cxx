@@ -513,7 +513,10 @@ draw(GraphicsStateGuardianBase *gsg, const qpGeomMunger *munger,
     for (pi = cdata->_primitives.begin(); 
          pi != cdata->_primitives.end();
          ++pi) {
-      (*pi)->draw(gsg);
+      const qpGeomPrimitive *primitive = (*pi);
+      if (primitive->get_num_vertices() != 0) {
+        (*pi)->draw(gsg);
+      }
     }
     gsg->end_draw_primitives();
   }

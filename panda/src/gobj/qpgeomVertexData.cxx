@@ -1394,10 +1394,9 @@ finalize(BamReader *manager) {
 
   for (size_t i = 0; i < cdata->_arrays.size(); ++i) {
     CPT(qpGeomVertexArrayFormat) new_array_format = new_format->get_array(i);
-    CPT(qpGeomVertexArrayFormat) old_array_format = _format->get_array(i);
-    nassertv(cdata->_arrays[i]->_array_format == old_array_format);
+    nassertv(cdata->_arrays[i]->_array_format->compare_to(*new_array_format) == 0);
 
-    manager->change_pointer(old_array_format, new_array_format);
+    manager->change_pointer(cdata->_arrays[i]->_array_format, new_array_format);
     cdata->_arrays[i]->_array_format = new_array_format;
   }
 

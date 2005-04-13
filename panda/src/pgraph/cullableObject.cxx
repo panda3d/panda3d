@@ -41,7 +41,8 @@ TypeHandle CullableObject::_type_handle;
 //               and/or its vertices.
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
-munge_geom(const qpGeomMunger *munger, const CullTraverser *traverser) {
+munge_geom(GraphicsStateGuardianBase *gsg,
+           const qpGeomMunger *munger, const CullTraverser *traverser) {
   if (_geom != (Geom *)NULL) {
     // Temporary test and dcast until the experimental Geom rewrite
     // becomes the actual Geom rewrite.
@@ -93,7 +94,11 @@ munge_geom(const qpGeomMunger *munger, const CullTraverser *traverser) {
     }
   }
   if (_next != (CullableObject *)NULL) {
-    _next->munge_geom(munger, traverser);
+    if (_next->_state != (RenderState *)NULL) {
+      _next->munge_geom(gsg, gsg->get_geom_munger(_next->_state), traverser);
+    } else {
+      _next->munge_geom(gsg, munger, traverser);
+    }
   }
 }
 
