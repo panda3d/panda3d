@@ -9,7 +9,7 @@
 ;   FULLNAME      - full name of what we're building            (ie, "Panda3D")
 ;   SMDIRECTORY   - where to put this in the start menu         (ie, "Panda3D VERSION")
 ;   UNINSTALLKEY  - what registry key to use for uninstaller    (ie, "Panda3D VERSION")
-;   INSTALLDIR    - where to install the program                (ie, "C:\Panda3D-VERSION")
+;   INSTALLDIR    - where to install the program                (ie, "C:\Program Files\Panda3D-VERSION")
 ;   PPGAME        - only if making a prepackaged game.          (ie, "Airblade")
 
 !define PANDA ..\built
@@ -41,7 +41,7 @@ SetCompressor ${COMPRESSOR}
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 
-!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Panda3DEnglish"
 
 ShowInstDetails show
 ShowUninstDetails show
