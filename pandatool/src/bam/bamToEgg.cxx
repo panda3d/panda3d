@@ -32,6 +32,9 @@
 #include "geomNode.h"
 #include "geom.h"
 #include "geomTri.h"
+#include "qpgeom.h"
+#include "qpgeomTriangles.h"
+#include "qpgeomVertexReader.h"
 #include "string_utils.h"
 #include "bamFile.h"
 #include "eggGroup.h"
@@ -236,19 +239,34 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
 
   // Now get out all the various kinds of geometry.
   int num_geoms = node->get_num_geoms();
-  for (int i = 0; i < num_geoms; i++) {
+  for (int i = 0; i < num_geoms; ++i) {
     CPT(RenderState) geom_state = net_state->compose(node->get_geom_state(i));
 
     const Geom *geom = node->get_geom(i);
-    // Explode the Geom before we try to deal with it.  That way, we
-    // don't have to know about tristrips or whatnot.
-    PT(Geom) exploded = geom->explode();
-
-    // Now determine what kind of Geom we've got.  Chances are good
-    // it's triangles.
-    if (exploded->is_of_type(GeomTri::get_class_type())) {
-      convert_geom_tri(DCAST(GeomTri, exploded), geom_state, net_mat,
-                       egg_parent);
+    if (geom->is_of_type(qpGeom::get_class_type())) {
+      const qpGeom *qpgeom = DCAST(qpGeom, geom);
+      int num_primitives = qpgeom->get_num_primitives();
+      for (int j = 0; j < num_primitives; ++j) {
+        const qpGeomPrimitive *primitive = qpgeom->get_primitive(j);
+        CPT(qpGeomPrimitive) simple = primitive->decompose();
+        if (simple->is_of_type(qpGeomTriangles::get_class_type())) {
+          convert_triangles(qpgeom->get_vertex_data(),
+                            DCAST(qpGeomTriangles, simple), geom_state,
+                            net_mat, egg_parent);
+        }
+      }
+     
+    } else {
+      // Explode the Geom before we try to deal with it.  That way, we
+      // don't have to know about tristrips or whatnot.
+      PT(Geom) exploded = geom->explode();
+      
+      // Now determine what kind of Geom we've got.  Chances are good
+      // it's triangles.
+      if (exploded->is_of_type(GeomTri::get_class_type())) {
+        convert_geom_tri(DCAST(GeomTri, exploded), geom_state, net_mat,
+                         egg_parent);
+      }
     }
   }
   
@@ -256,7 +274,119 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamToEgg::convert_geom
+//     Function: BamToEgg::convert_triangles
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_triangles(const qpGeomVertexData *vertex_data,
+                  const qpGeomTriangles *primitive, 
+                  const RenderState *net_state, 
+                  const LMatrix4f &net_mat, EggGroupNode *egg_parent) {
+  qpGeomVertexReader reader(vertex_data);
+
+  // Check for a color scale.
+  LVecBase4f color_scale(1.0f, 1.0f, 1.0f, 1.0f);
+  const ColorScaleAttrib *csa = net_state->get_color_scale();
+  if (csa != (const ColorScaleAttrib *)NULL) {
+    color_scale = csa->get_scale();
+  }
+
+  // Check for a color override.
+  bool has_color_override = false;
+  bool has_color_off = false;
+  Colorf color_override;
+  const ColorAttrib *ca = net_state->get_color();
+  if (ca != (const ColorAttrib *)NULL) {
+    if (ca->get_color_type() == ColorAttrib::T_flat) {
+      has_color_override = true;
+      color_override = ca->get_color();
+      color_override.set(color_override[0] * color_scale[0],
+                         color_override[1] * color_scale[1],
+                         color_override[2] * color_scale[2],
+                         color_override[3] * color_scale[3]);
+
+    } else if (ca->get_color_type() == ColorAttrib::T_off) {
+      has_color_off = true;
+    }
+  }
+
+  // Check for a texture.
+  EggTexture *egg_tex = (EggTexture *)NULL;
+  const TextureAttrib *ta = net_state->get_texture();
+  if (ta != (const TextureAttrib *)NULL) {
+    egg_tex = get_egg_texture(ta->get_texture());
+  }
+
+  // Check the backface flag.
+  bool bface = false;
+  const RenderAttrib *cf_attrib = net_state->get_attrib(CullFaceAttrib::get_class_type());
+  if (cf_attrib != (const RenderAttrib *)NULL) {
+    const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, cf_attrib);
+    if (cfa->get_effective_mode() == CullFaceAttrib::M_cull_none) {
+      bface = true;
+    }
+  }
+
+  Normalf normal;
+  Colorf color;
+
+  int nprims = primitive->get_num_primitives();
+  for (int i = 0; i < nprims; ++i) {
+    EggPolygon *egg_poly = new EggPolygon;
+    egg_parent->add_child(egg_poly);
+    if (egg_tex != (EggTexture *)NULL) {
+      egg_poly->set_texture(egg_tex);
+    }
+
+    if (bface) {
+      egg_poly->set_bface_flag(true);
+    }
+
+    for (int j = 0; j < 3; j++) {
+      EggVertex egg_vert;
+
+      // Get per-vertex properties.
+      reader.set_vertex(primitive->get_vertex(i * 3 + j));
+
+      reader.set_column(InternalName::get_vertex());
+      Vertexf vertex = reader.get_data3f();
+      egg_vert.set_pos(LCAST(double, vertex * net_mat));
+
+      if (vertex_data->has_normal()) {
+        reader.set_column(InternalName::get_normal());
+        Normalf normal = reader.get_data3f();
+        egg_vert.set_normal(LCAST(double, normal * net_mat));
+      }
+      if (has_color_override) {
+        egg_vert.set_color(color_override);
+
+      } else if (!has_color_off) {
+        Colorf color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (vertex_data->has_color()) {
+          reader.set_column(InternalName::get_color());
+          color = reader.get_data4f();
+        }
+        egg_vert.set_color(Colorf(color[0] * color_scale[0],
+                                  color[1] * color_scale[1],
+                                  color[2] * color_scale[2],
+                                  color[3] * color_scale[3]));
+      }
+
+      if (vertex_data->has_column(InternalName::get_texcoord())) {
+        reader.set_column(InternalName::get_texcoord());
+        TexCoordf uv = reader.get_data2f();
+        egg_vert.set_uv(LCAST(double, uv));
+      }
+
+      EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
+      egg_poly->add_vertex(new_egg_vert);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_geom_tri
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
