@@ -16,7 +16,7 @@ class BulletinBoard:
     def has(self, postName):
         return postName in self._dict
 
-    def getEventName(self, postName):
+    def getEvent(self, postName):
         return 'bboard-%s' % postName
 
     def post(self, postName, value=None):
@@ -30,7 +30,7 @@ class BulletinBoard:
         if postName in self._dict:
             BulletinBoard.notify.info('update: posting %s' % (postName))
         self._dict[postName] = value
-        messenger.send(self.getEventName(postName))
+        messenger.send(self.getEvent(postName))
         
     def remove(self, postName):
         if postName in self._dict:

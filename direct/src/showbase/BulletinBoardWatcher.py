@@ -18,7 +18,7 @@ class BulletinBoardWatcher(DirectObject.DirectObject):
         self.waitingOn = {}
         for name in postNames:
             if not bboard.has(name):
-                eventName = bboard.getEventName(name)
+                eventName = bboard.getEvent(name)
                 self.acceptOnce(eventName, Functor(self.handlePost, eventName))
                 self.waitingOn[eventName] = None
         self.checkDone()
