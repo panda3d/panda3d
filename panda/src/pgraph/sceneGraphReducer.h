@@ -83,6 +83,9 @@ PUBLISHED:
     CVD_avoid_dynamic  = 0x008,
   };
 
+  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
+  INLINE qpGeom::UsageHint get_usage_hint() const;
+
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);

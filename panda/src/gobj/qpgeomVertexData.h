@@ -24,7 +24,7 @@
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexColumn.h"
 #include "qpgeomVertexArrayData.h"
-#include "qpgeomUsageHint.h"
+#include "qpgeomEnums.h"
 #include "transformPalette.h"
 #include "transformBlendPalette.h"
 #include "sliderTable.h"
@@ -72,13 +72,13 @@ class qpGeomVertexColumn;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexData : public TypedWritableReferenceCount {
+class EXPCL_PANDA qpGeomVertexData : public TypedWritableReferenceCount, public qpGeomEnums {
 private:
   qpGeomVertexData();
 PUBLISHED:
   qpGeomVertexData(const string &name,
                    const qpGeomVertexFormat *format, 
-                   qpGeomUsageHint::UsageHint usage_hint);
+                   UsageHint usage_hint);
   qpGeomVertexData(const qpGeomVertexData &copy);
   void operator = (const qpGeomVertexData &copy);
   virtual ~qpGeomVertexData();
@@ -87,7 +87,8 @@ PUBLISHED:
   INLINE void set_name(const string &name);
 
   INLINE const qpGeomVertexFormat *get_format() const;
-  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+  INLINE UsageHint get_usage_hint() const;
+  void set_usage_hint(UsageHint usage_hint);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -122,23 +123,19 @@ PUBLISHED:
     scale_color(const LVecBase4f &color_scale) const;
   CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale, int num_components,
-                qpGeomVertexColumn::NumericType numeric_type,
-                qpGeomVertexColumn::Contents contents) const;
+                NumericType numeric_type, Contents contents) const;
   CPT(qpGeomVertexData) 
     set_color(const Colorf &color) const;
   CPT(qpGeomVertexData) 
     set_color(const Colorf &color, int num_components,
-              qpGeomVertexColumn::NumericType numeric_type,
-              qpGeomVertexColumn::Contents contents) const;
+              NumericType numeric_type, Contents contents) const;
 
   INLINE CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
     replace_column(const InternalName *name, int num_components,
-                   qpGeomVertexColumn::NumericType numeric_type,
-                   qpGeomVertexColumn::Contents contents,
-                   qpGeomUsageHint::UsageHint usage_hint,
-                   bool keep_animation) const;
+                   NumericType numeric_type, Contents contents,
+                   UsageHint usage_hint, bool keep_animation) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -148,26 +145,23 @@ public:
 
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
-                      int &num_values,
-                      qpGeomVertexColumn::NumericType &numeric_type, 
+                      int &num_values, NumericType &numeric_type, 
                       int &start, int &stride) const;
 
   INLINE bool has_vertex() const;
   INLINE bool is_vertex_transformed() const;
   bool get_vertex_info(const qpGeomVertexArrayData *&array_data,
-                       int &num_values,
-                       qpGeomVertexColumn::NumericType &numeric_type, 
+                       int &num_values, NumericType &numeric_type, 
                        int &start, int &stride) const;
 
   INLINE bool has_normal() const;
   bool get_normal_info(const qpGeomVertexArrayData *&array_data,
-                       qpGeomVertexColumn::NumericType &numeric_type, 
+                       NumericType &numeric_type,
                        int &start, int &stride) const;
 
   INLINE bool has_color() const;
   bool get_color_info(const qpGeomVertexArrayData *&array_data,
-                      int &num_values,
-                      qpGeomVertexColumn::NumericType &numeric_type, 
+                      int &num_values, NumericType &numeric_type, 
                       int &start, int &stride) const;
 
   static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
@@ -201,7 +195,6 @@ private:
 private:
   string _name;
   CPT(qpGeomVertexFormat) _format;
-  qpGeomUsageHint::UsageHint _usage_hint;
 
   typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
 
@@ -215,6 +208,7 @@ private:
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
+    UsageHint _usage_hint;
     Arrays _arrays;
     CPT(TransformPalette) _transform_palette;
     PT(TransformBlendPalette) _transform_blend_palette;

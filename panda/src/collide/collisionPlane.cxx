@@ -328,7 +328,7 @@ fill_viz_geom() {
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("collision", qpGeomVertexFormat::get_v3(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
     vertex.add_data3f(cp + p1 * plane_scale);
@@ -336,11 +336,11 @@ fill_viz_geom() {
     vertex.add_data3f(cp + p3 * plane_scale);
     vertex.add_data3f(cp + p4 * plane_scale);
     
-    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeomUsageHint::UH_static);
+    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeom::UH_static);
     body->add_consecutive_vertices(0, 4);
     body->close_primitive();
 
-    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeom::UH_static);
     border->add_consecutive_vertices(0, 4);
     border->add_vertex(0);
     border->close_primitive();

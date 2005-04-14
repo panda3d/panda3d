@@ -50,8 +50,8 @@ qpGeomVertexArrayFormat() :
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexColumn::NumericType numeric_type0,
-                        qpGeomVertexColumn::Contents contents0) :
+                        qpGeomVertexArrayFormat::NumericType numeric_type0,
+                        qpGeomVertexArrayFormat::Contents contents0) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
@@ -68,11 +68,11 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexColumn::NumericType numeric_type0,
-                        qpGeomVertexColumn::Contents contents0,
+                        qpGeomVertexArrayFormat::NumericType numeric_type0,
+                        qpGeomVertexArrayFormat::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexColumn::NumericType numeric_type1,
-                        qpGeomVertexColumn::Contents contents1) :
+                        qpGeomVertexArrayFormat::NumericType numeric_type1,
+                        qpGeomVertexArrayFormat::Contents contents1) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
@@ -90,14 +90,14 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexColumn::NumericType numeric_type0,
-                        qpGeomVertexColumn::Contents contents0,
+                        qpGeomVertexArrayFormat::NumericType numeric_type0,
+                        qpGeomVertexArrayFormat::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexColumn::NumericType numeric_type1,
-                        qpGeomVertexColumn::Contents contents1,
+                        qpGeomVertexArrayFormat::NumericType numeric_type1,
+                        qpGeomVertexArrayFormat::Contents contents1,
                         const InternalName *name2, int num_components2,
-                        qpGeomVertexColumn::NumericType numeric_type2,
-                        qpGeomVertexColumn::Contents contents2) :
+                        qpGeomVertexArrayFormat::NumericType numeric_type2,
+                        qpGeomVertexArrayFormat::Contents contents2) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
@@ -116,17 +116,17 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexColumn::NumericType numeric_type0,
-                        qpGeomVertexColumn::Contents contents0,
+                        qpGeomVertexArrayFormat::NumericType numeric_type0,
+                        qpGeomVertexArrayFormat::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexColumn::NumericType numeric_type1,
-                        qpGeomVertexColumn::Contents contents1,
+                        qpGeomVertexArrayFormat::NumericType numeric_type1,
+                        qpGeomVertexArrayFormat::Contents contents1,
                         const InternalName *name2, int num_components2,
-                        qpGeomVertexColumn::NumericType numeric_type2,
-                        qpGeomVertexColumn::Contents contents2,
+                        qpGeomVertexArrayFormat::NumericType numeric_type2,
+                        qpGeomVertexArrayFormat::Contents contents2,
                         const InternalName *name3, int num_components3,
-                        qpGeomVertexColumn::NumericType numeric_type3,
-                        qpGeomVertexColumn::Contents contents3) :
+                        qpGeomVertexArrayFormat::NumericType numeric_type3,
+                        qpGeomVertexArrayFormat::Contents contents3) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
@@ -209,8 +209,8 @@ qpGeomVertexArrayFormat::
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexArrayFormat::
 add_column(const InternalName *name, int num_components, 
-           qpGeomVertexColumn::NumericType numeric_type, 
-           qpGeomVertexColumn::Contents contents, int start) {
+           qpGeomVertexArrayFormat::NumericType numeric_type, 
+           qpGeomVertexArrayFormat::Contents contents, int start) {
   if (start < 0) {
     start = _total_bytes;
 

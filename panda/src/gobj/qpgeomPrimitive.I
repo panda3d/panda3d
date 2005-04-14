@@ -21,7 +21,7 @@
 //     Function: qpGeomPrimitive::get_usage_hint
 //       Access: Published
 //  Description: Returns the usage hint for this primitive.  See
-//               GeomUsageHint.  This has nothing to do with the usage
+//               geomEnums.h.  This has nothing to do with the usage
 //               hint associated with the primitive's vertices; this
 //               only specifies how often the vertex indices that
 //               define the primitive will be modified.
@@ -33,9 +33,23 @@
 //               the primitive will always reference the same set of
 //               vertices from the pool.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomUsageHint::UsageHint qpGeomPrimitive::
+INLINE qpGeomPrimitive::UsageHint qpGeomPrimitive::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for this primitive.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomPrimitive::
+set_usage_hint(qpGeomPrimitive::UsageHint usage_hint) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -359,6 +373,7 @@ get_maxs() const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive::CData::
 CData() :
+  _usage_hint(UH_unspecified),
   _shade_model(SM_smooth),
   _got_minmax(true),
   _min_vertex(0),
@@ -373,6 +388,7 @@ CData() :
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive::CData::
 CData(const qpGeomPrimitive::CData &copy) :
+  _usage_hint(copy._usage_hint),
   _shade_model(copy._shade_model),
   _vertices(copy._vertices),
   _rotated_vertices(copy._rotated_vertices),

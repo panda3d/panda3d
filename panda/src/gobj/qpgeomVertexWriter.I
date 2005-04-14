@@ -729,7 +729,7 @@ inc_add_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int qpGeomVertexWriter::Writer::
 maybe_scale_color(float data) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     return (unsigned int)(data * 255.0f);
   } else {
     return (unsigned int)data;
@@ -745,7 +745,7 @@ maybe_scale_color(float data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase2f &data) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
   } else {
@@ -763,7 +763,7 @@ maybe_scale_color(const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase3f &data) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);
@@ -783,7 +783,7 @@ maybe_scale_color(const LVecBase3f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase4f &data) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);

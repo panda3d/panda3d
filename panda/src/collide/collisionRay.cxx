@@ -158,7 +158,7 @@ fill_viz_geom() {
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("collision", qpGeomVertexFormat::get_v3cp(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
     
@@ -170,7 +170,7 @@ fill_viz_geom() {
                        t * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
     }
 
-    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeom::UH_static);
     line->add_next_vertices(num_points);
     line->close_primitive();
 

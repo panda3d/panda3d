@@ -22,8 +22,9 @@
 #include "pandabase.h"
 #include "renderState.h"
 #include "referenceCount.h"
-#include "geom.h"
+#include "qpgeom.h"
 #include "pointerTo.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextGlyph
@@ -39,7 +40,7 @@ public:
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
-  INLINE PT(Geom) get_geom() const;
+  INLINE PT(Geom) get_geom(qpGeom::UsageHint usage_hint) const;
   INLINE const RenderState *get_state() const;
   INLINE float get_advance() const;
 

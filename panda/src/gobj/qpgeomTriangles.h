@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomTriangles : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTriangles(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomTriangles(UsageHint usage_hint);
   qpGeomTriangles(const qpGeomTriangles &copy);
   virtual ~qpGeomTriangles();
 

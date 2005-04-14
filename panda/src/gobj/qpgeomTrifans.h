@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomTrifans : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomTrifans(UsageHint usage_hint);
   qpGeomTrifans(const qpGeomTrifans &copy);
   virtual ~qpGeomTrifans();
 

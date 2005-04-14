@@ -634,7 +634,7 @@ load_default_model(const NodePath &parent) {
     // New, experimental Geom code.
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       (string(), qpGeomVertexFormat::get_v3n3cpt2(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter normal(vdata, InternalName::get_normal());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
@@ -656,7 +656,7 @@ load_default_model(const NodePath &parent) {
     texcoord.add_data2f(1.0, 0.0);
     texcoord.add_data2f(0.0, 1.0);
     
-    PT(qpGeomTriangles) tri = new qpGeomTriangles(qpGeomUsageHint::UH_static);
+    PT(qpGeomTriangles) tri = new qpGeomTriangles(qpGeom::UH_static);
     tri->add_consecutive_vertices(0, 3);
     tri->close_primitive();
     
@@ -1061,7 +1061,7 @@ load_image_as_model(const Filename &filename) {
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       (string(), qpGeomVertexFormat::get_v3t2(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
@@ -1075,7 +1075,7 @@ load_image_as_model(const Filename &filename) {
     texcoord.add_data2f(1.0f, 1.0f);
     texcoord.add_data2f(1.0f, 0.0f);
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     strip->add_consecutive_vertices(0, 4);
     strip->close_primitive();
     

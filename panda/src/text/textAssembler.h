@@ -28,6 +28,7 @@
 #include "unicodeLatinMap.h"
 #include "geomNode.h"
 #include "pointerTo.h"
+#include "qpgeom.h"
 
 class TextEncoder;
 
@@ -47,6 +48,9 @@ public:
   ~TextAssembler();
 
   void clear();
+
+  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
+  INLINE qpGeom::UsageHint get_usage_hint() const;
 
   bool set_wtext(const wstring &wtext, const TextProperties &properties,
                  int max_rows = 0);
@@ -162,23 +166,24 @@ private:
                        int &additional_flags,
                        float &glyph_scale, float &advance_scale);
 
-  static void
+  void
   tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                  const LPoint3f &min_vert, const LPoint3f &max_vert,
                  const LPoint3f &centroid,
-                 const TextProperties *properties, GlyphPlacement *placement);
-  static bool 
+                 const TextProperties *properties, GlyphPlacement *placement) const;
+  bool 
   tack_on_accent(char accent_mark, CheesyPosition position,
                  CheesyTransform transform,
                  const LPoint3f &min_vert, const LPoint3f &max_vert,
                  const LPoint3f &centroid,
-                 const TextProperties *properties, GlyphPlacement *placement);
+                 const TextProperties *properties, GlyphPlacement *placement) const;
 
   // These are filled in by assemble_paragraph().
   LVector2f _ul;
   LVector2f _lr;
 
   TextEncoder *_encoder;
+  qpGeom::UsageHint _usage_hint;
 };
 
 #include "textAssembler.I"

@@ -29,7 +29,7 @@ TypeHandle qpGeomTrifans::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomTrifans::
-qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomTrifans(qpGeomTrifans::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
@@ -172,7 +172,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomTrifans::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTrifans *object = new qpGeomTrifans(qpGeomUsageHint::UH_client);
+  qpGeomTrifans *object = new qpGeomTrifans(UH_unspecified);
   DatagramIterator scan;
   BamReader *manager;
 

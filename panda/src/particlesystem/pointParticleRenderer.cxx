@@ -118,9 +118,9 @@ init_geoms() {
     _point_primitive = qpgeom;
     _vdata = new qpGeomVertexData
       ("particles", qpGeomVertexFormat::get_v3cp(),
-       qpGeomUsageHint::UH_dynamic);
+       qpGeom::UH_dynamic);
     qpgeom->set_vertex_data(_vdata);
-    _points = new qpGeomPoints(qpGeomUsageHint::UH_dynamic);
+    _points = new qpGeomPoints(qpGeom::UH_dynamic);
     qpgeom->add_primitive(_points);
 
   } else {

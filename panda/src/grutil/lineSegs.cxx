@@ -161,12 +161,12 @@ create(GeomNode *previous, bool dynamic) {
     if (use_qpgeom) {
       PT(qpGeomVertexData) vdata = new qpGeomVertexData
         ("lineSegs", qpGeomVertexFormat::get_v3cp(),
-         dynamic ? qpGeomUsageHint::UH_dynamic : qpGeomUsageHint::UH_static);
+         dynamic ? qpGeom::UH_dynamic : qpGeom::UH_static);
       qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
       qpGeomVertexWriter color(vdata, InternalName::get_color());
 
-      PT(qpGeomLinestrips) lines = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
-      PT(qpGeomPoints) points = new qpGeomPoints(qpGeomUsageHint::UH_static);
+      PT(qpGeomLinestrips) lines = new qpGeomLinestrips(qpGeom::UH_static);
+      PT(qpGeomPoints) points = new qpGeomPoints(qpGeom::UH_static);
 
       int v = 0;
       LineList::const_iterator ll;

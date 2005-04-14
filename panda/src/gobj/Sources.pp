@@ -19,6 +19,7 @@
     geomQuad.h geomSphere.h geomSprite.I geomSprite.h geomTri.h  \
     geomTrifan.h geomTristrip.h  \
     qpgeom.h qpgeom.I \
+    qpgeomEnums.h \
     qpgeomMunger.h qpgeomMunger.I \
     qpgeomPrimitive.h qpgeomPrimitive.I \
     qpgeomTriangles.h \
@@ -27,7 +28,6 @@
     qpgeomLines.h \
     qpgeomLinestrips.h \
     qpgeomPoints.h \
-    qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomCacheEntry.h qpgeomCacheEntry.I \
@@ -71,6 +71,7 @@
     geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
     geomTrifan.cxx geomTristrip.cxx \
     qpgeom.cxx \
+    qpgeomEnums.cxx \
     qpgeomMunger.cxx \
     qpgeomPrimitive.cxx \
     qpgeomTriangles.cxx \
@@ -120,6 +121,7 @@
     geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
     geomprimitives.h \
     qpgeom.h qpgeom.I \
+    qpgeomEnums.h \
     qpgeomMunger.h qpgeomMunger.I \
     qpgeomPrimitive.h qpgeomPrimitive.I \
     qpgeomTriangles.h \
@@ -128,7 +130,6 @@
     qpgeomLines.h \
     qpgeomLinestrips.h \
     qpgeomPoints.h \
-    qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomCacheEntry.h qpgeomCacheEntry.I \

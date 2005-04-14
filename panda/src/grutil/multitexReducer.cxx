@@ -832,7 +832,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
         vdata = vdata->replace_column
           (InternalName::get_texcoord(), column->get_num_components(),
            column->get_numeric_type(), column->get_contents(),
-           qpGeomUsageHint::UH_stream, true);
+           qpGeom::UH_stream, true);
         geom->set_vertex_data(vdata);
 
         qpGeomVertexReader from(vdata, texcoord_name);

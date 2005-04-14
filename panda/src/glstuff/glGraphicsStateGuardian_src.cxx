@@ -2195,7 +2195,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   const qpGeomVertexAnimationSpec &animation = 
     vertex_data->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware);
+  bool hardware_animation = (animation.get_animation_type() == qpGeom::AT_hardware);
   if (hardware_animation) {
     // Set up the transform matrices for vertex blending.
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
@@ -2289,8 +2289,8 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GLP(LoadIdentity)();
   }
 
-  if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
-      _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
+  if (geom->get_usage_hint() == qpGeom::UH_static && 
+      _vertex_data->get_usage_hint() == qpGeom::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
@@ -2342,7 +2342,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   const qpGeomVertexArrayData *array_data;
   int num_values;
-  qpGeomVertexColumn::NumericType numeric_type;
+  qpGeom::NumericType numeric_type;
   int start;
   int stride;
 
@@ -2366,7 +2366,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
                                    start, stride) &&
-      numeric_type != qpGeomVertexColumn::NT_packed_dabc) {
+      numeric_type != qpGeom::NT_packed_dabc) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
                       stride, client_pointer + start);
@@ -2494,10 +2494,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
   const unsigned short *client_pointer = setup_primitive(primitive);
 
   if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
-    GLCAT.debug()
-      << "Connected triangle strips\n";
-    primitive->write(GLCAT.debug(), 2);
-
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
@@ -2508,10 +2504,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
                          GL_UNSIGNED_SHORT, client_pointer);
 
   } else {
-    GLCAT.debug()
-      << "Separate triangle strips\n";
-    primitive->write(GLCAT.debug(), 2);
-
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();
@@ -2927,7 +2919,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
     return data->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == qpGeomUsageHint::UH_client) {
+      data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -3058,7 +3050,7 @@ setup_primitive(const qpGeomPrimitive *data) {
     return data->get_flat_last_vertices();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == qpGeomUsageHint::UH_client) {
+      data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -4723,17 +4715,17 @@ upload_texture_image(CLP(TextureContext) *gtc,
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_numeric_type(qpGeomVertexColumn::NumericType numeric_type) {
+get_numeric_type(qpGeom::NumericType numeric_type) {
   switch (numeric_type) {
-  case qpGeomVertexColumn::NT_uint16:
+  case qpGeom::NT_uint16:
     return GL_UNSIGNED_SHORT;
 
-  case qpGeomVertexColumn::NT_uint8:
-  case qpGeomVertexColumn::NT_packed_dcba:
-  case qpGeomVertexColumn::NT_packed_dabc:
+  case qpGeom::NT_uint8:
+  case qpGeom::NT_packed_dcba:
+  case qpGeom::NT_packed_dabc:
     return GL_UNSIGNED_BYTE;
     
-  case qpGeomVertexColumn::NT_float32:
+  case qpGeom::NT_float32:
     return GL_FLOAT;
   }
 
@@ -5191,18 +5183,19 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
 //  Description: Maps from UsageHint to the GL symbol.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_usage(qpGeomUsageHint::UsageHint usage_hint) {
+get_usage(qpGeom::UsageHint usage_hint) {
   switch (usage_hint) {
-  case qpGeomUsageHint::UH_stream:
+  case qpGeom::UH_stream:
     return GL_STREAM_DRAW;
 
-  case qpGeomUsageHint::UH_static:
+  case qpGeom::UH_static:
+  case qpGeom::UH_unspecified:
     return GL_STATIC_DRAW;
 
-  case qpGeomUsageHint::UH_dynamic:
+  case qpGeom::UH_dynamic:
     return GL_DYNAMIC_DRAW;
 
-  case qpGeomUsageHint::UH_client:
+  case qpGeom::UH_client:
     break;
   }
 

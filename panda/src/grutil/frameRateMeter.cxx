@@ -47,6 +47,7 @@ FrameRateMeter(const string &name) : TextNode(name) {
                 LMatrix4f::translate_mat(LVector3f::rfu(1.0f - frame_rate_meter_side_margins * frame_rate_meter_scale, 0.0f, 1.0f - frame_rate_meter_scale)));
   set_card_color(0.0f, 0.0f, 0.0f, 0.4f);
   set_card_as_margin(frame_rate_meter_side_margins, frame_rate_meter_side_margins, 0.1f, 0.0f);
+  set_usage_hint(qpGeom::UH_client);
 
   do_update();
 }

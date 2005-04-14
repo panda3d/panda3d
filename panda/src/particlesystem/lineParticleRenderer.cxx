@@ -143,9 +143,9 @@ init_geoms() {
     _line_primitive = qpgeom;
     _vdata = new qpGeomVertexData
       ("particles", qpGeomVertexFormat::get_v3cp(),
-       qpGeomUsageHint::UH_dynamic);
+       qpGeom::UH_dynamic);
     qpgeom->set_vertex_data(_vdata);
-    _lines = new qpGeomLines(qpGeomUsageHint::UH_dynamic);
+    _lines = new qpGeomLines(qpGeom::UH_dynamic);
     qpgeom->add_primitive(_lines);
 
   } else {

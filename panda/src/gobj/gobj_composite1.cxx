@@ -12,6 +12,7 @@
 #include "geomTrifan.cxx"
 #include "geomTristrip.cxx"
 #include "qpgeom.cxx"
+#include "qpgeomEnums.cxx"
 #include "qpgeomMunger.cxx"
 #include "qpgeomPrimitive.cxx"
 #include "qpgeomTriangles.cxx"

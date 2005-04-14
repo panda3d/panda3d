@@ -21,14 +21,13 @@
 
 #include "pandabase.h"
 
-#include "geom.h"
 #include "luse.h"
+#include "qpgeom.h"
 #include "qpgeomVertexData.h"
 
 class GeomNode;
 class RenderState;
 class InternalName;
-class qpGeom;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
@@ -51,6 +50,9 @@ public:
   GeomTransformer();
   GeomTransformer(const GeomTransformer &copy);
   ~GeomTransformer();
+
+  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
+  INLINE qpGeom::UsageHint get_usage_hint() const;
 
   INLINE int get_max_collect_vertices() const;
   INLINE void set_max_collect_vertices(int max_collect_vertices);
@@ -77,6 +79,7 @@ public:
   int collect_vertex_data(GeomNode *node, int collect_bits);
 
 private:
+  qpGeom::UsageHint _usage_hint;
   int _max_collect_vertices;
 
   class qpSourceVertices {
@@ -178,7 +181,7 @@ private:
 
     string _name;
     CPT(qpGeomVertexFormat) _format;
-    qpGeomUsageHint::UsageHint _usage_hint;
+    qpGeom::UsageHint _usage_hint;
   };
   typedef pmap< NewCollectedKey, PT(qpGeomVertexData) > NewCollectedData;
   NewCollectedData _new_collected_data;

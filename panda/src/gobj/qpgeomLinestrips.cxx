@@ -30,7 +30,7 @@ TypeHandle qpGeomLinestrips::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomLinestrips::
-qpGeomLinestrips(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomLinestrips(qpGeomLinestrips::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
@@ -193,7 +193,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomLinestrips::
 make_from_bam(const FactoryParams &params) {
-  qpGeomLinestrips *object = new qpGeomLinestrips(qpGeomUsageHint::UH_client);
+  qpGeomLinestrips *object = new qpGeomLinestrips(UH_unspecified);
   DatagramIterator scan;
   BamReader *manager;
 

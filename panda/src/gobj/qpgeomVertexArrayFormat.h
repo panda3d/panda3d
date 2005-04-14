@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexColumn.h"
+#include "qpgeomEnums.h"
 #include "indirectCompareTo.h"
 #include "pvector.h"
 #include "pmap.h"
@@ -53,40 +54,30 @@ class BamReader;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexArrayFormat : public TypedWritableReferenceCount {
+class EXPCL_PANDA qpGeomVertexArrayFormat : public TypedWritableReferenceCount, public qpGeomEnums {
 PUBLISHED:
   qpGeomVertexArrayFormat();
   qpGeomVertexArrayFormat(const qpGeomVertexArrayFormat &copy);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexColumn::NumericType numeric_type0,
-                          qpGeomVertexColumn::Contents contents0);
+                          NumericType numeric_type0, Contents contents0);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexColumn::NumericType numeric_type0,
-                          qpGeomVertexColumn::Contents contents0,
+                          NumericType numeric_type0, Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexColumn::NumericType numeric_type1,
-                          qpGeomVertexColumn::Contents contents1);
+                          NumericType numeric_type1, Contents contents1);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexColumn::NumericType numeric_type0,
-                          qpGeomVertexColumn::Contents contents0,
+                          NumericType numeric_type0, Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexColumn::NumericType numeric_type1,
-                          qpGeomVertexColumn::Contents contents1,
+                          NumericType numeric_type1, Contents contents1,
                           const InternalName *name2, int num_components2,
-                          qpGeomVertexColumn::NumericType numeric_type2,
-                          qpGeomVertexColumn::Contents contents2);
+                          NumericType numeric_type2, Contents contents2);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexColumn::NumericType numeric_type0,
-                          qpGeomVertexColumn::Contents contents0,
+                          NumericType numeric_type0, Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexColumn::NumericType numeric_type1,
-                          qpGeomVertexColumn::Contents contents1,
+                          NumericType numeric_type1, Contents contents1,
                           const InternalName *name2, int num_components2,
-                          qpGeomVertexColumn::NumericType numeric_type2,
-                          qpGeomVertexColumn::Contents contents2,
+                          NumericType numeric_type2, Contents contents2,
                           const InternalName *name3, int num_components3,
-                          qpGeomVertexColumn::NumericType numeric_type3,
-                          qpGeomVertexColumn::Contents contents3);
+                          NumericType numeric_type3, Contents contents3);
   void operator = (const qpGeomVertexArrayFormat &copy);
   ~qpGeomVertexArrayFormat();
 
@@ -100,8 +91,7 @@ PUBLISHED:
   INLINE int get_pad_to() const;
 
   int add_column(const InternalName *name, int num_components,
-                 qpGeomVertexColumn::NumericType numeric_type,
-                 qpGeomVertexColumn::Contents contents,
+                 NumericType numeric_type, Contents contents,
                  int start = -1);
   int add_column(const qpGeomVertexColumn &column);
   void remove_column(const InternalName *name);

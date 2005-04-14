@@ -23,6 +23,7 @@
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexAnimationSpec.h"
 #include "qpgeomVertexArrayFormat.h"
+#include "qpgeomEnums.h"
 #include "internalName.h"
 #include "luse.h"
 #include "pointerTo.h"
@@ -64,7 +65,7 @@ class qpGeomMunger;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexFormat : public TypedWritableReferenceCount {
+class EXPCL_PANDA qpGeomVertexFormat : public TypedWritableReferenceCount, public qpGeomEnums {
 PUBLISHED:
   qpGeomVertexFormat();
   qpGeomVertexFormat(const qpGeomVertexArrayFormat *array_format);

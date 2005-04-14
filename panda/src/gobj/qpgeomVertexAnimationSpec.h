@@ -20,6 +20,7 @@
 #define qpGEOMVERTEXANIMATIONSPEC_H
 
 #include "pandabase.h"
+#include "qpgeomEnums.h"
 
 class BamWriter;
 class BamReader;
@@ -44,17 +45,11 @@ class DatagramIterator;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexAnimationSpec {
+class EXPCL_PANDA qpGeomVertexAnimationSpec : public qpGeomEnums {
 PUBLISHED:
   INLINE qpGeomVertexAnimationSpec();
   INLINE qpGeomVertexAnimationSpec(const qpGeomVertexAnimationSpec &other);
   INLINE void operator = (const qpGeomVertexAnimationSpec &other);
-
-  enum AnimationType {
-    AT_none,     // No vertex animation.
-    AT_panda,    // Vertex animation calculated on the CPU by Panda.
-    AT_hardware, // Hardware-accelerated animation on the graphics card.
-  };
 
   INLINE AnimationType get_animation_type() const;
 

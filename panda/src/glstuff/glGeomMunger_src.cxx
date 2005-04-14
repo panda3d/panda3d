@@ -51,7 +51,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   const qpGeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (qpGeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == qpGeomVertexColumn::NT_packed_dabc) {
+      color_type->get_numeric_type() == NT_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
@@ -60,11 +60,11 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
     // Replace the existing color format with the new format.
     new_array_format->add_column
-      (InternalName::get_color(), 4, qpGeomVertexColumn::NT_uint8,
-       qpGeomVertexColumn::C_color, color_type->get_start());
+      (InternalName::get_color(), 4, NT_uint8,
+       C_color, color_type->get_start());
   }
 
-  if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware &&
+  if (animation.get_animation_type() == AT_hardware &&
       animation.get_num_transforms() > 0) {
     // If we want hardware animation, we need to reserve space for the
     // blend weights.
@@ -72,7 +72,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
     new_array_format->add_column
       (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_other);
+       NT_float32, C_other);
 
     if (animation.get_indexed_transforms()) {
       // Also, if we'll be indexing into the transform palette, reserve
@@ -83,7 +83,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
       // the maximum palette index, presumably in the AnimationSpec.
       new_array_format->add_column
         (InternalName::get_transform_index(), animation.get_num_transforms(),
-         qpGeomVertexColumn::NT_uint8, qpGeomVertexColumn::C_index);
+         NT_uint8, C_index);
     }                                    
 
     // Make sure the old weights and indices are removed, just in

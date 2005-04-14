@@ -25,7 +25,7 @@
 #include "qpgeomTextGlyph.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexFormat.h"
-#include "qpgeomTristrips.h"
+#include "qpgeomTriangles.h"
 #include "qpgeomVertexWriter.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
@@ -122,11 +122,13 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   float uv_left = (float)(_x - poly_margin) / _page->get_x_size();
   float uv_bottom = 1.0f - (float)(_y + poly_margin + tex_y_size) / _page->get_y_size();
   float uv_right = (float)(_x + poly_margin + tex_x_size) / _page->get_x_size();
-  // Create a corresponding tristrip.
+  // Create a corresponding triangle pair.  We use a pair of indexed
+  // triangles rther than a single triangle strip, to avoid the bad
+  // vertex duplication behavior with lots of two-triangle strips.
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       (string(), qpGeomVertexFormat::get_v3t2(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
@@ -140,13 +142,19 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
     texcoord.add_data2f(uv_right, uv_top);
     texcoord.add_data2f(uv_right, uv_bottom);
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
-    strip->add_consecutive_vertices(0, 4);
-    strip->close_primitive();
+    PT(qpGeomTriangles) tris = new qpGeomTriangles(qpGeom::UH_static);
+    tris->add_vertex(0);
+    tris->add_vertex(1);
+    tris->add_vertex(2);
+    tris->close_primitive();
+    tris->add_vertex(2);
+    tris->add_vertex(1);
+    tris->add_vertex(3);
+    tris->close_primitive();
     
     PT(qpGeom) geom = new qpGeomTextGlyph(this);
     geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
+    geom->add_primitive(tris);
     
     _geom = geom;
     

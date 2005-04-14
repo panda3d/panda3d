@@ -73,7 +73,7 @@ operator = (const TextGlyph &copy) {
 //  Description: Returns a Geom that renders the particular glyph.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(Geom) TextGlyph::
-get_geom() const {
+get_geom(qpGeom::UsageHint usage_hint) const {
   if (_geom == (Geom *)NULL) {
     return NULL;
   }
@@ -82,7 +82,15 @@ get_geom() const {
   // to modify its vertices without fear of stomping on other copies;
   // it is also critical for the DynamicTextGlyph, which depends on
   // this behavior to properly count references to this glyph.
-  return _geom->make_copy();
+  PT(Geom) new_geom = _geom->make_copy();
+  if (new_geom->is_of_type(qpGeom::get_class_type())) {
+    qpGeom *qpgeom = DCAST(qpGeom, new_geom);
+    qpgeom->set_usage_hint(usage_hint);
+    if (qpgeom->get_vertex_data()->get_usage_hint() != usage_hint) {
+      qpgeom->modify_vertex_data()->set_usage_hint(usage_hint);
+    }
+  }
+  return new_geom;
 }
 
 ////////////////////////////////////////////////////////////////////

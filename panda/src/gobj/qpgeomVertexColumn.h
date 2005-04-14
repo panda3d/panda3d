@@ -20,6 +20,7 @@
 #define qpGEOMVERTEXCOLUMN_H
 
 #include "pandabase.h"
+#include "qpgeomEnums.h"
 #include "internalName.h"
 #include "pointerTo.h"
 
@@ -38,27 +39,8 @@ class DatagramIterator;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexColumn {
+class EXPCL_PANDA qpGeomVertexColumn : public qpGeomEnums {
 PUBLISHED:
-  enum NumericType {
-    NT_uint8,        // An integer 0..255
-    NT_uint16,       // An integer 0..65535
-    NT_packed_dcba,  // DirectX style, four byte values packed in a uint32
-    NT_packed_dabc,  // DirectX packed color order (ARGB)
-    NT_float32,      // A floating-point number
-  };
-
-  enum Contents {
-    C_other,        // Arbitrary meaning, leave it alone
-    C_point,        // A point in 3-space or 4-space
-    C_clip_point,   // A point pre-transformed into clip coordinates
-    C_vector,       // A surface normal, tangent, or binormal
-    C_texcoord,     // A texture coordinate
-    C_color,        // 3- or 4-component color, ordered R, G, B, [A]
-    C_index,        // An index value into some other table
-    C_morph_delta,  // A delta from some base value, defining a blend shape
-  };
-
 private:
   INLINE qpGeomVertexColumn();
 PUBLISHED:
@@ -114,8 +96,6 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexColumn &obj);
-ostream &operator << (ostream &out, qpGeomVertexColumn::NumericType numeric_type);
-ostream &operator << (ostream &out, qpGeomVertexColumn::Contents contents);
 
 #include "qpgeomVertexColumn.I"
 

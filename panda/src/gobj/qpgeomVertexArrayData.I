@@ -32,11 +32,12 @@ get_array_format() const {
 //       Access: Published
 //  Description: Returns the usage hint that describes to the
 //               rendering backend how often the vertex data will be
-//               modified and/or rendered.  See GeomUsageHint.
+//               modified and/or rendered.  See geomEnums.h.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomUsageHint::UsageHint qpGeomVertexArrayData::
+INLINE qpGeomVertexArrayData::UsageHint qpGeomVertexArrayData::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +119,9 @@ get_data() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexArrayData::CData::
-CData() {
+CData() :
+  _usage_hint(UH_unspecified)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,6 +131,7 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexArrayData::CData::
 CData(const qpGeomVertexArrayData::CData &copy) :
+  _usage_hint(copy._usage_hint),
   _data(copy._data),
   _modified(copy._modified)
 {

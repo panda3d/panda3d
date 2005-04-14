@@ -820,7 +820,7 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("collision", qpGeomVertexFormat::get_v3(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
     Points::const_iterator pi;
@@ -828,11 +828,11 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
       vertex.add_data3f(to_3d((*pi)._p, to_3d_mat));
     }
     
-    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeomUsageHint::UH_static);
+    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeom::UH_static);
     body->add_consecutive_vertices(0, points.size());
     body->close_primitive();
 
-    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeom::UH_static);
     border->add_consecutive_vertices(0, points.size());
     border->add_vertex(0);
     border->close_primitive();

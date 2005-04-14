@@ -55,14 +55,15 @@ qpGeomVertexData() :
 qpGeomVertexData::
 qpGeomVertexData(const string &name,
                  const qpGeomVertexFormat *format,
-                 qpGeomUsageHint::UsageHint usage_hint) :
+                 qpGeomVertexData::UsageHint usage_hint) :
   _name(name),
   _format(format),
-  _usage_hint(usage_hint),
   _app_char_pcollector(PStatCollector(_app_animation_pcollector, name), "Vertices"),
   _cull_char_pcollector(PStatCollector(_cull_animation_pcollector, name), "Vertices")
 {
   nassertv(_format->is_registered());
+
+  set_usage_hint(usage_hint);
 
   // Create some empty arrays as required by the format.
   CDWriter cdata(_cycler);
@@ -85,7 +86,6 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
   TypedWritableReferenceCount(copy),
   _name(copy._name),
   _format(copy._format),
-  _usage_hint(copy._usage_hint),
   _cycler(copy._cycler),
   _app_char_pcollector(copy._app_char_pcollector),
   _cull_char_pcollector(copy._cull_char_pcollector)
@@ -102,13 +102,13 @@ operator = (const qpGeomVertexData &copy) {
   TypedWritableReferenceCount::operator = (copy);
   _name = copy._name;
   _format = copy._format;
-
-  // The assignment operator does not copy the usage_hint, which is
-  // not supposed to change over the lifetime of a GeomVertexData.
-
   _cycler = copy._cycler;
   _app_char_pcollector = copy._app_char_pcollector;
   _cull_char_pcollector = copy._cull_char_pcollector;
+
+  CDWriter cdata(_cycler);
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +118,31 @@ operator = (const qpGeomVertexData &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
 ~qpGeomVertexData() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for this vertex data, and
+//               for all of the arrays that share this data.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_usage_hint(qpGeomVertexData::UsageHint usage_hint) {
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
+
+  Arrays::iterator ai;
+  for (ai = cdata->_arrays.begin();
+       ai != cdata->_arrays.end();
+       ++ai) {
+    if ((*ai)->get_ref_count() > 1) {
+      (*ai) = new qpGeomVertexArrayData(*(*ai));
+    }
+    (*ai)->set_usage_hint(usage_hint);
+  }
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,6 +182,9 @@ clear_vertices() {
   for (ai = cdata->_arrays.begin();
        ai != cdata->_arrays.end();
        ++ai) {
+    if ((*ai)->get_ref_count() > 1) {
+      (*ai) = new qpGeomVertexArrayData(*(*ai));
+    }
     (*ai)->clear_vertices();
   }
   cdata->_modified = qpGeom::get_next_modified();
@@ -195,13 +223,14 @@ modify_array(int i) {
 //       Access: Published
 //  Description: Replaces the indicated vertex data array with
 //               a completely new array.  You should be careful that
-//               the new array has the same length as the old one,
-//               unless you know what you are doing.
+//               the new array has the same length and format as the
+//               old one, unless you know what you are doing.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 set_array(int i, const qpGeomVertexArrayData *array) {
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
+  nassertv(array->get_array_format() == cdata->_arrays[i]->get_array_format());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
@@ -448,7 +477,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
   const qpGeomVertexAnimationSpec &source_animation = source_format->get_animation();
   const qpGeomVertexAnimationSpec &dest_animation = dest_format->get_animation();
   if (source_animation != dest_animation) {
-    if (dest_animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware) {
+    if (dest_animation.get_animation_type() == AT_hardware) {
       // Convert Panda-style animation tables to hardware-style
       // animation tables.
       CPT(TransformBlendPalette) blend_palette = source.get_transform_blend_palette();
@@ -581,8 +610,8 @@ scale_color(const LVecBase4f &color_scale) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 scale_color(const LVecBase4f &color_scale, int num_components,
-            qpGeomVertexColumn::NumericType numeric_type,
-            qpGeomVertexColumn::Contents contents) const {
+            qpGeomVertexData::NumericType numeric_type,
+            qpGeomVertexData::Contents contents) const {
   int old_color_array = _format->get_array_with(InternalName::get_color());
   if (old_color_array == -1) {
     // Oops, no color anyway.
@@ -655,8 +684,8 @@ set_color(const Colorf &color) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 set_color(const Colorf &color, int num_components,
-          qpGeomVertexColumn::NumericType numeric_type,
-          qpGeomVertexColumn::Contents contents) const {
+          qpGeomVertexData::NumericType numeric_type,
+          qpGeomVertexData::Contents contents) const {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "Setting color for " << get_num_vertices() << " vertices to "
@@ -693,9 +722,9 @@ set_color(const Colorf &color, int num_components,
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) qpGeomVertexData::
 replace_column(const InternalName *name, int num_components,
-               qpGeomVertexColumn::NumericType numeric_type,
-               qpGeomVertexColumn::Contents contents,
-               qpGeomUsageHint::UsageHint usage_hint,
+               qpGeomVertexData::NumericType numeric_type,
+               qpGeomVertexData::Contents contents,
+               qpGeomVertexData::UsageHint usage_hint,
                bool keep_animation) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
 
@@ -732,7 +761,7 @@ replace_column(const InternalName *name, int num_components,
     gobj_cat.debug()
       << "Replacing data type " << *name << "; converting "
       << get_num_vertices() << " vertices from " 
-      << *_format << " to " << *new_format << "\n";
+      << *_format << " to " << *format << "\n";
   }
   
   PT(qpGeomVertexData) new_data = 
@@ -766,7 +795,7 @@ replace_column(const InternalName *name, int num_components,
     // For the new type array, we set up a temporary array that has
     // room for the right number of vertices.
     PT(qpGeomVertexArrayData) new_array = new qpGeomVertexArrayData
-      (new_format->get_array(j), get_usage_hint());
+      (format->get_array(j), get_usage_hint());
     new_array->set_num_vertices(get_num_vertices());
     new_data->set_array(j, new_array);
   }
@@ -823,7 +852,7 @@ bool qpGeomVertexData::
 get_array_info(const InternalName *name, 
                const qpGeomVertexArrayData *&array_data,
                int &num_values, 
-               qpGeomVertexColumn::NumericType &numeric_type, 
+               qpGeomVertexData::NumericType &numeric_type, 
                int &start, int &stride) const {
   int array_index;
   const qpGeomVertexColumn *column;
@@ -848,7 +877,7 @@ get_array_info(const InternalName *name,
 bool qpGeomVertexData::
 get_vertex_info(const qpGeomVertexArrayData *&array_data,
                 int &num_values, 
-                qpGeomVertexColumn::NumericType &numeric_type, 
+                qpGeomVertexData::NumericType &numeric_type, 
                 int &start, int &stride) const {
   int array_index = _format->get_vertex_array_index();
   if (array_index >= 0) {
@@ -874,7 +903,7 @@ get_vertex_info(const qpGeomVertexArrayData *&array_data,
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexData::
 get_normal_info(const qpGeomVertexArrayData *&array_data,
-                qpGeomVertexColumn::NumericType &numeric_type, 
+                qpGeomVertexData::NumericType &numeric_type, 
                 int &start, int &stride) const {
   int array_index = _format->get_normal_array_index();
   if (array_index >= 0) {
@@ -900,7 +929,7 @@ get_normal_info(const qpGeomVertexArrayData *&array_data,
 bool qpGeomVertexData::
 get_color_info(const qpGeomVertexArrayData *&array_data,
                 int &num_values, 
-                qpGeomVertexColumn::NumericType &numeric_type, 
+                qpGeomVertexData::NumericType &numeric_type, 
                 int &start, int &stride) const {
   int array_index = _format->get_color_array_index();
   if (array_index >= 0) {
@@ -927,8 +956,7 @@ CPT(qpGeomVertexData) qpGeomVertexData::
 do_animate_vertices(bool from_app) const {
   CDReader cdata(_cycler);
 
-  if (_format->get_animation().get_animation_type() !=
-      qpGeomVertexAnimationSpec::AT_panda) {
+  if (_format->get_animation().get_animation_type() != AT_panda) {
     return this;
   }
 
@@ -1095,23 +1123,23 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
     int num_values = column->get_num_values();
 
     switch (column->get_numeric_type()) {
-    case qpGeomVertexColumn::NT_packed_dcba:
-    case qpGeomVertexColumn::NT_packed_dabc:
-    case qpGeomVertexColumn::NT_uint8:
+    case NT_packed_dcba:
+    case NT_packed_dabc:
+    case NT_uint8:
       while (pointer < stop) {
         memset(pointer, 0xff, num_values);
         pointer += stride;
       }
       break;
 
-    case qpGeomVertexColumn::NT_uint16:
+    case NT_uint16:
       while (pointer < stop) {
         memset(pointer, 0xff, num_values * 2);
         pointer += stride;
       }
       break;
 
-    case qpGeomVertexColumn::NT_float32:
+    case NT_float32:
       while (pointer < stop) {
         PN_float32 *pi = (PN_float32 *)pointer;
         for (int i = 0; i < num_values; i++) {
@@ -1157,7 +1185,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
     CPT(qpGeomVertexFormat) animated_format = get_post_animated_format();
     cdata->_animated_vertices = 
       new qpGeomVertexData(get_name(), animated_format,
-                           min(get_usage_hint(), qpGeomUsageHint::UH_dynamic));
+                           min(get_usage_hint(), UH_dynamic));
   }
   PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
 
@@ -1326,7 +1354,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   dg.add_string(_name);
   manager->write_pointer(dg, _format);
-  dg.add_uint8(_usage_hint);
 
   manager->write_cdata(dg, _cycler);
 }
@@ -1431,7 +1458,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _name = scan.get_string();
   manager->read_pointer(scan);
-  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -1454,6 +1480,8 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint8(_usage_hint);
+
   dg.add_uint16(_arrays.size());
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
@@ -1499,6 +1527,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _usage_hint = (UsageHint)scan.get_uint8();
+
   size_t num_arrays = scan.get_uint16();
   _arrays.reserve(num_arrays);
   for (size_t i = 0; i < num_arrays; ++i) {

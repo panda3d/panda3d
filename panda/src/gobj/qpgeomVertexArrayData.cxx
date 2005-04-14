@@ -42,10 +42,11 @@ qpGeomVertexArrayData() {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData::
 qpGeomVertexArrayData(const qpGeomVertexArrayFormat *array_format,
-                      qpGeomUsageHint::UsageHint usage_hint) :
-  _array_format(array_format),
-  _usage_hint(usage_hint)
+                      qpGeomVertexArrayData::UsageHint usage_hint) :
+  _array_format(array_format)
 {
+  set_usage_hint(usage_hint);
+  nassertv(_array_format->is_registered());
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -55,21 +56,28 @@ qpGeomVertexArrayData(const qpGeomVertexArrayFormat *array_format,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData::
 qpGeomVertexArrayData(const qpGeomVertexArrayData &copy) :
+  TypedWritableReferenceCount(copy),
   _array_format(copy._array_format),
-  _usage_hint(copy._usage_hint),
   _cycler(copy._cycler)
 {
+  nassertv(_array_format->is_registered());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::Copy Assignment Operator
-//       Access: Private
-//  Description: Directly copying ArrayData objects by assignment is
-//               disallowed.
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::
-operator = (const qpGeomVertexArrayData &) {
-  nassertv(false);
+operator = (const qpGeomVertexArrayData &copy) {
+  TypedWritableReferenceCount::operator = (copy);
+  _array_format = copy._array_format;
+  _cycler = copy._cycler;
+
+  CDWriter cdata(_cycler);
+  cdata->_modified = qpGeom::get_next_modified();
+
+  nassertv(_array_format->is_registered());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,6 +144,19 @@ set_num_vertices(int n) {
   }
   
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for this array.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+set_usage_hint(qpGeomVertexArrayData::UsageHint usage_hint) {
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,7 +341,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
 
   manager->write_pointer(dg, _array_format);
-  dg.add_uint8(_usage_hint);
 
   manager->write_cdata(dg, _cycler);
 }
@@ -406,7 +426,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
   manager->read_pointer(scan);
-  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -429,6 +448,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint8(_usage_hint);
   WRITE_PTA(manager, dg, write_raw_data, _data);
 }
 
@@ -441,6 +461,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _usage_hint = (UsageHint)scan.get_uint8();
   READ_PTA(manager, scan, read_raw_data, _data);
 
   _modified = qpGeom::get_next_modified();

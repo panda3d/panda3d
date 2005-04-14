@@ -72,7 +72,7 @@
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexWriter {
+class EXPCL_PANDA qpGeomVertexWriter : public qpGeomEnums {
 PUBLISHED:
   INLINE qpGeomVertexWriter(qpGeomVertexData *vertex_data);
   INLINE qpGeomVertexWriter(qpGeomVertexData *vertex_data,

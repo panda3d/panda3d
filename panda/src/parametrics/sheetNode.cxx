@@ -280,13 +280,13 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
       format = qpGeomVertexFormat::get_v3n3t2();
     }
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("sheet", format, qpGeomUsageHint::UH_stream);
+      ("sheet", format, qpGeom::UH_stream);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter normal(vdata, InternalName::get_normal());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
     for (int ui = 0; ui < num_u_segments; ui++) {
       for (int uni = 0; uni < num_u_verts; uni++) {
         float u0 = (float)uni / (float)num_u_verts;

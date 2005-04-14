@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomLines : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomLines(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomLines(UsageHint usage_hint);
   qpGeomLines(const qpGeomLines &copy);
   virtual ~qpGeomLines();
 

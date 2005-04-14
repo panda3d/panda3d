@@ -27,7 +27,7 @@ EggRenderState(EggLoader &loader) :
   _state(RenderState::make_empty()),
   _hidden(false),
   _flat_shaded(false),
-  _primitive_type(qpGeomPrimitive::PT_none),
+  _primitive_type(qpGeom::PT_none),
   _loader(loader)
 {
 }

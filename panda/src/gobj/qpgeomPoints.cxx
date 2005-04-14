@@ -29,7 +29,7 @@ TypeHandle qpGeomPoints::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomPoints::
-qpGeomPoints(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomPoints(qpGeomPoints::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
@@ -137,7 +137,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomPoints::
 make_from_bam(const FactoryParams &params) {
-  qpGeomPoints *object = new qpGeomPoints(qpGeomUsageHint::UH_client);
+  qpGeomPoints *object = new qpGeomPoints(UH_unspecified);
   DatagramIterator scan;
   BamReader *manager;
 

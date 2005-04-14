@@ -81,8 +81,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
             // We have to add a color column, which means we have to
             // re-munge.
             animated_vertices = animated_vertices->set_color
-              (flash_color, 1, qpGeomVertexColumn::NT_packed_dabc,
-               qpGeomVertexColumn::C_color);
+              (flash_color, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
             animated_vertices = munger->munge_data(animated_vertices);
           }
           _state = _state->remove_attrib(TextureAttrib::get_class_type());
@@ -172,8 +171,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
   PT(qpGeomVertexArrayFormat) new_array_format =
     new qpGeomVertexArrayFormat(InternalName::get_vertex(), 4, 
-                                qpGeomVertexColumn::NT_float32,
-                                qpGeomVertexColumn::C_clip_point);
+                                qpGeom::NT_float32,
+                                qpGeom::C_clip_point);
   if (has_normal) {
     const qpGeomVertexColumn *c = normal.get_column();
     new_array_format->add_column
@@ -189,8 +188,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
   if (sprite_texcoord) {
     new_array_format->add_column
       (InternalName::get_texcoord(), 2,
-       qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_texcoord);
+       qpGeom::NT_float32,
+       qpGeom::C_texcoord);
 
   } else if (has_texcoord) {
     const qpGeomVertexColumn *c = texcoord.get_column();
@@ -203,7 +202,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
     qpGeomVertexFormat::register_format(new_array_format);
 
   PT(qpGeomVertexData) new_data = new qpGeomVertexData
-    (_munged_data->get_name(), new_format, qpGeomUsageHint::UH_client);
+    (_munged_data->get_name(), new_format, qpGeom::UH_client);
 
   qpGeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
   qpGeomVertexWriter new_normal(new_data, InternalName::get_normal());
@@ -289,7 +288,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
     // generally faster on PC hardware (otherwise, we'd have to nearly
     // double the vertices to stitch all the little triangle strips
     // together).
-    PT(qpGeomPrimitive) new_primitive = new qpGeomTriangles(qpGeomUsageHint::UH_client);
+    PT(qpGeomPrimitive) new_primitive = new qpGeomTriangles(qpGeom::UH_client);
 
     for (vi = vertices; vi != vertices_end; ++vi) {
       // The point in eye coordinates.

@@ -35,8 +35,8 @@ TypeHandle StandardMunger::_type_handle;
 StandardMunger::
 StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
-               qpGeomVertexColumn::NumericType numeric_type,
-               qpGeomVertexColumn::Contents contents) :
+               StandardMunger::NumericType numeric_type,
+               StandardMunger::Contents contents) :
   qpGeomMunger(gsg, state),
   _num_components(num_components),
   _numeric_type(numeric_type),
@@ -90,7 +90,7 @@ munge_data_impl(const qpGeomVertexData *data) {
 
   qpGeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
   if (hardware_animated_vertices &&
-      animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_panda &&
+      animation.get_animation_type() == AT_panda &&
       new_data->get_slider_table() == (SliderTable *)NULL) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendPalette *palette = new_data->get_transform_blend_palette();

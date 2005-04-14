@@ -394,10 +394,10 @@ fill_viz_geom() {
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("collision", qpGeomVertexFormat::get_v3(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     // Generate the first endcap.
     static const int num_slices = 8;
     static const int num_rings = 4;

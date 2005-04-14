@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomTristrips : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTristrips(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomTristrips(UsageHint usage_hint);
   qpGeomTristrips(const qpGeomTristrips &copy);
   virtual ~qpGeomTristrips();
 

@@ -401,7 +401,7 @@ inc_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int value) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     return (float)value / 255.0f;
   } else {
     return (float)value;
@@ -416,7 +416,7 @@ maybe_scale_color(unsigned int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _v2.set((float)a / 255.0f,
             (float)b / 255.0f);
   } else {    
@@ -432,7 +432,7 @@ maybe_scale_color(unsigned int a, unsigned int b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _v3.set((float)a / 255.0f,
             (float)b / 255.0f,
             (float)c / 255.0f);
@@ -450,7 +450,7 @@ maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b, unsigned int c,
                   unsigned int d) {
-  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
+  if (_column->get_contents() == C_color) {
     _v4.set((float)a / 255.0f,
             (float)b / 255.0f,
             (float)c / 255.0f,

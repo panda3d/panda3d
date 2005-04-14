@@ -18,6 +18,32 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::set_usage_hint
+//       Access: Published
+//  Description: Specifies the ceiling UsageHint that will be applied
+//               to transformed geometry.  If the source geometry's
+//               usage hint is greater (more static) than this, it
+//               will be reduced to this level.  If the source
+//               geometry's usage hit is less (more dynamic) than
+//               this, it will be preserved at its current level.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomTransformer::
+set_usage_hint(qpGeom::UsageHint usage_hint) {
+  _usage_hint = usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::get_usage_hint
+//       Access: Published
+//  Description: Returns the UsageHint that will be applied to
+//               generated geometry.  See set_usage_hint().
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::UsageHint GeomTransformer::
+get_usage_hint() const {
+  return _usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::get_max_collect_vertices
 //       Access: Public
 //  Description: Returns the maximum number of vertices that may be

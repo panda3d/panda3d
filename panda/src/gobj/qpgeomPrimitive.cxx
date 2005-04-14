@@ -38,9 +38,8 @@ PStatCollector qpGeomPrimitive::_rotate_pcollector("Draw:Rotate");
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomPrimitive::
-qpGeomPrimitive(qpGeomUsageHint::UsageHint usage_hint) :
-  _usage_hint(usage_hint)
-{
+qpGeomPrimitive(qpGeomPrimitive::UsageHint usage_hint) {
+  set_usage_hint(usage_hint);
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +50,6 @@ qpGeomPrimitive(qpGeomUsageHint::UsageHint usage_hint) :
 qpGeomPrimitive::
 qpGeomPrimitive(const qpGeomPrimitive &copy) :
   TypedWritableReferenceCount(copy),
-  _usage_hint(copy._usage_hint),
   _cycler(copy._cycler)
 {
 }
@@ -1026,8 +1024,6 @@ void qpGeomPrimitive::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
-  dg.add_uint8(_usage_hint);
-
   manager->write_cdata(dg, _cycler);
 }
 
@@ -1041,8 +1037,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void qpGeomPrimitive::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
-
-  _usage_hint = (qpGeomUsageHint::UsageHint)scan.get_uint8();
 
   manager->read_cdata(scan, _cycler);
 }
@@ -1105,6 +1099,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint8(_usage_hint);
   dg.add_uint8(_shade_model);
 
   WRITE_PTA(manager, dg, IPD_ushort::write_datagram, _vertices);
@@ -1120,6 +1115,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  _usage_hint = (UsageHint)scan.get_uint8();
   _shade_model = (ShadeModel)scan.get_uint8();
   
   READ_PTA(manager, scan, IPD_ushort::read_datagram, _vertices);

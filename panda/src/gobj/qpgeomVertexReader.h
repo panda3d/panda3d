@@ -59,7 +59,7 @@
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexReader {
+class EXPCL_PANDA qpGeomVertexReader : public qpGeomEnums {
 PUBLISHED:
   INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data);
   INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data,

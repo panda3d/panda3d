@@ -189,7 +189,7 @@ generate_flat_geom(const LVecBase4f &frame) {
     }
 
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeomUsageHint::UH_static);
+      ("PGFrame", format, qpGeom::UH_static);
 
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
@@ -217,7 +217,7 @@ generate_flat_geom(const LVecBase4f &frame) {
       texcoord.add_data2f(right, bottom);
     }
 
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     strip->add_next_vertices(4);
     strip->close_primitive();
 
@@ -390,12 +390,12 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   if (use_qpgeom) {
     CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::get_v3cp();
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeomUsageHint::UH_static);
+      ("PGFrame", format, qpGeom::UH_static);
 
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
 
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     // Tristrip 1.
     vertex.add_data3f(right, 0.0f, bottom);
     vertex.add_data3f(inner_right, 0.0f, inner_bottom);
@@ -433,7 +433,7 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
 
     strip->add_next_vertices(6);
     strip->close_primitive();
-    strip->set_shade_model(qpGeomPrimitive::SM_flat_last_vertex);
+    strip->set_shade_model(qpGeom::SM_flat_last_vertex);
 
     PT(qpGeom) geom = new qpGeom;
     geom->set_vertex_data(vdata);
@@ -656,12 +656,12 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   if (use_qpgeom) {
     CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::get_v3cp();
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeomUsageHint::UH_static);
+      ("PGFrame", format, qpGeom::UH_static);
 
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
 
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     // Tristrip 1.
     vertex.add_data3f(right, 0.0f, bottom);
     vertex.add_data3f(mid_right, 0.0f, mid_bottom);
@@ -725,7 +725,7 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
     strip->add_next_vertices(8);
     strip->close_primitive();
 
-    strip->set_shade_model(qpGeomPrimitive::SM_flat_last_vertex);
+    strip->set_shade_model(qpGeom::SM_flat_last_vertex);
 
     PT(qpGeom) geom = new qpGeom;
     geom->set_vertex_data(vdata);

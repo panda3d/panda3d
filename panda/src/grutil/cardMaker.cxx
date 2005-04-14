@@ -73,7 +73,7 @@ generate() {
     }
 
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("card", format, qpGeomUsageHint::UH_static);
+      ("card", format, qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter color(vdata, InternalName::get_color());
 
@@ -95,7 +95,7 @@ generate() {
       texcoord.add_data2f(_ur[0], _ll[1]);
     }
 
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     strip->add_next_vertices(4);
 
     PT(qpGeom) geom = new qpGeom;

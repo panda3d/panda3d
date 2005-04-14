@@ -83,7 +83,10 @@ isbreakpoint(unsigned int ch) {
 //               associated TextProperties.
 ////////////////////////////////////////////////////////////////////
 TextAssembler::
-TextAssembler(TextEncoder *encoder) : _encoder(encoder) {
+TextAssembler(TextEncoder *encoder) : 
+  _encoder(encoder),
+  _usage_hint(qpGeom::UH_static)
+{
   clear();
 }
 
@@ -833,14 +836,14 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
       float advance = 0.0f;
 
       if (first_glyph != (TextGlyph *)NULL) {
-        PT(Geom) first_char_geom = first_glyph->get_geom();
+        PT(Geom) first_char_geom = first_glyph->get_geom(_usage_hint);
         if (first_char_geom != (Geom *)NULL) {
           placement->add_piece(first_char_geom, first_glyph->get_state());
         }
         advance = first_glyph->get_advance() * advance_scale;
       }
       if (second_glyph != (TextGlyph *)NULL) {
-        PT(Geom) second_char_geom = second_glyph->get_geom();
+        PT(Geom) second_char_geom = second_glyph->get_geom(_usage_hint);
         if (second_char_geom != (Geom *)NULL) {
           second_char_geom->transform_vertices(LMatrix4f::translate_mat(advance, 0.0f, 0.0f));
           placement->add_piece(second_char_geom, second_glyph->get_state());
@@ -1007,7 +1010,7 @@ get_character_glyphs(int character, const TextProperties *properties,
   
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::tack_on_accent
-//       Access: Private, Static
+//       Access: Private
 //  Description: This is a cheesy attempt to tack on an accent to an
 //               ASCII letter for which we don't have the appropriate
 //               already-accented glyph in the font.
@@ -1017,7 +1020,7 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                const LPoint3f &min_vert, const LPoint3f &max_vert,
                const LPoint3f &centroid,
                const TextProperties *properties, 
-               TextAssembler::GlyphPlacement *placement) {
+               TextAssembler::GlyphPlacement *placement) const {
   switch (accent_type) {
   case UnicodeLatinMap::AT_grave:
     // We use the slash as the grave and acute accents.  ASCII does
@@ -1150,7 +1153,7 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::tack_on_accent
-//       Access: Private, Static
+//       Access: Private
 //  Description: Generates a cheesy accent mark above (or below, etc.)
 //               the character.  Returns true if successful, or false
 //               if the named accent character doesn't exist in the
@@ -1162,14 +1165,14 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
                const LPoint3f &min_vert, const LPoint3f &max_vert,
                const LPoint3f &centroid,
                const TextProperties *properties,
-               TextAssembler::GlyphPlacement *placement) {
+               TextAssembler::GlyphPlacement *placement) const {
   TextFont *font = properties->get_font();
   nassertr(font != (TextFont *)NULL, false);
   
   const TextGlyph *accent_glyph;
   if (font->get_glyph(accent_mark, accent_glyph) ||
       font->get_glyph(toupper(accent_mark), accent_glyph)) {
-    PT(Geom) accent_geom = accent_glyph->get_geom();
+    PT(Geom) accent_geom = accent_glyph->get_geom(_usage_hint);
     if (accent_geom != (Geom *)NULL) {
       LPoint3f min_accent, max_accent;
       bool found_any = false;

@@ -1998,19 +1998,19 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_point);
+     qpGeom::NT_float32, qpGeom::C_point);
 
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3, 
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_vector);
+       qpGeom::NT_float32, qpGeom::C_vector);
   }
 
   bool has_colors = vertex_pool->has_nonwhite_colors();
   if (has_colors) {
     array_format->add_column
       (InternalName::get_color(), 1, 
-       qpGeomVertexColumn::NT_packed_dabc, qpGeomVertexColumn::C_color);
+       qpGeom::NT_packed_dabc, qpGeom::C_color);
   }
 
   vector_string uv_names;
@@ -2024,7 +2024,7 @@ make_vertex_data(const EggRenderState *render_state,
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
     array_format->add_column
       (iname, 2,
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_texcoord);
+       qpGeom::NT_float32, qpGeom::C_texcoord);
   }
 
   PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
@@ -2050,7 +2050,7 @@ make_vertex_data(const EggRenderState *render_state,
     PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;
     anim_array_format->add_column
       (InternalName::get_transform_blend(), 1, 
-       qpGeomVertexColumn::NT_uint16, qpGeomVertexColumn::C_index);
+       qpGeom::NT_uint16, qpGeom::C_index);
     temp_format->add_array(anim_array_format);
 
     pset<string> slider_names;
@@ -2124,7 +2124,7 @@ make_vertex_data(const EggRenderState *render_state,
   // be changing--just the result of applying the animation is
   // dynamic.
   PT(qpGeomVertexData) vertex_data =
-    new qpGeomVertexData(name, format, qpGeomUsageHint::UH_static);
+    new qpGeomVertexData(name, format, qpGeom::UH_static);
 
   vertex_data->set_transform_blend_palette(blend_palette);
   if (slider_table != (SliderTable *)NULL) {
@@ -2266,7 +2266,7 @@ record_morph(qpGeomVertexArrayFormat *array_format,
   if (!array_format->has_column(delta_name)) {
     array_format->add_column
       (delta_name, num_components,
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_morph_delta);
+       qpGeom::NT_float32, qpGeom::C_morph_delta);
   }
 }
 
@@ -2282,24 +2282,24 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   PT(qpGeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {
-      primitive = new qpGeomTriangles(qpGeomUsageHint::UH_static);
+      primitive = new qpGeomTriangles(qpGeom::UH_static);
     }
 
   } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
-    primitive = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    primitive = new qpGeomTristrips(qpGeom::UH_static);
 
   } else if (egg_prim->is_of_type(EggTriangleFan::get_class_type())) {
-    primitive = new qpGeomTrifans(qpGeomUsageHint::UH_static);
+    primitive = new qpGeomTrifans(qpGeom::UH_static);
 
   } else if (egg_prim->is_of_type(EggLine::get_class_type())) {
     if (egg_prim->size() == 2) {
-      primitive = new qpGeomLines(qpGeomUsageHint::UH_static);
+      primitive = new qpGeomLines(qpGeom::UH_static);
     } else {
-      primitive = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+      primitive = new qpGeomLinestrips(qpGeom::UH_static);
     }
 
   } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
-    primitive = new qpGeomPoints(qpGeomUsageHint::UH_static);
+    primitive = new qpGeomPoints(qpGeom::UH_static);
   }
 
   if (primitive == (qpGeomPrimitive *)NULL) {

@@ -20,7 +20,7 @@
 #define qpGEOMPRIMITIVE_H
 
 #include "pandabase.h"
-#include "qpgeomUsageHint.h"
+#include "qpgeomEnums.h"
 #include "qpgeomCacheEntry.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
@@ -63,44 +63,18 @@ class FactoryParams;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomPrimitive : public TypedWritableReferenceCount {
+class EXPCL_PANDA qpGeomPrimitive : public TypedWritableReferenceCount, public qpGeomEnums {
 PUBLISHED:
-  qpGeomPrimitive(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomPrimitive(UsageHint usage_hint);
   qpGeomPrimitive(const qpGeomPrimitive &copy);
   virtual ~qpGeomPrimitive();
 
   virtual PT(qpGeomPrimitive) make_copy() const=0;
 
-  enum ShadeModel {
-    // SM_smooth: vertices within a single face have different
-    // colors/normals that should be smoothed across the face.  This
-    // primitive should be rendered with SmoothModelAttrib::M_smooth.
-    SM_smooth,  
-
-    // SM_uniform: all vertices across all faces have the same colors
-    // and normals.  It doesn't really matter which ShadeModelAttrib
-    // mode is used to render this primitive.
-    SM_uniform, 
-
-    // SM_flat_(first,last)_vertex: each face within the primitive
-    // might have a different color/normal than the other faces, but
-    // across a particular face there is only one color/normal.  Each
-    // face's color/normal is taken from the (first, last) vertex of
-    // the face.  This primitive should be rendered with
-    // SmoothModelAttrib::M_flat.
-    SM_flat_first_vertex,
-    SM_flat_last_vertex,
-  };
-
-  enum PrimitiveType {
-    PT_none,
-    PT_polygons,
-    PT_lines,
-    PT_points
-  };
-
   virtual PrimitiveType get_primitive_type() const=0;
-  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+
+  INLINE UsageHint get_usage_hint() const;
+  INLINE void set_usage_hint(UsageHint usage_hint);
 
   INLINE ShadeModel get_shade_model() const;
   INLINE void set_shade_model(ShadeModel shade_model);
@@ -202,8 +176,6 @@ protected:
   static PStatCollector _rotate_pcollector;
 
 private:
-  qpGeomUsageHint::UsageHint _usage_hint;
-
   // A GeomPrimitive keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Geoms that
@@ -231,6 +203,7 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
+    UsageHint _usage_hint;
     ShadeModel _shade_model;
     PTA_ushort _vertices;
     CPTA_ushort _rotated_vertices;

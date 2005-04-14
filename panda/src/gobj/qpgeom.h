@@ -29,7 +29,7 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomPrimitive.h"
 #include "qpgeomMunger.h"
-#include "qpgeomUsageHint.h"
+#include "qpgeomEnums.h"
 #include "qpgeomCacheEntry.h"
 #include "updateSeq.h"
 #include "pointerTo.h"
@@ -55,7 +55,8 @@ class EXPCL_PANDA qpGeom /* : public TypedWritableReferenceCount, public Bounded
 // pointer where a Geom should go, while we have both implementations
 // in the codebase.  We pick up some additional cruft from Geom that
 // we're not really using.
-  : public Geom
+  : public Geom,
+  public qpGeomEnums
 {
 PUBLISHED:
   qpGeom();
@@ -66,33 +67,10 @@ PUBLISHED:
   // Temporary.
   virtual Geom *make_copy() const;
 
-  enum PointRendering {
-    // If there are any points at all.
-    PR_point          = 0x0001,
+  INLINE PrimitiveType get_primitive_type() const;
+  INLINE UsageHint get_usage_hint() const;
+  void set_usage_hint(UsageHint usage_hint);
 
-    // If the points are all the same size, other than 1 pixel.
-    PR_uniform_size   = 0x0002,
-
-    // If the points have a per-vertex size designation.
-    PR_per_point_size = 0x0004,
-
-    // If the points' size is specified in camera units rather than
-    // screen pixels.
-    PR_perspective    = 0x0008,
-
-    // If the points have a non-square aspect ratio.
-    PR_aspect_ratio   = 0x0010,
-
-    // If the points are rotated off the orthonormal axis.
-    PR_rotate         = 0x0020,
-
-    // If the points require texture coordinates interpolated across
-    // their face, to render textures as sprites.
-    PR_sprite         = 0x0040,
-  };
-
-  INLINE qpGeomPrimitive::PrimitiveType get_primitive_type() const;
-  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
   INLINE int get_point_rendering() const;
 
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
@@ -181,9 +159,9 @@ private:
 
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
-    qpGeomPrimitive::PrimitiveType _primitive_type;
+    PrimitiveType _primitive_type;
     int _point_rendering;
-    qpGeomUsageHint::UsageHint _usage_hint;
+    UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
     Cache _cache;

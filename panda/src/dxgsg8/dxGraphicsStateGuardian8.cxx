@@ -2647,7 +2647,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   const qpGeomVertexAnimationSpec &animation = 
     vertex_data->get_format()->get_animation();
-  if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware) {
+  if (animation.get_animation_type() == qpGeom::AT_hardware) {
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
     case 1:

@@ -262,23 +262,23 @@ recompute_internal_bound() {
 CPT(qpGeomVertexFormat) RopeNode::
 get_format(bool support_normals) const {
   PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat
-    (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
-     qpGeomVertexColumn::C_point);
+    (InternalName::get_vertex(), 3, qpGeom::NT_float32,
+     qpGeom::C_point);
 
   if (support_normals && get_normal_mode() == NM_vertex) {
     array_format->add_column
-      (InternalName::get_normal(), 3, qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_vector);
+      (InternalName::get_normal(), 3, qpGeom::NT_float32,
+       qpGeom::C_vector);
   }
   if (get_use_vertex_color()) {
     array_format->add_column
-      (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
-       qpGeomVertexColumn::C_color);
+      (InternalName::get_color(), 1, qpGeom::NT_packed_dabc,
+       qpGeom::C_color);
   }
   if (get_uv_mode() != UV_none) {
     array_format->add_column
-      (InternalName::get_texcoord(), 2, qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_texcoord);
+      (InternalName::get_texcoord(), 2, qpGeom::NT_float32,
+       qpGeom::C_texcoord);
   }
 
   return qpGeomVertexFormat::register_format(array_format);
@@ -340,11 +340,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     // center strips.  Go back through and calculate the vertices on
     // either side.
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
+      ("rope", get_format(false), qpGeom::UH_stream);
 
     compute_thread_vertices(vdata, curve_segments);
     
-    PT(qpGeomLinestrips) strip = new qpGeomLinestrips(qpGeomUsageHint::UH_stream);
+    PT(qpGeomLinestrips) strip = new qpGeomLinestrips(qpGeom::UH_stream);
     CurveSegments::const_iterator si;
     for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
       const CurveSegment &segment = (*si);
@@ -432,12 +432,12 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     // center strips.  Go back through and calculate the vertices on
     // either side.
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
+      ("rope", get_format(false), qpGeom::UH_stream);
 
     compute_billboard_vertices(vdata, -get_tube_up(), 
                                curve_segments, result);
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
     CurveSegments::const_iterator si;
     for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
       const CurveSegment &segment = (*si);
@@ -530,12 +530,12 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     // center strips.  Go back through and calculate the vertices on
     // either side.
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("rope", get_format(false), qpGeomUsageHint::UH_stream);
+      ("rope", get_format(false), qpGeom::UH_stream);
 
     compute_billboard_vertices(vdata, camera_vec, 
                                curve_segments, result);
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
     CurveSegments::const_iterator si;
     for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
       const CurveSegment &segment = (*si);
@@ -623,12 +623,12 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("rope", get_format(true), qpGeomUsageHint::UH_stream);
+      ("rope", get_format(true), qpGeom::UH_stream);
 
     compute_tube_vertices(vdata,
                           num_verts_per_slice, curve_segments, result);
     
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
     // Finally, go through build up the index array, to tie all the
     // triangle strips together.
     int vi = 0;

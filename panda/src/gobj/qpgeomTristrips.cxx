@@ -30,7 +30,7 @@ TypeHandle qpGeomTristrips::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomTristrips::
-qpGeomTristrips(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomTristrips(qpGeomTristrips::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
@@ -296,7 +296,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomTristrips::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTristrips *object = new qpGeomTristrips(qpGeomUsageHint::UH_client);
+  qpGeomTristrips *object = new qpGeomTristrips(UH_unspecified);
   DatagramIterator scan;
   BamReader *manager;
 

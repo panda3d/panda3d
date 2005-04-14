@@ -28,6 +28,7 @@
 #include "textAssembler.h"
 #include "pandaNode.h"
 #include "luse.h"
+#include "qpgeom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextNode
@@ -168,6 +169,9 @@ PUBLISHED:
 
   INLINE void set_glyph_shift(float glyph_shift);
   INLINE void clear_glyph_shift();
+
+  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
+  INLINE qpGeom::UsageHint get_usage_hint() const;
 
   // These methods are inherited from TextEncoder, but we override
   // here so we can flag the TextNode as dirty when they have been

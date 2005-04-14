@@ -105,6 +105,30 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for all of the primitives
+//               on this Geom to the same value.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+set_usage_hint(qpGeom::UsageHint usage_hint) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
+
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    if ((*pi)->get_ref_count() > 1) {
+      (*pi) = (*pi)->make_copy();
+    }
+    (*pi)->set_usage_hint(usage_hint);
+  }
+
+  cdata->_modified = qpGeom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::modify_vertex_data
 //       Access: Published
 //  Description: Returns a modifiable pointer to the GeomVertexData,
@@ -163,6 +187,9 @@ offset_vertices(const qpGeomVertexData *data, int offset) {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    if ((*pi)->get_ref_count() > 1) {
+      (*pi) = (*pi)->make_copy();
+    }
     (*pi)->offset_vertices(offset);
 
 #ifndef NDEBUG
@@ -195,7 +222,7 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
 
   // All primitives within a particular Geom must have the same
   // fundamental primitive type (triangles, points, or lines).
-  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
+  nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
   if (cdata->_got_usage_hint &&
@@ -212,7 +239,7 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
     }
   }
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
-  qpGeomPrimitive::PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  PrimitiveType new_primitive_type = primitive->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
     reset_point_rendering(cdata);
@@ -237,11 +264,11 @@ add_primitive(const qpGeomPrimitive *primitive) {
 
   // All primitives within a particular Geom must have the same
   // fundamental primitive type (triangles, points, or lines).
-  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
+  nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
   cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
-  qpGeomPrimitive::PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  PrimitiveType new_primitive_type = primitive->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
     reset_point_rendering(cdata);
@@ -271,7 +298,7 @@ remove_primitive(int i) {
   }
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
-    cdata->_primitive_type = qpGeomPrimitive::PT_none;
+    cdata->_primitive_type = PT_none;
     reset_point_rendering(cdata);
   }
   cdata->_modified = qpGeom::get_next_modified();
@@ -290,7 +317,7 @@ clear_primitives() {
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_primitives.clear();
-  cdata->_primitive_type = qpGeomPrimitive::PT_none;
+  cdata->_primitive_type = PT_none;
   reset_point_rendering(cdata);
 }
 
@@ -674,7 +701,7 @@ check_will_be_valid(const qpGeomVertexData *vertex_data) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 reset_usage_hint(qpGeom::CDWriter &cdata) {
-  cdata->_usage_hint = qpGeomUsageHint::UH_static;
+  cdata->_usage_hint = UH_unspecified;
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
@@ -692,7 +719,7 @@ reset_usage_hint(qpGeom::CDWriter &cdata) {
 void qpGeom::
 reset_point_rendering(qpGeom::CDWriter &cdata) {
   cdata->_point_rendering = 0;
-  if (cdata->_primitive_type == qpGeomPrimitive::PT_points) {
+  if (cdata->_primitive_type == PT_points) {
     cdata->_point_rendering |= PR_point;
 
     if (cdata->_data->has_column(InternalName::get_size())) {
@@ -877,7 +904,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _primitives.push_back(NULL);
   }
 
-  _primitive_type = (qpGeomPrimitive::PrimitiveType)scan.get_uint8();
+  _primitive_type = (PrimitiveType)scan.get_uint8();
   _point_rendering = scan.get_uint16();
   _got_usage_hint = false;
   _modified = qpGeom::get_next_modified();

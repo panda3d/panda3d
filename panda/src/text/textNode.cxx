@@ -607,8 +607,7 @@ make_frame() {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3(),
-       qpGeomUsageHint::UH_static);
+      ("text", qpGeomVertexFormat::get_v3(), get_usage_hint());
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
     vertex.add_data3f(left, 0.0f, top);
@@ -616,7 +615,7 @@ make_frame() {
     vertex.add_data3f(right, 0.0f, bottom);
     vertex.add_data3f(right, 0.0f, top);
     
-    PT(qpGeomLinestrips) frame = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomLinestrips) frame = new qpGeomLinestrips(get_usage_hint());
     frame->add_consecutive_vertices(0, 4);
     frame->add_vertex(0);
     frame->close_primitive();
@@ -627,7 +626,7 @@ make_frame() {
     frame_node->add_geom(geom, state);
 
     if (get_frame_corners()) {
-      PT(qpGeomPoints) corners = new qpGeomPoints(qpGeomUsageHint::UH_static);
+      PT(qpGeomPoints) corners = new qpGeomPoints(get_usage_hint());
       corners->add_consecutive_vertices(0, 4);
       PT(qpGeom) geom2 = new qpGeom;
       geom2->set_vertex_data(vdata);
@@ -681,8 +680,7 @@ make_card() {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3t2(),
-       qpGeomUsageHint::UH_static);
+      ("text", qpGeomVertexFormat::get_v3t2(), get_usage_hint());
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
@@ -696,7 +694,7 @@ make_card() {
     texcoord.add_data2f(1.0f, 1.0f);
     texcoord.add_data2f(1.0f, 0.0f);
     
-    PT(qpGeomTristrips) card = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) card = new qpGeomTristrips(get_usage_hint());
     card->add_consecutive_vertices(0, 4);
     card->close_primitive();
     
@@ -766,8 +764,7 @@ make_card_with_border() {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3t2(),
-       qpGeomUsageHint::UH_static);
+      ("text", qpGeomVertexFormat::get_v3t2(), get_usage_hint());
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
@@ -817,7 +814,7 @@ make_card_with_border() {
     texcoord.add_data2f(1.0f, _card_border_uv_portion);//15
     texcoord.add_data2f(1.0f, 0.0f);//16
     
-    PT(qpGeomTristrips) card = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) card = new qpGeomTristrips(get_usage_hint());
 
     // tristrip #1
     card->add_consecutive_vertices(0, 8);

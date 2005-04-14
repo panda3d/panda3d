@@ -34,7 +34,7 @@ CPT(qpGeomVertexFormat) DXGeomMunger8::
 munge_format_impl(const qpGeomVertexFormat *orig,
                   const qpGeomVertexAnimationSpec &animation) {
   if (dxgsg8_cat.is_debug()) {
-    if (animation.get_animation_type() != qpGeomVertexAnimationSpec::AT_none) {
+    if (animation.get_animation_type() != AT_none) {
       dxgsg8_cat.debug()
         << "preparing animation type " << animation << "\n";
     }
@@ -54,7 +54,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   if (vertex_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
-      (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
+      (InternalName::get_vertex(), 3, NT_float32,
        vertex_type->get_contents());
     new_format->remove_column(vertex_type->get_name());
 
@@ -63,14 +63,14 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     return orig;
   }
 
-  if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware &&
+  if (animation.get_animation_type() == AT_hardware &&
       animation.get_num_transforms() > 0) {
     if (animation.get_num_transforms() > 1) {
       // If we want hardware animation, we need to reserve space for the
       // blend weights.
       new_array_format->add_column
         (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-         qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_other);
+         NT_float32, C_other);
     }
       
     if (animation.get_indexed_transforms()) {
@@ -78,7 +78,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
       // space for the index.
       new_array_format->add_column
         (InternalName::get_transform_index(), 1,
-         qpGeomVertexColumn::NT_packed_dcba, qpGeomVertexColumn::C_index);
+         NT_packed_dcba, C_index);
     }                                    
 
     // Make sure the old weights and indices are removed, just in
@@ -92,15 +92,13 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   if (normal_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
-      (InternalName::get_normal(), 3, qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_vector);
+      (InternalName::get_normal(), 3, NT_float32, C_vector);
     new_format->remove_column(normal_type->get_name());
   }
 
   if (color_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
-      (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
-       qpGeomVertexColumn::C_color);
+      (InternalName::get_color(), 1, NT_packed_dabc, C_color);
     new_format->remove_column(color_type->get_name());
   }
 
@@ -110,7 +108,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
       (InternalName::get_texcoord(), texcoord_type->get_num_values(),
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_texcoord);
+       NT_float32, C_texcoord);
     new_format->remove_column(texcoord_type->get_name());
   }
 

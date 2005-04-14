@@ -320,15 +320,12 @@ init_geoms() {
     _sprite_primitive = qpgeom;
 
     PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
-       qpGeomVertexColumn::C_point,
-       InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
-       qpGeomVertexColumn::C_color);
+      (InternalName::get_vertex(), 3, qpGeom::NT_float32, qpGeom::C_point,
+       InternalName::get_color(), 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
 
     if (_animate_theta || _theta != 0.0f) {
       array_format->add_column
-        (InternalName::get_rotate(), 1, qpGeomVertexColumn::NT_float32,
-         qpGeomVertexColumn::C_other);
+        (InternalName::get_rotate(), 1, qpGeom::NT_float32, qpGeom::C_other);
     }
 
     _base_y_scale = _initial_y_scale;
@@ -340,24 +337,23 @@ init_geoms() {
     if (_animate_y_ratio) {
       _base_y_scale = max(_initial_y_scale, _final_y_scale);
       array_format->add_column
-        (InternalName::get_size(), 1, qpGeomVertexColumn::NT_float32,
-         qpGeomVertexColumn::C_other);
+        (InternalName::get_size(), 1, qpGeom::NT_float32, qpGeom::C_other);
     }
 
     if (_aspect_ratio * _initial_x_scale != _initial_y_scale ||
         _aspect_ratio * final_x_scale != final_y_scale) {
       array_format->add_column
-        (InternalName::get_aspect_ratio(), 1, qpGeomVertexColumn::NT_float32,
-         qpGeomVertexColumn::C_other);
+        (InternalName::get_aspect_ratio(), 1, qpGeom::NT_float32,
+         qpGeom::C_other);
     }
 
     CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::register_format
       (new qpGeomVertexFormat(array_format));
 
     _vdata = new qpGeomVertexData
-      ("particles", format, qpGeomUsageHint::UH_dynamic);
+      ("particles", format, qpGeom::UH_dynamic);
     qpgeom->set_vertex_data(_vdata);
-    _sprites = new qpGeomPoints(qpGeomUsageHint::UH_dynamic);
+    _sprites = new qpGeomPoints(qpGeom::UH_dynamic);
     qpgeom->add_primitive(_sprites);
 
     state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));

@@ -306,10 +306,10 @@ make_bounds_viz(const BoundingVolume &vol) {
 
       PT(qpGeomVertexData) vdata = new qpGeomVertexData
         ("collision", qpGeomVertexFormat::get_v3(),
-         qpGeomUsageHint::UH_stream);
+         qpGeom::UH_stream);
       qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
       
-      PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+      PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
       for (int sl = 0; sl < num_slices; ++sl) {
         float longitude0 = (float)sl / (float)num_slices;
         float longitude1 = (float)(sl + 1) / (float)num_slices;

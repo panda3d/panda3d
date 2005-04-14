@@ -58,7 +58,7 @@ class qpGeom;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomMunger : public TypedReferenceCount {
+class EXPCL_PANDA qpGeomMunger : public TypedReferenceCount, public qpGeomEnums {
 public:
   qpGeomMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state);
   qpGeomMunger(const qpGeomMunger &copy);

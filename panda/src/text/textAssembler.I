@@ -18,6 +18,32 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::set_usage_hint
+//       Access: Published
+//  Description: Specifies the UsageHint that will be applied to
+//               generated geometry.  The default is UH_static, which
+//               is probably the right setting, but if you know the
+//               TextNode's geometry will have a short lifespan, it
+//               may be better to set it to UH_stream.  See
+//               geomEnums.h.
+////////////////////////////////////////////////////////////////////
+INLINE void TextAssembler::
+set_usage_hint(qpGeom::UsageHint usage_hint) {
+  _usage_hint = usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_usage_hint
+//       Access: Published
+//  Description: Returns the UsageHint that will be applied to
+//               generated geometry.  See set_usage_hint().
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::UsageHint TextAssembler::
+get_usage_hint() const {
+  return _usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::get_ul
 //       Access: Public
 //  Description: Returns the upper-left corner of the assembled text,

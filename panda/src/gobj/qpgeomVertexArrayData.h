@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexArrayFormat.h"
-#include "qpgeomUsageHint.h"
+#include "qpgeomEnums.h"
 #include "pta_uchar.h"
 #include "updateSeq.h"
 #include "cycleData.h"
@@ -56,21 +56,21 @@ class GraphicsStateGuardianBase;
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexArrayData : public TypedWritableReferenceCount {
+class EXPCL_PANDA qpGeomVertexArrayData : public TypedWritableReferenceCount, public qpGeomEnums {
 private:
   qpGeomVertexArrayData();
 
 PUBLISHED:
   qpGeomVertexArrayData(const qpGeomVertexArrayFormat *array_format,
-                        qpGeomUsageHint::UsageHint usage_hint);
+                        UsageHint usage_hint);
   qpGeomVertexArrayData(const qpGeomVertexArrayData &copy);
-private:
   void operator = (const qpGeomVertexArrayData &copy);
-PUBLISHED:
   virtual ~qpGeomVertexArrayData();
 
   INLINE const qpGeomVertexArrayFormat *get_array_format() const;
-  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+
+  INLINE UsageHint get_usage_hint() const;
+  void set_usage_hint(UsageHint usage_hint);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -98,7 +98,6 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   CPT(qpGeomVertexArrayFormat) _array_format;
-  qpGeomUsageHint::UsageHint _usage_hint;
 
   // A GeomVertexArrayData keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
@@ -117,6 +116,7 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
+    UsageHint _usage_hint;
     PTA_uchar _data;
     UpdateSeq _modified;
   };

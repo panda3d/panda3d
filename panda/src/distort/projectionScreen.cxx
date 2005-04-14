@@ -213,7 +213,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("projectionScreen", qpGeomVertexFormat::get_v3n3(),
-       qpGeomUsageHint::UH_dynamic);
+       qpGeom::UH_dynamic);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter normal(vdata, InternalName::get_normal());
     
@@ -242,7 +242,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
 
     // Now synthesize a triangle mesh.  We run triangle strips
     // horizontally across the grid.
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     // Fill up the index array into the vertices.  This lays out the
     // order of the vertices in each tristrip.
     int ti, si;
@@ -609,15 +609,15 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
     if (!vdata->has_column(_texcoord_name)) {
       // We need to add a new column for the new texcoords.
       vdata = vdata->replace_column
-        (_texcoord_name, 2, qpGeomVertexColumn::NT_float32,
-         qpGeomVertexColumn::C_texcoord, qpGeomUsageHint::UH_dynamic, true);
+        (_texcoord_name, 2, qpGeom::NT_float32,
+         qpGeom::C_texcoord, qpGeom::UH_dynamic, true);
       qpgeom->set_vertex_data(vdata);
     }
     if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
       // We need to add a column for color.
       vdata = vdata->replace_column
-        (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
-         qpGeomVertexColumn::C_color, qpGeomUsageHint::UH_dynamic, true);
+        (InternalName::get_color(), 1, qpGeom::NT_packed_dabc,
+         qpGeom::C_color, qpGeom::UH_dynamic, true);
       qpgeom->set_vertex_data(vdata);
     }
 

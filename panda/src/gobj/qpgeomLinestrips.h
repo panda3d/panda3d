@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomLinestrips : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomLinestrips(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomLinestrips(UsageHint usage_hint);
   qpGeomLinestrips(const qpGeomLinestrips &copy);
   virtual ~qpGeomLinestrips();
 

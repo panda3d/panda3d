@@ -891,7 +891,7 @@ make_geometry() {
     }
 
     // Now string together the line segments.
-    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeom::UH_static);
 
     // Draw a frame around the near plane.
     int i, si;
@@ -1756,7 +1756,7 @@ define_geom_data() {
   if (_geom_data == (qpGeomVertexData *)NULL) {
     _geom_data = new qpGeomVertexData
       ("lens", qpGeomVertexFormat::get_v3(),
-       qpGeomUsageHint::UH_dynamic);
+       qpGeom::UH_dynamic);
   }
 
   qpGeomVertexWriter vertex(_geom_data, InternalName::get_vertex());

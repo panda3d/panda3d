@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
 GeomTransformer() :
+  _usage_hint(qpGeom::UH_static),
   // The default value here comes from the Config file.
   _max_collect_vertices(max_collect_vertices)
 {
@@ -42,6 +43,7 @@ GeomTransformer() :
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
 GeomTransformer(const GeomTransformer &copy) :
+  _usage_hint(copy._usage_hint),
   _max_collect_vertices(copy._max_collect_vertices)
 {
 }
@@ -234,7 +236,8 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
         new_data = st._vertex_data->replace_column
           (to_name, old_column->get_num_components(),
            old_column->get_numeric_type(),
-           old_column->get_contents(), st._vertex_data->get_usage_hint(),
+           old_column->get_contents(), 
+           min(_usage_hint, st._vertex_data->get_usage_hint()),
            false);
       }
 
@@ -343,8 +346,7 @@ set_color(Geom *geom, const Colorf &color) {
         new_data = sc._vertex_data->set_color(color);
       } else {
         new_data = sc._vertex_data->set_color
-          (color, 1, qpGeomVertexColumn::NT_packed_dabc,
-           qpGeomVertexColumn::C_color);
+          (color, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
       }
     }
 
@@ -424,8 +426,7 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
         new_data = sc._vertex_data->scale_color(scale);
       } else {
         new_data = sc._vertex_data->set_color
-          (scale, 1, qpGeomVertexColumn::NT_packed_dabc,
-           qpGeomVertexColumn::C_color);
+          (scale, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
       }
     }
 
@@ -634,7 +635,7 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
       entry._geom = new_geom;
 
       if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&
-          new_geom->get_vertex_data()->get_usage_hint() < qpGeomUsageHint::UH_static) {
+          new_geom->get_vertex_data()->get_usage_hint() < qpGeom::UH_static) {
         // This one has some dynamic properties.  Collect it
         // independently of the outside world.
         if (dynamic == (GeomTransformer *)NULL) {

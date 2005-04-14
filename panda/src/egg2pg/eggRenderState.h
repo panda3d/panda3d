@@ -65,7 +65,7 @@ public:
   CPT(RenderState) _state;
   bool _hidden;
   bool _flat_shaded;
-  qpGeomPrimitive::PrimitiveType _primitive_type;
+  qpGeom::PrimitiveType _primitive_type;
 
   typedef EggLoader::BakeInUVs BakeInUVs;
   typedef EggLoader::TextureDef TextureDef;

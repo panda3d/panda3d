@@ -25,7 +25,7 @@
 //               primitives within a particular Geom must be the same
 //               type.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomPrimitive::PrimitiveType qpGeom::
+INLINE qpGeom::PrimitiveType qpGeom::
 get_primitive_type() const {
   CDReader cdata(_cycler);
   return cdata->_primitive_type;
@@ -38,7 +38,7 @@ get_primitive_type() const {
 //               among all of the individual GeomPrimitives that have
 //               been added to the geom.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomUsageHint::UsageHint qpGeom::
+INLINE qpGeom::UsageHint qpGeom::
 get_usage_hint() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_usage_hint) {
@@ -117,6 +117,9 @@ modify_primitive(int i) {
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
   cdata->_got_usage_hint = false;
   cdata->_modified = qpGeom::get_next_modified();
+  if (cdata->_primitives[i]->get_ref_count() > 1) {
+    cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
+  }
   return cdata->_primitives[i];
 }
 
@@ -175,9 +178,9 @@ operator < (const CacheEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::CData::
 CData() :
-  _primitive_type(qpGeomPrimitive::PT_none),
+  _primitive_type(PT_none),
   _point_rendering(0),
-  _usage_hint(qpGeomUsageHint::UH_static),
+  _usage_hint(UH_unspecified),
   _got_usage_hint(false)
 {
 }

@@ -162,13 +162,13 @@ fill_viz_geom() {
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       ("collision", qpGeomVertexFormat::get_v3cp(),
-       qpGeomUsageHint::UH_static);
+       qpGeom::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     
     vertex.add_data3f(_a);
     vertex.add_data3f(_b);
 
-    PT(qpGeomLines) line = new qpGeomLines(qpGeomUsageHint::UH_static);
+    PT(qpGeomLines) line = new qpGeomLines(qpGeom::UH_static);
     line->add_next_vertices(2);
     line->close_primitive();
 

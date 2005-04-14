@@ -380,8 +380,7 @@ copy_geom(const Geom *source, const Character *from) {
   if (source->is_of_type(qpGeom::get_class_type())) {
     CPT(qpGeom) qpsource = DCAST(qpGeom, source);
     CPT(qpGeomVertexFormat) format = qpsource->get_vertex_data()->get_format();
-    if (format->get_animation().get_animation_type() ==
-        qpGeomVertexAnimationSpec::AT_none) {
+    if (format->get_animation().get_animation_type() == qpGeom::AT_none) {
       // Not animated, so never mind.
       return (Geom *)source;
     }

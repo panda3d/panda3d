@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomPoints : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomPoints(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomPoints(UsageHint usage_hint);
   qpGeomPoints(const qpGeomPoints &copy);
   virtual ~qpGeomPoints();
 

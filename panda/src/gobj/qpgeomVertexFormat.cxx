@@ -380,7 +380,7 @@ output(ostream &out) const {
     }
   }
 
-  if (_animation.get_animation_type() != qpGeomVertexAnimationSpec::AT_none) {
+  if (_animation.get_animation_type() != AT_none) {
     out << ", anim " << _animation;
   }
 }
@@ -398,7 +398,7 @@ write(ostream &out, int indent_level) const {
     _arrays[i]->write(out, indent_level + 2);
   }
 
-  if (_animation.get_animation_type() != qpGeomVertexAnimationSpec::AT_none) {
+  if (_animation.get_animation_type() != AT_none) {
     indent(out, indent_level)
       << "anim " << _animation;
   }
@@ -536,22 +536,22 @@ do_register() {
     const qpGeomVertexColumn *column = _arrays[record._array_index]->get_column(record._column_index);
 
     switch (column->get_contents()) {
-    case qpGeomVertexColumn::C_point:
+    case C_point:
       // It's a point.
       _points.push_back(column->get_name());
       break;
 
-    case qpGeomVertexColumn::C_vector:
+    case C_vector:
       // It's a vector.
       _vectors.push_back(column->get_name());
       break;
 
-    case qpGeomVertexColumn::C_texcoord:
+    case C_texcoord:
       // It's a texcoord.
       _texcoords.push_back(column->get_name());
       break;
 
-    case qpGeomVertexColumn::C_morph_delta:
+    case C_morph_delta:
       {
         // It's a morph description.
         MorphRecord morph;
@@ -713,127 +713,95 @@ qpGeomVertexFormat::Registry::
 Registry() {
   _v3 = register_format(new qpGeomVertexArrayFormat
                         (InternalName::get_vertex(), 3, 
-                         qpGeomVertexColumn::NT_float32,
-                         qpGeomVertexColumn::C_point));
+                         NT_float32, C_point));
 
   _v3n3 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_point,
+                           NT_float32, C_point,
                            InternalName::get_normal(), 3, 
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_vector));
+                           NT_float32, C_vector));
 
   _v3t2 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_point,
+                           NT_float32, C_point,
                            InternalName::get_texcoord(), 2, 
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_texcoord));
+                           NT_float32, C_texcoord));
 
   _v3n3t2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3, 
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_vector,
+                             NT_float32, C_vector,
                              InternalName::get_texcoord(), 2, 
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_texcoord));
+                             NT_float32, C_texcoord));
 
   // Define the DirectX-style packed color formats
   _v3cp = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_point,
+                           NT_float32, C_point,
                            InternalName::get_color(), 1,
-                           qpGeomVertexColumn::NT_packed_dabc,
-                           qpGeomVertexColumn::C_color));
+                           NT_packed_dabc, C_color));
 
   _v3n3cp = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexColumn::NT_packed_dabc,
-                             qpGeomVertexColumn::C_color));
+                             NT_packed_dabc, C_color));
 
   _v3cpt2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexColumn::NT_packed_dabc,
-                             qpGeomVertexColumn::C_color,
+                             NT_packed_dabc, C_color,
                              InternalName::get_texcoord(), 2,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_texcoord));
+                             NT_float32, C_texcoord));
 
   _v3n3cpt2 = register_format(new qpGeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_point,
+                               NT_float32, C_point,
                                InternalName::get_normal(), 3,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_point,
+                               NT_float32, C_point,
                                InternalName::get_color(), 1,
-                               qpGeomVertexColumn::NT_packed_dabc,
-                               qpGeomVertexColumn::C_color,
+                               NT_packed_dabc, C_color,
                                InternalName::get_texcoord(), 2,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_texcoord));
+                               NT_float32, C_texcoord));
 
   // Define the OpenGL-style per-byte color formats.  This is not the
   // same as a packed format, above, because the resulting byte order
   // is endian-independent.
   _v3c4 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           qpGeomVertexColumn::NT_float32,
-                           qpGeomVertexColumn::C_point,
+                           NT_float32, C_point,
                            InternalName::get_color(), 4,
-                           qpGeomVertexColumn::NT_uint8,
-                           qpGeomVertexColumn::C_color));
+                           NT_uint8, C_color));
 
   _v3n3c4 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_color(), 4,
-                             qpGeomVertexColumn::NT_uint8,
-                             qpGeomVertexColumn::C_color));
+                             NT_uint8, C_color));
 
   _v3c4t2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_point,
+                             NT_float32, C_point,
                              InternalName::get_color(), 4,
-                             qpGeomVertexColumn::NT_uint8,
-                             qpGeomVertexColumn::C_color,
+                             NT_uint8, C_color,
                              InternalName::get_texcoord(), 2,
-                             qpGeomVertexColumn::NT_float32,
-                             qpGeomVertexColumn::C_texcoord));
+                             NT_float32, C_texcoord));
 
   _v3n3c4t2 = register_format(new qpGeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_point,
+                               NT_float32, C_point,
                                InternalName::get_normal(), 3,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_point,
+                               NT_float32, C_point,
                                InternalName::get_color(), 4,
-                               qpGeomVertexColumn::NT_uint8,
-                               qpGeomVertexColumn::C_color,
+                               NT_uint8, C_color,
                                InternalName::get_texcoord(), 2,
-                               qpGeomVertexColumn::NT_float32,
-                               qpGeomVertexColumn::C_texcoord));
+                               NT_float32, C_texcoord));
 }
 
 ////////////////////////////////////////////////////////////////////

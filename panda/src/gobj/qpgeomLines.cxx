@@ -29,7 +29,7 @@ TypeHandle qpGeomLines::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomLines::
-qpGeomLines(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomLines(qpGeomLines::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
@@ -159,7 +159,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomLines::
 make_from_bam(const FactoryParams &params) {
-  qpGeomLines *object = new qpGeomLines(qpGeomUsageHint::UH_client);
+  qpGeomLines *object = new qpGeomLines(UH_unspecified);
   DatagramIterator scan;
   BamReader *manager;
 

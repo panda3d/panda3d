@@ -242,7 +242,7 @@ protected:
                             GLint external_format, GLenum component_type, 
                             const unsigned char *image);
 
-  static GLenum get_numeric_type(qpGeomVertexColumn::NumericType numeric_type);
+  static GLenum get_numeric_type(qpGeom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
@@ -256,7 +256,7 @@ protected:
   static GLenum get_fog_mode_type(Fog::Mode m);
   static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
-  static GLenum get_usage(qpGeomUsageHint::UsageHint usage_hint);
+  static GLenum get_usage(qpGeom::UsageHint usage_hint);
 
   static CPT(RenderState) get_untextured_state();
   static CPT(RenderState) get_smooth_state();

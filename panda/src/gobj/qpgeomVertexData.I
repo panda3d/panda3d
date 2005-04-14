@@ -62,16 +62,17 @@ get_format() const {
 //               constructor, and which will be passed to each array
 //               data object created initially, and arrays created as
 //               the result of a convert_to() operation.  See
-//               GeomUsageHint.
+//               geomEnums.h.
 //
 //               However, each individual array may be replaced with a
 //               different array object with an independent usage hint
 //               specified, so there is no guarantee that the
 //               individual arrays all have the same usage_hint.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomUsageHint::UsageHint qpGeomVertexData::
+INLINE qpGeomVertexData::UsageHint qpGeomVertexData::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,7 +309,7 @@ INLINE bool qpGeomVertexData::
 is_vertex_transformed() const {
   const qpGeomVertexColumn *column = _format->get_vertex_column();
   if (column != (qpGeomVertexColumn *)NULL) {
-    return column->get_contents() == qpGeomVertexColumn::C_clip_point;
+    return column->get_contents() == C_clip_point;
   }
 
   return false;
@@ -419,7 +420,9 @@ add_transform(TransformPalette *palette, const VertexTransform *transform,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexData::CData::
-CData() {
+CData() :
+  _usage_hint(UH_unspecified)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,6 +432,7 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
+  _usage_hint(copy._usage_hint),
   _arrays(copy._arrays),
   _transform_palette(copy._transform_palette),
   _transform_blend_palette(copy._transform_blend_palette),
