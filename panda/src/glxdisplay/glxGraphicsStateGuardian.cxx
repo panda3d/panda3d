@@ -76,6 +76,35 @@ glxGraphicsStateGuardian::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::reset
+//       Access: Public, Virtual
+//  Description: Resets all internal state as if the gsg were newly
+//               created.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+reset() {
+  GLGraphicsStateGuardian::reset();
+
+  _supports_swap_control = has_extension("GLX_SGI_swap_control");
+
+  if (_supports_swap_control) {
+    _glXSwapIntervalSGI = 
+      (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glX", "SwapIntervalSGI");
+    if (_glXSwapIntervalSGI == NULL) {
+      glxdisplay_cat.error()
+        << "Driver claims to support GLX_SGI_swap_control extension, but does not define all functions.\n";
+      _supports_swap_control = false;
+    }
+  }
+
+  if (_supports_swap_control) {
+    // Set the video-sync setting up front, if we have the extension
+    // that supports it.
+    _glXSwapIntervalSGI(sync_video ? 1 : 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::glx_is_at_least_version
 //       Access: Public
 //  Description: Returns true if the runtime GLX version number is at

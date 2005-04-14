@@ -231,6 +231,15 @@ ConfigVariableDouble background_color
  PRC_DESC("Specifies the rgb(a) value of the default background color for a "
           "new window or offscreen buffer."));
 
+ConfigVariableBool sync_video
+("sync-video", true,
+ PRC_DESC("Configure this true to request the rendering to sync to the video "
+          "refresh, or false to let your frame rate go as high as it can, "
+          "irrespective of the video refresh.  Usually you want this true, "
+          "but it may be useful to set it false during development for a "
+          "cheesy estimate of scene complexity.  Some drivers may ignore "
+          "this request."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay

@@ -70,6 +70,8 @@ public:
 
   virtual ~glxGraphicsStateGuardian();
 
+  virtual void reset();
+
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
   GLXContext _context;
@@ -80,6 +82,10 @@ public:
 #ifdef HAVE_GLXFBCONFIG
   GLXFBConfig _fbconfig;
 #endif  // HAVE_GLXFBCONFIG
+
+public:
+  bool _supports_swap_control;
+  PFNGLXSWAPINTERVALSGIPROC _glXSwapIntervalSGI;
 
 protected:
   virtual void get_gl_version();

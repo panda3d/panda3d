@@ -61,13 +61,6 @@ ConfigVariableBool ime_hide
 ("ime-hide", false,
  PRC_DESC("Set this true to hide ime windows."));
 
-ConfigVariableBool sync_video
-("sync-video", true,
- PRC_DESC("Configure this true to force the rendering to sync to the video "
-          "refresh, or false to let your frame rate go as high as it can, "
-          "irrespective of the video refresh (if this capability is "
-          "available in the ICD)."));
-
 ConfigVariableBool swapbuffer_framelock
 ("swapbuffer-framelock", false,
  PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));
