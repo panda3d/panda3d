@@ -27,7 +27,8 @@
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
-PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffers");
+PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffer size");
+PStatCollector PreparedGraphicsObjects::_total_buffer_count_pcollector("Vertex buffer count");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor
@@ -449,6 +450,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   vbc->_data->clear_prepared(this);
   _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
+  _total_buffer_count_pcollector.sub_level(1);
 
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
@@ -482,6 +484,7 @@ release_all_vertex_buffers() {
     VertexBufferContext *vbc = (*vbci);
     vbc->_data->clear_prepared(this);
     _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
+    _total_buffer_count_pcollector.sub_level(1);
     vbc->_data = (qpGeomVertexArrayData *)NULL;
 
     _released_vertex_buffers.insert(vbc);
@@ -532,6 +535,7 @@ prepare_vertex_buffer_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase
     // GraphicsStateGuardian::add_to_vertex_buffer_record(); we don't need to
     // count it again here.
     //_total_buffers_pcollector.add_level(vbc->get_data_size_bytes());
+    _total_buffer_count_pcollector.add_level(1);
   }
 
   return vbc;
@@ -596,6 +600,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   ibc->_data->clear_prepared(this);
   _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
+  _total_buffer_count_pcollector.sub_level(1);
 
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
@@ -629,6 +634,7 @@ release_all_index_buffers() {
     IndexBufferContext *ibc = (*ibci);
     ibc->_data->clear_prepared(this);
     _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
+    _total_buffer_count_pcollector.sub_level(1);
     ibc->_data = (qpGeomPrimitive *)NULL;
 
     _released_index_buffers.insert(ibc);
@@ -679,6 +685,7 @@ prepare_index_buffer_now(qpGeomPrimitive *data, GraphicsStateGuardianBase *gsg) 
     // GraphicsStateGuardian::add_to_index_buffer_record(); we don't need to
     // count it again here.
     //_total_buffers_pcollector.add_level(ibc->get_data_size_bytes());
+    _total_buffer_count_pcollector.add_level(1);
   }
 
   return ibc;

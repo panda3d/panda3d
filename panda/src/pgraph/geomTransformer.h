@@ -28,6 +28,7 @@
 class GeomNode;
 class RenderState;
 class InternalName;
+class qpGeom;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
@@ -72,8 +73,8 @@ public:
 
   bool apply_state(GeomNode *node, const RenderState *state);
 
-  bool collect_vertex_data(Geom *geom, bool keep_names);
-  bool collect_vertex_data(GeomNode *node, bool keep_names);
+  int collect_vertex_data(qpGeom *geom, int collect_bits);
+  int collect_vertex_data(GeomNode *node, int collect_bits);
 
 private:
   int _max_collect_vertices;

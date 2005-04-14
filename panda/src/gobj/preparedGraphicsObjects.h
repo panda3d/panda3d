@@ -116,6 +116,7 @@ private:
 
   static PStatCollector _total_texusage_pcollector;
   static PStatCollector _total_buffers_pcollector;
+  static PStatCollector _total_buffer_count_pcollector;
 
   friend class GraphicsStateGuardian;
 };

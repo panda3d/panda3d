@@ -574,37 +574,50 @@ choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
 int SceneGraphReducer::
 r_collect_vertex_data(PandaNode *node, int collect_bits,
                       GeomTransformer &transformer) {
-  int num_collected = 0;
+  int num_created = 0;
 
-  if ((collect_bits & CVD_model) != 0 &&
-      node->is_of_type(ModelNode::get_class_type())) {
-    // When we come to a model node, start a new collection.
+  int this_node_bits = 0;
+  if (node->is_of_type(ModelNode::get_class_type())) {
+    this_node_bits |= CVD_model;
+  }
+  if (!node->get_transform()->is_identity()) {
+    this_node_bits |= CVD_transform;
+  }
+
+  if ((collect_bits & this_node_bits) != 0) {
+    // We need to start a unique collection here.
     GeomTransformer new_transformer(transformer);
+
+    if (node->is_geom_node()) {
+      // When we come to geom node, collect.
+      if (new_transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits)) {
+        ++num_created;
+      }
+    }
 
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      num_collected += 
+      num_created += 
         r_collect_vertex_data(children.get_child(i), collect_bits, new_transformer);
     }
-    return num_collected;
-  }
 
-  if (node->is_geom_node()) {
-    // When we come to geom node, collect.
-    bool keep_names = ((collect_bits & SceneGraphReducer::CVD_name) != 0);
-    if (transformer.collect_vertex_data(DCAST(GeomNode, node), keep_names)) {
-      ++num_collected;
+  } else {
+    // Keep the same collection.
+
+    if (node->is_geom_node()) {
+      if (transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits)) {
+        ++num_created;
+      }
+    }
+    
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
+    for (int i = 0; i < num_children; ++i) {
+      num_created +=
+        r_collect_vertex_data(children.get_child(i), collect_bits, transformer);
     }
   }
-
-  // Then recurse.
-  PandaNode::Children children = node->get_children();
-  int num_children = children.get_num_children();
-  for (int i = 0; i < num_children; ++i) {
-    num_collected +=
-      r_collect_vertex_data(children.get_child(i), collect_bits, transformer);
-  }
-
-  return num_collected;
+    
+  return num_created;
 }

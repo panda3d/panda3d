@@ -62,8 +62,25 @@ PUBLISHED:
   };
 
   enum CollectVertexData {
+    // If set, two GeomVertexDatas with different names will not be
+    // collected together.
     CVD_name           = 0x001,
+
+    // If set, a ModelNode begins a subgraph of nodes whose
+    // GeomVertexDatas will not be collected with nodes outside the
+    // subgraph.
     CVD_model          = 0x002,
+
+    // If set, a non-identity transform begins a subgraph of nodes
+    // whose GeomVertexDatas will not be collected with nodes outside
+    // the subgraph.
+    CVD_transform      = 0x004,
+
+    // If set, GeomVertexDatas with any usage_hint other than
+    // UH_static will not be collected with any other Geoms in a
+    // different GeomNode.  However, two different Geoms within the
+    // same node might still be collected together.
+    CVD_avoid_dynamic  = 0x008,
   };
 
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);

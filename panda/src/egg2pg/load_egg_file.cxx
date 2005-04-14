@@ -46,6 +46,7 @@ load_from_loader(EggLoader &loader) {
 
     SceneGraphReducer gr;
     int num_reduced = gr.flatten(loader._root, combine_siblings_bits);
+    //    gr.collect_vertex_data(loader._root);
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
   }
 

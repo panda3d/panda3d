@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomTransformer.h"
+#include "sceneGraphReducer.h"
 #include "geomNode.h"
 #include "qpgeom.h"
 #include "qpgeomVertexRewriter.h"
@@ -528,29 +529,23 @@ apply_state(GeomNode *node, const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::collect_vertex_data
 //       Access: Public
-//  Description: Transforms the vertices and the normals in the
-//               indicated Geom by the indicated matrix.  Returns true
-//               if the Geom was changed, false otherwise.
+//  Description: Collects together GeomVertexDatas from different
+//               geoms into one big (or several big) GeomVertexDatas.
+//               Returns the number of unique GeomVertexDatas created.
 ////////////////////////////////////////////////////////////////////
-bool GeomTransformer::
-collect_vertex_data(Geom *geom, bool keep_names) {
-  if (!geom->is_of_type(qpGeom::get_class_type())) {
-    return false;
-  }
-
-  qpGeom *qpgeom = DCAST(qpGeom, geom);
-
-  const qpGeomVertexData *vdata = qpgeom->get_vertex_data();
+int GeomTransformer::
+collect_vertex_data(qpGeom *geom, int collect_bits) {
+  const qpGeomVertexData *vdata = geom->get_vertex_data();
 
   if (vdata->get_num_vertices() > _max_collect_vertices) {
     // Don't even bother.
-    return false;
+    return 0;
   }
 
   const qpGeomVertexFormat *format = vdata->get_format();
 
   NewCollectedKey key;
-  if (keep_names) {
+  if ((collect_bits & SceneGraphReducer::CVD_name) != 0) {
     key._name = vdata->get_name();
   }
   key._format = format;
@@ -561,12 +556,13 @@ collect_vertex_data(Geom *geom, bool keep_names) {
   if (ai != _already_collected.end()) {
     // We've previously collected this vertex data; reuse it.
     const AlreadyCollectedData &acd = (*ai).second;
-    qpgeom->offset_vertices(acd._data, acd._offset);
-    return true;
+    geom->offset_vertices(acd._data, acd._offset);
+    return 0;
   }
 
   // We haven't collected this vertex data yet; append the vertices
   // onto the new data.
+  int num_created = 0;
 
   NewCollectedData::iterator ni = _new_collected_data.find(key);
   PT(qpGeomVertexData) new_data;
@@ -576,6 +572,7 @@ collect_vertex_data(Geom *geom, bool keep_names) {
     new_data = new qpGeomVertexData(vdata->get_name(), format, 
                                     vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
+    ++num_created;
   }
 
   int offset = new_data->get_num_vertices();
@@ -588,6 +585,7 @@ collect_vertex_data(Geom *geom, bool keep_names) {
     _new_collected_data[key] = new_data;
     offset = 0;
     new_num_vertices = vdata->get_num_vertices();
+    ++num_created;
   }
 
   new_data->set_num_vertices(new_num_vertices);
@@ -604,12 +602,12 @@ collect_vertex_data(Geom *geom, bool keep_names) {
            old_array->get_data(), copy_bytes);
   }
 
-  qpgeom->offset_vertices(new_data, offset);
   AlreadyCollectedData &acd = _already_collected[vdata];
   acd._data = new_data;
   acd._offset = offset;
+  geom->offset_vertices(new_data, offset);
 
-  return true;
+  return num_created;
 }
 
 
@@ -621,20 +619,38 @@ collect_vertex_data(Geom *geom, bool keep_names) {
 //               GeomVertexData structure.  This is designed to
 //               minimize context switches on the graphics card.
 ////////////////////////////////////////////////////////////////////
-bool GeomTransformer::
-collect_vertex_data(GeomNode *node, bool keep_names) {
-  bool any_changed = false;
+int GeomTransformer::
+collect_vertex_data(GeomNode *node, int collect_bits) {
+  int num_created = 0;
+
+  GeomTransformer *dynamic = NULL;
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
-    if (collect_vertex_data(new_geom, keep_names)) {
+    if (entry._geom->is_of_type(qpGeom::get_class_type())) {
+      PT(qpGeom) new_geom = DCAST(qpGeom, entry._geom->make_copy());
       entry._geom = new_geom;
-      any_changed = true;
+
+      if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&
+          new_geom->get_vertex_data()->get_usage_hint() < qpGeomUsageHint::UH_static) {
+        // This one has some dynamic properties.  Collect it
+        // independently of the outside world.
+        if (dynamic == (GeomTransformer *)NULL) {
+          dynamic = new GeomTransformer(*this);
+        }
+        num_created += dynamic->collect_vertex_data(new_geom, collect_bits);
+        
+      } else {
+        num_created += collect_vertex_data(new_geom, collect_bits);
+      }
     }
   }
 
-  return any_changed;
+  if (dynamic != (GeomTransformer *)NULL) {
+    delete dynamic;
+  }
+
+  return num_created;
 }

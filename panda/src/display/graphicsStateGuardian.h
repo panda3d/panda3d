@@ -332,6 +332,11 @@ public:
   // Statistics
   static PStatCollector _total_texusage_pcollector;
   static PStatCollector _active_texusage_pcollector;
+  static PStatCollector _texture_count_pcollector;
+  static PStatCollector _active_texture_count_pcollector;
+  static PStatCollector _total_buffer_count_pcollector;
+  static PStatCollector _active_vertex_buffer_count_pcollector;
+  static PStatCollector _active_index_buffer_count_pcollector;
   static PStatCollector _total_geom_pcollector;
   static PStatCollector _active_geom_pcollector;
   static PStatCollector _total_buffers_pcollector;
