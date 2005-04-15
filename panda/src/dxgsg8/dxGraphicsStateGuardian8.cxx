@@ -2744,7 +2744,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
     _pD3DDevice->DrawIndexedPrimitive
       (D3DPT_TRIANGLELIST,
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_max_vertex() + 1,
        0, primitive->get_num_primitives());
 
   } else {
@@ -2753,7 +2753,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_TRIANGLELIST, 
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_max_vertex() + 1,
        primitive->get_num_primitives(), 
        primitive->get_data(),
        index_type,
@@ -2784,13 +2784,13 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLESTRIP,
-         min_vertex, max_vertex - min_vertex + 1,
+         min_vertex, max_vertex + 1,
          0, primitive->get_num_vertices() - 2);
       
     } else {
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLESTRIP, 
-         min_vertex, max_vertex - min_vertex + 1,
+         min_vertex, max_vertex + 1,
          primitive->get_num_vertices() - 2, 
          primitive->get_data(), index_type,
          _vertex_data->get_array(0)->get_data(),
@@ -2804,8 +2804,9 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     int index_stride = primitive->get_index_stride();
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
-    qpGeomVertexReader maxs(primitive->get_mins(), 0);
-    nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
+    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+    nassertv(mins.get_num_vertices() == (int)ends.size() && 
+             maxs.get_num_vertices() == (int)ends.size());
     
     if (_vbuffer_active) {
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2819,8 +2820,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP,
-           min, max - min + 1, 
-           start * index_stride, ends[i] - start - 2);
+           min, max + 1, 
+           start, ends[i] - start - 2);
         
         start = ends[i] + 2;
       }
@@ -2837,7 +2838,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitiveUP
           (D3DPT_TRIANGLESTRIP, 
-           min, max - min + 1, 
+           min, max + 1, 
            ends[i] - start - 2,
            vertices + start * index_stride, index_type,
            array_data, stride);
@@ -2865,8 +2866,9 @@ draw_trifans(const qpGeomTrifans *primitive) {
   int index_stride = primitive->get_index_stride();
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
-  qpGeomVertexReader maxs(primitive->get_mins(), 0);
-  nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
+  qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+  nassertv(mins.get_num_vertices() == (int)ends.size() && 
+           maxs.get_num_vertices() == (int)ends.size());
   
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2880,17 +2882,17 @@ draw_trifans(const qpGeomTrifans *primitive) {
       unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLEFAN,
-         min, max - min + 1,
-         start * index_stride, ends[i] - start - 2);
+         min, max + 1,
+         start, ends[i] - start - 2);
       
-      start = ends[i] + 2;
+      start = ends[i];
     }
     
   } else {
     CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
     int stride = _vertex_data->get_format()->get_array(0)->get_stride();
     CPTA_uchar vertices = primitive->get_data();
-    
+
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
       _vertices_trifan_pcollector.add_level(ends[i] - start);
@@ -2898,12 +2900,17 @@ draw_trifans(const qpGeomTrifans *primitive) {
       unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLEFAN, 
-         min, max - min + 1, 
+         // It's not clear whether the third parameter to
+         // DrawIndexedPrimitiveUP() should be (max + 1) or (max - min
+         // + 1).  The documentation seems to imply it should be (max
+         // - min + 1), but empirically it seems that only (max + 1)
+         // works.
+         min, max + 1,
          ends[i] - start - 2,
          vertices + start * index_stride, index_type,
          array_data, stride);
       
-      start = ends[i] + 2;
+      start = ends[i];
     }
   }
 }
@@ -2924,7 +2931,7 @@ draw_lines(const qpGeomLines *primitive) {
     _pD3DDevice->DrawIndexedPrimitive
       (D3DPT_LINELIST,
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_max_vertex() + 1,
        0, primitive->get_num_primitives());
 
   } else {
@@ -2933,7 +2940,7 @@ draw_lines(const qpGeomLines *primitive) {
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_LINELIST, 
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_max_vertex() + 1,
        primitive->get_num_primitives(), 
        primitive->get_data(),
        index_type,
