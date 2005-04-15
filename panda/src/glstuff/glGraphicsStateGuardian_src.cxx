@@ -2519,7 +2519,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     int index_stride = primitive->get_index_stride();
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
-    qpGeomVertexReader maxs(primitive->get_mins(), 0);
+    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
     nassertv(mins.get_num_vertices() == (int)ends.size() && 
              maxs.get_num_vertices() == (int)ends.size());
     
@@ -2553,7 +2553,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
   int index_stride = primitive->get_index_stride();
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
-  qpGeomVertexReader maxs(primitive->get_mins(), 0);
+  qpGeomVertexReader maxs(primitive->get_maxs(), 0);
   nassertv(mins.get_num_vertices() == (int)ends.size() && 
            maxs.get_num_vertices() == (int)ends.size());
 
@@ -2564,7 +2564,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
                          mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
                          get_numeric_type(primitive->get_index_type()), 
                          client_pointer + start * index_stride);
-    start = ends[i] + 2;
+    start = ends[i];
   }
     
   report_my_gl_errors();
@@ -2913,7 +2913,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
         << "copying " << gvbc->get_data()->get_data_size_bytes()
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
-    if (gvbc->changed_size()) {
+    if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
       _glBufferData(GL_ARRAY_BUFFER, gvbc->get_data()->get_data_size_bytes(),
                     gvbc->get_data()->get_data(), 
                     get_usage(gvbc->get_data()->get_usage_hint()));
@@ -3044,7 +3044,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
         << "copying " << gibc->get_data()->get_data_size_bytes()
         << " bytes into index buffer " << gibc->_index << "\n";
     }
-    if (gibc->changed_size()) {
+    if (gibc->changed_size() || gibc->changed_usage_hint()) {
       _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
                     gibc->get_data()->get_data(), 
                     get_usage(gibc->get_data()->get_usage_hint()));
