@@ -2755,7 +2755,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
        primitive->get_min_vertex(),
        primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
-       primitive->get_vertices(),
+       primitive->get_data(),
        index_type,
        _vertex_data->get_array(0)->get_data(),
        _vertex_data->get_format()->get_array(0)->get_stride());
