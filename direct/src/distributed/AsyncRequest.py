@@ -105,7 +105,9 @@ class AsyncRequest(DirectObject):
         else:
             if context is None:
                 context=self.air.allocateContext()
-            self.accept("doRequestResponse-%s"%(context,), self._checkCompletion, [None])
+            self.accept(
+                "doRequestResponse-%s"%(context,), 
+                self._checkCompletion, [None])
             self.air.queryObjectSnapshot(doId, context)
 
     def createObject(self, name, className, context=None):
@@ -119,13 +121,15 @@ class AsyncRequest(DirectObject):
         self.neededObjects[name]=None
         if context is None:
             context=self.air.allocateContext()
-        self.accept("doRequestResponse-%s"%(context,), self._checkCompletion, [name])
+        self.accept(
+            "doRequestResponse-%s"%(context,), self._checkCompletion, [name])
         self.air.requestDatabaseGenerate(className, context)
 
     def finish(self):
         """
-        This is the function that gets called when all of the needed objects are in.
-        I.e. all the askForObject and createObject requests have been satisfied.
+        This is the function that gets called when all of the needed objects 
+        are in (i.e. all the askForObject and createObject requests have 
+        been satisfied).
         If the other requests timeout, finish will not be called.
         """
         assert self.notify.debugCall()
