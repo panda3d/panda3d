@@ -92,24 +92,24 @@ qpGeomVertexArrayData::
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::set_num_vertices
+//     Function: qpGeomVertexArrayData::set_num_rows
 //       Access: Published
-//  Description: Sets the length of the array to n vertices.
+//  Description: Sets the length of the array to n rows.
 //               Normally, you would not call this directly, since all
 //               of the arrays in a particular GeomVertexData must
-//               have the same number of vertices; instead, call
-//               GeomVertexData::set_num_vertices().
+//               have the same number of rows; instead, call
+//               GeomVertexData::set_num_rows().
 //
-//               The return value is true if the number of vertices
+//               The return value is true if the number of rows
 //               was changed, false if the object already contained n
-//               vertices (or if there was some error).
+//               rows (or if there was some error).
 //
 //               The new vertex data is initialized to 0, including
 //               the "color" column (but see
-//               GeomVertexData::set_num_vertices()).
+//               GeomVertexData::set_num_rows()).
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexArrayData::
-set_num_vertices(int n) {
+set_num_rows(int n) {
   CDWriter cdata(_cycler);
 
   int stride = _array_format->get_stride();
@@ -164,7 +164,7 @@ set_usage_hint(qpGeomVertexArrayData::UsageHint usage_hint) {
 //       Access: Public
 //  Description: Returns a modifiable pointer to the actual vertex
 //               array, so that application code may directly
-//               manipulate the vertices.
+//               manipulate it.  Use with caution.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar qpGeomVertexArrayData::
 modify_data() {

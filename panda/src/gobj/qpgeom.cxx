@@ -575,7 +575,7 @@ output(ostream &out) const {
   for (ti = types.begin(); ti != types.end(); ++ti) {
     out << " " << (*ti);
   }
-  out << " ], " << cdata->_data->get_num_vertices() << " vertices";
+  out << " ], " << cdata->_data->get_num_rows() << " vertices";
 }
 
 ////////////////////////////////////////////////////////////////////

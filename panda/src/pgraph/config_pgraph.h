@@ -42,6 +42,7 @@ extern ConfigVariableBool compose_componentwise;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
 extern ConfigVariableInt max_collect_vertices;
+extern ConfigVariableInt max_collect_indices;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;

@@ -126,9 +126,9 @@ get_array_data() const {
 //  Description: Sets up the reader to use the nth data type of the
 //               GeomVertexFormat, numbering from 0.
 //
-//               This also resets the read vertex number to the start
-//               vertex (the same value passed to a previous call to
-//               set_vertex(), or 0 if set_vertex() was never called.)
+//               This also resets the read row number to the start row
+//               (the same value passed to a previous call to
+//               set_row(), or 0 if set_row() was never called.)
 //
 //               The return value is true if the data type is valid,
 //               false otherwise.
@@ -151,9 +151,9 @@ set_column(int column) {
 //  Description: Sets up the reader to use the data type with the
 //               indicated name.
 //
-//               This also resets the read vertex number to the start
-//               vertex (the same value passed to a previous call to
-//               set_vertex(), or 0 if set_vertex() was never called.)
+//               This also resets the read row number to the start row
+//               (the same value passed to a previous call to
+//               set_row(), or 0 if set_row() was never called.)
 //
 //               The return value is true if the data type is valid,
 //               false otherwise.
@@ -169,9 +169,9 @@ set_column(const string &name) {
 //  Description: Sets up the reader to use the data type with the
 //               indicated name.
 //
-//               This also resets the read vertex number to the start
-//               vertex (the same value passed to a previous call to
-//               set_vertex(), or 0 if set_vertex() was never called.)
+//               This also resets the read row number to the start row
+//               (the same value passed to a previous call to
+//               set_row(), or 0 if set_row() was never called.)
 //
 //               The return value is true if the data type is valid,
 //               false otherwise.
@@ -227,30 +227,32 @@ get_column() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::set_vertex
+//     Function: qpGeomVertexReader::set_row
 //       Access: Published
-//  Description: Sets the start, read, and write index to the
-//               indicated value.  The reader will begin traversing
-//               from the given vertex.
+//  Description: Sets the start row to the indicated value.  The
+//               reader will begin reading from the indicated row;
+//               each subsequent get_data*() call will return the data
+//               from the subsequent row.  If set_column() is called,
+//               the reader will return to this row.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::
-set_vertex(int vertex) {
-  _start_vertex = vertex;
+set_row(int row) {
+  _start_row = row;
   if (has_column()) {
-    set_pointer(_start_vertex);
+    set_pointer(_start_row);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::get_start_vertex
+//     Function: qpGeomVertexReader::get_start_row
 //       Access: Published
-//  Description: Returns the vertex index at which the reader
-//               started.  It will return to this vertex if you reset
-//               the current column.
+//  Description: Returns the row index at which the reader started.
+//               It will return to this row if you reset the current
+//               column.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexReader::
-get_start_vertex() const {
-  return _start_vertex;
+get_start_row() const {
+  return _start_row;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,9 +271,9 @@ is_at_end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data1f
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 1-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexReader::
 get_data1f() {
@@ -282,9 +284,9 @@ get_data1f() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data2f
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 2-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase2f &qpGeomVertexReader::
 get_data2f() {
@@ -295,9 +297,9 @@ get_data2f() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data3f
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 3-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase3f &qpGeomVertexReader::
 get_data3f() {
@@ -308,9 +310,9 @@ get_data3f() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data4f
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 4-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &qpGeomVertexReader::
 get_data4f() {
@@ -321,9 +323,9 @@ get_data4f() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data1i
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 1-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexReader::
 get_data1i() {
@@ -334,9 +336,9 @@ get_data1i() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data2i
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 2-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data2i() {
@@ -347,9 +349,9 @@ get_data2i() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data3i
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 3-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data3i() {
@@ -360,9 +362,9 @@ get_data3i() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data4i
 //       Access: Published
-//  Description: Returns the data associated with the read vertex,
+//  Description: Returns the data associated with the read row,
 //               expressed as a 4-component value, and advances the
-//               read vertex.
+//               read row.
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data4i() {
@@ -373,29 +375,29 @@ get_data4i() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::set_pointer
 //       Access: Private
-//  Description: Sets up the internal write pointer, etc. to use the
-//               indicated vertex.
+//  Description: Sets up the internal read pointer, etc. to read from
+//               the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::
-set_pointer(int vertex) {
+set_pointer(int row) {
   nassertv(has_column());
   if (_vertex_data != (const qpGeomVertexData *)NULL) {
     const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
     _pointer = array_data->get_data();
     _pointer_end = _pointer + array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * vertex;
+    _pointer += _packer->_column->get_start() + _stride * row;
 
   } else {
     _pointer = _array_data->get_data();
     _pointer_end = _pointer + _array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * vertex;
+    _pointer += _packer->_column->get_start() + _stride * row;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::inc_pointer
 //       Access: Private
-//  Description: Increments to the next vertex, and returns the data
+//  Description: Increments to the next row, and returns the data
 //               pointer as it was before incrementing.
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *qpGeomVertexReader::

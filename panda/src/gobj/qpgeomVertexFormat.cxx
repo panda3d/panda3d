@@ -413,7 +413,7 @@ void qpGeomVertexFormat::
 write_with_data(ostream &out, int indent_level, 
                 const qpGeomVertexData *data) const {
   indent(out, indent_level)
-    << data->get_num_vertices() << " vertices.\n";
+    << data->get_num_rows() << " rows.\n";
   for (size_t i = 0; i < _arrays.size(); i++) {
     CPTA_uchar array_data = data->get_array(i)->get_data();
     indent(out, indent_level)

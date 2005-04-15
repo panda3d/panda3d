@@ -2805,8 +2805,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
     qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
-             primitive->get_maxs()->get_num_vertices() == (int)ends.size());
+    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+             primitive->get_maxs()->get_num_rows() == (int)ends.size());
     
     if (_vbuffer_active) {
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2867,8 +2867,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
   qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-  nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
-           primitive->get_maxs()->get_num_vertices() == (int)ends.size());
+  nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+           primitive->get_maxs()->get_num_rows() == (int)ends.size());
   
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -3203,7 +3203,7 @@ prepare_vertex_buffer(qpGeomVertexArrayData *data) {
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
         << "creating vertex buffer " << dvbc->_vbuffer << ": "
-        << data->get_num_vertices() << " vertices " 
+        << data->get_num_rows() << " vertices " 
         << *data->get_array_format() << "\n";
     }
   }
@@ -3285,7 +3285,10 @@ prepare_index_buffer(qpGeomPrimitive *data) {
 
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "creating index buffer " << dibc->_ibuffer << "\n";
+      << "creating index buffer " << dibc->_ibuffer << ": "
+      << data->get_num_vertices() << " indices (" 
+      << data->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
+      << ")\n";
   }
 
   return dibc;

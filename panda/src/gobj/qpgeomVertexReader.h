@@ -83,9 +83,9 @@ PUBLISHED:
   INLINE int get_array() const;
   INLINE const qpGeomVertexColumn *get_column() const;
 
-  INLINE void set_vertex(int vertex);
+  INLINE void set_row(int row);
 
-  INLINE int get_start_vertex() const;
+  INLINE int get_start_row() const;
   INLINE bool is_at_end() const;
 
   INLINE float get_data1f();
@@ -101,7 +101,7 @@ PUBLISHED:
 private:
   void initialize();
 
-  INLINE void set_pointer(int vertex);
+  INLINE void set_pointer(int row);
   INLINE const unsigned char *inc_pointer();
 
   // It is important that we only store *one* of the following two
@@ -119,7 +119,7 @@ private:
   const unsigned char *_pointer;
   const unsigned char *_pointer_end;
 
-  int _start_vertex;
+  int _start_row;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL

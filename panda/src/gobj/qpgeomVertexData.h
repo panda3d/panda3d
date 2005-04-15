@@ -92,9 +92,9 @@ PUBLISHED:
 
   INLINE bool has_column(const InternalName *name) const;
 
-  int get_num_vertices() const;
-  INLINE bool set_num_vertices(int n);
-  void clear_vertices();
+  int get_num_rows() const;
+  INLINE bool set_num_rows(int n);
+  void clear_rows();
 
   INLINE int get_num_arrays() const;
   INLINE const qpGeomVertexArrayData *get_array(int i) const;
@@ -223,7 +223,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
 private:
-  bool do_set_num_vertices(int n, CDWriter &cdata);
+  bool do_set_num_rows(int n, CDWriter &cdata);
   void update_animated_vertices(CDWriter &cdata, bool from_app);
   CPT(qpGeomVertexFormat) get_post_animated_format() const;
 

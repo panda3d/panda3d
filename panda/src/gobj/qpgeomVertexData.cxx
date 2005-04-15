@@ -146,18 +146,18 @@ set_usage_hint(qpGeomVertexData::UsageHint usage_hint) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::get_num_vertices
+//     Function: qpGeomVertexData::get_num_rows
 //       Access: Published
-//  Description: Returns the number of vertices stored within all the
+//  Description: Returns the number of rows stored within all the
 //               arrays.  All arrays store data for the same n
-//               vertices.
+//               rows.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexData::
-get_num_vertices() const {
+get_num_rows() const {
   CDReader cdata(_cycler);
   nassertr(_format->get_num_arrays() == (int)cdata->_arrays.size(), 0);
   if (_format->get_num_arrays() == 0) {
-    // No arrays means no vertices.  Weird but legal.
+    // No arrays means no rows.  Weird but legal.
     return 0;
   }
 
@@ -167,14 +167,14 @@ get_num_vertices() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::clear_vertices
+//     Function: qpGeomVertexData::clear_rows
 //       Access: Published
-//  Description: Removes all of the vertices from the arrays;
-//               functionally equivalent to set_num_vertices(0) (but
+//  Description: Removes all of the rows from the arrays;
+//               functionally equivalent to set_num_rows(0) (but
 //               faster).
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-clear_vertices() {
+clear_rows() {
   CDWriter cdata(_cycler);
   nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
 
@@ -185,7 +185,7 @@ clear_vertices() {
     if ((*ai)->get_ref_count() > 1) {
       (*ai) = new qpGeomVertexArrayData(*(*ai));
     }
-    (*ai)->clear_vertices();
+    (*ai)->clear_rows();
   }
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices.clear();
@@ -196,9 +196,9 @@ clear_vertices() {
 //       Access: Published
 //  Description: Returns a modifiable pointer to the indicated vertex
 //               array, so that application code may directly
-//               manipulate the vertices.  You should avoid changing
+//               manipulate the data.  You should avoid changing
 //               the length of this array, since all of the arrays
-//               should be kept in sync--use set_num_vertices()
+//               should be kept in sync--use set_num_rows()
 //               instead.
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData *qpGeomVertexData::
@@ -357,7 +357,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
   const qpGeomVertexFormat *source_format = source.get_format();
   const qpGeomVertexFormat *dest_format = get_format();
 
-  int num_vertices = source.get_num_vertices();
+  int num_rows = source.get_num_rows();
   int num_arrays = source_format->get_num_arrays();
   int source_i;
 
@@ -402,7 +402,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
   }
 
   // Now make sure the arrays we didn't share are all filled in.
-  set_num_vertices(num_vertices);
+  set_num_rows(num_rows);
 
   // Now go back through and copy any data that's left over.
   for (source_i = 0; source_i < num_arrays; ++source_i) {
@@ -427,7 +427,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
           bytewise_copy(dest_array_data + dest_column->get_start(), 
                         dest_array_format->get_stride(),
                         array_data + source_column->get_start(), source_array_format->get_stride(),
-                        source_column, num_vertices);
+                        source_column, num_rows);
 
         } else if (dest_column->is_packed_argb() && 
                    source_column->is_uint8_rgba()) {
@@ -438,7 +438,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
             (dest_array_data + dest_column->get_start(), 
              dest_array_format->get_stride(),
              array_data + source_column->get_start(), source_array_format->get_stride(),
-             num_vertices);
+             num_rows);
 
         } else if (dest_column->is_uint8_rgba() && 
                    source_column->is_packed_argb()) {
@@ -450,7 +450,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
             (dest_array_data + dest_column->get_start(), 
              dest_array_format->get_stride(),
              array_data + source_column->get_start(), source_array_format->get_stride(),
-             num_vertices);
+             num_rows);
 
         } else {
           // A generic copy.
@@ -553,7 +553,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   // Okay, convert the data to the new format.
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Converting " << get_num_vertices() << " vertices.\n";
+      << "Converting " << get_num_rows() << " rows.\n";
   }
   PStatTimer timer(_convert_pcollector);
 
@@ -617,11 +617,11 @@ scale_color(const LVecBase4f &color_scale, int num_components,
     return set_color(color_scale, num_components, numeric_type, contents);
   }
 
-  int num_vertices = get_num_vertices();
+  int num_rows = get_num_rows();
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Scaling color for " << num_vertices << " vertices by "
+      << "Scaling color for " << num_rows << " vertices by "
       << color_scale << ".\n";
   }
   PStatTimer timer(_scale_color_pcollector);
@@ -634,7 +634,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   qpGeomVertexWriter to(new_data, InternalName::get_color());
   qpGeomVertexReader from(this, InternalName::get_color());
 
-  for (int i = 0; i < num_vertices; i++) {
+  for (int i = 0; i < num_rows; i++) {
     Colorf color = from.get_data4f();
     to.set_data4f(color[0] * color_scale[0],
                   color[1] * color_scale[1],
@@ -687,7 +687,7 @@ set_color(const Colorf &color, int num_components,
           qpGeomVertexData::Contents contents) const {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Setting color for " << get_num_vertices() << " vertices to "
+      << "Setting color for " << get_num_rows() << " vertices to "
       << color << ".\n";
   }
   PStatTimer timer(_set_color_pcollector);
@@ -759,7 +759,7 @@ replace_column(const InternalName *name, int num_components,
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "Replacing data type " << *name << "; converting "
-      << get_num_vertices() << " vertices from " 
+      << get_num_rows() << " rows from " 
       << *_format << " to " << *format << "\n";
   }
   
@@ -792,10 +792,10 @@ replace_column(const InternalName *name, int num_components,
     nassertr(j == new_type_array, new_data);
 
     // For the new type array, we set up a temporary array that has
-    // room for the right number of vertices.
+    // room for the right number of rows.
     PT(qpGeomVertexArrayData) new_array = new qpGeomVertexArrayData
       (format->get_array(j), get_usage_hint());
-    new_array->set_num_vertices(get_num_vertices());
+    new_array->set_num_rows(get_num_rows());
     new_data->set_array(j, new_array);
   }
 
@@ -812,7 +812,7 @@ output(ostream &out) const {
   if (!get_name().empty()) {
     out << get_name() << " ";
   }
-  out << get_num_vertices() << " vertices: " << *get_format();
+  out << get_num_rows() << " rows: " << *get_format();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1080,36 +1080,36 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::do_set_num_vertices
+//     Function: qpGeomVertexData::do_set_num_rows
 //       Access: Private
-//  Description: The private implementation of set_num_vertices().
+//  Description: The private implementation of set_num_rows().
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexData::
-do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
+do_set_num_rows(int n, qpGeomVertexData::CDWriter &cdata) {
   nassertr(_format->get_num_arrays() == (int)cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
   int color_array = -1;
-  int orig_color_vertices = -1;
+  int orig_color_rows = -1;
 
   for (size_t i = 0; i < cdata->_arrays.size(); i++) {
-    if (cdata->_arrays[i]->get_num_vertices() != n) {
+    if (cdata->_arrays[i]->get_num_rows() != n) {
       // Copy-on-write.
       if (cdata->_arrays[i]->get_ref_count() > 1) {
         cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
       }
       if (cdata->_arrays[i]->has_column(InternalName::get_color())) {
         color_array = i;
-        orig_color_vertices = cdata->_arrays[i]->get_num_vertices();
+        orig_color_rows = cdata->_arrays[i]->get_num_rows();
       }
-      cdata->_arrays[i]->set_num_vertices(n);
+      cdata->_arrays[i]->set_num_rows(n);
       any_changed = true;
     }
   }
 
-  if (color_array >= 0 && orig_color_vertices < n) {
-    // We have just added some vertices, fill the "color" column with
+  if (color_array >= 0 && orig_color_rows < n) {
+    // We have just added some rows, fill the "color" column with
     // (1, 1, 1, 1), for the programmer's convenience.
     qpGeomVertexArrayData *array_data = cdata->_arrays[color_array];
     const qpGeomVertexColumn *column = 
@@ -1118,7 +1118,7 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
     unsigned char *start = 
       array_data->modify_data() + column->get_start();
     unsigned char *stop = start + array_data->get_data_size_bytes();
-    unsigned char *pointer = start + stride * orig_color_vertices;
+    unsigned char *pointer = start + stride * orig_color_rows;
     int num_values = column->get_num_values();
 
     switch (column->get_numeric_type()) {
@@ -1162,11 +1162,11 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
-  int num_vertices = get_num_vertices();
+  int num_rows = get_num_rows();
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Animating " << num_vertices << " vertices for " << get_name()
+      << "Animating " << num_rows << " vertices for " << get_name()
       << "\n";
   }
 
@@ -1208,7 +1208,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
 
           if (data.get_column()->get_num_values() == 4) {
             if (data.get_column()->has_homogeneous_coord()) {
-              for (int i = 0; i < num_vertices; i++) {
+              for (int i = 0; i < num_rows; i++) {
                 // Scale the delta by the homogeneous coordinate.
                 LPoint4f vertex = data.get_data4f();
                 LPoint3f d = delta.get_data3f();
@@ -1220,7 +1220,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
               }
             } else {
               // Just apply the four-component delta.
-              for (int i = 0; i < num_vertices; i++) {
+              for (int i = 0; i < num_rows; i++) {
                 const LPoint4f &vertex = data.get_data4f();
                 LPoint4f d = delta.get_data4f();
                 data.set_data4f(vertex + d * slider_value);
@@ -1229,7 +1229,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
           } else {
             // 3-component or smaller values; don't worry about a
             // homogeneous coordinate.
-            for (int i = 0; i < num_vertices; i++) {
+            for (int i = 0; i < num_rows; i++) {
               const LPoint3f &vertex = data.get_data3f();
               LPoint3f d = delta.get_data3f();
               data.set_data3f(vertex + d * slider_value);
@@ -1266,14 +1266,14 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
       }
       
       if (data.get_column()->get_num_values() == 4) {
-        for (int i = 0; i < num_vertices; i++) {
+        for (int i = 0; i < num_rows; i++) {
           LPoint4f vertex = data.get_data4f();
           int bi = blendi.get_data1i();
           palette->get_blend(bi).transform_point(vertex);
           data.set_data4f(vertex);
         }
       } else {
-        for (int i = 0; i < num_vertices; i++) {
+        for (int i = 0; i < num_rows; i++) {
           LPoint3f vertex = data.get_data3f();
           int bi = blendi.get_data1i();
           palette->get_blend(bi).transform_point(vertex);
@@ -1292,7 +1292,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
         return;
       }
       
-      for (int i = 0; i < num_vertices; i++) {
+      for (int i = 0; i < num_rows; i++) {
         LVector3f vertex = data.get_data3f();
         int bi = blendi.get_data1i();
         palette->get_blend(bi).transform_vector(vertex);

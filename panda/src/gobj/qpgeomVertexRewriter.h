@@ -29,7 +29,7 @@
 //               GeomVertexReader and a GeomVertexWriter, combined
 //               together into one convenient package.  It is designed
 //               for making a single pass over a GeomVertexData
-//               object, modifying vertices as it goes.
+//               object, modifying rows as it goes.
 //
 //               Although it doesn't provide any real performance
 //               benefit over using a separate reader and writer on
@@ -66,9 +66,9 @@ PUBLISHED:
   INLINE int get_array() const;
   INLINE const qpGeomVertexColumn *get_column() const;
 
-  INLINE void set_vertex(int vertex);
+  INLINE void set_row(int row);
 
-  INLINE int get_start_vertex() const;
+  INLINE int get_start_row() const;
   INLINE bool is_at_end() const;
 };
 

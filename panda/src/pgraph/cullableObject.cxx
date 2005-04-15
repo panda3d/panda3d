@@ -273,7 +273,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
       // Get the point in eye-space coordinates.
       unsigned int v = index.get_data1i();
       (*vi) = v;
-      vertex.set_vertex(v);
+      vertex.set_row(v);
       points[v]._eye = modelview.xform_point(vertex.get_data3f());
       points[v]._dist = gsg->compute_distance_to(points[v]._eye);
     }
@@ -298,7 +298,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
       LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * projection;
 
       if (has_size) {
-        size.set_vertex(*vi);
+        size.set_row(*vi);
         point_size = size.get_data1f();
       }
 
@@ -323,7 +323,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
       float scale_x = scale_y;
       if (has_aspect_ratio) {
-        aspect_ratio.set_vertex(*vi);
+        aspect_ratio.set_row(*vi);
         scale_x *= aspect_ratio.get_data1f();
       }
 
@@ -333,7 +333,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
       if (has_rotate) {
         // If we have a rotate factor, apply it to those two corners.
-        rotate.set_vertex(*vi);
+        rotate.set_row(*vi);
         float r = rotate.get_data1f();
         LMatrix3f mat = LMatrix3f::rotate_mat(r);
         c0 = c0 * mat;
@@ -353,7 +353,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
       new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
 
       if (has_normal) {
-        normal.set_vertex(*vi);
+        normal.set_row(*vi);
         Normalf c = render_transform.xform_vec(normal.get_data3f());
         new_normal.add_data3f(c);
         new_normal.add_data3f(c);
@@ -361,7 +361,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
         new_normal.add_data3f(c);
       }
       if (has_color) {
-        color.set_vertex(*vi);
+        color.set_row(*vi);
         const Colorf &c = color.get_data4f();
         new_color.add_data4f(c);
         new_color.add_data4f(c);
@@ -374,7 +374,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
         new_texcoord.add_data2f(1.0f, 1.0f);
         new_texcoord.add_data2f(0.0f, 1.0f);
       } else if (has_texcoord) {
-        texcoord.set_vertex(*vi);
+        texcoord.set_row(*vi);
         const LVecBase4f &c = texcoord.get_data4f();
         new_texcoord.add_data4f(c);
         new_texcoord.add_data4f(c);

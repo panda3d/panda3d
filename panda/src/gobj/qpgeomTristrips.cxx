@@ -139,7 +139,7 @@ decompose_impl() const {
   qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
-  int num_vertices = vertices->get_num_vertices();
+  int num_vertices = vertices->get_num_rows();
 
   // We need a slightly different algorithm for SM_flat_first_vertex
   // than for SM_flat_last_vertex, to preserve the key vertex in the
@@ -153,7 +153,7 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
-      index.set_vertex(vi);
+      index.set_row(vi);
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
       int v0 = index.get_data1i();
@@ -190,7 +190,7 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
-      index.set_vertex(vi);
+      index.set_row(vi);
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
       int v0 = index.get_data1i();
@@ -252,7 +252,7 @@ rotate_impl() const {
     if (begin != 0) {
       // Copy in the unused vertices between tristrips.
       to.set_data1i(last_added);
-      from.set_vertex(end - 1);
+      from.set_row(end - 1);
       to.set_data1i(from.get_data1i());
       begin += 2;
     }
@@ -261,7 +261,7 @@ rotate_impl() const {
     // an odd number of vertices, which is not allowed.
     nassertr((num_vertices & 1) == 0, NULL);
     for (int vi = end - 1; vi >= begin; --vi) {
-      from.set_vertex(vi);
+      from.set_row(vi);
       last_added = from.get_data1i();
       to.set_data1i(last_added);
     }
@@ -285,11 +285,11 @@ rotate_impl() const {
 void qpGeomTristrips::
 append_unused_vertices(qpGeomVertexArrayData *vertices, int vertex) {
   qpGeomVertexReader from(vertices, 0);
-  from.set_vertex(vertices->get_num_vertices() - 1);
+  from.set_row(vertices->get_num_rows() - 1);
   int prev = from.get_data1i();
 
   qpGeomVertexWriter to(vertices, 0);
-  to.set_vertex(vertices->get_num_vertices());
+  to.set_row(vertices->get_num_rows());
 
   to.add_data1i(prev);
   to.add_data1i(vertex);

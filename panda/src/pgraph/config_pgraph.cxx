@@ -155,12 +155,24 @@ ConfigVariableBool auto_break_cycles
           "from time to time to prevent gradual memory bloat."));
 
 ConfigVariableInt max_collect_vertices
-("max-collect-vertices", 4096,
+("max-collect-vertices", 1024,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "
           "accumulated into any one GeomVertexData structure as a result "
-          "of collecting objects together during a flatten operation.  This "
-          "does not impose a limit on the original size of any one "
+          "of collecting objects together during a flatten operation.  "
+          "This prevents the accidental generation of large vertex buffers "
+          "from lots of smaller vertex buffers, while not "
+          "imposing a limit on the original size of any one "
           "GeomVertexData structure."));
+
+ConfigVariableInt max_collect_indices
+("max-collect-indices", 1024,
+ PRC_DESC("Specifies the maximum number of vertex indices that are allowed "
+          "to be accumulated into any one GeomPrimitive as a result "
+          "of collecting objects together during a flatten operation.  "
+          "This prevents the accidental generation of large index buffers "
+          "from lots of smaller index buffers, while not "
+          "imposing a limit on the original size of any one "
+          "GeomPrimitive."));
 
 ConfigVariableBool polylight_info
 ("polylight-info", false,

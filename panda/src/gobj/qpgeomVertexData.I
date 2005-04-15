@@ -88,30 +88,30 @@ has_column(const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_num_vertices
+//     Function: qpGeomVertexData::set_num_rows
 //       Access: Published
-//  Description: Sets the length of the array to n vertices in all of
-//               the various arrays (presumably by adding vertices).
+//  Description: Sets the length of the array to n rows in all of
+//               the various arrays (presumably by adding rows).
 //
 //               The new vertex data is initialized to 0, except for
 //               the "color" column, which is initialized to (1, 1, 1,
 //               1).
 //
-//               The return value is true if the number of vertices
+//               The return value is true if the number of rows
 //               was changed, false if the object already contained n
-//               vertices (or if there was some error).
+//               rows (or if there was some error).
 //
 //               Although this method is Published, application code
 //               only very rarely has any need to call it.  Instead,
 //               you should use the GeomVertexWriter to build up the
-//               vertices in a GeomVertexData object automatically,
+//               rows in a GeomVertexData object automatically,
 //               without need to explicitly set the number of
-//               vertices.
+//               rows.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexData::
-set_num_vertices(int n) {
+set_num_rows(int n) {
   CDWriter cdata(_cycler);
-  return do_set_num_vertices(n, cdata);
+  return do_set_num_rows(n, cdata);
 }
 
 ////////////////////////////////////////////////////////////////////

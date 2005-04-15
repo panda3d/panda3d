@@ -128,9 +128,9 @@ get_array_data() const {
 //  Description: Sets up the rewriter to use the nth data type of the
 //               GeomVertexFormat, numbering from 0.
 //
-//               This also resets both the read and write vertex
-//               numbers to the start vertex (the same value passed to
-//               a previous call to set_vertex(), or 0 if set_vertex()
+//               This also resets both the read and write row
+//               numbers to the start row (the same value passed to
+//               a previous call to set_row(), or 0 if set_row()
 //               was never called.)
 //
 //               The return value is true if the data type is valid,
@@ -139,7 +139,7 @@ get_array_data() const {
 INLINE bool qpGeomVertexRewriter::
 set_column(int column) {
   // It's important to invoke the writer first, then the reader.  See
-  // set_vertex().
+  // set_row().
   qpGeomVertexWriter::set_column(column);
   return qpGeomVertexReader::set_column(column);
 }
@@ -150,9 +150,9 @@ set_column(int column) {
 //  Description: Sets up the rewriter to use the data type with the
 //               indicated name.
 //
-//               This also resets both the read and write vertex
-//               numbers to the start vertex (the same value passed to
-//               a previous call to set_vertex(), or 0 if set_vertex()
+//               This also resets both the read and write row
+//               numbers to the start row (the same value passed to
+//               a previous call to set_row(), or 0 if set_row()
 //               was never called.)
 //
 //               The return value is true if the data type is valid,
@@ -169,9 +169,9 @@ set_column(const string &name) {
 //  Description: Sets up the rewriter to use the data type with the
 //               indicated name.
 //
-//               This also resets both the read and write vertex
-//               numbers to the start vertex (the same value passed to
-//               a previous call to set_vertex(), or 0 if set_vertex()
+//               This also resets both the read and write row
+//               numbers to the start row (the same value passed to
+//               a previous call to set_row(), or 0 if set_row()
 //               was never called.)
 //
 //               The return value is true if the data type is valid,
@@ -180,7 +180,7 @@ set_column(const string &name) {
 INLINE bool qpGeomVertexRewriter::
 set_column(const InternalName *name) {
   // It's important to invoke the writer first, then the reader.  See
-  // set_vertex().
+  // set_row().
   qpGeomVertexWriter::set_column(name);
   return qpGeomVertexReader::set_column(name);
 }
@@ -191,9 +191,9 @@ set_column(const InternalName *name) {
 //  Description: Sets up the rewriter to use the indicated column
 //               description on the given array.
 //
-//               This also resets both the read and write vertex
-//               numbers to the start vertex (the same value passed to
-//               a previous call to set_vertex(), or 0 if set_vertex()
+//               This also resets both the read and write row
+//               numbers to the start row (the same value passed to
+//               a previous call to set_row(), or 0 if set_row()
 //               was never called.)
 //
 //               The return value is true if the data type is valid,
@@ -202,7 +202,7 @@ set_column(const InternalName *name) {
 INLINE bool qpGeomVertexRewriter::
 set_column(int array, const qpGeomVertexColumn *column) {
   // It's important to invoke the writer first, then the reader.  See
-  // set_vertex().
+  // set_row().
   qpGeomVertexWriter::set_column(array, column);
   return qpGeomVertexReader::set_column(array, column);
 }
@@ -248,33 +248,33 @@ get_column() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::set_vertex
+//     Function: qpGeomVertexRewriter::set_row
 //       Access: Published
 //  Description: Sets the start, write, and write index to the
 //               indicated value.  The rewriter will begin traversing
-//               from the given vertex.
+//               from the given row.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexRewriter::
-set_vertex(int vertex) {
+set_row(int row) {
   // It's important to invoke the Writer first, since that might force
   // a recopy of the array, which might invalidate the pointer already
   // stored by the Reader if we invoked the Reader first.
-  qpGeomVertexWriter::set_vertex(vertex);
-  qpGeomVertexReader::set_vertex(vertex);
+  qpGeomVertexWriter::set_row(row);
+  qpGeomVertexReader::set_row(row);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::get_start_vertex
+//     Function: qpGeomVertexRewriter::get_start_row
 //       Access: Published
-//  Description: Returns the vertex index at which the rewriter
-//               started.  It will return to this vertex if you reset
+//  Description: Returns the row index at which the rewriter
+//               started.  It will return to this row if you reset
 //               the current column.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexRewriter::
-get_start_vertex() const {
-  nassertr(qpGeomVertexWriter::get_start_vertex() == 
-           qpGeomVertexReader::get_start_vertex(), 0);
-  return qpGeomVertexWriter::get_start_vertex();
+get_start_row() const {
+  nassertr(qpGeomVertexWriter::get_start_row() == 
+           qpGeomVertexReader::get_start_row(), 0);
+  return qpGeomVertexWriter::get_start_row();
 }
 
 ////////////////////////////////////////////////////////////////////

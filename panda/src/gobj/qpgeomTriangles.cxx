@@ -124,17 +124,17 @@ rotate_impl() const {
   qpGeomVertexReader from(vertices, 0);
   qpGeomVertexWriter to(new_vertices, 0);
 
-  int num_vertices = vertices->get_num_vertices();
+  int num_vertices = vertices->get_num_rows();
   
   switch (shade_model) {
   case SM_flat_first_vertex:
     // Move the first vertex to the end.
     {
       for (int begin = 0; begin < num_vertices; begin += 3) {
-        from.set_vertex(begin + 1);
+        from.set_row(begin + 1);
         to.set_data1i(from.get_data1i());
         to.set_data1i(from.get_data1i());
-        from.set_vertex(begin);
+        from.set_row(begin);
         to.set_data1i(from.get_data1i());
       }
     }
@@ -144,9 +144,9 @@ rotate_impl() const {
     // Move the last vertex to the front.
     {
       for (int begin = 0; begin < num_vertices; begin += 3) {
-        from.set_vertex(begin + 2);
+        from.set_row(begin + 2);
         to.set_data1i(from.get_data1i());
-        from.set_vertex(begin);
+        from.set_row(begin);
         to.set_data1i(from.get_data1i());
         to.set_data1i(from.get_data1i());
       }

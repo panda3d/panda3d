@@ -100,7 +100,7 @@ get_index_type() const {
 INLINE int qpGeomPrimitive::
 get_num_vertices() const {
   CDReader cdata(_cycler);
-  return cdata->_vertices->get_num_vertices();
+  return cdata->_vertices->get_num_rows();
 }
 
 ////////////////////////////////////////////////////////////////////

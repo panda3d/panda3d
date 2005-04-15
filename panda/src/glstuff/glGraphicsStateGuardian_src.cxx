@@ -2520,8 +2520,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
     qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
-             primitive->get_maxs()->get_num_vertices() == (int)ends.size());
+    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+             primitive->get_maxs()->get_num_rows() == (int)ends.size());
     
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
@@ -2554,8 +2554,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
   qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-  nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
-           primitive->get_maxs()->get_num_vertices() == (int)ends.size());
+  nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+           primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
   unsigned int start = 0;
   for (size_t i = 0; i < ends.size(); i++) {
@@ -2881,7 +2881,7 @@ prepare_vertex_buffer(qpGeomVertexArrayData *data) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "creating vertex buffer " << gvbc->_index << ": "
-        << data->get_num_vertices() << " vertices " 
+        << data->get_num_rows() << " vertices " 
         << *data->get_array_format() << "\n";
     }
     

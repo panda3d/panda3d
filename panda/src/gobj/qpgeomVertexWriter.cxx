@@ -31,10 +31,9 @@ unsigned char qpGeomVertexWriter::empty_buffer[100] = { 0 };
 //  Description: Sets up the writer to use the indicated column
 //               description on the given array.
 //
-//               This also resets the current write vertex numbers to
-//               the start vertex (the same value passed to a previous
-//               call to set_vertex(), or 0 if set_vertex() was never
-//               called.)
+//               This also resets the current write row number to the
+//               start row (the same value passed to a previous call
+//               to set_row(), or 0 if set_row() was never called.)
 //
 //               The return value is true if the data type is valid,
 //               false otherwise.
@@ -73,7 +72,7 @@ set_column(int array, const qpGeomVertexColumn *column) {
 
   _packer = column->_packer;
   
-  set_pointer(_start_vertex);
+  set_pointer(_start_row);
   
   return true;
 }
@@ -89,6 +88,6 @@ initialize() {
   _packer = NULL;
   _pointer = NULL;
   _pointer_end = NULL;
-  _start_vertex = 0;
-  _write_vertex = 0;
+  _start_row = 0;
+  _write_row = 0;
 }

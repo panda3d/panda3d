@@ -131,12 +131,12 @@ rotate_impl() const {
   qpGeomVertexReader from(vertices, 0);
   qpGeomVertexWriter to(new_vertices, 0);
 
-  int num_vertices = vertices->get_num_vertices();
+  int num_vertices = vertices->get_num_rows();
 
   for (int begin = 0; begin < num_vertices; begin += 2) {
-    from.set_vertex(begin + 1);
+    from.set_row(begin + 1);
     to.set_data1i(from.get_data1i());
-    from.set_vertex(begin);
+    from.set_row(begin);
     to.set_data1i(from.get_data1i());
   }
   

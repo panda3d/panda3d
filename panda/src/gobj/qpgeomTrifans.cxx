@@ -124,7 +124,7 @@ decompose_impl() const {
   qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
-  int num_vertices = vertices->get_num_vertices();
+  int num_vertices = vertices->get_num_rows();
 
   int vi = 0;
   int li = 0;

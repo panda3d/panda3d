@@ -437,14 +437,14 @@ void qpGeomVertexArrayFormat::
 write_with_data(ostream &out, int indent_level,
                 const qpGeomVertexData *data, int array_index) const {
   consider_sort_columns();
-  int num_vertices = data->get_num_vertices();
+  int num_vertices = data->get_num_rows();
 
   qpGeomVertexReader reader(data);
 
   for (int i = 0; i < num_vertices; i++) {
     indent(out, indent_level)
-      << "vertex index " << i << ":\n";
-    reader.set_vertex(i);
+      << "row " << i << ":\n";
+    reader.set_row(i);
     Columns::const_iterator ci;
     for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
       const qpGeomVertexColumn *column = (*ci);

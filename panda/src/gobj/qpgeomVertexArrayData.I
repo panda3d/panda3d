@@ -53,26 +53,26 @@ has_column(const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::get_num_vertices
+//     Function: qpGeomVertexArrayData::get_num_rows
 //       Access: Published
-//  Description: Returns the number of vertices stored in the array,
+//  Description: Returns the number of rows stored in the array,
 //               based on the number of bytes and the stride.  This
 //               should be the same for all arrays within a given
 //               GeomVertexData object.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexArrayData::
-get_num_vertices() const {
+get_num_rows() const {
   return get_data_size_bytes() / _array_format->get_stride();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::clear_vertices
+//     Function: qpGeomVertexArrayData::clear_rows
 //       Access: Published
-//  Description: Removes all of the vertices in the array.
-//               Functionally equivalent to set_num_vertices(0).
+//  Description: Removes all of the rows in the array.
+//               Functionally equivalent to set_num_rows(0).
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexArrayData::
-clear_vertices() {
+clear_rows() {
   set_data(PTA_uchar());
 }
 

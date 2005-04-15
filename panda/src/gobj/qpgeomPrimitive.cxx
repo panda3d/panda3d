@@ -136,10 +136,10 @@ set_index_type(qpGeomPrimitive::NumericType index_type) {
 int qpGeomPrimitive::
 get_vertex(int i) const {
   CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_vertices(), -1);
+  nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_rows(), -1);
 
   qpGeomVertexReader index(cdata->_vertices, 0);
-  index.set_vertex(i);
+  index.set_row(i);
   return index.get_data1i();
 }
 
@@ -159,14 +159,14 @@ add_vertex(int vertex) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      (int)cdata->_vertices->get_num_vertices() == get_primitive_end(num_primitives - 1)) {
+      (int)cdata->_vertices->get_num_rows() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
     append_unused_vertices(cdata->_vertices, vertex);
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
-  index.set_vertex(cdata->_vertices->get_num_vertices());
+  index.set_row(cdata->_vertices->get_num_rows());
 
   index.add_data1i(vertex);
 
@@ -191,14 +191,14 @@ add_consecutive_vertices(int start, int num_vertices) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      (int)cdata->_vertices->get_num_vertices() == get_primitive_end(num_primitives - 1)) {
+      (int)cdata->_vertices->get_num_rows() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
     append_unused_vertices(cdata->_vertices, start);
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
-  index.set_vertex(cdata->_vertices->get_num_vertices());
+  index.set_row(cdata->_vertices->get_num_rows());
 
   for (int v = start; v <= end; ++v) {
     index.add_data1i(v);
@@ -247,14 +247,14 @@ close_primitive() {
 #ifndef NDEBUG
     int num_added;
     if (cdata->_ends.empty()) {
-      num_added = (int)cdata->_vertices->get_num_vertices();
+      num_added = (int)cdata->_vertices->get_num_rows();
     } else {
-      num_added = (int)cdata->_vertices->get_num_vertices() - cdata->_ends.back();
+      num_added = (int)cdata->_vertices->get_num_rows() - cdata->_ends.back();
       num_added -= get_num_unused_vertices_per_primitive();
     }
     nassertr(num_added >= get_min_num_vertices_per_primitive(), false);
 #endif
-    cdata->_ends.push_back((int)cdata->_vertices->get_num_vertices());
+    cdata->_ends.push_back((int)cdata->_vertices->get_num_rows());
 
   } else {
 #ifndef NDEBUG
@@ -264,7 +264,7 @@ close_primitive() {
     int num_vertices_per_primitive = get_num_vertices_per_primitive();
     int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
 
-    int num_vertices = cdata->_vertices->get_num_vertices();
+    int num_vertices = cdata->_vertices->get_num_rows();
     nassertr((num_vertices + num_unused_vertices_per_primitive) % (num_vertices_per_primitive + num_unused_vertices_per_primitive) == 0, false)
 #endif
   }
@@ -331,7 +331,7 @@ get_num_primitives() const {
   } else {
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.
-    return ((int)cdata->_vertices->get_num_vertices() / num_vertices_per_primitive);
+    return ((int)cdata->_vertices->get_num_rows() / num_vertices_per_primitive);
   }
 }
 
@@ -437,10 +437,10 @@ get_primitive_num_vertices(int n) const {
 int qpGeomPrimitive::
 get_primitive_min_vertex(int n) const {
   CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_mins->get_num_vertices(), -1);
+  nassertr(n >= 0 && n < (int)cdata->_mins->get_num_rows(), -1);
 
   qpGeomVertexReader index(cdata->_mins, 0);
-  index.set_vertex(n);
+  index.set_row(n);
   return index.get_data1i();
 }
 
@@ -453,10 +453,10 @@ get_primitive_min_vertex(int n) const {
 int qpGeomPrimitive::
 get_primitive_max_vertex(int n) const {
   CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_maxs->get_num_vertices(), -1);
+  nassertr(n >= 0 && n < (int)cdata->_maxs->get_num_rows(), -1);
 
   qpGeomVertexReader index(cdata->_maxs, 0);
-  index.set_vertex(n);
+  index.set_row(n);
   return index.get_data1i();
 }
 
@@ -540,7 +540,7 @@ get_num_bytes() const {
 bool qpGeomPrimitive::
 check_valid(const qpGeomVertexData *vertex_data) const {
   return get_num_vertices() == 0 ||
-    get_max_vertex() < vertex_data->get_num_vertices();
+    get_max_vertex() < vertex_data->get_num_rows();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,7 +856,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 
   if (got_mat) {
     while (!index.is_at_end()) {
-      reader.set_vertex(index.get_data1i());
+      reader.set_row(index.get_data1i());
       const LVecBase3f &vertex = reader.get_data3f();
       
       if (found_any) {
@@ -874,7 +874,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     }
   } else {
     while (!index.is_at_end()) {
-      reader.set_vertex(index.get_data1i());
+      reader.set_row(index.get_data1i());
       LPoint3f vertex = mat.xform_point(reader.get_data3f());
       
       if (found_any) {
@@ -945,7 +945,7 @@ append_unused_vertices(qpGeomVertexArrayData *, int) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
-  if (cdata->_vertices->get_num_vertices() == 0) {
+  if (cdata->_vertices->get_num_rows() == 0) {
     cdata->_min_vertex = 0;
     cdata->_max_vertex = 0;
     cdata->_mins.clear();
@@ -995,7 +995,7 @@ recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
     }
     mins.add_data1i(min_prim);
     maxs.add_data1i(max_prim);
-    nassertv(cdata->_mins->get_num_vertices() == (int)cdata->_ends.size());
+    nassertv(cdata->_mins->get_num_rows() == (int)cdata->_ends.size());
 
   } else {
     // This is a simple primitive type like a triangle; just compute

@@ -538,7 +538,7 @@ int GeomTransformer::
 collect_vertex_data(qpGeom *geom, int collect_bits) {
   const qpGeomVertexData *vdata = geom->get_vertex_data();
 
-  if (vdata->get_num_vertices() > _max_collect_vertices) {
+  if (vdata->get_num_rows() > _max_collect_vertices) {
     // Don't even bother.
     return 0;
   }
@@ -576,8 +576,8 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
     ++num_created;
   }
 
-  int offset = new_data->get_num_vertices();
-  int new_num_vertices = offset + vdata->get_num_vertices();
+  int offset = new_data->get_num_rows();
+  int new_num_vertices = offset + vdata->get_num_rows();
   if (new_num_vertices > _max_collect_vertices) {
     // Whoa, hold the phone!  Too many vertices going into this one
     // GeomVertexData object; we'd better start over.
@@ -585,11 +585,11 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
                                     vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
     offset = 0;
-    new_num_vertices = vdata->get_num_vertices();
+    new_num_vertices = vdata->get_num_rows();
     ++num_created;
   }
 
-  new_data->set_num_vertices(new_num_vertices);
+  new_data->set_num_rows(new_num_vertices);
 
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
     qpGeomVertexArrayData *new_array = new_data->modify_array(i);

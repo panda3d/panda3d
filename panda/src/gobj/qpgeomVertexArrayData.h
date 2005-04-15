@@ -74,9 +74,9 @@ PUBLISHED:
 
   INLINE bool has_column(const InternalName *name) const;
 
-  INLINE int get_num_vertices() const;
-  bool set_num_vertices(int n);
-  INLINE void clear_vertices();
+  INLINE int get_num_rows() const;
+  bool set_num_rows(int n);
+  INLINE void clear_rows();
 
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;

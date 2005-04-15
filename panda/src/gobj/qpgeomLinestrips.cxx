@@ -153,7 +153,7 @@ decompose_impl() const {
     }
     ++li;
   }
-  nassertr(vi == vertices->get_num_vertices() && index.is_at_end(), NULL);
+  nassertr(vi == vertices->get_num_rows() && index.is_at_end(), NULL);
 
   return lines.p();
 }
@@ -178,7 +178,7 @@ rotate_impl() const {
   for (ei = ends.begin(); ei != ends.end(); ++ei) {
     int end = (*ei);
     for (int vi = end - 1; vi >= begin; --vi) {
-      from.set_vertex(vi);
+      from.set_row(vi);
       to.set_data1i(from.get_data1i());
     }
     begin = end;

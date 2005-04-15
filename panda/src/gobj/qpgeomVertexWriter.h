@@ -39,7 +39,7 @@
 //               to allow these to run past the end of the data.  The
 //               add_data*() family of methods, on the other hand, can
 //               be used to replace existing data or add new data; if
-//               you call set_vertex() into the middle of existing
+//               you call set_row() into the middle of existing
 //               data the add_data*() methods will behave like the
 //               corresponding set_data*(), but if they run past the
 //               end of existing data they will quietly add new
@@ -96,9 +96,9 @@ PUBLISHED:
   INLINE int get_array() const;
   INLINE const qpGeomVertexColumn *get_column() const;
 
-  INLINE void set_vertex(int vertex);
+  INLINE void set_row(int row);
 
-  INLINE int get_start_vertex() const;
+  INLINE int get_start_row() const;
   INLINE bool is_at_end() const;
 
   INLINE void set_data1f(float data);
@@ -138,7 +138,7 @@ private:
 
   void initialize();
 
-  INLINE void set_pointer(int vertex);
+  INLINE void set_pointer(int row);
   INLINE unsigned char *inc_pointer();
   INLINE unsigned char *inc_add_pointer();
 
@@ -157,8 +157,8 @@ private:
   unsigned char *_pointer;
   unsigned char *_pointer_end;
 
-  int _start_vertex;
-  int _write_vertex;
+  int _start_row;
+  int _write_row;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL
