@@ -709,9 +709,9 @@ inc_pointer() {
   nassertr(_pointer < _pointer_end, empty_buffer);
   if (_vertex_data != (qpGeomVertexData *)NULL){ 
     const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertr(_pointer >= array_data->get_data() && _pointer < array_data->get_data() + array_data->get_data_size_bytes(), empty_buffer);
+    nassertr(_pointer >= array_data->get_data().p() && _pointer < array_data->get_data().p() + array_data->get_data_size_bytes(), empty_buffer);
   } else {
-    nassertr(_pointer >= _array_data->get_data() && _pointer < _array_data->get_data() + _array_data->get_data_size_bytes(), empty_buffer);
+    nassertr(_pointer >= _array_data->get_data().p() && _pointer < _array_data->get_data().p() + _array_data->get_data_size_bytes(), empty_buffer);
   }
 #endif
 

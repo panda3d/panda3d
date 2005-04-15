@@ -44,6 +44,7 @@ public:
 
   INLINE int get_data_size_bytes() const;
   INLINE bool changed_size() const;
+  INLINE bool changed_usage_hint() const;
   INLINE bool was_modified() const;
 
   INLINE void mark_loaded();
@@ -55,6 +56,7 @@ private:
   qpGeomVertexArrayData *_data;
   UpdateSeq _modified;
   int _data_size_bytes;
+  qpGeomEnums::UsageHint _usage_hint;
 
 public:
   static TypeHandle get_class_type() {

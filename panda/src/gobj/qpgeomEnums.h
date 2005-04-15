@@ -199,8 +199,8 @@ PUBLISHED:
 
 };
 
-ostream &operator << (ostream &out, qpGeomEnums::NumericType numeric_type);
-ostream &operator << (ostream &out, qpGeomEnums::Contents contents);
+EXPCL_PANDA ostream &operator << (ostream &out, qpGeomEnums::NumericType numeric_type);
+EXPCL_PANDA ostream &operator << (ostream &out, qpGeomEnums::Contents contents);
 
 #endif
 

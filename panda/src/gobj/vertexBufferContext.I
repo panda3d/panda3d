@@ -67,6 +67,17 @@ changed_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexBufferContext::changed_usage_hint
+//       Access: Public
+//  Description: Returns true if the data has changed its usage hint
+//               since the last time mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexBufferContext::
+changed_usage_hint() const {
+  return _usage_hint != _data->get_usage_hint();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexBufferContext::was_modified
 //       Access: Public
 //  Description: Returns true if the data has been modified since the
@@ -87,5 +98,6 @@ was_modified() const {
 INLINE void VertexBufferContext::
 mark_loaded() {
   _data_size_bytes = _data->get_data_size_bytes();
+  _usage_hint = _data->get_usage_hint();
   _modified = _data->get_modified();
 }
