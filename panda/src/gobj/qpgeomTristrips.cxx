@@ -242,8 +242,6 @@ rotate_impl() const {
   qpGeomVertexReader from(vertices, 0);
   qpGeomVertexWriter to(new_vertices, 0);
 
-  bool any_odd = false;
-
   int begin = 0;
   int last_added = 0;
   CPTA_int::const_iterator ei;

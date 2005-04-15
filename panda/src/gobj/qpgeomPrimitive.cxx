@@ -983,14 +983,14 @@ recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
 
       } else {
         min_prim = min(min_prim, vertex);
-        max_prim = min(max_prim, vertex);
+        max_prim = max(max_prim, vertex);
       }
       
       ++vi;
     }
     mins.add_data1i(min_prim);
     maxs.add_data1i(max_prim);
-    nassertv(mins.get_num_vertices() == cdata->_ends.size());
+    nassertv(mins.get_num_vertices() == (int)cdata->_ends.size());
 
   } else {
     // This is a simple primitive type like a triangle; just compute

@@ -208,8 +208,8 @@ private:
     UpdateSeq _modified;
 
     bool _got_minmax;
-    unsigned short _min_vertex;
-    unsigned short _max_vertex;
+    unsigned int _min_vertex;
+    unsigned int _max_vertex;
   };
 
   PipelineCycler<CData> _cycler;

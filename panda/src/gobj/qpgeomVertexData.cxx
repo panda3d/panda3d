@@ -1125,15 +1125,10 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
     case NT_packed_dcba:
     case NT_packed_dabc:
     case NT_uint8:
-      while (pointer < stop) {
-        memset(pointer, 0xff, num_values);
-        pointer += stride;
-      }
-      break;
-
     case NT_uint16:
+    case NT_uint32:
       while (pointer < stop) {
-        memset(pointer, 0xff, num_values * 2);
+        memset(pointer, 0xff, column->get_total_bytes());
         pointer += stride;
       }
       break;

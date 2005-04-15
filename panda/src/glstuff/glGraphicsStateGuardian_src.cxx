@@ -2520,7 +2520,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
     qpGeomVertexReader maxs(primitive->get_mins(), 0);
-    nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
+    nassertv(mins.get_num_vertices() == (int)ends.size() && 
+             maxs.get_num_vertices() == (int)ends.size());
     
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
@@ -2553,7 +2554,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
   qpGeomVertexReader maxs(primitive->get_mins(), 0);
-  nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
+  nassertv(mins.get_num_vertices() == (int)ends.size() && 
+           maxs.get_num_vertices() == (int)ends.size());
 
   unsigned int start = 0;
   for (size_t i = 0; i < ends.size(); i++) {

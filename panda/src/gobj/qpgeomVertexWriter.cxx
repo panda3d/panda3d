@@ -465,7 +465,6 @@ set_data1i(unsigned char *pointer, int a) {
       
     case NT_uint32:
       *(PN_uint32 *)pointer = a;
-      nassertv(*(PN_uint32 *)pointer == a);
       break;
       
     case NT_packed_dcba:
