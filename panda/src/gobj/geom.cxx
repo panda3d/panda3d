@@ -1120,7 +1120,7 @@ recompute_bound() {
         ++vcount;
       }
     }
-    nassertr(vcount == num_vertices, bound);
+    //nassertr(vcount == num_vertices, bound);
 
   } else {
     // Indexed case.
@@ -1134,7 +1134,7 @@ recompute_bound() {
         ++vindex;
       }
     }
-    nassertr(vindex == num_indices, bound);
+    //nassertr(vindex == num_indices, bound);
   }
 
   const LPoint3f *vertices_begin = &vertices[0];
