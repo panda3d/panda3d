@@ -190,38 +190,41 @@ DXGraphicsStateGuardian8::
 DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   GraphicsStateGuardian(properties, CS_yup_left)
 {
+  reset_panda_gsg();
+  
+  _pScrn = NULL;
+  _pD3DDevice = NULL;
+  
+  _bDXisReady = false;
+  _transform_stale = false;
+  _vertex_blending_enabled = false;
+  _overlay_windows_supported = false;
+  
+  _pFvfBufBasePtr = NULL;
+  _index_buf=NULL;
+  
+  _vbuffer_active = false;
+  _ibuffer_active = false;
+  
+  //    _max_light_range = __D3DLIGHT_RANGE_MAX;
+  
+  // non-dx obj values inited here should not change if resize is
+  // called and dx objects need to be recreated (otherwise they
+  // belong in dx_init, with other renderstate
+  
+  ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
+  matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
+  
+  _cur_read_pixel_buffer=RenderBuffer::T_front;
+  set_color_clear_value(_color_clear_value);
+  
+  // DirectX drivers seem to consistently invert the texture when
+  // they copy framebuffer-to-texture.  Ok.
+  _copy_texture_inverted = true;
 
-    reset_panda_gsg();
-
-    _pScrn = NULL;
-    _pD3DDevice = NULL;
-    
-    _bDXisReady = false;
-    _transform_stale = false;
-    _vertex_blending_enabled = false;
-    _overlay_windows_supported = false;
-
-    _pFvfBufBasePtr = NULL;
-    _index_buf=NULL;
-
-    _vbuffer_active = false;
-    _ibuffer_active = false;
-
-    //    _max_light_range = __D3DLIGHT_RANGE_MAX;
-
-    // non-dx obj values inited here should not change if resize is
-    // called and dx objects need to be recreated (otherwise they
-    // belong in dx_init, with other renderstate
-
-    ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
-    matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
-
-    _cur_read_pixel_buffer=RenderBuffer::T_front;
-    set_color_clear_value(_color_clear_value);
-
-    // DirectX drivers seem to consistently invert the texture when
-    // they copy framebuffer-to-texture.  Ok.
-    _copy_texture_inverted = true;
+  _supported_geom_rendering = 
+    qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
+    qpGeom::GR_flat_first_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2749,7 +2752,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
        primitive->get_min_vertex(),
        primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
-       primitive->get_flat_first_vertices(),
+       primitive->get_vertices(),
        D3DFMT_INDEX16,
        _vertex_data->get_array(0)->get_data(),
        _vertex_data->get_format()->get_array(0)->get_stride());
@@ -2765,8 +2768,6 @@ void DXGraphicsStateGuardian8::
 draw_tristrips(const qpGeomTristrips *primitive) {
   int min_vertex = primitive->get_min_vertex();
   int max_vertex = primitive->get_max_vertex();
-  //  CPTA_ushort vertices = primitive->get_flat_first_vertices();
-  CPTA_ushort vertices = primitive->get_vertices();
 
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
@@ -2779,17 +2780,15 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLESTRIP,
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          0, primitive->get_num_vertices() - 2);
       
     } else {
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLESTRIP, 
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          primitive->get_num_vertices() - 2, 
-         vertices, D3DFMT_INDEX16,
+         primitive->get_vertices(), D3DFMT_INDEX16,
          _vertex_data->get_array(0)->get_data(),
          _vertex_data->get_format()->get_array(0)->get_stride());
     }
@@ -2821,6 +2820,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     } else {
       CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
       int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+      CPTA_ushort vertices = primitive->get_vertices();
       
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -2834,6 +2834,59 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         
         start = ends[i] + 2;
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_trifans
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle fans.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_trifans(const qpGeomTrifans *primitive) {
+  int min_vertex = primitive->get_min_vertex();
+  int max_vertex = primitive->get_max_vertex();
+
+  // Send the individual triangle fans.  There's no connecting fans
+  // with degenerate vertices, so no worries about that.
+  CPTA_int ends = primitive->get_ends();
+  CPTA_ushort mins = primitive->get_mins();
+  CPTA_ushort maxs = primitive->get_maxs();
+  nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+  
+  if (_vbuffer_active) {
+    IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+    nassertv(ibc != (IndexBufferContext *)NULL);
+    apply_index_buffer(ibc);
+    
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      _pD3DDevice->DrawIndexedPrimitive
+        (D3DPT_TRIANGLEFAN,
+         mins[i], maxs[i] - mins[i] + 1, 
+         start, ends[i] - start - 2);
+      
+      start = ends[i] + 2;
+    }
+    
+  } else {
+    CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
+    int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+    CPTA_ushort vertices = primitive->get_vertices();
+    
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      _pD3DDevice->DrawIndexedPrimitiveUP
+        (D3DPT_TRIANGLEFAN, 
+         mins[i], maxs[i] - mins[i] + 1, 
+         ends[i] - start - 2,
+         vertices + start, D3DFMT_INDEX16,
+         array_data, stride);
+      
+      start = ends[i] + 2;
     }
   }
 }
@@ -2863,7 +2916,7 @@ draw_lines(const qpGeomLines *primitive) {
        primitive->get_min_vertex(),
        primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
-       primitive->get_flat_first_vertices(),
+       primitive->get_vertices(),
        D3DFMT_INDEX16,
        _vertex_data->get_array(0)->get_data(),
        _vertex_data->get_format()->get_array(0)->get_stride());

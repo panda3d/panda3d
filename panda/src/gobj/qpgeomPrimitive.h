@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 #include "qpgeomEnums.h"
-#include "qpgeomCacheEntry.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "updateSeq.h"
@@ -72,12 +71,13 @@ PUBLISHED:
   virtual PT(qpGeomPrimitive) make_copy() const=0;
 
   virtual PrimitiveType get_primitive_type() const=0;
-
-  INLINE UsageHint get_usage_hint() const;
-  INLINE void set_usage_hint(UsageHint usage_hint);
+  virtual int get_geom_rendering() const;
 
   INLINE ShadeModel get_shade_model() const;
   INLINE void set_shade_model(ShadeModel shade_model);
+
+  INLINE UsageHint get_usage_hint() const;
+  INLINE void set_usage_hint(UsageHint usage_hint);
 
   // The following published methods are provided for safe, high-level
   // iteration through the vertices and sub-primitives within the
@@ -109,6 +109,7 @@ PUBLISHED:
   INLINE int get_primitive_max_vertex(int n) const;
 
   CPT(qpGeomPrimitive) decompose() const;
+  CPT(qpGeomPrimitive) rotate() const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;
@@ -131,8 +132,6 @@ public:
   // instead.
 
   INLINE CPTA_ushort get_vertices() const;
-  INLINE CPTA_ushort get_flat_first_vertices() const;
-  INLINE CPTA_ushort get_flat_last_vertices() const;
   PTA_ushort modify_vertices();
   void set_vertices(CPTA_ushort vertices);
 
@@ -147,7 +146,6 @@ public:
   virtual int get_min_num_vertices_per_primitive() const;
   virtual int get_num_unused_vertices_per_primitive() const;
 
-  void clear_cache();
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
 public:
@@ -172,9 +170,6 @@ protected:
   virtual CPTA_ushort rotate_impl() const;
   virtual void append_unused_vertices(PTA_ushort &vertices, int vertex);
 
-protected:
-  static PStatCollector _rotate_pcollector;
-
 private:
   // A GeomPrimitive keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
@@ -183,16 +178,6 @@ private:
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, IndexBufferContext *> Contexts;
   Contexts _contexts;
-
-  class CacheEntry : public qpGeomCacheEntry {
-  public:
-    virtual void evict_callback();
-    virtual int get_result_size() const;
-    virtual void output(ostream &out) const;
-
-    qpGeomPrimitive *_source;
-    CPT(qpGeomPrimitive) _decomposed;
-  };
     
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -206,7 +191,6 @@ private:
     UsageHint _usage_hint;
     ShadeModel _shade_model;
     PTA_ushort _vertices;
-    CPTA_ushort _rotated_vertices;
     PTA_int _ends;
     PTA_ushort _mins;
     PTA_ushort _maxs;
@@ -215,16 +199,16 @@ private:
     bool _got_minmax;
     unsigned short _min_vertex;
     unsigned short _max_vertex;
-
-    PT(CacheEntry) _cache;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
-  CPTA_ushort do_rotate(CDReader &cdata);
   void recompute_minmax(CDWriter &cdata);
+
+  static PStatCollector _decompose_pcollector;
+  static PStatCollector _rotate_pcollector;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

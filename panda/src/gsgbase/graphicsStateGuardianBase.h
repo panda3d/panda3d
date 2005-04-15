@@ -120,7 +120,7 @@ class Lens;
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 public:
   virtual bool get_supports_multisample() const=0;
-  virtual int get_supported_point_rendering() const=0;
+  virtual int get_supported_geom_rendering() const=0;
 
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the

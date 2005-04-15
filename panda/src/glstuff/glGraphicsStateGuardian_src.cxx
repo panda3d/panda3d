@@ -327,7 +327,7 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::Constructor
+//     Function: GLGraphicsStateGuardian::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -342,7 +342,7 @@ CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::Destructor
+//     Function: GLGraphicsStateGuardian::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -352,7 +352,7 @@ CLP(GraphicsStateGuardian)::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::reset
+//     Function: GLGraphicsStateGuardian::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
 //               created.
@@ -369,6 +369,11 @@ reset() {
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
   get_extra_extensions();
   report_extensions();
+
+  _supported_geom_rendering = 
+    qpGeom::GR_point | qpGeom::GR_point_uniform_size |
+    qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
+    qpGeom::GR_flat_last_vertex;
 
   _supports_point_parameters = false;
 
@@ -389,7 +394,9 @@ reset() {
       _supports_point_parameters = false;
     }
   }
-  if (!_supports_point_parameters) {
+  if (_supports_point_parameters) {
+    _supported_geom_rendering |= qpGeom::GR_point_perspective;
+  } else {
     _glPointParameterfv = null_glPointParameterfv;
   }
 
@@ -867,7 +874,7 @@ reset() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::clear
+//     Function: GLGraphicsStateGuardian::clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
@@ -936,7 +943,7 @@ do_clear(const RenderBuffer &buffer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_display_region
+//     Function: GLGraphicsStateGuardian::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
 //               scissor region and viewport)
@@ -972,7 +979,7 @@ prepare_display_region() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_lens
+//     Function: GLGraphicsStateGuardian::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
 //               recently specified with set_scene()) active, so
@@ -1056,7 +1063,7 @@ begin_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::end_frame
+//     Function: GLGraphicsStateGuardian::end_frame
 //       Access: Public, Virtual
 //  Description: Called after each frame is rendered, to allow the
 //               GSG a chance to do any internal cleanup after
@@ -1099,7 +1106,7 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_point
+//     Function: GLGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1170,7 +1177,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_line
+//     Function: GLGraphicsStateGuardian::draw_line
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1244,7 +1251,7 @@ draw_line(GeomLine *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_linestrip
+//     Function: GLGraphicsStateGuardian::draw_linestrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1343,7 +1350,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_sprite
+//     Function: GLGraphicsStateGuardian::draw_sprite
 //       Access: Public, Virtual
 //  Description: CSN, 7/11/00
 ////////////////////////////////////////////////////////////////////
@@ -1619,7 +1626,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_polygon
+//     Function: GLGraphicsStateGuardian::draw_polygon
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1701,7 +1708,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_tri
+//     Function: GLGraphicsStateGuardian::draw_tri
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1780,7 +1787,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_quad
+//     Function: GLGraphicsStateGuardian::draw_quad
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1857,7 +1864,7 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_tristrip
+//     Function: GLGraphicsStateGuardian::draw_tristrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1963,7 +1970,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_trifan
+//     Function: GLGraphicsStateGuardian::draw_trifan
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -2063,7 +2070,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_sphere
+//     Function: GLGraphicsStateGuardian::draw_sphere
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -2160,7 +2167,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::begin_draw_primitives
+//     Function: GLGraphicsStateGuardian::begin_draw_primitives
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
 //               functions are called, this should prepare the vertex
@@ -2466,7 +2473,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_triangles
+//     Function: GLGraphicsStateGuardian::draw_triangles
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
@@ -2485,7 +2492,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_tristrips
+//     Function: GLGraphicsStateGuardian::draw_tristrips
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
@@ -2525,7 +2532,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_lines
+//     Function: GLGraphicsStateGuardian::draw_lines
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
@@ -2544,7 +2551,16 @@ draw_lines(const qpGeomLines *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_points
+//     Function: GLGraphicsStateGuardian::draw_linestrips
+//       Access: Public, Virtual
+//  Description: Draws a series of line strips.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_linestrips(const qpGeomLinestrips *primitive) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_points
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
@@ -2563,7 +2579,7 @@ draw_points(const qpGeomPoints *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::end_draw_primitives()
+//     Function: GLGraphicsStateGuardian::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()
 //               functions are called, this should do whatever cleanup
@@ -2606,7 +2622,7 @@ end_draw_primitives() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_texture
+//     Function: GLGraphicsStateGuardian::prepare_texture
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given texture, and returns a newly-allocated
@@ -2633,7 +2649,7 @@ prepare_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_texture
+//     Function: GLGraphicsStateGuardian::apply_texture
 //       Access: Public, Virtual
 //  Description: Makes the texture the currently available texture for
 //               rendering.
@@ -2661,7 +2677,7 @@ apply_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_texture
+//     Function: GLGraphicsStateGuardian::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               texture.  This function should never be called
@@ -2680,7 +2696,7 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_geom
+//     Function: GLGraphicsStateGuardian::prepare_geom
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given geom, and returns a newly-allocated
@@ -2772,7 +2788,7 @@ prepare_geom(Geom *geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_geom
+//     Function: GLGraphicsStateGuardian::release_geom
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               geom.  This function should never be called
@@ -2789,7 +2805,7 @@ release_geom(GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::record_deleted_display_list
+//     Function: GLGraphicsStateGuardian::record_deleted_display_list
 //       Access: Public
 //  Description: This is intended to be called only from the
 //               GLGeomContext destructor.  It saves the indicated
@@ -2803,7 +2819,7 @@ record_deleted_display_list(GLuint index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_vertex_buffer
+//     Function: GLGraphicsStateGuardian::prepare_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given data, and returns a newly-allocated
@@ -2836,7 +2852,7 @@ prepare_vertex_buffer(qpGeomVertexArrayData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_vertex_buffer
+//     Function: GLGraphicsStateGuardian::apply_vertex_buffer
 //       Access: Public
 //  Description: Makes the data the currently available data for
 //               rendering.
@@ -2873,7 +2889,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_vertex_buffer
+//     Function: GLGraphicsStateGuardian::release_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               data.  This function should never be called
@@ -2899,7 +2915,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_array_data
+//     Function: GLGraphicsStateGuardian::setup_array_data
 //       Access: Public
 //  Description: Internal function to bind a buffer object for the
 //               indicated data array, if appropriate, or to unbind a
@@ -2936,7 +2952,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_index_buffer
+//     Function: GLGraphicsStateGuardian::prepare_index_buffer
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given data, and returns a newly-allocated
@@ -2967,7 +2983,7 @@ prepare_index_buffer(qpGeomPrimitive *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_index_buffer
+//     Function: GLGraphicsStateGuardian::apply_index_buffer
 //       Access: Public
 //  Description: Makes the data the currently available data for
 //               rendering.
@@ -2989,12 +3005,12 @@ apply_index_buffer(IndexBufferContext *ibc) {
     }
     if (gibc->changed_size()) {
       _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
-                    gibc->get_data()->get_flat_last_vertices(), 
+                    gibc->get_data()->get_vertices(), 
                     get_usage(gibc->get_data()->get_usage_hint()));
 
     } else {
       _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, gibc->get_data_size_bytes(),
-                       gibc->get_data()->get_flat_last_vertices());
+                       gibc->get_data()->get_vertices());
     }
 
     gibc->mark_loaded();
@@ -3004,7 +3020,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_index_buffer
+//     Function: GLGraphicsStateGuardian::release_index_buffer
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               data.  This function should never be called
@@ -3030,7 +3046,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_primitive
+//     Function: GLGraphicsStateGuardian::setup_primitive
 //       Access: Public
 //  Description: Internal function to bind a buffer object for the
 //               indicated primitive's index list, if appropriate, or
@@ -3047,19 +3063,19 @@ const unsigned short *CLP(GraphicsStateGuardian)::
 setup_primitive(const qpGeomPrimitive *data) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return data->get_flat_last_vertices();
+    return data->get_vertices();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    return data->get_flat_last_vertices();
+    return data->get_vertices();
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = ((qpGeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, data->get_flat_last_vertices());
+  nassertr(ibc != (IndexBufferContext *)NULL, data->get_vertices());
   apply_index_buffer(ibc);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -3067,7 +3083,7 @@ setup_primitive(const qpGeomPrimitive *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_geom_munger
+//     Function: GLGraphicsStateGuardian::get_geom_munger
 //       Access: Public, Virtual
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
@@ -3079,7 +3095,7 @@ get_geom_munger(const RenderState *state) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_texture
+//     Function: GLGraphicsStateGuardian::framebuffer_copy_to_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixels within the indicated display
 //               region from the framebuffer into texture memory.
@@ -3140,7 +3156,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_ram
+//     Function: GLGraphicsStateGuardian::framebuffer_copy_to_ram
 //       Access: Public, Virtual
 //  Description: Copy the pixels within the indicated display region
 //               from the framebuffer into system memory, not texture
@@ -3263,7 +3279,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_material
+//     Function: GLGraphicsStateGuardian::apply_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3308,7 +3324,7 @@ void CLP(GraphicsStateGuardian)::apply_material(const Material *material) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_fog
+//     Function: GLGraphicsStateGuardian::apply_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3333,7 +3349,7 @@ apply_fog(Fog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_transform
+//     Function: GLGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
@@ -3358,7 +3374,7 @@ issue_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_tex_matrix
+//     Function: GLGraphicsStateGuardian::issue_tex_matrix
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3374,7 +3390,7 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_tex_gen
+//     Function: GLGraphicsStateGuardian::issue_tex_gen
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3390,7 +3406,7 @@ issue_tex_gen(const TexGenAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_shade_model
+//     Function: GLGraphicsStateGuardian::issue_shade_model
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3413,7 +3429,7 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_cg_shader_bind
+//     Function: GLGraphicsStateGuardian::issue_cg_shader_bind
 //       Access: Public, Virtual
 //  Description: Bind shader of current node
 //               and unbind the shader of the previous node
@@ -3453,7 +3469,7 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_material
+//     Function: GLGraphicsStateGuardian::issue_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3471,7 +3487,7 @@ issue_material(const MaterialAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_render_mode
+//     Function: GLGraphicsStateGuardian::issue_render_mode
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3480,7 +3496,6 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   _render_mode = attrib->get_mode();
   _point_size = attrib->get_thickness();
   _point_perspective = attrib->get_perspective();
-  _point_perspective = true;
 
   switch (_render_mode) {
   case RenderModeAttrib::M_unchanged:
@@ -3510,7 +3525,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_antialias
+//     Function: GLGraphicsStateGuardian::issue_antialias
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3566,7 +3581,7 @@ issue_antialias(const AntialiasAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_rescale_normal
+//     Function: GLGraphicsStateGuardian::issue_rescale_normal
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3613,7 +3628,7 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_texture_apply
+//     Function: GLGraphicsStateGuardian::issue_texture_apply
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3625,7 +3640,7 @@ issue_texture_apply(const TextureApplyAttrib *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_color_write
+//     Function: GLGraphicsStateGuardian::issue_color_write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3656,7 +3671,7 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_depth_test
+//     Function: GLGraphicsStateGuardian::issue_depth_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3673,7 +3688,7 @@ issue_depth_test(const DepthTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_alpha_test
+//     Function: GLGraphicsStateGuardian::issue_alpha_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3690,7 +3705,7 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_depth_write
+//     Function: GLGraphicsStateGuardian::issue_depth_write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3706,7 +3721,7 @@ issue_depth_write(const DepthWriteAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_cull_face
+//     Function: GLGraphicsStateGuardian::issue_cull_face
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3735,7 +3750,7 @@ issue_cull_face(const CullFaceAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_fog
+//     Function: GLGraphicsStateGuardian::issue_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3753,7 +3768,7 @@ issue_fog(const FogAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_depth_offset
+//     Function: GLGraphicsStateGuardian::issue_depth_offset
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3775,7 +3790,7 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::bind_light
+//     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
@@ -3815,7 +3830,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::bind_light
+//     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
@@ -3856,7 +3871,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::bind_light
+//     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
@@ -3896,7 +3911,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::wants_texcoords
+//     Function: GLGraphicsStateGuardian::wants_texcoords
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -3906,7 +3921,7 @@ wants_texcoords() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::compute_distance_to
+//     Function: GLGraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
 //               traversal; it will compute the distance to the
@@ -4084,7 +4099,7 @@ has_extension(const string &extension) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::is_at_least_version
+//     Function: GLGraphicsStateGuardian::is_at_least_version
 //       Access: Public
 //  Description: Returns true if the runtime GL version number is at
 //               least the indicated value, false otherwise.
@@ -4105,7 +4120,7 @@ is_at_least_version(int major_version, int minor_version,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_extension_func
+//     Function: GLGraphicsStateGuardian::get_extension_func
 //       Access: Public, Virtual
 //  Description: Returns the pointer to the GL extension function with
 //               the indicated name.  It is the responsibility of the
@@ -4121,7 +4136,7 @@ get_extension_func(const char *, const char *) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::set_draw_buffer
+//     Function: GLGraphicsStateGuardian::set_draw_buffer
 //       Access: Protected
 //  Description: Sets up the GLP(DrawBuffer) to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
@@ -4170,7 +4185,7 @@ set_draw_buffer(const RenderBuffer &rb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::set_read_buffer
+//     Function: GLGraphicsStateGuardian::set_read_buffer
 //       Access: Protected
 //  Description: Sets up the GLP(ReadBuffer) to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
@@ -4220,7 +4235,7 @@ set_read_buffer(const RenderBuffer &rb) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::bind_texture
+//     Function: GLGraphicsStateGuardian::bind_texture
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -4245,7 +4260,7 @@ bind_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::specify_texture
+//     Function: GLGraphicsStateGuardian::specify_texture
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -4371,7 +4386,7 @@ compute_gl_image_size(int x_size, int y_size, int z_size,
 #endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_texture_immediate
+//     Function: GLGraphicsStateGuardian::apply_texture_immediate
 //       Access: Protected
 //  Description: Sends the texture image to GL.  This can be used to
 //               render a texture in immediate mode, or as part of the
@@ -4571,7 +4586,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::upload_texture_image
+//     Function: GLGraphicsStateGuardian::upload_texture_image
 //       Access: Protected
 //  Description: Loads a texture image, or one page of a cube map
 //               image, from system RAM to texture memory.
@@ -4709,7 +4724,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_numeric_type
+//     Function: GLGraphicsStateGuardian::get_numeric_type
 //       Access: Protected, Static
 //  Description: Maps from the Geom's internal numeric type symbols
 //               to GL's.
@@ -4735,7 +4750,7 @@ get_numeric_type(qpGeom::NumericType numeric_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_target
+//     Function: GLGraphicsStateGuardian::get_texture_target
 //       Access: Protected
 //  Description: Maps from the Texture's texture type symbols to
 //               GL's.
@@ -4769,7 +4784,7 @@ get_texture_target(Texture::TextureType texture_type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_wrap_mode
+//     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
 //       Access: Protected, Static
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
@@ -4803,7 +4818,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_filter_type
+//     Function: GLGraphicsStateGuardian::get_texture_filter_type
 //       Access: Protected, Static
 //  Description: Maps from the Texture's internal filter type symbols
 //               to GL's.
@@ -4850,7 +4865,7 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_component_type
+//     Function: GLGraphicsStateGuardian::get_component_type
 //       Access: Protected, Static
 //  Description: Maps from the Texture's internal ComponentType symbols
 //               to GL's.
@@ -4872,7 +4887,7 @@ get_component_type(Texture::ComponentType component_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_external_image_format
+//     Function: GLGraphicsStateGuardian::get_external_image_format
 //       Access: Protected
 //  Description: Maps from the Texture's Format symbols
 //               to GL's.
@@ -4920,7 +4935,7 @@ get_external_image_format(Texture::Format format) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_internal_image_format
+//     Function: GLGraphicsStateGuardian::get_internal_image_format
 //       Access: Protected, Static
 //  Description: Maps from the Texture's Format symbols to a
 //               suitable internal format for GL textures.
@@ -4972,7 +4987,7 @@ get_internal_image_format(Texture::Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_apply_mode_type
+//     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
 //       Access: Protected, Static
 //  Description: Maps from the texture stage's mode types
 //               to the corresponding OpenGL ids
@@ -4995,7 +5010,7 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_combine_type
+//     Function: GLGraphicsStateGuardian::get_texture_combine_type
 //       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineMode types
 //               to the corresponding OpenGL ids
@@ -5019,7 +5034,7 @@ get_texture_combine_type(TextureStage::CombineMode cm) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_src_type
+//     Function: GLGraphicsStateGuardian::get_texture_src_type
 //       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineSource types
 //               to the corresponding OpenGL ids
@@ -5041,7 +5056,7 @@ get_texture_src_type(TextureStage::CombineSource cs) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_texture_operand_type
+//     Function: GLGraphicsStateGuardian::get_texture_operand_type
 //       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineOperand types
 //               to the corresponding OpenGL ids
@@ -5062,7 +5077,7 @@ get_texture_operand_type(TextureStage::CombineOperand co) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_fog_mode_type
+//     Function: GLGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected, Static
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
@@ -5083,7 +5098,7 @@ get_fog_mode_type(Fog::Mode m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_blend_equation_type
+//     Function: GLGraphicsStateGuardian::get_blend_equation_type
 //       Access: Protected, Static
 //  Description: Maps from ColorBlendAttrib::Mode to glBlendEquation
 //               value.
@@ -5114,7 +5129,7 @@ get_blend_equation_type(ColorBlendAttrib::Mode mode) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_blend_func
+//     Function: GLGraphicsStateGuardian::get_blend_func
 //       Access: Protected, Static
 //  Description: Maps from ColorBlendAttrib::Operand to glBlendFunc
 //               value.
@@ -5178,7 +5193,7 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_usage
+//     Function: GLGraphicsStateGuardian::get_usage
 //       Access: Public, Static
 //  Description: Maps from UsageHint to the GL symbol.
 ////////////////////////////////////////////////////////////////////
@@ -5206,7 +5221,7 @@ get_usage(qpGeom::UsageHint usage_hint) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::print_gfx_visual
+//     Function: GLGraphicsStateGuardian::print_gfx_visual
 //       Access: Public
 //  Description: Prints a description of the current visual selected.
 ////////////////////////////////////////////////////////////////////
@@ -5254,7 +5269,7 @@ print_gfx_visual() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_scaled_color
+//     Function: GLGraphicsStateGuardian::issue_scaled_color
 //       Access: Public
 //  Description: Transform the color by the current color matrix, and
 //               calls the appropriate glColor function.
@@ -5271,7 +5286,7 @@ issue_scaled_color(const Colorf &color) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::slot_new_light
+//     Function: GLGraphicsStateGuardian::slot_new_light
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
 //               particular light id will be used for the first time.
@@ -5289,7 +5304,7 @@ slot_new_light(int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_lighting
+//     Function: GLGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of lighting overall.  This
@@ -5306,7 +5321,7 @@ enable_lighting(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::set_ambient_light
+//     Function: GLGraphicsStateGuardian::set_ambient_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               indicate the color of the ambient light that should
@@ -5319,7 +5334,7 @@ set_ambient_light(const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_light
+//     Function: GLGraphicsStateGuardian::enable_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated light id.  A specific Light will
@@ -5335,7 +5350,7 @@ enable_light(int light_id, bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::begin_bind_lights
+//     Function: GLGraphicsStateGuardian::begin_bind_lights
 //       Access: Protected, Virtual
 //  Description: Called immediately before bind_light() is called,
 //               this is intended to provide the derived class a hook
@@ -5361,7 +5376,7 @@ begin_bind_lights() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::end_bind_lights
+//     Function: GLGraphicsStateGuardian::end_bind_lights
 //       Access: Protected, Virtual
 //  Description: Called after before bind_light() has been called one
 //               or more times (but before any geometry is issued or
@@ -5376,7 +5391,7 @@ end_bind_lights() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::slot_new_clip_plane
+//     Function: GLGraphicsStateGuardian::slot_new_clip_plane
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
 //               particular clip plane id will be used for the first
@@ -5395,7 +5410,7 @@ slot_new_clip_plane(int plane_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_clip_plane
+//     Function: GLGraphicsStateGuardian::enable_clip_plane
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated clip_plane id.  A specific
@@ -5412,7 +5427,7 @@ enable_clip_plane(int plane_id, bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::begin_bind_clip_planes
+//     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
 //       Access: Protected, Virtual
 //  Description: Called immediately before bind_clip_plane() is called,
 //               this is intended to provide the derived class a hook
@@ -5438,7 +5453,7 @@ begin_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::bind_clip_plane
+//     Function: GLGraphicsStateGuardian::bind_clip_plane
 //       Access: Protected, Virtual
 //  Description: Called the first time a particular clip_plane has been
 //               bound to a given id within a frame, this should set
@@ -5460,7 +5475,7 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::end_bind_clip_planes
+//     Function: GLGraphicsStateGuardian::end_bind_clip_planes
 //       Access: Protected, Virtual
 //  Description: Called after before bind_clip_plane() has been called one
 //               or more times (but before any geometry is issued or
@@ -5475,7 +5490,7 @@ end_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::set_blend_mode
+//     Function: GLGraphicsStateGuardian::set_blend_mode
 //       Access: Protected, Virtual
 //  Description: Called after any of the things that might change
 //               blending state have changed, this function is
@@ -5847,7 +5862,7 @@ finish_modify_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::free_pointers
+//     Function: GLGraphicsStateGuardian::free_pointers
 //       Access: Protected, Virtual
 //  Description: Frees some memory that was explicitly allocated
 //               within the glgsg.
@@ -5857,7 +5872,7 @@ free_pointers() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_untextured_state
+//     Function: GLGraphicsStateGuardian::get_untextured_state
 //       Access: Protected, Static
 //  Description: Returns a RenderState object that represents
 //               texturing off.
@@ -5872,7 +5887,7 @@ get_untextured_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_smooth_state
+//     Function: GLGraphicsStateGuardian::get_smooth_state
 //       Access: Protected, Static
 //  Description: Returns a RenderState object that represents
 //               smooth, per-vertex shading.
@@ -5887,7 +5902,7 @@ get_smooth_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_flat_state
+//     Function: GLGraphicsStateGuardian::get_flat_state
 //       Access: Protected, Static
 //  Description: Returns a RenderState object that represents
 //               flat, per-primitive shading.
@@ -5902,7 +5917,7 @@ get_flat_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::do_auto_rescale_normal
+//     Function: GLGraphicsStateGuardian::do_auto_rescale_normal
 //       Access: Protected
 //  Description: Issues the appropriate GL commands to either rescale
 //               or normalize the normals according to the current
@@ -5938,7 +5953,7 @@ do_auto_rescale_normal() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::do_issue_texture
+//     Function: GLGraphicsStateGuardian::do_issue_texture
 //       Access: Protected
 //  Description: This is called by finish_modify_state() when the
 //               texture state has changed.
@@ -6125,7 +6140,7 @@ do_issue_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::do_point_size
+//     Function: GLGraphicsStateGuardian::do_point_size
 //       Access: Protected
 //  Description: Internally sets the point size parameters after any
 //               of the properties have changed that might affect
@@ -6156,7 +6171,7 @@ do_point_size() {
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::build_phony_mipmaps
+//     Function: GLGraphicsStateGuardian::build_phony_mipmaps
 //       Access: Protected
 //  Description: Generates a series of colored mipmap levels to aid in
 //               visualizing the mipmap levels as the hardware applies
@@ -6200,7 +6215,7 @@ build_phony_mipmaps(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::build_phony_mipmap_level
+//     Function: GLGraphicsStateGuardian::build_phony_mipmap_level
 //       Access: Protected
 //  Description: Generates a single colored mipmap level.
 ////////////////////////////////////////////////////////////////////
@@ -6269,7 +6284,7 @@ build_phony_mipmap_level(int level, int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::save_mipmap_images
+//     Function: GLGraphicsStateGuardian::save_mipmap_images
 //       Access: Protected
 //  Description: Saves out each mipmap level of the indicated texture
 //               (which must also be the currently active texture in
@@ -6323,1227 +6338,3 @@ save_mipmap_images(Texture *tex) {
   } while (x_size > 0 || y_size > 0);
 }
 #endif  // NDEBUG
-
-TypeHandle CLP(GraphicsStateGuardian)::get_type(void) const {
-  return get_class_type();
-}
-
-TypeHandle CLP(GraphicsStateGuardian)::get_class_type(void) {
-  return _type_handle;
-}
-
-void CLP(GraphicsStateGuardian)::init_type(void) {
-  GraphicsStateGuardian::init_type();
-  register_type(_type_handle, CLASSPREFIX_QUOTED "GraphicsStateGuardian",
-                GraphicsStateGuardian::get_class_type());
-}
-
-
-#ifdef GSG_VERBOSE
-
-void CLP(GraphicsStateGuardian)::
-dump_state(void)
-{
-  if (GLCAT.is_debug())
-    {
-      ostream &dump = GLCAT.debug(false);
-      GLCAT.debug() << "Dumping GL State" << endl;
-
-      dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)GLP(IsEnabled)(GL_LINE_SMOOTH) << "\n";
-      dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)GLP(IsEnabled)(GL_POINT_SMOOTH) << "\n";
-      dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)GLP(IsEnabled)(GL_LIGHTING) << "\n";
-      dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)GLP(IsEnabled)(GL_SCISSOR_TEST) << "\n";
-      dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)GLP(IsEnabled)(GL_STENCIL_TEST) << "\n";
-      dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)GLP(IsEnabled)(GL_BLEND) << "\n";
-      dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)GLP(IsEnabled)(GL_DEPTH_TEST) << "\n";
-      dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)GLP(IsEnabled)(GL_FOG) << "\n";
-      dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)GLP(IsEnabled)(GL_ALPHA_TEST) << "\n";
-      dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)GLP(IsEnabled)(GL_POLYGON_OFFSET_FILL) << "\n";
-
-      dump << endl;
-    }
-}
-
-#else  // GSG_VERBOSE
-
-// This function does nothing unless GSG_VERBOSE is compiled in.
-void CLP(GraphicsStateGuardian)::
-dump_state(void)
-{
-}
-
-#endif  // GSG_VERBOSE
-
-
-#ifdef GSG_VERBOSE
-
-// This is a handy function to output a GLenum value as a string, for
-// debugging.
-ostream &output_gl_enum(ostream &out, GLenum v) {
-  switch (v) {
-  case GL_FALSE:
-    return out << "GL_FALSE";
-  case GL_TRUE:
-    return out << "GL_TRUE";
-
-    /* Data types */
-  case GL_BYTE:
-    return out << "GL_BYTE";
-  case GL_UNSIGNED_BYTE:
-    return out << "GL_UNSIGNED_BYTE";
-  case GL_SHORT:
-    return out << "GL_SHORT";
-  case GL_UNSIGNED_SHORT:
-    return out << "GL_UNSIGNED_SHORT";
-  case GL_INT:
-    return out << "GL_INT";
-  case GL_UNSIGNED_INT:
-    return out << "GL_UNSIGNED_INT";
-  case GL_FLOAT:
-    return out << "GL_FLOAT";
-  case GL_DOUBLE:
-    return out << "GL_DOUBLE";
-  case GL_2_BYTES:
-    return out << "GL_2_BYTES";
-  case GL_3_BYTES:
-    return out << "GL_3_BYTES";
-  case GL_4_BYTES:
-    return out << "GL_4_BYTES";
-
-    /* Primitives */
-    /*
-      case GL_LINES:
-      return out << "GL_LINES";
-      case GL_POINTS:
-      return out << "GL_POINTS";
-    */
-  case GL_LINE_STRIP:
-    return out << "GL_LINE_STRIP";
-  case GL_LINE_LOOP:
-    return out << "GL_LINE_LOOP";
-  case GL_TRIANGLES:
-    return out << "GL_TRIANGLES";
-  case GL_TRIANGLE_STRIP:
-    return out << "GL_TRIANGLE_STRIP";
-  case GL_TRIANGLE_FAN:
-    return out << "GL_TRIANGLE_FAN";
-  case GL_QUADS:
-    return out << "GL_QUADS";
-  case GL_QUAD_STRIP:
-    return out << "GL_QUAD_STRIP";
-  case GL_POLYGON:
-    return out << "GL_POLYGON";
-  case GL_EDGE_FLAG:
-    return out << "GL_EDGE_FLAG";
-
-    /* Vertex Arrays */
-  case GL_VERTEX_ARRAY:
-    return out << "GL_VERTEX_ARRAY";
-  case GL_NORMAL_ARRAY:
-    return out << "GL_NORMAL_ARRAY";
-  case GL_COLOR_ARRAY:
-    return out << "GL_COLOR_ARRAY";
-  case GL_INDEX_ARRAY:
-    return out << "GL_INDEX_ARRAY";
-  case GL_TEXTURE_COORD_ARRAY:
-    return out << "GL_TEXTURE_COORD_ARRAY";
-  case GL_EDGE_FLAG_ARRAY:
-    return out << "GL_EDGE_FLAG_ARRAY";
-  case GL_VERTEX_ARRAY_SIZE:
-    return out << "GL_VERTEX_ARRAY_SIZE";
-  case GL_VERTEX_ARRAY_TYPE:
-    return out << "GL_VERTEX_ARRAY_TYPE";
-  case GL_VERTEX_ARRAY_STRIDE:
-    return out << "GL_VERTEX_ARRAY_STRIDE";
-  case GL_NORMAL_ARRAY_TYPE:
-    return out << "GL_NORMAL_ARRAY_TYPE";
-  case GL_NORMAL_ARRAY_STRIDE:
-    return out << "GL_NORMAL_ARRAY_STRIDE";
-  case GL_COLOR_ARRAY_SIZE:
-    return out << "GL_COLOR_ARRAY_SIZE";
-  case GL_COLOR_ARRAY_TYPE:
-    return out << "GL_COLOR_ARRAY_TYPE";
-  case GL_COLOR_ARRAY_STRIDE:
-    return out << "GL_COLOR_ARRAY_STRIDE";
-  case GL_INDEX_ARRAY_TYPE:
-    return out << "GL_INDEX_ARRAY_TYPE";
-  case GL_INDEX_ARRAY_STRIDE:
-    return out << "GL_INDEX_ARRAY_STRIDE";
-  case GL_TEXTURE_COORD_ARRAY_SIZE:
-    return out << "GL_TEXTURE_COORD_ARRAY_SIZE";
-  case GL_TEXTURE_COORD_ARRAY_TYPE:
-    return out << "GL_TEXTURE_COORD_ARRAY_TYPE";
-  case GL_TEXTURE_COORD_ARRAY_STRIDE:
-    return out << "GL_TEXTURE_COORD_ARRAY_STRIDE";
-  case GL_EDGE_FLAG_ARRAY_STRIDE:
-    return out << "GL_EDGE_FLAG_ARRAY_STRIDE";
-  case GL_VERTEX_ARRAY_POINTER:
-    return out << "GL_VERTEX_ARRAY_POINTER";
-  case GL_NORMAL_ARRAY_POINTER:
-    return out << "GL_NORMAL_ARRAY_POINTER";
-  case GL_COLOR_ARRAY_POINTER:
-    return out << "GL_COLOR_ARRAY_POINTER";
-  case GL_INDEX_ARRAY_POINTER:
-    return out << "GL_INDEX_ARRAY_POINTER";
-  case GL_TEXTURE_COORD_ARRAY_POINTER:
-    return out << "GL_TEXTURE_COORD_ARRAY_POINTER";
-  case GL_EDGE_FLAG_ARRAY_POINTER:
-    return out << "GL_EDGE_FLAG_ARRAY_POINTER";
-  case GL_V2F:
-    return out << "GL_V2F";
-  case GL_V3F:
-    return out << "GL_V3F";
-  case GL_C4UB_V2F:
-    return out << "GL_C4UB_V2F";
-  case GL_C4UB_V3F:
-    return out << "GL_C4UB_V3F";
-  case GL_C3F_V3F:
-    return out << "GL_C3F_V3F";
-  case GL_N3F_V3F:
-    return out << "GL_N3F_V3F";
-  case GL_C4F_N3F_V3F:
-    return out << "GL_C4F_N3F_V3F";
-  case GL_T2F_V3F:
-    return out << "GL_T2F_V3F";
-  case GL_T4F_V4F:
-    return out << "GL_T4F_V4F";
-  case GL_T2F_C4UB_V3F:
-    return out << "GL_T2F_C4UB_V3F";
-  case GL_T2F_C3F_V3F:
-    return out << "GL_T2F_C3F_V3F";
-  case GL_T2F_N3F_V3F:
-    return out << "GL_T2F_N3F_V3F";
-  case GL_T2F_C4F_N3F_V3F:
-    return out << "GL_T2F_C4F_N3F_V3F";
-  case GL_T4F_C4F_N3F_V4F:
-    return out << "GL_T4F_C4F_N3F_V4F";
-
-    /* Matrix Mode */
-  case GL_MATRIX_MODE:
-    return out << "GL_MATRIX_MODE";
-  case GL_MODELVIEW:
-    return out << "GL_MODELVIEW";
-  case GL_PROJECTION:
-    return out << "GL_PROJECTION";
-  case GL_TEXTURE:
-    return out << "GL_TEXTURE";
-
-    /* Points */
-  case GL_POINT_SMOOTH:
-    return out << "GL_POINT_SMOOTH";
-  case GL_POINT_SIZE:
-    return out << "GL_POINT_SIZE";
-  case GL_POINT_SIZE_GRANULARITY:
-    return out << "GL_POINT_SIZE_GRANULARITY";
-  case GL_POINT_SIZE_RANGE:
-    return out << "GL_POINT_SIZE_RANGE";
-
-    /* Lines */
-  case GL_LINE_SMOOTH:
-    return out << "GL_LINE_SMOOTH";
-  case GL_LINE_STIPPLE:
-    return out << "GL_LINE_STIPPLE";
-  case GL_LINE_STIPPLE_PATTERN:
-    return out << "GL_LINE_STIPPLE_PATTERN";
-  case GL_LINE_STIPPLE_REPEAT:
-    return out << "GL_LINE_STIPPLE_REPEAT";
-  case GL_LINE_WIDTH:
-    return out << "GL_LINE_WIDTH";
-  case GL_LINE_WIDTH_GRANULARITY:
-    return out << "GL_LINE_WIDTH_GRANULARITY";
-  case GL_LINE_WIDTH_RANGE:
-    return out << "GL_LINE_WIDTH_RANGE";
-
-    /* Polygons */
-  case GL_POINT:
-    return out << "GL_POINT";
-  case GL_LINE:
-    return out << "GL_LINE";
-  case GL_FILL:
-    return out << "GL_FILL";
-  case GL_CCW:
-    return out << "GL_CCW";
-  case GL_CW:
-    return out << "GL_CW";
-  case GL_FRONT:
-    return out << "GL_FRONT";
-  case GL_BACK:
-    return out << "GL_BACK";
-  case GL_CULL_FACE:
-    return out << "GL_CULL_FACE";
-  case GL_CULL_FACE_MODE:
-    return out << "GL_CULL_FACE_MODE";
-  case GL_POLYGON_SMOOTH:
-    return out << "GL_POLYGON_SMOOTH";
-  case GL_POLYGON_STIPPLE:
-    return out << "GL_POLYGON_STIPPLE";
-  case GL_FRONT_FACE:
-    return out << "GL_FRONT_FACE";
-  case GL_POLYGON_MODE:
-    return out << "GL_POLYGON_MODE";
-  case GL_POLYGON_OFFSET_FACTOR:
-    return out << "GL_POLYGON_OFFSET_FACTOR";
-  case GL_POLYGON_OFFSET_UNITS:
-    return out << "GL_POLYGON_OFFSET_UNITS";
-  case GL_POLYGON_OFFSET_POINT:
-    return out << "GL_POLYGON_OFFSET_POINT";
-  case GL_POLYGON_OFFSET_LINE:
-    return out << "GL_POLYGON_OFFSET_LINE";
-  case GL_POLYGON_OFFSET_FILL:
-    return out << "GL_POLYGON_OFFSET_FILL";
-
-    /* Display Lists */
-  case GL_COMPILE:
-    return out << "GL_COMPILE";
-  case GL_COMPILE_AND_EXECUTE:
-    return out << "GL_COMPILE_AND_EXECUTE";
-  case GL_LIST_BASE:
-    return out << "GL_LIST_BASE";
-  case GL_LIST_INDEX:
-    return out << "GL_LIST_INDEX";
-  case GL_LIST_MODE:
-    return out << "GL_LIST_MODE";
-
-    /* Depth buffer */
-  case GL_NEVER:
-    return out << "GL_NEVER";
-  case GL_LESS:
-    return out << "GL_LESS";
-  case GL_GEQUAL:
-    return out << "GL_GEQUAL";
-  case GL_LEQUAL:
-    return out << "GL_LEQUAL";
-  case GL_GREATER:
-    return out << "GL_GREATER";
-  case GL_NOTEQUAL:
-    return out << "GL_NOTEQUAL";
-  case GL_EQUAL:
-    return out << "GL_EQUAL";
-  case GL_ALWAYS:
-    return out << "GL_ALWAYS";
-  case GL_DEPTH_TEST:
-    return out << "GL_DEPTH_TEST";
-  case GL_DEPTH_BITS:
-    return out << "GL_DEPTH_BITS";
-  case GL_DEPTH_CLEAR_VALUE:
-    return out << "GL_DEPTH_CLEAR_VALUE";
-  case GL_DEPTH_FUNC:
-    return out << "GL_DEPTH_FUNC";
-  case GL_DEPTH_RANGE:
-    return out << "GL_DEPTH_RANGE";
-  case GL_DEPTH_WRITEMASK:
-    return out << "GL_DEPTH_WRITEMASK";
-  case GL_DEPTH_COMPONENT:
-    return out << "GL_DEPTH_COMPONENT";
-
-    /* Lighting */
-  case GL_LIGHTING:
-    return out << "GL_LIGHTING";
-  case GL_LIGHT0:
-    return out << "GL_LIGHT0";
-  case GL_LIGHT1:
-    return out << "GL_LIGHT1";
-  case GL_LIGHT2:
-    return out << "GL_LIGHT2";
-  case GL_LIGHT3:
-    return out << "GL_LIGHT3";
-  case GL_LIGHT4:
-    return out << "GL_LIGHT4";
-  case GL_LIGHT5:
-    return out << "GL_LIGHT5";
-  case GL_LIGHT6:
-    return out << "GL_LIGHT6";
-  case GL_LIGHT7:
-    return out << "GL_LIGHT7";
-  case GL_SPOT_EXPONENT:
-    return out << "GL_SPOT_EXPONENT";
-  case GL_SPOT_CUTOFF:
-    return out << "GL_SPOT_CUTOFF";
-  case GL_CONSTANT_ATTENUATION:
-    return out << "GL_CONSTANT_ATTENUATION";
-  case GL_LINEAR_ATTENUATION:
-    return out << "GL_LINEAR_ATTENUATION";
-  case GL_QUADRATIC_ATTENUATION:
-    return out << "GL_QUADRATIC_ATTENUATION";
-  case GL_AMBIENT:
-    return out << "GL_AMBIENT";
-  case GL_DIFFUSE:
-    return out << "GL_DIFFUSE";
-  case GL_SPECULAR:
-    return out << "GL_SPECULAR";
-  case GL_SHININESS:
-    return out << "GL_SHININESS";
-  case GL_EMISSION:
-    return out << "GL_EMISSION";
-  case GL_POSITION:
-    return out << "GL_POSITION";
-  case GL_SPOT_DIRECTION:
-    return out << "GL_SPOT_DIRECTION";
-  case GL_AMBIENT_AND_DIFFUSE:
-    return out << "GL_AMBIENT_AND_DIFFUSE";
-  case GL_COLOR_INDEXES:
-    return out << "GL_COLOR_INDEXES";
-  case GL_LIGHT_MODEL_TWO_SIDE:
-    return out << "GL_LIGHT_MODEL_TWO_SIDE";
-  case GL_LIGHT_MODEL_LOCAL_VIEWER:
-    return out << "GL_LIGHT_MODEL_LOCAL_VIEWER";
-  case GL_LIGHT_MODEL_AMBIENT:
-    return out << "GL_LIGHT_MODEL_AMBIENT";
-  case GL_FRONT_AND_BACK:
-    return out << "GL_FRONT_AND_BACK";
-  case GL_SHADE_MODEL:
-    return out << "GL_SHADE_MODEL";
-  case GL_FLAT:
-    return out << "GL_FLAT";
-  case GL_SMOOTH:
-    return out << "GL_SMOOTH";
-  case GL_COLOR_MATERIAL:
-    return out << "GL_COLOR_MATERIAL";
-  case GL_COLOR_MATERIAL_FACE:
-    return out << "GL_COLOR_MATERIAL_FACE";
-  case GL_COLOR_MATERIAL_PARAMETER:
-    return out << "GL_COLOR_MATERIAL_PARAMETER";
-  case GL_NORMALIZE:
-    return out << "GL_NORMALIZE";
-
-    /* User clipping planes */
-  case GL_CLIP_PLANE0:
-    return out << "GL_CLIP_PLANE0";
-  case GL_CLIP_PLANE1:
-    return out << "GL_CLIP_PLANE1";
-  case GL_CLIP_PLANE2:
-    return out << "GL_CLIP_PLANE2";
-  case GL_CLIP_PLANE3:
-    return out << "GL_CLIP_PLANE3";
-  case GL_CLIP_PLANE4:
-    return out << "GL_CLIP_PLANE4";
-  case GL_CLIP_PLANE5:
-    return out << "GL_CLIP_PLANE5";
-
-    /* Accumulation buffer */
-  case GL_ACCUM_RED_BITS:
-    return out << "GL_ACCUM_RED_BITS";
-  case GL_ACCUM_GREEN_BITS:
-    return out << "GL_ACCUM_GREEN_BITS";
-  case GL_ACCUM_BLUE_BITS:
-    return out << "GL_ACCUM_BLUE_BITS";
-  case GL_ACCUM_ALPHA_BITS:
-    return out << "GL_ACCUM_ALPHA_BITS";
-  case GL_ACCUM_CLEAR_VALUE:
-    return out << "GL_ACCUM_CLEAR_VALUE";
-  case GL_ACCUM:
-    return out << "GL_ACCUM";
-  case GL_ADD:
-    return out << "GL_ADD";
-  case GL_LOAD:
-    return out << "GL_LOAD";
-  case GL_MULT:
-    return out << "GL_MULT";
-
-    /* Alpha testing */
-  case GL_ALPHA_TEST:
-    return out << "GL_ALPHA_TEST";
-  case GL_ALPHA_TEST_REF:
-    return out << "GL_ALPHA_TEST_REF";
-  case GL_ALPHA_TEST_FUNC:
-    return out << "GL_ALPHA_TEST_FUNC";
-
-    /* Blending */
-  case GL_BLEND:
-    return out << "GL_BLEND";
-  case GL_BLEND_SRC:
-    return out << "GL_BLEND_SRC";
-  case GL_BLEND_DST:
-    return out << "GL_BLEND_DST";
-    /*
-      case GL_ZERO:
-      return out << "GL_ZERO";
-      case GL_ONE:
-      return out << "GL_ONE";
-    */
-  case GL_SRC_COLOR:
-    return out << "GL_SRC_COLOR";
-  case GL_ONE_MINUS_SRC_COLOR:
-    return out << "GL_ONE_MINUS_SRC_COLOR";
-  case GL_DST_COLOR:
-    return out << "GL_DST_COLOR";
-  case GL_ONE_MINUS_DST_COLOR:
-    return out << "GL_ONE_MINUS_DST_COLOR";
-  case GL_SRC_ALPHA:
-    return out << "GL_SRC_ALPHA";
-  case GL_ONE_MINUS_SRC_ALPHA:
-    return out << "GL_ONE_MINUS_SRC_ALPHA";
-  case GL_DST_ALPHA:
-    return out << "GL_DST_ALPHA";
-  case GL_ONE_MINUS_DST_ALPHA:
-    return out << "GL_ONE_MINUS_DST_ALPHA";
-  case GL_SRC_ALPHA_SATURATE:
-    return out << "GL_SRC_ALPHA_SATURATE";
-  case GL_CONSTANT_COLOR:
-    return out << "GL_CONSTANT_COLOR";
-  case GL_ONE_MINUS_CONSTANT_COLOR:
-    return out << "GL_ONE_MINUS_CONSTANT_COLOR";
-  case GL_CONSTANT_ALPHA:
-    return out << "GL_CONSTANT_ALPHA";
-  case GL_ONE_MINUS_CONSTANT_ALPHA:
-    return out << "GL_ONE_MINUS_CONSTANT_ALPHA";
-
-    /* Render Mode */
-  case GL_FEEDBACK:
-    return out << "GL_FEEDBACK";
-  case GL_RENDER:
-    return out << "GL_RENDER";
-  case GL_SELECT:
-    return out << "GL_SELECT";
-
-    /* Feedback */
-  case GL_2D:
-    return out << "GL_2D";
-  case GL_3D:
-    return out << "GL_3D";
-  case GL_3D_COLOR:
-    return out << "GL_3D_COLOR";
-  case GL_3D_COLOR_TEXTURE:
-    return out << "GL_3D_COLOR_TEXTURE";
-  case GL_4D_COLOR_TEXTURE:
-    return out << "GL_4D_COLOR_TEXTURE";
-  case GL_POINT_TOKEN:
-    return out << "GL_POINT_TOKEN";
-  case GL_LINE_TOKEN:
-    return out << "GL_LINE_TOKEN";
-  case GL_LINE_RESET_TOKEN:
-    return out << "GL_LINE_RESET_TOKEN";
-  case GL_POLYGON_TOKEN:
-    return out << "GL_POLYGON_TOKEN";
-  case GL_BITMAP_TOKEN:
-    return out << "GL_BITMAP_TOKEN";
-  case GL_DRAW_PIXEL_TOKEN:
-    return out << "GL_DRAW_PIXEL_TOKEN";
-  case GL_COPY_PIXEL_TOKEN:
-    return out << "GL_COPY_PIXEL_TOKEN";
-  case GL_PASS_THROUGH_TOKEN:
-    return out << "GL_PASS_THROUGH_TOKEN";
-  case GL_FEEDBACK_BUFFER_POINTER:
-    return out << "GL_FEEDBACK_BUFFER_POINTER";
-  case GL_FEEDBACK_BUFFER_SIZE:
-    return out << "GL_FEEDBACK_BUFFER_SIZE";
-  case GL_FEEDBACK_BUFFER_TYPE:
-    return out << "GL_FEEDBACK_BUFFER_TYPE";
-
-    /* Selection */
-  case GL_SELECTION_BUFFER_POINTER:
-    return out << "GL_SELECTION_BUFFER_POINTER";
-  case GL_SELECTION_BUFFER_SIZE:
-    return out << "GL_SELECTION_BUFFER_SIZE";
-
-    /* Fog */
-  case GL_FOG:
-    return out << "GL_FOG";
-  case GL_FOG_MODE:
-    return out << "GL_FOG_MODE";
-  case GL_FOG_DENSITY:
-    return out << "GL_FOG_DENSITY";
-  case GL_FOG_COLOR:
-    return out << "GL_FOG_COLOR";
-  case GL_FOG_INDEX:
-    return out << "GL_FOG_INDEX";
-  case GL_FOG_START:
-    return out << "GL_FOG_START";
-  case GL_FOG_END:
-    return out << "GL_FOG_END";
-  case GL_LINEAR:
-    return out << "GL_LINEAR";
-  case GL_EXP:
-    return out << "GL_EXP";
-  case GL_EXP2:
-    return out << "GL_EXP2";
-
-    /* Logic Ops */
-  case GL_LOGIC_OP:
-    return out << "GL_LOGIC_OP";
-    /*
-      case GL_INDEX_LOGIC_OP:
-      return out << "GL_INDEX_LOGIC_OP";
-    */
-  case GL_COLOR_LOGIC_OP:
-    return out << "GL_COLOR_LOGIC_OP";
-  case GL_LOGIC_OP_MODE:
-    return out << "GL_LOGIC_OP_MODE";
-  case GL_CLEAR:
-    return out << "GL_CLEAR";
-  case GL_SET:
-    return out << "GL_SET";
-  case GL_COPY:
-    return out << "GL_COPY";
-  case GL_COPY_INVERTED:
-    return out << "GL_COPY_INVERTED";
-  case GL_NOOP:
-    return out << "GL_NOOP";
-  case GL_INVERT:
-    return out << "GL_INVERT";
-  case GL_AND:
-    return out << "GL_AND";
-  case GL_NAND:
-    return out << "GL_NAND";
-  case GL_OR:
-    return out << "GL_OR";
-  case GL_NOR:
-    return out << "GL_NOR";
-  case GL_XOR:
-    return out << "GL_XOR";
-  case GL_EQUIV:
-    return out << "GL_EQUIV";
-  case GL_AND_REVERSE:
-    return out << "GL_AND_REVERSE";
-  case GL_AND_INVERTED:
-    return out << "GL_AND_INVERTED";
-  case GL_OR_REVERSE:
-    return out << "GL_OR_REVERSE";
-  case GL_OR_INVERTED:
-    return out << "GL_OR_INVERTED";
-
-    /* Stencil */
-  case GL_STENCIL_TEST:
-    return out << "GL_STENCIL_TEST";
-  case GL_STENCIL_WRITEMASK:
-    return out << "GL_STENCIL_WRITEMASK";
-  case GL_STENCIL_BITS:
-    return out << "GL_STENCIL_BITS";
-  case GL_STENCIL_FUNC:
-    return out << "GL_STENCIL_FUNC";
-  case GL_STENCIL_VALUE_MASK:
-    return out << "GL_STENCIL_VALUE_MASK";
-  case GL_STENCIL_REF:
-    return out << "GL_STENCIL_REF";
-  case GL_STENCIL_FAIL:
-    return out << "GL_STENCIL_FAIL";
-  case GL_STENCIL_PASS_DEPTH_PASS:
-    return out << "GL_STENCIL_PASS_DEPTH_PASS";
-  case GL_STENCIL_PASS_DEPTH_FAIL:
-    return out << "GL_STENCIL_PASS_DEPTH_FAIL";
-  case GL_STENCIL_CLEAR_VALUE:
-    return out << "GL_STENCIL_CLEAR_VALUE";
-  case GL_STENCIL_INDEX:
-    return out << "GL_STENCIL_INDEX";
-  case GL_KEEP:
-    return out << "GL_KEEP";
-  case GL_REPLACE:
-    return out << "GL_REPLACE";
-  case GL_INCR:
-    return out << "GL_INCR";
-  case GL_DECR:
-    return out << "GL_DECR";
-
-    /* Buffers, Pixel Drawing/Reading */
-    /*
-      case GL_NONE:
-      return out << "GL_NONE";
-    */
-  case GL_LEFT:
-    return out << "GL_LEFT";
-  case GL_RIGHT:
-    return out << "GL_RIGHT";
-  case GL_FRONT_LEFT:
-    return out << "GL_FRONT_LEFT";
-  case GL_FRONT_RIGHT:
-    return out << "GL_FRONT_RIGHT";
-  case GL_BACK_LEFT:
-    return out << "GL_BACK_LEFT";
-  case GL_BACK_RIGHT:
-    return out << "GL_BACK_RIGHT";
-  case GL_AUX0:
-    return out << "GL_AUX0";
-  case GL_AUX1:
-    return out << "GL_AUX1";
-  case GL_AUX2:
-    return out << "GL_AUX2";
-  case GL_AUX3:
-    return out << "GL_AUX3";
-  case GL_COLOR_INDEX:
-    return out << "GL_COLOR_INDEX";
-  case GL_RED:
-    return out << "GL_RED";
-  case GL_GREEN:
-    return out << "GL_GREEN";
-  case GL_BLUE:
-    return out << "GL_BLUE";
-  case GL_ALPHA:
-    return out << "GL_ALPHA";
-  case GL_LUMINANCE:
-    return out << "GL_LUMINANCE";
-  case GL_LUMINANCE_ALPHA:
-    return out << "GL_LUMINANCE_ALPHA";
-  case GL_ALPHA_BITS:
-    return out << "GL_ALPHA_BITS";
-  case GL_RED_BITS:
-    return out << "GL_RED_BITS";
-  case GL_GREEN_BITS:
-    return out << "GL_GREEN_BITS";
-  case GL_BLUE_BITS:
-    return out << "GL_BLUE_BITS";
-  case GL_INDEX_BITS:
-    return out << "GL_INDEX_BITS";
-  case GL_SUBPIXEL_BITS:
-    return out << "GL_SUBPIXEL_BITS";
-  case GL_AUX_BUFFERS:
-    return out << "GL_AUX_BUFFERS";
-  case GL_READ_BUFFER:
-    return out << "GL_READ_BUFFER";
-  case GL_DRAW_BUFFER:
-    return out << "GL_DRAW_BUFFER";
-  case GL_DOUBLEBUFFER:
-    return out << "GL_DOUBLEBUFFER";
-  case GL_STEREO:
-    return out << "GL_STEREO";
-  case GL_BITMAP:
-    return out << "GL_BITMAP";
-  case GL_COLOR:
-    return out << "GL_COLOR";
-  case GL_DEPTH:
-    return out << "GL_DEPTH";
-  case GL_STENCIL:
-    return out << "GL_STENCIL";
-  case GL_DITHER:
-    return out << "GL_DITHER";
-  case GL_RGB:
-    return out << "GL_RGB";
-  case GL_RGBA:
-    return out << "GL_RGBA";
-
-    /* Implementation limits */
-  case GL_MAX_LIST_NESTING:
-    return out << "GL_MAX_LIST_NESTING";
-  case GL_MAX_ATTRIB_STACK_DEPTH:
-    return out << "GL_MAX_ATTRIB_STACK_DEPTH";
-  case GL_MAX_MODELVIEW_STACK_DEPTH:
-    return out << "GL_MAX_MODELVIEW_STACK_DEPTH";
-  case GL_MAX_NAME_STACK_DEPTH:
-    return out << "GL_MAX_NAME_STACK_DEPTH";
-  case GL_MAX_PROJECTION_STACK_DEPTH:
-    return out << "GL_MAX_PROJECTION_STACK_DEPTH";
-  case GL_MAX_TEXTURE_STACK_DEPTH:
-    return out << "GL_MAX_TEXTURE_STACK_DEPTH";
-  case GL_MAX_EVAL_ORDER:
-    return out << "GL_MAX_EVAL_ORDER";
-  case GL_MAX_LIGHTS:
-    return out << "GL_MAX_LIGHTS";
-  case GL_MAX_CLIP_PLANES:
-    return out << "GL_MAX_CLIP_PLANES";
-  case GL_MAX_TEXTURE_SIZE:
-    return out << "GL_MAX_TEXTURE_SIZE";
-  case GL_MAX_PIXEL_MAP_TABLE:
-    return out << "GL_MAX_PIXEL_MAP_TABLE";
-  case GL_MAX_VIEWPORT_DIMS:
-    return out << "GL_MAX_VIEWPORT_DIMS";
-  case GL_MAX_CLIENT_ATTRIB_STACK_DEPTH:
-    return out << "GL_MAX_CLIENT_ATTRIB_STACK_DEPTH";
-
-    /* Gets */
-  case GL_ATTRIB_STACK_DEPTH:
-    return out << "GL_ATTRIB_STACK_DEPTH";
-  case GL_CLIENT_ATTRIB_STACK_DEPTH:
-    return out << "GL_CLIENT_ATTRIB_STACK_DEPTH";
-  case GL_COLOR_CLEAR_VALUE:
-    return out << "GL_COLOR_CLEAR_VALUE";
-  case GL_COLOR_WRITEMASK:
-    return out << "GL_COLOR_WRITEMASK";
-  case GL_CURRENT_INDEX:
-    return out << "GL_CURRENT_INDEX";
-  case GL_CURRENT_COLOR:
-    return out << "GL_CURRENT_COLOR";
-  case GL_CURRENT_NORMAL:
-    return out << "GL_CURRENT_NORMAL";
-  case GL_CURRENT_RASTER_COLOR:
-    return out << "GL_CURRENT_RASTER_COLOR";
-  case GL_CURRENT_RASTER_DISTANCE:
-    return out << "GL_CURRENT_RASTER_DISTANCE";
-  case GL_CURRENT_RASTER_INDEX:
-    return out << "GL_CURRENT_RASTER_INDEX";
-  case GL_CURRENT_RASTER_POSITION:
-    return out << "GL_CURRENT_RASTER_POSITION";
-  case GL_CURRENT_RASTER_TEXTURE_COORDS:
-    return out << "GL_CURRENT_RASTER_TEXTURE_COORDS";
-  case GL_CURRENT_RASTER_POSITION_VALID:
-    return out << "GL_CURRENT_RASTER_POSITION_VALID";
-  case GL_CURRENT_TEXTURE_COORDS:
-    return out << "GL_CURRENT_TEXTURE_COORDS";
-  case GL_INDEX_CLEAR_VALUE:
-    return out << "GL_INDEX_CLEAR_VALUE";
-  case GL_INDEX_MODE:
-    return out << "GL_INDEX_MODE";
-  case GL_INDEX_WRITEMASK:
-    return out << "GL_INDEX_WRITEMASK";
-  case GL_MODELVIEW_MATRIX:
-    return out << "GL_MODELVIEW_MATRIX";
-  case GL_MODELVIEW_STACK_DEPTH:
-    return out << "GL_MODELVIEW_STACK_DEPTH";
-  case GL_NAME_STACK_DEPTH:
-    return out << "GL_NAME_STACK_DEPTH";
-  case GL_PROJECTION_MATRIX:
-    return out << "GL_PROJECTION_MATRIX";
-  case GL_PROJECTION_STACK_DEPTH:
-    return out << "GL_PROJECTION_STACK_DEPTH";
-  case GL_RENDER_MODE:
-    return out << "GL_RENDER_MODE";
-  case GL_RGBA_MODE:
-    return out << "GL_RGBA_MODE";
-  case GL_TEXTURE_MATRIX:
-    return out << "GL_TEXTURE_MATRIX";
-  case GL_TEXTURE_STACK_DEPTH:
-    return out << "GL_TEXTURE_STACK_DEPTH";
-  case GL_VIEWPORT:
-    return out << "GL_VIEWPORT";
-
-
-    /* Evaluators */
-  case GL_AUTO_NORMAL:
-    return out << "GL_AUTO_NORMAL";
-  case GL_MAP1_COLOR_4:
-    return out << "GL_MAP1_COLOR_4";
-  case GL_MAP1_GRID_DOMAIN:
-    return out << "GL_MAP1_GRID_DOMAIN";
-  case GL_MAP1_GRID_SEGMENTS:
-    return out << "GL_MAP1_GRID_SEGMENTS";
-  case GL_MAP1_INDEX:
-    return out << "GL_MAP1_INDEX";
-  case GL_MAP1_NORMAL:
-    return out << "GL_MAP1_NORMAL";
-  case GL_MAP1_TEXTURE_COORD_1:
-    return out << "GL_MAP1_TEXTURE_COORD_1";
-  case GL_MAP1_TEXTURE_COORD_2:
-    return out << "GL_MAP1_TEXTURE_COORD_2";
-  case GL_MAP1_TEXTURE_COORD_3:
-    return out << "GL_MAP1_TEXTURE_COORD_3";
-  case GL_MAP1_TEXTURE_COORD_4:
-    return out << "GL_MAP1_TEXTURE_COORD_4";
-  case GL_MAP1_VERTEX_3:
-    return out << "GL_MAP1_VERTEX_3";
-  case GL_MAP1_VERTEX_4:
-    return out << "GL_MAP1_VERTEX_4";
-  case GL_MAP2_COLOR_4:
-    return out << "GL_MAP2_COLOR_4";
-  case GL_MAP2_GRID_DOMAIN:
-    return out << "GL_MAP2_GRID_DOMAIN";
-  case GL_MAP2_GRID_SEGMENTS:
-    return out << "GL_MAP2_GRID_SEGMENTS";
-  case GL_MAP2_INDEX:
-    return out << "GL_MAP2_INDEX";
-  case GL_MAP2_NORMAL:
-    return out << "GL_MAP2_NORMAL";
-  case GL_MAP2_TEXTURE_COORD_1:
-    return out << "GL_MAP2_TEXTURE_COORD_1";
-  case GL_MAP2_TEXTURE_COORD_2:
-    return out << "GL_MAP2_TEXTURE_COORD_2";
-  case GL_MAP2_TEXTURE_COORD_3:
-    return out << "GL_MAP2_TEXTURE_COORD_3";
-  case GL_MAP2_TEXTURE_COORD_4:
-    return out << "GL_MAP2_TEXTURE_COORD_4";
-  case GL_MAP2_VERTEX_3:
-    return out << "GL_MAP2_VERTEX_3";
-  case GL_MAP2_VERTEX_4:
-    return out << "GL_MAP2_VERTEX_4";
-  case GL_COEFF:
-    return out << "GL_COEFF";
-  case GL_DOMAIN:
-    return out << "GL_DOMAIN";
-  case GL_ORDER:
-    return out << "GL_ORDER";
-
-    /* Hints */
-  case GL_FOG_HINT:
-    return out << "GL_FOG_HINT";
-  case GL_LINE_SMOOTH_HINT:
-    return out << "GL_LINE_SMOOTH_HINT";
-  case GL_PERSPECTIVE_CORRECTION_HINT:
-    return out << "GL_PERSPECTIVE_CORRECTION_HINT";
-  case GL_POINT_SMOOTH_HINT:
-    return out << "GL_POINT_SMOOTH_HINT";
-  case GL_POLYGON_SMOOTH_HINT:
-    return out << "GL_POLYGON_SMOOTH_HINT";
-  case GL_DONT_CARE:
-    return out << "GL_DONT_CARE";
-  case GL_FASTEST:
-    return out << "GL_FASTEST";
-  case GL_NICEST:
-    return out << "GL_NICEST";
-
-    /* Scissor box */
-  case GL_SCISSOR_TEST:
-    return out << "GL_SCISSOR_TEST";
-  case GL_SCISSOR_BOX:
-    return out << "GL_SCISSOR_BOX";
-
-    /* Pixel Mode / Transfer */
-  case GL_MAP_COLOR:
-    return out << "GL_MAP_COLOR";
-  case GL_MAP_STENCIL:
-    return out << "GL_MAP_STENCIL";
-  case GL_INDEX_SHIFT:
-    return out << "GL_INDEX_SHIFT";
-  case GL_INDEX_OFFSET:
-    return out << "GL_INDEX_OFFSET";
-  case GL_RED_SCALE:
-    return out << "GL_RED_SCALE";
-  case GL_RED_BIAS:
-    return out << "GL_RED_BIAS";
-  case GL_GREEN_SCALE:
-    return out << "GL_GREEN_SCALE";
-  case GL_GREEN_BIAS:
-    return out << "GL_GREEN_BIAS";
-  case GL_BLUE_SCALE:
-    return out << "GL_BLUE_SCALE";
-  case GL_BLUE_BIAS:
-    return out << "GL_BLUE_BIAS";
-  case GL_ALPHA_SCALE:
-    return out << "GL_ALPHA_SCALE";
-  case GL_ALPHA_BIAS:
-    return out << "GL_ALPHA_BIAS";
-  case GL_DEPTH_SCALE:
-    return out << "GL_DEPTH_SCALE";
-  case GL_DEPTH_BIAS:
-    return out << "GL_DEPTH_BIAS";
-  case GL_PIXEL_MAP_S_TO_S_SIZE:
-    return out << "GL_PIXEL_MAP_S_TO_S_SIZE";
-  case GL_PIXEL_MAP_I_TO_I_SIZE:
-    return out << "GL_PIXEL_MAP_I_TO_I_SIZE";
-  case GL_PIXEL_MAP_I_TO_R_SIZE:
-    return out << "GL_PIXEL_MAP_I_TO_R_SIZE";
-  case GL_PIXEL_MAP_I_TO_G_SIZE:
-    return out << "GL_PIXEL_MAP_I_TO_G_SIZE";
-  case GL_PIXEL_MAP_I_TO_B_SIZE:
-    return out << "GL_PIXEL_MAP_I_TO_B_SIZE";
-  case GL_PIXEL_MAP_I_TO_A_SIZE:
-    return out << "GL_PIXEL_MAP_I_TO_A_SIZE";
-  case GL_PIXEL_MAP_R_TO_R_SIZE:
-    return out << "GL_PIXEL_MAP_R_TO_R_SIZE";
-  case GL_PIXEL_MAP_G_TO_G_SIZE:
-    return out << "GL_PIXEL_MAP_G_TO_G_SIZE";
-  case GL_PIXEL_MAP_B_TO_B_SIZE:
-    return out << "GL_PIXEL_MAP_B_TO_B_SIZE";
-  case GL_PIXEL_MAP_A_TO_A_SIZE:
-    return out << "GL_PIXEL_MAP_A_TO_A_SIZE";
-  case GL_PIXEL_MAP_S_TO_S:
-    return out << "GL_PIXEL_MAP_S_TO_S";
-  case GL_PIXEL_MAP_I_TO_I:
-    return out << "GL_PIXEL_MAP_I_TO_I";
-  case GL_PIXEL_MAP_I_TO_R:
-    return out << "GL_PIXEL_MAP_I_TO_R";
-  case GL_PIXEL_MAP_I_TO_G:
-    return out << "GL_PIXEL_MAP_I_TO_G";
-  case GL_PIXEL_MAP_I_TO_B:
-    return out << "GL_PIXEL_MAP_I_TO_B";
-  case GL_PIXEL_MAP_I_TO_A:
-    return out << "GL_PIXEL_MAP_I_TO_A";
-  case GL_PIXEL_MAP_R_TO_R:
-    return out << "GL_PIXEL_MAP_R_TO_R";
-  case GL_PIXEL_MAP_G_TO_G:
-    return out << "GL_PIXEL_MAP_G_TO_G";
-  case GL_PIXEL_MAP_B_TO_B:
-    return out << "GL_PIXEL_MAP_B_TO_B";
-  case GL_PIXEL_MAP_A_TO_A:
-    return out << "GL_PIXEL_MAP_A_TO_A";
-  case GL_PACK_ALIGNMENT:
-    return out << "GL_PACK_ALIGNMENT";
-  case GL_PACK_LSB_FIRST:
-    return out << "GL_PACK_LSB_FIRST";
-  case GL_PACK_ROW_LENGTH:
-    return out << "GL_PACK_ROW_LENGTH";
-  case GL_PACK_SKIP_PIXELS:
-    return out << "GL_PACK_SKIP_PIXELS";
-  case GL_PACK_SKIP_ROWS:
-    return out << "GL_PACK_SKIP_ROWS";
-  case GL_PACK_SWAP_BYTES:
-    return out << "GL_PACK_SWAP_BYTES";
-  case GL_UNPACK_ALIGNMENT:
-    return out << "GL_UNPACK_ALIGNMENT";
-  case GL_UNPACK_LSB_FIRST:
-    return out << "GL_UNPACK_LSB_FIRST";
-  case GL_UNPACK_ROW_LENGTH:
-    return out << "GL_UNPACK_ROW_LENGTH";
-  case GL_UNPACK_SKIP_PIXELS:
-    return out << "GL_UNPACK_SKIP_PIXELS";
-  case GL_UNPACK_SKIP_ROWS:
-    return out << "GL_UNPACK_SKIP_ROWS";
-  case GL_UNPACK_SWAP_BYTES:
-    return out << "GL_UNPACK_SWAP_BYTES";
-  case GL_ZOOM_X:
-    return out << "GL_ZOOM_X";
-  case GL_ZOOM_Y:
-    return out << "GL_ZOOM_Y";
-
-    /* Texture mapping */
-  case GL_TEXTURE_ENV:
-    return out << "GL_TEXTURE_ENV";
-  case GL_TEXTURE_ENV_MODE:
-    return out << "GL_TEXTURE_ENV_MODE";
-  case GL_TEXTURE_1D:
-    return out << "GL_TEXTURE_1D";
-  case GL_TEXTURE_2D:
-    return out << "GL_TEXTURE_2D";
-  case GL_TEXTURE_WRAP_S:
-    return out << "GL_TEXTURE_WRAP_S";
-  case GL_TEXTURE_WRAP_T:
-    return out << "GL_TEXTURE_WRAP_T";
-  case GL_TEXTURE_MAG_FILTER:
-    return out << "GL_TEXTURE_MAG_FILTER";
-  case GL_TEXTURE_MIN_FILTER:
-    return out << "GL_TEXTURE_MIN_FILTER";
-  case GL_TEXTURE_ENV_COLOR:
-    return out << "GL_TEXTURE_ENV_COLOR";
-  case GL_TEXTURE_GEN_S:
-    return out << "GL_TEXTURE_GEN_S";
-  case GL_TEXTURE_GEN_T:
-    return out << "GL_TEXTURE_GEN_T";
-  case GL_TEXTURE_GEN_MODE:
-    return out << "GL_TEXTURE_GEN_MODE";
-  case GL_TEXTURE_BORDER_COLOR:
-    return out << "GL_TEXTURE_BORDER_COLOR";
-  case GL_TEXTURE_WIDTH:
-    return out << "GL_TEXTURE_WIDTH";
-  case GL_TEXTURE_HEIGHT:
-    return out << "GL_TEXTURE_HEIGHT";
-  case GL_TEXTURE_BORDER:
-    return out << "GL_TEXTURE_BORDER";
-  case GL_TEXTURE_COMPONENTS:
-    return out << "GL_TEXTURE_COMPONENTS";
-  case GL_TEXTURE_RED_SIZE:
-    return out << "GL_TEXTURE_RED_SIZE";
-  case GL_TEXTURE_GREEN_SIZE:
-    return out << "GL_TEXTURE_GREEN_SIZE";
-  case GL_TEXTURE_BLUE_SIZE:
-    return out << "GL_TEXTURE_BLUE_SIZE";
-  case GL_TEXTURE_ALPHA_SIZE:
-    return out << "GL_TEXTURE_ALPHA_SIZE";
-  case GL_TEXTURE_LUMINANCE_SIZE:
-    return out << "GL_TEXTURE_LUMINANCE_SIZE";
-  case GL_TEXTURE_INTENSITY_SIZE:
-    return out << "GL_TEXTURE_INTENSITY_SIZE";
-  case GL_NEAREST_MIPMAP_NEAREST:
-    return out << "GL_NEAREST_MIPMAP_NEAREST";
-  case GL_NEAREST_MIPMAP_LINEAR:
-    return out << "GL_NEAREST_MIPMAP_LINEAR";
-  case GL_LINEAR_MIPMAP_NEAREST:
-    return out << "GL_LINEAR_MIPMAP_NEAREST";
-  case GL_LINEAR_MIPMAP_LINEAR:
-    return out << "GL_LINEAR_MIPMAP_LINEAR";
-  case GL_OBJECT_LINEAR:
-    return out << "GL_OBJECT_LINEAR";
-  case GL_OBJECT_PLANE:
-    return out << "GL_OBJECT_PLANE";
-  case GL_EYE_LINEAR:
-    return out << "GL_EYE_LINEAR";
-  case GL_EYE_PLANE:
-    return out << "GL_EYE_PLANE";
-  case GL_SPHERE_MAP:
-    return out << "GL_SPHERE_MAP";
-  case GL_DECAL:
-    return out << "GL_DECAL";
-  case GL_MODULATE:
-    return out << "GL_MODULATE";
-  case GL_NEAREST:
-    return out << "GL_NEAREST";
-  case GL_REPEAT:
-    return out << "GL_REPEAT";
-  case GL_CLAMP:
-    return out << "GL_CLAMP";
-  case GL_S:
-    return out << "GL_S";
-  case GL_T:
-    return out << "GL_T";
-  case GL_R:
-    return out << "GL_R";
-  case GL_Q:
-    return out << "GL_Q";
-  case GL_TEXTURE_GEN_R:
-    return out << "GL_TEXTURE_GEN_R";
-  case GL_TEXTURE_GEN_Q:
-    return out << "GL_TEXTURE_GEN_Q";
-
-    /* GL 1.1 texturing */
-  case GL_PROXY_TEXTURE_1D:
-    return out << "GL_PROXY_TEXTURE_1D";
-  case GL_PROXY_TEXTURE_2D:
-    return out << "GL_PROXY_TEXTURE_2D";
-  case GL_TEXTURE_PRIORITY:
-    return out << "GL_TEXTURE_PRIORITY";
-  case GL_TEXTURE_RESIDENT:
-    return out << "GL_TEXTURE_RESIDENT";
-  case GL_TEXTURE_BINDING_1D:
-    return out << "GL_TEXTURE_BINDING_1D";
-  case GL_TEXTURE_BINDING_2D:
-    return out << "GL_TEXTURE_BINDING_2D";
-    /*
-      case GL_TEXTURE_INTERNAL_FORMAT:
-      return out << "GL_TEXTURE_INTERNAL_FORMAT";
-    */
-
-    /* GL 1.2 texturing */
-  case GL_PACK_SKIP_IMAGES:
-    return out << "GL_PACK_SKIP_IMAGES";
-  case GL_PACK_IMAGE_HEIGHT:
-    return out << "GL_PACK_IMAGE_HEIGHT";
-  case GL_UNPACK_SKIP_IMAGES:
-    return out << "GL_UNPACK_SKIP_IMAGES";
-  case GL_UNPACK_IMAGE_HEIGHT:
-    return out << "GL_UNPACK_IMAGE_HEIGHT";
-  case GL_TEXTURE_3D:
-    return out << "GL_TEXTURE_3D";
-  case GL_PROXY_TEXTURE_3D:
-    return out << "GL_PROXY_TEXTURE_3D";
-  case GL_TEXTURE_DEPTH:
-    return out << "GL_TEXTURE_DEPTH";
-  case GL_TEXTURE_WRAP_R:
-    return out << "GL_TEXTURE_WRAP_R";
-  case GL_MAX_3D_TEXTURE_SIZE:
-    return out << "GL_MAX_3D_TEXTURE_SIZE";
-  case GL_TEXTURE_BINDING_3D:
-    return out << "GL_TEXTURE_BINDING_3D";
-
-    /* Internal texture formats (GL 1.1) */
-  case GL_ALPHA4:
-    return out << "GL_ALPHA4";
-  case GL_ALPHA8:
-    return out << "GL_ALPHA8";
-  case GL_ALPHA12:
-    return out << "GL_ALPHA12";
-  case GL_ALPHA16:
-    return out << "GL_ALPHA16";
-  case GL_LUMINANCE4:
-    return out << "GL_LUMINANCE4";
-  case GL_LUMINANCE8:
-    return out << "GL_LUMINANCE8";
-  case GL_LUMINANCE12:
-    return out << "GL_LUMINANCE12";
-  case GL_LUMINANCE16:
-    return out << "GL_LUMINANCE16";
-  case GL_LUMINANCE4_ALPHA4:
-    return out << "GL_LUMINANCE4_ALPHA4";
-  case GL_LUMINANCE6_ALPHA2:
-    return out << "GL_LUMINANCE6_ALPHA2";
-  case GL_LUMINANCE8_ALPHA8:
-    return out << "GL_LUMINANCE8_ALPHA8";
-  case GL_LUMINANCE12_ALPHA4:
-    return out << "GL_LUMINANCE12_ALPHA4";
-  case GL_LUMINANCE12_ALPHA12:
-    return out << "GL_LUMINANCE12_ALPHA12";
-  case GL_LUMINANCE16_ALPHA16:
-    return out << "GL_LUMINANCE16_ALPHA16";
-  case GL_INTENSITY:
-    return out << "GL_INTENSITY";
-  case GL_INTENSITY4:
-    return out << "GL_INTENSITY4";
-  case GL_INTENSITY8:
-    return out << "GL_INTENSITY8";
-  case GL_INTENSITY12:
-    return out << "GL_INTENSITY12";
-  case GL_INTENSITY16:
-    return out << "GL_INTENSITY16";
-  case GL_R3_G3_B2:
-    return out << "GL_R3_G3_B2";
-  case GL_RGB4:
-    return out << "GL_RGB4";
-  case GL_RGB5:
-    return out << "GL_RGB5";
-  case GL_RGB8:
-    return out << "GL_RGB8";
-  case GL_RGB10:
-    return out << "GL_RGB10";
-  case GL_RGB12:
-    return out << "GL_RGB12";
-  case GL_RGB16:
-    return out << "GL_RGB16";
-  case GL_RGBA2:
-    return out << "GL_RGBA2";
-  case GL_RGBA4:
-    return out << "GL_RGBA4";
-  case GL_RGB5_A1:
-    return out << "GL_RGB5_A1";
-  case GL_RGBA8:
-    return out << "GL_RGBA8";
-  case GL_RGB10_A2:
-    return out << "GL_RGB10_A2";
-  case GL_RGBA12:
-    return out << "GL_RGBA12";
-  case GL_RGBA16:
-    return out << "GL_RGBA16";
-
-    /* Utility */
-  case GL_VENDOR:
-    return out << "GL_VENDOR";
-  case GL_RENDERER:
-    return out << "GL_RENDERER";
-  case GL_VERSION:
-    return out << "GL_VERSION";
-  case GL_EXTENSIONS:
-    return out << "GL_EXTENSIONS";
-
-    /* Errors */
-  case GL_INVALID_VALUE:
-    return out << "GL_INVALID_VALUE";
-  case GL_INVALID_ENUM:
-    return out << "GL_INVALID_ENUM";
-  case GL_INVALID_OPERATION:
-    return out << "GL_INVALID_OPERATION";
-  case GL_STACK_OVERFLOW:
-    return out << "GL_STACK_OVERFLOW";
-  case GL_STACK_UNDERFLOW:
-    return out << "GL_STACK_UNDERFLOW";
-  case GL_OUT_OF_MEMORY:
-    return out << "GL_OUT_OF_MEMORY";
-
-    /* OpenGL 1.2 */
-  case GL_RESCALE_NORMAL:
-    return out << "GL_RESCALE_NORMAL";
-  case GL_CLAMP_TO_EDGE:
-    return out << "GL_CLAMP_TO_EDGE";
-  case GL_MAX_ELEMENTS_VERTICES:
-    return out << "GL_MAX_ELEMENTS_VERTICES";
-  case GL_MAX_ELEMENTS_INDICES:
-    return out << "GL_MAX_ELEMENTS_INDICES";
-  case GL_BGR:
-    return out << "GL_BGR";
-  case GL_BGRA:
-    return out << "GL_BGRA";
-  case GL_UNSIGNED_BYTE_3_3_2:
-    return out << "GL_UNSIGNED_BYTE_3_3_2";
-  case GL_UNSIGNED_BYTE_2_3_3_REV:
-    return out << "GL_UNSIGNED_BYTE_2_3_3_REV";
-  case GL_UNSIGNED_SHORT_5_6_5:
-    return out << "GL_UNSIGNED_SHORT_5_6_5";
-  case GL_UNSIGNED_SHORT_5_6_5_REV:
-    return out << "GL_UNSIGNED_SHORT_5_6_5_REV";
-  case GL_UNSIGNED_SHORT_4_4_4_4:
-    return out << "GL_UNSIGNED_SHORT_4_4_4_4";
-  case GL_UNSIGNED_SHORT_4_4_4_4_REV:
-    return out << "GL_UNSIGNED_SHORT_4_4_4_4_REV";
-  case GL_UNSIGNED_SHORT_5_5_5_1:
-    return out << "GL_UNSIGNED_SHORT_5_5_5_1";
-  case GL_UNSIGNED_SHORT_1_5_5_5_REV:
-    return out << "GL_UNSIGNED_SHORT_1_5_5_5_REV";
-  case GL_UNSIGNED_INT_8_8_8_8:
-    return out << "GL_UNSIGNED_INT_8_8_8_8";
-  case GL_UNSIGNED_INT_8_8_8_8_REV:
-    return out << "GL_UNSIGNED_INT_8_8_8_8_REV";
-  case GL_UNSIGNED_INT_10_10_10_2:
-    return out << "GL_UNSIGNED_INT_10_10_10_2";
-  case GL_UNSIGNED_INT_2_10_10_10_REV:
-    return out << "GL_UNSIGNED_INT_2_10_10_10_REV";
-  case GL_LIGHT_MODEL_COLOR_CONTROL:
-    return out << "GL_LIGHT_MODEL_COLOR_CONTROL";
-  case GL_SINGLE_COLOR:
-    return out << "GL_SINGLE_COLOR";
-  case GL_SEPARATE_SPECULAR_COLOR:
-    return out << "GL_SEPARATE_SPECULAR_COLOR";
-  case GL_TEXTURE_MIN_LOD:
-    return out << "GL_TEXTURE_MIN_LOD";
-  case GL_TEXTURE_MAX_LOD:
-    return out << "GL_TEXTURE_MAX_LOD";
-  case GL_TEXTURE_BASE_LEVEL:
-    return out << "GL_TEXTURE_BASE_LEVEL";
-  case GL_TEXTURE_MAX_LEVEL:
-    return out << "GL_TEXTURE_MAX_LEVEL";
-  }
-
-  return out << (int)v;
-}
-#endif

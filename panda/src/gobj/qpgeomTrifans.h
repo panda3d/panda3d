@@ -37,6 +37,7 @@ PUBLISHED:
 public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+  virtual int get_geom_rendering() const;
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;

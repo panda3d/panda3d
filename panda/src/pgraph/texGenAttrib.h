@@ -104,7 +104,7 @@ PUBLISHED:
   bool has_stage(TextureStage *stage) const;
   Mode get_mode(TextureStage *stage) const;
 
-  INLINE int get_point_rendering(int geom_point_rendering) const;
+  INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
   INLINE const Geom::NoTexCoordStages &get_no_texcoords() const;

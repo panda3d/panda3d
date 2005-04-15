@@ -37,6 +37,7 @@ PUBLISHED:
 public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+  virtual int get_geom_rendering() const;
   virtual int get_num_unused_vertices_per_primitive() const;
 
 public:

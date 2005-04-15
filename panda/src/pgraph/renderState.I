@@ -250,23 +250,23 @@ get_render_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_point_rendering
+//     Function: RenderState::get_geom_rendering
 //       Access: Published
-//  Description: Returns the union of the Geom::PointRendering bits
+//  Description: Returns the union of the Geom::GeomRendering bits
 //               that will be required once this RenderState is
 //               applied to a geom which includes the indicated
-//               geom_point_rendering bits.
+//               geom_rendering bits.
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderState::
-get_point_rendering(int geom_point_rendering) const {
+get_geom_rendering(int geom_rendering) const {
   if (get_render_mode() != (const RenderModeAttrib *)NULL) {
-    geom_point_rendering = _render_mode->get_point_rendering(geom_point_rendering);
+    geom_rendering = _render_mode->get_geom_rendering(geom_rendering);
   }
   if (get_tex_gen() != (const TexGenAttrib *)NULL) {
-    geom_point_rendering = _tex_gen->get_point_rendering(geom_point_rendering);
+    geom_rendering = _tex_gen->get_geom_rendering(geom_rendering);
   }
 
-  return geom_point_rendering;
+  return geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////

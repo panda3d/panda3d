@@ -35,12 +35,6 @@ NotifyCategoryDef(wdxdisplay7, "windisplay");
 ConfigVariableBool dx_full_screen
 ("dx-full-screen", false);
 
-//  Configure this true to force the rendering to sync to the video
-//  refresh, or false to let your frame rate go as high as it can,
-//  irrespective of the video refresh.
-ConfigVariableBool dx_sync_video
-("sync-video", true);
-
 // enable this to turn on full-screen anti-aliasing, if the HW supports it
 // this var is also used in wdxGraphicsWindows.cxx
 ConfigVariableBool dx_full_screen_antialiasing

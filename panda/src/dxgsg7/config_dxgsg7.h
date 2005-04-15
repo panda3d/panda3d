@@ -29,7 +29,6 @@ NotifyCategoryDecl(dxgsg7, EXPCL_PANDADX, EXPTP_PANDADX);
 NotifyCategoryDecl(wdxdisplay7, EXPCL_PANDADX, EXPTP_PANDADX);
 
 extern ConfigVariableBool dx_full_screen;
-extern ConfigVariableBool dx_sync_video;
 extern ConfigVariableBool dx_no_vertex_fog;
 extern ConfigVariableBool dx_full_screen_antialiasing;
 extern ConfigVariableBool dx_use_rangebased_fog;

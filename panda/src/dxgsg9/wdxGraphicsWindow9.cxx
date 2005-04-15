@@ -670,9 +670,12 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   pPresParams->BackBufferFormat = Display.DisplayMode.Format;  // dont need dest alpha, so just use adapter format
 
-  if (dx_sync_video && !(pD3DCaps->Caps & D3DCAPS_READ_SCANLINE)) {
-    wdxdisplay9_cat.info() << "HW doesnt support syncing to vertical refresh, ignoring dx_sync_video\n";
-    dx_sync_video=false;
+  bool do_sync = sync_video;
+
+  if (do_sync && !(pD3DCaps->Caps & D3DCAPS_READ_SCANLINE)) {
+    wdxdisplay9_cat.info()
+      << "HW doesnt support syncing to vertical refresh, ignoring sync-video\n";
+    do_sync = false;
   }
 
   // verify the rendertarget fmt one last time
@@ -766,7 +769,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   if (is_fullscreen()) {
     pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
-    pPresParams->PresentationInterval = (dx_sync_video ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
+    pPresParams->PresentationInterval = (do_sync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
     pPresParams->FullScreen_RefreshRateInHz = Display.DisplayMode.RefreshRate;
 
 #ifdef _DEBUG
@@ -818,7 +821,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
     pPresParams->PresentationInterval = 0;
 
     if (dx_multisample_antialiasing_level<2) {
-      if (dx_sync_video) {
+      if (do_sync) {
         pPresParams->SwapEffect = D3DSWAPEFFECT_COPY;
       } else {
         pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  //D3DSWAPEFFECT_COPY;  does this make any difference?

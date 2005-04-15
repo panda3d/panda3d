@@ -51,10 +51,10 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       _munged_data = qpgeom->get_vertex_data();
 
-      int point_rendering = _state->get_point_rendering(qpgeom->get_point_rendering());
+      int geom_rendering = _state->get_geom_rendering(qpgeom->get_geom_rendering());
 
       GraphicsStateGuardianBase *gsg = traverser->get_gsg();
-      if ((point_rendering & ~gsg->get_supported_point_rendering()) != 0) {
+      if ((geom_rendering & ~gsg->get_supported_geom_rendering() & qpGeom::GR_point_bits) != 0) {
         // The GSG doesn't support rendering these fancy points
         // directly; we have to render them in software instead.
         // Munge them into quads.  This will replace the _geom and

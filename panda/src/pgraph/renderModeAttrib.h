@@ -50,7 +50,7 @@ PUBLISHED:
   INLINE float get_thickness() const;
   INLINE bool get_perspective() const;
 
-  INLINE int get_point_rendering(int geom_point_rendering) const;
+  INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;

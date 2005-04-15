@@ -37,12 +37,6 @@ NotifyCategoryDef(wdxdisplay9, "windisplay");
 ConfigVariableBool dx_show_transforms
 ("dx-show-transforms", false);
 
-//  Configure this true to force the rendering to sync to the video
-//  refresh, or false to let your frame rate go as high as it can,
-//  irrespective of the video refresh.
-ConfigVariableBool dx_sync_video
-("sync-video", true);
-
 // Set Level of MultiSampling to be used, if HW supports it.  Valid values are 2-16.
 ConfigVariableInt dx_multisample_antialiasing_level
 ("dx-multisample-antialiasing-level", 0);

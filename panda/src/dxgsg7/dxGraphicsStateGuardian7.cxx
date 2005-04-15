@@ -4968,7 +4968,7 @@ void DXGraphicsStateGuardian7::show_full_screen_frame(void) {
     // Normally, we can just do the fast flip operation.
     DWORD dwFlipFlags = DDFLIP_WAIT;
 
-    if (!dx_sync_video) {
+    if (!sync_video) {
       // If the user indicated via Config that we shouldn't wait for
       // video sync, then don't wait (if the hardware supports this).
       // This will introduce visible artifacts like tearing, and may
@@ -5008,7 +5008,7 @@ void DXGraphicsStateGuardian7::show_windowed_frame(void) {
 
   DX_DECLARE_CLEAN(DDBLTFX, bltfx);
 
-  if (dx_sync_video) {
+  if (sync_video) {
     // Wait for the video refresh *before* we blt the rendered image
     // onto the window.  This will (a) prevent the "tearing" of the
     // image that would occur if only part of the image happened to be
@@ -5029,7 +5029,7 @@ void DXGraphicsStateGuardian7::show_windowed_frame(void) {
 
   hr = _pScrn->pddsPrimary->Blt( &_pScrn->view_rect, _pScrn->pddsBack,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
 
-  if (dx_sync_video) {
+  if (sync_video) {
     HRESULT hr = _pScrn->pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
     if(hr != DD_OK) {
       dxgsg7_cat.error() << "WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;

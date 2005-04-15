@@ -79,6 +79,18 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTrifans::get_geom_rendering
+//       Access: Published, Virtual
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomTrifans::
+get_geom_rendering() const {
+  return GR_triangle_fan;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTrifans::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
@@ -147,8 +159,8 @@ CPTA_ushort qpGeomTrifans::
 rotate_impl() const {
   // Actually, we can't rotate fans without chaging the winding order.
   // It's an error to define a flat shade model for a GeomTrifan.
-  nassertr(false, get_vertices());
-  return get_vertices();
+  nassertr(false, CPTA_ushort());
+  return CPTA_ushort();
 }
 
 ////////////////////////////////////////////////////////////////////

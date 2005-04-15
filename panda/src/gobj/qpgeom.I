@@ -32,6 +32,32 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_shade_model
+//       Access: Published
+//  Description: Returns the shade model common to all of the
+//               individual GeomPrimitives that have been added to the
+//               geom.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::ShadeModel qpGeom::
+get_shade_model() const {
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_geom_rendering
+//       Access: Published
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this Geom.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeom::
+get_geom_rendering() const {
+  CDReader cdata(_cycler);
+  return cdata->_geom_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_usage_hint
 //       Access: Published
 //  Description: Returns the minimum (i.e. most dynamic) usage_hint
@@ -46,19 +72,6 @@ get_usage_hint() const {
     ((qpGeom *)this)->reset_usage_hint(cdataw);
   }
   return cdata->_usage_hint;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeom::get_point_rendering
-//       Access: Published
-//  Description: Returns the set of PointRendering bits that represent
-//               the rendering properties required to properly render
-//               the points (if any) represented within this Geom.
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeom::
-get_point_rendering() const {
-  CDReader cdata(_cycler);
-  return cdata->_point_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +137,34 @@ modify_primitive(int i) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::decompose
+//       Access: Published
+//  Description: Decomposes all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::decompose().
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeom) qpGeom::
+decompose() const {
+  PT(qpGeom) new_geom = new qpGeom(*this);
+  new_geom->decompose_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::rotate
+//       Access: Published
+//  Description: Rotates all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::rotate().
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeom) qpGeom::
+rotate() const {
+  PT(qpGeom) new_geom = new qpGeom(*this);
+  new_geom->rotate_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to
@@ -179,7 +220,8 @@ operator < (const CacheEntry &other) const {
 INLINE qpGeom::CData::
 CData() :
   _primitive_type(PT_none),
-  _point_rendering(0),
+  _shade_model(SM_uniform),
+  _geom_rendering(0),
   _usage_hint(UH_unspecified),
   _got_usage_hint(false)
 {
@@ -195,7 +237,8 @@ CData(const qpGeom::CData &copy) :
   _data(copy._data),
   _primitives(copy._primitives),
   _primitive_type(copy._primitive_type),
-  _point_rendering(copy._point_rendering),
+  _shade_model(copy._shade_model),
+  _geom_rendering(copy._geom_rendering),
   _usage_hint(copy._usage_hint),
   _got_usage_hint(copy._got_usage_hint),
   _modified(copy._modified)

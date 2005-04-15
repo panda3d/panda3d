@@ -18,6 +18,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_shade_model
+//       Access: Published
+//  Description: Returns the ShadeModel hint for this primitive.
+//               This is intended as a hint to the renderer to tell it
+//               how the per-vertex colors and normals are applied.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomPrimitive::ShadeModel qpGeomPrimitive::
+get_shade_model() const {
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_shade_model
+//       Access: Published
+//  Description: Changes the ShadeModel hint for this primitive.
+//               This is different from the ShadeModelAttrib that
+//               might also be applied from the scene graph.  This
+//               does not affect the shade model that is in effect
+//               when rendering, but rather serves as a hint to the
+//               renderer to tell it how the per-vertex colors and
+//               normals on this primitive are applied.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomPrimitive::
+set_shade_model(qpGeomPrimitive::ShadeModel shade_model) {
+  CDWriter cdata(_cycler);
+  cdata->_shade_model = shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_usage_hint
 //       Access: Published
 //  Description: Returns the usage hint for this primitive.  See
@@ -47,40 +77,8 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomPrimitive::
 set_usage_hint(qpGeomPrimitive::UsageHint usage_hint) {
-  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_usage_hint = usage_hint;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_shade_model
-//       Access: Published
-//  Description: Returns the ShadeModel hint for this primitive.
-//               This is intended as a hint to the renderer to tell it
-//               how the per-vertex colors and normals are applied.
-////////////////////////////////////////////////////////////////////
-INLINE qpGeomPrimitive::ShadeModel qpGeomPrimitive::
-get_shade_model() const {
-  CDReader cdata(_cycler);
-  return cdata->_shade_model;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::set_shade_model
-//       Access: Published
-//  Description: Changes the ShadeModel hint for this primitive.
-//               This is different from the ShadeModelAttrib that
-//               might also be applied from the scene graph.  This
-//               does not affect the shade model that is in effect
-//               when rendering, but rather serves as a hint to the
-//               renderer to tell it how the per-vertex colors and
-//               normals on this primitive are applied.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomPrimitive::
-set_shade_model(qpGeomPrimitive::ShadeModel shade_model) {
-  CDWriter cdata(_cycler);
-  cdata->_shade_model = shade_model;
-  cdata->_rotated_vertices.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,64 +245,6 @@ get_vertices() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_flat_first_vertices
-//       Access: Public
-//  Description: Returns a const pointer to the vertex index array,
-//               suitable for traversing for a renderer that expects
-//               the key vertex of each triangle in a flat-shaded
-//               model to be the triangle's first vertex (as DirectX
-//               does).
-//
-//               The result of this is dependent on the value
-//               specified to set_shade_model().  If the shade model
-//               indicates flat_last_vertex, this will return the
-//               vertices rotated to bring them into first_vertex
-//               compliance; otherwise, it will be the unmodified
-//               result from get_vertices().
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_flat_first_vertices() const {
-  CDReader cdata(_cycler);
-  if (cdata->_shade_model == SM_flat_last_vertex) {
-    if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
-    }
-    return cdata->_rotated_vertices;
-  } else {
-    return cdata->_vertices;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_flat_last_vertices
-//       Access: Public
-//  Description: Returns a const pointer to the vertex index array,
-//               suitable for traversing for a renderer that expects
-//               the key vertex of each triangle in a flat-shaded
-//               model to be the triangle's last vertex (as OpenGL
-//               does).
-//
-//               The result of this is dependent on the value
-//               specified to set_shade_model().  If the shade model
-//               indicates flat_first_vertex, this will return the
-//               vertices rotated to bring them into last_vertex
-//               compliance; otherwise, it will be the unmodified
-//               result from get_vertices().
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_flat_last_vertices() const {
-  CDReader cdata(_cycler);
-  if (cdata->_shade_model == SM_flat_first_vertex) {
-    if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
-    }
-    return cdata->_rotated_vertices;
-  } else {
-    return cdata->_vertices;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_ends
 //       Access: Public
 //  Description: Returns a const pointer to the primitive ends
@@ -391,7 +331,6 @@ CData(const qpGeomPrimitive::CData &copy) :
   _usage_hint(copy._usage_hint),
   _shade_model(copy._shade_model),
   _vertices(copy._vertices),
-  _rotated_vertices(copy._rotated_vertices),
   _ends(copy._ends),
   _mins(copy._mins),
   _maxs(copy._maxs),

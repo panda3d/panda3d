@@ -162,7 +162,7 @@ set_vertex_data(const qpGeomVertexData *data) {
   CDWriter cdata(_cycler);
   cdata->_data = (qpGeomVertexData *)data;
   mark_bound_stale();
-  reset_point_rendering(cdata);
+  reset_geom_rendering(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,10 +199,9 @@ offset_vertices(const qpGeomVertexData *data, int offset) {
 #endif
   }
 
-  cdata->_got_usage_hint = false;
   cdata->_modified = qpGeom::get_next_modified();
   mark_bound_stale();
-  reset_point_rendering(cdata);
+  reset_geom_rendering(cdata);
 
   nassertv(all_is_valid);
 }
@@ -225,25 +224,25 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
-  if (cdata->_got_usage_hint &&
-      cdata->_primitives[i]->get_usage_hint() != primitive->get_usage_hint()) {
-    if (cdata->_primitives[i]->get_usage_hint() < primitive->get_usage_hint()) {
-      // If we're reducing the usage hint, we might also be reducing
-      // the minimum usage hit.
-      cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
-    } else { // (cdata->_primitives[i]->get_usage_hint() > primitive->get_usage_hint())
-      // If we're increasing it, we might have to rederive the minimum.
-      if (cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
-        cdata->_got_usage_hint = false;
-      }
-    }
-  }
+  // They also should have the same fundamental shade model, but
+  // SM_uniform is compatible with anything.
+  nassertv(cdata->_shade_model == SM_uniform ||
+           primitive->get_shade_model() == SM_uniform ||
+           cdata->_shade_model == primitive->get_shade_model());
+
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
   PrimitiveType new_primitive_type = primitive->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
-    reset_point_rendering(cdata);
   }
+  ShadeModel new_shade_model = primitive->get_shade_model();
+  if (new_shade_model != cdata->_shade_model &&
+      new_shade_model != SM_uniform) {
+    cdata->_shade_model = new_shade_model;
+  }
+
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -267,16 +266,25 @@ add_primitive(const qpGeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
+  // They also should have the same fundamental shade model, but
+  // SM_uniform is compatible with anything.
+  nassertv(cdata->_shade_model == SM_uniform ||
+           primitive->get_shade_model() == SM_uniform ||
+           cdata->_shade_model == primitive->get_shade_model());
+
   cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
   PrimitiveType new_primitive_type = primitive->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
-    reset_point_rendering(cdata);
+  }
+  ShadeModel new_shade_model = primitive->get_shade_model();
+  if (new_shade_model != cdata->_shade_model &&
+      new_shade_model != SM_uniform) {
+    cdata->_shade_model = new_shade_model;
   }
 
-  if (cdata->_got_usage_hint) {
-    cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
-  }
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -290,17 +298,13 @@ remove_primitive(int i) {
   clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
-  if (cdata->_got_usage_hint &&
-      cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
-    // Maybe we're raising the minimum usage_hint; we have to rederive
-    // the usage_hint later.
-    cdata->_got_usage_hint = false;
-  }
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
     cdata->_primitive_type = PT_none;
-    reset_point_rendering(cdata);
+    cdata->_shade_model = SM_uniform;
   }
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -318,7 +322,73 @@ clear_primitives() {
   CDWriter cdata(_cycler);
   cdata->_primitives.clear();
   cdata->_primitive_type = PT_none;
-  reset_point_rendering(cdata);
+  cdata->_shade_model = SM_uniform;
+  reset_geom_rendering(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::decompose_in_place
+//       Access: Published
+//  Description: Decomposes all of the primitives within this Geom,
+//               leaving the results in place.  See
+//               GeomPrimitive::decompose().
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+decompose_in_place() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(qpGeomPrimitive) new_prim = (*pi)->decompose();
+    (*pi) = (qpGeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(cdata->_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = qpGeom::get_next_modified();
+  reset_geom_rendering(cdata);
+
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::rotate_in_place
+//       Access: Published
+//  Description: Rotates all of the primitives within this Geom,
+//               leaving the results in place.  See
+//               GeomPrimitive::rotate().
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+rotate_in_place() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(qpGeomPrimitive) new_prim = (*pi)->rotate();
+    (*pi) = (qpGeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(cdata->_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = qpGeom::get_next_modified();
+
+  nassertv(all_is_valid);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -712,25 +782,43 @@ reset_usage_hint(qpGeom::CDWriter &cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeom::reset_point_rendering
+//     Function: qpGeom::reset_geom_rendering
 //       Access: Private
-//  Description: Rederives the _point_rendering member.
+//  Description: Rederives the _geom_rendering member.
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
-reset_point_rendering(qpGeom::CDWriter &cdata) {
-  cdata->_point_rendering = 0;
-  if (cdata->_primitive_type == PT_points) {
-    cdata->_point_rendering |= PR_point;
+reset_geom_rendering(qpGeom::CDWriter &cdata) {
+  cdata->_geom_rendering = 0;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    cdata->_geom_rendering |= (*pi)->get_geom_rendering();
+  }
 
+  if ((cdata->_geom_rendering & GR_point) != 0) {
     if (cdata->_data->has_column(InternalName::get_size())) {
-      cdata->_point_rendering |= PR_per_point_size;
+      cdata->_geom_rendering |= GR_per_point_size;
     }
     if (cdata->_data->has_column(InternalName::get_aspect_ratio())) {
-      cdata->_point_rendering |= PR_aspect_ratio;
+      cdata->_geom_rendering |= GR_point_aspect_ratio;
     }
     if (cdata->_data->has_column(InternalName::get_rotate())) {
-      cdata->_point_rendering |= PR_rotate;
+      cdata->_geom_rendering |= GR_point_rotate;
     }
+  }
+
+  switch (get_shade_model()) {
+  case SM_flat_first_vertex:
+    cdata->_geom_rendering |= GR_flat_first_vertex;
+    break;
+
+  case SM_flat_last_vertex:
+    cdata->_geom_rendering |= GR_flat_last_vertex;
+    break;
+
+  default:
+    break;
   }
 }
 
@@ -862,7 +950,8 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   }
 
   dg.add_uint8(_primitive_type);
-  dg.add_uint16(_point_rendering);
+  dg.add_uint8(_shade_model);
+  dg.add_uint16(_geom_rendering);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -905,7 +994,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _primitive_type = (PrimitiveType)scan.get_uint8();
-  _point_rendering = scan.get_uint16();
+  _shade_model = (ShadeModel)scan.get_uint16();
+  _geom_rendering = scan.get_uint16();
   _got_usage_hint = false;
   _modified = qpGeom::get_next_modified();
 }

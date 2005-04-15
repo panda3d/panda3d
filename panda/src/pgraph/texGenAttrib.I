@@ -44,22 +44,22 @@ TexGenAttrib(const TexGenAttrib &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_point_rendering
+//     Function: TexGenAttrib::get_geom_rendering
 //       Access: Published
-//  Description: Returns the union of the Geom::PointRendering bits
+//  Description: Returns the union of the Geom::GeomRendering bits
 //               that will be required once this TexGenAttrib is
 //               applied to a geom which includes the indicated
-//               geom_point_rendering bits.
+//               geom_rendering bits.
 ////////////////////////////////////////////////////////////////////
 INLINE int TexGenAttrib::
-get_point_rendering(int geom_point_rendering) const {
-  if ((geom_point_rendering & qpGeom::PR_point) != 0) {
+get_geom_rendering(int geom_rendering) const {
+  if ((geom_rendering & qpGeom::GR_point) != 0) {
     if (_num_point_sprites > 0) {
-      return geom_point_rendering |= qpGeom::PR_sprite;
+      return geom_rendering |= qpGeom::GR_point_sprite;
     }
   }
 
-  return geom_point_rendering;
+  return geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////

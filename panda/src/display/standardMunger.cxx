@@ -134,6 +134,41 @@ munge_data_impl(const qpGeomVertexData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StandardMunger::munge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+bool StandardMunger::
+munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
+  int geom_rendering = geom->get_geom_rendering();
+  int supported_geom_rendering = _gsg->get_supported_geom_rendering();
+
+  int unsupported_bits = geom_rendering & ~supported_geom_rendering;
+
+  if (unsupported_bits != 0) {
+    // Even beyond munging the vertex format, we have to convert the
+    // Geom itself into a new primitive type the GSG can render
+    // directly.
+    if ((unsupported_bits & qpGeom::GR_composite_bits) != 0) {
+      // This decomposes everything in the primitive, so that if (for
+      // instance) the primitive contained both strips and fans, but
+      // the GSG didn't support fans, it would decompose the strips
+      // too.  To handle this correctly, we'd need a separate
+      // decompose_fans() and decompose_strips() call; but for now,
+      // we'll just say it's good enough.  In practice, we don't have
+      // any GSG's that can support strips without also supporting
+      // fans.
+      geom = geom->decompose();
+    }
+    if ((unsupported_bits & qpGeom::GR_shade_model_bits) != 0) {
+      geom = geom->rotate();
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StandardMunger::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Called to compare two GeomMungers who are known to be

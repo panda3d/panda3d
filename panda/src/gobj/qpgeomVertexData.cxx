@@ -230,7 +230,6 @@ void qpGeomVertexData::
 set_array(int i, const qpGeomVertexArrayData *array) {
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
-  nassertv(array->get_array_format() == cdata->_arrays[i]->get_array_format());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();

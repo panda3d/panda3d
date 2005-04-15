@@ -134,7 +134,7 @@ rotate_impl() const {
     new_vertices.push_back(vertices[begin]);
   }
   
-  nassertr(new_vertices.size() == vertices.size(), vertices);
+  nassertr(new_vertices.size() == vertices.size(), CPTA_ushort());
   return new_vertices;
 }
 

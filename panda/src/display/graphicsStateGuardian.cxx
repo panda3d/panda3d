@@ -122,7 +122,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_generate_mipmap = false;
   _supports_render_texture = false;
 
-  _supported_point_rendering = 0;
+  _supported_geom_rendering = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,20 +153,20 @@ get_supports_multisample() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supported_point_rendering
+//     Function: GraphicsStateGuardian::get_supported_geom_rendering
 //       Access: Published, Virtual
-//  Description: Returns the union of Geom::PointRendering values that
-//               this particular GSG can support directly.  If a point
+//  Description: Returns the union of Geom::GeomRendering values that
+//               this particular GSG can support directly.  If a Geom
 //               needs to be rendered that requires some additional
-//               properties, the StandardMunger will convert it into
-//               quads instead.
+//               properties, the StandardMunger and/or the
+//               CullableObject will convert it as needed.
 //
 //               This method is declared virtual solely so that it can
 //               be queried from cullableObject.cxx.
 ////////////////////////////////////////////////////////////////////
 int GraphicsStateGuardian::
-get_supported_point_rendering() const {
-  return _supported_point_rendering;
+get_supported_geom_rendering() const {
+  return _supported_geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -723,10 +723,6 @@ draw_triangles(const qpGeomTriangles *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
-  if (!new_prim->is_of_type(qpGeomTristrips::get_class_type())) {
-    new_prim->draw(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -736,10 +732,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_trifans(const qpGeomTrifans *primitive) {
-  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
-  if (!new_prim->is_of_type(qpGeomTrifans::get_class_type())) {
-    new_prim->draw(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,10 +750,6 @@ draw_lines(const qpGeomLines *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_linestrips(const qpGeomLinestrips *primitive) {
-  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
-  if (!new_prim->is_of_type(qpGeomLinestrips::get_class_type())) {
-    new_prim->draw(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

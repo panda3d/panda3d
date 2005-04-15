@@ -73,25 +73,25 @@ get_perspective() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderModeAttrib::get_point_rendering
+//     Function: RenderModeAttrib::get_geom_rendering
 //       Access: Published
-//  Description: Returns the union of the Geom::PointRendering bits
+//  Description: Returns the union of the Geom::GeomRendering bits
 //               that will be required once this RenderModeAttrib is
 //               applied to a geom which includes the indicated
-//               geom_point_rendering bits.
+//               geom_rendering bits.
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderModeAttrib::
-get_point_rendering(int geom_point_rendering) const {
+get_geom_rendering(int geom_rendering) const {
   if (_mode == M_point) {
-    geom_point_rendering |= qpGeom::PR_point;
+    geom_rendering |= qpGeom::GR_point;
   }
-  if ((geom_point_rendering & qpGeom::PR_point) != 0) {
+  if ((geom_rendering & qpGeom::GR_point) != 0) {
     if (_perspective) {
-      geom_point_rendering |= (qpGeom::PR_perspective | qpGeom::PR_uniform_size);
+      geom_rendering |= (qpGeom::GR_point_perspective | qpGeom::GR_point_uniform_size);
     } else if (_thickness != 1.0f) {
-      geom_point_rendering |= qpGeom::PR_uniform_size;
+      geom_rendering |= qpGeom::GR_point_uniform_size;
     }
   }
 
-  return geom_point_rendering;
+  return geom_rendering;
 }

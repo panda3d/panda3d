@@ -68,10 +68,11 @@ PUBLISHED:
   virtual Geom *make_copy() const;
 
   INLINE PrimitiveType get_primitive_type() const;
+  INLINE ShadeModel get_shade_model() const;
+  INLINE int get_geom_rendering() const;
+
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
-
-  INLINE int get_point_rendering() const;
 
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
   PT(qpGeomVertexData) modify_vertex_data();
@@ -85,6 +86,12 @@ PUBLISHED:
   void add_primitive(const qpGeomPrimitive *primitive);
   void remove_primitive(int i);
   void clear_primitives();
+
+  INLINE CPT(qpGeom) decompose() const;
+  INLINE CPT(qpGeom) rotate() const;
+
+  void decompose_in_place();
+  void rotate_in_place();
 
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
@@ -160,7 +167,8 @@ private:
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
     PrimitiveType _primitive_type;
-    int _point_rendering;
+    ShadeModel _shade_model;
+    int _geom_rendering;
     UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
@@ -172,7 +180,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
   void reset_usage_hint(CDWriter &cdata);
-  void reset_point_rendering(CDWriter &cdata);
+  void reset_geom_rendering(CDWriter &cdata);
 
   static UpdateSeq _next_modified;
 

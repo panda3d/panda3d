@@ -82,47 +82,67 @@ PUBLISHED:
     UH_unspecified,
   };
 
-  // This type specifies a number of bits that are used to
-  // representing the rendering capabilities and/or requirements for
-  // fancy points.
-  enum PointRendering {
+  // This type specifies a number of bits that are used to represent
+  // the rendering requirements of a particular Geom, as well as the
+  // rendering capabilities of the GSG.  The difference between the
+  // two indicates whether the Geom needs to be munged for the GSG.
+  enum GeomRendering {
     // If there are any points at all.
-    PR_point          = 0x0001,
+    GR_point                = 0x0001,
 
     // If the points are all the same size, other than 1 pixel.
-    PR_uniform_size   = 0x0002,
+    GR_point_uniform_size   = 0x0002,
 
     // If the points have a per-vertex size designation.
-    PR_per_point_size = 0x0004,
+    GR_per_point_size       = 0x0004,
 
     // If the points' size is specified in camera units rather than
     // screen pixels.
-    PR_perspective    = 0x0008,
+    GR_point_perspective    = 0x0008,
 
     // If the points have a non-square aspect ratio.
-    PR_aspect_ratio   = 0x0010,
+    GR_point_aspect_ratio   = 0x0010,
 
     // If the points are rotated off the orthonormal axis.
-    PR_rotate         = 0x0020,
+    GR_point_rotate         = 0x0020,
 
     // If the points require texture coordinates interpolated across
     // their face, to render textures as sprites.
-    PR_sprite         = 0x0040,
+    GR_point_sprite         = 0x0040,
+
+    // The union of all the above point attributes.
+    GR_point_bits           = 0x007f,
+
+    // If there are any of these composite types.
+    GR_triangle_strip       = 0x0080,
+    GR_triangle_fan         = 0x0100,
+    GR_line_strip           = 0x0200,
+
+    // The union of all of the above composite types.
+    GR_composite_bits       = 0x0380,
+
+    // If the shade model requires a particular vertex for flat shading.
+    GR_flat_first_vertex    = 0x0400,
+    GR_flat_last_vertex     = 0x0800,
+
+    // The union of the above shade model types.
+    GR_shade_model_bits     = 0x0c00,
   };
 
-  // The shade model controls whether colors and/or lighting effects
-  // are smoothly interpolated across the face of a triangle, or
-  // uniform for the entire triangle.
+  // The shade model specifies whether the per-vertex colors and
+  // normals indexed by a given primitive truly represent per-vertex
+  // colors and normals, or whether they actually represent
+  // per-triangle flat-shaded colors and normals.
   enum ShadeModel {
-    // SM_smooth: vertices within a single face have different
-    // colors/normals that should be smoothed across the face.  This
-    // primitive should be rendered with SmoothModelAttrib::M_smooth.
-    SM_smooth,  
-
     // SM_uniform: all vertices across all faces have the same colors
     // and normals.  It doesn't really matter which ShadeModelAttrib
     // mode is used to render this primitive.
     SM_uniform, 
+
+    // SM_smooth: vertices within a single face have different
+    // colors/normals that should be smoothed across the face.  This
+    // primitive should be rendered with SmoothModelAttrib::M_smooth.
+    SM_smooth,  
 
     // SM_flat_(first,last)_vertex: each face within the primitive
     // might have a different color/normal than the other faces, but

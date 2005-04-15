@@ -96,7 +96,7 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_render_texture() const;
 
-  virtual int get_supported_point_rendering() const;
+  virtual int get_supported_geom_rendering() const;
 
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
@@ -326,7 +326,7 @@ protected:
   bool _supports_multisample;
   bool _supports_generate_mipmap;
   bool _supports_render_texture;
-  int _supported_point_rendering;
+  int _supported_geom_rendering;
 
 public:
   // Statistics

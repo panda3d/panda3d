@@ -80,6 +80,18 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomLinestrips::get_geom_rendering
+//       Access: Published, Virtual
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomLinestrips::
+get_geom_rendering() const {
+  return GR_line_strip;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomLinestrips::get_min_num_vertices_per_primitive
 //       Access: Public, Virtual
 //  Description: Returns the minimum number of vertices that must be
@@ -167,7 +179,7 @@ rotate_impl() const {
     }
     begin = end;
   }
-  nassertr(new_vertices.size() == vertices.size(), vertices);
+  nassertr(new_vertices.size() == vertices.size(), CPTA_ushort());
 
   return new_vertices;
 }

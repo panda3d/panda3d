@@ -129,6 +129,8 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Cull:Munge",                       { 0.3, 0.3, 0.9 } },
   { 1, "Cull:Munge:Points",                { 0.2, 0.8, 0.4 } },
   { 1, "Cull:Munge:Data",                  { 0.7, 0.5, 0.2 } },
+  { 1, "Cull:Munge:Rotate",                { 0.9, 0.8, 0.5 } },
+  { 1, "Cull:Munge:Decompose",             { 0.1, 0.3, 0.1 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },
@@ -140,7 +142,6 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Flip:End",                    { 0.9, 0.3, 0.6 } },
   { 1, "Draw:Bins",                        { 0.3, 0.6, 0.0 } },
   { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
-  { 1, "Draw:Rotate",                      { 0.9, 0.8, 0.5 } },
   { 0, NULL }
 };
 

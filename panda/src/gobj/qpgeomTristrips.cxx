@@ -80,6 +80,18 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::get_geom_rendering
+//       Access: Published, Virtual
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomTristrips::
+get_geom_rendering() const {
+  return GR_triangle_strip;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::get_num_unused_vertices_per_primitive
 //       Access: Public, Virtual
 //  Description: Returns the number of vertices that are added between
@@ -256,7 +268,7 @@ rotate_impl() const {
   // If this assertion is triggered, there was a triangle strip with
   // an odd number of vertices and either SM_flat_first_vertex or
   // SM_flat_last_vertex specified--which is not allowed.
-  nassertr(!any_odd, new_vertices);
+  nassertr(!any_odd, CPTA_ushort());
   return new_vertices;
 }
 

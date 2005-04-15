@@ -79,6 +79,21 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPoints::get_geom_rendering
+//       Access: Published, Virtual
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomPoints::
+get_geom_rendering() const {
+  // Fancy point attributes, if any, are based on whether the
+  // appropriate columns are defined in the associated GeomVertexData;
+  // these bits will be added by Geom::get_geom_rendering().
+  return GR_point;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPoints::get_num_vertices_per_primitive
 //       Access: Public, Virtual
 //  Description: If the primitive type is a simple type in which all

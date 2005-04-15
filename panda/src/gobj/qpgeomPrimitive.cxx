@@ -30,7 +30,8 @@
 
 TypeHandle qpGeomPrimitive::_type_handle;
 
-PStatCollector qpGeomPrimitive::_rotate_pcollector("Draw:Rotate");
+PStatCollector qpGeomPrimitive::_decompose_pcollector("Cull:Munge:Decompose");
+PStatCollector qpGeomPrimitive::_rotate_pcollector("Cull:Munge:Rotate");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::Constructor
@@ -61,22 +62,20 @@ qpGeomPrimitive(const qpGeomPrimitive &copy) :
 ////////////////////////////////////////////////////////////////////
 qpGeomPrimitive::
 ~qpGeomPrimitive() {
-  // When we destruct, we should ensure that all of our cached
-  // entries, across all pipeline stages, are properly removed from
-  // the cache manager.
-  int num_stages = _cycler.get_num_stages();
-  for (int i = 0; i < num_stages; i++) {
-    if (_cycler.is_stage_unique(i)) {
-      CData *cdata = _cycler.write_stage(i);
-      if (cdata->_cache != (CacheEntry *)NULL) {
-        cdata->_cache->erase();
-        cdata->_cache = NULL;
-      }
-      _cycler.release_write_stage(i, cdata);
-    }
-  }
-
   release_all();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_geom_rendering
+//       Access: Published, Virtual
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_geom_rendering() const {
+  // The default is nothing fancy.
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +93,6 @@ add_vertex(int vertex) {
   unsigned short short_vertex = vertex;
   nassertv((int)short_vertex == vertex);
 
-  clear_cache();
   CDWriter cdata(_cycler);
 
   int num_primitives = get_num_primitives();
@@ -106,7 +104,6 @@ add_vertex(int vertex) {
   }
 
   cdata->_vertices.push_back(short_vertex);
-  cdata->_rotated_vertices.clear();
 
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_vertex);
@@ -139,7 +136,6 @@ add_consecutive_vertices(int start, int num_vertices) {
   if (num_vertices == 0) {
     return;
   }
-  clear_cache();
   int end = (start + num_vertices) - 1;
   unsigned short short_start = start;
   unsigned short short_end = end;
@@ -158,7 +154,6 @@ add_consecutive_vertices(int start, int num_vertices) {
   for (unsigned short v = short_start; v <= short_end; ++v) {
     cdata->_vertices.push_back(v);
   }
-  cdata->_rotated_vertices.clear();
 
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_start);
@@ -210,7 +205,6 @@ add_next_vertices(int num_vertices) {
 ////////////////////////////////////////////////////////////////////
 bool qpGeomPrimitive::
 close_primitive() {
-  clear_cache();
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
   CDWriter cdata(_cycler);
@@ -262,10 +256,8 @@ close_primitive() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 clear_vertices() {
-  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices.clear();
-  cdata->_rotated_vertices.clear();
   cdata->_ends.clear();
   cdata->_mins.clear();
   cdata->_maxs.clear();
@@ -280,10 +272,8 @@ clear_vertices() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 offset_vertices(int offset) {
-  clear_cache();
   CDWriter cdata(_cycler);
 
-  cdata->_rotated_vertices.clear();
   cdata->_mins.clear();
   cdata->_maxs.clear();
   cdata->_got_minmax = false;
@@ -427,49 +417,44 @@ get_primitive_num_vertices(int n) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomPrimitive) qpGeomPrimitive::
 decompose() const {
-  CPT(qpGeomPrimitive) result;
-  {
-    // Use read() and release_read() instead of CDReader, because the
-    // call to record_primitive() might recursively call back into
-    // this object, and require a write.
-    const CData *cdata = _cycler.read();
-    if (cdata->_cache != (CacheEntry *)NULL) {
-      result = cdata->_cache->_decomposed;
-      _cycler.release_read(cdata);
-      // Record a cache hit, so this element will stay in the cache a
-      // while longer.
-      cdata->_cache->refresh();
-
-      return result;
-    }
-    _cycler.release_read(cdata);
-  }
-
-  result = decompose_impl();
-  if (result.p() == this || result.p() == NULL) {
-    // decomposing this primitive has no effect or cannot be done.
-    return this;
-  }
-
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "Decomposing " << get_type() << ": " << (void *)this << "\n";
   }
 
-  // Record the result for the future.
-  CacheEntry *entry;
-  {
-    CDWriter cdata(((qpGeomPrimitive *)this)->_cycler);
-    entry = new CacheEntry;
-    entry->_source = (qpGeomPrimitive *)this;
-    entry->_decomposed = result;
-    cdata->_cache = entry;
+  PStatTimer timer(_decompose_pcollector);
+  return decompose_impl();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::rotate
+//       Access: Published
+//  Description: Returns a new primitive with the shade_model reversed
+//               (if it is flat shaded).
+//
+//               If the current shade_model indicates
+//               flat_vertex_last, this should bring the last vertex
+//               to the first position; if it indicates
+//               flat_vertex_first, this should bring the first vertex
+//               to the last position.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomPrimitive) qpGeomPrimitive::
+rotate() const {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Rotating " << get_type() << ": " << (void *)this << "\n";
   }
 
-  // And add *this* object to the cache manager.
-  entry->record();
+  PStatTimer timer(_rotate_pcollector);
+  CPTA_ushort rotated_vertices = rotate_impl();
 
-  return result;
+  if (rotated_vertices.is_null()) {
+    return this;
+  }
+
+  PT(qpGeomPrimitive) new_prim = make_copy();
+  new_prim->set_vertices(rotated_vertices);
+  return new_prim;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,9 +539,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 PTA_ushort qpGeomPrimitive::
 modify_vertices() {
-  clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_rotated_vertices.clear();
   cdata->_got_minmax = false;
   return cdata->_vertices;
 }
@@ -570,10 +553,8 @@ modify_vertices() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 set_vertices(CPTA_ushort vertices) {
-  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices = (PTA_ushort &)vertices;
-  cdata->_rotated_vertices.clear();
   cdata->_got_minmax = false;
 }
 
@@ -591,9 +572,7 @@ set_vertices(CPTA_ushort vertices) {
 ////////////////////////////////////////////////////////////////////
 PTA_int qpGeomPrimitive::
 modify_ends() {
-  clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_rotated_vertices.clear();
   cdata->_got_minmax = false;
   return cdata->_ends;
 }
@@ -612,10 +591,8 @@ modify_ends() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 set_ends(CPTA_int ends) {
-  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_ends = (PTA_int &)ends;
-  cdata->_rotated_vertices.clear();
   cdata->_got_minmax = false;
 }
 
@@ -659,28 +636,6 @@ int qpGeomPrimitive::
 get_num_unused_vertices_per_primitive() const {
   return 0;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::clear_cache
-//       Access: Public
-//  Description: Removes all of the previously-cached results of
-//               decompose().
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
-clear_cache() {
-  // Probably we shouldn't do anything at all here unless we are
-  // running in pipeline stage 0.
-  CData *cdata = CDWriter(_cycler);
-  if (cdata->_cache != (CacheEntry *)NULL) {
-    cdata->_cache->erase();
-    cdata->_cache = NULL;
-  }
-
-  // This, on the other hand, should be applied to the current
-  // pipeline stage.
-  cdata->_modified = qpGeom::get_next_modified();
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::prepare
@@ -892,13 +847,13 @@ decompose_impl() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::rotate_impl
 //       Access: Protected, Virtual
-//  Description: The virtual implementation of do_rotate().
+//  Description: The virtual implementation of rotate().
 ////////////////////////////////////////////////////////////////////
 CPTA_ushort qpGeomPrimitive::
 rotate_impl() const {
   // The default implementation doesn't even try to do anything.
-  nassertr(false, get_vertices());
-  return get_vertices();
+  nassertr(false, CPTA_ushort());
+  return CPTA_ushort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -912,34 +867,6 @@ rotate_impl() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 append_unused_vertices(PTA_ushort &, int) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::do_rotate
-//       Access: Private
-//  Description: Fills _rotated_vertices by rotating the individual
-//               primitives to bring each flat-colored vertex to the
-//               opposite position.  If the current shade_model
-//               indicates flat_vertex_last, this should bring the
-//               last vertex to the first position; if it indicates
-//               flat_vertex_first, this should bring the first vertex
-//               to the last position.  This is used internally to
-//               implement get_flat_first_vertices() and
-//               get_flat_last_vertices().
-////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomPrimitive::
-do_rotate(qpGeomPrimitive::CDReader &cdata) {
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
-      << "Rotating " << get_type() << ": " << (void *)this << "\n";
-  }
-
-  PStatTimer timer(_rotate_pcollector);
-  CPTA_ushort rotated_vertices = rotate_impl();
-
-  CDWriter cdataw(_cycler, cdata);
-  cdataw->_rotated_vertices = rotated_vertices;
-  return rotated_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1039,46 +966,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   manager->read_cdata(scan, _cycler);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::CacheEntry::evict_callback
-//       Access: Public, Virtual
-//  Description: Called when the entry is evicted from the cache, this
-//               should clean up the owning object appropriately.
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::CacheEntry::
-evict_callback() {
-  // We have to operate on stage 0 of the pipeline, since that's where
-  // the cache really counts.  Because of the multistage pipeline, we
-  // might not actually have a cache entry there (it might have been
-  // added to stage 1 instead).  No big deal if we don't.
-  CData *cdata = _source->_cycler.write_stage(0);
-  if (cdata->_cache.p() == this) {
-    cdata->_cache = NULL;
-  }
-  _source->_cycler.release_write_stage(0, cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::CacheEntry::get_result_size
-//       Access: Public, Virtual
-//  Description: Returns the approximate number of bytes represented
-//               by the computed result.
-////////////////////////////////////////////////////////////////////
-int qpGeomPrimitive::CacheEntry::
-get_result_size() const {
-  return _decomposed->get_num_bytes();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::CacheEntry::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::CacheEntry::
-output(ostream &out) const {
-  out << "primitive " << (void *)_source;
 }
 
 ////////////////////////////////////////////////////////////////////

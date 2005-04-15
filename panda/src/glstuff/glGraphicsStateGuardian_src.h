@@ -100,6 +100,7 @@ public:
   virtual void draw_triangles(const qpGeomTriangles *primitive);
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void draw_lines(const qpGeomLines *primitive);
+  virtual void draw_linestrips(const qpGeomLinestrips *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
   virtual void end_draw_primitives();
 
@@ -390,16 +391,24 @@ public:
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
 
-public:
-  static GraphicsStateGuardian *
-  make_GlGraphicsStateGuardian(const FactoryParams &params);
+  static PStatCollector _vertices_display_list_pcollector;
 
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-  static PStatCollector _vertices_display_list_pcollector;
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+
+public:
+  static void init_type() {
+    GraphicsStateGuardian::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "GraphicsStateGuardian",
+                  GraphicsStateGuardian::get_class_type());
+  }
 
 private:
   static TypeHandle _type_handle;

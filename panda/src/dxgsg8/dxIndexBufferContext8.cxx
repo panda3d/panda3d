@@ -104,7 +104,7 @@ upload_data() {
     return;
   }
 
-  memcpy(local_pointer, get_data()->get_flat_first_vertices(), data_size);
+  memcpy(local_pointer, get_data()->get_vertices(), data_size);
 
   _ibuffer->Unlock();
 }

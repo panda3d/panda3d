@@ -127,7 +127,7 @@ PUBLISHED:
   INLINE const TexGenAttrib *get_tex_gen() const;
   INLINE const RenderModeAttrib *get_render_mode() const;
 
-  INLINE int get_point_rendering(int geom_point_rendering) const;
+  INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
