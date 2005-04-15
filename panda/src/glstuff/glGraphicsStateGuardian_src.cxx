@@ -3012,8 +3012,12 @@ prepare_index_buffer(qpGeomPrimitive *data) {
     _glGenBuffers(1, &gibc->_index);
 
     if (GLCAT.is_debug()) {
+      const qpGeomVertexArrayData *vertices = data->get_vertices();
       GLCAT.debug()
-        << "creating index buffer " << gibc->_index << "\n";
+        << "creating index buffer " << gibc->_index << ": "
+        << data->get_num_vertices() << " indices (" 
+        << data->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
+        << ")\n";
     }
     
     report_my_gl_errors();
