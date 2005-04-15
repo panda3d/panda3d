@@ -46,6 +46,7 @@ public:
   INLINE bool changed_size() const;
   INLINE bool changed_usage_hint() const;
   INLINE bool was_modified() const;
+  INLINE UpdateSeq get_modified() const;
 
   INLINE void mark_loaded();
 

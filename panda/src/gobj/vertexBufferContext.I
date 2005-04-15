@@ -89,6 +89,17 @@ was_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexBufferContext::get_modified
+//       Access: Public
+//  Description: Returns the UpdateSeq that was recorded the last time
+//               mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq VertexBufferContext::
+get_modified() const {
+  return _modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexBufferContext::mark_loaded
 //       Access: Public
 //  Description: Should be called after the VertexBufferContext has been

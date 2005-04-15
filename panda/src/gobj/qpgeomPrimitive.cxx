@@ -170,6 +170,7 @@ add_vertex(int vertex) {
 
   index.add_data1i(vertex);
 
+  cdata->_modified = qpGeom::get_next_modified();
   cdata->_got_minmax = false;
 }
 
@@ -203,6 +204,7 @@ add_consecutive_vertices(int start, int num_vertices) {
     index.add_data1i(v);
   }
 
+  cdata->_modified = qpGeom::get_next_modified();
   cdata->_got_minmax = false;
 }
 
@@ -267,6 +269,8 @@ close_primitive() {
 #endif
   }
 
+  cdata->_modified = qpGeom::get_next_modified();
+
   return true;
 }
 
@@ -284,6 +288,7 @@ clear_vertices() {
   cdata->_ends.clear();
   cdata->_mins.clear();
   cdata->_maxs.clear();
+  cdata->_modified = qpGeom::get_next_modified();
   cdata->_got_minmax = false;
 }
 
