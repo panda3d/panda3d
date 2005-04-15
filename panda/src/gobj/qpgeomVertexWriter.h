@@ -99,8 +99,6 @@ PUBLISHED:
   INLINE void set_vertex(int vertex);
 
   INLINE int get_start_vertex() const;
-  INLINE int get_write_vertex() const;
-  INLINE int get_num_vertices() const;
   INLINE bool is_at_end() const;
 
   INLINE void set_data1f(float data);
@@ -143,120 +141,30 @@ private:
   INLINE void set_pointer(int vertex);
   INLINE unsigned char *inc_pointer();
   INLINE unsigned char *inc_add_pointer();
-  Writer *make_writer() const;
 
+  // It is important that we only store *one* of the following two
+  // pointers.  If we are storing a GeomVertexData/array index, we
+  // must not keep a pointer to the particular ArrayData we are
+  // working on (if we do, it may result in an extra copy of the data
+  // due to holding the reference count).
   PT(qpGeomVertexData) _vertex_data;
-  PT(qpGeomVertexArrayData) _array_data;
   int _array;
-  const qpGeomVertexColumn *_column;
+  PT(qpGeomVertexArrayData) _array_data;
+
+  qpGeomVertexColumn::Packer *_packer;
   int _stride;
 
   unsigned char *_pointer;
+  unsigned char *_pointer_end;
 
   int _start_vertex;
   int _write_vertex;
-  int _num_vertices;
-
-  Writer *_writer;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL
   // to return from a nassertr() call.
   static unsigned char empty_buffer[100];
 #endif
-
-  // This nested class provides the implementation for unpacking data
-  // in a very general way, but also provides the hooks for
-  // implementing the common, very direct code paths (for instance,
-  // 3-component float32 to LVecBase3f) as quickly as possible.
-  class Writer {
-  public:
-    virtual ~Writer();
-    virtual void set_data1f(unsigned char *pointer, float data);
-    virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
-    virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
-    
-    virtual void set_data1i(unsigned char *pointer, int a);
-    virtual void set_data2i(unsigned char *pointer, int a, int b);
-    virtual void set_data3i(unsigned char *pointer, int a, int b, int c);
-    virtual void set_data4i(unsigned char *pointer, int a, int b, int c, int d);
-
-    INLINE unsigned int maybe_scale_color(float data);
-    INLINE void maybe_scale_color(const LVecBase2f &data);
-    INLINE void maybe_scale_color(const LVecBase3f &data);
-    INLINE void maybe_scale_color(const LVecBase4f &data);
-
-    const qpGeomVertexColumn *_column;
-    unsigned int _a, _b, _c, _d;
-  };
-
-  // This is a specialization on the generic Writer that handles
-  // points, which are special because the fourth component, if
-  // present in the data but not specified by the caller, is
-  // implicitly 1.0; and if it is not present in the data but is
-  // specified, we have to divide by it.
-  class Writer_point : public Writer {
-  public:
-    virtual void set_data1f(unsigned char *pointer, float data);
-    virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
-    virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
-  };
-
-  // This is similar to Writer_point, in that the fourth component
-  // (alpha) is implicitly 1.0 if unspecified, but we never divide by
-  // alpha.
-  class Writer_color : public Writer {
-  public:
-    virtual void set_data1f(unsigned char *pointer, float data);
-    virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
-    virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
-  };
-
-
-  // These are the specializations on the generic Writer that handle
-  // the direct code paths.
-
-  class Writer_float32_3 : public Writer {
-  public:
-    virtual void set_data3f(unsigned char *pointer, const LVecBase3f &value);
-  };
-
-  class Writer_point_float32_2 : public Writer_point {
-  public:
-    virtual void set_data2f(unsigned char *pointer, const LVecBase2f &value);
-  };
-
-  class Writer_point_float32_3 : public Writer_point {
-  public:
-    virtual void set_data3f(unsigned char *pointer, const LVecBase3f &value);
-  };
-
-  class Writer_point_float32_4 : public Writer_point {
-  public:
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
-  };
-
-  class Writer_argb_packed : public Writer_color {
-  public:
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
-  };
-
-  class Writer_rgba_uint8_4 : public Writer_color {
-  public:
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
-  };
-
-  class Writer_rgba_float32_4 : public Writer_color {
-  public:
-    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
-  };
-
-  class Writer_uint16_1 : public Writer {
-  public:
-    virtual void set_data1i(unsigned char *pointer, int value);
-  };
 };
 
 #include "qpgeomVertexWriter.I"

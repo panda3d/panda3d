@@ -166,7 +166,7 @@ add_vertex(int vertex) {
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
-  index.set_vertex(index.get_num_vertices());
+  index.set_vertex(cdata->_vertices->get_num_vertices());
 
   index.add_data1i(vertex);
 
@@ -197,7 +197,7 @@ add_consecutive_vertices(int start, int num_vertices) {
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
-  index.set_vertex(index.get_num_vertices());
+  index.set_vertex(cdata->_vertices->get_num_vertices());
 
   for (int v = start; v <= end; ++v) {
     index.add_data1i(v);
@@ -990,7 +990,7 @@ recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
     }
     mins.add_data1i(min_prim);
     maxs.add_data1i(max_prim);
-    nassertv(mins.get_num_vertices() == (int)cdata->_ends.size());
+    nassertv(cdata->_mins->get_num_vertices() == (int)cdata->_ends.size());
 
   } else {
     // This is a simple primitive type like a triangle; just compute

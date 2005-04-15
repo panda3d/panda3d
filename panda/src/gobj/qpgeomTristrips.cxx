@@ -285,11 +285,11 @@ rotate_impl() const {
 void qpGeomTristrips::
 append_unused_vertices(qpGeomVertexArrayData *vertices, int vertex) {
   qpGeomVertexReader from(vertices, 0);
-  from.set_vertex(from.get_num_vertices() - 1);
+  from.set_vertex(vertices->get_num_vertices() - 1);
   int prev = from.get_data1i();
 
   qpGeomVertexWriter to(vertices, 0);
-  to.set_vertex(to.get_num_vertices());
+  to.set_vertex(vertices->get_num_vertices());
 
   to.add_data1i(prev);
   to.add_data1i(vertex);

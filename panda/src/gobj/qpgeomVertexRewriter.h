@@ -69,7 +69,6 @@ PUBLISHED:
   INLINE void set_vertex(int vertex);
 
   INLINE int get_start_vertex() const;
-  INLINE int get_num_vertices() const;
   INLINE bool is_at_end() const;
 };
 

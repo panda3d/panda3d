@@ -95,10 +95,6 @@ qpGeomVertexReader(const qpGeomVertexArrayData *array_data, int column) :
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexReader::
 ~qpGeomVertexReader() {
-  if (_reader != (Reader *)NULL) {
-    delete _reader;
-    _reader = NULL;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,7 +198,7 @@ set_column(const InternalName *name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexReader::
 has_column() const {
-  return (_column != (qpGeomVertexColumn *)NULL);
+  return (_packer != (qpGeomVertexColumn::Packer *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,7 +220,10 @@ get_array() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const qpGeomVertexColumn *qpGeomVertexReader::
 get_column() const {
-  return _column;
+  if (_packer != (qpGeomVertexColumn::Packer *)NULL) {
+    return _packer->_column;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,7 +236,7 @@ get_column() const {
 INLINE void qpGeomVertexReader::
 set_vertex(int vertex) {
   _start_vertex = vertex;
-  if (_column != (qpGeomVertexColumn *)NULL) {
+  if (has_column()) {
     set_pointer(_start_vertex);
   }
 }
@@ -255,28 +254,6 @@ get_start_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::get_read_vertex
-//       Access: Published
-//  Description: Returns the current read vertex index of the
-//               reader.  This is the index whose value will be
-//               returned by the next call to get_data*().
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexReader::
-get_read_vertex() const {
-  return _read_vertex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::get_num_vertices
-//       Access: Published
-//  Description: Returns the number of vertices in the vertex data.
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexReader::
-get_num_vertices() const {
-  return _num_vertices;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::is_at_end
 //       Access: Published
 //  Description: Returns true if the reader is currently at the end of
@@ -286,7 +263,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexReader::
 is_at_end() const {
-  return _read_vertex >= _num_vertices;
+  return _pointer >= _pointer_end;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,8 +275,8 @@ is_at_end() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexReader::
 get_data1f() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, 0.0f);
-  return _reader->get_data1f(inc_pointer());
+  nassertr(has_column(), 0.0f);
+  return _packer->get_data1f(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,8 +288,8 @@ get_data1f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase2f &qpGeomVertexReader::
 get_data2f() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, LVecBase2f::zero());
-  return _reader->get_data2f(inc_pointer());
+  nassertr(has_column(), LVecBase2f::zero());
+  return _packer->get_data2f(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -324,8 +301,8 @@ get_data2f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase3f &qpGeomVertexReader::
 get_data3f() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, LVecBase3f::zero());
-  return _reader->get_data3f(inc_pointer());
+  nassertr(has_column(), LVecBase3f::zero());
+  return _packer->get_data3f(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,8 +314,8 @@ get_data3f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &qpGeomVertexReader::
 get_data4f() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, LVecBase4f::zero());
-  return _reader->get_data4f(inc_pointer());
+  nassertr(has_column(), LVecBase4f::zero());
+  return _packer->get_data4f(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,8 +327,8 @@ get_data4f() {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexReader::
 get_data1i() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, 0);
-  return _reader->get_data1i(inc_pointer());
+  nassertr(has_column(), 0);
+  return _packer->get_data1i(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -363,8 +340,8 @@ get_data1i() {
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data2i() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, 0);
-  return _reader->get_data2i(inc_pointer());
+  nassertr(has_column(), 0);
+  return _packer->get_data2i(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -376,8 +353,8 @@ get_data2i() {
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data3i() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, 0);
-  return _reader->get_data3i(inc_pointer());
+  nassertr(has_column(), 0);
+  return _packer->get_data3i(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,8 +366,8 @@ get_data3i() {
 ////////////////////////////////////////////////////////////////////
 INLINE const int *qpGeomVertexReader::
 get_data4i() {
-  nassertr(_column != (qpGeomVertexColumn *)NULL, 0);
-  return _reader->get_data4i(inc_pointer());
+  nassertr(has_column(), 0);
+  return _packer->get_data4i(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,13 +378,18 @@ get_data4i() {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::
 set_pointer(int vertex) {
-  nassertv(_column != (qpGeomVertexColumn *)NULL);
-  _read_vertex = vertex;
+  nassertv(has_column());
   if (_vertex_data != (const qpGeomVertexData *)NULL) {
-    _array_data = _vertex_data->get_array(_array);
+    const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    _pointer = array_data->get_data();
+    _pointer_end = _pointer + array_data->get_data_size_bytes();
+    _pointer += _packer->_column->get_start() + _stride * vertex;
+
+  } else {
+    _pointer = _array_data->get_data();
+    _pointer_end = _pointer + _array_data->get_data_size_bytes();
+    _pointer += _packer->_column->get_start() + _stride * vertex;
   }
-  _pointer = _array_data->get_data() + _column->get_start() + _stride * _read_vertex;
-  _num_vertices = _array_data->get_num_vertices();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -419,86 +401,16 @@ set_pointer(int vertex) {
 INLINE const unsigned char *qpGeomVertexReader::
 inc_pointer() {
 #ifndef NDEBUG
-  nassertr(_read_vertex < _num_vertices, empty_buffer);
+  nassertr(_pointer < _pointer_end, empty_buffer);
   if (_vertex_data != (const qpGeomVertexData *)NULL){ 
-    nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _read_vertex, empty_buffer);
+    const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    nassertr(_pointer >= array_data->get_data() && _pointer < array_data->get_data() + array_data->get_data_size_bytes(), empty_buffer);
   } else {
-    nassertr(_pointer == _array_data->get_data() + _column->get_start() + _stride * _read_vertex, empty_buffer);
+    nassertr(_pointer >= _array_data->get_data() && _pointer < _array_data->get_data() + _array_data->get_data_size_bytes(), empty_buffer);
   }
 #endif
 
   const unsigned char *orig_pointer = _pointer;
   _pointer += _stride;
-  ++_read_vertex;
   return orig_pointer;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::Reader::maybe_scale_color
-//       Access: Public
-//  Description: Converts an integer (typically a uint8) value to a
-//               floating-point value.  If the contents value
-//               indicates this is a color value, scales it into the
-//               range 0..1 per convention; otherwise leaves it alone.
-////////////////////////////////////////////////////////////////////
-INLINE float qpGeomVertexReader::Reader::
-maybe_scale_color(unsigned int value) {
-  if (_column->get_contents() == C_color) {
-    return (float)value / 255.0f;
-  } else {
-    return (float)value;
-  }
-}
-    
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::Reader::maybe_scale_color
-//       Access: Public
-//  Description: Converts a pair of integers into the _v2 member.  See
-//               one-parameter maybe_scale_color() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::Reader::
-maybe_scale_color(unsigned int a, unsigned int b) {
-  if (_column->get_contents() == C_color) {
-    _v2.set((float)a / 255.0f,
-            (float)b / 255.0f);
-  } else {    
-    _v2.set((float)a, (float)b);
-  }
-}
-    
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::Reader::maybe_scale_color
-//       Access: Public
-//  Description: Converts a pair of integers into the _v3 member.  See
-//               one-parameter maybe_scale_color() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::Reader::
-maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
-  if (_column->get_contents() == C_color) {
-    _v3.set((float)a / 255.0f,
-            (float)b / 255.0f,
-            (float)c / 255.0f);
-  } else {    
-    _v3.set((float)a, (float)b, (float)c);
-  }
-}
-    
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::Reader::maybe_scale_color
-//       Access: Public
-//  Description: Converts a pair of integers into the _v4 member.  See
-//               one-parameter maybe_scale_color() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::Reader::
-maybe_scale_color(unsigned int a, unsigned int b, unsigned int c,
-                  unsigned int d) {
-  if (_column->get_contents() == C_color) {
-    _v4.set((float)a / 255.0f,
-            (float)b / 255.0f,
-            (float)c / 255.0f,
-            (float)d / 255.0f);
-  } else {
-    _v4.set((float)a, (float)b, (float)c, (float)d);
-  }
-}
-    

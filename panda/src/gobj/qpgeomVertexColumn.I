@@ -24,7 +24,9 @@
 //               from a bam file.
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexColumn::
-qpGeomVertexColumn() {
+qpGeomVertexColumn() :
+  _packer(NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +42,8 @@ qpGeomVertexColumn(const InternalName *name, int num_components,
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
-  _start(start)
+  _start(start),
+  _packer(NULL)
 {
   setup();
 }
@@ -54,30 +57,22 @@ INLINE qpGeomVertexColumn::
 qpGeomVertexColumn(const qpGeomVertexColumn &copy) :
   _name(copy._name),
   _num_components(copy._num_components),
-  _num_values(copy._num_values),
   _numeric_type(copy._numeric_type),
   _contents(copy._contents),
   _start(copy._start),
-  _component_bytes(copy._component_bytes),
-  _total_bytes(copy._total_bytes)
+  _packer(NULL)
 {
+  setup();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexColumn::Copy Assignment Operator
+//     Function: qpGeomVertexColumn::Destructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexColumn::
-operator = (const qpGeomVertexColumn &copy) {
-  _name = copy._name;
-  _num_components = copy._num_components;
-  _num_values = copy._num_values;
-  _numeric_type = copy._numeric_type;
-  _contents = copy._contents;
-  _start = copy._start;
-  _component_bytes = copy._component_bytes;
-  _total_bytes = copy._total_bytes;
+INLINE qpGeomVertexColumn::
+~qpGeomVertexColumn() {
+  delete _packer;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,4 +325,151 @@ INLINE ostream &
 operator << (ostream &out, const qpGeomVertexColumn &obj) {
   obj.output(out);
   return out;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_scale_color
+//       Access: Public
+//  Description: Converts an integer (typically a uint8) value to a
+//               floating-point value.  If the contents value
+//               indicates this is a color value, scales it into the
+//               range 0..1 per convention; otherwise leaves it alone.
+////////////////////////////////////////////////////////////////////
+INLINE float qpGeomVertexColumn::Packer::
+maybe_scale_color(unsigned int value) {
+  if (_column->get_contents() == C_color) {
+    return (float)value / 255.0f;
+  } else {
+    return (float)value;
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_scale_color
+//       Access: Public
+//  Description: Converts a pair of integers into the _v2 member.  See
+//               one-parameter maybe_scale_color() for more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_scale_color(unsigned int a, unsigned int b) {
+  if (_column->get_contents() == C_color) {
+    _v2.set((float)a / 255.0f,
+            (float)b / 255.0f);
+  } else {    
+    _v2.set((float)a, (float)b);
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_scale_color
+//       Access: Public
+//  Description: Converts a pair of integers into the _v3 member.  See
+//               one-parameter maybe_scale_color() for more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
+  if (_column->get_contents() == C_color) {
+    _v3.set((float)a / 255.0f,
+            (float)b / 255.0f,
+            (float)c / 255.0f);
+  } else {    
+    _v3.set((float)a, (float)b, (float)c);
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_scale_color
+//       Access: Public
+//  Description: Converts a pair of integers into the _v4 member.  See
+//               one-parameter maybe_scale_color() for more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_scale_color(unsigned int a, unsigned int b, unsigned int c,
+                  unsigned int d) {
+  if (_column->get_contents() == C_color) {
+    _v4.set((float)a / 255.0f,
+            (float)b / 255.0f,
+            (float)c / 255.0f,
+            (float)d / 255.0f);
+  } else {
+    _v4.set((float)a, (float)b, (float)c, (float)d);
+  }
+}
+    
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_unscale_color
+//       Access: Public
+//  Description: Converts a floating-point value to a uint8 value.  If
+//               the contents value indicates this is a color value,
+//               scales it into the range 0..255 per convention;
+//               otherwise leaves it alone.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int qpGeomVertexColumn::Packer::
+maybe_unscale_color(float data) {
+  if (_column->get_contents() == C_color) {
+    return (unsigned int)(data * 255.0f);
+  } else {
+    return (unsigned int)data;
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_unscale_color
+//       Access: Public
+//  Description: Converts an LVecBase2f into a pair of uint8
+//               values.  See one-parameter maybe_unscale_color() for
+//               more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_unscale_color(const LVecBase2f &data) {
+  if (_column->get_contents() == C_color) {
+    _a = (unsigned int)(data[0] * 255.0f);
+    _b = (unsigned int)(data[1] * 255.0f);
+  } else {
+    _a = (unsigned int)data[0];
+    _b = (unsigned int)data[1];
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_unscale_color
+//       Access: Public
+//  Description: Converts an LVecBase3f into a pair of uint8
+//               values.  See one-parameter maybe_unscale_color() for
+//               more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_unscale_color(const LVecBase3f &data) {
+  if (_column->get_contents() == C_color) {
+    _a = (unsigned int)(data[0] * 255.0f);
+    _b = (unsigned int)(data[1] * 255.0f);
+    _c = (unsigned int)(data[2] * 255.0f);
+  } else {
+    _a = (unsigned int)data[0];
+    _b = (unsigned int)data[1];
+    _c = (unsigned int)data[2];
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexColumn::Packer::maybe_unscale_color
+//       Access: Public
+//  Description: Converts an LVecBase4f into a pair of uint8
+//               values.  See one-parameter maybe_unscale_color() for
+//               more info.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexColumn::Packer::
+maybe_unscale_color(const LVecBase4f &data) {
+  if (_column->get_contents() == C_color) {
+    _a = (unsigned int)(data[0] * 255.0f);
+    _b = (unsigned int)(data[1] * 255.0f);
+    _c = (unsigned int)(data[2] * 255.0f);
+    _d = (unsigned int)(data[3] * 255.0f);
+  } else {
+    _a = (unsigned int)data[0];
+    _b = (unsigned int)data[1];
+    _c = (unsigned int)data[2];
+    _d = (unsigned int)data[3];
+  }
 }

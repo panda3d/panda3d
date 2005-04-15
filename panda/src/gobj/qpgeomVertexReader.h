@@ -86,8 +86,6 @@ PUBLISHED:
   INLINE void set_vertex(int vertex);
 
   INLINE int get_start_vertex() const;
-  INLINE int get_read_vertex() const;
-  INLINE int get_num_vertices() const;
   INLINE bool is_at_end() const;
 
   INLINE float get_data1f();
@@ -101,153 +99,33 @@ PUBLISHED:
   INLINE const int *get_data4i();
 
 private:
-  class Reader;
-
   void initialize();
 
   INLINE void set_pointer(int vertex);
   INLINE const unsigned char *inc_pointer();
-  Reader *make_reader() const;
 
+  // It is important that we only store *one* of the following two
+  // pointers.  If we are storing a GeomVertexData/array index, we
+  // must not keep a pointer to the particular ArrayData we are
+  // working on (if we do, it may result in an extra copy of the data
+  // due to holding the reference count).
   CPT(qpGeomVertexData) _vertex_data;
-  CPT(qpGeomVertexArrayData) _array_data;
   int _array;
-  const qpGeomVertexColumn *_column;
+  CPT(qpGeomVertexArrayData) _array_data;
+
+  qpGeomVertexColumn::Packer *_packer;
   int _stride;
 
   const unsigned char *_pointer;
+  const unsigned char *_pointer_end;
 
   int _start_vertex;
-  int _read_vertex;
-  int _num_vertices;
-
-  Reader *_reader;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL
   // to return from a nassertr() call.
   static const unsigned char empty_buffer[100];
 #endif
-
-  // This nested class provides the implementation for unpacking data
-  // in a very general way, but also provides the hooks for
-  // implementing the common, very direct code paths (for instance,
-  // 3-component float32 to LVecBase3f) as quickly as possible.
-  class Reader {
-  public:
-    virtual ~Reader();
-    virtual float get_data1f(const unsigned char *pointer);
-    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-    virtual int get_data1i(const unsigned char *pointer);
-    virtual const int *get_data2i(const unsigned char *pointer);
-    virtual const int *get_data3i(const unsigned char *pointer);
-    virtual const int *get_data4i(const unsigned char *pointer);
-
-    INLINE float maybe_scale_color(unsigned int value);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
-                                  unsigned int c);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
-                                  unsigned int c, unsigned int d);
-
-    const qpGeomVertexColumn *_column;
-    LVecBase2f _v2;
-    LVecBase3f _v3;
-    LVecBase4f _v4;
-    int _i[4];
-  };
-
-  // This is a specialization on the generic Reader that handles
-  // points, which are special because the fourth component, if not
-  // present in the data, is implicitly 1.0; and if it is present,
-  // than any three-component or smaller return is implicitly divided
-  // by the fourth component.
-  class Reader_point : public Reader {
-  public:
-    virtual float get_data1f(const unsigned char *pointer);
-    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  // This is similar to Reader_point, in that the fourth component is
-  // implicitly 1.0 if it is not present in the data, but we never
-  // divide by alpha.
-  class Reader_color : public Reader {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-
-  // These are the specializations on the generic Reader that handle
-  // the direct code paths.
-
-  class Reader_float32_3 : public Reader {
-  public:
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-  };
-
-  class Reader_point_float32_2 : public Reader_point {
-  public:
-    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
-  };
-
-  class Reader_point_float32_3 : public Reader_point {
-  public:
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-  };
-
-  class Reader_point_float32_4 : public Reader_point {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_nativefloat_3 : public Reader {
-  public:
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-  };
-
-  class Reader_point_nativefloat_2 : public Reader_point {
-  public:
-    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
-  };
-
-  class Reader_point_nativefloat_3 : public Reader_point {
-  public:
-    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
-  };
-
-  class Reader_point_nativefloat_4 : public Reader_point {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_argb_packed : public Reader_color {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_rgba_uint8_4 : public Reader_color {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_rgba_float32_4 : public Reader_color {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_rgba_nativefloat_4 : public Reader_color {
-  public:
-    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
-  };
-
-  class Reader_uint16_1 : public Reader {
-  public:
-    virtual int get_data1i(const unsigned char *pointer);
-  };
 };
 
 #include "qpgeomVertexReader.I"

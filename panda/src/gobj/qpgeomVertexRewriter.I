@@ -278,18 +278,6 @@ get_start_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::get_num_vertices
-//       Access: Published
-//  Description: Returns the number of vertices in the vertex data.
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexRewriter::
-get_num_vertices() const {
-  nassertr(qpGeomVertexWriter::get_num_vertices() == 
-           qpGeomVertexReader::get_num_vertices(), 0);
-  return qpGeomVertexWriter::get_num_vertices();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexRewriter::is_at_end
 //       Access: Published
 //  Description: Returns true if the reader or writer is currently at
