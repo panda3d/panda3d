@@ -1108,11 +1108,33 @@ recompute_bound() {
   // of our vertices.
   pvector<LPoint3f> vertices;
   VertexIterator vi = make_vertex_iterator();
-
-  for (int p = 0; p < get_num_prims(); p++) {
-    for (int v = 0; v < get_length(p); v++) {
-      vertices.push_back(get_next_vertex(vi));
+  int num_vertices = _coords.size();
+  
+  if (_vindex.is_null()) {
+    // Nonindexed case.
+    int vcount = 0;
+    for (int p = 0; p < get_num_prims(); p++) {
+      for (int v = 0; v < get_length(p); v++) {
+        nassertr(vcount < num_vertices, bound);
+        vertices.push_back(get_next_vertex(vi));
+        ++vcount;
+      }
     }
+    nassertr(vcount == num_vertices, bound);
+
+  } else {
+    // Indexed case.
+    int num_indices = _vindex.size();
+    int vindex = 0;
+    for (int p = 0; p < get_num_prims(); p++) {
+      for (int v = 0; v < get_length(p); v++) {
+        nassertr(vindex < num_indices, bound);
+        nassertr(_vindex[vindex] < num_vertices, bound);
+        vertices.push_back(get_next_vertex(vi));
+        ++vindex;
+      }
+    }
+    nassertr(vindex == num_indices, bound);
   }
 
   const LPoint3f *vertices_begin = &vertices[0];
