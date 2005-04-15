@@ -685,13 +685,10 @@ pack_object(PyObject *object) {
 
   if (PyInt_Check(object)) {
     pack_int(PyInt_AS_LONG(object));
-
   } else if (PyFloat_Check(object)) {
     pack_double(PyFloat_AS_DOUBLE(object));
-
   } else if (PyLong_Check(object)) {
     pack_int64(PyLong_AsLongLong(object));
-
   } else if (PyString_Check(object) || PyUnicode_Check(object)) {
     char *buffer;
     int length;
@@ -699,9 +696,7 @@ pack_object(PyObject *object) {
     if (buffer) {
       pack_string(string(buffer, length));
     }
-
   } else {
-
     // For some reason, PySequence_Check() is incorrectly reporting
     // that a class instance is a sequence, even if it doesn't provide
     // __len__, so we double-check by testing for __len__ explicitly.
@@ -747,13 +742,12 @@ pack_object(PyObject *object) {
       // class object, or it is not a sequence--this is case (1) or
       // (3).
       pack_class_object(dclass, object);
-
     } else if (is_sequence) {
       // The supplied object is not an instance of the expected class
       // object, but it is a sequence.  This is case (2).
       push();
       int size = PySequence_Size(object);
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; ++i) {
         PyObject *element = PySequence_GetItem(object, i);
         if (element != (PyObject *)NULL) {
           pack_object(element);
@@ -763,7 +757,6 @@ pack_object(PyObject *object) {
         }
       }
       pop();
-
     } else {
       // The supplied object is not a sequence, and we weren't
       // expecting a class parameter.  This is none of the above, an
