@@ -2805,8 +2805,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
     qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(mins.get_num_vertices() == (int)ends.size() && 
-             maxs.get_num_vertices() == (int)ends.size());
+    nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
+             primitive->get_maxs()->get_num_vertices() == (int)ends.size());
     
     if (_vbuffer_active) {
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2867,8 +2867,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
   qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-  nassertv(mins.get_num_vertices() == (int)ends.size() && 
-           maxs.get_num_vertices() == (int)ends.size());
+  nassertv(primitive->get_mins()->get_num_vertices() == (int)ends.size() && 
+           primitive->get_maxs()->get_num_vertices() == (int)ends.size());
   
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
