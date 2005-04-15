@@ -61,6 +61,33 @@ qpGeomVertexRewriter(qpGeomVertexData *vertex_data, const InternalName *name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexRewriter::Constructor
+//       Access: Published
+//  Description: Constructs a new rewriter to process the vertices of
+//               the indicated array only.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexRewriter::
+qpGeomVertexRewriter(qpGeomVertexArrayData *array_data) :
+  qpGeomVertexWriter(array_data),
+  qpGeomVertexReader(array_data)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexRewriter::Constructor
+//       Access: Published
+//  Description: Constructs a new rewriter to process the vertices of
+//               the indicated array only.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexRewriter::
+qpGeomVertexRewriter(qpGeomVertexArrayData *array_data, int column) :
+  qpGeomVertexWriter(array_data),
+  qpGeomVertexReader(array_data)
+{
+  set_column(column);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexRewriter::Destructor
 //       Access: Published
 //  Description: 
@@ -80,6 +107,19 @@ get_vertex_data() const {
   nassertr(qpGeomVertexWriter::get_vertex_data() == 
            qpGeomVertexReader::get_vertex_data(), NULL);
   return qpGeomVertexWriter::get_vertex_data();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexRewriter::get_array_data
+//       Access: Published
+//  Description: Returns the particular array object that the
+//               rewriter is currently processing.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexArrayData *qpGeomVertexRewriter::
+get_array_data() const {
+  nassertr(qpGeomVertexWriter::get_array_data() == 
+           qpGeomVertexReader::get_array_data(), NULL);
+  return qpGeomVertexWriter::get_array_data();
 }
 
 ////////////////////////////////////////////////////////////////////

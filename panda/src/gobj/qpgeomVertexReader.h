@@ -66,9 +66,13 @@ PUBLISHED:
                             const string &name);
   INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data,
                             const InternalName *name);
+  INLINE qpGeomVertexReader(const qpGeomVertexArrayData *array_data);
+  INLINE qpGeomVertexReader(const qpGeomVertexArrayData *array_data, 
+                            int column);
   INLINE ~qpGeomVertexReader();
 
   INLINE const qpGeomVertexData *get_vertex_data() const;
+  INLINE const qpGeomVertexArrayData *get_array_data() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);
@@ -99,11 +103,14 @@ PUBLISHED:
 private:
   class Reader;
 
+  void initialize();
+
   INLINE void set_pointer(int vertex);
   INLINE const unsigned char *inc_pointer();
   Reader *make_reader() const;
 
   CPT(qpGeomVertexData) _vertex_data;
+  CPT(qpGeomVertexArrayData) _array_data;
   int _array;
   const qpGeomVertexColumn *_column;
   int _stride;

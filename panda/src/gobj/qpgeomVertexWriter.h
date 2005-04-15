@@ -79,9 +79,13 @@ PUBLISHED:
                             const string &name);
   INLINE qpGeomVertexWriter(qpGeomVertexData *vertex_data,
                             const InternalName *name);
+  INLINE qpGeomVertexWriter(qpGeomVertexArrayData *array_data);
+  INLINE qpGeomVertexWriter(qpGeomVertexArrayData *array_data, 
+                            int column);
   INLINE ~qpGeomVertexWriter();
 
   INLINE qpGeomVertexData *get_vertex_data() const;
+  INLINE qpGeomVertexArrayData *get_array_data() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);
@@ -134,12 +138,15 @@ PUBLISHED:
 private:
   class Writer;
 
+  void initialize();
+
   INLINE void set_pointer(int vertex);
   INLINE unsigned char *inc_pointer();
   INLINE unsigned char *inc_add_pointer();
   Writer *make_writer() const;
 
   PT(qpGeomVertexData) _vertex_data;
+  PT(qpGeomVertexArrayData) _array_data;
   int _array;
   const qpGeomVertexColumn *_column;
   int _stride;

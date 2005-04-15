@@ -121,20 +121,26 @@ draw(GraphicsStateGuardianBase *gsg) const {
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomLines::
+CPT(qpGeomVertexArrayData) qpGeomLines::
 rotate_impl() const {
   // To rotate lines, we just move reverse the pairs of vertices.
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
 
-  PTA_ushort new_vertices;
-  new_vertices.reserve(vertices.size());
+  PT(qpGeomVertexArrayData) new_vertices = 
+    new qpGeomVertexArrayData(*vertices);
+  qpGeomVertexReader from(vertices, 0);
+  qpGeomVertexWriter to(new_vertices, 0);
 
-  for (int begin = 0; begin < (int)vertices.size(); begin += 2) {
-    new_vertices.push_back(vertices[begin + 1]);
-    new_vertices.push_back(vertices[begin]);
+  int num_vertices = vertices->get_num_vertices();
+
+  for (int begin = 0; begin < num_vertices; begin += 2) {
+    from.set_vertex(begin + 1);
+    to.set_data1i(from.get_data1i());
+    from.set_vertex(begin);
+    to.set_data1i(from.get_data1i());
   }
   
-  nassertr(new_vertices.size() == vertices.size(), CPTA_ushort());
+  nassertr(to.is_at_end(), NULL);
   return new_vertices;
 }
 

@@ -152,6 +152,8 @@ public:
   INLINE float compute_distance_to(const LPoint3f &point) const;
   virtual void set_color_clear_value(const Colorf& value);
 
+  static D3DFORMAT get_index_type(qpGeom::NumericType numeric_type);
+
 public:
   // recreate_tex_callback needs these to be public
   DXScreenData *_pScrn;

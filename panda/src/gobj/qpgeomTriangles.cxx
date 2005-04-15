@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomTriangles.h"
+#include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -110,25 +111,31 @@ draw(GraphicsStateGuardianBase *gsg) const {
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomTriangles::
+CPT(qpGeomVertexArrayData) qpGeomTriangles::
 rotate_impl() const {
   // To rotate triangles, we just move one vertex from the front to
   // the back, or vice-versa; but we have to know what direction we're
   // going.
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   ShadeModel shade_model = get_shade_model();
 
-  PTA_ushort new_vertices;
-  new_vertices.reserve(vertices.size());
+  PT(qpGeomVertexArrayData) new_vertices = 
+    new qpGeomVertexArrayData(*vertices);
+  qpGeomVertexReader from(vertices, 0);
+  qpGeomVertexWriter to(new_vertices, 0);
 
+  int num_vertices = vertices->get_num_vertices();
+  
   switch (shade_model) {
   case SM_flat_first_vertex:
     // Move the first vertex to the end.
     {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 1]);
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
+      for (int begin = 0; begin < num_vertices; begin += 3) {
+        from.set_vertex(begin + 1);
+        to.set_data1i(from.get_data1i());
+        to.set_data1i(from.get_data1i());
+        from.set_vertex(begin);
+        to.set_data1i(from.get_data1i());
       }
     }
     break;
@@ -136,10 +143,12 @@ rotate_impl() const {
   case SM_flat_last_vertex:
     // Move the last vertex to the front.
     {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
-        new_vertices.push_back(vertices[begin + 1]);
+      for (int begin = 0; begin < num_vertices; begin += 3) {
+        from.set_vertex(begin + 2);
+        to.set_data1i(from.get_data1i());
+        from.set_vertex(begin);
+        to.set_data1i(from.get_data1i());
+        to.set_data1i(from.get_data1i());
       }
     }
     break;
@@ -149,7 +158,7 @@ rotate_impl() const {
     nassertr(false, vertices);
   }
   
-  nassertr(new_vertices.size() == vertices.size(), vertices);
+  nassertr(to.is_at_end(), NULL);
   return new_vertices;
 }
 

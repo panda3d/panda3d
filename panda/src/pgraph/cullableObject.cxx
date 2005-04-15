@@ -264,18 +264,18 @@ munge_points_to_quads(const CullTraverser *traverser) {
     int num_points = primitive->get_max_vertex() + 1;
     int num_vertices = primitive->get_num_vertices();
     PointData *points = (PointData *)alloca(num_points * sizeof(PointData));
-    unsigned short *vertices = (unsigned short *)alloca(num_vertices * sizeof(unsigned short));
-    unsigned short *vertices_end = vertices + num_vertices;
+    unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
+    unsigned int *vertices_end = vertices + num_vertices;
 
-    memcpy(vertices, primitive->get_vertices(),
-           num_vertices * sizeof(unsigned short));
-    
-    unsigned short *vi;
+    qpGeomVertexReader index(primitive->get_vertices(), 0);
+    unsigned int *vi;
     for (vi = vertices; vi != vertices_end; ++vi) {
       // Get the point in eye-space coordinates.
-      vertex.set_vertex(*vi);
-      points[*vi]._eye = modelview.xform_point(vertex.get_data3f());
-      points[*vi]._dist = gsg->compute_distance_to(points[*vi]._eye);
+      unsigned int v = index.get_data1i();
+      (*vi) = v;
+      vertex.set_vertex(v);
+      points[v]._eye = modelview.xform_point(vertex.get_data3f());
+      points[v]._dist = gsg->compute_distance_to(points[v]._eye);
     }
   
     // Now sort the points in order from back-to-front so they will

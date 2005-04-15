@@ -65,9 +65,12 @@ create_ibuffer(DXScreenData &scrn) {
     _ibuffer = NULL;
   }
 
+  D3DFORMAT index_type = 
+    DXGraphicsStateGuardian8::get_index_type(get_data()->get_index_type());
+
   HRESULT hr = scrn.pD3DDevice->CreateIndexBuffer
     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
-     D3DFMT_INDEX16, D3DPOOL_MANAGED, &_ibuffer);
+     index_type, D3DPOOL_MANAGED, &_ibuffer);
   if (FAILED(hr)) {
     dxgsg8_cat.warning()
       << "CreateIndexBuffer failed" << D3DERRORSTRING(hr);
@@ -104,7 +107,7 @@ upload_data() {
     return;
   }
 
-  memcpy(local_pointer, get_data()->get_vertices(), data_size);
+  memcpy(local_pointer, get_data()->get_data(), data_size);
 
   _ibuffer->Unlock();
 }

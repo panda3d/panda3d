@@ -78,6 +78,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_transform_weight();
   INLINE static PT(InternalName) get_transform_index();
   INLINE static PT(InternalName) get_morph(InternalName *column, const string &slider);
+  INLINE static PT(InternalName) get_index();
 
 private:
   PT(InternalName) _parent;
@@ -101,6 +102,7 @@ private:
   static PT(InternalName) _transform_blend;
   static PT(InternalName) _transform_weight;
   static PT(InternalName) _transform_index;
+  static PT(InternalName) _index;
   
 public:
   // Datagram stuff

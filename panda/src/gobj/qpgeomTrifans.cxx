@@ -18,6 +18,7 @@
 
 #include "qpgeomTrifans.h"
 #include "qpgeomTriangles.h"
+#include "qpgeomVertexRewriter.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
@@ -119,33 +120,35 @@ CPT(qpGeomPrimitive) qpGeomTrifans::
 decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
+  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
+
+  int num_vertices = vertices->get_num_vertices();
 
   int vi = 0;
   int li = 0;
   while (li < (int)ends.size()) {
     int end = ends[li];
     nassertr(vi + 2 <= end, triangles.p());
-    nassertr(vi < (int)vertices.size(), this);
-    int v0 = vertices[vi];
+    int v0 = index.get_data1i();
     ++vi;
-    nassertr(vi < (int)vertices.size(), this);
-    int v1 = vertices[vi];
+    int v1 = index.get_data1i();
     ++vi;
     while (vi < end) {
+      int v2 = index.get_data1i();
+      ++vi;
       triangles->add_vertex(v0);
       triangles->add_vertex(v1);
-      triangles->add_vertex(vertices[vi]);
-      nassertr(vi < (int)vertices.size(), this);
-      v1 = vertices[vi];
+      triangles->add_vertex(v2);
+      nassertr(vi < num_vertices, this);
+      v1 = v2;
       triangles->close_primitive();
-      ++vi;
     }
     ++li;
   }
 
-  nassertr(vi == (int)vertices.size(), triangles.p());
+  nassertr(vi == num_vertices && index.is_at_end(), NULL);
 
   return triangles.p();
 }
@@ -155,12 +158,12 @@ decompose_impl() const {
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomTrifans::
+CPT(qpGeomVertexArrayData) qpGeomTrifans::
 rotate_impl() const {
   // Actually, we can't rotate fans without chaging the winding order.
   // It's an error to define a flat shade model for a GeomTrifan.
-  nassertr(false, CPTA_ushort());
-  return CPTA_ushort();
+  nassertr(false, NULL);
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,9 +49,13 @@ PUBLISHED:
                               const string &name);
   INLINE qpGeomVertexRewriter(qpGeomVertexData *vertex_data,
                               const InternalName *name);
+  INLINE qpGeomVertexRewriter(qpGeomVertexArrayData *array_data);
+  INLINE qpGeomVertexRewriter(qpGeomVertexArrayData *array_data, 
+                              int column);
   INLINE ~qpGeomVertexRewriter();
 
   INLINE qpGeomVertexData *get_vertex_data() const;
+  INLINE qpGeomVertexArrayData *get_array_data() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);

@@ -25,15 +25,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data) :
-  _vertex_data(vertex_data),
-  _array(0),
-  _column(NULL),
-  _pointer(NULL),
-  _start_vertex(0),
-  _write_vertex(0),
-  _num_vertices(0),
-  _writer(NULL)
+  _vertex_data(vertex_data)
 {
+  initialize();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,15 +39,9 @@ qpGeomVertexWriter(qpGeomVertexData *vertex_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data, const string &name) :
-  _vertex_data(vertex_data),
-  _array(0),
-  _column(NULL),
-  _pointer(NULL),
-  _start_vertex(0),
-  _write_vertex(0),
-  _num_vertices(0),
-  _writer(NULL)
+  _vertex_data(vertex_data)
 {
+  initialize();
   set_column(name);
 }
 
@@ -66,16 +54,37 @@ qpGeomVertexWriter(qpGeomVertexData *vertex_data, const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data, const InternalName *name) :
-  _vertex_data(vertex_data),
-  _array(0),
-  _column(NULL),
-  _pointer(NULL),
-  _start_vertex(0),
-  _write_vertex(0),
-  _num_vertices(0),
-  _writer(NULL)
+  _vertex_data(vertex_data)
 {
+  initialize();
   set_column(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::Constructor
+//       Access: Published
+//  Description: Constructs a new writer to process the vertices of
+//               the indicated array only.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexWriter::
+qpGeomVertexWriter(qpGeomVertexArrayData *array_data) :
+  _array_data(array_data)
+{
+  initialize();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::Constructor
+//       Access: Published
+//  Description: Constructs a new writer to process the vertices of
+//               the indicated array only.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexWriter::
+qpGeomVertexWriter(qpGeomVertexArrayData *array_data, int column) :
+  _array_data(array_data)
+{
+  initialize();
+  set_column(column);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,11 +104,23 @@ INLINE qpGeomVertexWriter::
 //     Function: qpGeomVertexWriter::get_vertex_data
 //       Access: Published
 //  Description: Returns the vertex data object that the
-//               writer is processing.
+//               writer is processing.  This may return NULL if the
+//               writer was constructed with just an array pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexData *qpGeomVertexWriter::
 get_vertex_data() const {
   return _vertex_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::get_array_data
+//       Access: Published
+//  Description: Returns the particular array object that the
+//               writer is currently processing.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexArrayData *qpGeomVertexWriter::
+get_array_data() const {
+  return _array_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,11 +138,14 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
 set_column(int column) {
-  if (_vertex_data == (qpGeomVertexData *)NULL) {
-    return false;
+  if (_vertex_data != (qpGeomVertexData *)NULL) {
+    return set_column(_vertex_data->get_format()->get_array_with(column),
+                      _vertex_data->get_format()->get_column(column));
   }
-  return set_column(_vertex_data->get_format()->get_array_with(column),
-                    _vertex_data->get_format()->get_column(column));
+  if (_array_data != (qpGeomVertexArrayData *)NULL) {
+    return set_column(0, _array_data->get_array_format()->get_column(column));
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,11 +181,15 @@ set_column(const string &name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
 set_column(const InternalName *name) {
-  if (_vertex_data == (qpGeomVertexData *)NULL) {
-    return false;
+  if (_vertex_data != (qpGeomVertexData *)NULL) {
+    return set_column(_vertex_data->get_format()->get_array_with(name),
+                      _vertex_data->get_format()->get_column(name));
   }
-  return set_column(_vertex_data->get_format()->get_array_with(name),
-                    _vertex_data->get_format()->get_column(name));
+  if (_array_data != (qpGeomVertexArrayData *)NULL) {
+    return set_column(0, _array_data->get_array_format()->get_column(name));
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -679,9 +707,11 @@ INLINE void qpGeomVertexWriter::
 set_pointer(int vertex) {
   nassertv(_column != (qpGeomVertexColumn *)NULL);
   _write_vertex = vertex;
-  PT(qpGeomVertexArrayData) array_data = _vertex_data->modify_array(_array);
-  _pointer = array_data->modify_data() + _column->get_start() + _stride * _write_vertex;
-  _num_vertices = array_data->get_num_vertices();
+  if (_vertex_data != (qpGeomVertexData *)NULL) {
+    _array_data = _vertex_data->modify_array(_array);
+  }
+  _pointer = _array_data->modify_data() + _column->get_start() + _stride * _write_vertex;
+  _num_vertices = _array_data->get_num_vertices();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -692,8 +722,14 @@ set_pointer(int vertex) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *qpGeomVertexWriter::
 inc_pointer() {
+#ifndef NDEBUG
   nassertr(_write_vertex < _num_vertices, empty_buffer);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _write_vertex, empty_buffer);
+  if (_vertex_data != (qpGeomVertexData *)NULL){ 
+    nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _write_vertex, empty_buffer);
+  } else {
+    nassertr(_pointer == _array_data->get_data() + _column->get_start() + _stride * _write_vertex, empty_buffer);
+  }
+#endif
 
   unsigned char *orig_pointer = _pointer;
   _pointer += _stride;
@@ -713,7 +749,11 @@ INLINE unsigned char *qpGeomVertexWriter::
 inc_add_pointer() {
   if (_write_vertex >= _num_vertices) {
     // Reset the data pointer.
-    _vertex_data->set_num_vertices(max(_write_vertex + 1, _vertex_data->get_num_vertices()));
+    if (_vertex_data != (qpGeomVertexData *)NULL) {
+      _vertex_data->set_num_vertices(max(_write_vertex + 1, _vertex_data->get_num_vertices()));
+    } else {
+      _array_data->set_num_vertices(max(_write_vertex + 1, _array_data->get_num_vertices()));
+    }
     set_pointer(_write_vertex);
   }
   return inc_pointer();

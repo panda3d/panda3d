@@ -2480,13 +2480,14 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
-  const unsigned short *client_pointer = setup_primitive(primitive);
+  const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_TRIANGLES, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
                        primitive->get_num_vertices(),
-                       GL_UNSIGNED_SHORT, client_pointer);
+                       get_numeric_type(primitive->get_index_type()), 
+                       client_pointer);
 
   report_my_gl_errors();
 }
@@ -2498,7 +2499,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  const unsigned short *client_pointer = setup_primitive(primitive);
+  const unsigned char *client_pointer = setup_primitive(primitive);
 
   if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
@@ -2508,24 +2509,60 @@ draw_tristrips(const qpGeomTristrips *primitive) {
                          primitive->get_min_vertex(),
                          primitive->get_max_vertex(),
                          primitive->get_num_vertices(),
-                         GL_UNSIGNED_SHORT, client_pointer);
+                         get_numeric_type(primitive->get_index_type()), 
+                         client_pointer);
 
   } else {
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();
-    CPTA_ushort mins = primitive->get_mins();
-    CPTA_ushort maxs = primitive->get_maxs();
-    nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+    int index_stride = primitive->get_index_stride();
+
+    qpGeomVertexReader mins(primitive->get_mins(), 0);
+    qpGeomVertexReader maxs(primitive->get_mins(), 0);
+    nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
     
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
       _vertices_tristrip_pcollector.add_level(ends[i] - start);
       _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                           mins[i], maxs[i], ends[i] - start,
-                           GL_UNSIGNED_SHORT, client_pointer + start);
+                           mins.get_data1i(), maxs.get_data1i(), 
+                           ends[i] - start,
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer + start * index_stride);
       start = ends[i] + 2;
     }
+  }
+    
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_trifans
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle fans.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_trifans(const qpGeomTrifans *primitive) {
+  const unsigned char *client_pointer = setup_primitive(primitive);
+
+  // Send the individual triangle fans.  There's no connecting fans
+  // with degenerate vertices, so no worries about that.
+  CPTA_int ends = primitive->get_ends();
+  int index_stride = primitive->get_index_stride();
+
+  qpGeomVertexReader mins(primitive->get_mins(), 0);
+  qpGeomVertexReader maxs(primitive->get_mins(), 0);
+  nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
+
+  unsigned int start = 0;
+  for (size_t i = 0; i < ends.size(); i++) {
+    _vertices_trifan_pcollector.add_level(ends[i] - start);
+    _glDrawRangeElements(GL_TRIANGLE_FAN, 
+                         mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
+                         get_numeric_type(primitive->get_index_type()), 
+                         client_pointer + start * index_stride);
+    start = ends[i] + 2;
   }
     
   report_my_gl_errors();
@@ -2539,13 +2576,14 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 void CLP(GraphicsStateGuardian)::
 draw_lines(const qpGeomLines *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
-  const unsigned short *client_pointer = setup_primitive(primitive);
+  const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_LINES, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
                        primitive->get_num_vertices(),
-                       GL_UNSIGNED_SHORT, client_pointer);
+                       get_numeric_type(primitive->get_index_type()), 
+                       client_pointer);
 
   report_my_gl_errors();
 }
@@ -2567,13 +2605,14 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 void CLP(GraphicsStateGuardian)::
 draw_points(const qpGeomPoints *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
-  const unsigned short *client_pointer = setup_primitive(primitive);
+  const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_POINTS, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
                        primitive->get_num_vertices(),
-                       GL_UNSIGNED_SHORT, client_pointer);
+                       get_numeric_type(primitive->get_index_type()), 
+                       client_pointer);
 
   report_my_gl_errors();
 }
@@ -3005,12 +3044,12 @@ apply_index_buffer(IndexBufferContext *ibc) {
     }
     if (gibc->changed_size()) {
       _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
-                    gibc->get_data()->get_vertices(), 
+                    gibc->get_data()->get_data(), 
                     get_usage(gibc->get_data()->get_usage_hint()));
 
     } else {
       _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, gibc->get_data_size_bytes(),
-                       gibc->get_data()->get_vertices());
+                       gibc->get_data()->get_data());
     }
 
     gibc->mark_loaded();
@@ -3059,23 +3098,23 @@ release_index_buffer(IndexBufferContext *ibc) {
 //               this function returns the pointer to the data array
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
-const unsigned short *CLP(GraphicsStateGuardian)::
+const unsigned char *CLP(GraphicsStateGuardian)::
 setup_primitive(const qpGeomPrimitive *data) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return data->get_vertices();
+    return data->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    return data->get_vertices();
+    return data->get_data();
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = ((qpGeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, data->get_vertices());
+  nassertr(ibc != (IndexBufferContext *)NULL, data->get_data());
   apply_index_buffer(ibc);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -4734,6 +4773,9 @@ get_numeric_type(qpGeom::NumericType numeric_type) {
   switch (numeric_type) {
   case qpGeom::NT_uint16:
     return GL_UNSIGNED_SHORT;
+
+  case qpGeom::NT_uint32:
+    return GL_UNSIGNED_INT;
 
   case qpGeom::NT_uint8:
   case qpGeom::NT_packed_dcba:

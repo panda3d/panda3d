@@ -28,6 +28,9 @@ operator << (ostream &out, qpGeomEnums::NumericType numeric_type) {
   case qpGeomEnums::NT_uint16:
     return out << "uint16";
     
+  case qpGeomEnums::NT_uint32:
+    return out << "uint32";
+    
   case qpGeomEnums::NT_packed_dcba:
     return out << "packed_dcba";
     

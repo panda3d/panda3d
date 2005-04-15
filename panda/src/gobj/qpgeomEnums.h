@@ -169,6 +169,7 @@ PUBLISHED:
   enum NumericType {
     NT_uint8,        // An integer 0..255
     NT_uint16,       // An integer 0..65535
+    NT_uint32,       // An integer 0..4294967296
     NT_packed_dcba,  // DirectX style, four byte values packed in a uint32
     NT_packed_dabc,  // DirectX packed color order (ARGB)
     NT_float32,      // A floating-point number

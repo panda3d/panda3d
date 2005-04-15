@@ -55,6 +55,7 @@
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
 #include "qpgeomLines.h"
+#include "qpGeomVertexReader.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
 #include "dxVertexBufferContext8.h"
@@ -2747,13 +2748,15 @@ draw_triangles(const qpGeomTriangles *primitive) {
        0, primitive->get_num_primitives());
 
   } else {
+    D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_TRIANGLELIST, 
        primitive->get_min_vertex(),
        primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
        primitive->get_vertices(),
-       D3DFMT_INDEX16,
+       index_type,
        _vertex_data->get_array(0)->get_data(),
        _vertex_data->get_format()->get_array(0)->get_stride());
   }
@@ -2768,6 +2771,7 @@ void DXGraphicsStateGuardian8::
 draw_tristrips(const qpGeomTristrips *primitive) {
   int min_vertex = primitive->get_min_vertex();
   int max_vertex = primitive->get_max_vertex();
+  D3DFORMAT index_type = get_index_type(primitive->get_index_type());
 
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
@@ -2788,7 +2792,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         (D3DPT_TRIANGLESTRIP, 
          min_vertex, max_vertex - min_vertex + 1,
          primitive->get_num_vertices() - 2, 
-         primitive->get_vertices(), D3DFMT_INDEX16,
+         primitive->get_data(), index_type,
          _vertex_data->get_array(0)->get_data(),
          _vertex_data->get_format()->get_array(0)->get_stride());
     }
@@ -2797,9 +2801,11 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();
-    CPTA_ushort mins = primitive->get_mins();
-    CPTA_ushort maxs = primitive->get_maxs();
-    nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+    int index_stride = primitive->get_index_stride();
+
+    qpGeomVertexReader mins(primitive->get_mins(), 0);
+    qpGeomVertexReader maxs(primitive->get_mins(), 0);
+    nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
     
     if (_vbuffer_active) {
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2809,10 +2815,12 @@ draw_tristrips(const qpGeomTristrips *primitive) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        unsigned int min = mins.get_data1i();
+        unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP,
-           mins[i], maxs[i] - mins[i] + 1, 
-           start, ends[i] - start - 2);
+           min, max - min + 1, 
+           start * index_stride, ends[i] - start - 2);
         
         start = ends[i] + 2;
       }
@@ -2820,16 +2828,18 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     } else {
       CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
       int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-      CPTA_ushort vertices = primitive->get_vertices();
+      CPTA_uchar vertices = primitive->get_data();
       
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        unsigned int min = mins.get_data1i();
+        unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitiveUP
           (D3DPT_TRIANGLESTRIP, 
-           mins[i], maxs[i] - mins[i] + 1, 
+           min, max - min + 1, 
            ends[i] - start - 2,
-           vertices + start, D3DFMT_INDEX16,
+           vertices + start * index_stride, index_type,
            array_data, stride);
         
         start = ends[i] + 2;
@@ -2847,13 +2857,16 @@ void DXGraphicsStateGuardian8::
 draw_trifans(const qpGeomTrifans *primitive) {
   int min_vertex = primitive->get_min_vertex();
   int max_vertex = primitive->get_max_vertex();
+  D3DFORMAT index_type = get_index_type(primitive->get_index_type());
 
   // Send the individual triangle fans.  There's no connecting fans
   // with degenerate vertices, so no worries about that.
   CPTA_int ends = primitive->get_ends();
-  CPTA_ushort mins = primitive->get_mins();
-  CPTA_ushort maxs = primitive->get_maxs();
-  nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+  int index_stride = primitive->get_index_stride();
+
+  qpGeomVertexReader mins(primitive->get_mins(), 0);
+  qpGeomVertexReader maxs(primitive->get_mins(), 0);
+  nassertv(mins.get_num_vertices() == ends.size() && maxs.get_num_vertices() == ends.size());
   
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
@@ -2863,10 +2876,12 @@ draw_trifans(const qpGeomTrifans *primitive) {
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
       _vertices_trifan_pcollector.add_level(ends[i] - start);
+      unsigned int min = mins.get_data1i();
+      unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLEFAN,
-         mins[i], maxs[i] - mins[i] + 1, 
-         start, ends[i] - start - 2);
+         min, max - min + 1,
+         start * index_stride, ends[i] - start - 2);
       
       start = ends[i] + 2;
     }
@@ -2874,16 +2889,18 @@ draw_trifans(const qpGeomTrifans *primitive) {
   } else {
     CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
     int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-    CPTA_ushort vertices = primitive->get_vertices();
+    CPTA_uchar vertices = primitive->get_data();
     
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
       _vertices_trifan_pcollector.add_level(ends[i] - start);
+      unsigned int min = mins.get_data1i();
+      unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLEFAN, 
-         mins[i], maxs[i] - mins[i] + 1, 
+         min, max - min + 1, 
          ends[i] - start - 2,
-         vertices + start, D3DFMT_INDEX16,
+         vertices + start * index_stride, index_type,
          array_data, stride);
       
       start = ends[i] + 2;
@@ -2911,13 +2928,15 @@ draw_lines(const qpGeomLines *primitive) {
        0, primitive->get_num_primitives());
 
   } else {
+    D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_LINELIST, 
        primitive->get_min_vertex(),
        primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
-       primitive->get_vertices(),
-       D3DFMT_INDEX16,
+       primitive->get_data(),
+       index_type,
        _vertex_data->get_array(0)->get_data(),
        _vertex_data->get_format()->get_array(0)->get_stride());
   }
@@ -4247,6 +4266,27 @@ end_frame() {
   // but we override gsg::end_frame, so need to explicitly call it here
   // (currently it's an empty fn)
   GraphicsStateGuardian::end_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_index_type
+//       Access: Protected, Static
+//  Description: Maps from the Geom's internal numeric type symbols
+//               to DirectX's.
+////////////////////////////////////////////////////////////////////
+D3DFORMAT DXGraphicsStateGuardian8::
+get_index_type(qpGeom::NumericType numeric_type) {
+  switch (numeric_type) {
+  case qpGeom::NT_uint16:
+    return D3DFMT_INDEX16;
+
+  case qpGeom::NT_uint32:
+    return D3DFMT_INDEX32;
+  }
+
+  dxgsg8_cat.error()
+    << "Invalid index NumericType value (" << (int)numeric_type << ")\n";
+  return D3DFMT_INDEX16;
 }
 
 ////////////////////////////////////////////////////////////////////

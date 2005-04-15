@@ -18,6 +18,7 @@
 
 #include "qpgeomTristrips.h"
 #include "qpgeomTriangles.h"
+#include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -134,8 +135,11 @@ CPT(qpGeomPrimitive) qpGeomTristrips::
 decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
+  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
+
+  int num_vertices = vertices->get_num_vertices();
 
   // We need a slightly different algorithm for SM_flat_first_vertex
   // than for SM_flat_last_vertex, to preserve the key vertex in the
@@ -149,35 +153,34 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
+      index.set_vertex(vi);
       int end = ends[li];
-      nassertr(vi + 2 <= end, triangles.p());
-      nassertr(vi < (int)vertices.size(), this);
-      int v0 = vertices[vi];
+      nassertr(vi + 2 <= end, NULL);
+      int v0 = index.get_data1i();
       ++vi;
-      nassertr(vi < (int)vertices.size(), this);
-      int v1 = vertices[vi];
+      int v1 = index.get_data1i();
       ++vi;
       bool reversed = false;
       while (vi < end) {
         triangles->add_vertex(v0);
+        int v2 = index.get_data1i();
+        ++vi;
         if (reversed) {
-          triangles->add_vertex(vertices[vi]);
+          triangles->add_vertex(v2);
           triangles->add_vertex(v1);
           reversed = false;
         } else {
           triangles->add_vertex(v1);
-          triangles->add_vertex(vertices[vi]);
+          triangles->add_vertex(v2);
           reversed = true;
         }
         v0 = v1;
-        nassertr(vi < (int)vertices.size(), this);
-        v1 = vertices[vi];
+        v1 = v2;
         triangles->close_primitive();
-        ++vi;
       }
       ++li;
     }
-    nassertr(vi == (int)vertices.size(), triangles.p());
+    nassertr(vi == num_vertices && index.is_at_end(), NULL);
 
   } else {
     // Preserve the last vertex of each component triangle as the
@@ -187,13 +190,12 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
+      index.set_vertex(vi);
       int end = ends[li];
-      nassertr(vi + 2 <= end, triangles.p());
-      nassertr(vi < (int)vertices.size(), this);
-      int v0 = vertices[vi];
+      nassertr(vi + 2 <= end, NULL);
+      int v0 = index.get_data1i();
       ++vi;
-      nassertr(vi < (int)vertices.size(), this);
-      int v1 = vertices[vi];
+      int v1 = index.get_data1i();
       ++vi;
       bool reversed = false;
       while (vi < end) {
@@ -206,16 +208,16 @@ decompose_impl() const {
           triangles->add_vertex(v1);
           reversed = true;
         }
-        triangles->add_vertex(vertices[vi]);
-        v0 = v1;
-        nassertr(vi < (int)vertices.size(), this);
-        v1 = vertices[vi];
-        triangles->close_primitive();
+        int v2 = index.get_data1i();
         ++vi;
+        triangles->add_vertex(v2);
+        v0 = v1;
+        v1 = v2;
+        triangles->close_primitive();
       }
       ++li;
     }
-    nassertr(vi == (int)vertices.size(), triangles.p());
+    nassertr(vi == num_vertices && index.is_at_end(), NULL);
   }
 
   return triangles.p();
@@ -226,21 +228,24 @@ decompose_impl() const {
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomTristrips::
+CPT(qpGeomVertexArrayData) qpGeomTristrips::
 rotate_impl() const {
   // To rotate a triangle strip with an even number of vertices, we
   // just reverse the vertices.  But if we have an odd number of
   // vertices, that doesn't work--in fact, nothing works (without also
   // changing the winding order), so we don't allow an odd number of
   // vertices in a flat-shaded tristrip.
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   CPTA_int ends = get_ends();
-  PTA_ushort new_vertices;
-  new_vertices.reserve(vertices.size());
+  PT(qpGeomVertexArrayData) new_vertices = 
+    new qpGeomVertexArrayData(*vertices);
+  qpGeomVertexReader from(vertices, 0);
+  qpGeomVertexWriter to(new_vertices, 0);
 
   bool any_odd = false;
 
   int begin = 0;
+  int last_added = 0;
   CPTA_int::const_iterator ei;
   for (ei = ends.begin(); ei != ends.end(); ++ei) {
     int end = (*ei);
@@ -248,27 +253,25 @@ rotate_impl() const {
 
     if (begin != 0) {
       // Copy in the unused vertices between tristrips.
-      new_vertices.push_back(new_vertices.back());
-      new_vertices.push_back(vertices[end - 1]);
+      to.set_data1i(last_added);
+      from.set_vertex(end - 1);
+      to.set_data1i(from.get_data1i());
       begin += 2;
     }
 
-    if ((num_vertices & 1) == 0) {
-      for (int vi = end - 1; vi >= begin; --vi) {
-        new_vertices.push_back(vertices[vi]);
-      }
-    } else {
-      any_odd = true;
+    // If this assertion is triggered, there was a triangle strip with
+    // an odd number of vertices, which is not allowed.
+    nassertr((num_vertices & 1) == 0, NULL);
+    for (int vi = end - 1; vi >= begin; --vi) {
+      from.set_vertex(vi);
+      last_added = from.get_data1i();
+      to.set_data1i(last_added);
     }
 
     begin = end;
   }
-  nassertr(new_vertices.size() == vertices.size(), vertices);
 
-  // If this assertion is triggered, there was a triangle strip with
-  // an odd number of vertices and either SM_flat_first_vertex or
-  // SM_flat_last_vertex specified--which is not allowed.
-  nassertr(!any_odd, CPTA_ushort());
+  nassertr(to.is_at_end(), NULL);
   return new_vertices;
 }
 
@@ -282,9 +285,16 @@ rotate_impl() const {
 //               vertex that begins the new primitive.
 ////////////////////////////////////////////////////////////////////
 void qpGeomTristrips::
-append_unused_vertices(PTA_ushort &vertices, int vertex) {
-  vertices.push_back(vertices.back());
-  vertices.push_back(vertex);
+append_unused_vertices(qpGeomVertexArrayData *vertices, int vertex) {
+  qpGeomVertexReader from(vertices, 0);
+  from.set_vertex(from.get_num_vertices() - 1);
+  int prev = from.get_data1i();
+
+  qpGeomVertexWriter to(vertices, 0);
+  to.set_vertex(to.get_num_vertices());
+
+  to.add_data1i(prev);
+  to.add_data1i(vertex);
 }
 
 ////////////////////////////////////////////////////////////////////

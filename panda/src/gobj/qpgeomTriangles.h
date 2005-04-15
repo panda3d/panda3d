@@ -44,7 +44,7 @@ public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;
 
 protected:
-  virtual CPTA_ushort rotate_impl() const;
+  virtual CPT(qpGeomVertexArrayData) rotate_impl() const;
 
 public:
   static void register_with_read_factory();

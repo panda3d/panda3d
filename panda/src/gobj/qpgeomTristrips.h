@@ -45,8 +45,9 @@ public:
 
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
-  virtual CPTA_ushort rotate_impl() const;
-  virtual void append_unused_vertices(PTA_ushort &vertices, int vertex);
+  virtual CPT(qpGeomVertexArrayData) rotate_impl() const;
+  virtual void append_unused_vertices(qpGeomVertexArrayData *vertices, 
+                                      int vertex);
 
 public:
   static void register_with_read_factory();

@@ -47,6 +47,10 @@ setup() {
     _component_bytes = 2;  // sizeof(PN_uint16)
     break;
 
+  case NT_uint32:
+    _component_bytes = 4;  // sizeof(PN_uint32)
+    break;
+
   case NT_uint8:
     _component_bytes = 1;
     break;

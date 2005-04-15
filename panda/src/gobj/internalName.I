@@ -91,7 +91,9 @@ get_error() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_vertex
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "vertex".
+//  Description: Returns the standard InternalName "vertex".  This is
+//               the column header for the 3-d or 4-d vertex position
+//               information for each vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_vertex() {
@@ -104,7 +106,9 @@ get_vertex() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_normal
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "normal".
+//  Description: Returns the standard InternalName "normal".  This is
+//               the column header for the 3-d lighting normal for
+//               each vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_normal() {
@@ -117,7 +121,12 @@ get_normal() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_tangent
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "tangent".
+//  Description: Returns the standard InternalName "tangent".  This is
+//               the column header for the tangent vector associated
+//               with each vertex, which is a unit vector
+//               usually perpendicular to the normal and in the
+//               direction of the U texture coordinate change.  It is
+//               used for deriving bump maps.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_tangent() {
@@ -130,7 +139,13 @@ get_tangent() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_binormal
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "binormal".
+//  Description: Returns the standard InternalName "binormal".  This is
+//               the column header for the tangent vector associated
+//               with each vertex, which is a unit vector
+//               usually perpendicular to both the normal and the
+//               tangent, and in the direction of the V texture
+//               coordinate change.  It is used for deriving bump
+//               maps.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_binormal() {
@@ -143,7 +158,11 @@ get_binormal() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_texcoord
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "texcoord".
+//  Description: Returns the standard InternalName "texcoord".  This
+//               is the column header for the default texture
+//               coordinate set for each vertex.  It is also used for
+//               identifying the default texture coordinate set in a
+//               TextureStage.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_texcoord() {
@@ -157,8 +176,10 @@ get_texcoord() {
 //     Function: InternalName::get_texcoord_name
 //       Access: Published, Static
 //  Description: Returns the InternalName "texcoord.name", where name
-//               is the supplied string.  This, by convention,
-//               represents the named texture coordinate set.
+//               is the supplied string.  This is the column header
+//               for the named texture coordinate set for each vertex.
+//               It is also used for identifying the named texture
+//               coordinate set in a TextureStage.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_texcoord_name(const string &name) {
@@ -168,7 +189,9 @@ get_texcoord_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_color
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "color".
+//  Description: Returns the standard InternalName "color".  This is
+//               the column header for the 4-component color value for
+//               each vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_color() {
@@ -181,7 +204,11 @@ get_color() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_rotate
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "rotate".
+//  Description: Returns the standard InternalName "rotate".  This is
+//               the column header for the floating-point rotate
+//               value, which represents a number of degrees
+//               counter-clockwise to rotate each point or point
+//               sprite.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_rotate() {
@@ -194,7 +221,11 @@ get_rotate() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_size
 //       Access: Published, Static
-//  Description: Returns the standard InternalName "size".
+//  Description: Returns the standard InternalName "size".  This is
+//               the column header for the floating-point size value,
+//               which overrides the thickness parameter of the
+//               RenderModeAttrib on a per-vertex (e.g. per-point)
+//               basis.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_size() {
@@ -208,6 +239,10 @@ get_size() {
 //     Function: InternalName::get_aspect_ratio
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "aspect_ratio".
+//               This is the column header for the floating-point
+//               aspect ratio value, which is used to define
+//               non-square points.  This number is the ratio x / y,
+//               where y is the point size (above).
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_aspect_ratio() {
@@ -221,6 +256,10 @@ get_aspect_ratio() {
 //     Function: InternalName::get_transform_blend
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "transform_blend".
+//               This is the column header for the integer
+//               transform_blend index, which is used to define vertex
+//               animation on the CPU by indexing to a particular
+//               vertex weighting from the TransformBlendPalette.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_transform_blend() {
@@ -234,6 +273,14 @@ get_transform_blend() {
 //     Function: InternalName::get_transform_weight
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "transform_weight".
+//               This is the column header for the n-component
+//               transform_weight value, which is used in conjuntion
+//               with "transform_index" to define vertex animation on
+//               the graphics card.  The transform_weight value
+//               specifies the weight of the nth transform.  By
+//               convention, there are 1 fewer weight values than
+//               transforms, since the weights are assumed to sum to 1
+//               (and the last value is therefore implicit).
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_transform_weight() {
@@ -247,6 +294,14 @@ get_transform_weight() {
 //     Function: InternalName::get_transform_index
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "transform_index".
+//               This is the column header for the n-component
+//               transform_index value, which is used in conjuntion
+//               with "transform_weight" to define vertex animation on
+//               the graphics card.  The transform_index value
+//               specifies the nth transform, by lookup in the
+//               TransformPalette.  The transform_index column may be
+//               omitted, in which case the nth transform is the nth
+//               entry in the palette.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_transform_index() {
@@ -259,14 +314,39 @@ get_transform_index() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_morph
 //       Access: Published, Static
-//  Description: Returns an InternalName suitable for defining the
-//               morph deltas in the GeomVertexData to apply to the
-//               indicated data type name, using the named slider.
+//  Description: Returns an InternalName derived from the given base
+//               column name and the given slider name, which is the
+//               column header for the offset vector that should be
+//               applied to the base column name when the named morph
+//               slider is engaged.
+//
+//               Each morph slider requires a set of n morph columns,
+//               one for each base column it applies to.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_morph(InternalName *column, const string &slider) {
-  // Returns column.morph.slider
+  // This actually returns "column.morph.slider", although that's just
+  // an implementation detail--as long as it returns a consistent,
+  // unique name for each combination of column and slider, everything
+  // is good.
   return column->append("morph")->append(slider);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_index
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "index".  This is
+//               the column header for the integer vertex index.  It
+//               is not used in the vertex data itself, but is used in
+//               the GeomPrimitive structure to index into the vertex
+//               data.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_index() {
+  if (_index == (InternalName *)NULL) {
+    _index = InternalName::make("index");
+  }
+  return _index;
 }
 
 INLINE ostream &

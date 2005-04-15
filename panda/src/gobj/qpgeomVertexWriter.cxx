@@ -41,7 +41,8 @@ unsigned char qpGeomVertexWriter::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexWriter::
 set_column(int array, const qpGeomVertexColumn *column) {
-  if (_vertex_data == (qpGeomVertexData *)NULL) {
+  if (_vertex_data == (qpGeomVertexData *)NULL &&
+      _array_data == (qpGeomVertexArrayData *)NULL) {
     return false;
   }
 
@@ -51,8 +52,13 @@ set_column(int array, const qpGeomVertexColumn *column) {
     _writer = NULL;
   }
 
-  if (array < 0 || array >= _vertex_data->get_num_arrays() || 
-      column == (qpGeomVertexColumn *)NULL) {
+  int num_arrays = 1;
+  if (_vertex_data != (qpGeomVertexData *)NULL) {
+    num_arrays = _vertex_data->get_num_arrays();
+  }
+
+  if (array < 0 || array >= num_arrays ||
+      column == (const qpGeomVertexColumn *)NULL) {
     // Clear the data type.
     _array = -1;
     _column = NULL;
@@ -65,7 +71,11 @@ set_column(int array, const qpGeomVertexColumn *column) {
   } else {
     _array = array;
     _column = column;
-    _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
+    if (_vertex_data != (qpGeomVertexData *)NULL) {
+      _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
+    } else {
+      _stride = _array_data->get_array_format()->get_stride();
+    }
 
     set_pointer(_start_vertex);
 
@@ -75,6 +85,22 @@ set_column(int array, const qpGeomVertexColumn *column) {
 
     return true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::initialize
+//       Access: Private
+//  Description: Called only by the constructor.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexWriter::
+initialize() {
+  _array = 0;
+  _column = NULL;
+  _pointer = NULL;
+  _start_vertex = 0;
+  _write_vertex = 0;
+  _num_vertices = 0;
+  _writer = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,6 +215,10 @@ set_data1f(unsigned char *pointer, float data) {
       *(PN_uint16 *)pointer = (unsigned int)data;
       break;
       
+    case NT_uint32:
+      *(PN_uint32 *)pointer = (unsigned int)data;
+      break;
+      
     case NT_packed_dcba:
     case NT_packed_dabc:
       nassertv(false);
@@ -236,6 +266,14 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
     case NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = (unsigned int)data[0];
+        pi[1] = (unsigned int)data[1];
+      }
+      break;
+      
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
       }
@@ -294,6 +332,15 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = (unsigned int)data[0];
+        pi[1] = (unsigned int)data[1];
+        pi[2] = (unsigned int)data[2];
+      }
+      break;
+      
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -361,6 +408,16 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
         pi[3] = (unsigned int)data[3];
       }
       break;
+
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
+        pi[0] = (unsigned int)data[0];
+        pi[1] = (unsigned int)data[1];
+        pi[2] = (unsigned int)data[2];
+        pi[3] = (unsigned int)data[3];
+      }
+      break;
       
     case NT_packed_dcba:
       maybe_scale_color(data);
@@ -398,10 +455,17 @@ set_data1i(unsigned char *pointer, int a) {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
       *pointer = a;
+      nassertv((*pointer) == a);
       break;
       
     case NT_uint16:
       *(PN_uint16 *)pointer = a;
+      nassertv(*(PN_uint16 *)pointer == a);
+      break;
+      
+    case NT_uint32:
+      *(PN_uint32 *)pointer = a;
+      nassertv(*(PN_uint32 *)pointer == a);
       break;
       
     case NT_packed_dcba:
@@ -451,6 +515,14 @@ set_data2i(unsigned char *pointer, int a, int b) {
     case NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+      }
+      break;
+
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
         pi[0] = a;
         pi[1] = b;
       }
@@ -513,6 +585,15 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
         pi[2] = c;
       }
       break;
+
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+      }
+      break;
       
     case NT_packed_dcba:
     case NT_packed_dabc:
@@ -568,6 +649,16 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
     case NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+        pi[3] = d;
+      }
+      break;
+
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
         pi[0] = a;
         pi[1] = b;
         pi[2] = c;
@@ -672,6 +763,16 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = (unsigned int)data[0];
+        pi[1] = (unsigned int)data[1];
+        pi[2] = (unsigned int)data[2];
+        pi[3] = (unsigned int)data[3];
+      }
+      break;
+
+    case NT_uint32:
+      {
+        PN_uint32 *pi = (PN_uint32 *)pointer;
         pi[0] = (unsigned int)data[0];
         pi[1] = (unsigned int)data[1];
         pi[2] = (unsigned int)data[2];
@@ -846,4 +947,5 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 void qpGeomVertexWriter::Writer_uint16_1::
 set_data1i(unsigned char *pointer, int data) {
   *(PN_uint16 *)pointer = data;
+  nassertv(*(PN_uint16 *)pointer == data);
 }

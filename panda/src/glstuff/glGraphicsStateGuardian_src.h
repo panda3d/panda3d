@@ -99,6 +99,7 @@ public:
                                      const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(const qpGeomTriangles *primitive);
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
+  virtual void draw_trifans(const qpGeomTrifans *primitive);
   virtual void draw_lines(const qpGeomLines *primitive);
   virtual void draw_linestrips(const qpGeomLinestrips *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
@@ -122,7 +123,7 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
-  const unsigned short *setup_primitive(const qpGeomPrimitive *data);
+  const unsigned char *setup_primitive(const qpGeomPrimitive *data);
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 

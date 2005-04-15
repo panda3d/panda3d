@@ -38,6 +38,7 @@ PT(InternalName) InternalName::_aspect_ratio;
 PT(InternalName) InternalName::_transform_blend;
 PT(InternalName) InternalName::_transform_weight;
 PT(InternalName) InternalName::_transform_index;
+PT(InternalName) InternalName::_index;
 
 TypeHandle InternalName::_type_handle;
 TypeHandle InternalName::_texcoord_type_handle;

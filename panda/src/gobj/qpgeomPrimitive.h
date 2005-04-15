@@ -21,11 +21,11 @@
 
 #include "pandabase.h"
 #include "qpgeomEnums.h"
+#include "qpgeomVertexArrayData.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "updateSeq.h"
 #include "pointerTo.h"
-#include "pta_ushort.h"
 #include "pta_int.h"
 #include "pStatCollector.h"
 #include "cycleData.h"
@@ -63,6 +63,9 @@ class FactoryParams;
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomPrimitive : public TypedWritableReferenceCount, public qpGeomEnums {
+protected:
+  qpGeomPrimitive();
+
 PUBLISHED:
   qpGeomPrimitive(UsageHint usage_hint);
   qpGeomPrimitive(const qpGeomPrimitive &copy);
@@ -79,6 +82,9 @@ PUBLISHED:
   INLINE UsageHint get_usage_hint() const;
   INLINE void set_usage_hint(UsageHint usage_hint);
 
+  INLINE NumericType get_index_type() const;
+  void set_index_type(NumericType index_type);
+
   // The following published methods are provided for safe, high-level
   // iteration through the vertices and sub-primitives within the
   // GeomPrimitive class.  These work correctly regardless of the
@@ -87,7 +93,7 @@ PUBLISHED:
   // composite primitive using these methods.
 
   INLINE int get_num_vertices() const;
-  INLINE int get_vertex(int i) const;
+  int get_vertex(int i) const;
   void add_vertex(int vertex);
   void add_consecutive_vertices(int start, int num_vertices);
   void add_next_vertices(int num_vertices);
@@ -104,9 +110,9 @@ PUBLISHED:
   INLINE int get_primitive_num_faces(int n) const;
 
   INLINE int get_min_vertex() const;
-  INLINE int get_primitive_min_vertex(int n) const;
+  int get_primitive_min_vertex(int n) const;
   INLINE int get_max_vertex() const;
-  INLINE int get_primitive_max_vertex(int n) const;
+  int get_primitive_max_vertex(int n) const;
 
   CPT(qpGeomPrimitive) decompose() const;
   CPT(qpGeomPrimitive) rotate() const;
@@ -131,16 +137,19 @@ public:
   // recommended that application-level code use the above interfaces
   // instead.
 
-  INLINE CPTA_ushort get_vertices() const;
-  PTA_ushort modify_vertices();
-  void set_vertices(CPTA_ushort vertices);
+  INLINE const qpGeomVertexArrayData *get_vertices() const;
+  qpGeomVertexArrayData *modify_vertices();
+  void set_vertices(const qpGeomVertexArrayData *vertices);
+
+  INLINE int get_index_stride() const;
+  INLINE CPTA_uchar get_data() const;
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
   void set_ends(CPTA_int ends);
 
-  INLINE CPTA_ushort get_mins() const;
-  INLINE CPTA_ushort get_maxs() const;
+  INLINE const qpGeomVertexArrayData *get_mins() const;
+  INLINE const qpGeomVertexArrayData *get_maxs() const;
 
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;
@@ -167,8 +176,9 @@ public:
 
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
-  virtual CPTA_ushort rotate_impl() const;
-  virtual void append_unused_vertices(PTA_ushort &vertices, int vertex);
+  virtual CPT(qpGeomVertexArrayData) rotate_impl() const;
+  virtual void append_unused_vertices(qpGeomVertexArrayData *vertices, 
+                                      int vertex);
 
 private:
   // A GeomPrimitive keeps a list (actually, a map) of all the
@@ -186,14 +196,15 @@ private:
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-    UsageHint _usage_hint;
     ShadeModel _shade_model;
-    PTA_ushort _vertices;
+    NumericType _index_type;
+    PT(qpGeomVertexArrayData) _vertices;
     PTA_int _ends;
-    PTA_ushort _mins;
-    PTA_ushort _maxs;
+    PT(qpGeomVertexArrayData) _mins;
+    PT(qpGeomVertexArrayData) _maxs;
     UpdateSeq _modified;
 
     bool _got_minmax;

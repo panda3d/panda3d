@@ -18,6 +18,7 @@
 
 #include "qpgeomLinestrips.h"
 #include "qpgeomLines.h"
+#include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -131,7 +132,8 @@ CPT(qpGeomPrimitive) qpGeomLinestrips::
 decompose_impl() const {
   PT(qpGeomLines) lines = new qpGeomLines(get_usage_hint());
   lines->set_shade_model(get_shade_model());
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
+  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
   int vi = 0;
@@ -139,20 +141,19 @@ decompose_impl() const {
   while (li < (int)ends.size()) {
     int end = ends[li];
     nassertr(vi + 1 <= end, lines.p());
-    nassertr(vi < (int)vertices.size(), this);
-    int v0 = vertices[vi];
+    int v0 = index.get_data1i();
     ++vi;
     while (vi < end) {
-      lines->add_vertex(v0);
-      lines->add_vertex(vertices[vi]);
-      nassertr(vi < (int)vertices.size(), this);
-      v0 = vertices[vi];
-      lines->close_primitive();
+      int v1 = index.get_data1i();
       ++vi;
+      lines->add_vertex(v0);
+      lines->add_vertex(v1);
+      v0 = v1;
+      lines->close_primitive();
     }
     ++li;
   }
-  nassertr(vi == (int)vertices.size(), lines.p());
+  nassertr(vi == vertices->get_num_vertices() && index.is_at_end(), NULL);
 
   return lines.p();
 }
@@ -162,25 +163,28 @@ decompose_impl() const {
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomLinestrips::
+CPT(qpGeomVertexArrayData) qpGeomLinestrips::
 rotate_impl() const {
   // To rotate a line strip, we just reverse the vertices.
-  CPTA_ushort vertices = get_vertices();
+  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   CPTA_int ends = get_ends();
-  PTA_ushort new_vertices;
-  new_vertices.reserve(vertices.size());
+  PT(qpGeomVertexArrayData) new_vertices = 
+    new qpGeomVertexArrayData(*vertices);
+  qpGeomVertexReader from(vertices, 0);
+  qpGeomVertexWriter to(new_vertices, 0);
 
   int begin = 0;
   CPTA_int::const_iterator ei;
   for (ei = ends.begin(); ei != ends.end(); ++ei) {
     int end = (*ei);
     for (int vi = end - 1; vi >= begin; --vi) {
-      new_vertices.push_back(vertices[vi]);
+      from.set_vertex(vi);
+      to.set_data1i(from.get_data1i());
     }
     begin = end;
   }
-  nassertr(new_vertices.size() == vertices.size(), CPTA_ushort());
 
+  nassertr(to.is_at_end(), NULL);
   return new_vertices;
 }
 

@@ -41,14 +41,24 @@ const unsigned char qpGeomVertexReader::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexReader::
 set_column(int array, const qpGeomVertexColumn *column) {
+  if (_vertex_data == (const qpGeomVertexData *)NULL &&
+      _array_data == (const qpGeomVertexArrayData *)NULL) {
+    return false;
+  }
+
   // Delete the old reader, if we've got one.
   if (_reader != (Reader *)NULL) {
     delete _reader;
     _reader = NULL;
   }
 
-  if (array < 0 || array >= _vertex_data->get_num_arrays() || 
-      column == (qpGeomVertexColumn *)NULL) {
+  int num_arrays = 1;
+  if (_vertex_data != (const qpGeomVertexData *)NULL) {
+    num_arrays = _vertex_data->get_num_arrays();
+  }
+
+  if (array < 0 || array >= num_arrays || 
+      column == (const qpGeomVertexColumn *)NULL) {
     // Clear the data type.
     _array = -1;
     _column = NULL;
@@ -61,7 +71,11 @@ set_column(int array, const qpGeomVertexColumn *column) {
   } else {
     _array = array;
     _column = column;
-    _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
+    if (_vertex_data != (const qpGeomVertexData *)NULL) {
+      _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
+    } else {
+      _stride = _array_data->get_array_format()->get_stride();
+    }
 
     set_pointer(_start_vertex);
 
@@ -71,6 +85,22 @@ set_column(int array, const qpGeomVertexColumn *column) {
 
     return true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::initialize
+//       Access: Private
+//  Description: Called only by the constructor.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexReader::
+initialize() {
+  _array = 0;
+  _column = NULL;
+  _pointer = NULL;
+  _start_vertex = 0;
+  _read_vertex = 0;
+  _num_vertices = 0;
+  _reader = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,6 +233,9 @@ get_data1f(const unsigned char *pointer) {
   case NT_uint16:
     return *(const PN_uint16 *)pointer;
 
+  case NT_uint32:
+    return *(const PN_uint32 *)pointer;
+
   case NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
@@ -242,6 +275,13 @@ get_data2f(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _v2.set(pi[0], pi[1]);
+      }
+      return _v2;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
@@ -302,6 +342,13 @@ get_data3f(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _v3.set(pi[0], pi[1], pi[2]);
+      }
+      return _v3;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
@@ -375,6 +422,13 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        _v4.set(pi[0], pi[1], pi[2], pi[3]);
+      }
+      return _v4;
+      
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
@@ -421,6 +475,9 @@ get_data1i(const unsigned char *pointer) {
   case NT_uint16:
     return *(const PN_uint16 *)pointer;
 
+  case NT_uint32:
+    return *(const PN_uint32 *)pointer;
+
   case NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
@@ -465,6 +522,14 @@ get_data2i(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+      }
+      return _i;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _i[0] = pi[0];
         _i[1] = pi[1];
       }
@@ -533,6 +598,15 @@ get_data3i(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+        _i[2] = pi[2];
+      }
+      return _i;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _i[0] = pi[0];
         _i[1] = pi[1];
         _i[2] = pi[2];
@@ -618,6 +692,16 @@ get_data4i(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+        _i[2] = pi[2];
+        _i[3] = pi[3];
+      }
+      return _i;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _i[0] = pi[0];
         _i[1] = pi[1];
         _i[2] = pi[2];
@@ -746,6 +830,13 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
+        _v4.set(pi[0], pi[1], pi[2], pi[3]);
+      }
+      return _v4;
+      
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
@@ -813,6 +904,13 @@ get_data4f(const unsigned char *pointer) {
     case NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _v4.set(pi[0], pi[1], pi[2], pi[3]);
+      }
+      return _v4;
+      
+    case NT_uint32:
+      {
+        const PN_uint32 *pi = (const PN_uint32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
