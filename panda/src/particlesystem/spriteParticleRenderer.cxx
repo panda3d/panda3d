@@ -158,8 +158,8 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
         const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
         for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
           int vert = primitive->get_vertex(vi);
-          texcoord.set_vertex(vert);
-          vertex.set_vertex(vert);
+          texcoord.set_row(vert);
+          vertex.set_row(vert);
           
           if (!found_any) {
             min_uv = max_uv = texcoord.get_data2f();
