@@ -19,18 +19,22 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
 Material() {
-  _flags = 0;
+  _ambient.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _specular.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _emission.set(0.0f, 0.0f, 0.0f, 0.0f);
   _shininess = 0.0;
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
@@ -40,7 +44,7 @@ Material(const Material &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
@@ -49,7 +53,7 @@ INLINE Material::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::has_ambient
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the ambient color has been explicitly
 //               set for this material, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -60,29 +64,30 @@ has_ambient() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_ambient
-//       Access: Public
+//       Access: Published
 //  Description: Returns the ambient color setting, if it has been
 //               set.  Returns (0,0,0,0) if the ambient color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &Material::
 get_ambient() const {
-  return (_flags & F_ambient) != 0 ? _ambient : Colorf::zero();
+  return _ambient;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::clear_ambient
-//       Access: Public
+//       Access: Published
 //  Description: Removes the explicit ambient color from the material.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_ambient() {
   _flags &= ~F_ambient;
+  _ambient.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::has_diffuse
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the diffuse color has been explicitly
 //               set for this material, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -93,29 +98,30 @@ has_diffuse() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_diffuse
-//       Access: Public
+//       Access: Published
 //  Description: Returns the diffuse color setting, if it has been
-//               set.  Returns (0,0,0,0) if the diffuse color has not
+//               set.  Returns (1,1,1,1) if the diffuse color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &Material::
 get_diffuse() const {
-  return (_flags & F_diffuse) != 0 ? _diffuse : Colorf::zero();
+  return _diffuse;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::clear_diffuse
-//       Access: Public
+//       Access: Published
 //  Description: Removes the explicit diffuse color from the material.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_diffuse() {
   _flags &= ~F_diffuse;
+  _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::has_specular
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the specular color has been explicitly
 //               set for this material, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -126,29 +132,30 @@ has_specular() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_specular
-//       Access: Public
+//       Access: Published
 //  Description: Returns the specular color setting, if it has been
 //               set.  Returns (0,0,0,0) if the specular color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &Material::
 get_specular() const {
-  return (_flags & F_specular) != 0 ? _specular : Colorf::zero();
+  return _specular;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::clear_specular
-//       Access: Public
+//       Access: Published
 //  Description: Removes the explicit specular color from the material.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_specular() {
   _flags &= ~F_specular;
+  _specular.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::has_emission
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the emission color has been explicitly
 //               set for this material, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -159,29 +166,30 @@ has_emission() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_emission
-//       Access: Public
-//  Description: Returns the emmission color setting, if it has been
-//               set.  Returns (0,0,0,0) if the emmission color has not
+//       Access: Published
+//  Description: Returns the emission color setting, if it has been
+//               set.  Returns (0,0,0,0) if the emission color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &Material::
 get_emission() const {
-  return (_flags & F_emission) != 0 ? _emission : Colorf::zero();
+  return _emission;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::clear_emission
-//       Access: Public
+//       Access: Published
 //  Description: Removes the explicit emission color from the material.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_emission() {
   _flags &= ~F_emission;
+  _emission.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_shininess
-//       Access: Public
+//       Access: Published
 //  Description: Returns the shininess exponent of the material.
 ////////////////////////////////////////////////////////////////////
 INLINE float Material::
@@ -191,7 +199,7 @@ get_shininess() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_shininess
-//       Access: Public
+//       Access: Published
 //  Description: Sets the shininess exponent of the material.  This
 //               controls the size of the specular highlight spot.  In
 //               general, larger number produce a smaller specular
@@ -206,8 +214,8 @@ set_shininess(float shininess) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_local
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: Returns the local viewer flag.  Set set_local().
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::
 get_local() const {
@@ -216,8 +224,12 @@ get_local() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_local
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: Sets the local viewer flag.  Set this true to enable
+//               camera-relative specular highlights, or false to use
+//               orthogonal specular highlights.  The default value is
+//               true.  Applications that use orthogonal projection
+//               should specify false.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_local(bool local) {
@@ -230,8 +242,9 @@ set_local(bool local) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::get_twoside
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: Returns the state of the two-sided lighting flag.
+//               See set_twoside().
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::
 get_twoside() const {
@@ -240,8 +253,12 @@ get_twoside() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_twoside
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: Set this true to enable two-sided lighting.  When
+//               two-sided lighting is on, both sides of a polygon
+//               will be lit by this material.  The default is for
+//               two-sided lighting to be off, in which case only the
+//               front surface is lit.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_twoside(bool twoside) {
@@ -254,7 +271,7 @@ set_twoside(bool twoside) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::operator ==
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::
@@ -264,7 +281,7 @@ operator == (const Material &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::operator !=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::
@@ -274,7 +291,7 @@ operator != (const Material &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::operator <
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::

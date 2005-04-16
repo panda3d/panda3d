@@ -18,23 +18,17 @@
 
 #include "pandabase.h"
 #include "material.h"
-
 #include "indent.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
-#include <stddef.h>
-
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle Material::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Material::
@@ -49,7 +43,7 @@ operator = (const Material &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_ambient
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the ambient color setting of the material.
 //               This will be the multiplied by any ambient lights in
 //               effect on the material to set its base color.
@@ -67,7 +61,7 @@ set_ambient(const Colorf &color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_diffuse
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the diffuse color setting of the material.
 //               This will be multiplied by any lights in effect on
 //               the material to get the color in the parts of the
@@ -87,7 +81,7 @@ set_diffuse(const Colorf &color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_specular
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the diffuse color setting of the material.
 //               This will be multiplied by any lights in effect on
 //               the material to compute the color of specular
@@ -106,7 +100,7 @@ set_specular(const Colorf &color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::set_emission
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the emission color setting of the material.
 //               This is the color of the object as it appears in the
 //               absence of any light whatsover, including ambient
@@ -126,7 +120,7 @@ set_emission(const Colorf &color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Returns a number less than zero if this material
 //               sorts before the other one, greater than zero if it
 //               sorts after, or zero if they are equivalent.  The
@@ -159,7 +153,7 @@ compare_to(const Material &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Material::
@@ -184,7 +178,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::write
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Material::

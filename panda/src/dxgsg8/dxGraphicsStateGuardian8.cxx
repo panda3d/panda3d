@@ -405,6 +405,10 @@ dx_init(void) {
     _projection_mat_stack_count = 0;
     _has_scene_graph_color = false;
 
+    // Apply a default material when materials are turned off.
+    Material empty;
+    apply_material(&empty);
+
 //  GL stuff that hasnt been translated to DX
     // none of these are implemented
     //_multisample_enabled = false;         // bugbug:  translate this to dx_multisample_antialiasing_level?
@@ -520,8 +524,6 @@ dx_init(void) {
 
     _current_fill_mode = RenderModeAttrib::M_filled;
     _pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);  // Use the diffuse vertex color.
 
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
@@ -2744,7 +2746,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
     _pD3DDevice->DrawIndexedPrimitive
       (D3DPT_TRIANGLELIST,
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() + 1,
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        0, primitive->get_num_primitives());
 
   } else {
@@ -2753,7 +2755,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_TRIANGLELIST, 
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() + 1,
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
        primitive->get_data(),
        index_type,
@@ -2820,7 +2822,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP,
-           min, max + 1, 
+           min, max - min + 1, 
            start, ends[i] - start - 2);
         
         start = ends[i] + 2;
@@ -2838,7 +2840,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         unsigned int max = maxs.get_data1i();
         _pD3DDevice->DrawIndexedPrimitiveUP
           (D3DPT_TRIANGLESTRIP, 
-           min, max + 1, 
+           min, max - min + 1, 
            ends[i] - start - 2,
            vertices + start * index_stride, index_type,
            array_data, stride);
@@ -2882,7 +2884,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
       unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLEFAN,
-         min, max + 1,
+         min, max - min + 1,
          start, ends[i] - start - 2);
       
       start = ends[i];
@@ -2900,12 +2902,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
       unsigned int max = maxs.get_data1i();
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLEFAN, 
-         // It's not clear whether the third parameter to
-         // DrawIndexedPrimitiveUP() should be (max + 1) or (max - min
-         // + 1).  The documentation seems to imply it should be (max
-         // - min + 1), but empirically it seems that only (max + 1)
-         // works.
-         min, max + 1,
+         min, max - min + 1,
          ends[i] - start - 2,
          vertices + start * index_stride, index_type,
          array_data, stride);
@@ -2931,7 +2928,7 @@ draw_lines(const qpGeomLines *primitive) {
     _pD3DDevice->DrawIndexedPrimitive
       (D3DPT_LINELIST,
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() + 1,
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        0, primitive->get_num_primitives());
 
   } else {
@@ -2940,7 +2937,7 @@ draw_lines(const qpGeomLines *primitive) {
     _pD3DDevice->DrawIndexedPrimitiveUP
       (D3DPT_LINELIST, 
        primitive->get_min_vertex(),
-       primitive->get_max_vertex() + 1,
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
        primitive->get_num_primitives(), 
        primitive->get_data(),
        index_type,
@@ -3503,14 +3500,37 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::apply_material( const Material* material ) {
-    D3DMATERIAL8 cur_material;
-    cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
-    cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
-    cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
-    cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
-    cur_material.Power   =  material->get_shininess();
-    _pD3DDevice->SetMaterial(&cur_material);
+void DXGraphicsStateGuardian8::
+apply_material(const Material *material) {
+  D3DMATERIAL8 cur_material;
+  cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
+  cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
+  cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
+  cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
+  cur_material.Power = material->get_shininess();
+
+  _pD3DDevice->SetMaterial(&cur_material);
+
+  if (material->has_diffuse()) {
+    // If the material specifies an diffuse color, use it.
+    _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+  } else {
+    // Otherwise, the diffuse color comes from the object color.
+    _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+  }
+  if (material->has_ambient()) {
+    // If the material specifies an ambient color, use it.
+    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
+  } else {
+    // Otherwise, the ambient color comes from the object color.
+    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
+  }
+
+  if (material->get_local()) {
+    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
+  } else {
+    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
+  }    
 }
 
 ////////////////////////////////////////////////////////////////////
