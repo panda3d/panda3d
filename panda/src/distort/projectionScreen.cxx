@@ -238,7 +238,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
         normal.add_data3f(-normalize(norm * rel_mat));
       }
     }
-    nassertr(vdata->get_num_vertices() == num_verts, NULL);
+    nassertr(vdata->get_num_rows() == num_verts, NULL);
 
     // Now synthesize a triangle mesh.  We run triangle strips
     // horizontally across the grid.

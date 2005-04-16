@@ -2136,7 +2136,7 @@ make_vertex_data(const EggRenderState *render_state,
   for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
     qpGeomVertexWriter gvw(vertex_data);
     EggVertex *vertex = (*vi);
-    gvw.set_vertex(vertex->get_index());
+    gvw.set_row(vertex->get_index());
 
     gvw.set_column(InternalName::get_vertex());
     gvw.add_data4f(LCAST(float, vertex->get_pos4() * transform));
