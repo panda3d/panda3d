@@ -347,7 +347,7 @@ convert_triangles(const qpGeomVertexData *vertex_data,
       EggVertex egg_vert;
 
       // Get per-vertex properties.
-      reader.set_vertex(primitive->get_vertex(i * 3 + j));
+      reader.set_row(primitive->get_vertex(i * 3 + j));
 
       reader.set_column(InternalName::get_vertex());
       Vertexf vertex = reader.get_data3f();
