@@ -2786,13 +2786,13 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLESTRIP,
-         min_vertex, max_vertex + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          0, primitive->get_num_vertices() - 2);
       
     } else {
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLESTRIP, 
-         min_vertex, max_vertex + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          primitive->get_num_vertices() - 2, 
          primitive->get_data(), index_type,
          _vertex_data->get_array(0)->get_data(),
