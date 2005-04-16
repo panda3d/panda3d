@@ -19,6 +19,8 @@
 #include "dxVertexBufferContext8.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomVertexArrayFormat.h"
+#include "graphicsStateGuardian.h"
+#include "pStatTimer.h"
 #include "internalName.h"
 #include "config_dxgsg8.h"
 #include <d3dx8.h>
@@ -182,6 +184,7 @@ create_vbuffer(DXScreenData &scrn) {
 void DXVertexBufferContext8::
 upload_data() {
   nassertv(_vbuffer != NULL);
+  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector);
 
   int data_size = get_data()->get_data_size_bytes();
   
@@ -199,6 +202,7 @@ upload_data() {
     return;
   }
 
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
   memcpy(local_pointer, get_data()->get_data(), data_size);
 
   _vbuffer->Unlock();

@@ -22,6 +22,11 @@
 
 qpGeomCacheManager *qpGeomCacheManager::_global_ptr = NULL;
 
+PStatCollector qpGeomCacheManager::_geom_cache_size_pcollector("Geom cache size");
+PStatCollector qpGeomCacheManager::_geom_cache_record_pcollector("Geom cache operations:record");
+PStatCollector qpGeomCacheManager::_geom_cache_erase_pcollector("Geom cache operations:erase");
+PStatCollector qpGeomCacheManager::_geom_cache_evict_pcollector("Geom cache operations:evict");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheManager::Constructor
 //       Access: Protected
@@ -88,5 +93,7 @@ evict_old_entries() {
 
     _total_size -= entry->_result_size;
     entry->remove_from_list();
+    _geom_cache_evict_pcollector.add_level(1);
   }
+  _geom_cache_size_pcollector.set_level(_total_size);
 }

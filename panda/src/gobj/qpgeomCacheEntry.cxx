@@ -54,6 +54,8 @@ record() {
 
   insert_before(cache_mgr->_list);
   cache_mgr->_total_size += _result_size;
+  cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
+  cache_mgr->_geom_cache_record_pcollector.add_level(1);
 
   // Increment our own reference count while we're in the queue, just
   // so we don't have to play games with it later--this is inner-loop
@@ -91,6 +93,8 @@ erase() {
 
   remove_from_list();
   cache_mgr->_total_size -= _result_size;
+  cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
+  cache_mgr->_geom_cache_erase_pcollector.add_level(1);
 
   return this;
 }

@@ -240,6 +240,8 @@ protected:
   void add_to_geom_record(GeomContext *gc);
   void add_to_vertex_buffer_record(VertexBufferContext *vbc);
   void add_to_index_buffer_record(IndexBufferContext *ibc);
+  void add_to_total_buffer_record(VertexBufferContext *vbc);
+  void add_to_total_buffer_record(IndexBufferContext *ibc);
 
   pset<TextureContext *> _current_textures;
   pset<GeomContext *> _current_geoms;
@@ -251,7 +253,9 @@ protected:
   INLINE void add_to_geom_record(GeomContext *) { }
   INLINE void record_state_change(TypeHandle) { }
   INLINE void add_to_vertex_buffer_record(VertexBufferContext *) { }
-  INLINE void add_to_index_buffer_record(IndexBufferContext *i) { }
+  INLINE void add_to_index_buffer_record(IndexBufferContext *) { }
+  INLINE void add_to_total_buffer_record(VertexBufferContext *) { };
+  INLINE void add_to_total_buffer_record(IndexBufferContext *) { };
 #endif
 
   static CPT(RenderState) get_unlit_state();
@@ -334,9 +338,12 @@ public:
   static PStatCollector _active_texusage_pcollector;
   static PStatCollector _texture_count_pcollector;
   static PStatCollector _active_texture_count_pcollector;
-  static PStatCollector _total_buffer_count_pcollector;
-  static PStatCollector _active_vertex_buffer_count_pcollector;
-  static PStatCollector _active_index_buffer_count_pcollector;
+  static PStatCollector _vertex_buffer_switch_pcollector;
+  static PStatCollector _index_buffer_switch_pcollector;
+  static PStatCollector _load_vertex_buffer_pcollector;
+  static PStatCollector _load_index_buffer_pcollector;
+  static PStatCollector _load_texture_pcollector;
+  static PStatCollector _data_transferred_pcollector;
   static PStatCollector _total_geom_pcollector;
   static PStatCollector _active_geom_pcollector;
   static PStatCollector _total_buffers_pcollector;
@@ -348,6 +355,11 @@ public:
   static PStatCollector _used_texmem_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
   static PStatCollector _texmgrmem_resident_pcollector;
+  static PStatCollector _primitive_batches_pcollector;
+  static PStatCollector _primitive_batches_tristrip_pcollector;
+  static PStatCollector _primitive_batches_trifan_pcollector;
+  static PStatCollector _primitive_batches_tri_pcollector;
+  static PStatCollector _primitive_batches_other_pcollector;
   static PStatCollector _vertices_tristrip_pcollector;
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;

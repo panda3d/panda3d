@@ -75,9 +75,9 @@
 
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
-#ifdef DO_PSTATS
+PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
+PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
-#endif
 
 static void
 issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator, 
@@ -1054,6 +1054,7 @@ begin_frame() {
 
 #ifdef DO_PSTATS
   _vertices_display_list_pcollector.clear_level();
+  _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
   _actual_display_region = NULL;
@@ -2316,6 +2317,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       GLP(CallList)(_geom_display_list);
 #ifdef DO_PSTATS
       _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+      _primitive_batches_display_list_pcollector.add_level(1);
 #endif
 
       // And now we don't need to do anything else for this geom.
@@ -2323,7 +2325,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       end_draw_primitives();
       return false;
     }
-    
+
+    // Since we start this collector explicitly, we have to be sure to
+    // stop it again.
+    _load_display_list_pcollector.start();
+
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "compiling display list " << _geom_display_list << "\n";
@@ -2335,7 +2341,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       GLP(NewList)(_geom_display_list, GL_COMPILE_AND_EXECUTE);
     } else {
       GLP(NewList)(_geom_display_list, GL_COMPILE);
-    }      
+    }
 
 #ifdef DO_PSTATS
     // Count up the number of vertices used by primitives in the Geom,
@@ -2480,6 +2486,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_tri_pcollector.add_level(1);
   const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_TRIANGLES, 
@@ -2505,6 +2512,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+    _primitive_batches_tristrip_pcollector.add_level(1);
     _glDrawRangeElements(GL_TRIANGLE_STRIP, 
                          primitive->get_min_vertex(),
                          primitive->get_max_vertex(),
@@ -2523,6 +2531,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
              primitive->get_maxs()->get_num_rows() == (int)ends.size());
     
+    _primitive_batches_tristrip_pcollector.add_level(ends.size());
     unsigned int start = 0;
     for (size_t i = 0; i < ends.size(); i++) {
       _vertices_tristrip_pcollector.add_level(ends[i] - start);
@@ -2557,6 +2566,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
   nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
            primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
+  _primitive_batches_trifan_pcollector.add_level(ends.size());
   unsigned int start = 0;
   for (size_t i = 0; i < ends.size(); i++) {
     _vertices_trifan_pcollector.add_level(ends[i] - start);
@@ -2578,6 +2588,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 void CLP(GraphicsStateGuardian)::
 draw_lines(const qpGeomLines *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_other_pcollector.add_level(1);
   const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_LINES, 
@@ -2607,6 +2618,7 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 void CLP(GraphicsStateGuardian)::
 draw_points(const qpGeomPoints *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_other_pcollector.add_level(1);
   const unsigned char *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_POINTS, 
@@ -2631,9 +2643,12 @@ end_draw_primitives() {
   if (_geom_display_list != 0) {
     // If we were building a display list, close it now.
     GLP(EndList)();
+    _load_display_list_pcollector.stop();
+
     if (!CLP(compile_and_execute)) {
       GLP(CallList)(_geom_display_list);
     }      
+    _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
 
@@ -2908,21 +2923,24 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   
   add_to_vertex_buffer_record(gvbc);
   if (gvbc->was_modified()) {
+    PStatTimer timer(_load_vertex_buffer_pcollector);
+    int num_bytes = gvbc->get_data()->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "copying " << gvbc->get_data()->get_data_size_bytes()
+        << "copying " << num_bytes
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
     if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
-      _glBufferData(GL_ARRAY_BUFFER, gvbc->get_data()->get_data_size_bytes(),
+      _glBufferData(GL_ARRAY_BUFFER, num_bytes,
                     gvbc->get_data()->get_data(), 
                     get_usage(gvbc->get_data()->get_usage_hint()));
 
     } else {
-      _glBufferSubData(GL_ARRAY_BUFFER, 0, gvbc->get_data_size_bytes(),
+      _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
                        gvbc->get_data()->get_data());
     }
-
+    _data_transferred_pcollector.add_level(num_bytes);
+    add_to_total_buffer_record(gvbc);
     gvbc->mark_loaded();
   }
 
@@ -3042,21 +3060,24 @@ apply_index_buffer(IndexBufferContext *ibc) {
   
   add_to_index_buffer_record(gibc);
   if (gibc->was_modified()) {
+    PStatTimer timer(_load_index_buffer_pcollector);
+    int num_bytes = gibc->get_data()->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "copying " << gibc->get_data()->get_data_size_bytes()
+        << "copying " << num_bytes
         << " bytes into index buffer " << gibc->_index << "\n";
     }
     if (gibc->changed_size() || gibc->changed_usage_hint()) {
-      _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
+      _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
                     gibc->get_data()->get_data(), 
                     get_usage(gibc->get_data()->get_usage_hint()));
 
     } else {
-      _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, gibc->get_data_size_bytes(),
+      _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
                        gibc->get_data()->get_data());
     }
-
+    _data_transferred_pcollector.add_level(num_bytes);
+    add_to_total_buffer_record(gibc);
     gibc->mark_loaded();
   }
 
@@ -4646,6 +4667,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
     return false;
   }
+  PStatTimer timer(_load_texture_pcollector);
 
   if (uses_mipmaps) {
 #ifndef NDEBUG
@@ -4660,6 +4682,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
         bool success = true;
+#ifdef DO_PSTATS
+        _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type) * 4 / 3);
+#endif
         switch (target) {
         case GL_TEXTURE_1D:
           GLUP(Build1DMipmaps)(target, internal_format, width,
@@ -4698,6 +4723,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
       gtc->_height != height ||
       gtc->_depth != depth) {
     // We need to reload a new image.
+#ifdef DO_PSTATS
+    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
+#endif
     switch (target) {
     case GL_TEXTURE_1D:
       GLP(TexImage1D)(target, 0, internal_format,
@@ -5031,6 +5059,75 @@ get_internal_image_format(Texture::Format format) {
       << (int)format << "\n";
     return GL_RGB;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_external_texture_bytes
+//       Access: Protected, Static
+//  Description: Computes the number of bytes that should be in the
+//               "external", or local, texture buffer before
+//               transferring to OpenGL.  This is just used for
+//               sending data to PStats.
+////////////////////////////////////////////////////////////////////
+int CLP(GraphicsStateGuardian)::
+get_external_texture_bytes(int width, int height, int depth,
+                           GLint external_format, GLenum component_type) {
+  int num_components;
+  switch (external_format) {
+  case GL_COLOR_INDEX:
+  case GL_STENCIL_INDEX:
+  case GL_DEPTH_COMPONENT:
+  case GL_RED:
+  case GL_GREEN:
+  case GL_BLUE:
+  case GL_ALPHA:
+  case GL_LUMINANCE:
+    num_components = 1;
+    break;
+
+  case GL_LUMINANCE_ALPHA:
+    num_components = 2;
+    break;
+
+  case GL_BGR: 
+  case GL_RGB:
+    num_components = 3;
+    break;
+
+  case GL_BGRA: 
+  case GL_RGBA:
+    num_components = 4;
+    break;
+    
+  default:
+    GLCAT.error()
+      << "Unexpected external_format in get_external_texture_bytes(): "
+      << hex << external_format << dec << "\n";
+    num_components = 3;
+  }
+
+  int component_width;
+  switch (component_type) {
+  case GL_UNSIGNED_BYTE:
+    component_width = 1;
+    break;
+
+  case GL_UNSIGNED_SHORT:
+    component_width = 2;
+    break;
+
+  case GL_FLOAT:
+    component_width = 4;
+    break;
+
+  default:
+    GLCAT.error()
+      << "Unexpected component_type in get_external_texture_bytes(): "
+      << hex << component_type << dec << "\n";
+    component_width = 1;
+  }
+
+  return width * height * depth * num_components * component_width;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6322,11 +6419,17 @@ build_phony_mipmap_level(int level, int x_size, int y_size) {
   } else {
     GLenum internal_format = get_internal_image_format(tex->get_format());
     GLenum external_format = get_external_image_format(tex->get_format());
-    GLenum type = get_component_type(tex->get_component_type());
+    GLenum component_type = get_component_type(tex->get_component_type());
     
+#ifdef DO_PSTATS
+    int num_bytes = 
+      get_external_texture_bytes(tex->get_x_size(), tex->get_y_size(), 1,
+                                 external_format, component_type);
+    _data_transferred_pcollector.add_level(num_bytes);
+#endif
     GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
                     tex->get_x_size(), tex->get_y_size(), 0,
-                    external_format, type, tex->get_ram_image());
+                    external_format, component_type, tex->get_ram_image());
   }
 }
 

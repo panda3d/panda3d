@@ -251,6 +251,9 @@ protected:
   static GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture::Format format) const;
   static GLint get_internal_image_format(Texture::Format format);
+  static int get_external_texture_bytes(int width, int height, int depth,
+                                        GLint external_format, 
+                                        GLenum component_type);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
   static GLint get_texture_src_type(TextureStage::CombineSource cs);
@@ -392,6 +395,8 @@ public:
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
 
+  static PStatCollector _load_display_list_pcollector;
+  static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
 
 public:

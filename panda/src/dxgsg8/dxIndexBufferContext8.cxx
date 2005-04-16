@@ -19,6 +19,8 @@
 #include "dxIndexBufferContext8.h"
 #include "qpgeomPrimitive.h"
 #include "config_dxgsg8.h"
+#include "graphicsStateGuardian.h"
+#include "pStatTimer.h"
 #include <d3dx8.h>
 
 TypeHandle DXIndexBufferContext8::_type_handle;
@@ -90,6 +92,7 @@ create_ibuffer(DXScreenData &scrn) {
 void DXIndexBufferContext8::
 upload_data() {
   nassertv(_ibuffer != NULL);
+  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector);
 
   int data_size = get_data()->get_data_size_bytes();
   
@@ -107,6 +110,7 @@ upload_data() {
     return;
   }
 
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
   memcpy(local_pointer, get_data()->get_data(), data_size);
 
   _ibuffer->Unlock();

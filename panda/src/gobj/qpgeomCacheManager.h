@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "config_gobj.h"
 #include "pmutex.h"
+#include "pStatCollector.h"
 
 class qpGeomCacheEntry;
 
@@ -83,6 +84,13 @@ private:
   qpGeomCacheEntry *_list;
 
   static qpGeomCacheManager *_global_ptr;
+
+public:
+  static PStatCollector _geom_cache_size_pcollector;
+  static PStatCollector _geom_cache_record_pcollector;
+  static PStatCollector _geom_cache_erase_pcollector;
+  static PStatCollector _geom_cache_evict_pcollector;
+
   friend class qpGeomCacheEntry;
 };
 

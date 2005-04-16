@@ -32,6 +32,7 @@
 #include "mutexHolder.h"
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
+#include "qpgeomCacheManager.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -500,6 +501,9 @@ render_frame() {
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
   CullTraverser::_geoms_pcollector.clear_level();
+  qpGeomCacheManager::_geom_cache_record_pcollector.clear_level();
+  qpGeomCacheManager::_geom_cache_erase_pcollector.clear_level();
+  qpGeomCacheManager::_geom_cache_evict_pcollector.clear_level();
   
   _transform_states_pcollector.set_level(TransformState::get_num_states());
   _render_states_pcollector.set_level(RenderState::get_num_states());

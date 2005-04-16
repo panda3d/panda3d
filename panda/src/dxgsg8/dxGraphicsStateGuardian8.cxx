@@ -2738,6 +2738,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 void DXGraphicsStateGuardian8::
 draw_triangles(const qpGeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_tri_pcollector.add_level(1);
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
     nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2779,6 +2780,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+    _primitive_batches_tristrip_pcollector.add_level(1);
     if (_vbuffer_active) {
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2804,6 +2806,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();
     int index_stride = primitive->get_index_stride();
+    _primitive_batches_tristrip_pcollector.add_level(ends.size());
 
     qpGeomVertexReader mins(primitive->get_mins(), 0);
     qpGeomVertexReader maxs(primitive->get_maxs(), 0);
@@ -2866,6 +2869,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
   // with degenerate vertices, so no worries about that.
   CPTA_int ends = primitive->get_ends();
   int index_stride = primitive->get_index_stride();
+  _primitive_batches_trifan_pcollector.add_level(ends.size());
 
   qpGeomVertexReader mins(primitive->get_mins(), 0);
   qpGeomVertexReader maxs(primitive->get_maxs(), 0);
@@ -2920,6 +2924,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 void DXGraphicsStateGuardian8::
 draw_lines(const qpGeomLines *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_other_pcollector.add_level(1);
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
     nassertv(ibc != (IndexBufferContext *)NULL);
@@ -3193,9 +3198,8 @@ VertexBufferContext *DXGraphicsStateGuardian8::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
   DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
 
-  if (vertex_buffers) {
+  if (vertex_buffers && data->get_usage_hint() != qpGeom::UH_client) {
     dvbc->create_vbuffer(*_pScrn);
-    dvbc->mark_loaded();
 
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
@@ -3232,6 +3236,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
         dvbc->upload_data();
       }
       
+      add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
     }
 
@@ -3278,7 +3283,6 @@ prepare_index_buffer(qpGeomPrimitive *data) {
   DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
 
   dibc->create_ibuffer(*_pScrn);
-  dibc->mark_loaded();
 
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
@@ -3315,6 +3319,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
         dibc->upload_data();
       }
       
+      add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
     }
 

@@ -21,7 +21,7 @@
 #include "dxTextureContext8.h"
 #include "config_dxgsg8.h"
 #include "dxGraphicsStateGuardian8.h"
-//#include "pnmImage.h"
+#include "pStatTimer.h"
 #include <d3dx8tex.h>
 
 //#define FORCE_16bpp_1555
@@ -559,22 +559,6 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
         dxgsg8_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< TargetWidth<<"," << TargetHeight << ") to meet HW square texture reqmt\n";
 #endif
     }
-/*
-    // we now use D3DXLoadSurfFromMem to do resizing as well as fmt conversion
-    if(bShrinkOriginal) {
-        // need 2 add checks for errors
-        PNMImage pnmi_src;
-        PNMImage *pnmi = new PNMImage(TargetWidth, TargetHeight, cNumColorChannels);
-        _texture->store(pnmi_src);
-        pnmi->quick_filter_from(pnmi_src,0,0);
-
-        _texture->load(*pnmi);  // violates device independence of pixbufs
-
-        dwOrigWidth  = (DWORD)_texture->get_x_size();
-        dwOrigHeight = (DWORD)_texture->get_y_size();
-        delete pnmi;
-    }
-*/
 
     char *szErrorMsg;
 
@@ -931,128 +915,133 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
 
 HRESULT DXTextureContext8::
 FillDDSurfTexturePixels(void) {
-    HRESULT hr=E_FAIL;
-    assert(IS_VALID_PTR(_texture));
+  HRESULT hr=E_FAIL;
+  assert(IS_VALID_PTR(_texture));
 
-    CPTA_uchar image = _texture->get_ram_image();
-    if (image.is_null()) {
-      // The texture doesn't have an image to load.  That's ok; it
-      // might be a texture we've rendered to by frame buffer
-      // operations or something.
-      return S_OK;
+  CPTA_uchar image = _texture->get_ram_image();
+  if (image.is_null()) {
+    // The texture doesn't have an image to load.  That's ok; it
+    // might be a texture we've rendered to by frame buffer
+    // operations or something.
+    return S_OK;
+  }
+
+  PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
+  
+  assert(IS_VALID_PTR(_pD3DTexture8));
+  
+  DWORD OrigWidth  = (DWORD) _texture->get_x_size();
+  DWORD OrigHeight = (DWORD) _texture->get_y_size();
+  DWORD cNumColorChannels = _texture->get_num_components();
+  D3DFORMAT SrcFormat=_PixBufD3DFmt;
+  BYTE *pPixels=(BYTE*)image.p();
+  int component_width = _texture->get_component_width();
+  
+  assert(IS_VALID_PTR(pPixels));
+  
+  IDirect3DSurface8 *pMipLevel0;
+  hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
+  if(FAILED(hr)) {
+    dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
+    return E_FAIL;
+  }
+  
+  RECT SrcSize;
+  SrcSize.left = SrcSize.top = 0;
+  SrcSize.right = OrigWidth;
+  SrcSize.bottom = OrigHeight;
+  
+  UINT SrcPixBufRowByteLength=OrigWidth*cNumColorChannels;
+  
+  DWORD Lev0Filter,MipFilterFlags;
+  bool bUsingTempPixBuf=false;
+  
+  // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
+  Lev0Filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
+  
+  // D3DXLoadSurfaceFromMemory will load black luminance and we want full white,
+  // so convert to explicit luminance-alpha format
+  if (_PixBufD3DFmt==D3DFMT_A8) {
+    // alloc buffer for explicit D3DFMT_A8L8
+    USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
+    if(!IS_VALID_PTR(pTempPixBuf)) {
+      dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+      goto exit_FillDDSurf;
     }
-
-    assert(IS_VALID_PTR(_pD3DTexture8));
-
-    DWORD OrigWidth  = (DWORD) _texture->get_x_size();
-    DWORD OrigHeight = (DWORD) _texture->get_y_size();
-    DWORD cNumColorChannels = _texture->get_num_components();
-    D3DFORMAT SrcFormat=_PixBufD3DFmt;
-    BYTE *pPixels=(BYTE*)image.p();
-    int component_width = _texture->get_component_width();
-
-    assert(IS_VALID_PTR(pPixels));
-
-    IDirect3DSurface8 *pMipLevel0;
-    hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
-    if(FAILED(hr)) {
-       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
-       return E_FAIL;
+    bUsingTempPixBuf=true;
+    
+    USHORT *pOutPix=pTempPixBuf;
+    BYTE *pSrcPix=pPixels + component_width - 1;
+    for (UINT y = 0; y < OrigHeight; y++) {
+      for (UINT x = 0; 
+           x < OrigWidth; 
+           x++, pSrcPix += component_width, pOutPix++) {
+        // add full white, which is our interpretation of alpha-only
+        // (similar to default adding full opaque alpha 0xFF to
+        // RGB-only textures)
+        *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;
+      }
     }
-
-    RECT SrcSize;
-    SrcSize.left = SrcSize.top = 0;
-    SrcSize.right = OrigWidth;
-    SrcSize.bottom = OrigHeight;
-
-    UINT SrcPixBufRowByteLength=OrigWidth*cNumColorChannels;
-
-    DWORD Lev0Filter,MipFilterFlags;
-    bool bUsingTempPixBuf=false;
-
-    // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
-    Lev0Filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
-
-    // D3DXLoadSurfaceFromMemory will load black luminance and we want full white,
-    // so convert to explicit luminance-alpha format
-    if (_PixBufD3DFmt==D3DFMT_A8) {
-      // alloc buffer for explicit D3DFMT_A8L8
-      USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
-      if(!IS_VALID_PTR(pTempPixBuf)) {
-        dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-        goto exit_FillDDSurf;
-      }
-      bUsingTempPixBuf=true;
-      
-      USHORT *pOutPix=pTempPixBuf;
-      BYTE *pSrcPix=pPixels + component_width - 1;
-      for (UINT y = 0; y < OrigHeight; y++) {
-        for (UINT x = 0; 
-             x < OrigWidth; 
-             x++, pSrcPix += component_width, pOutPix++) {
-          // add full white, which is our interpretation of alpha-only
-          // (similar to default adding full opaque alpha 0xFF to
-          // RGB-only textures)
-          *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;
-        }
-      }
-      
-      SrcFormat=D3DFMT_A8L8;
-      SrcPixBufRowByteLength=OrigWidth*sizeof(USHORT);
-      pPixels=(BYTE*)pTempPixBuf;
-      
-    } else if (component_width != 1) {
-      // Convert from 16-bit per channel (or larger) format down to
-      // 8-bit per channel.  This throws away precision in the
-      // original image, but dx8 doesn't support high-precision images
-      // anyway.
-
-      int num_components = _texture->get_num_components();
-      int num_pixels = OrigWidth * OrigHeight * num_components;
-      BYTE *pTempPixBuf = new BYTE[num_pixels];
-      if(!IS_VALID_PTR(pTempPixBuf)) {
-        dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-        goto exit_FillDDSurf;
-      }
-      bUsingTempPixBuf=true;
-
-      BYTE *pSrcPix = pPixels + component_width - 1;
-      for (int i = 0; i < num_pixels; i++) {
-        pTempPixBuf[i] = *pSrcPix;
-        pSrcPix += component_width;
-      }
-      pPixels=(BYTE*)pTempPixBuf;
+    
+    SrcFormat=D3DFMT_A8L8;
+    SrcPixBufRowByteLength=OrigWidth*sizeof(USHORT);
+    pPixels=(BYTE*)pTempPixBuf;
+    
+  } else if (component_width != 1) {
+    // Convert from 16-bit per channel (or larger) format down to
+    // 8-bit per channel.  This throws away precision in the
+    // original image, but dx8 doesn't support high-precision images
+    // anyway.
+    
+    int num_components = _texture->get_num_components();
+    int num_pixels = OrigWidth * OrigHeight * num_components;
+    BYTE *pTempPixBuf = new BYTE[num_pixels];
+    if(!IS_VALID_PTR(pTempPixBuf)) {
+      dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+      goto exit_FillDDSurf;
     }
-
-
-    // filtering may be done here if texture if targetsize!=origsize
-    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID)pPixels,SrcFormat,
-                                 SrcPixBufRowByteLength,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
-    if(FAILED(hr)) {
-       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
-       goto exit_FillDDSurf;
+    bUsingTempPixBuf=true;
+    
+    BYTE *pSrcPix = pPixels + component_width - 1;
+    for (int i = 0; i < num_pixels; i++) {
+      pTempPixBuf[i] = *pSrcPix;
+      pSrcPix += component_width;
     }
-
-    if(_bHasMipMaps) {
-        if(!dx_use_triangle_mipgen_filter)
-          MipFilterFlags = D3DX_FILTER_BOX;
-         else MipFilterFlags = D3DX_FILTER_TRIANGLE;
-
+    pPixels=(BYTE*)pTempPixBuf;
+  }
+  
+  
+  // filtering may be done here if texture if targetsize!=origsize
+#ifdef DO_PSTATS
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(SrcPixBufRowByteLength * OrigHeight);
+#endif
+  hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID)pPixels,SrcFormat,
+                               SrcPixBufRowByteLength,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
+  if(FAILED(hr)) {
+    dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+    goto exit_FillDDSurf;
+  }
+  
+  if(_bHasMipMaps) {
+    if(!dx_use_triangle_mipgen_filter)
+      MipFilterFlags = D3DX_FILTER_BOX;
+    else MipFilterFlags = D3DX_FILTER_TRIANGLE;
+    
     //    MipFilterFlags|= D3DX_FILTER_DITHER;
-
-        hr=D3DXFilterTexture(_pD3DTexture8,(PALETTEENTRY*)NULL,0,MipFilterFlags);
-        if(FAILED(hr)) {
-            dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex failed" << D3DERRORSTRING(hr);
-            goto exit_FillDDSurf;
-        }
+    
+    hr=D3DXFilterTexture(_pD3DTexture8,(PALETTEENTRY*)NULL,0,MipFilterFlags);
+    if(FAILED(hr)) {
+      dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+      goto exit_FillDDSurf;
     }
-
+  }
+  
  exit_FillDDSurf:
-    if(bUsingTempPixBuf) {
-      SAFE_DELETE_ARRAY(pPixels);
-    }
-    RELEASE(pMipLevel0,dxgsg8,"FillDDSurf MipLev0 texture ptr",RELEASE_ONCE);
-    return hr;
+  if(bUsingTempPixBuf) {
+    SAFE_DELETE_ARRAY(pPixels);
+  }
+  RELEASE(pMipLevel0,dxgsg8,"FillDDSurf MipLev0 texture ptr",RELEASE_ONCE);
+  return hr;
 }
 
 //-----------------------------------------------------------------------------
