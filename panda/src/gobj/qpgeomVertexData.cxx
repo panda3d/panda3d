@@ -553,7 +553,8 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   // Okay, convert the data to the new format.
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Converting " << get_num_rows() << " rows.\n";
+      << "Converting " << get_num_rows() << " rows from " << *_format
+      << " to " << *new_format << "\n";
   }
   PStatTimer timer(_convert_pcollector);
 

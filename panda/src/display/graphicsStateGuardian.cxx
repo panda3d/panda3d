@@ -1511,6 +1511,8 @@ close_gsg() {
   if (_prepared_objects->get_ref_count() == 1) {
     release_all_textures();
     release_all_geoms();
+    release_all_vertex_buffers();
+    release_all_index_buffers();
   }
 }
 

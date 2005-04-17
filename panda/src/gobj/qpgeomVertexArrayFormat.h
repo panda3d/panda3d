@@ -29,6 +29,7 @@
 
 class qpGeomVertexFormat;
 class qpGeomVertexData;
+class qpGeomVertexArrayData;
 class InternalName;
 class FactoryParams;
 class BamWriter;
@@ -109,7 +110,7 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
   void write_with_data(ostream &out, int indent_level, 
-                       const qpGeomVertexData *data, int array_index) const;
+                       const qpGeomVertexArrayData *array_data) const;
 
 public:
   int compare_to(const qpGeomVertexArrayFormat &other) const;

@@ -77,21 +77,36 @@ void qpGeomCacheManager::
 evict_old_entries() {
   MutexHolder holder(_lock);
 
+  int current_frame = ClockObject::get_global_clock()->get_frame_count();
+  int min_frames = geom_cache_min_frames;
+
   int max_size = get_max_size();
   while (_total_size > max_size) {
     PT(qpGeomCacheEntry) entry = _list->_next;
     nassertv(entry != _list);
+
+    if (current_frame - entry->_last_frame_used < min_frames) {
+      // Never mind, this one is too new.
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Oldest element in cache is "
+          << current_frame - entry->_last_frame_used
+          << " frames; keeping cache at " << _total_size << " entries.\n";
+      }
+      break;
+    }
+
     entry->unref();
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "cache total_size = " << _total_size << ", max_size = "
+        << "cache total_size = " << _total_size << " entries, max_size = "
         << max_size << ", removing " << *entry << "\n";
     }
 
     entry->evict_callback();
 
-    _total_size -= entry->_result_size;
+    --_total_size;
     entry->remove_from_list();
     _geom_cache_evict_pcollector.add_level(1);
   }

@@ -160,6 +160,26 @@ set_usage_hint(qpGeomVertexArrayData::UsageHint usage_hint) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+output(ostream &out) const {
+  out << get_num_rows() << " rows: " << *get_array_format();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+write(ostream &out, int indent_level) const {
+  _array_format->write_with_data(out, indent_level, this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::modify_data
 //       Access: Public
 //  Description: Returns a modifiable pointer to the actual vertex

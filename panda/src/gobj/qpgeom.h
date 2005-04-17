@@ -134,22 +134,27 @@ private:
   // We have to use reference-counting pointers here instead of having
   // explicit cleanup in the GeomVertexFormat destructor, because the
   // cache needs to be stored in the CycleData, which makes accurate
-  // cleanup more difficult.  We use the GeomVertexCacheManager class
-  // to avoid cache bloat.
+  // cleanup more difficult.  We use the GeomCacheManager class to
+  // avoid cache bloat.
   class CacheEntry : public qpGeomCacheEntry {
   public:
     INLINE CacheEntry(const qpGeomVertexData *source_data,
                       const qpGeomMunger *modifier);
+    INLINE CacheEntry(qpGeom *source, 
+                      const qpGeomVertexData *source_data,
+                      const qpGeomMunger *modifier, 
+                      const qpGeom *geom_result, 
+                      const qpGeomVertexData *data_result);
+    virtual ~CacheEntry();
     INLINE bool operator < (const CacheEntry &other) const;
 
     virtual void evict_callback();
-    virtual int get_result_size() const;
     virtual void output(ostream &out) const;
 
     qpGeom *_source;
     CPT(qpGeomVertexData) _source_data;
     CPT(qpGeomMunger) _modifier;
-    CPT(qpGeom) _geom_result;
+    const qpGeom *_geom_result;  // ref-counted if not same as _source
     CPT(qpGeomVertexData) _data_result;
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;

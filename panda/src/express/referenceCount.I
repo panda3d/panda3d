@@ -87,7 +87,7 @@ operator = (const ReferenceCount &) {
   // instance of a class that derives from ReferenceCount.  Or maybe
   // your headers are out of sync, and you need to make clean in
   // direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_ref_count != deleted_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,7 +112,13 @@ INLINE ReferenceCount::
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_ref_count != deleted_ref_count);
+
+  // If this assertion fails, we're trying to delete a static object
+  // that still has an outstanding reference count.  You should make
+  // sure that all references to your static objects are gone by the
+  // time the object itself destructs.
+  nassertv(_ref_count <= local_ref_count);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
@@ -129,7 +135,7 @@ INLINE ReferenceCount::
   // constructor for a ReferenceCount object, and then bitwise
   // copied a dynamically allocated value--reference count and
   // all--onto a locally allocated one.
-  nassertv(_ref_count == 0);
+  nassertv(_ref_count == 0 || _ref_count == local_ref_count);
 
   // Tell our weak reference holders that we're going away now.
   if (_weak_list != (WeakReferenceList *)NULL) {
@@ -138,10 +144,10 @@ INLINE ReferenceCount::
   }
 
 #ifndef NDEBUG
-  // Ok, all clear to delete.  Now set the reference count to -100,
-  // so we'll have a better chance of noticing if we happen to have
-  // a stray pointer to it still out there.
-  _ref_count = -100;
+  // Ok, all clear to delete.  Now set the reference count to
+  // deleted_ref_count, so we'll have a better chance of noticing if
+  // we happen to have a stray pointer to it still out there.
+  _ref_count = deleted_ref_count;
 #endif
 
 #ifdef DO_MEMORY_USAGE
@@ -151,7 +157,7 @@ INLINE ReferenceCount::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::get_ref_count
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current reference count.
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
@@ -164,7 +170,7 @@ get_ref_count() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::ref
-//       Access: Public
+//       Access: Published
 //  Description: Explicitly increments the reference count.  User code
 //               should avoid using ref() and unref() directly, which
 //               can result in missed reference counts.  Instead, let
@@ -191,7 +197,7 @@ ref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != -100, 0);
+  nassertr(_ref_count != deleted_ref_count, 0);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
@@ -203,7 +209,7 @@ ref() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::unref
-//       Access: Public
+//       Access: Published
 //  Description: Explicitly decrements the reference count.  Note that
 //               the object will not be implicitly deleted by unref()
 //               simply because the reference count drops to zero.
@@ -237,7 +243,7 @@ unref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != -100, false);
+  nassertr(_ref_count != deleted_ref_count, false);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
@@ -254,7 +260,7 @@ unref() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::test_ref_count_integrity
-//       Access: Public
+//       Access: Published
 //  Description: Does some easy checks to make sure that the reference
 //               count isn't completely bogus.
 ////////////////////////////////////////////////////////////////////
@@ -270,13 +276,37 @@ test_ref_count_integrity() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_ref_count != deleted_ref_count);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
   nassertv(_ref_count >= 0);
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::local_object
+//       Access: Public
+//  Description: This function should be called, once, immediately
+//               after creating a new instance of some
+//               ReferenceCount-derived object on the stack.
+//
+//               This allows the object to be passed to functions that
+//               will increment and decrement the object's reference
+//               count temporarily, and it will prevent the object
+//               from being deleted (inappropriately), when the
+//               reference count returns to zero.  It actually
+//               achieves this by setting a large positive value in
+//               the reference count field.
+////////////////////////////////////////////////////////////////////
+INLINE void ReferenceCount::
+local_object() {
+  // If this assertion fails, you didn't call this immediately after
+  // creating a local object.
+  nassertv(_ref_count == 0);
+
+  _ref_count = local_ref_count;
 }
 
 ////////////////////////////////////////////////////////////////////

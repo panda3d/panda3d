@@ -54,6 +54,7 @@ PUBLISHED:
   INLINE void test_ref_count_integrity() const;
 
 public:
+  INLINE void local_object();
   INLINE bool has_weak_list() const;
   INLINE WeakReferenceList *get_weak_list() const;
 
@@ -61,6 +62,22 @@ public:
   INLINE void weak_unref(WeakPointerToVoid *ptv);
 
 private:
+  enum { 
+    // We use this value as a flag to indicate an object has been
+    // indicated as a local object, and should not be deleted except
+    // by its own destructor.  Really, any nonzero value would do, but
+    // having a large specific number makes the sanity checks easier.
+    local_ref_count = 10000000,
+
+    // This value is used as a flag to indicate that an object has
+    // just been deleted, and you're looking at deallocated memory.
+    // It's not guaranteed to stick around, of course (since the
+    // deleted memory might be repurposed for anything else, including
+    // a new object), but if you ever do encounter this value in a
+    // reference count field, you screwed up.
+    deleted_ref_count = -100,
+  };
+
   int _ref_count;
   WeakReferenceList *_weak_list;
 
@@ -136,8 +153,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-
 
 #include "referenceCount.I"
 

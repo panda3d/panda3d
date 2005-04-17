@@ -153,7 +153,8 @@ DXVertexBufferContext8::
 ////////////////////////////////////////////////////////////////////
 //     Function: DXVertexBufferContext8::create_vbuffer
 //       Access: Public
-//  Description: Creates a new vertex buffer and uploads data to it.
+//  Description: Creates a new vertex buffer (but does not upload data
+//               to it).
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext8::
 create_vbuffer(DXScreenData &scrn) {
@@ -169,9 +170,13 @@ create_vbuffer(DXScreenData &scrn) {
     dxgsg8_cat.warning()
       << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
     _vbuffer = NULL;
-    
   } else {
-    upload_data();
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "created vertex buffer " << _vbuffer << ": "
+        << get_data()->get_num_rows() << " vertices " 
+        << *get_data()->get_array_format() << "\n";
+    }
   }
 }
 

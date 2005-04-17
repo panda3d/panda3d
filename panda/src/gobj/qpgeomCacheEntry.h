@@ -43,15 +43,14 @@ public:
   virtual ~qpGeomCacheEntry();
 
   PT(qpGeomCacheEntry) record();
-  INLINE void refresh();
+  void refresh();
   PT(qpGeomCacheEntry) erase();
 
   virtual void evict_callback();
-  virtual int get_result_size() const;
   virtual void output(ostream &out) const;
 
 private:
-  int _result_size;
+  int _last_frame_used;
 
   INLINE void remove_from_list();
   INLINE void insert_before(qpGeomCacheEntry *node);

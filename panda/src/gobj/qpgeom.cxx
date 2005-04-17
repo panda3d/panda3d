@@ -469,7 +469,7 @@ munge_geom(const qpGeomMunger *munger,
   {
     CDReader cdata(_cycler);
     CacheEntry temp_entry(source_data, munger);
-    temp_entry.ref();  // big ugly hack to allow a stack-allocated ReferenceCount object.
+    temp_entry.local_object();
     Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
     if (ci != cdata->_cache.end()) {
       CacheEntry *entry = (*ci);
@@ -483,7 +483,6 @@ munge_geom(const qpGeomMunger *munger,
         entry->refresh();
         result = entry->_geom_result;
         data = entry->_data_result;
-        temp_entry.unref();
         return;
       }
 
@@ -496,7 +495,6 @@ munge_geom(const qpGeomMunger *munger,
       CDWriter cdataw(((qpGeom *)this)->_cycler, cdata);
       cdataw->_cache.erase(entry);
     }
-    temp_entry.unref();
   }
 
   // Ok, invoke the munger.
@@ -513,10 +511,8 @@ munge_geom(const qpGeomMunger *munger,
     CacheEntry *entry;
     {
       CDWriter cdata(((qpGeom *)this)->_cycler);
-      entry = new CacheEntry(source_data, munger);
-      entry->_source = (qpGeom *)this; 
-      entry->_geom_result = result;
-      entry->_data_result = data;
+      entry = new CacheEntry((qpGeom *)this, source_data, munger,
+                             result, data);
       bool inserted = cdata->_cache.insert(entry).second;
       nassertv(inserted);
     }
@@ -881,6 +877,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::CacheEntry::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+qpGeom::CacheEntry::
+~CacheEntry() {
+  if (_geom_result != _source) {
+    unref_delete(_geom_result);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::CacheEntry::evict_callback
 //       Access: Public, Virtual
 //  Description: Called when the entry is evicted from the cache, this
@@ -898,17 +906,6 @@ evict_callback() {
     cdata->_cache.erase(ci);
   }
   _source->_cycler.release_write_stage(0, cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeom::CacheEntry::get_result_size
-//       Access: Public, Virtual
-//  Description: Returns the approximate number of bytes represented
-//               by the computed result.
-////////////////////////////////////////////////////////////////////
-int qpGeom::CacheEntry::
-get_result_size() const {
-  return _geom_result->get_num_bytes() + _data_result->get_num_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////

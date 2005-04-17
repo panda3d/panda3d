@@ -206,14 +206,19 @@ ConfigVariableString fake_texture_image
           "the same texture file, which will presumably only be loaded "
           "once."));
 
-ConfigVariableInt vertex_convert_cache
-("vertex-convert-cache", 4194304, // 4 MB
- PRC_DESC("This is the amount of memory, in bytes, that should be set "
-          "aside for storing pre-processed data for rendering vertices.  "
-          "This is not a limit on the actual vertex data, which is "
-          "determined by the model; it is also not a limit on the "
-          "amount of memory used by the video driver or the system "
-          "graphics interface, which Panda has no control over."));
+ConfigVariableInt geom_cache_size
+("geom-cache-size", 5000,
+ PRC_DESC("Specifies the maximum number of entries in the cache "
+          "for storing pre-processed data for rendering "
+          "vertices.  This limit is flexible, and may be "
+          "temporarily exceeded if many different Geoms are "
+          "pre-processed during the space of a single frame."));
+
+ConfigVariableInt geom_cache_min_frames
+("geom-cache-min-frames", 1,
+ PRC_DESC("Specifies the minimum number of frames any one particular "
+          "object will remain in the geom cache, even if geom-cache-size "
+          "is exceeded."));
 
 ConfigVariableDouble default_near
 ("default-near", 1.0,

@@ -81,6 +81,9 @@ PUBLISHED:
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
 public:
   INLINE CPTA_uchar get_data() const;
   PTA_uchar modify_data();
@@ -157,6 +160,8 @@ private:
   friend class qpGeomVertexData;
   friend class PreparedGraphicsObjects;
 };
+
+INLINE ostream &operator << (ostream &out, const qpGeomVertexArrayData &obj);
 
 #include "qpgeomVertexArrayData.I"
 

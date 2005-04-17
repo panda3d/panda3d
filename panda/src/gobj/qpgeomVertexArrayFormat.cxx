@@ -435,13 +435,13 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayFormat::
 write_with_data(ostream &out, int indent_level,
-                const qpGeomVertexData *data, int array_index) const {
+                const qpGeomVertexArrayData *array_data) const {
   consider_sort_columns();
-  int num_vertices = data->get_num_rows();
+  int num_rows = array_data->get_num_rows();
 
-  qpGeomVertexReader reader(data);
+  qpGeomVertexReader reader(array_data);
 
-  for (int i = 0; i < num_vertices; i++) {
+  for (int i = 0; i < num_rows; i++) {
     indent(out, indent_level)
       << "row " << i << ":\n";
     reader.set_row(i);
@@ -449,7 +449,7 @@ write_with_data(ostream &out, int indent_level,
     for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
       const qpGeomVertexColumn *column = (*ci);
       int num_values = min(column->get_num_values(), 4);
-      reader.set_column(array_index, column);
+      reader.set_column(0, column);
       const LVecBase4f &d = reader.get_data4f();
 
       indent(out, indent_level + 2) 

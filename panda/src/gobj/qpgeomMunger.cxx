@@ -253,17 +253,6 @@ do_unregister() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::CacheEntry::get_result_size
-//       Access: Public, Virtual
-//  Description: Returns the approximate number of bytes represented
-//               by the computed result.
-////////////////////////////////////////////////////////////////////
-int qpGeomMunger::CacheEntry::
-get_result_size() const {
-  return sizeof(qpGeomMunger);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::CacheEntry::output
 //       Access: Public, Virtual
 //  Description: 

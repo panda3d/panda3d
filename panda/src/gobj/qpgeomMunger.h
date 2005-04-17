@@ -118,7 +118,6 @@ private:
 private:
   class CacheEntry : public qpGeomCacheEntry {
   public:
-    virtual int get_result_size() const;
     virtual void output(ostream &out) const;
 
     PT(qpGeomMunger) _munger;

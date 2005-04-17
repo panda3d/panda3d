@@ -66,7 +66,8 @@ extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;
 extern EXPCL_PANDA ConfigVariableString fake_texture_image;
 
-extern EXPCL_PANDA ConfigVariableInt vertex_convert_cache;
+extern EXPCL_PANDA ConfigVariableInt geom_cache_size;
+extern EXPCL_PANDA ConfigVariableInt geom_cache_min_frames;
 
 extern ConfigVariableDouble default_near;
 extern ConfigVariableDouble default_far;

@@ -187,9 +187,32 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::CacheEntry::
 CacheEntry(const qpGeomVertexData *source_data, const qpGeomMunger *modifier) :
+  _source(NULL),
   _source_data(source_data),
-  _modifier(modifier)
+  _modifier(modifier),
+  _geom_result(NULL),
+  _data_result(NULL)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::CacheEntry::
+CacheEntry(qpGeom *source, const qpGeomVertexData *source_data,
+           const qpGeomMunger *modifier, const qpGeom *geom_result, 
+           const qpGeomVertexData *data_result) :
+  _source(source),
+  _source_data(source_data),
+  _modifier(modifier),
+  _geom_result(geom_result),
+  _data_result(data_result)
+{
+  if (_geom_result != _source) {
+    _geom_result->ref();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

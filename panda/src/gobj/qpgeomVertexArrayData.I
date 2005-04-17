@@ -136,3 +136,9 @@ CData(const qpGeomVertexArrayData::CData &copy) :
   _modified(copy._modified)
 {
 }
+
+INLINE ostream &
+operator << (ostream &out, const qpGeomVertexArrayData &obj) {
+  obj.output(out);
+  return out;
+}

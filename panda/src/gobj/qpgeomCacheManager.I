@@ -20,37 +20,39 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheManager::set_max_size
 //       Access: Published
-//  Description: Specifies the amount of memory, in bytes, that should
-//               be set aside for storing pre-processed data for
-//               rendering vertices.  This is not a limit on the
-//               actual vertex data, which is what it is; it is also
-//               not a limit on the amount of memory used by the video
-//               driver or the system graphics interface, which Panda
-//               has no control over.
+//  Description: Specifies the maximum number of entries in the cache
+//               for storing pre-processed data for rendering
+//               vertices.  This limit is flexible, and may be
+//               temporarily exceeded if many different Geoms are
+//               pre-processed during the space of a single frame.
+//
+//               This is not a limit on the actual vertex data, which
+//               is what it is; it is also not a limit on the amount
+//               of memory used by the video driver or the system
+//               graphics interface, which Panda has no control over.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomCacheManager::
 set_max_size(int max_size) const {
   // We directly change the config variable.
-  vertex_convert_cache = max_size;
+  geom_cache_size = max_size;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheManager::get_max_size
 //       Access: Published
-//  Description: Returns the amount of memory, in bytes, that should
-//               be set aside for storing pre-processed data for
-//               rendering vertices.  See set_max_size().
+//  Description: Returns the maximum number of entries in the cache
+//               for storing pre-processed data for rendering
+//               vertices.  See set_max_size().
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomCacheManager::
 get_max_size() const {
-  return vertex_convert_cache;
+  return geom_cache_size;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheManager::get_total_size
 //       Access: Published
-//  Description: Returns the amount of memory, in bytes, currently
-//               consumed by the cache of pre-processed vertex data.
+//  Description: Returns the number of entries currently in the cache.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomCacheManager::
 get_total_size() const {

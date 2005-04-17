@@ -58,7 +58,8 @@ DXIndexBufferContext8::
 ////////////////////////////////////////////////////////////////////
 //     Function: DXIndexBufferContext8::create_ibuffer
 //       Access: Public
-//  Description: Creates a new index buffer and uploads data to it.
+//  Description: Creates a new index buffer (but does not upload data
+//               to it).
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext8::
 create_ibuffer(DXScreenData &scrn) {
@@ -77,9 +78,14 @@ create_ibuffer(DXScreenData &scrn) {
     dxgsg8_cat.warning()
       << "CreateIndexBuffer failed" << D3DERRORSTRING(hr);
     _ibuffer = NULL;
-    
   } else {
-    upload_data();
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "creating index buffer " << _ibuffer << ": "
+        << get_data()->get_num_vertices() << " indices (" 
+        << get_data()->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
+        << ")\n";
+    }
   }
 }
 

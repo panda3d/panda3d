@@ -31,27 +31,6 @@ qpGeomCacheEntry() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomCacheEntry::refresh
-//       Access: Public
-//  Description: Marks the cache entry recently used, so it will not
-//               be evicted for a while.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomCacheEntry::
-refresh() {
-  nassertv(_next != (qpGeomCacheEntry *)NULL && _prev != (qpGeomCacheEntry *)NULL);
-
-  qpGeomCacheManager *cache_mgr = qpGeomCacheManager::get_global_ptr();
-  MutexHolder holder(cache_mgr->_lock);
-
-  remove_from_list();
-  insert_before(cache_mgr->_list);
-
-  int new_size = get_result_size();
-  cache_mgr->_total_size += (new_size - _result_size);
-  _result_size = new_size;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheEntry::remove_from_list
 //       Access: Private
 //  Description: Removes a GeomCacheEntry record from the

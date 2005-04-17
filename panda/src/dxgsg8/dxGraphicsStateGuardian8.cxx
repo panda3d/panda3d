@@ -3197,44 +3197,51 @@ release_texture(TextureContext *tc) {
 VertexBufferContext *DXGraphicsStateGuardian8::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
   DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
-
-  if (vertex_buffers && data->get_usage_hint() != qpGeom::UH_client) {
-    dvbc->create_vbuffer(*_pScrn);
-
-    if (dxgsg8_cat.is_debug()) {
-      dxgsg8_cat.debug()
-        << "creating vertex buffer " << dvbc->_vbuffer << ": "
-        << data->get_num_rows() << " vertices " 
-        << *data->get_array_format() << "\n";
-    }
-  }
-
   return dvbc;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::apply_vertex_buffer
 //       Access: Public
-//  Description: Makes the data the currently available data for
-//               rendering.
+//  Description: Updates the vertex buffer with the current data, and
+//               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 apply_vertex_buffer(VertexBufferContext *vbc) {
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
 
-  if (dvbc->_vbuffer != NULL) {
+  if (dvbc->_vbuffer == NULL) {
+    // Attempt to create a new vertex buffer.
+    if (vertex_buffers && 
+        dvbc->get_data()->get_usage_hint() != qpGeom::UH_client) {
+      dvbc->create_vbuffer(*_pScrn);
+    }
+
+    if (dvbc->_vbuffer != NULL) {
+      dvbc->upload_data();
+      
+      add_to_vertex_buffer_record(dvbc);
+      add_to_total_buffer_record(dvbc);
+      dvbc->mark_loaded();
+
+      _pD3DDevice->SetStreamSource
+        (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
+      _vbuffer_active = true;
+    } else {
+      _vbuffer_active = false;
+    }
+
+  } else {
     add_to_vertex_buffer_record(dvbc);
   
     if (dvbc->was_modified()) {
       if (dvbc->changed_size()) {
-        // Here we have to destroy the old vertex buffer and create a
-        // new one.
+        // We have to destroy the old vertex buffer and create a new
+        // one.
         dvbc->create_vbuffer(*_pScrn);
-
-      } else {
-        // Here we just copy the new data to the vertex buffer.
-        dvbc->upload_data();
       }
+
+      dvbc->upload_data();
       
       add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
@@ -3243,9 +3250,6 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     _pD3DDevice->SetStreamSource
       (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
     _vbuffer_active = true;
-
-  } else {
-    _vbuffer_active = false;
   }
 
   set_vertex_format(dvbc->_fvf);
@@ -3281,43 +3285,48 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 IndexBufferContext *DXGraphicsStateGuardian8::
 prepare_index_buffer(qpGeomPrimitive *data) {
   DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
-
-  dibc->create_ibuffer(*_pScrn);
-
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "creating index buffer " << dibc->_ibuffer << ": "
-      << data->get_num_vertices() << " indices (" 
-      << data->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
-      << ")\n";
-  }
-
   return dibc;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::apply_index_buffer
 //       Access: Public
-//  Description: Makes the data the currently available data for
-//               rendering.
+//  Description: Updates the index buffer with the current data, and
+//               makes it the current index buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 apply_index_buffer(IndexBufferContext *ibc) {
   DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
 
-  if (dibc->_ibuffer != NULL) {
+  if (dibc->_ibuffer == NULL) {
+    // Attempt to create a new index buffer.
+    dibc->create_ibuffer(*_pScrn);
+
+    if (dibc->_ibuffer != NULL) {
+      dibc->upload_data();
+      add_to_index_buffer_record(dibc);
+      add_to_total_buffer_record(dibc);
+      dibc->mark_loaded();
+
+      _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
+      _ibuffer_active = true;
+    } else {
+
+      _pD3DDevice->SetIndices(NULL, 0);
+      _ibuffer_active = false;
+    }
+
+  } else {
     add_to_index_buffer_record(dibc);
   
     if (dibc->was_modified()) {
       if (dibc->changed_size()) {
-        // Here we have to destroy the old index buffer and create a
-        // new one.
+        // We have to destroy the old index buffer and create a new
+        // one.
         dibc->create_ibuffer(*_pScrn);
-
-      } else {
-        // Here we just copy the new data to the index buffer.
-        dibc->upload_data();
       }
+
+      dibc->upload_data();
       
       add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
@@ -3325,10 +3334,6 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
     _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
     _ibuffer_active = true;
-
-  } else {
-    _pD3DDevice->SetIndices(NULL, 0);
-    _ibuffer_active = false;
   }
 }
 

@@ -59,7 +59,7 @@ GraphicsThreadingModel(const string &model) {
 
   size_t slash = model.find('/', start);
   if (slash == string::npos) {
-    _cull_name = model;
+    _cull_name = model.substr(start);
   } else {
     _cull_name = model.substr(start, slash - start);
     _draw_name = model.substr(slash + 1);

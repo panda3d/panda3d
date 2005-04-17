@@ -63,6 +63,28 @@ release_all_geoms() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_vertex_buffers
+//       Access: Public
+//  Description: Frees the resources for all vertex buffers associated
+//               with this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+release_all_vertex_buffers() {
+  return _prepared_objects->release_all_vertex_buffers();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_index_buffers
+//       Access: Public
+//  Description: Frees the resources for all index buffers associated
+//               with this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+release_all_index_buffers() {
+  return _prepared_objects->release_all_index_buffers();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_active
 //       Access: Published
 //  Description: Sets the active flag associated with the

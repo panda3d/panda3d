@@ -20,6 +20,7 @@
 #include "qpgeomCacheManager.h"
 #include "mutexHolder.h"
 #include "config_gobj.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomCacheEntry::Destructor
@@ -41,21 +42,20 @@ record() {
   nassertr(_next == (qpGeomCacheEntry *)NULL && _prev == (qpGeomCacheEntry *)NULL, NULL);
   PT(qpGeomCacheEntry) keepme = this;
 
-  _result_size = get_result_size();
-
   qpGeomCacheManager *cache_mgr = qpGeomCacheManager::get_global_ptr();
   MutexHolder holder(cache_mgr->_lock);
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "recording cache entry: " << *this << ", total_size = "
-      << cache_mgr->_total_size + _result_size << "\n";
+      << cache_mgr->_total_size + 1 << "\n";
   }
 
   insert_before(cache_mgr->_list);
-  cache_mgr->_total_size += _result_size;
+  ++cache_mgr->_total_size;
   cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
   cache_mgr->_geom_cache_record_pcollector.add_level(1);
+  _last_frame_used = ClockObject::get_global_clock()->get_frame_count();
 
   // Increment our own reference count while we're in the queue, just
   // so we don't have to play games with it later--this is inner-loop
@@ -68,6 +68,25 @@ record() {
   cache_mgr->evict_old_entries();
 
   return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomCacheEntry::refresh
+//       Access: Public
+//  Description: Marks the cache entry recently used, so it will not
+//               be evicted for a while.
+////////////////////////////////////////////////////////////////////
+void qpGeomCacheEntry::
+refresh() {
+  nassertv(_next != (qpGeomCacheEntry *)NULL && _prev != (qpGeomCacheEntry *)NULL);
+
+  qpGeomCacheManager *cache_mgr = qpGeomCacheManager::get_global_ptr();
+  MutexHolder holder(cache_mgr->_lock);
+
+  remove_from_list();
+  insert_before(cache_mgr->_list);
+
+  _last_frame_used = ClockObject::get_global_clock()->get_frame_count();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +111,7 @@ erase() {
   MutexHolder holder(cache_mgr->_lock);
 
   remove_from_list();
-  cache_mgr->_total_size -= _result_size;
+  --cache_mgr->_total_size;
   cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
   cache_mgr->_geom_cache_erase_pcollector.add_level(1);
 
@@ -107,17 +126,6 @@ erase() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomCacheEntry::
 evict_callback() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomCacheEntry::get_result_size
-//       Access: Public, Virtual
-//  Description: Returns the approximate number of bytes represented
-//               by the computed result.
-////////////////////////////////////////////////////////////////////
-int qpGeomCacheEntry::
-get_result_size() const {
-  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

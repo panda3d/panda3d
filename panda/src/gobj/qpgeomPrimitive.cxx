@@ -300,12 +300,7 @@ clear_vertices() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 offset_vertices(int offset) {
-  CDWriter cdata(_cycler);
-
-  cdata->_got_minmax = false;
-
-  qpGeomVertexRewriter index(cdata->_vertices, 0);
-
+  qpGeomVertexRewriter index(modify_vertices(), 0);
   while (!index.is_at_end()) {
     index.set_data1i(index.get_data1i() + offset);
   }

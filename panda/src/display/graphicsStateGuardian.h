@@ -74,6 +74,8 @@ public:
 PUBLISHED:
   INLINE int release_all_textures();
   INLINE int release_all_geoms();
+  INLINE int release_all_vertex_buffers();
+  INLINE int release_all_index_buffers();
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
