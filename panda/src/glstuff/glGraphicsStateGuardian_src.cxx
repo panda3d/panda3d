@@ -821,6 +821,8 @@ reset() {
   _needs_tex_gen = false;
   _tex_gen_modifies_mat = false;
   _last_max_stage_index = 0;
+  _current_vbuffer_index = 0;
+  _current_ibuffer_index = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
   _point_size = 1.0f;
@@ -2919,9 +2921,12 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+  if (_current_vbuffer_index != gvbc->_index) {
+    _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+    _current_vbuffer_index = gvbc->_index;
+    add_to_vertex_buffer_record(gvbc);
+  }
   
-  add_to_vertex_buffer_record(gvbc);
   if (gvbc->was_modified()) {
     PStatTimer timer(_load_vertex_buffer_pcollector);
     int num_bytes = gvbc->get_data()->get_data_size_bytes();
@@ -2997,7 +3002,10 @@ setup_array_data(const qpGeomVertexArrayData *data) {
       data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
-    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (_current_vbuffer_index != 0) {
+      _glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _current_vbuffer_index = 0;
+    }
     return data->get_data();
   }
 
@@ -3056,9 +3064,12 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
-  _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
+  if (_current_ibuffer_index != gibc->_index) {
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
+    _current_ibuffer_index = gibc->_index;
+    add_to_index_buffer_record(gibc);
+  }
   
-  add_to_index_buffer_record(gibc);
   if (gibc->was_modified()) {
     PStatTimer timer(_load_index_buffer_pcollector);
     int num_bytes = gibc->get_data()->get_data_size_bytes();
@@ -3134,7 +3145,10 @@ setup_primitive(const qpGeomPrimitive *data) {
       data->get_usage_hint() == qpGeom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
-    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    if (_current_ibuffer_index != 0) {
+      _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      _current_ibuffer_index = 0;
+    }
     return data->get_data();
   }
 

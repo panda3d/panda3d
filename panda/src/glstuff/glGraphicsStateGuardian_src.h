@@ -337,6 +337,8 @@ protected:
   bool _auto_rescale_normal;
   GLuint _geom_display_list;
   int _last_max_stage_index;
+  GLuint _current_vbuffer_index;
+  GLuint _current_ibuffer_index;
   
   int _error_count;
 
