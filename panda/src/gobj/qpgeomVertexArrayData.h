@@ -135,6 +135,8 @@ public:
   static PTA_uchar read_raw_data(DatagramIterator &source);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
+  virtual void finalize(BamReader *manager);
+
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);

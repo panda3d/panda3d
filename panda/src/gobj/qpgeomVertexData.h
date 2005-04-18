@@ -25,6 +25,7 @@
 #include "qpgeomVertexColumn.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomEnums.h"
+#include "qpgeomCacheEntry.h"
 #include "transformPalette.h"
 #include "transformBlendPalette.h"
 #include "sliderTable.h"
@@ -140,6 +141,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
+  void clear_cache();
+
 public:
   INLINE CPT(qpGeomVertexData) animate_vertices_cull() const;
 
@@ -198,6 +201,23 @@ private:
 
   typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
 
+  class CacheEntry : public qpGeomCacheEntry {
+  public:
+    INLINE CacheEntry(const qpGeomVertexFormat *modifier);
+    INLINE CacheEntry(qpGeomVertexData *source,
+                      const qpGeomVertexFormat *modifier,
+                      const qpGeomVertexData *result);
+    INLINE bool operator < (const CacheEntry &other) const;
+
+    virtual void evict_callback();
+    virtual void output(ostream &out) const;
+
+    qpGeomVertexData *_source;
+    CPT(qpGeomVertexFormat) _modifier;
+    CPT(qpGeomVertexData) _result;
+  };
+  typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
@@ -216,6 +236,7 @@ private:
     PT(qpGeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
+    Cache _cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -263,6 +284,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class CacheEntry;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexData &obj);

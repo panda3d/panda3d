@@ -107,6 +107,7 @@ operator = (const qpGeomVertexData &copy) {
   _cull_char_pcollector = copy._cull_char_pcollector;
 
   CDWriter cdata(_cycler);
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -118,6 +119,23 @@ operator = (const qpGeomVertexData &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
 ~qpGeomVertexData() {
+  // When we destruct, we should ensure that all of our cached
+  // entries, across all pipeline stages, are properly removed from
+  // the cache manager.
+  int num_stages = _cycler.get_num_stages();
+  for (int i = 0; i < num_stages; i++) {
+    if (_cycler.is_stage_unique(i)) {
+      CData *cdata = _cycler.write_stage(i);
+      for (Cache::iterator ci = cdata->_cache.begin();
+           ci != cdata->_cache.end();
+           ++ci) {
+        CacheEntry *entry = (*ci);
+        entry->erase();
+      }
+      cdata->_cache.clear();
+      _cycler.release_write_stage(i, cdata);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,6 +159,7 @@ set_usage_hint(qpGeomVertexData::UsageHint usage_hint) {
     }
     (*ai)->set_usage_hint(usage_hint);
   }
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -187,6 +206,7 @@ clear_rows() {
     }
     (*ai)->clear_rows();
   }
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices.clear();
 }
@@ -212,6 +232,7 @@ modify_array(int i) {
   if (cdata->_arrays[i]->get_ref_count() > 1) {
     cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
   }
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
@@ -231,6 +252,7 @@ set_array(int i, const qpGeomVertexArrayData *array) {
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -250,6 +272,7 @@ set_transform_palette(const TransformPalette *palette) {
 
   CDWriter cdata(_cycler);
   cdata->_transform_palette = (TransformPalette *)palette;
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -272,6 +295,7 @@ modify_transform_blend_palette() {
   if (cdata->_transform_blend_palette->get_ref_count() > 1) {
     cdata->_transform_blend_palette = new TransformBlendPalette(*cdata->_transform_blend_palette);
   }
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
@@ -291,6 +315,7 @@ void qpGeomVertexData::
 set_transform_blend_palette(const TransformBlendPalette *palette) {
   CDWriter cdata(_cycler);
   cdata->_transform_blend_palette = (TransformBlendPalette *)palette;
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -312,6 +337,7 @@ set_slider_table(const SliderTable *table) {
 
   CDWriter cdata(_cycler);
   cdata->_slider_table = (SliderTable *)table;
+  clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -550,6 +576,22 @@ convert_to(const qpGeomVertexFormat *new_format) const {
     return this;
   }
 
+  // Look up the new format in our cache--maybe we've recently applied
+  // it.
+  {
+    CDReader cdata(_cycler);
+    CacheEntry temp_entry(new_format);
+    temp_entry.local_object();
+    Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
+    if (ci != cdata->_cache.end()) {
+      CacheEntry *entry = (*ci);
+      // Record a cache hit, so this element will stay in the cache a
+      // while longer.
+      entry->refresh();
+      return entry->_result;
+    }
+  }
+
   // Okay, convert the data to the new format.
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
@@ -564,6 +606,23 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   new_data->set_slider_table(get_slider_table());
 
   new_data->copy_from(*this, false);
+
+  {
+    // Record the new result in the cache.
+    CacheEntry *entry;
+    {
+      CDWriter cdata(((qpGeomVertexData *)this)->_cycler);
+      entry = new CacheEntry((qpGeomVertexData *)this, new_format, new_data);
+      bool inserted = cdata->_cache.insert(entry).second;
+      nassertr(inserted, new_data);
+    }
+    
+    // And tell the cache manager about the new entry.  (It might
+    // immediately request a delete from the cache of the thing we
+    // just added.)
+    entry->record();
+  }
+
   return new_data;
 }
 
@@ -832,6 +891,26 @@ write(ostream &out, int indent_level) const {
       << "Transform blend palette:\n";
     get_transform_blend_palette()->write(out, indent_level + 2);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to().
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+clear_cache() {
+  // Probably we shouldn't do anything at all here unless we are
+  // running in pipeline stage 0.
+  CData *cdata = CDWriter(_cycler);
+  for (Cache::iterator ci = cdata->_cache.begin();
+       ci != cdata->_cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    entry->erase();
+  }
+  cdata->_cache.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1147,6 +1226,7 @@ do_set_num_rows(int n, qpGeomVertexData::CDWriter &cdata) {
   }
 
   if (any_changed) {
+    clear_cache();
     cdata->_modified = qpGeom::get_next_modified();
     cdata->_animated_vertices.clear();
   }
@@ -1455,6 +1535,37 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
 
   manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::CacheEntry::evict_callback
+//       Access: Public, Virtual
+//  Description: Called when the entry is evicted from the cache, this
+//               should clean up the owning object appropriately.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::CacheEntry::
+evict_callback() {
+  // We have to operate on stage 0 of the pipeline, since that's where
+  // the cache really counts.  Because of the multistage pipeline, we
+  // might not actually have a cache entry there (it might have been
+  // added to stage 1 instead).  No big deal if we don't.
+  CData *cdata = _source->_cycler.write_stage(0);
+  Cache::iterator ci = cdata->_cache.find(this);
+  if (ci != cdata->_cache.end()) {
+    cdata->_cache.erase(ci);
+  }
+  _source->_cycler.release_write_stage(0, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::CacheEntry::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::CacheEntry::
+output(ostream &out) const {
+  out << "vertex data " << (void *)_source << " to " 
+      << *_modifier;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -415,6 +415,31 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+finalize(BamReader *manager) {
+  // Now we need to register the format that we have read from the bam
+  // file (since it doesn't come out of the bam file automatically
+  // registered).  This may change the format's pointer, which we
+  // should then update our own data to reflect.  But since this may
+  // cause the unregistered object to destruct, we have to also tell
+  // the BamReader to return the new object from now on.
+
+  CDWriter cdata(_cycler);
+
+  CPT(qpGeomVertexArrayFormat) new_array_format = 
+    qpGeomVertexArrayFormat::register_format(_array_format);
+
+  manager->change_pointer(_array_format, new_array_format);
+  _array_format = new_array_format;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
@@ -430,6 +455,7 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   object->fillin(scan, manager);
+  manager->register_finalize(object);
 
   return object;
 }

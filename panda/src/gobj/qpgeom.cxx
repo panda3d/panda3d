@@ -991,7 +991,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _primitive_type = (PrimitiveType)scan.get_uint8();
-  _shade_model = (ShadeModel)scan.get_uint16();
+  _shade_model = (ShadeModel)scan.get_uint8();
   _geom_rendering = scan.get_uint16();
   _got_usage_hint = false;
   _modified = qpGeom::get_next_modified();

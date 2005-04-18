@@ -415,6 +415,44 @@ add_transform(TransformPalette *palette, const VertexTransform *transform,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexData::CacheEntry::
+CacheEntry(const qpGeomVertexFormat *modifier) :
+  _source(NULL),
+  _modifier(modifier),
+  _result(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexData::CacheEntry::
+CacheEntry(qpGeomVertexData *source,
+           const qpGeomVertexFormat *modifier,
+           const qpGeomVertexData *result) :
+  _source(source),
+  _modifier(modifier),
+  _result(result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::CacheEntry::operator <
+//       Access: Public
+//  Description: Provides a unique ordering within the set.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::CacheEntry::
+operator < (const CacheEntry &other) const {
+  return _modifier < other._modifier;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::CData::Constructor
 //       Access: Public
 //  Description:
