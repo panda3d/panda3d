@@ -936,3 +936,22 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def haveCreateAuthority(self):
         return (self.DOIDlast > self.DOIDnext)
+
+    def getDoHierarchy(self):
+        return self.__doHierarchy
+
+    def getWorld(self, doId):
+        # Get the world node for this object
+        obj = self.doId2do[doId]
+
+        worldNP = obj.getParent()
+        while 1:
+            nextNP = worldNP.getParent()
+            if nextNP == render:
+                break
+            elif worldNP.isEmpty():
+                return None
+        return worldNP
+            
+        
+    

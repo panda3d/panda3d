@@ -12,9 +12,9 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
 
     RuleSeparator = ":"
 
-    def __init__(self, air, startingZone, gridSize, gridRadius):
+    def __init__(self, air, startingZone, gridSize, gridRadius, style="Cartesian"):
         DistributedNodeAI.DistributedNodeAI.__init__(self, air)
-        self.style = "Cartesian"
+        self.style = style
         self.startingZone = startingZone
         self.gridSize = gridSize
         self.gridRadius = gridRadius

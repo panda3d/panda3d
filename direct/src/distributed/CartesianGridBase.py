@@ -3,10 +3,15 @@
 
 class CartesianGridBase:
     def isValidZone(self, zoneId):
-        if ((zoneId < self.startingZone) or
-            (zoneId > self.startingZone + self.gridSize * self.gridSize - 1)):
+        if self.style == "Cartesian":
+            if ((zoneId < self.startingZone) or
+                (zoneId > self.startingZone + self.gridSize * self.gridSize - 1)):
+                return 0
+            return 1
+        elif self.style == "CartesianStated":
+            return 1
+        else:
             return 0
-        return 1
     
     def getZoneFromXYZ(self, pos):
         # NOTE: pos should be relative to our own grid origin

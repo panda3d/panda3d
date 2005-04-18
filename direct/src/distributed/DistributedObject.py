@@ -370,4 +370,3 @@ class DistributedObject(PandaObject):
     def isGridParent(self):
         # If this distributed object is a DistributedGrid return 1.  0 by default
         return 0
-
