@@ -50,6 +50,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         assert self.notify.debug("setParentingRules: style: %s, rule: %s" % (style, rule))
         rules = rule.split(self.RuleSeparator)
         assert(len(rules) == 3)
+        self.style = style
         self.startingZone = int(rules[0])
         self.gridSize = int(rules[1])
         self.viewingRadius = int(rules[2])
@@ -124,6 +125,22 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
                     self.handleAvatarZoneChange(self.visAvatar, zoneId)
             return Task.cont
 
+    # Take an avatar (or other object) from somewhere in the world and
+    # wrtReparent him to the grid.
+    def addObjectToGrid(self, av):
+        # Get our pos relative to the island grid
+        pos = av.getPos(self)
+        # Figure out what zone in that island grid
+        zoneId = self.getZoneFromXYZ(pos)
+        # Do the wrtReparenting to the grid node
+        self.handleAvatarZoneChange(av, zoneId)
+
+    def removeObjectFromGrid(self, av):
+        # TODO: WHAT LOCATION SHOULD WE SET THIS TO?
+        av.reparentTo(hidden)
+        av.b_setLocation(0,0)
+        
+        
     def handleAvatarZoneChange(self, av, zoneId):
         assert self.notify.debug("handleAvatarZoneChange(%s, %s)" % (av.doId, zoneId))
         # This method can be overridden by derived classes that
