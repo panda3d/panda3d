@@ -104,6 +104,8 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS ${PANDA}\Pmw\*.*
             SetOutPath $INSTDIR
             File /r /x CVS ${PSOURCE}\doc\ReleaseNotes
+            SetOutPath $INSTDIR\python\lib
+            File /nonfatal /r ${PSOURCE}\thirdparty\win-extras\*
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
