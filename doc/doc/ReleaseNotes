@@ -1,3 +1,32 @@
+------------------------  RELEASE 1.0.2  ------------------------
+
+This is a bugfix release.
+
+  * makepanda contained a bug: it was compiling maya2egg6
+    against the Maya 5.0 libraries, making it largely useless.
+    This is fixed.
+
+  * Maya2egg65 has been added, for Maya 6.5 users.
+
+  * The configuration combo "want-tk=false, want-directtools=true"
+    used to confuse panda, because directtools uses Tk.  Now
+    it's smart enough to do the right thing.
+
+  * When you ask controlJoint to create a control node for
+    you, it initializes the control node to the joint's initial
+    position.
+
+  * The scene editor supposedly works now.  We'll see.
+
+  * The models directory was missing the animation 'panda-walk4',
+    which is necessary for the tutorial.
+
+  * A new directory 'win-extras' has been added to the
+    thirdparty tree.  This contains some miscellaneous python
+    libraries needed at the Entertainment Technology Center.
+    The script that builds the windows installer will include
+    these libraries in the distribution.
+
 ------------------------  RELEASE 1.0.1  ------------------------
 
 This is a bugfix release.
