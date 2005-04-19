@@ -130,6 +130,15 @@ appear before they are referenced.
 
   The following attributes are presently implemented for textures:
 
+  <Scalar> alpha-file { alpha-filename }
+
+    If this scalar is present, the texture file's alpha channel is
+    read in from the named image file (which should contain a
+    grayscale image), and the two images are combined into a single
+    two- or four-channel image internally.  This is useful for loading
+    alpha channels along with image file formats like JPEG that don't
+    traditionally support alpha channels.
+
   <Scalar> format { format-definition }
 
     This defines the load format of the image file.  The
