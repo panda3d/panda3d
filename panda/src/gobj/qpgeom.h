@@ -78,6 +78,7 @@ PUBLISHED:
   PT(qpGeomVertexData) modify_vertex_data();
   void set_vertex_data(const qpGeomVertexData *data);
   void offset_vertices(const qpGeomVertexData *data, int offset);
+  int make_nonindexed(bool composite_only);
 
   INLINE int get_num_primitives() const;
   INLINE const qpGeomPrimitive *get_primitive(int i) const;

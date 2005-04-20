@@ -379,11 +379,11 @@ get_num_bytes() const {
 //               pointerwise from the source.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
-  const qpGeomVertexFormat *source_format = source.get_format();
+copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
+  const qpGeomVertexFormat *source_format = source->get_format();
   const qpGeomVertexFormat *dest_format = get_format();
 
-  int num_rows = source.get_num_rows();
+  int num_rows = source->get_num_rows();
   int num_arrays = source_format->get_num_arrays();
   int source_i;
 
@@ -410,14 +410,14 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
 
           // Maybe it even has the same data pointer already.  If so,
           // avoid flipping the modified flag.
-          CPTA_uchar source_data = source.get_array(source_i)->get_data();
+          CPTA_uchar source_data = source->get_array(source_i)->get_data();
           if (get_array(dest_i)->get_data() != source_data) {
             modify_array(dest_i)->set_data(source_data);
           }
         } else {
           // Copy the GeomVertexArrayData object.
-          if (get_array(dest_i) != source.get_array(source_i)) {
-            set_array(dest_i, source.get_array(source_i));
+          if (get_array(dest_i) != source->get_array(source_i)) {
+            set_array(dest_i, source->get_array(source_i));
           }
         }
 
@@ -432,7 +432,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
 
   // Now go back through and copy any data that's left over.
   for (source_i = 0; source_i < num_arrays; ++source_i) {
-    CPTA_uchar array_data = source.get_array(source_i)->get_data();
+    CPTA_uchar array_data = source->get_array(source_i)->get_data();
     const qpGeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
     int num_columns = source_array_format->get_num_columns();
     for (int di = 0; di < num_columns; ++di) {
@@ -487,7 +487,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
           }
           qpGeomVertexWriter to(this);
           to.set_column(dest_i, dest_column);
-          qpGeomVertexReader from(&source);
+          qpGeomVertexReader from(source);
           from.set_column(source_i, source_column);
 
           while (!from.is_at_end()) {
@@ -505,7 +505,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
     if (dest_animation.get_animation_type() == AT_hardware) {
       // Convert Panda-style animation tables to hardware-style
       // animation tables.
-      CPT(TransformBlendPalette) blend_palette = source.get_transform_blend_palette();
+      CPT(TransformBlendPalette) blend_palette = source->get_transform_blend_palette();
       if (blend_palette != (TransformBlendPalette *)NULL) {
         PT(TransformPalette) transform_palette = new TransformPalette;
         TransformMap already_added;
@@ -515,7 +515,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
           // means we can put the blends in any order.
           qpGeomVertexWriter weight(this, InternalName::get_transform_weight());
           qpGeomVertexWriter index(this, InternalName::get_transform_index());
-          qpGeomVertexReader from(&source, InternalName::get_transform_blend());
+          qpGeomVertexReader from(source, InternalName::get_transform_blend());
         
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
@@ -537,7 +537,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
           // Build a nonindexed transform array.  This means we have to
           // use the same n transforms, in the same order, for each vertex.
           qpGeomVertexWriter weight(this, InternalName::get_transform_weight());
-          qpGeomVertexReader from(&source, InternalName::get_transform_blend());
+          qpGeomVertexReader from(source, InternalName::get_transform_blend());
         
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
@@ -559,6 +559,41 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
         set_transform_palette(TransformPalette::register_palette(transform_palette));
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::copy_row_from
+//       Access: Published
+//  Description: Copies a single row of the data from the other array
+//               into the indicated row of this array.  In this case,
+//               the source format must exactly match the destination
+//               format.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+copy_row_from(int dest_row, const qpGeomVertexData *source, 
+              int source_row) {
+  const qpGeomVertexFormat *source_format = source->get_format();
+  const qpGeomVertexFormat *dest_format = get_format();
+  nassertv(source_format == dest_format);
+  nassertv(source_row >= 0 && source_row < source->get_num_rows());
+
+  if (dest_row >= get_num_rows()) {
+    // Implicitly add enough rows to get to the indicated row.
+    set_num_rows(dest_row + 1);
+  }
+
+  int num_arrays = source_format->get_num_arrays();
+
+  for (int i = 0; i < num_arrays; ++i) {
+    PTA_uchar dest_array_data = modify_array(i)->modify_data();
+    CPTA_uchar source_array_data = source->get_array(i)->get_data();
+    const qpGeomVertexArrayFormat *array_format = source_format->get_array(i);
+    int stride = array_format->get_stride();
+
+    memcpy(dest_array_data + stride * dest_row,
+           source_array_data + stride * source_row,
+           stride);
   }
 }
 
@@ -605,7 +640,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   new_data->set_transform_blend_palette(get_transform_blend_palette());
   new_data->set_slider_table(get_slider_table());
 
-  new_data->copy_from(*this, false);
+  new_data->copy_from(this, false);
 
   {
     // Record the new result in the cache.
@@ -1269,7 +1304,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   // of the data that might have changed since last frame, but that's
   // too much trouble (and isn't obviously faster than just copying
   // the whole thing).
-  new_data->copy_from(*this, true);
+  new_data->copy_from(this, true);
 
   // First, apply all of the morphs.
   CPT(SliderTable) table = cdata->_slider_table;

@@ -46,7 +46,33 @@ operator = (const qpGeomVertexColumn &copy) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexColumn::
 output(ostream &out) const {
-  out << *get_name() << "(" << get_num_components() << ")";
+  out << *get_name() << "(" << get_num_components();
+  switch (get_numeric_type()) {
+  case NT_uint8:
+    out << "b";
+    break;
+
+  case NT_uint16:
+    out << "s";
+    break;
+
+  case NT_uint32:
+    out << "l";
+    break;
+
+  case NT_packed_dcba:
+    out << "p-";
+    break;
+
+  case NT_packed_dabc:
+    out << "p";
+    break;
+
+  case NT_float32:
+    out << "f";
+  }
+
+  out << ")";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -70,6 +70,7 @@ get_usage_hint() const {
   if (!cdata->_got_usage_hint) {
     CDWriter cdataw(((qpGeom *)this)->_cycler, cdata);
     ((qpGeom *)this)->reset_usage_hint(cdataw);
+    return cdataw->_usage_hint;
   }
   return cdata->_usage_hint;
 }

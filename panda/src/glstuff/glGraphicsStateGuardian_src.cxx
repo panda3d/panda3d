@@ -2489,14 +2489,21 @@ void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
-  const unsigned char *client_pointer = setup_primitive(primitive);
 
-  _glDrawRangeElements(GL_TRIANGLES, 
-                       primitive->get_min_vertex(),
-                       primitive->get_max_vertex(),
-                       primitive->get_num_vertices(),
-                       get_numeric_type(primitive->get_index_type()), 
-                       client_pointer);
+  if (primitive->is_indexed()) {
+    const unsigned char *client_pointer = setup_primitive(primitive);
+    
+    _glDrawRangeElements(GL_TRIANGLES, 
+                         primitive->get_min_vertex(),
+                         primitive->get_max_vertex(),
+                         primitive->get_num_vertices(),
+                         get_numeric_type(primitive->get_index_type()), 
+                         client_pointer);
+  } else {
+    GLP(DrawArrays)(GL_TRIANGLES,
+                    primitive->get_first_vertex(),
+                    primitive->get_num_vertices());
+  }
 
   report_my_gl_errors();
 }
@@ -2508,41 +2515,58 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  const unsigned char *client_pointer = setup_primitive(primitive);
-
   if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_tristrip_pcollector.add_level(1);
-    _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                         primitive->get_min_vertex(),
-                         primitive->get_max_vertex(),
-                         primitive->get_num_vertices(),
-                         get_numeric_type(primitive->get_index_type()), 
-                         client_pointer);
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                           primitive->get_min_vertex(),
+                           primitive->get_max_vertex(),
+                           primitive->get_num_vertices(),
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer);
+    } else {
+      GLP(DrawArrays)(GL_TRIANGLE_STRIP,
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices());
+    }
 
   } else {
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
     CPTA_int ends = primitive->get_ends();
-    int index_stride = primitive->get_index_stride();
-
-    qpGeomVertexReader mins(primitive->get_mins(), 0);
-    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-             primitive->get_maxs()->get_num_rows() == (int)ends.size());
     
     _primitive_batches_tristrip_pcollector.add_level(ends.size());
-    unsigned int start = 0;
-    for (size_t i = 0; i < ends.size(); i++) {
-      _vertices_tristrip_pcollector.add_level(ends[i] - start);
-      _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                           mins.get_data1i(), maxs.get_data1i(), 
-                           ends[i] - start,
-                           get_numeric_type(primitive->get_index_type()), 
-                           client_pointer + start * index_stride);
-      start = ends[i] + 2;
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      int index_stride = primitive->get_index_stride();
+      qpGeomVertexReader mins(primitive->get_mins(), 0);
+      qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+               primitive->get_maxs()->get_num_rows() == (int)ends.size());
+
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                             mins.get_data1i(), maxs.get_data1i(), 
+                             ends[i] - start,
+                             get_numeric_type(primitive->get_index_type()), 
+                             client_pointer + start * index_stride);
+        start = ends[i] + 2;
+      }
+    } else {
+      unsigned int start = 0;
+      int first_vertex = primitive->get_first_vertex();
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
+                        ends[i] - start);
+        start = ends[i] + 2;
+      }
     }
   }
     
@@ -2556,27 +2580,37 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_trifans(const qpGeomTrifans *primitive) {
-  const unsigned char *client_pointer = setup_primitive(primitive);
-
   // Send the individual triangle fans.  There's no connecting fans
   // with degenerate vertices, so no worries about that.
   CPTA_int ends = primitive->get_ends();
-  int index_stride = primitive->get_index_stride();
-
-  qpGeomVertexReader mins(primitive->get_mins(), 0);
-  qpGeomVertexReader maxs(primitive->get_maxs(), 0);
-  nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-           primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
   _primitive_batches_trifan_pcollector.add_level(ends.size());
-  unsigned int start = 0;
-  for (size_t i = 0; i < ends.size(); i++) {
-    _vertices_trifan_pcollector.add_level(ends[i] - start);
-    _glDrawRangeElements(GL_TRIANGLE_FAN, 
-                         mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
-                         get_numeric_type(primitive->get_index_type()), 
-                         client_pointer + start * index_stride);
-    start = ends[i];
+  if (primitive->is_indexed()) {
+    const unsigned char *client_pointer = setup_primitive(primitive);
+    int index_stride = primitive->get_index_stride();
+    qpGeomVertexReader mins(primitive->get_mins(), 0);
+    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+             primitive->get_maxs()->get_num_rows() == (int)ends.size());
+
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      _glDrawRangeElements(GL_TRIANGLE_FAN, 
+                           mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer + start * index_stride);
+      start = ends[i];
+    }
+  } else {
+    unsigned int start = 0;
+    int first_vertex = primitive->get_first_vertex();
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
+                      ends[i] - start);
+      start = ends[i];
+    }
   }
     
   report_my_gl_errors();
@@ -2591,14 +2625,20 @@ void CLP(GraphicsStateGuardian)::
 draw_lines(const qpGeomLines *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
-  const unsigned char *client_pointer = setup_primitive(primitive);
 
-  _glDrawRangeElements(GL_LINES, 
-                       primitive->get_min_vertex(),
-                       primitive->get_max_vertex(),
-                       primitive->get_num_vertices(),
-                       get_numeric_type(primitive->get_index_type()), 
-                       client_pointer);
+  if (primitive->is_indexed()) {
+    const unsigned char *client_pointer = setup_primitive(primitive);
+    _glDrawRangeElements(GL_LINES, 
+                         primitive->get_min_vertex(),
+                         primitive->get_max_vertex(),
+                         primitive->get_num_vertices(),
+                         get_numeric_type(primitive->get_index_type()), 
+                         client_pointer);
+  } else {
+    GLP(DrawArrays)(GL_LINES,
+                    primitive->get_first_vertex(),
+                    primitive->get_num_vertices());
+  }
 
   report_my_gl_errors();
 }
@@ -2621,14 +2661,20 @@ void CLP(GraphicsStateGuardian)::
 draw_points(const qpGeomPoints *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
-  const unsigned char *client_pointer = setup_primitive(primitive);
 
-  _glDrawRangeElements(GL_POINTS, 
-                       primitive->get_min_vertex(),
-                       primitive->get_max_vertex(),
-                       primitive->get_num_vertices(),
-                       get_numeric_type(primitive->get_index_type()), 
-                       client_pointer);
+  if (primitive->is_indexed()) {
+    const unsigned char *client_pointer = setup_primitive(primitive);
+    _glDrawRangeElements(GL_POINTS, 
+                         primitive->get_min_vertex(),
+                         primitive->get_max_vertex(),
+                         primitive->get_num_vertices(),
+                         get_numeric_type(primitive->get_index_type()), 
+                         client_pointer);
+  } else {
+    GLP(DrawArrays)(GL_POINTS,
+                    primitive->get_first_vertex(),
+                    primitive->get_num_vertices());
+  }
 
   report_my_gl_errors();
 }

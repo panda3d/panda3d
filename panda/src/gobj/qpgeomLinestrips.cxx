@@ -166,25 +166,45 @@ decompose_impl() const {
 CPT(qpGeomVertexArrayData) qpGeomLinestrips::
 rotate_impl() const {
   // To rotate a line strip, we just reverse the vertices.
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   CPTA_int ends = get_ends();
-  PT(qpGeomVertexArrayData) new_vertices = 
-    new qpGeomVertexArrayData(*vertices);
-  qpGeomVertexReader from(vertices, 0);
-  qpGeomVertexWriter to(new_vertices, 0);
+  PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->set_num_rows(get_num_vertices());
 
-  int begin = 0;
-  CPTA_int::const_iterator ei;
-  for (ei = ends.begin(); ei != ends.end(); ++ei) {
-    int end = (*ei);
-    for (int vi = end - 1; vi >= begin; --vi) {
-      from.set_row(vi);
-      to.set_data1i(from.get_data1i());
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) vertices = get_vertices();
+    qpGeomVertexReader from(vertices, 0);
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    int begin = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+      for (int vi = end - 1; vi >= begin; --vi) {
+        from.set_row(vi);
+        to.set_data1i(from.get_data1i());
+      }
+      begin = end;
     }
-    begin = end;
-  }
+    
+    nassertr(to.is_at_end(), NULL);
 
-  nassertr(to.is_at_end(), NULL);
+  } else {
+    // Nonindexed case.
+    int first_vertex = get_first_vertex();
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    int begin = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+      for (int vi = end - 1; vi >= begin; --vi) {
+        to.set_data1i(vi + first_vertex);
+      }
+      begin = end;
+    }
+    
+    nassertr(to.is_at_end(), NULL);
+  }
   return new_vertices;
 }
 

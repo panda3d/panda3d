@@ -80,7 +80,7 @@ PUBLISHED:
   INLINE void set_shade_model(ShadeModel shade_model);
 
   INLINE UsageHint get_usage_hint() const;
-  INLINE void set_usage_hint(UsageHint usage_hint);
+  void set_usage_hint(UsageHint usage_hint);
 
   INLINE NumericType get_index_type() const;
   void set_index_type(NumericType index_type);
@@ -92,6 +92,9 @@ PUBLISHED:
   // primitives' lengths are encoded.  You can also safely build up a
   // composite primitive using these methods.
 
+  INLINE bool is_composite() const;
+  INLINE bool is_indexed() const;
+  int get_first_vertex() const;
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   void add_vertex(int vertex);
@@ -100,6 +103,9 @@ PUBLISHED:
   bool close_primitive();
   void clear_vertices();
   void offset_vertices(int offset);
+  void make_nonindexed(qpGeomVertexData *dest, const qpGeomVertexData *source);
+  void pack_vertices(qpGeomVertexData *dest, const qpGeomVertexData *source);
+  void make_indexed();
 
   int get_num_primitives() const;
   int get_primitive_start(int n) const;
@@ -140,6 +146,7 @@ public:
   INLINE const qpGeomVertexArrayData *get_vertices() const;
   qpGeomVertexArrayData *modify_vertices();
   void set_vertices(const qpGeomVertexArrayData *vertices);
+  void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
   INLINE int get_index_stride() const;
   INLINE CPTA_uchar get_data() const;
@@ -163,6 +170,10 @@ public:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
+protected:
+  INLINE CPT(qpGeomVertexArrayFormat) get_index_format() const;
+  INLINE PT(qpGeomVertexArrayData) make_index_data() const;
+
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
@@ -177,6 +188,7 @@ public:
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
   virtual CPT(qpGeomVertexArrayData) rotate_impl() const;
+  virtual bool requires_unused_vertices() const;
   virtual void append_unused_vertices(qpGeomVertexArrayData *vertices, 
                                       int vertex);
 
@@ -200,7 +212,10 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     ShadeModel _shade_model;
+    int _first_vertex;
+    int _num_vertices;
     NumericType _index_type;
+    UsageHint _usage_hint;
     PT(qpGeomVertexArrayData) _vertices;
     PTA_int _ends;
     PT(qpGeomVertexArrayData) _mins;
@@ -217,12 +232,15 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
   void recompute_minmax(CDWriter &cdata);
+  void do_make_indexed(CDWriter &cdata);
 
   static PStatCollector _decompose_pcollector;
   static PStatCollector _rotate_pcollector;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);

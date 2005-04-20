@@ -78,9 +78,29 @@ PUBLISHED:
 
     // If set, GeomVertexDatas with any usage_hint other than
     // UH_static will not be collected with any other Geoms in a
-    // different GeomNode.  However, two different Geoms within the
-    // same node might still be collected together.
+    // different GeomNode.  However, two different dynamic Geoms
+    // within the same node might still be collected together.
     CVD_avoid_dynamic  = 0x008,
+
+    // If set, only those GeomVertexDatas within the same node might
+    // be collected together.
+    CVD_one_node_only  = 0x010,
+  };
+
+  enum MakeNonindexed {
+    // If set, only composite primitives such as tristrips and trifans
+    // will be made nonindexed; simple primitives such as triangles
+    // will be left indexed.
+    MN_composite_only  = 0x001,
+
+    // If set any GeomVertexData with any animation indication will
+    // not be adjusted, whether the animation is to be performed on
+    // the CPU or on the graphics pipe.
+    MN_avoid_animated  = 0x002,
+
+    // If set, any GeomVertexData or Geom with a usage_hint other than
+    // UH_static will not be made nonindexed.
+    MN_avoid_dynamic   = 0x004,
   };
 
   INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
@@ -93,6 +113,7 @@ PUBLISHED:
   int flatten(PandaNode *root, int combine_siblings_bits);
 
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
+  INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
 
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
@@ -121,6 +142,7 @@ protected:
 
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer);
+  int r_make_nonindexed(PandaNode *node, int collect_bits);
 
 private:
   GeomTransformer _transformer;

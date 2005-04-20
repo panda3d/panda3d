@@ -124,23 +124,38 @@ draw(GraphicsStateGuardianBase *gsg) const {
 CPT(qpGeomVertexArrayData) qpGeomLines::
 rotate_impl() const {
   // To rotate lines, we just move reverse the pairs of vertices.
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
+  int num_vertices = get_num_vertices();
+    
+  PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->set_num_rows(num_vertices);
 
-  PT(qpGeomVertexArrayData) new_vertices = 
-    new qpGeomVertexArrayData(*vertices);
-  qpGeomVertexReader from(vertices, 0);
-  qpGeomVertexWriter to(new_vertices, 0);
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) vertices = get_vertices();
+    qpGeomVertexReader from(vertices, 0);
+    qpGeomVertexWriter to(new_vertices, 0);
 
-  int num_vertices = vertices->get_num_rows();
-
-  for (int begin = 0; begin < num_vertices; begin += 2) {
-    from.set_row(begin + 1);
-    to.set_data1i(from.get_data1i());
-    from.set_row(begin);
-    to.set_data1i(from.get_data1i());
-  }
+    for (int begin = 0; begin < num_vertices; begin += 2) {
+      from.set_row(begin + 1);
+      to.set_data1i(from.get_data1i());
+      from.set_row(begin);
+      to.set_data1i(from.get_data1i());
+    }
   
-  nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), NULL);
+
+  } else {
+    // Nonindexed case.
+    int first_vertex = get_first_vertex();
+    qpGeomVertexWriter to(new_vertices, 0);
+
+    for (int begin = 0; begin < num_vertices; begin += 2) {
+      to.set_data1i(begin + 1 + first_vertex);
+      to.set_data1i(begin + first_vertex);
+    }
+  
+    nassertr(to.is_at_end(), NULL);
+  }
+    
   return new_vertices;
 }
 

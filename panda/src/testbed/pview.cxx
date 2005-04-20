@@ -18,9 +18,10 @@
 
 #include "pandaFramework.h"
 #include "textNode.h"
-#include "multitexReducer.h"
 #include "configVariableBool.h"
 #include "texturePool.h"
+#include "multitexReducer.h"
+#include "sceneGraphReducer.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -130,6 +131,12 @@ event_2(CPT_Event event, void *) {
 void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
+
+  SceneGraphReducer gr;
+  gr.make_nonindexed(framework.get_models().node());
+  gr.collect_vertex_data(framework.get_models().node());
+
+  /*
   static int count = 0;
 
   static PT(TextureStage) ts;
@@ -175,6 +182,7 @@ event_0(CPT_Event event, void *) {
     }
   }
   count++;
+  */
 }
 
 void 

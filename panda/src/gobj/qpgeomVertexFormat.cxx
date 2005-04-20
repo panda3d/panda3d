@@ -417,7 +417,8 @@ write_with_data(ostream &out, int indent_level,
   for (size_t i = 0; i < _arrays.size(); i++) {
     CPTA_uchar array_data = data->get_array(i)->get_data();
     indent(out, indent_level)
-      << "Array " << i << " (" << (void *)array_data.p() << "):\n";
+      << "Array " << i << " (" << (void *)array_data.p() << ", "
+      << *_arrays[i] << "):\n";
     _arrays[i]->write_with_data(out, indent_level + 2, data->get_array(i));
   }
 }

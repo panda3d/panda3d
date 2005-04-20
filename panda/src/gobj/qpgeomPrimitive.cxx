@@ -53,13 +53,7 @@ qpGeomPrimitive() {
 qpGeomPrimitive::
 qpGeomPrimitive(qpGeomPrimitive::UsageHint usage_hint) {
   CDWriter cdata(_cycler);
-
-  CPT(qpGeomVertexArrayFormat) new_format =
-    qpGeomVertexArrayFormat::register_format
-    (new qpGeomVertexArrayFormat(InternalName::get_index(), 1, 
-                                 cdata->_index_type, C_index));
-
-  cdata->_vertices = new qpGeomVertexArrayData(new_format, usage_hint);
+  cdata->_usage_hint = usage_hint;
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +92,27 @@ get_geom_rendering() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for this primitive.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+set_usage_hint(qpGeomPrimitive::UsageHint usage_hint) {
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
+
+  if (cdata->_vertices != (qpGeomVertexArrayData *)NULL) {
+    if (cdata->_vertices->get_ref_count() > 1) {
+      cdata->_vertices = new qpGeomVertexArrayData(*cdata->_vertices);
+    }
+    
+    cdata->_modified = qpGeom::get_next_modified();
+    cdata->_usage_hint = usage_hint;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::set_index_type
 //       Access: Published
 //  Description: Changes the numeric type of the index column.
@@ -108,23 +123,45 @@ void qpGeomPrimitive::
 set_index_type(qpGeomPrimitive::NumericType index_type) {
   CDWriter cdata(_cycler);
   cdata->_index_type = index_type;
-  
-  CPT(qpGeomVertexArrayFormat) new_format =
-    qpGeomVertexArrayFormat::register_format
-    (new qpGeomVertexArrayFormat(InternalName::get_index(), 1, index_type, 
-                                 C_index));
 
-  if (cdata->_vertices->get_array_format() != new_format) {
-    PT(qpGeomVertexArrayData) new_vertices = 
-      new qpGeomVertexArrayData(new_format, cdata->_vertices->get_usage_hint());
-    qpGeomVertexReader from(cdata->_vertices, 0);
-    qpGeomVertexWriter to(new_vertices, 0);
+  if (cdata->_vertices != (qpGeomVertexArrayData *)NULL) {
+    CPT(qpGeomVertexArrayFormat) new_format = get_index_format();
+    
+    if (cdata->_vertices->get_array_format() != new_format) {
+      PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+      new_vertices->set_num_rows(cdata->_vertices->get_num_rows());
 
-    while (!from.is_at_end()) {
-      to.add_data1i(from.get_data1i());
+      qpGeomVertexReader from(cdata->_vertices, 0);
+      qpGeomVertexWriter to(new_vertices, 0);
+      
+      while (!from.is_at_end()) {
+        to.set_data1i(from.get_data1i());
+      }
+      cdata->_vertices = new_vertices;
+      cdata->_got_minmax = false;
     }
-    cdata->_vertices = new_vertices;
-    cdata->_got_minmax = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_first_vertex
+//       Access: Published
+//  Description: Returns the first vertex number referenced by the
+//               primitive.  This is particularly important in the
+//               case of a nonindexed primitive, in which case
+//               get_first_vertex() and get_num_vertices() completely
+//               define the extent of the vertex range.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_first_vertex() const {
+  CDReader cdata(_cycler);
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    return cdata->_first_vertex;
+  } else if (cdata->_vertices->get_num_rows() == 0) {
+    return 0;
+  } else {
+    qpGeomVertexReader index(cdata->_vertices, 0);
+    return index.get_data1i();
   }
 }
 
@@ -136,11 +173,19 @@ set_index_type(qpGeomPrimitive::NumericType index_type) {
 int qpGeomPrimitive::
 get_vertex(int i) const {
   CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_rows(), -1);
 
-  qpGeomVertexReader index(cdata->_vertices, 0);
-  index.set_row(i);
-  return index.get_data1i();
+  if (cdata->_vertices != (qpGeomVertexArrayData *)NULL) {
+    // The indexed case.
+    nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_rows(), -1);
+
+    qpGeomVertexReader index(cdata->_vertices, 0);
+    index.set_row(i);
+    return index.get_data1i();
+
+  } else {
+    // The nonindexed case.
+    return cdata->_first_vertex + i;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,10 +204,31 @@ add_vertex(int vertex) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      (int)cdata->_vertices->get_num_rows() == get_primitive_end(num_primitives - 1)) {
+      requires_unused_vertices() && 
+      get_num_vertices() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
+    if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+      do_make_indexed(cdata);
+    }
     append_unused_vertices(cdata->_vertices, vertex);
+  }
+
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    // The nonindexed case.  We can keep the primitive nonindexed only
+    // if the vertex number happens to be the next available vertex.
+    if (cdata->_num_vertices == 0) {
+      cdata->_first_vertex = vertex;
+      cdata->_num_vertices = 1;
+      return;
+
+    } else if (vertex == cdata->_first_vertex + cdata->_num_vertices) {
+      ++cdata->_num_vertices;
+      return;
+    }
+    
+    // Otherwise, we need to suddenly become an indexed primitive.
+    do_make_indexed(cdata);
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
@@ -191,10 +257,30 @@ add_consecutive_vertices(int start, int num_vertices) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      (int)cdata->_vertices->get_num_rows() == get_primitive_end(num_primitives - 1)) {
+      get_num_vertices() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
+    if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+      do_make_indexed(cdata);
+    }
     append_unused_vertices(cdata->_vertices, start);
+  }
+
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    // The nonindexed case.  We can keep the primitive nonindexed only
+    // if the vertex number happens to be the next available vertex.
+    if (cdata->_num_vertices == 0) {
+      cdata->_first_vertex = start;
+      cdata->_num_vertices = num_vertices;
+      return;
+
+    } else if (start == cdata->_first_vertex + cdata->_num_vertices) {
+      cdata->_num_vertices += num_vertices;
+      return;
+    }
+    
+    // Otherwise, we need to suddenly become an indexed primitive.
+    do_make_indexed(cdata);
   }
 
   qpGeomVertexWriter index(cdata->_vertices, 0);
@@ -247,14 +333,14 @@ close_primitive() {
 #ifndef NDEBUG
     int num_added;
     if (cdata->_ends.empty()) {
-      num_added = (int)cdata->_vertices->get_num_rows();
+      num_added = get_num_vertices();
     } else {
-      num_added = (int)cdata->_vertices->get_num_rows() - cdata->_ends.back();
+      num_added = get_num_vertices() - cdata->_ends.back();
       num_added -= get_num_unused_vertices_per_primitive();
     }
     nassertr(num_added >= get_min_num_vertices_per_primitive(), false);
 #endif
-    cdata->_ends.push_back((int)cdata->_vertices->get_num_rows());
+    cdata->_ends.push_back(get_num_vertices());
 
   } else {
 #ifndef NDEBUG
@@ -264,7 +350,7 @@ close_primitive() {
     int num_vertices_per_primitive = get_num_vertices_per_primitive();
     int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
 
-    int num_vertices = cdata->_vertices->get_num_rows();
+    int num_vertices = get_num_vertices();
     nassertr((num_vertices + num_unused_vertices_per_primitive) % (num_vertices_per_primitive + num_unused_vertices_per_primitive) == 0, false)
 #endif
   }
@@ -283,8 +369,9 @@ close_primitive() {
 void qpGeomPrimitive::
 clear_vertices() {
   CDWriter cdata(_cycler);
-  cdata->_vertices = new qpGeomVertexArrayData
-    (cdata->_vertices->get_array_format(), cdata->_vertices->get_usage_hint());
+  cdata->_first_vertex = 0;
+  cdata->_num_vertices = 0;
+  cdata->_vertices.clear();
   cdata->_ends.clear();
   cdata->_mins.clear();
   cdata->_maxs.clear();
@@ -300,10 +387,101 @@ clear_vertices() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 offset_vertices(int offset) {
-  qpGeomVertexRewriter index(modify_vertices(), 0);
-  while (!index.is_at_end()) {
-    index.set_data1i(index.get_data1i() + offset);
+  if (is_indexed()) {
+    qpGeomVertexRewriter index(modify_vertices(), 0);
+    while (!index.is_at_end()) {
+      index.set_data1i(index.get_data1i() + offset);
+    }
+
+  } else {
+    CDWriter cdata(_cycler);
+    cdata->_first_vertex += offset;
+    cdata->_modified = qpGeom::get_next_modified();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::make_nonindexed
+//       Access: Published
+//  Description: Converts the primitive from indexed to nonindexed by
+//               duplicating vertices as necessary into the indicated
+//               dest GeomVertexData.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+make_nonindexed(qpGeomVertexData *dest, const qpGeomVertexData *source) {
+  int num_vertices = get_num_vertices();
+  int dest_start = dest->get_num_rows();
+
+  dest->set_num_rows(dest_start + num_vertices);
+  for (int i = 0; i < num_vertices; ++i) {
+    int v = get_vertex(i);
+    dest->copy_row_from(dest_start + i, source, v);
+  }
+
+  set_nonindexed_vertices(dest_start, num_vertices);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::pack_vertices
+//       Access: Published
+//  Description: Packs the vertices used by the primitive from the
+//               indicated source array onto the end of the indicated
+//               destination array.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+pack_vertices(qpGeomVertexData *dest, const qpGeomVertexData *source) {
+  if (!is_indexed()) {
+    // If the primitive is nonindexed, packing is the same as
+    // converting (again) to nonindexed.
+    make_nonindexed(dest, source);
+
+  } else {
+    // The indexed case: build up a new index as we go.
+    CPT(qpGeomVertexArrayData) orig_vertices = get_vertices();
+    PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+    qpGeomVertexWriter index(new_vertices, 0);
+    typedef pmap<int, int> CopiedIndices;
+    CopiedIndices copied_indices;
+
+    int num_vertices = get_num_vertices();
+    int dest_start = dest->get_num_rows();
+
+    for (int i = 0; i < num_vertices; ++i) {
+      int v = get_vertex(i);
+
+      // Try to add the relation { v : size() }.  If that succeeds,
+      // great; if it doesn't, look up whatever we previously added
+      // for v.
+      pair<CopiedIndices::iterator, bool> result = 
+        copied_indices.insert(CopiedIndices::value_type(v, (int)copied_indices.size()));
+      int v2 = (*result.first).second + dest_start;
+      index.add_data1i(v2);
+
+      if (result.second) {
+        // This is the first time we've seen vertex v.
+        dest->copy_row_from(v2, source, v);
+      }
+    }
+    
+    set_vertices(new_vertices);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::make_indexed
+//       Access: Published
+//  Description: Converts the primitive from nonindexed form to
+//               indexed form.  This will simply create an index table
+//               that is numbered consecutively from
+//               get_first_vertex(); it does not automatically
+//               collapse together identical vertices that may have
+//               been split apart by a previous call to
+//               make_nonindexed().
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+make_indexed() {
+  CDWriter cdata(_cycler);
+  do_make_indexed(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -326,7 +504,7 @@ get_num_primitives() const {
   } else {
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.
-    return ((int)cdata->_vertices->get_num_rows() / num_vertices_per_primitive);
+    return (get_num_vertices() / num_vertices_per_primitive);
   }
 }
 
@@ -431,12 +609,16 @@ get_primitive_num_vertices(int n) const {
 ////////////////////////////////////////////////////////////////////
 int qpGeomPrimitive::
 get_primitive_min_vertex(int n) const {
-  CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_mins->get_num_rows(), -1);
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) mins = get_mins();
+    nassertr(n >= 0 && n < mins->get_num_rows(), -1);
 
-  qpGeomVertexReader index(cdata->_mins, 0);
-  index.set_row(n);
-  return index.get_data1i();
+    qpGeomVertexReader index(mins, 0);
+    index.set_row(n);
+    return index.get_data1i();
+  } else {
+    return get_primitive_start(n);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,12 +629,16 @@ get_primitive_min_vertex(int n) const {
 ////////////////////////////////////////////////////////////////////
 int qpGeomPrimitive::
 get_primitive_max_vertex(int n) const {
-  CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_maxs->get_num_rows(), -1);
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) maxs = get_maxs();
+    nassertr(n >= 0 && n < maxs->get_num_rows(), -1);
 
-  qpGeomVertexReader index(cdata->_maxs, 0);
-  index.set_row(n);
-  return index.get_data1i();
+    qpGeomVertexReader index(maxs, 0);
+    index.set_row(n);
+    return index.get_data1i();
+  } else {
+    return get_primitive_end(n) - 1;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -520,8 +706,12 @@ rotate() const {
 int qpGeomPrimitive::
 get_num_bytes() const {
   CDReader cdata(_cycler);
-  return (cdata->_vertices->get_data_size_bytes() +
-    cdata->_ends.size() * sizeof(int) + sizeof(qpGeomPrimitive));
+  int num_bytes = cdata->_ends.size() * sizeof(int) + sizeof(qpGeomPrimitive);
+  if (cdata->_vertices != (qpGeomVertexArrayData *)NULL) {
+    num_bytes += cdata->_vertices->get_data_size_bytes();
+  }
+
+  return num_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -557,7 +747,13 @@ output(ostream &out) const {
 void qpGeomPrimitive::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_type() << ":\n";
+    << get_type();
+  if (is_indexed()) {
+    out << " (indexed)";
+  } else {
+    out << " (nonindexed)";
+  }
+  out << ":\n";
   int num_primitives = get_num_primitives();
   int num_vertices = get_num_vertices();
   int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
@@ -590,10 +786,18 @@ write(ostream &out, int indent_level) const {
 //               list, so application code can directly fiddle with
 //               this data.  Use with caution, since there are no
 //               checks that the data will be left in a stable state.
+//
+//               If this is called on a nonindexed primitive, it will
+//               implicitly be converted to an indexed primitive.
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData *qpGeomPrimitive::
 modify_vertices() {
   CDWriter cdata(_cycler);
+
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    do_make_indexed(cdata);
+  }
+
   if (cdata->_vertices->get_ref_count() > 1) {
     cdata->_vertices = new qpGeomVertexArrayData(*cdata->_vertices);
   }
@@ -617,6 +821,24 @@ set_vertices(const qpGeomVertexArrayData *vertices) {
 
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_got_minmax = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_nonindexed_vertices
+//       Access: Public
+//  Description: Sets the primitive up as a nonindexed primitive,
+//               using the indicated vertex range.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+set_nonindexed_vertices(int first_vertex, int num_vertices) {
+  CDWriter cdata(_cycler);
+  cdata->_vertices = (qpGeomVertexArrayData *)NULL;
+  cdata->_first_vertex = first_vertex;
+  cdata->_num_vertices = num_vertices;
+
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_got_minmax = false;
+  recompute_minmax(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -847,42 +1069,85 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 
   CDReader cdata(_cycler);
 
-  qpGeomVertexReader index(cdata->_vertices, 0);
-
-  if (got_mat) {
-    while (!index.is_at_end()) {
-      reader.set_row(index.get_data1i());
-      const LVecBase3f &vertex = reader.get_data3f();
-      
-      if (found_any) {
-        min_point.set(min(min_point[0], vertex[0]),
-                      min(min_point[1], vertex[1]),
-                      min(min_point[2], vertex[2]));
-        max_point.set(max(max_point[0], vertex[0]),
-                      max(max_point[1], vertex[1]),
-                      max(max_point[2], vertex[2]));
-      } else {
-        min_point = vertex;
-        max_point = vertex;
-        found_any = true;
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    // Nonindexed case.
+    if (got_mat) {
+      for (int i = 0; i < cdata->_num_vertices; i++) {
+        reader.set_row(cdata->_first_vertex + i);
+        const LVecBase3f &vertex = reader.get_data3f();
+        
+        if (found_any) {
+          min_point.set(min(min_point[0], vertex[0]),
+                        min(min_point[1], vertex[1]),
+                        min(min_point[2], vertex[2]));
+          max_point.set(max(max_point[0], vertex[0]),
+                        max(max_point[1], vertex[1]),
+                        max(max_point[2], vertex[2]));
+        } else {
+          min_point = vertex;
+          max_point = vertex;
+          found_any = true;
+        }
+      }
+    } else {
+      for (int i = 0; i < cdata->_num_vertices; i++) {
+        reader.set_row(cdata->_first_vertex + i);
+        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        
+        if (found_any) {
+          min_point.set(min(min_point[0], vertex[0]),
+                        min(min_point[1], vertex[1]),
+                        min(min_point[2], vertex[2]));
+          max_point.set(max(max_point[0], vertex[0]),
+                        max(max_point[1], vertex[1]),
+                        max(max_point[2], vertex[2]));
+        } else {
+          min_point = vertex;
+          max_point = vertex;
+          found_any = true;
+        }
       }
     }
+
   } else {
-    while (!index.is_at_end()) {
-      reader.set_row(index.get_data1i());
-      LPoint3f vertex = mat.xform_point(reader.get_data3f());
-      
-      if (found_any) {
-        min_point.set(min(min_point[0], vertex[0]),
-                      min(min_point[1], vertex[1]),
-                      min(min_point[2], vertex[2]));
-        max_point.set(max(max_point[0], vertex[0]),
-                      max(max_point[1], vertex[1]),
-                      max(max_point[2], vertex[2]));
-      } else {
-        min_point = vertex;
-        max_point = vertex;
-        found_any = true;
+    // Indexed case.
+    qpGeomVertexReader index(cdata->_vertices, 0);
+
+    if (got_mat) {
+      while (!index.is_at_end()) {
+        reader.set_row(index.get_data1i());
+        const LVecBase3f &vertex = reader.get_data3f();
+        
+        if (found_any) {
+          min_point.set(min(min_point[0], vertex[0]),
+                        min(min_point[1], vertex[1]),
+                        min(min_point[2], vertex[2]));
+          max_point.set(max(max_point[0], vertex[0]),
+                        max(max_point[1], vertex[1]),
+                        max(max_point[2], vertex[2]));
+        } else {
+          min_point = vertex;
+          max_point = vertex;
+          found_any = true;
+        }
+      }
+    } else {
+      while (!index.is_at_end()) {
+        reader.set_row(index.get_data1i());
+        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        
+        if (found_any) {
+          min_point.set(min(min_point[0], vertex[0]),
+                        min(min_point[1], vertex[1]),
+                        min(min_point[2], vertex[2]));
+          max_point.set(max(max_point[0], vertex[0]),
+                        max(max_point[1], vertex[1]),
+                        max(max_point[2], vertex[2]));
+        } else {
+          min_point = vertex;
+          max_point = vertex;
+          found_any = true;
+        }
       }
     }
   }
@@ -920,6 +1185,17 @@ rotate_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::requires_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Should be redefined to return true in any primitive
+//               that implements append_unused_vertices().
+////////////////////////////////////////////////////////////////////
+bool qpGeomPrimitive::
+requires_unused_vertices() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::append_unused_vertices
 //       Access: Protected, Virtual
 //  Description: Called when a new primitive is begun (other than the
@@ -927,6 +1203,9 @@ rotate_impl() const {
 //               vertices between primitives, if the primitive type
 //               requires that.  The second parameter is the first
 //               vertex that begins the new primitive.
+//
+//               This method is only called if
+//               requires_unused_vertices(), above, returns true.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 append_unused_vertices(qpGeomVertexArrayData *, int) {
@@ -940,7 +1219,16 @@ append_unused_vertices(qpGeomVertexArrayData *, int) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
-  if (cdata->_vertices->get_num_rows() == 0) {
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    // In the nonindexed case, we don't need to do much (the
+    // minmax is trivial).
+    cdata->_min_vertex = cdata->_first_vertex;
+    cdata->_max_vertex = cdata->_first_vertex + cdata->_num_vertices - 1;
+    cdata->_mins.clear();
+    cdata->_maxs.clear();
+
+  } else if (get_num_vertices() == 0) {
+    // Or if we don't have any vertices, the minmax is also trivial.
     cdata->_min_vertex = 0;
     cdata->_max_vertex = 0;
     cdata->_mins.clear();
@@ -951,10 +1239,8 @@ recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
     // the minmax of each primitive (as well as the overall minmax).
     qpGeomVertexReader index(cdata->_vertices, 0);
 
-    cdata->_mins = new qpGeomVertexArrayData
-      (cdata->_vertices->get_array_format(), UH_unspecified);
-    cdata->_maxs = new qpGeomVertexArrayData
-      (cdata->_vertices->get_array_format(), UH_unspecified);
+    cdata->_mins = make_index_data();
+    cdata->_maxs = make_index_data();
 
     qpGeomVertexWriter mins(cdata->_mins, 0);
     qpGeomVertexWriter maxs(cdata->_maxs, 0);
@@ -1015,6 +1301,22 @@ recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::do_make_indexed
+//       Access: Private
+//  Description: The private implementation of make_indexed().
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+do_make_indexed(qpGeomPrimitive::CDWriter &cdata) {
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    cdata->_vertices = make_index_data();
+    qpGeomVertexWriter index(cdata->_vertices, 0);
+    for (int i = 0; i < cdata->_num_vertices; ++i) {
+      index.add_data1i(i + cdata->_first_vertex);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
@@ -1025,6 +1327,23 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
   manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+finalize(BamReader *manager) {
+  if (manager->get_file_minor_ver() < 19) {
+    const qpGeomVertexArrayData *vertices = get_vertices();
+    if (vertices != (qpGeomVertexArrayData *)NULL) {
+      set_usage_hint(vertices->get_usage_hint());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1039,6 +1358,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   manager->read_cdata(scan, _cycler);
+  manager->register_finalize(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1060,7 +1380,10 @@ make_copy() const {
 void qpGeomPrimitive::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_shade_model);
+  dg.add_uint32(_first_vertex);
+  dg.add_uint32(_num_vertices);
   dg.add_uint8(_index_type);
+  dg.add_uint8(_usage_hint);
 
   manager->write_pointer(dg, _vertices);
   WRITE_PTA(manager, dg, IPD_int::write_datagram, _ends);
@@ -1092,7 +1415,14 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 void qpGeomPrimitive::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _shade_model = (ShadeModel)scan.get_uint8();
+  if (manager->get_file_minor_ver() >= 19) {
+    _first_vertex = scan.get_uint32();
+    _num_vertices = scan.get_uint32();
+  }
   _index_type = (NumericType)scan.get_uint8();
+  if (manager->get_file_minor_ver() >= 19) {
+    _usage_hint = (UsageHint)scan.get_uint8();
+  }
 
   manager->read_pointer(scan);
   READ_PTA(manager, scan, IPD_int::read_datagram, _ends);

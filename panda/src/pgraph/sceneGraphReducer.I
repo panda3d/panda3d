@@ -118,3 +118,18 @@ INLINE int SceneGraphReducer::
 collect_vertex_data(PandaNode *root, int collect_bits) {
   return r_collect_vertex_data(root, collect_bits, _transformer);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::make_nonindexed
+//       Access: Published
+//  Description: Converts indexed geometry to nonindexed geometry at
+//               the indicated node and below, by duplicating vertices
+//               where necessary.  The parameter nonindexed_bits is a
+//               union of bits defined in
+//               SceneGraphReducer::MakeNonindexed, which specifes
+//               which types of geometry to avoid making nonindexed.
+////////////////////////////////////////////////////////////////////
+INLINE int SceneGraphReducer::
+make_nonindexed(PandaNode *root, int nonindexed_bits) {
+  return r_make_nonindexed(root, nonindexed_bits);
+}

@@ -583,6 +583,9 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
   if (!node->get_transform()->is_identity()) {
     this_node_bits |= CVD_transform;
   }
+  if (node->is_geom_node()) {
+    this_node_bits |= CVD_one_node_only;
+  }
 
   if ((collect_bits & this_node_bits) != 0) {
     // We need to start a unique collection here.
@@ -620,4 +623,54 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
   }
     
   return num_created;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_make_nonindexed
+//       Access: Private
+//  Description: The recursive implementation of
+//               make_nonindexed().
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
+  int num_changed = 0;
+
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    int num_geoms = geom_node->get_num_geoms();
+    for (int i = 0; i < num_geoms; ++i) {
+      if (geom_node->get_geom(i)->is_of_type(qpGeom::get_class_type())) {
+        const qpGeom *geom = DCAST(qpGeom, geom_node->get_geom(i));
+
+        // Check whether the geom is animated or dynamic, and skip it
+        // if the user specified so.
+        const qpGeomVertexData *data = geom->get_vertex_data();
+        int this_geom_bits = 0;
+        if (data->get_format()->get_animation().get_animation_type() !=
+            qpGeom::AT_none) {
+          this_geom_bits |= MN_avoid_animated;
+        }
+        if (data->get_usage_hint() != qpGeom::UH_static ||
+            geom->get_usage_hint() != qpGeom::UH_static) {
+          this_geom_bits |= MN_avoid_dynamic;
+        }
+
+        if ((nonindexed_bits & this_geom_bits) == 0) {
+          // The geom meets the user's qualifications for making
+          // nonindexed, so do it.
+          qpGeom *mgeom = DCAST(qpGeom, geom_node->modify_geom(i));
+          num_changed += mgeom->make_nonindexed((nonindexed_bits & MN_composite_only) != 0);
+        }
+      }
+    }
+  }
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    num_changed += 
+      r_make_nonindexed(children.get_child(i), nonindexed_bits);
+  }
+    
+  return num_changed;
 }

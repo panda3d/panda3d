@@ -116,49 +116,87 @@ rotate_impl() const {
   // To rotate triangles, we just move one vertex from the front to
   // the back, or vice-versa; but we have to know what direction we're
   // going.
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   ShadeModel shade_model = get_shade_model();
-
-  PT(qpGeomVertexArrayData) new_vertices = 
-    new qpGeomVertexArrayData(*vertices);
-  qpGeomVertexReader from(vertices, 0);
-  qpGeomVertexWriter to(new_vertices, 0);
-
-  int num_vertices = vertices->get_num_rows();
-  
-  switch (shade_model) {
-  case SM_flat_first_vertex:
-    // Move the first vertex to the end.
-    {
-      for (int begin = 0; begin < num_vertices; begin += 3) {
-        from.set_row(begin + 1);
-        to.set_data1i(from.get_data1i());
-        to.set_data1i(from.get_data1i());
-        from.set_row(begin);
-        to.set_data1i(from.get_data1i());
-      }
-    }
-    break;
+  int num_vertices = get_num_vertices();
     
-  case SM_flat_last_vertex:
-    // Move the last vertex to the front.
-    {
-      for (int begin = 0; begin < num_vertices; begin += 3) {
-        from.set_row(begin + 2);
-        to.set_data1i(from.get_data1i());
-        from.set_row(begin);
-        to.set_data1i(from.get_data1i());
-        to.set_data1i(from.get_data1i());
+  PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->set_num_rows(num_vertices);
+
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) vertices = get_vertices();
+    qpGeomVertexReader from(vertices, 0);
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    switch (shade_model) {
+    case SM_flat_first_vertex:
+      // Move the first vertex to the end.
+      {
+        for (int begin = 0; begin < num_vertices; begin += 3) {
+          from.set_row(begin + 1);
+          to.set_data1i(from.get_data1i());
+          to.set_data1i(from.get_data1i());
+          from.set_row(begin);
+          to.set_data1i(from.get_data1i());
+        }
       }
-    }
-    break;
+      break;
       
-  default:
-    // This shouldn't get called with any other shade model.
-    nassertr(false, vertices);
+    case SM_flat_last_vertex:
+      // Move the last vertex to the front.
+      {
+        for (int begin = 0; begin < num_vertices; begin += 3) {
+          from.set_row(begin + 2);
+          to.set_data1i(from.get_data1i());
+          from.set_row(begin);
+          to.set_data1i(from.get_data1i());
+          to.set_data1i(from.get_data1i());
+        }
+      }
+      break;
+      
+    default:
+      // This shouldn't get called with any other shade model.
+      nassertr(false, vertices);
+    }
+    
+    nassertr(to.is_at_end(), NULL);
+
+  } else {
+    // Nonindexed case.
+    int first_vertex = get_first_vertex();
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    switch (shade_model) {
+    case SM_flat_first_vertex:
+      // Move the first vertex to the end.
+      {
+        for (int begin = 0; begin < num_vertices; begin += 3) {
+          to.set_data1i(begin + 1 + first_vertex);
+          to.set_data1i(begin + 2 + first_vertex);
+          to.set_data1i(begin + first_vertex);
+        }
+      }
+      break;
+      
+    case SM_flat_last_vertex:
+      // Move the last vertex to the front.
+      {
+        for (int begin = 0; begin < num_vertices; begin += 3) {
+          to.set_data1i(begin + 2 + first_vertex);
+          to.set_data1i(begin + first_vertex);
+          to.set_data1i(begin + 1 + first_vertex);
+        }
+      }
+      break;
+      
+    default:
+      // This shouldn't get called with any other shade model.
+      nassertr(false, NULL);
+    }
+    
+    nassertr(to.is_at_end(), NULL);
   }
-  
-  nassertr(to.is_at_end(), NULL);
+
   return new_vertices;
 }
 

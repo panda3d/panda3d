@@ -65,18 +65,8 @@ set_shade_model(qpGeomPrimitive::ShadeModel shade_model) {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive::UsageHint qpGeomPrimitive::
 get_usage_hint() const {
-  return get_vertices()->get_usage_hint();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::set_usage_hint
-//       Access: Published
-//  Description: Changes the UsageHint hint for this primitive.  See
-//               get_usage_hint().
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomPrimitive::
-set_usage_hint(qpGeomPrimitive::UsageHint usage_hint) {
-  modify_vertices()->set_usage_hint(usage_hint);
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,6 +82,36 @@ get_index_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::is_composite
+//       Access: Published
+//  Description: Returns true if the primitive is a composite
+//               primitive such as a tristrip or trifan, or false if
+//               it is a fundamental primitive such as a collection of
+//               triangles.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomPrimitive::
+is_composite() const {
+  return (get_num_vertices_per_primitive() == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::is_indexed
+//       Access: Published
+//  Description: Returns true if the primitive is indexed, false
+//               otherwise.  An indexed primitive stores a table of
+//               index numbers into its GeomVertexData, so that it can
+//               reference the vertices in any order.  A nonindexed
+//               primitive, on the other hand, stores only the first
+//               vertex number and number of vertices used, so that it
+//               can only reference the vertices consecutively.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomPrimitive::
+is_indexed() const {
+  CDReader cdata(_cycler);
+  return (cdata->_vertices != (qpGeomVertexArrayData *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_num_vertices
 //       Access: Published
 //  Description: Returns the number of vertex vertices used by all the
@@ -100,7 +120,11 @@ get_index_type() const {
 INLINE int qpGeomPrimitive::
 get_num_vertices() const {
   CDReader cdata(_cycler);
-  return cdata->_vertices->get_num_rows();
+  if (cdata->_vertices == (qpGeomVertexArrayData *)NULL) {
+    return cdata->_num_vertices;
+  } else {
+    return cdata->_vertices->get_num_rows();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,6 +181,7 @@ get_min_vertex() const {
     ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
     return cdataw->_min_vertex;
   }
+  
   return cdata->_min_vertex;
 }
 
@@ -206,7 +231,8 @@ get_modified() const {
 //     Function: qpGeomPrimitive::get_vertices
 //       Access: Public
 //  Description: Returns a const pointer to the vertex index array so
-//               application code can read it directly.  Do not
+//               application code can read it directly.  This might
+//               return NULL if the primitive is nonindexed.  Do not
 //               attempt to modify the returned array; use
 //               modify_vertices() or set_vertices() for this.
 ////////////////////////////////////////////////////////////////////
@@ -225,6 +251,7 @@ get_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomPrimitive::
 get_index_stride() const {
+  nassertr(is_indexed(), 0);
   return get_vertices()->get_array_format()->get_stride();
 }
 
@@ -236,6 +263,7 @@ get_index_stride() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_uchar qpGeomPrimitive::
 get_data() const {
+  nassertr(is_indexed(), CPTA_uchar());
   return get_vertices()->get_data();
 }
 
@@ -270,6 +298,7 @@ get_ends() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const qpGeomVertexArrayData *qpGeomPrimitive::
 get_mins() const {
+  nassertr(is_indexed(), NULL);
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
@@ -292,6 +321,7 @@ get_mins() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const qpGeomVertexArrayData *qpGeomPrimitive::
 get_maxs() const {
+  nassertr(is_indexed(), NULL);
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
@@ -302,6 +332,29 @@ get_maxs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_index_format
+//       Access: Protected
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeomVertexArrayFormat) qpGeomPrimitive::
+get_index_format() const {
+  return qpGeomVertexArrayFormat::register_format
+    (new qpGeomVertexArrayFormat(InternalName::get_index(), 1, 
+                                 get_index_type(), C_index));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::make_index_data
+//       Access: Protected
+//  Description: Creates and returns a new, empty index table.
+////////////////////////////////////////////////////////////////////
+INLINE PT(qpGeomVertexArrayData) qpGeomPrimitive::
+make_index_data() const {
+  return new qpGeomVertexArrayData(get_index_format(), get_usage_hint());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::CData::Constructor
 //       Access: Public
 //  Description:
@@ -309,7 +362,10 @@ get_maxs() const {
 INLINE qpGeomPrimitive::CData::
 CData() :
   _shade_model(SM_smooth),
+  _first_vertex(0),
+  _num_vertices(0),
   _index_type(NT_uint16),
+  _usage_hint(UH_unspecified),
   _got_minmax(true),
   _min_vertex(0),
   _max_vertex(0)
@@ -324,7 +380,10 @@ CData() :
 INLINE qpGeomPrimitive::CData::
 CData(const qpGeomPrimitive::CData &copy) :
   _shade_model(copy._shade_model),
+  _first_vertex(copy._first_vertex),
+  _num_vertices(copy._num_vertices),
   _index_type(copy._index_type),
+  _usage_hint(copy._usage_hint),
   _vertices(copy._vertices),
   _ends(copy._ends),
   _mins(copy._mins),

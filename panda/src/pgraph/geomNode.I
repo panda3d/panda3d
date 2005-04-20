@@ -67,6 +67,17 @@ get_geom(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_unique_geom
 //       Access: Public
+//  Description: This method is deprecated; you should call
+//               modify_geom() instead.
+////////////////////////////////////////////////////////////////////
+INLINE Geom *GeomNode::
+get_unique_geom(int n) {
+  return modify_geom(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::modify_geom
+//       Access: Public
 //  Description: Returns the nth geom of the node, suitable for
 //               modifying it.  If the nth Geom has multiple reference
 //               counts to it, reassigns it to an identical copy
@@ -76,7 +87,7 @@ get_geom(int n) const {
 //               with any other GeomNodes.
 ////////////////////////////////////////////////////////////////////
 INLINE Geom *GeomNode::
-get_unique_geom(int n) {
+modify_geom(int n) {
   CDWriter cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
   Geom *geom = cdata->_geoms[n]._geom;

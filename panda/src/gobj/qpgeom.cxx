@@ -200,10 +200,67 @@ offset_vertices(const qpGeomVertexData *data, int offset) {
   }
 
   cdata->_modified = qpGeom::get_next_modified();
-  mark_bound_stale();
-  reset_geom_rendering(cdata);
-
   nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::make_nonindexed
+//       Access: Published
+//  Description: Converts the geom from indexed to nonindexed by
+//               duplicating vertices as necessary.  If composite_only
+//               is true, then only composite primitives such as
+//               trifans and tristrips are converted.  Returns the
+//               number of GeomPrimitive objects converted.
+////////////////////////////////////////////////////////////////////
+int qpGeom::
+make_nonindexed(bool composite_only) {
+  int num_changed = 0;
+
+  clear_cache();
+  CDWriter cdata(_cycler);
+  CPT(qpGeomVertexData) orig_data = cdata->_data;
+  PT(qpGeomVertexData) new_data = new qpGeomVertexData(*cdata->_data);
+  new_data->clear_rows();
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  Primitives new_prims;
+  new_prims.reserve(cdata->_primitives.size());
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    PT(qpGeomPrimitive) primitive = (*pi)->make_copy();
+    new_prims.push_back(primitive);
+
+    if (primitive->is_indexed() && 
+        (primitive->is_composite() || !composite_only)) {
+      primitive->make_nonindexed(new_data, orig_data);
+      ++num_changed;
+    } else {
+      // If it's a simple primitive, pack it anyway, so it can share
+      // the same GeomVertexData.
+      primitive->pack_vertices(new_data, orig_data);
+    }
+
+#ifndef NDEBUG
+    if (!primitive->check_valid(new_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  nassertr(all_is_valid, 0);
+
+  if (num_changed != 0) {
+    // If any at all were changed, then keep the result (otherwise,
+    // discard it, since we might have de-optimized the indexed
+    // geometry a bit).
+    cdata->_data = new_data;
+    cdata->_primitives.swap(new_prims);
+    cdata->_modified = qpGeom::get_next_modified();
+  }
+
+  return num_changed;
 }
 
 ////////////////////////////////////////////////////////////////////

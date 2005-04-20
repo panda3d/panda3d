@@ -118,7 +118,9 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
-  void copy_from(const qpGeomVertexData &source, bool keep_data_objects);
+  void copy_from(const qpGeomVertexData *source, bool keep_data_objects);
+  void copy_row_from(int dest_row, const qpGeomVertexData *source, 
+                     int source_row);
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
   CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale) const;

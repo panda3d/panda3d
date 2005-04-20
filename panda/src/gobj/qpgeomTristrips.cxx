@@ -235,42 +235,89 @@ rotate_impl() const {
   // vertices, that doesn't work--in fact, nothing works (without also
   // changing the winding order), so we don't allow an odd number of
   // vertices in a flat-shaded tristrip.
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
   CPTA_int ends = get_ends();
-  PT(qpGeomVertexArrayData) new_vertices = 
-    new qpGeomVertexArrayData(*vertices);
-  qpGeomVertexReader from(vertices, 0);
-  qpGeomVertexWriter to(new_vertices, 0);
 
-  int begin = 0;
-  int last_added = 0;
-  CPTA_int::const_iterator ei;
-  for (ei = ends.begin(); ei != ends.end(); ++ei) {
-    int end = (*ei);
-    int num_vertices = end - begin;
+  PT(qpGeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->set_num_rows(get_num_vertices());
 
-    if (begin != 0) {
-      // Copy in the unused vertices between tristrips.
-      to.set_data1i(last_added);
-      from.set_row(end - 1);
-      to.set_data1i(from.get_data1i());
-      begin += 2;
+  if (is_indexed()) {
+    CPT(qpGeomVertexArrayData) vertices = get_vertices();
+    qpGeomVertexReader from(vertices, 0);
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    int begin = 0;
+    int last_added = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+      int num_vertices = end - begin;
+      
+      if (begin != 0) {
+        // Copy in the unused vertices between tristrips.
+        to.set_data1i(last_added);
+        from.set_row(end - 1);
+        to.set_data1i(from.get_data1i());
+        begin += 2;
+      }
+      
+      // If this assertion is triggered, there was a triangle strip with
+      // an odd number of vertices, which is not allowed.
+      nassertr((num_vertices & 1) == 0, NULL);
+      for (int vi = end - 1; vi >= begin; --vi) {
+        from.set_row(vi);
+        last_added = from.get_data1i();
+        to.set_data1i(last_added);
+      }
+      
+      begin = end;
     }
 
-    // If this assertion is triggered, there was a triangle strip with
-    // an odd number of vertices, which is not allowed.
-    nassertr((num_vertices & 1) == 0, NULL);
-    for (int vi = end - 1; vi >= begin; --vi) {
-      from.set_row(vi);
-      last_added = from.get_data1i();
-      to.set_data1i(last_added);
+    nassertr(to.is_at_end(), NULL);
+
+  } else {
+    // Nonindexed case.
+    int first_vertex = get_first_vertex();
+    qpGeomVertexWriter to(new_vertices, 0);
+    
+    int begin = 0;
+    int last_added = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+      int num_vertices = end - begin;
+      
+      if (begin != 0) {
+        // Copy in the unused vertices between tristrips.
+        to.set_data1i(last_added);
+        to.set_data1i(end - 1 + first_vertex);
+        begin += 2;
+      }
+      
+      // If this assertion is triggered, there was a triangle strip with
+      // an odd number of vertices, which is not allowed.
+      nassertr((num_vertices & 1) == 0, NULL);
+      for (int vi = end - 1; vi >= begin; --vi) {
+        last_added = vi + first_vertex;
+        to.set_data1i(last_added);
+      }
+      
+      begin = end;
     }
 
-    begin = end;
+    nassertr(to.is_at_end(), NULL);
   }
-
-  nassertr(to.is_at_end(), NULL);
   return new_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::requires_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Should be redefined to return true in any primitive
+//               that implements append_unused_vertices().
+////////////////////////////////////////////////////////////////////
+bool qpGeomTristrips::
+requires_unused_vertices() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
