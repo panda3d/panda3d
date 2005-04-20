@@ -2795,8 +2795,6 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
@@ -2819,6 +2817,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         
       } else {
         // Indexed, client arrays, one long triangle strip.
+        D3DFORMAT index_type = get_index_type(primitive->get_index_type());
         _pD3DDevice->DrawIndexedPrimitiveUP
           (D3DPT_TRIANGLESTRIP, 
            min_vertex, max_vertex - min_vertex + 1,
@@ -2864,7 +2863,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
                primitive->get_maxs()->get_num_rows() == (int)ends.size());
       
       if (_active_vbuffer != NULL) {
-        // Indexed, client arrays, individual triangle strips.
+        // Indexed, vbuffers, individual triangle strips.
         IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
@@ -2887,6 +2886,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
         int stride = _vertex_data->get_format()->get_array(0)->get_stride();
         CPTA_uchar vertices = primitive->get_data();
+        D3DFORMAT index_type = get_index_type(primitive->get_index_type());
         
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -2904,9 +2904,10 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         }
       }
     } else {
+      unsigned int first_vertex = primitive->get_first_vertex();
+
       if (_active_vbuffer != NULL) {
-        // Nonindexed, client arrays, individual triangle strips.
-        unsigned int first_vertex = primitive->get_first_vertex();
+        // Nonindexed, vbuffers, individual triangle strips.
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
@@ -2921,7 +2922,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         // Nonindexed, client arrays, individual triangle strips.
         CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
         int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-        unsigned int first_vertex = primitive->get_first_vertex();
         
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -2951,7 +2951,6 @@ draw_trifans(const qpGeomTrifans *primitive) {
   if (primitive->is_indexed()) {
     int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
     int max_vertex = primitive->get_max_vertex();
-    D3DFORMAT index_type = get_index_type(primitive->get_index_type());
     
     // Send the individual triangle fans.  There's no connecting fans
     // with degenerate vertices, so no worries about that.
@@ -2986,6 +2985,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
       CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
       int stride = _vertex_data->get_format()->get_array(0)->get_stride();
       CPTA_uchar vertices = primitive->get_data();
+      D3DFORMAT index_type = get_index_type(primitive->get_index_type());
       
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -3003,6 +3003,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
       }
     }
   } else {
+    unsigned int first_vertex = primitive->get_first_vertex();
+
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       unsigned int start = 0;
@@ -3010,7 +3012,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         _pD3DDevice->DrawPrimitive
           (D3DPT_TRIANGLEFAN,
-           start, ends[i] - start - 2);
+           first_vertex + start, ends[i] - start - 2);
         
         start = ends[i];
       }
@@ -3019,7 +3021,6 @@ draw_trifans(const qpGeomTrifans *primitive) {
       // Nonindexed, client arrays.
       CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
       int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-      unsigned int first_vertex = primitive->get_first_vertex();
       
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -3077,7 +3078,8 @@ draw_lines(const qpGeomLines *primitive) {
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       _pD3DDevice->DrawPrimitive
-        (D3DPT_LINELIST, primitive->get_first_vertex(), 
+        (D3DPT_LINELIST, 
+         primitive->get_first_vertex(), 
          primitive->get_num_primitives());
       
     } else {
