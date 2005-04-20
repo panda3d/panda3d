@@ -55,6 +55,9 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #define PRINTVIDMEM(pDD,pCaps,pMsg)
 #endif
 
+class DXVertexBufferContext8;
+class DXIndexBufferContext8;
+
 ////////////////////////////////////////////////////////////////////
 //   Class : DXGraphicsStateGuardian8
 // Description : A GraphicsStateGuardian specialized for rendering
@@ -327,8 +330,8 @@ protected:
   int _projection_mat_stack_count;
 
   CPT(DisplayRegion) _actual_display_region;
-  bool _vbuffer_active;
-  bool _ibuffer_active;
+  const DXVertexBufferContext8 *_active_vbuffer;
+  const DXIndexBufferContext8 *_active_ibuffer;
 
   // Color/Alpha Matrix Transition stuff
   INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);

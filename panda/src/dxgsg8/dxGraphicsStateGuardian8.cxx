@@ -204,8 +204,8 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   _pFvfBufBasePtr = NULL;
   _index_buf=NULL;
   
-  _vbuffer_active = false;
-  _ibuffer_active = false;
+  _active_vbuffer = NULL;
+  _active_ibuffer = NULL;
   
   //    _max_light_range = __D3DLIGHT_RANGE_MAX;
   
@@ -2740,7 +2740,10 @@ draw_triangles(const qpGeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
   if (primitive->is_indexed()) {
-    if (_vbuffer_active) {
+    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
+    int max_vertex = primitive->get_max_vertex();
+
+    if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2748,8 +2751,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
       
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLELIST,
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          0, primitive->get_num_primitives());
       
     } else {
@@ -2758,8 +2760,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
       
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_TRIANGLELIST, 
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          primitive->get_num_primitives(), 
          primitive->get_data(),
          index_type,
@@ -2767,7 +2768,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
          _vertex_data->get_format()->get_array(0)->get_stride());
     }
   } else {
-    if (_vbuffer_active) {
+    if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       _pD3DDevice->DrawPrimitive
         (D3DPT_TRIANGLELIST,
@@ -2794,8 +2795,6 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  int min_vertex = primitive->get_min_vertex();
-  int max_vertex = primitive->get_max_vertex();
   D3DFORMAT index_type = get_index_type(primitive->get_index_type());
 
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
@@ -2804,7 +2803,10 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_tristrip_pcollector.add_level(1);
     if (primitive->is_indexed()) {
-      if (_vbuffer_active) {
+      int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
+      int max_vertex = primitive->get_max_vertex();
+
+      if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, one line triangle strip.
         IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2826,7 +2828,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
            _vertex_data->get_format()->get_array(0)->get_stride());
       }
     } else {
-      if (_vbuffer_active) {
+      if (_active_vbuffer != NULL) {
         // Nonindexed, vbuffers, one long triangle strip.
         _pD3DDevice->DrawPrimitive
           (D3DPT_TRIANGLESTRIP,
@@ -2861,7 +2863,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
       nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
                primitive->get_maxs()->get_num_rows() == (int)ends.size());
       
-      if (_vbuffer_active) {
+      if (_active_vbuffer != NULL) {
         // Indexed, client arrays, individual triangle strips.
         IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2902,7 +2904,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
         }
       }
     } else {
-      if (_vbuffer_active) {
+      if (_active_vbuffer != NULL) {
         // Nonindexed, client arrays, individual triangle strips.
         unsigned int first_vertex = primitive->get_first_vertex();
         unsigned int start = 0;
@@ -2947,7 +2949,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
   _primitive_batches_trifan_pcollector.add_level(ends.size());
 
   if (primitive->is_indexed()) {
-    int min_vertex = primitive->get_min_vertex();
+    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
     int max_vertex = primitive->get_max_vertex();
     D3DFORMAT index_type = get_index_type(primitive->get_index_type());
     
@@ -2960,7 +2962,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
     nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
              primitive->get_maxs()->get_num_rows() == (int)ends.size());
     
-    if (_vbuffer_active) {
+    if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
@@ -3001,7 +3003,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
       }
     }
   } else {
-    if (_vbuffer_active) {
+    if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -3044,7 +3046,10 @@ draw_lines(const qpGeomLines *primitive) {
   _primitive_batches_other_pcollector.add_level(1);
 
   if (primitive->is_indexed()) {
-    if (_vbuffer_active) {
+    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
+    int max_vertex = primitive->get_max_vertex();
+
+    if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
@@ -3052,8 +3057,7 @@ draw_lines(const qpGeomLines *primitive) {
       
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_LINELIST,
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          0, primitive->get_num_primitives());
       
     } else {
@@ -3062,8 +3066,7 @@ draw_lines(const qpGeomLines *primitive) {
 
       _pD3DDevice->DrawIndexedPrimitiveUP
         (D3DPT_LINELIST, 
-         primitive->get_min_vertex(),
-         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         min_vertex, max_vertex - min_vertex + 1,
          primitive->get_num_primitives(), 
          primitive->get_data(),
          index_type,
@@ -3071,7 +3074,7 @@ draw_lines(const qpGeomLines *primitive) {
          _vertex_data->get_format()->get_array(0)->get_stride());
     }
   } else {
-    if (_vbuffer_active) {
+    if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       _pD3DDevice->DrawPrimitive
         (D3DPT_LINELIST, primitive->get_first_vertex(), 
@@ -3359,20 +3362,19 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     if (dvbc->_vbuffer != NULL) {
       dvbc->upload_data();
       
-      add_to_vertex_buffer_record(dvbc);
       add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
 
       _pD3DDevice->SetStreamSource
         (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
-      _vbuffer_active = true;
+      _active_vbuffer = dvbc;
+      add_to_vertex_buffer_record(dvbc);
+
     } else {
-      _vbuffer_active = false;
+      _active_vbuffer = NULL;
     }
 
   } else {
-    add_to_vertex_buffer_record(dvbc);
-  
     if (dvbc->was_modified()) {
       if (dvbc->changed_size()) {
         // We have to destroy the old vertex buffer and create a new
@@ -3384,11 +3386,15 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
       
       add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
+      _active_vbuffer = NULL;
     }
 
-    _pD3DDevice->SetStreamSource
-      (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
-    _vbuffer_active = true;
+    if (_active_vbuffer != dvbc) {
+      _pD3DDevice->SetStreamSource
+        (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
+      _active_vbuffer = dvbc;
+      add_to_vertex_buffer_record(dvbc);
+    }
   }
 
   set_vertex_format(dvbc->_fvf);
@@ -3443,21 +3449,19 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
     if (dibc->_ibuffer != NULL) {
       dibc->upload_data();
-      add_to_index_buffer_record(dibc);
       add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
 
       _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
-      _ibuffer_active = true;
-    } else {
+      _active_ibuffer = dibc;
+      add_to_index_buffer_record(dibc);
 
+    } else {
       _pD3DDevice->SetIndices(NULL, 0);
-      _ibuffer_active = false;
+      _active_ibuffer = NULL;
     }
 
   } else {
-    add_to_index_buffer_record(dibc);
-  
     if (dibc->was_modified()) {
       if (dibc->changed_size()) {
         // We have to destroy the old index buffer and create a new
@@ -3469,10 +3473,14 @@ apply_index_buffer(IndexBufferContext *ibc) {
       
       add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
+      _active_ibuffer = NULL;
     }
 
-    _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
-    _ibuffer_active = true;
+    if (_active_ibuffer != dibc) {
+      _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
+      _active_ibuffer = dibc;
+      add_to_index_buffer_record(dibc);
+    }
   }
 }
 

@@ -62,6 +62,18 @@ ConfigVariableBool dx_show_cursor_watermark
 ConfigVariableBool dx_use_triangle_mipgen_filter
 ("dx-use-triangle-mipgen-filter", false);
 
+ConfigVariableBool dx_broken_max_index
+("dx-broken-max-index", false,
+ PRC_DESC("Configure this true if you have a buggy graphics driver that "
+          "doesn't correctly implement the third parameter, NumVertices, "
+          "of DrawIndexedPrimitive().  In particular, the NVIDIA Quadro "
+          "driver version 6.14.10.7184 seems to treat this as a maximum "
+          "vertex index, rather than a delta between the maximum and "
+          "minimum vertex index.  Turn this on if you are seeing stray "
+          "triangles, or you are not seeing all of your triangles.  Enabling "
+          "this should work around this bug, at the cost of some additional "
+          "rendering overhead on the GPU."));
+
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW
