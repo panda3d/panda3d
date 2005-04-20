@@ -595,6 +595,27 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayFormat::
+finalize(BamReader *manager) {
+  // Now we can build up the _columns_by_name index.  We have to wait
+  // until finalize(), since the index is based on the nested name
+  // pointer within each column, which might not be available at the
+  // time complete_pointers() is called.
+  _columns_by_name.clear();
+  Columns::iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    qpGeomVertexColumn *column = (*ci);
+    _columns_by_name.insert(ColumnsByName::value_type(column->get_name(), column));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayFormat::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
@@ -611,6 +632,7 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   object->fillin(scan, manager);
+  manager->register_finalize(object);
 
   return object;
 }

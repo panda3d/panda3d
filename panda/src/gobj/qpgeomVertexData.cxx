@@ -445,6 +445,7 @@ copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
           dest_format->get_array(dest_i);
         const qpGeomVertexColumn *dest_column = 
           dest_array_format->get_column(source_column->get_name());
+        nassertv(dest_column != (const qpGeomVertexColumn *)NULL);
 
         if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
