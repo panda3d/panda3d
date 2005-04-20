@@ -135,11 +135,9 @@ CPT(qpGeomPrimitive) qpGeomTristrips::
 decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
-  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
-  int num_vertices = vertices->get_num_rows();
+  int num_vertices = get_num_vertices();
 
   // We need a slightly different algorithm for SM_flat_first_vertex
   // than for SM_flat_last_vertex, to preserve the key vertex in the
@@ -153,17 +151,16 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
-      index.set_row(vi);
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
-      int v0 = index.get_data1i();
+      int v0 = get_vertex(vi);
       ++vi;
-      int v1 = index.get_data1i();
+      int v1 = get_vertex(vi);
       ++vi;
       bool reversed = false;
       while (vi < end) {
         triangles->add_vertex(v0);
-        int v2 = index.get_data1i();
+        int v2 = get_vertex(vi);
         ++vi;
         if (reversed) {
           triangles->add_vertex(v2);
@@ -180,7 +177,7 @@ decompose_impl() const {
       }
       ++li;
     }
-    nassertr(vi == num_vertices && index.is_at_end(), NULL);
+    nassertr(vi == num_vertices, NULL);
 
   } else {
     // Preserve the last vertex of each component triangle as the
@@ -190,12 +187,11 @@ decompose_impl() const {
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
       vi += 2;
-      index.set_row(vi);
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
-      int v0 = index.get_data1i();
+      int v0 = get_vertex(vi);
       ++vi;
-      int v1 = index.get_data1i();
+      int v1 = get_vertex(vi);
       ++vi;
       bool reversed = false;
       while (vi < end) {
@@ -208,7 +204,7 @@ decompose_impl() const {
           triangles->add_vertex(v1);
           reversed = true;
         }
-        int v2 = index.get_data1i();
+        int v2 = get_vertex(vi);
         ++vi;
         triangles->add_vertex(v2);
         v0 = v1;
@@ -217,7 +213,7 @@ decompose_impl() const {
       }
       ++li;
     }
-    nassertr(vi == num_vertices && index.is_at_end(), NULL);
+    nassertr(vi == num_vertices, NULL);
   }
 
   return triangles.p();

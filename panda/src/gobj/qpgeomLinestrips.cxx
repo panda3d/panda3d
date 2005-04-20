@@ -132,8 +132,6 @@ CPT(qpGeomPrimitive) qpGeomLinestrips::
 decompose_impl() const {
   PT(qpGeomLines) lines = new qpGeomLines(get_usage_hint());
   lines->set_shade_model(get_shade_model());
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
-  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
   int vi = 0;
@@ -141,10 +139,10 @@ decompose_impl() const {
   while (li < (int)ends.size()) {
     int end = ends[li];
     nassertr(vi + 1 <= end, lines.p());
-    int v0 = index.get_data1i();
+    int v0 = get_vertex(vi);
     ++vi;
     while (vi < end) {
-      int v1 = index.get_data1i();
+      int v1 = get_vertex(vi);
       ++vi;
       lines->add_vertex(v0);
       lines->add_vertex(v1);
@@ -153,7 +151,7 @@ decompose_impl() const {
     }
     ++li;
   }
-  nassertr(vi == vertices->get_num_rows() && index.is_at_end(), NULL);
+  nassertr(vi == get_num_vertices(), NULL);
 
   return lines.p();
 }

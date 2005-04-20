@@ -267,15 +267,28 @@ munge_points_to_quads(const CullTraverser *traverser) {
     unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
     unsigned int *vertices_end = vertices + num_vertices;
 
-    qpGeomVertexReader index(primitive->get_vertices(), 0);
-    unsigned int *vi;
-    for (vi = vertices; vi != vertices_end; ++vi) {
-      // Get the point in eye-space coordinates.
-      unsigned int v = index.get_data1i();
-      (*vi) = v;
-      vertex.set_row(v);
-      points[v]._eye = modelview.xform_point(vertex.get_data3f());
-      points[v]._dist = gsg->compute_distance_to(points[v]._eye);
+    if (primitive->is_indexed()) {
+      qpGeomVertexReader index(primitive->get_vertices(), 0);
+      for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
+        // Get the point in eye-space coordinates.
+        unsigned int v = index.get_data1i();
+        nassertv(v < (unsigned int)num_points);
+        (*vi) = v;
+        vertex.set_row(v);
+        points[v]._eye = modelview.xform_point(vertex.get_data3f());
+        points[v]._dist = gsg->compute_distance_to(points[v]._eye);
+      }
+    } else {
+      // Nonindexed case.
+      unsigned int first_vertex = primitive->get_first_vertex();
+      for (int i = 0; i < num_vertices; ++i) {
+        unsigned int v = i + first_vertex;
+        nassertv(v < (unsigned int)num_points);
+        vertices[i] = v;
+        vertex.set_row(i + first_vertex);
+        points[v]._eye = modelview.xform_point(vertex.get_data3f());
+        points[v]._dist = gsg->compute_distance_to(points[v]._eye);
+      }
     }
   
     // Now sort the points in order from back-to-front so they will
@@ -290,7 +303,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
     // together).
     PT(qpGeomPrimitive) new_primitive = new qpGeomTriangles(qpGeom::UH_client);
 
-    for (vi = vertices; vi != vertices_end; ++vi) {
+    for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
       // The point in eye coordinates.
       const LPoint3f &eye = points[*vi]._eye;
     

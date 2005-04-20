@@ -220,10 +220,14 @@ add_vertex(int vertex) {
     if (cdata->_num_vertices == 0) {
       cdata->_first_vertex = vertex;
       cdata->_num_vertices = 1;
+      cdata->_modified = qpGeom::get_next_modified();
+      cdata->_got_minmax = false;
       return;
 
     } else if (vertex == cdata->_first_vertex + cdata->_num_vertices) {
       ++cdata->_num_vertices;
+      cdata->_modified = qpGeom::get_next_modified();
+      cdata->_got_minmax = false;
       return;
     }
     
@@ -397,6 +401,7 @@ offset_vertices(int offset) {
     CDWriter cdata(_cycler);
     cdata->_first_vertex += offset;
     cdata->_modified = qpGeom::get_next_modified();
+    cdata->_got_minmax = false;
   }
 }
 

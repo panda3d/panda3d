@@ -120,23 +120,21 @@ CPT(qpGeomPrimitive) qpGeomTrifans::
 decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
-  CPT(qpGeomVertexArrayData) vertices = get_vertices();
-  qpGeomVertexReader index(vertices, 0);
   CPTA_int ends = get_ends();
 
-  int num_vertices = vertices->get_num_rows();
+  int num_vertices = get_num_vertices();
 
   int vi = 0;
   int li = 0;
   while (li < (int)ends.size()) {
     int end = ends[li];
     nassertr(vi + 2 <= end, triangles.p());
-    int v0 = index.get_data1i();
+    int v0 = get_vertex(vi);
     ++vi;
-    int v1 = index.get_data1i();
+    int v1 = get_vertex(vi);
     ++vi;
     while (vi < end) {
-      int v2 = index.get_data1i();
+      int v2 = get_vertex(vi);
       ++vi;
       triangles->add_vertex(v0);
       triangles->add_vertex(v1);
@@ -147,7 +145,7 @@ decompose_impl() const {
     ++li;
   }
 
-  nassertr(vi == num_vertices && index.is_at_end(), NULL);
+  nassertr(vi == num_vertices, NULL);
 
   return triangles.p();
 }
