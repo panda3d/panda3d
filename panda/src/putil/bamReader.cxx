@@ -410,6 +410,13 @@ change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_point
 
   _created_objs_by_pointer.erase(ci);
 
+  // Also change the pointer on the finalize_list.
+  Finalize::iterator fi = _finalize_list.find((TypedWritable *)orig_pointer);
+  if (fi != _finalize_list.end()) {
+    _finalize_list.insert((TypedWritable *)new_pointer);
+    _finalize_list.erase(fi);
+  }
+
   return true;
 }
 
