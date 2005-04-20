@@ -97,6 +97,7 @@ generate() {
 
     PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
     strip->add_next_vertices(4);
+    strip->close_primitive();
 
     PT(qpGeom) geom = new qpGeom;
     geom->set_vertex_data(vdata);
