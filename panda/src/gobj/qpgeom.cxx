@@ -449,6 +449,73 @@ rotate_in_place() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::unify_in_place
+//       Access: Published
+//  Description: Unifies all of the primitives contained within this
+//               Geom into a single primitive object.  This may
+//               require decomposing the primitives if, for instance,
+//               the Geom contains both triangle strips and triangle
+//               fans.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+unify_in_place() {
+  if (get_num_primitives() <= 1) {
+    // If we don't have more than one primitive to start with, no need
+    // to do anything.
+    return;
+  }
+
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+  PT(qpGeomPrimitive) new_prim;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(qpGeomPrimitive) primitive = (*pi);
+    if (new_prim == (qpGeomPrimitive *)NULL) {
+      // The first primitive type we come across is copied directly.
+      new_prim = primitive->make_copy();
+    } else {
+      // Thereafter, we must try to merge primitives.  If they are not
+      // the same type, we have to decompose both of them.
+      if (new_prim->get_type() != primitive->get_type()) {
+        CPT(qpGeomPrimitive) decomposed = new_prim->decompose();
+        new_prim = (qpGeomPrimitive *)decomposed.p();
+        primitive = primitive->decompose();
+
+        nassertv(new_prim->get_type() == primitive->get_type());
+      }
+
+      // Now simply copy in the vertices.
+      int num_primitives = primitive->get_num_primitives();
+      for (int pi = 0; pi < num_primitives; ++pi) {
+        int start = primitive->get_primitive_start(pi);
+        int end = primitive->get_primitive_end(pi);
+        for (int vi = start; vi < end; ++vi) {
+          new_prim->add_vertex(primitive->get_vertex(vi));
+        }
+        new_prim->close_primitive();
+      }
+    }
+  }
+
+  // At the end of the day, we have just one primitive, which becomes
+  // the one primitive in our list of primitives.
+  nassertv(new_prim->check_valid(cdata->_data));
+
+  // The new primitive, naturally, inherits the Geom's overall shade
+  // model.
+  new_prim->set_shade_model(cdata->_shade_model);
+
+  cdata->_primitives.clear();
+  cdata->_primitives.push_back(new_prim);
+
+  cdata->_modified = qpGeom::get_next_modified();
+  reset_geom_rendering(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_num_bytes
 //       Access: Published
 //  Description: Returns the number of bytes consumed by the geom and

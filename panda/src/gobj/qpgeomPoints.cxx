@@ -69,9 +69,11 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
-//               This is used primarily to set up the appropriate
-//               antialiasing settings when AntialiasAttrib::M_auto is
-//               in effect.
+//
+//               This is used to set up the appropriate antialiasing
+//               settings when AntialiasAttrib::M_auto is in effect;
+//               it also implies the type of primitive that will be
+//               produced when decompose() is called.
 ////////////////////////////////////////////////////////////////////
 qpGeomPrimitive::PrimitiveType qpGeomPoints::
 get_primitive_type() const {

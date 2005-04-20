@@ -20,10 +20,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_primitive_type
 //       Access: Published
-//  Description: Returns the primitive type that is common to all
-//               GeomPrimitives added within the Geom.  All nested
-//               primitives within a particular Geom must be the same
-//               type.
+//  Description: Returns the fundamental primitive type that is common
+//               to all GeomPrimitives added within the Geom.  All
+//               nested primitives within a particular Geom must be
+//               the same type (that is, you can mix triangles and
+//               tristrips, because they are both the same fundamental
+//               type PT_polygons, but you cannot mix triangles and
+//               points withn the same Geom).
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::PrimitiveType qpGeom::
 get_primitive_type() const {
@@ -162,6 +165,22 @@ INLINE CPT(qpGeom) qpGeom::
 rotate() const {
   PT(qpGeom) new_geom = new qpGeom(*this);
   new_geom->rotate_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::unify
+//       Access: Published
+//  Description: Unifies all of the primitives contained within this
+//               Geom into a single primitive object.  This may
+//               require decomposing the primitives if, for instance,
+//               the Geom contains both triangle strips and triangle
+//               fans.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeom) qpGeom::
+unify() const {
+  PT(qpGeom) new_geom = new qpGeom(*this);
+  new_geom->unify_in_place();
   return new_geom;
 }
 

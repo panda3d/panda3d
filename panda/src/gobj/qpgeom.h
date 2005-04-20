@@ -90,9 +90,11 @@ PUBLISHED:
 
   INLINE CPT(qpGeom) decompose() const;
   INLINE CPT(qpGeom) rotate() const;
+  INLINE CPT(qpGeom) unify() const;
 
   void decompose_in_place();
   void rotate_in_place();
+  void unify_in_place();
 
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
