@@ -1042,6 +1042,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
 
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
+      vpool->set_highest_index(0);
 
       // add the vertices in the _tree._root node, so that 
       // they will be written out first in egg file. This 
@@ -1272,6 +1273,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
 
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
+      vpool->set_highest_index(0);
 
       // add the vertices in the _tree._egg_root node, so that 
       // they will be written out first in egg file. This 
