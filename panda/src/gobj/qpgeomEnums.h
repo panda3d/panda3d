@@ -87,46 +87,52 @@ PUBLISHED:
   // rendering capabilities of the GSG.  The difference between the
   // two indicates whether the Geom needs to be munged for the GSG.
   enum GeomRendering {
+    // If there are indexed points.
+    GR_indexed_point        = 0x0001,
+
+    // The union of all of the indexed attributes.
+    GR_indexed_bits         = 0x0001,
+
     // If there are any points at all.
-    GR_point                = 0x0001,
+    GR_point                = 0x0002,
 
     // If the points are all the same size, other than 1 pixel.
-    GR_point_uniform_size   = 0x0002,
+    GR_point_uniform_size   = 0x0004,
 
     // If the points have a per-vertex size designation.
-    GR_per_point_size       = 0x0004,
+    GR_per_point_size       = 0x0008,
 
     // If the points' size is specified in camera units rather than
     // screen pixels.
-    GR_point_perspective    = 0x0008,
+    GR_point_perspective    = 0x0010,
 
     // If the points have a non-square aspect ratio.
-    GR_point_aspect_ratio   = 0x0010,
+    GR_point_aspect_ratio   = 0x0020,
 
     // If the points are rotated off the orthonormal axis.
-    GR_point_rotate         = 0x0020,
+    GR_point_rotate         = 0x0040,
 
     // If the points require texture coordinates interpolated across
     // their face, to render textures as sprites.
-    GR_point_sprite         = 0x0040,
+    GR_point_sprite         = 0x0080,
 
-    // The union of all the above point attributes.
-    GR_point_bits           = 0x007f,
+    // The union of all the above point attributes, except GR_indexed_point.
+    GR_point_bits           = 0x00f3,
 
     // If there are any of these composite types.
-    GR_triangle_strip       = 0x0080,
-    GR_triangle_fan         = 0x0100,
-    GR_line_strip           = 0x0200,
+    GR_triangle_strip       = 0x0100,
+    GR_triangle_fan         = 0x0200,
+    GR_line_strip           = 0x0400,
 
     // The union of all of the above composite types.
-    GR_composite_bits       = 0x0380,
+    GR_composite_bits       = 0x0700,
 
     // If the shade model requires a particular vertex for flat shading.
-    GR_flat_first_vertex    = 0x0400,
-    GR_flat_last_vertex     = 0x0800,
+    GR_flat_first_vertex    = 0x0800,
+    GR_flat_last_vertex     = 0x1000,
 
     // The union of the above shade model types.
-    GR_shade_model_bits     = 0x0c00,
+    GR_shade_model_bits     = 0x1800,
   };
 
   // The shade model specifies whether the per-vertex colors and

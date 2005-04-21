@@ -749,7 +749,7 @@ match_shade_model(qpGeomPrimitive::ShadeModel shade_model) const {
       (this_shade_model == SM_flat_last_vertex && shade_model == SM_flat_first_vertex)) {
     // Needs to be rotated.
     CPT(qpGeomPrimitive) rotated = rotate();
-    if (rotated == this) {
+    if (rotated.p() == this) {
       // Oops, can't be rotated, sorry.
       return NULL;
     }

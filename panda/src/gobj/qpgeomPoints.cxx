@@ -92,7 +92,11 @@ get_geom_rendering() const {
   // Fancy point attributes, if any, are based on whether the
   // appropriate columns are defined in the associated GeomVertexData;
   // these bits will be added by Geom::get_geom_rendering().
-  return GR_point;
+  if (is_indexed()) {
+    return GR_point | GR_indexed_point;
+  } else {
+    return GR_point;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
