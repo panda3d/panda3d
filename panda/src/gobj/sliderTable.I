@@ -64,7 +64,7 @@ register_table(const SliderTable *table) {
 ////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::get_num_sliders
 //       Access: Published
-//  Description: Returns the number of sliders in the palette.
+//  Description: Returns the number of sliders in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE int SliderTable::
 get_num_sliders() const {
@@ -74,7 +74,7 @@ get_num_sliders() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::get_slider
 //       Access: Published
-//  Description: Returns the nth slider in the palette.
+//  Description: Returns the nth slider in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE const VertexSlider *SliderTable::
 get_slider(int n) const {

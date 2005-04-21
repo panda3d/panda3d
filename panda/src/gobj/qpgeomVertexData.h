@@ -26,8 +26,8 @@
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomEnums.h"
 #include "qpgeomCacheEntry.h"
-#include "transformPalette.h"
-#include "transformBlendPalette.h"
+#include "transformTable.h"
+#include "transformBlendTable.h"
 #include "sliderTable.h"
 #include "internalName.h"
 #include "cycleData.h"
@@ -102,17 +102,17 @@ PUBLISHED:
   qpGeomVertexArrayData *modify_array(int i);
   void set_array(int i, const qpGeomVertexArrayData *array);
 
-  INLINE const TransformPalette *get_transform_palette() const;
-  void set_transform_palette(const TransformPalette *palette);
-  INLINE void clear_transform_palette();
+  INLINE const TransformTable *get_transform_table() const;
+  void set_transform_table(const TransformTable *table);
+  INLINE void clear_transform_table();
 
-  INLINE const TransformBlendPalette *get_transform_blend_palette() const;
-  TransformBlendPalette *modify_transform_blend_palette();
-  void set_transform_blend_palette(const TransformBlendPalette *palette);
-  INLINE void clear_transform_blend_palette();
+  INLINE const TransformBlendTable *get_transform_blend_table() const;
+  TransformBlendTable *modify_transform_blend_table();
+  void set_transform_blend_table(const TransformBlendTable *table);
+  INLINE void clear_transform_blend_table();
 
   INLINE const SliderTable *get_slider_table() const;
-  void set_slider_table(const SliderTable *palette);
+  void set_slider_table(const SliderTable *table);
   INLINE void clear_slider_table();
 
   int get_num_bytes() const;
@@ -194,7 +194,7 @@ private:
 
   typedef pmap<const VertexTransform *, int> TransformMap;
   INLINE static int 
-  add_transform(TransformPalette *palette, const VertexTransform *transform,
+  add_transform(TransformTable *table, const VertexTransform *transform,
                 TransformMap &already_added);
   
 private:
@@ -232,8 +232,8 @@ private:
 
     UsageHint _usage_hint;
     Arrays _arrays;
-    CPT(TransformPalette) _transform_palette;
-    PT(TransformBlendPalette) _transform_blend_palette;
+    CPT(TransformTable) _transform_table;
+    PT(TransformBlendTable) _transform_blend_table;
     CPT(SliderTable) _slider_table;
     PT(qpGeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;

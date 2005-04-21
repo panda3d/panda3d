@@ -259,7 +259,7 @@ get_aspect_ratio() {
 //               This is the column header for the integer
 //               transform_blend index, which is used to define vertex
 //               animation on the CPU by indexing to a particular
-//               vertex weighting from the TransformBlendPalette.
+//               vertex weighting from the TransformBlendTable.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_transform_blend() {
@@ -299,9 +299,9 @@ get_transform_weight() {
 //               with "transform_weight" to define vertex animation on
 //               the graphics card.  The transform_index value
 //               specifies the nth transform, by lookup in the
-//               TransformPalette.  The transform_index column may be
+//               TransformTable.  The transform_index column may be
 //               omitted, in which case the nth transform is the nth
-//               entry in the palette.
+//               entry in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
 get_transform_index() {

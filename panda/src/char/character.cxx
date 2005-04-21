@@ -388,8 +388,8 @@ copy_geom(const Geom *source, const Character *from) {
     PT(qpGeom) dest = new qpGeom(*qpsource);
     PT(qpGeomVertexData) vdata = dest->modify_vertex_data();
 
-    vdata->set_transform_palette(redirect_transform_palette(vdata->get_transform_palette()));
-    vdata->set_transform_blend_palette(redirect_transform_blend_palette(vdata->get_transform_blend_palette()));
+    vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table()));
+    vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table()));
     vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table()));
 
     return dest.p();
@@ -498,19 +498,19 @@ copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Character::redirect_transform_palette
+//     Function: Character::redirect_transform_table
 //       Access: Public
-//  Description: Creates a new TransformPalette, similar to the
+//  Description: Creates a new TransformTable, similar to the
 //               indicated one, with the joint and slider pointers
 //               redirected into this object.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformPalette) Character::
-redirect_transform_palette(const TransformPalette *source) {
-  if (source == (TransformPalette *)NULL) {
+CPT(TransformTable) Character::
+redirect_transform_table(const TransformTable *source) {
+  if (source == (TransformTable *)NULL) {
     return NULL;
   }
 
-  PT(TransformPalette) dest = new TransformPalette(*source);
+  PT(TransformTable) dest = new TransformTable(*source);
 
   int num_transforms = dest->get_num_transforms();
   for (int i = 0; i < num_transforms; ++i) {
@@ -525,23 +525,23 @@ redirect_transform_palette(const TransformPalette *source) {
     }
   }
 
-  return TransformPalette::register_palette(dest);
+  return TransformTable::register_table(dest);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Character::redirect_transform_blend_palette
+//     Function: Character::redirect_transform_blend_table
 //       Access: Public
-//  Description: Creates a new TransformBlendPalette, similar to the
+//  Description: Creates a new TransformBlendTable, similar to the
 //               indicated one, with the joint and slider pointers
 //               redirected into this object.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformBlendPalette) Character::
-redirect_transform_blend_palette(const TransformBlendPalette *source) {
-  if (source == (TransformBlendPalette *)NULL) {
+CPT(TransformBlendTable) Character::
+redirect_transform_blend_table(const TransformBlendTable *source) {
+  if (source == (TransformBlendTable *)NULL) {
     return NULL;
   }
 
-  PT(TransformBlendPalette) dest = new TransformBlendPalette(*source);
+  PT(TransformBlendTable) dest = new TransformBlendTable(*source);
 
   int num_blends = dest->get_num_blends();
   for (int i = 0; i < num_blends; ++i) {

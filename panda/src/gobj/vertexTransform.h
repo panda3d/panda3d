@@ -29,7 +29,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
-class TransformPalette;
+class TransformTable;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexTransform
@@ -63,8 +63,8 @@ protected:
   void mark_modified();
 
 private:
-  typedef pset<TransformPalette *> Palettes;
-  Palettes _palettes;
+  typedef pset<TransformTable *> Palettes;
+  Palettes _tables;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -109,7 +109,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class TransformPalette;
+  friend class TransformTable;
 };
 
 INLINE ostream &operator << (ostream &out, const VertexTransform &obj);

@@ -36,7 +36,7 @@
 //               vertices in a particular GeomVertexData object might
 //               depend on.
 //
-//               This is similar to a TransformPalette, but it stores
+//               This is similar to a TransformTable, but it stores
 //               VertexSliders instead of VertexTransforms, and it
 //               stores them by name instead of by index number.
 //               Also, it is only used when animating vertices on the

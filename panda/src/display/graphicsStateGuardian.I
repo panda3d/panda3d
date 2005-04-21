@@ -246,7 +246,7 @@ get_max_vertex_transforms() const {
 //     Function: GraphicsStateGuardian::get_max_vertex_transform_indices
 //       Access: Published
 //  Description: Returns the maximum number of transforms there may be
-//               in a single TransformPalette for this graphics
+//               in a single TransformTable for this graphics
 //               hardware.  If this number is 0 (but
 //               get_max_transforms() is nonzero), then the graphics
 //               hardware (or API) doesn't support indexed transforms,

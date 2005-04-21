@@ -44,8 +44,8 @@
 #include "texture.h"
 #include "textureStage.h"
 #include "textureContext.h"
-#include "transformBlendPalette.h"
-#include "transformPalette.h"
+#include "transformBlendTable.h"
+#include "transformTable.h"
 #include "userVertexSlider.h"
 #include "userVertexTransform.h"
 #include "vertexTransform.h"
@@ -278,8 +278,8 @@ ConfigureFn(config_gobj) {
   Texture::init_type();
   dDrawable::init_type();
   TextureStage::init_type();
-  TransformBlendPalette::init_type();
-  TransformPalette::init_type();
+  TransformBlendTable::init_type();
+  TransformTable::init_type();
   UserVertexSlider::init_type();
   UserVertexTransform::init_type();
   VertexTransform::init_type();
@@ -316,8 +316,8 @@ ConfigureFn(config_gobj) {
   SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
-  TransformBlendPalette::register_with_read_factory();
-  TransformPalette::register_with_read_factory();
+  TransformBlendTable::register_with_read_factory();
+  TransformTable::register_with_read_factory();
   UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
   InternalName::register_with_read_factory();

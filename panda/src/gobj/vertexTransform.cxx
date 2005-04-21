@@ -42,9 +42,9 @@ VertexTransform() {
 ////////////////////////////////////////////////////////////////////
 VertexTransform::
 ~VertexTransform() {
-  // We shouldn't destruct while any TransformPalettes are holding our
+  // We shouldn't destruct while any TransformTables are holding our
   // pointer.
-  nassertv(_palettes.empty());
+  nassertv(_tables.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ mark_modified() {
   cdata->_modified = get_next_modified();
   
   Palettes::iterator pi;
-  for (pi = _palettes.begin(); pi != _palettes.end(); ++pi) {
+  for (pi = _tables.begin(); pi != _tables.end(); ++pi) {
     (*pi)->update_modified(cdata->_modified);
   }
 }

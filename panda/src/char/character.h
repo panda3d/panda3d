@@ -29,8 +29,8 @@
 #include "pointerTo.h"
 #include "geom.h"
 #include "pStatCollector.h"
-#include "transformPalette.h"
-#include "transformBlendPalette.h"
+#include "transformTable.h"
+#include "transformBlendTable.h"
 #include "sliderTable.h"
 
 class CharacterJointBundle;
@@ -84,8 +84,8 @@ private:
                    const Character *from, NodeMap &node_map);
   PT(Geom) copy_geom(const Geom *source, const Character *from);
   void copy_node_pointers(const Character *from, const NodeMap &node_map);
-  CPT(TransformPalette) redirect_transform_palette(const TransformPalette *source);
-  CPT(TransformBlendPalette) redirect_transform_blend_palette(const TransformBlendPalette *source);
+  CPT(TransformTable) redirect_transform_table(const TransformTable *source);
+  CPT(TransformBlendTable) redirect_transform_blend_table(const TransformBlendTable *source);
   CPT(SliderTable) redirect_slider_table(const SliderTable *source);
 
   // These are the actual dynamic vertex pools for this Character's

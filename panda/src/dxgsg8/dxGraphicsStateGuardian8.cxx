@@ -2684,17 +2684,17 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
     }
     
-    const TransformPalette *palette = vertex_data->get_transform_palette();
-    if (palette != (TransformPalette *)NULL) {
-      for (int i = 0; i < palette->get_num_transforms(); i++) {
+    const TransformTable *table = vertex_data->get_transform_table();
+    if (table != (TransformTable *)NULL) {
+      for (int i = 0; i < table->get_num_transforms(); i++) {
         LMatrix4f mat;
-        palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+        table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
         const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
         _pD3DDevice->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
       }
 
-      // Setting the palette transforms steps on the world matrix, so
-      // we have to set a flag to reload the world matrix later.
+      // Setting the first animation matrix steps on the world matrix,
+      // so we have to set a flag to reload the world matrix later.
       _transform_stale = true;
     }
     _vertex_blending_enabled = true;

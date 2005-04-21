@@ -1,4 +1,4 @@
-// Filename: transformPalette.h
+// Filename: transformTable.h
 // Created by:  drose (23Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TRANSFORMPALETTE_H
-#define TRANSFORMPALETTE_H
+#ifndef TRANSFORMTABLE_H
+#define TRANSFORMTABLE_H
 
 #include "pandabase.h"
 #include "vertexTransform.h"
@@ -32,27 +32,27 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TransformPalette
+//       Class : TransformTable
 // Description : Stores the total set of VertexTransforms that the
 //               vertices in a particular GeomVertexData object might
 //               depend on.
 //
 //               This structure is used for a GeomVertexData set up to
 //               compute its dynamic vertices on the graphics card.
-//               See TransformBlendPalette for one set up to compute
+//               See TransformBlendTable for one set up to compute
 //               its dynamic vertices on the CPU.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformPalette : public TypedWritableReferenceCount {
+class EXPCL_PANDA TransformTable : public TypedWritableReferenceCount {
 PUBLISHED:
-  TransformPalette();
-  TransformPalette(const TransformPalette &copy);
-  void operator = (const TransformPalette &copy);
-  virtual ~TransformPalette();
+  TransformTable();
+  TransformTable(const TransformTable &copy);
+  void operator = (const TransformTable &copy);
+  virtual ~TransformTable();
 
   INLINE bool is_registered() const;
-  INLINE static CPT(TransformPalette) register_palette(const TransformPalette *palette);
+  INLINE static CPT(TransformTable) register_table(const TransformTable *table);
 
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
@@ -106,7 +106,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "TransformPalette",
+    register_type(_type_handle, "TransformTable",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -120,8 +120,8 @@ private:
   friend class VertexTransform;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformPalette &obj);
+INLINE ostream &operator << (ostream &out, const TransformTable &obj);
 
-#include "transformPalette.I"
+#include "transformTable.I"
 
 #endif

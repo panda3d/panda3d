@@ -54,8 +54,8 @@
     texturePool.I texturePool.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
-    transformBlendPalette.I transformBlendPalette.h \
-    transformPalette.I transformPalette.h \
+    transformBlendTable.I transformBlendTable.h \
+    transformTable.I transformTable.h \
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
@@ -103,8 +103,8 @@
     texture.cxx textureContext.cxx texturePool.cxx \
     textureStage.cxx \
     transformBlend.cxx \
-    transformBlendPalette.cxx \
-    transformPalette.cxx \
+    transformBlendTable.cxx \
+    transformTable.cxx \
     userVertexSlider.cxx \
     userVertexTransform.cxx \
     vertexBufferContext.cxx \
@@ -156,8 +156,8 @@
     texturePool.I texturePool.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
-    transformBlendPalette.I transformBlendPalette.h \
-    transformPalette.I transformPalette.h \
+    transformBlendTable.I transformBlendTable.h \
+    transformTable.I transformTable.h \
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \

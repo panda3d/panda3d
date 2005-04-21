@@ -1,4 +1,4 @@
-// Filename: transformBlendPalette.h
+// Filename: transformBlendTable.h
 // Created by:  drose (24Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TRANSFORMBLENDPALETTE_H
-#define TRANSFORMBLENDPALETTE_H
+#ifndef TRANSFORMBLENDTABLE_H
+#define TRANSFORMBLENDTABLE_H
 
 #include "pandabase.h"
 #include "transformBlend.h"
@@ -33,28 +33,28 @@
 #include "pipelineCycler.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TransformBlendPalette
+//       Class : TransformBlendTable
 // Description : This structure collects together the different
 //               combinations of transforms and blend amounts used by
 //               a GeomVertexData, to facilitate computing dynamic
 //               vertices on the CPU at runtime.  Each vertex has a
-//               pointer to exactly one of entries in this palette,
+//               pointer to exactly one of entries in this table,
 //               and each entry defines a number of transform/blend
 //               combinations.
 //
 //               This structure is used for a GeomVertexData set up to
 //               compute its dynamic vertices on the CPU.  See
-//               TransformPalette for one set up to compute its
+//               TransformTable for one set up to compute its
 //               dynamic vertices on the graphics card.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformBlendPalette : public TypedWritableReferenceCount {
+class EXPCL_PANDA TransformBlendTable : public TypedWritableReferenceCount {
 PUBLISHED:
-  TransformBlendPalette();
-  TransformBlendPalette(const TransformBlendPalette &copy);
-  void operator = (const TransformBlendPalette &copy);
-  virtual ~TransformBlendPalette();
+  TransformBlendTable();
+  TransformBlendTable(const TransformBlendTable &copy);
+  void operator = (const TransformBlendTable &copy);
+  virtual ~TransformBlendTable();
 
   INLINE int get_num_blends() const;
   INLINE const TransformBlend &get_blend(int n) const;
@@ -75,10 +75,10 @@ private:
   void rebuild_index();
 
 private:
-  // We don't bother with registering the palette, or protecting its
+  // We don't bother with registering the table, or protecting its
   // data in a CycleData structure--the interface on GeomVertexData
   // guarantees that the pointer will be copied if we modify the
-  // palette.
+  // table.
   typedef pvector<TransformBlend> Blends;
   Blends _blends;
 
@@ -91,7 +91,7 @@ private:
   int _num_transforms;
   int _max_simultaneous_transforms;
 
-  // Even though we don't store the actual blend palette data in a
+  // Even though we don't store the actual blend table data in a
   // CycleData structure, we do need to keep a local cache of the
   // relevant modified stamps there, so it can be updated per-thread.
   class EXPCL_PANDA CData : public CycleData {
@@ -128,7 +128,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "TransformBlendPalette",
+    register_type(_type_handle, "TransformBlendTable",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -142,8 +142,8 @@ private:
   friend class VertexTransform;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformBlendPalette &obj);
+INLINE ostream &operator << (ostream &out, const TransformBlendTable &obj);
 
-#include "transformBlendPalette.I"
+#include "transformBlendTable.I"
 
 #endif

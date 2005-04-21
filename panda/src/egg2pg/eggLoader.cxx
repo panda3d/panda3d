@@ -89,7 +89,7 @@
 #include "sheetNode.h"
 #include "look_at.h"
 #include "configVariableString.h"
-#include "transformBlendPalette.h"
+#include "transformBlendTable.h"
 #include "transformBlend.h"
 
 #include <ctype.h>
@@ -2037,14 +2037,14 @@ make_vertex_data(const EggRenderState *render_state,
 
   PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
 
-  PT(TransformBlendPalette) blend_palette;
+  PT(TransformBlendTable) blend_table;
   PT(SliderTable) slider_table;
   string name = _data->get_egg_filename().get_basename_wo_extension();
 
   if (is_dynamic) {
-    // If it's a dynamic object, we need a TransformBlendPalette and
+    // If it's a dynamic object, we need a TransformBlendTable and
     // maybe a SliderTable, and additional columns in the vertex data:
-    // one that indexes into the blend palette per vertex, and also
+    // one that indexes into the blend table per vertex, and also
     // one for each different type of morph delta.
 
     // Tell the format that we're setting it up for Panda-based
@@ -2053,7 +2053,7 @@ make_vertex_data(const EggRenderState *render_state,
     animation.set_panda();
     temp_format->set_animation(animation);
 
-    blend_palette = new TransformBlendPalette;
+    blend_table = new TransformBlendTable;
 
     PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;
     anim_array_format->add_column
@@ -2134,7 +2134,7 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexData) vertex_data =
     new qpGeomVertexData(name, format, qpGeom::UH_static);
 
-  vertex_data->set_transform_blend_palette(blend_palette);
+  vertex_data->set_transform_blend_table(blend_table);
   if (slider_table != (SliderTable *)NULL) {
     vertex_data->set_slider_table(SliderTable::register_table(slider_table));
   }
@@ -2245,9 +2245,9 @@ make_vertex_data(const EggRenderState *render_state,
       }
       blend.normalize_weights();
 
-      int palette_index = blend_palette->add_blend(blend);
+      int table_index = blend_table->add_blend(blend);
       gvw.set_column(InternalName::get_transform_blend());
-      gvw.set_data1i(palette_index);
+      gvw.set_data1i(table_index);
     }
   }
 

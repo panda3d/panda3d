@@ -1,4 +1,4 @@
-// Filename: transformBlendPalette.I
+// Filename: transformBlendTable.I
 // Created by:  drose (24Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,40 +18,40 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::get_num_blends
+//     Function: TransformBlendTable::get_num_blends
 //       Access: Published
 //  Description: Returns the total number of different blend
-//               combinations in the palette.
+//               combinations in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformBlendPalette::
+INLINE int TransformBlendTable::
 get_num_blends() const {
   return _blends.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::get_blend
+//     Function: TransformBlendTable::get_blend
 //       Access: Published
-//  Description: Returns the nth blend in the palette.
+//  Description: Returns the nth blend in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformBlend &TransformBlendPalette::
+INLINE const TransformBlend &TransformBlendTable::
 get_blend(int n) const {
   nassertr(n >= 0 && n < (int)_blends.size(), _blends[0]);
   return _blends[n];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::get_modified
+//     Function: TransformBlendTable::get_modified
 //       Access: Published
 //  Description: Returns a counter which is guaranteed to increment at
-//               least when any TransformBlends within the palette
+//               least when any TransformBlends within the table
 //               have changed.
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq TransformBlendPalette::
+INLINE UpdateSeq TransformBlendTable::
 get_modified() const {
   CDReader cdata(_cycler);
   if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-    CDWriter cdataw(((TransformBlendPalette *)this)->_cycler, cdata);
-    ((TransformBlendPalette *)this)->recompute_modified(cdataw);
+    CDWriter cdataw(((TransformBlendTable *)this)->_cycler, cdata);
+    ((TransformBlendTable *)this)->recompute_modified(cdataw);
     return cdataw->_modified;
   } else {
     return cdata->_modified;
@@ -59,64 +59,64 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::get_num_transforms
+//     Function: TransformBlendTable::get_num_transforms
 //       Access: Published
 //  Description: Returns the number of unique VertexTransform objects
-//               represented in the palette.  This will correspond to
-//               the size of the TransformPalette object that would
+//               represented in the table.  This will correspond to
+//               the size of the TransformTable object that would
 //               represent the same table.  This is also the same
 //               limit reflected by
 //               GraphicsStateGuardian::get_max_vertex_transform_indices().
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformBlendPalette::
+INLINE int TransformBlendTable::
 get_num_transforms() const {
   consider_rebuild_index();
   return _num_transforms;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::get_max_simultaneous_transforms
+//     Function: TransformBlendTable::get_max_simultaneous_transforms
 //       Access: Published
 //  Description: Returns the maximum number of unique VertexTransform
 //               objects that are applied to any one vertex
 //               simultaneously.  This is the same limit reflected by
 //               GraphicsStateGuardian::get_max_vertex_transforms().
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformBlendPalette::
+INLINE int TransformBlendTable::
 get_max_simultaneous_transforms() const {
   consider_rebuild_index();
   return _max_simultaneous_transforms;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::consider_rebuild_index
+//     Function: TransformBlendTable::consider_rebuild_index
 //       Access: Private
 //  Description: Calls rebuild_index() if the index needs to be
 //               rebuilt.
 ////////////////////////////////////////////////////////////////////
-INLINE void TransformBlendPalette::
+INLINE void TransformBlendTable::
 consider_rebuild_index() const {
   if (_blend_index.empty()) {
-    ((TransformBlendPalette *)this)->rebuild_index();
+    ((TransformBlendTable *)this)->rebuild_index();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::CData::Constructor
+//     Function: TransformBlendTable::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformBlendPalette::CData::
+INLINE TransformBlendTable::CData::
 CData() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendPalette::CData::Copy Constructor
+//     Function: TransformBlendTable::CData::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformBlendPalette::CData::
-CData(const TransformBlendPalette::CData &copy) :
+INLINE TransformBlendTable::CData::
+CData(const TransformBlendTable::CData &copy) :
   _modified(copy._modified),
   _global_modified(copy._global_modified)
 {

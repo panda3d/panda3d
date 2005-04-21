@@ -74,7 +74,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     }
       
     if (animation.get_indexed_transforms()) {
-      // Also, if we'll be indexing into the transfom palette, reserve
+      // Also, if we'll be indexing into the transform table, reserve
       // space for the index.
       new_array_format->add_column
         (InternalName::get_transform_index(), 1,

@@ -84,9 +84,9 @@ get_num_transforms() const {
 //       Access: Published
 //  Description: This is only meaningful for animation_type
 //               AT_hardware.  If true, it indicates that the format
-//               uses indexed animation palettes.  It is false if each
+//               uses indexed animation tables.  It is false if each
 //               vertex will reference the first _num_transforms
-//               palette entries only.
+//               table entries only.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexAnimationSpec::
 get_indexed_transforms() const {

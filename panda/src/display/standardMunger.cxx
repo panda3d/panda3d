@@ -93,31 +93,31 @@ munge_data_impl(const qpGeomVertexData *data) {
       animation.get_animation_type() == AT_panda &&
       new_data->get_slider_table() == (SliderTable *)NULL) {
     // Maybe we can animate the vertices with hardware.
-    const TransformBlendPalette *palette = new_data->get_transform_blend_palette();
-    if (palette != (TransformBlendPalette *)NULL &&
-        palette->get_max_simultaneous_transforms() <= 
+    const TransformBlendTable *table = new_data->get_transform_blend_table();
+    if (table != (TransformBlendTable *)NULL &&
+        table->get_max_simultaneous_transforms() <= 
         _gsg->get_max_vertex_transforms()) {
       if (matrix_palette && 
-          palette->get_num_transforms() <= _gsg->get_max_vertex_transform_indices()) {
+          table->get_num_transforms() <= _gsg->get_max_vertex_transform_indices()) {
 
-        if (palette->get_num_transforms() == palette->get_max_simultaneous_transforms()) {
+        if (table->get_num_transforms() == table->get_max_simultaneous_transforms()) {
           // We can support an indexed palette, but since that won't
           // save us any per-vertex blends, go ahead and do a plain
-          // old nonindexed palette instead.
-          animation.set_hardware(palette->get_num_transforms(), false);
+          // old nonindexed table instead.
+          animation.set_hardware(table->get_num_transforms(), false);
 
         } else {
           // We can support an indexed palette, and that means we can
           // reduce the number of blends we have to specify for each
           // vertex.
-          animation.set_hardware(palette->get_max_simultaneous_transforms(), true);
+          animation.set_hardware(table->get_max_simultaneous_transforms(), true);
         }
 
-      } else if (palette->get_num_transforms() <=
+      } else if (table->get_num_transforms() <=
                  _gsg->get_max_vertex_transforms()) {
         // We can't support an indexed palette, but we have few enough
-        // transforms that we can do a nonindexed palette.
-        animation.set_hardware(palette->get_num_transforms(), false);
+        // transforms that we can do a nonindexed table.
+        animation.set_hardware(table->get_num_transforms(), false);
       }
     }
   }

@@ -258,63 +258,63 @@ set_array(int i, const qpGeomVertexArrayData *array) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_transform_palette
+//     Function: qpGeomVertexData::set_transform_table
 //       Access: Published
-//  Description: Replaces the TransformPalette on this vertex
-//               data with the indicated palette.  The length of this
-//               palette should be consistent with the maximum palette
+//  Description: Replaces the TransformTable on this vertex
+//               data with the indicated table.  The length of this
+//               table should be consistent with the maximum table
 //               index assigned to the vertices under the
 //               "transform_index" name.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-set_transform_palette(const TransformPalette *palette) {
-  nassertv(palette == (TransformPalette *)NULL || palette->is_registered());
+set_transform_table(const TransformTable *table) {
+  nassertv(table == (TransformTable *)NULL || table->is_registered());
 
   CDWriter cdata(_cycler);
-  cdata->_transform_palette = (TransformPalette *)palette;
+  cdata->_transform_table = (TransformTable *)table;
   clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::modify_transform_blend_palette
+//     Function: qpGeomVertexData::modify_transform_blend_table
 //       Access: Published
 //  Description: Returns a modifiable pointer to the current
-//               TransformBlendPalette on this vertex data, if any, or
-//               NULL if there is not a TransformBlendPalette.  See
-//               get_transform_blend_palette().
+//               TransformBlendTable on this vertex data, if any, or
+//               NULL if there is not a TransformBlendTable.  See
+//               get_transform_blend_table().
 ////////////////////////////////////////////////////////////////////
-TransformBlendPalette *qpGeomVertexData::
-modify_transform_blend_palette() {
-  // Perform copy-on-write: if the reference count on the palette is
+TransformBlendTable *qpGeomVertexData::
+modify_transform_blend_table() {
+  // Perform copy-on-write: if the reference count on the table is
   // greater than 1, assume some other GeomVertexData has the same
   // pointer, so make a copy of it first.
   CDWriter cdata(_cycler);
 
-  if (cdata->_transform_blend_palette->get_ref_count() > 1) {
-    cdata->_transform_blend_palette = new TransformBlendPalette(*cdata->_transform_blend_palette);
+  if (cdata->_transform_blend_table->get_ref_count() > 1) {
+    cdata->_transform_blend_table = new TransformBlendTable(*cdata->_transform_blend_table);
   }
   clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
-  return cdata->_transform_blend_palette;
+  return cdata->_transform_blend_table;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_transform_blend_palette
+//     Function: qpGeomVertexData::set_transform_blend_table
 //       Access: Published
-//  Description: Replaces the TransformBlendPalette on this vertex
-//               data with the indicated palette.  The length of this
-//               palette should be consistent with the maximum palette
+//  Description: Replaces the TransformBlendTable on this vertex
+//               data with the indicated table.  The length of this
+//               table should be consistent with the maximum table
 //               index assigned to the vertices under the
 //               "transform_blend" name.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-set_transform_blend_palette(const TransformBlendPalette *palette) {
+set_transform_blend_table(const TransformBlendTable *table) {
   CDWriter cdata(_cycler);
-  cdata->_transform_blend_palette = (TransformBlendPalette *)palette;
+  cdata->_transform_blend_table = (TransformBlendTable *)table;
   clear_cache();
   cdata->_modified = qpGeom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
@@ -506,9 +506,9 @@ copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
     if (dest_animation.get_animation_type() == AT_hardware) {
       // Convert Panda-style animation tables to hardware-style
       // animation tables.
-      CPT(TransformBlendPalette) blend_palette = source->get_transform_blend_palette();
-      if (blend_palette != (TransformBlendPalette *)NULL) {
-        PT(TransformPalette) transform_palette = new TransformPalette;
+      CPT(TransformBlendTable) blend_table = source->get_transform_blend_table();
+      if (blend_table != (TransformBlendTable *)NULL) {
+        PT(TransformTable) transform_table = new TransformTable;
         TransformMap already_added;
 
         if (dest_animation.get_indexed_transforms()) {
@@ -519,14 +519,14 @@ copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
           qpGeomVertexReader from(source, InternalName::get_transform_blend());
         
           while (!from.is_at_end()) {
-            const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
+            const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4f weights = LVecBase4f::zero();
             int indices[4] = {0, 0, 0, 0};
             nassertv(blend.get_num_transforms() <= 4);
             
             for (int i = 0; i < blend.get_num_transforms(); i++) {
               weights[i] = blend.get_weight(i);
-              indices[i] = add_transform(transform_palette, blend.get_transform(i),
+              indices[i] = add_transform(transform_table, blend.get_transform(i),
                                          already_added);
             }
             if (weight.has_column()) {
@@ -541,11 +541,11 @@ copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
           qpGeomVertexReader from(source, InternalName::get_transform_blend());
         
           while (!from.is_at_end()) {
-            const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
+            const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4f weights = LVecBase4f::zero();
             
             for (int i = 0; i < blend.get_num_transforms(); i++) {
-              int index = add_transform(transform_palette, blend.get_transform(i),
+              int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
               nassertv(index <= 4);
               weights[index] = blend.get_weight(i);
@@ -556,8 +556,8 @@ copy_from(const qpGeomVertexData *source, bool keep_data_objects) {
           }
         }
         
-        clear_transform_blend_palette();
-        set_transform_palette(TransformPalette::register_palette(transform_palette));
+        clear_transform_blend_table();
+        set_transform_table(TransformTable::register_table(transform_table));
       }
     }
   }
@@ -638,7 +638,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(get_name(), new_format, get_usage_hint());
-  new_data->set_transform_blend_palette(get_transform_blend_palette());
+  new_data->set_transform_blend_table(get_transform_blend_table());
   new_data->set_slider_table(get_slider_table());
 
   new_data->copy_from(this, false);
@@ -862,7 +862,7 @@ replace_column(const InternalName *name, int num_components,
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(get_name(), format, usage_hint);
   if (keep_animation) {
-    new_data->set_transform_blend_palette(get_transform_blend_palette());
+    new_data->set_transform_blend_table(get_transform_blend_table());
     new_data->set_slider_table(get_slider_table());
   }
 
@@ -922,10 +922,10 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level) << get_name() << "\n";
   }
   _format->write_with_data(out, indent_level + 2, this);
-  if (get_transform_blend_palette() != (TransformBlendPalette *)NULL) {
+  if (get_transform_blend_table() != (TransformBlendTable *)NULL) {
     indent(out, indent_level)
-      << "Transform blend palette:\n";
-    get_transform_blend_palette()->write(out, indent_level + 2);
+      << "Transform blend table:\n";
+    get_transform_blend_table()->write(out, indent_level + 2);
   }
 }
 
@@ -1076,20 +1076,20 @@ do_animate_vertices(bool from_app) const {
   }
 
   UpdateSeq modified;
-  if (cdata->_transform_blend_palette != (TransformBlendPalette *)NULL) {
+  if (cdata->_transform_blend_table != (TransformBlendTable *)NULL) {
     if (cdata->_slider_table != (SliderTable *)NULL) {
       modified = 
-        max(cdata->_transform_blend_palette->get_modified(),
+        max(cdata->_transform_blend_table->get_modified(),
             cdata->_slider_table->get_modified());
     } else {
-      modified = cdata->_transform_blend_palette->get_modified();
+      modified = cdata->_transform_blend_table->get_modified();
     }
 
   } else if (cdata->_slider_table != (SliderTable *)NULL) {
     modified = cdata->_slider_table->get_modified();
 
   } else {
-    // No transform blend palette or slider table--ergo, no vertex
+    // No transform blend table or slider table--ergo, no vertex
     // animation.
     return this;
   }
@@ -1308,12 +1308,12 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   new_data->copy_from(this, true);
 
   // First, apply all of the morphs.
-  CPT(SliderTable) table = cdata->_slider_table;
-  if (table != (SliderTable *)NULL) {
+  CPT(SliderTable) slider_table = cdata->_slider_table;
+  if (slider_table != (SliderTable *)NULL) {
     int num_morphs = _format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
       CPT(InternalName) slider_name = _format->get_morph_slider(mi);
-      const VertexSlider *slider = table->find_slider(slider_name);
+      const VertexSlider *slider = slider_table->find_slider(slider_name);
       if (slider != (VertexSlider *)NULL) {
         float slider_value = slider->get_slider();
         if (slider_value != 0.0f) {
@@ -1358,15 +1358,15 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   }
 
   // Then apply the transforms.
-  CPT(TransformBlendPalette) palette = cdata->_transform_blend_palette;
-  if (palette != (TransformBlendPalette *)NULL) {
+  CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table;
+  if (tb_table != (TransformBlendTable *)NULL) {
 
     // Recompute all the blends up front, so we don't have to test
     // each one for staleness at each vertex.
-    int num_blends = palette->get_num_blends();
+    int num_blends = tb_table->get_num_blends();
     int bi;
     for (bi = 0; bi < num_blends; bi++) {
-      palette->get_blend(bi).update_blend();
+      tb_table->get_blend(bi).update_blend();
     }
 
     // Now go through and apply the transforms.
@@ -1378,7 +1378,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
       if (!blendi.has_column()) {
         gobj_cat.warning()
           << "Vertex data " << get_name()
-          << " has a transform_blend_palette, but no transform_blend data.\n";
+          << " has a transform_blend_table, but no transform_blend data.\n";
         return;
       }
       
@@ -1386,14 +1386,14 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
         for (int i = 0; i < num_rows; i++) {
           LPoint4f vertex = data.get_data4f();
           int bi = blendi.get_data1i();
-          palette->get_blend(bi).transform_point(vertex);
+          tb_table->get_blend(bi).transform_point(vertex);
           data.set_data4f(vertex);
         }
       } else {
         for (int i = 0; i < num_rows; i++) {
           LPoint3f vertex = data.get_data3f();
           int bi = blendi.get_data1i();
-          palette->get_blend(bi).transform_point(vertex);
+          tb_table->get_blend(bi).transform_point(vertex);
           data.set_data3f(vertex);
         }
       }
@@ -1405,14 +1405,14 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
       if (!blendi.has_column()) {
         gobj_cat.warning()
           << "Vertex data " << get_name()
-          << " has a transform_blend_palette, but no transform_blend data.\n";
+          << " has a transform_blend_table, but no transform_blend data.\n";
         return;
       }
       
       for (int i = 0; i < num_rows; i++) {
         LVector3f vertex = data.get_data3f();
         int bi = blendi.get_data1i();
-        palette->get_blend(bi).transform_vector(vertex);
+        tb_table->get_blend(bi).transform_vector(vertex);
         data.set_data3f(vertex);
       }
     }
@@ -1523,7 +1523,7 @@ finalize(BamReader *manager) {
   // the BamReader to return the new object from now on.
 
   // This extends to the nested array datas, as well as the transform
-  // palette and slider tables, as well.
+  // table and slider tables, as well.
 
   CDWriter cdata(_cycler);
 
@@ -1541,11 +1541,11 @@ finalize(BamReader *manager) {
   manager->change_pointer(_format, new_format);
   _format = new_format;
 
-  if (cdata->_transform_palette != (TransformPalette *)NULL) {
-    CPT(TransformPalette) new_transform_palette = 
-      TransformPalette::register_palette(cdata->_transform_palette);
-    manager->change_pointer(cdata->_transform_palette, new_transform_palette);
-    cdata->_transform_palette = new_transform_palette;
+  if (cdata->_transform_table != (TransformTable *)NULL) {
+    CPT(TransformTable) new_transform_table = 
+      TransformTable::register_table(cdata->_transform_table);
+    manager->change_pointer(cdata->_transform_table, new_transform_table);
+    cdata->_transform_table = new_transform_table;
   }
 
   if (cdata->_slider_table != (SliderTable *)NULL) {
@@ -1630,8 +1630,8 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
     manager->write_pointer(dg, *ai);
   }
 
-  manager->write_pointer(dg, _transform_palette);
-  manager->write_pointer(dg, _transform_blend_palette);
+  manager->write_pointer(dg, _transform_table);
+  manager->write_pointer(dg, _transform_blend_table);
   manager->write_pointer(dg, _slider_table);
 }
 
@@ -1651,8 +1651,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     (*ai) = DCAST(qpGeomVertexArrayData, p_list[pi++]);    
   }
 
-  _transform_palette = DCAST(TransformPalette, p_list[pi++]);
-  _transform_blend_palette = DCAST(TransformBlendPalette, p_list[pi++]);
+  _transform_table = DCAST(TransformTable, p_list[pi++]);
+  _transform_blend_table = DCAST(TransformBlendTable, p_list[pi++]);
   _slider_table = DCAST(SliderTable, p_list[pi++]);
 
   _modified = qpGeom::get_next_modified();

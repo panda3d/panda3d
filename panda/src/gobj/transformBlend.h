@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TransformBlend
 // Description : This defines a single entry in a
-//               TransformBlendPalette.  It represents a unique
+//               TransformBlendTable.  It represents a unique
 //               combination of VertexTransform pointers and blend
 //               amounts.
 //

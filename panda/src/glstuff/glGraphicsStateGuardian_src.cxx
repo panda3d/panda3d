@@ -2221,8 +2221,8 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
     _glVertexBlendARB(animation.get_num_transforms() - 1);
     
-    const TransformPalette *palette = vertex_data->get_transform_palette();
-    if (palette != (TransformPalette *)NULL) {
+    const TransformTable *table = vertex_data->get_transform_table();
+    if (table != (TransformTable *)NULL) {
       if (animation.get_indexed_transforms()) {
         // We are loading the indexed matrix palette.  The ARB decided
         // to change this interface from that for the list of
@@ -2232,9 +2232,9 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
         GLP(MatrixMode)(GL_MATRIX_PALETTE_ARB);
 
-        for (int i = 0; i < palette->get_num_transforms(); ++i) {
+        for (int i = 0; i < table->get_num_transforms(); ++i) {
           LMatrix4f mat;
-          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
           _glCurrentPaletteMatrixARB(i);
           GLP(LoadMatrixf)(mat.get_data());
         }
@@ -2252,23 +2252,23 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
         // GL_MODELVIEW0 and 1 are different than the rest.
         int i = 0;
-        if (i < palette->get_num_transforms()) {
+        if (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW0_ARB);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
         }
-        if (i < palette->get_num_transforms()) {
+        if (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW1_ARB);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
         }
-        while (i < palette->get_num_transforms()) {
+        while (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW2_ARB + i - 2);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;

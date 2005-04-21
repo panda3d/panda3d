@@ -1,4 +1,4 @@
-// Filename: transformPalette.I
+// Filename: transformTable.I
 // Created by:  drose (23Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,114 +18,114 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::is_registered
+//     Function: TransformTable::is_registered
 //       Access: Published
-//  Description: Returns true if this palette has been registered.
+//  Description: Returns true if this table has been registered.
 //               Once it has been registered, the set of transforms in
-//               a TransformPalette may not be further modified; but
+//               a TransformTable may not be further modified; but
 //               it must be registered before it can be assigned to a
 //               Geom.
 ////////////////////////////////////////////////////////////////////
-INLINE bool TransformPalette::
+INLINE bool TransformTable::
 is_registered() const {
   return _is_registered;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::register_palette
+//     Function: TransformTable::register_table
 //       Access: Published, Static
-//  Description: Registers a TransformPalette for use.  This is
+//  Description: Registers a TransformTable for use.  This is
 //               similar to GeomVertexFormat::register_format().  Once
-//               registered, a TransformPalette may no longer be
+//               registered, a TransformTable may no longer be
 //               modified (although the individual VertexTransform
 //               objects may modify their reported transforms).
 //
-//               This must be called before a palette may be used in a
+//               This must be called before a table may be used in a
 //               Geom.  After this call, you should discard the
 //               original pointer you passed in (which may or may not
 //               now be invalid) and let its reference count decrement
 //               normally; you should use only the returned value from
 //               this point on.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(TransformPalette) TransformPalette::
-register_palette(const TransformPalette *palette) {
-  // We don't actually bother adding the palette object to a registry.
+INLINE CPT(TransformTable) TransformTable::
+register_table(const TransformTable *table) {
+  // We don't actually bother adding the table object to a registry.
   // This means there may be multiple copies of identical registered
-  // TransformPalettes.  Big deal.  We can always go back and make a
+  // TransformTables.  Big deal.  We can always go back and make a
   // registry later if we really need it.
-  if (palette->is_registered()) {
-    return palette;
+  if (table->is_registered()) {
+    return table;
   }
 
-  ((TransformPalette *)palette)->do_register();
-  return palette;
+  ((TransformTable *)table)->do_register();
+  return table;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_num_transforms
+//     Function: TransformTable::get_num_transforms
 //       Access: Published
-//  Description: Returns the number of transforms in the palette.
+//  Description: Returns the number of transforms in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformPalette::
+INLINE int TransformTable::
 get_num_transforms() const {
   return _transforms.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_transform
+//     Function: TransformTable::get_transform
 //       Access: Published
-//  Description: Returns the nth transform in the palette.
+//  Description: Returns the nth transform in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE const VertexTransform *TransformPalette::
+INLINE const VertexTransform *TransformTable::
 get_transform(int n) const {
   nassertr(n >= 0 && n < (int)_transforms.size(), NULL);
   return _transforms[n];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_modified
+//     Function: TransformTable::get_modified
 //       Access: Published
 //  Description: Returns a sequence number that's guaranteed to change
-//               at least when any VertexTransforms in the palette
+//               at least when any VertexTransforms in the table
 //               change.  (However, this is only true for a registered
-//               palette.  An unregistered palette may or may not
+//               table.  An unregistered table may or may not
 //               reflect an update here when a VertexTransform
 //               changes.)
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq TransformPalette::
+INLINE UpdateSeq TransformTable::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::update_modified
+//     Function: TransformTable::update_modified
 //       Access: Private
 //  Description: Called internally whenever a nested VertexTransform
 //               reports that it has been modified.
 ////////////////////////////////////////////////////////////////////
-INLINE void TransformPalette::
+INLINE void TransformTable::
 update_modified(UpdateSeq modified) {
   CDWriter cdata(_cycler);
   cdata->_modified = modified;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::Constructor
+//     Function: TransformTable::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformPalette::CData::
+INLINE TransformTable::CData::
 CData() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::Copy Constructor
+//     Function: TransformTable::CData::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformPalette::CData::
-CData(const TransformPalette::CData &copy) :
+INLINE TransformTable::CData::
+CData(const TransformTable::CData &copy) :
   _modified(copy._modified)
 {
 }

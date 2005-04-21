@@ -1,4 +1,4 @@
-// Filename: transformPalette.cxx
+// Filename: transformTable.cxx
 // Created by:  drose (23Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,65 +16,65 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "transformPalette.h"
+#include "transformTable.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
-TypeHandle TransformPalette::_type_handle;
+TypeHandle TransformTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::Constructor
+//     Function: TransformTable::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TransformPalette::
-TransformPalette() :
+TransformTable::
+TransformTable() :
   _is_registered(false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::Copy Constructor
+//     Function: TransformTable::Copy Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TransformPalette::
-TransformPalette(const TransformPalette &copy) :
+TransformTable::
+TransformTable(const TransformTable &copy) :
   _is_registered(false),
   _transforms(copy._transforms)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::Copy Assignment Operator
+//     Function: TransformTable::Copy Assignment Operator
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
-operator = (const TransformPalette &copy) {
+void TransformTable::
+operator = (const TransformTable &copy) {
   nassertv(!_is_registered);
   _transforms = copy._transforms;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::Destructor
+//     Function: TransformTable::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TransformPalette::
-~TransformPalette() {
+TransformTable::
+~TransformTable() {
   if (_is_registered) {
     do_unregister();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::set_transform
+//     Function: TransformTable::set_transform
 //       Access: Published
 //  Description: Replaces the nth transform.  Only valid for
-//               unregistered palettes.
+//               unregistered tables.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 set_transform(int n, const VertexTransform *transform) {
   nassertv(!_is_registered);
   nassertv(n >= 0 && n < (int)_transforms.size());
@@ -82,12 +82,12 @@ set_transform(int n, const VertexTransform *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::remove_transform
+//     Function: TransformTable::remove_transform
 //       Access: Published
 //  Description: Removes the nth transform.  Only valid for
-//               unregistered palettes.
+//               unregistered tables.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 remove_transform(int n) {
   nassertv(!_is_registered);
   nassertv(n >= 0 && n < (int)_transforms.size());
@@ -95,13 +95,13 @@ remove_transform(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::add_transform
+//     Function: TransformTable::add_transform
 //       Access: Published
-//  Description: Adds a new transform to the palette and returns the
+//  Description: Adds a new transform to the table and returns the
 //               index number of the new transform.  Only valid for
-//               unregistered palettes.
+//               unregistered tables.
 ////////////////////////////////////////////////////////////////////
-int TransformPalette::
+int TransformTable::
 add_transform(const VertexTransform *transform) {
   nassertr(!_is_registered, -1);
   int new_index = (int)_transforms.size();
@@ -110,11 +110,11 @@ add_transform(const VertexTransform *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::write
+//     Function: TransformTable::write
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 write(ostream &out) const {
   for (size_t i = 0; i < _transforms.size(); ++i) {
     out << i << ". " << *_transforms[i] << "\n";
@@ -122,59 +122,59 @@ write(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::do_register
+//     Function: TransformTable::do_register
 //       Access: Private
-//  Description: Called internally when the palette is registered.
+//  Description: Called internally when the table is registered.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 do_register() {
   nassertv(!_is_registered);
 
   Transforms::iterator ti;
   for (ti = _transforms.begin(); ti != _transforms.end(); ++ti) {
     VertexTransform *transform = (VertexTransform *)(*ti).p();
-    bool inserted = transform->_palettes.insert(this).second;
+    bool inserted = transform->_tables.insert(this).second;
     nassertv(inserted);
   }
   _is_registered = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::do_unregister
+//     Function: TransformTable::do_unregister
 //       Access: Private
-//  Description: Called internally when the palette is unregistered
+//  Description: Called internally when the table is unregistered
 //               (i.e. right before destruction).
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 do_unregister() {
   nassertv(_is_registered);
 
   Transforms::iterator ti;
   for (ti = _transforms.begin(); ti != _transforms.end(); ++ti) {
     VertexTransform *transform = (VertexTransform *)(*ti).p();
-    transform->_palettes.erase(this);
+    transform->_tables.erase(this);
   }
   _is_registered = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::register_with_read_factory
+//     Function: TransformTable::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               TransformPalette.
+//               TransformTable.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::write_datagram
+//     Function: TransformTable::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
 
@@ -189,13 +189,13 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::complete_pointers
+//     Function: TransformTable::complete_pointers
 //       Access: Public, Virtual
 //  Description: Receives an array of pointers, one for each time
 //               manager->read_pointer() was called in fillin().
 //               Returns the number of pointers processed.
 ////////////////////////////////////////////////////////////////////
-int TransformPalette::
+int TransformTable::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
@@ -209,16 +209,16 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::make_from_bam
+//     Function: TransformTable::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type TransformPalette is encountered
-//               in the Bam file.  It should create the TransformPalette
+//               when a new object of type TransformTable is encountered
+//               in the Bam file.  It should create the TransformTable
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *TransformPalette::
+TypedWritable *TransformTable::
 make_from_bam(const FactoryParams &params) {
-  TransformPalette *object = new TransformPalette;
+  TransformTable *object = new TransformTable;
   DatagramIterator scan;
   BamReader *manager;
 
@@ -229,13 +229,13 @@ make_from_bam(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::fillin
+//     Function: TransformTable::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new TransformPalette.
+//               the new TransformTable.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::
+void TransformTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
@@ -250,33 +250,33 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::make_copy
+//     Function: TransformTable::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CycleData *TransformPalette::CData::
+CycleData *TransformTable::CData::
 make_copy() const {
   return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::write_datagram
+//     Function: TransformTable::CData::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::CData::
+void TransformTable::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::fillin
+//     Function: TransformTable::CData::fillin
 //       Access: Public, Virtual
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new TransformPalette.
+//               the new TransformTable.
 ////////////////////////////////////////////////////////////////////
-void TransformPalette::CData::
+void TransformTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _modified = VertexTransform::get_next_modified();
 }

@@ -75,12 +75,14 @@ munge_format_impl(const qpGeomVertexFormat *orig,
        NT_float32, C_other);
 
     if (animation.get_indexed_transforms()) {
-      // Also, if we'll be indexing into the transform palette, reserve
+      // Also, if we'll be indexing into the transform table, reserve
       // space for the index.
 
       // TODO: We should examine the maximum palette index so we can
       // decide whether we need 16-bit indices.  That implies saving
       // the maximum palette index, presumably in the AnimationSpec.
+      // At the moment, I don't think any existing hardware supports
+      // more than 255 indices anyway.
       new_array_format->add_column
         (InternalName::get_transform_index(), animation.get_num_transforms(),
          NT_uint8, C_index);

@@ -142,69 +142,69 @@ get_array(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::get_transform_palette
+//     Function: qpGeomVertexData::get_transform_table
 //       Access: Published
-//  Description: Returns a const pointer to the TransformPalette
+//  Description: Returns a const pointer to the TransformTable
 //               assigned to this data.  Vertices within the table
-//               will index into this palette to indicate their
+//               will index into this table to indicate their
 //               dynamic skinning information; this table is used when
 //               the vertex animation is to be performed by the
 //               graphics hardware (but also see
-//               get_transform_blend_palette()).
+//               get_transform_blend_table()).
 //
 //               This will return NULL if the vertex data does not
-//               have a TransformPalette assigned (which implies the
+//               have a TransformTable assigned (which implies the
 //               vertices will not be animated by the graphics
 //               hardware).
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformPalette *qpGeomVertexData::
-get_transform_palette() const {
+INLINE const TransformTable *qpGeomVertexData::
+get_transform_table() const {
   CDReader cdata(_cycler);
-  return cdata->_transform_palette;
+  return cdata->_transform_table;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::clear_transform_palette
+//     Function: qpGeomVertexData::clear_transform_table
 //       Access: Published
-//  Description: Sets the TransformPalette pointer to NULL,
-//               removing the palette from the vertex data.  This
+//  Description: Sets the TransformTable pointer to NULL,
+//               removing the table from the vertex data.  This
 //               disables hardware-driven vertex animation.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexData::
-clear_transform_palette() {
-  set_transform_palette(NULL);
+clear_transform_table() {
+  set_transform_table(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::get_transform_blend_palette
+//     Function: qpGeomVertexData::get_transform_blend_table
 //       Access: Published
-//  Description: Returns a const pointer to the TransformBlendPalette
+//  Description: Returns a const pointer to the TransformBlendTable
 //               assigned to this data.  Vertices within the table
-//               will index into this palette to indicate their
+//               will index into this table to indicate their
 //               dynamic skinning information; this table is used when
 //               the vertex animation is to be performed by the CPU
-//               (but also see get_transform_palette()).
+//               (but also see get_transform_table()).
 //
 //               This will return NULL if the vertex data does not
-//               have a TransformBlendPalette assigned (which implies
+//               have a TransformBlendTable assigned (which implies
 //               the vertices will not be animated by the CPU).
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformBlendPalette *qpGeomVertexData::
-get_transform_blend_palette() const {
+INLINE const TransformBlendTable *qpGeomVertexData::
+get_transform_blend_table() const {
   CDReader cdata(_cycler);
-  return cdata->_transform_blend_palette;
+  return cdata->_transform_blend_table;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::clear_transform_blend_palette
+//     Function: qpGeomVertexData::clear_transform_blend_table
 //       Access: Published
-//  Description: Sets the TransformBlendPalette pointer to NULL,
-//               removing the palette from the vertex data.  This
+//  Description: Sets the TransformBlendTable pointer to NULL,
+//               removing the table from the vertex data.  This
 //               disables CPU-driven vertex animation.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexData::
-clear_transform_blend_palette() {
-  set_transform_blend_palette(NULL);
+clear_transform_blend_table() {
+  set_transform_blend_table(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,16 +399,16 @@ unpack_abcd_d(PN_uint32 data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::add_transform
 //       Access: Private, Static
-//  Description: Adds the indicated transform to the palette, if it is
+//  Description: Adds the indicated transform to the table, if it is
 //               not already there, and returns its index number.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexData::
-add_transform(TransformPalette *palette, const VertexTransform *transform,
+add_transform(TransformTable *table, const VertexTransform *transform,
               TransformMap &already_added) {
-  pair<TransformMap::iterator, bool> result = already_added.insert(TransformMap::value_type(transform, palette->get_num_transforms()));
+  pair<TransformMap::iterator, bool> result = already_added.insert(TransformMap::value_type(transform, table->get_num_transforms()));
   
   if (result.second) {
-    palette->add_transform(transform);
+    table->add_transform(transform);
   }
 
   return (*(result.first)).second;
@@ -472,8 +472,8 @@ INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
   _usage_hint(copy._usage_hint),
   _arrays(copy._arrays),
-  _transform_palette(copy._transform_palette),
-  _transform_blend_palette(copy._transform_blend_palette),
+  _transform_table(copy._transform_table),
+  _transform_blend_table(copy._transform_blend_table),
   _slider_table(copy._slider_table),
   _animated_vertices(copy._animated_vertices),
   _animated_vertices_modified(copy._animated_vertices_modified),
