@@ -612,26 +612,38 @@ reset() {
   }
 
   _glBlendEquation = NULL;
-  if (has_extension("GL_EXT_blend_minmax") || is_at_least_version(1, 2)) {
+  bool supports_blend_equation = false;
+  if (is_at_least_version(1, 2)) {
+    supports_blend_equation = true;
+    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BlendEquation");
+  } else if (has_extension("GL_EXT_blend_minmax")) {
+    supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquationEXT");
-    if (_glBlendEquation == NULL) {
-      GLCAT.warning()
-        << "BlendEquation advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
-    }
+  }
+  if (supports_blend_equation && _glBlendEquation == NULL) {
+    GLCAT.warning()
+      << "BlendEquation advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
   }
   if (_glBlendEquation == NULL) {
     _glBlendEquation = null_glBlendEquation;
   }
 
   _glBlendColor = NULL;
-  if (has_extension("GL_EXT_blend_color") || is_at_least_version(1, 2)) {
+  bool supports_blend_color = false;
+  if (is_at_least_version(1, 2)) {
+    supports_blend_color = true;
+    _glBlendColor = (PFNGLBLENDCOLORPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BlendColor");
+  } else if (has_extension("GL_EXT_blend_color")) {
+    supports_blend_color = true;
     _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendColorEXT");
-    if (_glBlendColor == NULL) {
-      GLCAT.warning()
-        << "BlendColor advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
-    }
+  }
+  if (supports_blend_color && _glBlendColor == NULL) {
+    GLCAT.warning()
+      << "BlendColor advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
   }
   if (_glBlendColor == NULL) {
     _glBlendColor = null_glBlendColor;
