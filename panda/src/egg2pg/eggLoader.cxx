@@ -176,6 +176,14 @@ build_graph() {
   _data->get_connected_shading();
   _data->unify_attributes(true, true);
 
+  // Now we need to get the connected shading again, since in unifying
+  // the attributes we may have made vertices suddenly become
+  // identical to each other, thereby connecting more primitives than
+  // before.
+  _data->clear_connected_shading();
+  _data->remove_unused_vertices(true);
+  _data->get_connected_shading();
+
   // Sequences and switches have special needs.  Make sure that
   // primitives parented directly to a sequence or switch are sorted
   // into sub-groups first, to prevent them being unified into a
