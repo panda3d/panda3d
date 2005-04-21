@@ -68,6 +68,8 @@ PUBLISHED:
   INLINE void remove_geom(int n);
   INLINE void remove_all_geoms();
 
+  void unify();
+
   void write_geoms(ostream &out, int indent_level) const;
   void write_verbose(ostream &out, int indent_level) const;
 

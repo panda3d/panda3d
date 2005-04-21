@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeom.h"
+#include "qpgeomPoints.h"
 #include "qpgeomVertexReader.h"
 #include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
@@ -232,8 +233,14 @@ make_nonindexed(bool composite_only) {
     PT(qpGeomPrimitive) primitive = (*pi)->make_copy();
     new_prims.push_back(primitive);
 
+    // GeomPoints are considered "composite" for the purposes of
+    // making nonindexed, since there's no particular advantage to
+    // having indexed points (as opposed to, say, indexed triangles or
+    // indexed lines).
     if (primitive->is_indexed() && 
-        (primitive->is_composite() || !composite_only)) {
+        (primitive->is_composite() || 
+         primitive->is_exact_type(qpGeomPoints::get_class_type()) || 
+         !composite_only)) {
       primitive->make_nonindexed(new_data, orig_data);
       ++num_changed;
     } else {
@@ -281,18 +288,16 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
-  // They also should have the same fundamental shade model, but
-  // SM_uniform is compatible with anything.
-  nassertv(cdata->_shade_model == SM_uniform ||
-           primitive->get_shade_model() == SM_uniform ||
-           cdata->_shade_model == primitive->get_shade_model());
+  // They also should have the a compatible shade model.
+  CPT(qpGeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
+  nassertv_always(compat != (qpGeomPrimitive *)NULL);
 
-  cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
-  PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  cdata->_primitives[i] = (qpGeomPrimitive *)compat.p();
+  PrimitiveType new_primitive_type = compat->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
   }
-  ShadeModel new_shade_model = primitive->get_shade_model();
+  ShadeModel new_shade_model = compat->get_shade_model();
   if (new_shade_model != cdata->_shade_model &&
       new_shade_model != SM_uniform) {
     cdata->_shade_model = new_shade_model;
@@ -323,18 +328,16 @@ add_primitive(const qpGeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
-  // They also should have the same fundamental shade model, but
-  // SM_uniform is compatible with anything.
-  nassertv(cdata->_shade_model == SM_uniform ||
-           primitive->get_shade_model() == SM_uniform ||
-           cdata->_shade_model == primitive->get_shade_model());
+  // They also should have the a compatible shade model.
+  CPT(qpGeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
+  nassertv_always(compat != (qpGeomPrimitive *)NULL);
 
-  cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
-  PrimitiveType new_primitive_type = primitive->get_primitive_type();
+  cdata->_primitives.push_back((qpGeomPrimitive *)compat.p());
+  PrimitiveType new_primitive_type = compat->get_primitive_type();
   if (new_primitive_type != cdata->_primitive_type) {
     cdata->_primitive_type = new_primitive_type;
   }
-  ShadeModel new_shade_model = primitive->get_shade_model();
+  ShadeModel new_shade_model = compat->get_shade_model();
   if (new_shade_model != cdata->_shade_model &&
       new_shade_model != SM_uniform) {
     cdata->_shade_model = new_shade_model;
@@ -515,6 +518,51 @@ unify_in_place() {
   reset_geom_rendering(cdata);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::copy_primitives_from
+//       Access: Published
+//  Description: Copies the primitives from the indicated Geom into
+//               this one.  This does require that both Geoms contain
+//               the same fundamental type primitives, both have a
+//               compatible shade model, and both use the same
+//               GeomVertexData.
+//
+//               Returns true if the copy is successful, or false
+//               otherwise (because the Geoms were mismatched).
+////////////////////////////////////////////////////////////////////
+bool qpGeom::
+copy_primitives_from(const qpGeom *other) {
+  if (get_primitive_type() != PT_none &&
+      other->get_primitive_type() != get_primitive_type()) {
+    return false;
+  }
+  if (get_vertex_data() != other->get_vertex_data()) {
+    return false;
+  }
+
+  ShadeModel this_shade_model = get_shade_model();
+  ShadeModel other_shade_model = other->get_shade_model();
+  if (this_shade_model != SM_uniform && other_shade_model != SM_uniform &&
+      this_shade_model != other_shade_model) {
+    if ((this_shade_model == SM_flat_first_vertex && other_shade_model == SM_flat_last_vertex) ||
+        (this_shade_model == SM_flat_last_vertex && other_shade_model == SM_flat_first_vertex)) {
+      // This is acceptable; we can rotate the primitives to match.
+
+    } else {
+      // Otherwise, we have incompatible shade models.
+      return false;
+    }
+  }
+
+  int num_primitives = other->get_num_primitives();
+  for (int i = 0; i < num_primitives; i++) {
+    add_primitive(other->get_primitive(i));
+  }
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_num_bytes
 //       Access: Published
@@ -682,11 +730,13 @@ output(ostream &out) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
+  int num_faces = 0;
   pset<TypeHandle> types;
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
+    num_faces += (*pi)->get_num_faces();
     types.insert((*pi)->get_type());
   }
 
@@ -695,7 +745,7 @@ output(ostream &out) const {
   for (ti = types.begin(); ti != types.end(); ++ti) {
     out << " " << (*ti);
   }
-  out << " ], " << cdata->_data->get_num_rows() << " vertices";
+  out << " ], " << num_faces << " faces";
 }
 
 ////////////////////////////////////////////////////////////////////

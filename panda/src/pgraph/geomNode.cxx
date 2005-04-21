@@ -450,6 +450,75 @@ add_geoms_from(const GeomNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::unify
+//       Access: Published
+//  Description: Attempts to unify all of the Geoms contained within
+//               this node into a single Geom, or at least as few
+//               Geoms as possible.  In turn, the individual
+//               GeomPrimitives contained within each resulting Geom
+//               are also unified.  The goal is to reduce the number
+//               of GeomPrimitives within the node as far as possible.
+//               This may result in composite primitives, such as
+//               triangle strips and triangle fans, being decomposed
+//               into triangles.  See also Geom::unify().
+//
+//               In order for this to be successful, the primitives
+//               must reference the same GeomVertexData, have the same
+//               fundamental primitive type, and have compatible shade
+//               models.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+unify() {
+  CDWriter cdata(_cycler);
+
+  Geoms new_geoms;
+
+  // Try to unify each Geom with each preceding Geom.  This is an n^2
+  // operation, but usually there are only a handful of Geoms to
+  // consider, so that's not a big deal.
+  Geoms::iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    
+    bool unified = false;
+    if (entry._geom->is_of_type(qpGeom::get_class_type())) {
+      Geoms::iterator gj;
+      for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
+        GeomEntry &new_entry = (*gj);
+        if (new_entry._geom->is_of_type(qpGeom::get_class_type())) {
+          if (entry._state == new_entry._state) {
+            // Both states match, so try to combine the primitives.
+            if (DCAST(qpGeom, new_entry._geom)->copy_primitives_from
+                (DCAST(qpGeom, entry._geom))) {
+              // Successfully combined!
+              unified = true;
+            }
+          }
+        }
+      }
+    }
+
+    if (!unified) {
+      // Couldn't unify this Geom with anything, so just add it to the
+      // output list.
+      new_geoms.push_back(entry);
+    }
+  }
+
+  // Done!  We'll keep whatever's left in the output list.
+  cdata->_geoms.swap(new_geoms);
+  new_geoms.clear();
+
+  // Finally, go back through and unify the resulting geom(s).
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    if (entry._geom->is_of_type(qpGeom::get_class_type())) {
+      DCAST(qpGeom, entry._geom)->unify_in_place();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::write_geoms
 //       Access: Published
 //  Description: Writes a short description of all the Geoms in the

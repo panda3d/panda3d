@@ -96,6 +96,8 @@ PUBLISHED:
   void rotate_in_place();
   void unify_in_place();
 
+  bool copy_primitives_from(const qpGeom *other);
+
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 

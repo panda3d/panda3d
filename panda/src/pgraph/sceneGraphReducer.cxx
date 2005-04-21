@@ -674,3 +674,22 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
     
   return num_changed;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_unify
+//       Access: Private
+//  Description: The recursive implementation of unify().
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+r_unify(PandaNode *node) {
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    geom_node->unify();
+  }
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    r_unify(children.get_child(i));
+  }
+}

@@ -617,7 +617,7 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
 //       Access: Public
 //  Description: Collects together individual GeomVertexData
 //               structures that share the same format into one big
-//               GeomVertexData structure.  This is designed to
+//               GeomVertexData structure.  This is intended to
 //               minimize context switches on the graphics card.
 ////////////////////////////////////////////////////////////////////
 int GeomTransformer::

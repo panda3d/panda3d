@@ -133,3 +133,14 @@ INLINE int SceneGraphReducer::
 make_nonindexed(PandaNode *root, int nonindexed_bits) {
   return r_make_nonindexed(root, nonindexed_bits);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::unify
+//       Access: Published
+//  Description: Calls unify() on every GeomNode at this level and
+//               below.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneGraphReducer::
+unify(PandaNode *root) {
+  r_unify(root);
+}

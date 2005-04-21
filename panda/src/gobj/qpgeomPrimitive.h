@@ -122,6 +122,7 @@ PUBLISHED:
 
   CPT(qpGeomPrimitive) decompose() const;
   CPT(qpGeomPrimitive) rotate() const;
+  CPT(qpGeomPrimitive) match_shade_model(ShadeModel shade_model) const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;

@@ -675,7 +675,9 @@ decompose() const {
 //     Function: qpGeomPrimitive::rotate
 //       Access: Published
 //  Description: Returns a new primitive with the shade_model reversed
-//               (if it is flat shaded).
+//               (if it is flat shaded), if possible.  If the
+//               primitive type cannot be rotated, returns the
+//               original primitive, unrotated.
 //
 //               If the current shade_model indicates
 //               flat_vertex_last, this should bring the last vertex
@@ -694,12 +696,68 @@ rotate() const {
   CPT(qpGeomVertexArrayData) rotated_vertices = rotate_impl();
 
   if (rotated_vertices == (qpGeomVertexArrayData *)NULL) {
+    // This primitive type can't be rotated.
     return this;
   }
 
   PT(qpGeomPrimitive) new_prim = make_copy();
   new_prim->set_vertices(rotated_vertices);
+
+  switch (get_shade_model()) {
+  case SM_flat_first_vertex:
+    new_prim->set_shade_model(SM_flat_last_vertex);
+    break;
+
+  case SM_flat_last_vertex:
+    new_prim->set_shade_model(SM_flat_first_vertex);
+    break;
+
+  default:
+    break;
+  }
+
   return new_prim;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::match_shade_model
+//       Access: Published
+//  Description: Returns a new primitive that is compatible with the
+//               indicated shade model, if possible, or NULL if this
+//               is not possible.
+//
+//               In most cases, this will return either NULL or the
+//               original primitive.  In the case of a
+//               SM_flat_first_vertex vs. a SM_flat_last_vertex (or
+//               vice-versa), however, it will return a rotated
+//               primitive.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomPrimitive) qpGeomPrimitive::
+match_shade_model(qpGeomPrimitive::ShadeModel shade_model) const {
+  ShadeModel this_shade_model = get_shade_model();
+  if (this_shade_model == shade_model) {
+    // Trivially compatible.
+    return this;
+  }
+
+  if (this_shade_model == SM_uniform || shade_model == SM_uniform) {
+    // SM_uniform is compatible with anything.
+    return this;
+  }
+
+  if ((this_shade_model == SM_flat_first_vertex && shade_model == SM_flat_last_vertex) ||
+      (this_shade_model == SM_flat_last_vertex && shade_model == SM_flat_first_vertex)) {
+    // Needs to be rotated.
+    CPT(qpGeomPrimitive) rotated = rotate();
+    if (rotated == this) {
+      // Oops, can't be rotated, sorry.
+      return NULL;
+    }
+    return rotated;
+  }
+
+  // Not compatible, sorry.
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -83,6 +83,12 @@ event_W(CPT_Event, void *) {
 }
 
 void
+event_F(CPT_Event, void *) {
+  // shift-F: flatten the model hierarchy.
+  framework.get_models().flatten_strong();
+}
+
+void
 event_Enter(CPT_Event, void *) {
   // alt-enter: toggle between window/fullscreen in the same scene.
 
@@ -133,8 +139,9 @@ event_0(CPT_Event event, void *) {
   // 0: run hacky test.
 
   SceneGraphReducer gr;
-  gr.make_nonindexed(framework.get_models().node());
   gr.collect_vertex_data(framework.get_models().node());
+  gr.unify(framework.get_models().node());
+  gr.make_nonindexed(framework.get_models().node());
 
   /*
   static int count = 0;
@@ -312,6 +319,7 @@ main(int argc, char *argv[]) {
 
     framework.enable_default_keys();
     framework.define_key("shift-w", "open a new window", event_W, NULL);
+    framework.define_key("shift-f", "flatten hierarchy", event_F, NULL);
     framework.define_key("alt-enter", "toggle between window/fullscreen", event_Enter, NULL);
     framework.define_key("2", "split the window", event_2, NULL);
     if (pview_test_hack) {
