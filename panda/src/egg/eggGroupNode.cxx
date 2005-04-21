@@ -865,8 +865,8 @@ remove_invalid_primitives(bool recurse) {
 //               get_connected_shading().
 //
 //               It may be a good idea to call
-//               remove_unused_vertices() at the same time, to
-//               establish the correct connectivity.
+//               remove_unused_vertices() as well, to establish the
+//               correct connectivity between common vertices.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 clear_connected_shading() {
