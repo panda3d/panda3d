@@ -1098,7 +1098,7 @@ def randInt32(rng=random.random):
     """
     i = int(rng() * 0x7FFFFFFF)
     if rng() < .5:
-        i += 0x80000000
+        i *= -1
     return i
 
 class Enum:

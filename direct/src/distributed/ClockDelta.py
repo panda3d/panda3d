@@ -23,8 +23,9 @@ NetworkTimePrecision = 100.0
 
 # These values are derived from the above.
 NetworkTimeMask = (1 << NetworkTimeBits) - 1
+NetworkTimeSignedMask = NetworkTimeMask >> 1 # the max absolute value bits.
 NetworkTimeTopBits = 32 - NetworkTimeBits
-MaxTimeDelta = (NetworkTimeMask / 2.0) / NetworkTimePrecision
+MaxTimeDelta = NetworkTimeSignedMask / NetworkTimePrecision
 
 # This is the maximum number of seconds by which we expect our clock
 # (or the server's clock) to drift over an hour.
@@ -65,7 +66,7 @@ class ClockDelta(DirectObject.DirectObject):
         # uncertainty increases over time (due to relative clock
         # drift).
         self.lastResync = 0.0
-        
+
         self.accept("resetClock", self.__resetClock)
 
     def getDelta(self):
@@ -76,10 +77,10 @@ class ClockDelta(DirectObject.DirectObject):
         # as a number of seconds plus or minus.  Returns None,
         # representing infinite uncertainty, if we have never received
         # a time measurement.
-        
+
         if self.uncertainty == None:
             return None
-        
+
         now = self.globalClock.getRealTime()
         elapsed = now - self.lastResync
         return self.uncertainty + elapsed * ClockDriftPerSecond
@@ -88,7 +89,7 @@ class ClockDelta(DirectObject.DirectObject):
         # Returns the local time at which we last resynchronized the
         # clock delta.
         return self.lastResync
-    
+
     def __resetClock(self, timeDelta):
         """
         this is called when the global clock gets adjusted
@@ -134,7 +135,7 @@ class ClockDelta(DirectObject.DirectObject):
         value is negative if the test was not even considered (because
         it happened too soon after another recent request).
         """
-        
+
         now = self.globalClock.getRealTime()
         if now - self.lastResync < P2PResyncDelay:
             # We can't process this request; it came in on the heels
@@ -143,7 +144,7 @@ class ClockDelta(DirectObject.DirectObject):
             # request is meaningless.
             assert(self.notify.debug("Ignoring request for resync from %s within %.3f s." % (avId, now - self.lastResync)))
             return -1
-            
+
         # The timestamp value will be a timestamp that we sent out
         # previously, echoed back to us.  Therefore we can confidently
         # convert it back into our local time, even though we suspect
@@ -168,7 +169,7 @@ class ClockDelta(DirectObject.DirectObject):
             self.notify.info("Got sync +/- %.3f s, elapsed %.3f s, from %s." % (uncertainty, elapsed, avId))
             delta -= elapsed / 2.0
             uncertainty += elapsed / 2.0
-        
+
             gotSync = self.newDelta(local, delta, uncertainty, trustNew = 0)
 
         return gotSync
@@ -188,7 +189,7 @@ class ClockDelta(DirectObject.DirectObject):
             # Our previous measurement was self.delta +/- oldUncertainty;
             # our new measurement is newDelta +/- newUncertainty.  Take
             # the intersection of both.
-            
+
             oldLow = self.delta - oldUncertainty
             oldHigh = self.delta + oldUncertainty
             newLow = newDelta - newUncertainty
@@ -196,20 +197,20 @@ class ClockDelta(DirectObject.DirectObject):
 
             low = max(oldLow, newLow)
             high = min(oldHigh, newHigh)
-                      
+
             # If there is no intersection, whoops!  Either the old
             # measurement or the new measurement is completely wrong.
             if low > high:
                 if not trustNew:
                     self.notify.info('discarding new delta.')
                     return 0
-                
+
                 self.notify.info('discarding previous delta.')
             else:
                 newDelta = (low + high) / 2.0
                 newUncertainty = (high - low) / 2.0
                 assert(self.notify.debug('intersection at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty)))
-        
+
         self.delta = newDelta
         self.uncertainty = newUncertainty
         self.lastResync = localTime
@@ -245,9 +246,9 @@ class ClockDelta(DirectObject.DirectObject):
             # Assume the bits is either 16 or 32.  If it's 32, no need
             # to sign-extend.  32 bits gives us about 227 days of
             # continuous timestamp.
-            
+
             diff = networkTime - ntime
-        
+
         return now + float(diff) / ticksPerSec
 
     def localToNetworkTime(self, localTime, bits = 16,
@@ -310,6 +311,13 @@ class ClockDelta(DirectObject.DirectObject):
         Preserves the lower NetworkTimeBits of the networkTime value,
         and extends the sign bit all the way up.
         """
-        return ((networkTime & NetworkTimeMask) << NetworkTimeTopBits) >> NetworkTimeTopBits
+        if networkTime < 0:
+            # flip the sign, mask it as if it were positive, flip the sign back:
+            r = (networkTime * -1 & NetworkTimeSignedMask) * -1
+        else:
+            r = networkTime & NetworkTimeSignedMask
+        assert -32768 <= r <= 32767
+        return r
+
 
 globalClockDelta = ClockDelta()
