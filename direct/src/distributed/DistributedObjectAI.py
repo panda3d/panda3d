@@ -22,7 +22,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.air = air
             # Record our parentId and zoneId
             self.__location = None
-            
+
             # Record our distributed class
             className = self.__class__.__name__
             self.dclass = self.air.dclassesByName[className]
@@ -248,13 +248,13 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
     if wantOtpServer:
         def GetPuppetConnectionChannel(self, doId):
-            return doId + ( 1L << 32);
+            return doId + (1L << 32);
 
         def GetAccountIDFromChannelCode(self, channel):
-            return (channel >> 32)
+            return channel >> 32
 
         def GetAvatarIDFromChannelCode(self, channel):
-            return (channel  & 0xffffffffL)
+            return channel & 0xffffffffL
 
         def sendUpdateToAvatarId(self, avId, fieldName, args):
             assert self.notify.debugStateCall(self)
