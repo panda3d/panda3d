@@ -48,7 +48,14 @@ glxGraphicsPipe(const string &display) {
     display_spec = ":0.0";
   }
 
+  // The X docs say we should do this to get international character
+  // support from the keyboard.
   setlocale(LC_ALL, "");
+
+  // But it's important that we use the "C" locale for numeric
+  // formatting, since all of the internal Panda code assumes this--we
+  // need a decimal point to mean a decimal point.
+  setlocale(LC_NUMERIC, "C");
 
   _is_valid = false;
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
