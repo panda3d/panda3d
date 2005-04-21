@@ -2316,6 +2316,18 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
+
+    // Before we compile or call a display list, make sure the current
+    // buffers are unbound, or the nVidia drivers may crash.
+    if (_current_vbuffer_index != 0) {
+      _glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _current_vbuffer_index = 0;
+    }
+    if (_current_ibuffer_index != 0) {
+      _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      _current_ibuffer_index = 0;
+    }
+
     GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
