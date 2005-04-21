@@ -22,6 +22,7 @@
 #include "bamWriter.h"
 
 TypeHandle TransformBlendTable::_type_handle;
+TypeHandle TransformBlendTable::_palette_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformBlendTable::Constructor
@@ -211,6 +212,7 @@ clear_modified() {
 void TransformBlendTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+  BamReader::get_factory()->register_factory(_palette_type_handle, make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////

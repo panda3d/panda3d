@@ -130,6 +130,10 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "TransformBlendTable",
                   TypedWritableReferenceCount::get_class_type());
+    // The _palette_type_handle is defined only to support older bam
+    // files, generated before we renamed the type to TransformBlendTable.
+    register_type(_palette_type_handle, "TransformBlendPalette",
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -138,6 +142,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  static TypeHandle _palette_type_handle;
 
   friend class VertexTransform;
 };
