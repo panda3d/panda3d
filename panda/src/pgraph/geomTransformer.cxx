@@ -22,6 +22,9 @@
 #include "qpgeom.h"
 #include "qpgeomVertexRewriter.h"
 #include "renderState.h"
+#include "transformTable.h"
+#include "transformBlendTable.h"
+#include "sliderTable.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Constructor
@@ -597,11 +600,145 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
     int stride = format->get_array(i)->get_stride();
     int start_byte = offset * stride;
     int copy_bytes = old_array->get_data_size_bytes();
-    nassertr(start_byte + copy_bytes == new_array->get_data_size_bytes(), false);
+    nassertr(start_byte + copy_bytes == new_array->get_data_size_bytes(), 0);
 
     memcpy(new_array->modify_data() + start_byte,
            old_array->get_data(), copy_bytes);
   }
+
+  // Also, copy the animation data (if any).  This means combining
+  // transform and/or slider tables, and might therefore mean
+  // remapping transform indices in the vertices.  Each of these has a
+  // slightly different way to handle the remapping, because they have
+  // slightly different kinds of data.
+  typedef pvector<int> IndexMap;
+
+  if (vdata->get_transform_table() != (TransformTable *)NULL) {
+    // The TransformTable.
+    const TransformTable *old_table = vdata->get_transform_table();
+    // First, build a mapping of the transforms we already have in the
+    // current table.  We must do this because the TransformTable
+    // doesn't automatically unquify index numbers for us (it doesn't
+    // store an index).
+    typedef pmap<const VertexTransform *, int> AddedTransforms;
+    AddedTransforms added_transforms;
+
+    int num_old_transforms = old_table->get_num_transforms();
+    for (int i = 0; i < num_old_transforms; i++) {
+      added_transforms[old_table->get_transform(i)] = i;
+    }
+
+    // Now create a new table.  We have to create a new table instead
+    // of modifying the existing one, since a registered
+    // TransformTable cannot be modified.
+    PT(TransformTable) new_table;
+    if (new_data->get_transform_table() != (TransformTable *)NULL) {
+      new_table = new TransformTable(*new_data->get_transform_table());
+    } else {
+      new_table = new TransformTable;
+    }
+
+    // Now walk through the old table and copy over its transforms.
+    // We will build up an IndexMap of old index numbers to new index
+    // numbers while we go, which we can use to modify the vertices.
+    IndexMap transform_map;
+
+    int num_transforms = old_table->get_num_transforms();
+    transform_map.reserve(num_transforms);
+    for (int ti = 0; ti < num_transforms; ++ti) {
+      const VertexTransform *transform = old_table->get_transform(ti);
+      AddedTransforms::iterator ai = added_transforms.find(transform);
+      if (ai != added_transforms.end()) {
+        // Already got this one in the table.
+        transform_map.push_back((*ai).second);
+      } else {
+        // This is a new one.
+        int tj = new_table->add_transform(transform);
+        transform_map.push_back(tj);
+        added_transforms[transform] = tj;
+      }
+    }
+    new_data->set_transform_table(TransformTable::register_table(new_table));
+
+    // And now modify the vertices to update the indices to their new
+    // values in the new table.  This requires a nested loop, since
+    // each column of transform_index might define multiple index
+    // values.
+    qpGeomVertexRewriter index(new_data, InternalName::get_transform_index());
+    if (index.has_column()) {
+      int num_values = index.get_column()->get_num_values();
+      int new_index[4];
+
+      index.set_row(offset);
+      while (!index.is_at_end()) {
+        const int *orig_index = index.get_data4i();
+        for (int i = 0; i < num_values; i++) {
+          nassertr(orig_index[i] >= 0 && orig_index[i] < (int)transform_map.size(), 0);
+          new_index[i] = transform_map[orig_index[i]];
+        }
+        index.set_data4i(new_index);
+      }
+    }
+  }
+
+  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL)  {
+    // The TransformBlendTable.  This one is the easiest, because we
+    // can modify it directly, and it will uniquify blend objects for
+    // us.
+    const TransformBlendTable *old_btable = vdata->get_transform_blend_table();
+    PT(TransformBlendTable) new_btable;
+    if (new_data->get_transform_blend_table() != (TransformBlendTable *)NULL) {
+      new_btable = new_data->modify_transform_blend_table();
+    } else {
+      new_btable = new TransformBlendTable;
+      new_data->set_transform_blend_table(new_btable);
+    }
+
+    // We still need to build up the IndexMap.
+    IndexMap blend_map;
+
+    int num_blends = old_btable->get_num_blends();
+    blend_map.reserve(num_blends);
+    for (int bi = 0; bi < num_blends; ++bi) {
+      int bj = new_btable->add_blend(old_btable->get_blend(bi));
+      blend_map.push_back(bj);
+    }
+
+    // Modify the indices.  This is simpler than the transform_index,
+    // above, because each column of transform_blend may only define
+    // one index value.
+    qpGeomVertexRewriter index(new_data, InternalName::get_transform_blend());
+    if (index.has_column()) {
+      index.set_row(offset);
+      while (!index.is_at_end()) {
+        int orig_index = index.get_data1i();
+        nassertr(orig_index >= 0 && orig_index < (int)blend_map.size(), 0);
+        int new_index = blend_map[orig_index];
+        index.set_data1i(new_index);
+      }
+    }
+  }
+
+  if (vdata->get_slider_table() != (SliderTable *)NULL) {
+    // The SliderTable.  This one requires making a copy, like the
+    // TransformTable (since it can't be modified once registered
+    // either), but at least it uniquifies sliders added to it.  Also,
+    // it doesn't require indexing into it, so we don't have to build
+    // an IndexMap to modify the vertices with.
+    const SliderTable *old_sliders = vdata->get_slider_table();
+    PT(SliderTable) new_sliders;
+    if (new_data->get_slider_table() != (SliderTable *)NULL) {
+      new_sliders = new SliderTable(*new_data->get_slider_table());
+    } else {
+      new_sliders = new SliderTable;
+    }
+    int num_sliders = old_sliders->get_num_sliders();
+    for (int si = 0; si < num_sliders; ++si) {
+      new_sliders->add_slider(old_sliders->get_slider(si));
+    }
+    new_data->set_slider_table(SliderTable::register_table(new_sliders));
+  }
+
 
   AlreadyCollectedData &acd = _already_collected[vdata];
   acd._data = new_data;

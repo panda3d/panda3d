@@ -100,6 +100,10 @@ remove_transform(int n) {
 //  Description: Adds a new transform to the table and returns the
 //               index number of the new transform.  Only valid for
 //               unregistered tables.
+//
+//               This does not automatically uniquify the pointer; if
+//               the transform is already present in the table, it
+//               will be added twice.
 ////////////////////////////////////////////////////////////////////
 int TransformTable::
 add_transform(const VertexTransform *transform) {
