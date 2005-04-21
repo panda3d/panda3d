@@ -112,7 +112,7 @@ PUBLISHED:
   Datagram client_format_generate(PyObject *distobj, int do_id, int zone_id,                              
                                   PyObject *optional_fields) const;
 
-  Datagram ai_database_generate_context(int context_id, int parent_id, int zone_id,
+  Datagram ai_database_generate_context(unsigned int context_id, unsigned int parent_id, unsigned int zone_id,
                                 CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const;
   
 #endif 
