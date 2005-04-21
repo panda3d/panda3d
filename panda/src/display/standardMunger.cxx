@@ -161,7 +161,16 @@ munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
       geom = geom->decompose();
     }
     if ((unsupported_bits & qpGeom::GR_shade_model_bits) != 0) {
+      // Rotate the vertices to account for different shade-model
+      // expectations (e.g. SM_flat_last_vertex to
+      // SM_flat_first_vertex)
       geom = geom->rotate();
+    }
+    if ((unsupported_bits & qpGeom::GR_indexed_bits) != 0) {
+      // Convert indexed geometry to nonindexed geometry.
+      PT(qpGeom) new_geom = new qpGeom(*geom);
+      new_geom->make_nonindexed(false);
+      geom = new_geom;
     }
   }
 

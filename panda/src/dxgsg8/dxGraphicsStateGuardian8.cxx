@@ -55,6 +55,8 @@
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
 #include "qpgeomLines.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomPoints.h"
 #include "qpGeomVertexReader.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
@@ -223,7 +225,13 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   // they copy framebuffer-to-texture.  Ok.
   _copy_texture_inverted = true;
 
+  // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
+  // texture coordinates via a texture matrix, a fatal flaw.  Without
+  // that support, we don't advertise this capability, and fall back
+  // to always generating quads for textured sprites.
   _supported_geom_rendering = 
+    qpGeom::GR_point | qpGeom::GR_point_uniform_size | 
+    qpGeom::GR_point_perspective | /* qpGeom::GR_point_sprite |*/
     qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
     qpGeom::GR_flat_first_vertex;
 }
@@ -401,8 +409,7 @@ dx_init(void) {
     _fog_enabled = false;
     _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, _fog_enabled);
 
-    _current_projection_mat = LMatrix4f::ident_mat();
-    _projection_mat_stack_count = 0;
+    _projection_mat = LMatrix4f::ident_mat();
     _has_scene_graph_color = false;
 
     // Apply a default material when materials are turned off.
@@ -663,6 +670,7 @@ prepare_display_region() {
   if (_current_display_region == (DisplayRegion*)0L) {
     dxgsg8_cat.error()
       << "Invalid NULL display region in prepare_display_region()\n";
+
   } else if (_current_display_region != _actual_display_region) {
     _actual_display_region = _current_display_region;
     
@@ -719,7 +727,7 @@ prepare_lens() {
   }
 
   // Start with the projection matrix from the lens.
-  const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat();
 
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of
@@ -736,19 +744,18 @@ prepare_lens() {
      0, 0, 0.5, 0,
      0, 0, 0.5, 1);
   
-  LMatrix4f new_projection_mat =
-    convert_mat * projection_mat * rescale_mat;
+  _projection_mat = convert_mat * lens_mat * rescale_mat;
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the
     // projection matrix.
     static LMatrix4f invert_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
-    new_projection_mat *= invert_mat;
+    _projection_mat *= invert_mat;
   }
 
   HRESULT hr = 
     _pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)new_projection_mat.get_data());
+                              (D3DMATRIX*)_projection_mat.get_data());
   return SUCCEEDED(hr);
 }
 
@@ -3096,6 +3103,48 @@ draw_lines(const qpGeomLines *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_linestrips
+//       Access: Public, Virtual
+//  Description: Draws a series of line strips.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_linestrips(const qpGeomLinestrips *primitive) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_points
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected points.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_points(const qpGeomPoints *primitive) {
+  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _primitive_batches_other_pcollector.add_level(1);
+
+  // The munger should have protected us from indexed points--DirectX
+  // doesn't support them.
+  nassertv(!primitive->is_indexed());
+
+  if (_active_vbuffer != NULL) {
+    // Nonindexed, vbuffers.
+    _pD3DDevice->DrawPrimitive
+      (D3DPT_POINTLIST, 
+       primitive->get_first_vertex(), 
+       primitive->get_num_primitives());
+    
+  } else {
+    // Nonindexed, client arrays.
+    int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+    unsigned int first_vertex = primitive->get_first_vertex();
+    _pD3DDevice->DrawPrimitiveUP
+      (D3DPT_POINTLIST, 
+       primitive->get_num_primitives(), 
+       _vertex_data->get_array(0)->get_data() + stride * first_vertex, 
+       stride);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()
@@ -3887,47 +3936,23 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_tex_gen(const TexGenAttrib *attrib) {
-  /*
-   * Automatically generate texture coordinates for stage 0.
-   * Use the wrap mode from the texture coordinate set at index 1.
-   */
-  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
-  if (attrib->is_empty()) {
+  TexGenAttrib::Mode mode = attrib->get_mode(TextureStage::get_default());
+  switch (mode) {
+  case TexGenAttrib::M_off:
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
+    break;
 
-    //enable_texturing(false);
-    // reset the texcoordindex lookup to 0
-    //_pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
-    //_pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
-    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
+  case TexGenAttrib::M_eye_sphere_map:
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX,
+                                      D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
+    break;
 
-  } else if (attrib->get_mode(TextureStage::get_default()) == TexGenAttrib::M_eye_sphere_map) {
-
-#if 0
-    // best reflection on a sphere is achieved by camera space normals in directx
-    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
-                                       D3DTSS_TCI_CAMERASPACENORMAL);
-    // We have set up the texture matrix to scale and translate the
-    // texture coordinates to get from camera space (-1, +1) to
-    // texture space (0,1)
-    LMatrix4f dm(0.5f, 0.0f, 0.0f, 0.0f,
-                 0.0f, 0.5f, 0.0f, 0.0f,
-                 0.0f, 0.0f, 1.0f, 0.0f,
-                 0.5f, 0.5f, 0.0f, 1.0f);
-#else
-    // since this is a reflection map, we want the camera space
-    // reflection vector. A close approximation of the asin(theta)/pi
-    // + 0.5 is achieved by the following matrix
-    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
-                                       D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
-    LMatrix4f dm(0.33f, 0.0f, 0.0f, 0.0f,
-                 0.0f, 0.33f, 0.0f, 0.0f,
-                 0.0f, 0.0f, 1.0f, 0.0f,
-                 0.5f, 0.5f, 0.0f, 1.0f);
-#endif
-    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
-                                          D3DTTFF_COUNT2);
-    //_pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, false);
+  case TexGenAttrib::M_point_sprite:
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE);
+    break;
   }
 }
 
@@ -4013,6 +4038,27 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   default:
     dxgsg8_cat.error()
       << "Unknown render mode " << (int)mode << endl;
+  }
+
+  // This might also specify the point size.
+  float point_size = attrib->get_thickness();
+  _pD3DDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&point_size));
+
+  if (attrib->get_perspective()) {
+    _pD3DDevice->SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
+
+    LVector3f height(0.0f, point_size, 1.0f);
+    height = height * _projection_mat;
+    float s = height[1] / point_size;
+
+    float zero = 0.0f;
+    float one_over_s2 = 1.0f / (s * s);
+    _pD3DDevice->SetRenderState(D3DRS_POINTSCALE_A, *((DWORD*)&zero));
+    _pD3DDevice->SetRenderState(D3DRS_POINTSCALE_B, *((DWORD*)&zero));
+    _pD3DDevice->SetRenderState(D3DRS_POINTSCALE_C, *((DWORD*)&one_over_s2));
+
+  } else {
+    _pD3DDevice->SetRenderState(D3DRS_POINTSCALEENABLE, FALSE);
   }
 
   _current_fill_mode = mode;

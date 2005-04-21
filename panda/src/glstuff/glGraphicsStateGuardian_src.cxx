@@ -371,6 +371,7 @@ reset() {
   report_extensions();
 
   _supported_geom_rendering = 
+    qpGeom::GR_indexed_point |
     qpGeom::GR_point | qpGeom::GR_point_uniform_size |
     qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
     qpGeom::GR_flat_last_vertex;
@@ -519,9 +520,6 @@ reset() {
 
   _supports_cube_map = 
     has_extension("GL_ARB_texture_cube_map") || is_at_least_version(1, 3);
-
-  _supports_rescale_normal = 
-    has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2);
 
   _supports_bgr = 
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
@@ -976,6 +974,8 @@ prepare_display_region() {
 
     int l, b, w, h;
     _actual_display_region->get_region_pixels(l, b, w, h);
+    _viewport_width = w;
+    _viewport_height = h;
     GLint x = GLint(l);
     GLint y = GLint(b);
     GLsizei width = GLsizei(w);
@@ -984,8 +984,6 @@ prepare_display_region() {
     enable_scissor(true);
     GLP(Scissor)(x, y, width, height);
     GLP(Viewport)(x, y, width, height);
-    _viewport_width = width;
-    _viewport_height = height;
   }
   report_my_gl_errors();
 

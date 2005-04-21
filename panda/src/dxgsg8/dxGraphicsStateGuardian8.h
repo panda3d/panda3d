@@ -100,6 +100,8 @@ public:
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void draw_trifans(const qpGeomTrifans *primitive);
   virtual void draw_lines(const qpGeomLines *primitive);
+  virtual void draw_linestrips(const qpGeomLinestrips *primitive);
+  virtual void draw_points(const qpGeomPoints *primitive);
   virtual void end_draw_primitives();
 
   virtual TextureContext *prepare_texture(Texture *tex);
@@ -326,8 +328,8 @@ protected:
   D3DTEXTUREFILTERTYPE _CurTexMagFilter,_CurTexMinFilter,_CurTexMipFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
-  LMatrix4f _current_projection_mat;
-  int _projection_mat_stack_count;
+
+  LMatrix4f _projection_mat;
 
   CPT(DisplayRegion) _actual_display_region;
   const DXVertexBufferContext8 *_active_vbuffer;
