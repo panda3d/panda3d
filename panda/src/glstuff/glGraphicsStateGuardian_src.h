@@ -318,6 +318,7 @@ protected:
   CPT(TexGenAttrib) _current_tex_gen;
   bool _needs_tex_gen;
   bool _tex_gen_modifies_mat;
+  bool _tex_gen_point_sprite;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
   float _point_size;

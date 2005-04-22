@@ -401,7 +401,14 @@ reset() {
     _glPointParameterfv = null_glPointParameterfv;
   }
 
-  _supports_point_sprite = false;
+  _supports_point_sprite = has_extension("GL_ARB_point_sprite");
+  if (_supports_point_sprite) {
+    // It appears that the point_sprite extension doesn't support
+    // texture transforms on the generated texture coordinates.  How
+    // inconsistent.  Because of this, we don't advertise
+    // GR_point_sprite_tex_matrix.
+    _supported_geom_rendering |= qpGeom::GR_point_sprite;
+  }
 
   _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
 
@@ -781,7 +788,8 @@ reset() {
   _polygon_offset_enabled = false;
   _flat_shade_model = false;
   _decal_level = 0;
-
+  _tex_gen_point_sprite = false;
+  
   // Dither is on by default in GL; let's turn it off
   GLP(Disable)(GL_DITHER);
   _dithering_enabled = false;
@@ -5894,18 +5902,23 @@ finish_modify_state() {
     static const float q_data[4] = { 0, 0, 0, 1 };
 
     _tex_gen_modifies_mat = false;
+
+    bool got_point_sprites = false;
     
     for (int i = 0; i < num_stages; i++) {
       TextureStage *stage = _current_texture->get_on_stage(i);
       _glActiveTexture(GL_TEXTURE0 + i);
+      GLP(Disable)(GL_TEXTURE_GEN_S);
+      GLP(Disable)(GL_TEXTURE_GEN_T);
+      GLP(Disable)(GL_TEXTURE_GEN_R);
+      GLP(Disable)(GL_TEXTURE_GEN_Q);
+      if (_supports_point_sprite) {
+        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, FALSE);
+      }
 
       TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
       switch (mode) {
       case TexGenAttrib::M_off:
-        GLP(Disable)(GL_TEXTURE_GEN_S);
-        GLP(Disable)(GL_TEXTURE_GEN_T);
-        GLP(Disable)(GL_TEXTURE_GEN_R);
-        GLP(Disable)(GL_TEXTURE_GEN_Q);
         break;
         
       case TexGenAttrib::M_eye_sphere_map:
@@ -5913,8 +5926,6 @@ finish_modify_state() {
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
-        GLP(Disable)(GL_TEXTURE_GEN_R);
-        GLP(Disable)(GL_TEXTURE_GEN_Q);
         force_normal = true;
         break;
         
@@ -5946,13 +5957,7 @@ finish_modify_state() {
           GLP(Enable)(GL_TEXTURE_GEN_S);
           GLP(Enable)(GL_TEXTURE_GEN_T);
           GLP(Enable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
           force_normal = true;
-        } else {
-          GLP(Disable)(GL_TEXTURE_GEN_S);
-          GLP(Disable)(GL_TEXTURE_GEN_T);
-          GLP(Disable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
         }
         break;
         
@@ -5984,13 +5989,7 @@ finish_modify_state() {
           GLP(Enable)(GL_TEXTURE_GEN_S);
           GLP(Enable)(GL_TEXTURE_GEN_T);
           GLP(Enable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
           force_normal = true;
-        } else {
-          GLP(Disable)(GL_TEXTURE_GEN_S);
-          GLP(Disable)(GL_TEXTURE_GEN_T);
-          GLP(Disable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
         }
         break;
 
@@ -6067,8 +6066,19 @@ finish_modify_state() {
         break;
 
       case TexGenAttrib::M_point_sprite:
-        // TODO.
+        nassertv(_supports_point_sprite);
+        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, TRUE);
+        got_point_sprites = true;
         break;
+      }
+    }
+
+    if (got_point_sprites != _tex_gen_point_sprite) {
+      _tex_gen_point_sprite = got_point_sprites;
+      if (_tex_gen_point_sprite) {
+        GLP(Enable)(GL_POINT_SPRITE_ARB);
+      } else {
+        GLP(Disable)(GL_POINT_SPRITE_ARB);
       }
     }
 
