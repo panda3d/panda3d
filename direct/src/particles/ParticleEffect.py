@@ -36,13 +36,17 @@ class ParticleEffect(NodePath):
     def cleanup(self):
         self.removeNode()
         self.disable()
-        for f in self.forceGroupDict.values():
-            f.cleanup()
-        for p in self.particlesDict.values():
-            p.cleanup()
+        if hasattr(self, 'forceGroupDict'):
+            for f in self.forceGroupDict.values():
+                f.cleanup()
+            del self.forceGroupDict
+        if hasattr(self, 'particlesDict'):
+            for p in self.particlesDict.values():
+                p.cleanup()
+            del self.particlesDict
         del self.renderParent
-        del self.particlesDict
-        del self.forceGroupDict
+
+
 
     def reset(self):
         self.removeAllForces()
@@ -52,14 +56,16 @@ class ParticleEffect(NodePath):
 
     def enable(self):
         """enable()"""
-        if (self.renderParent != None):
+        # band-aid added for client crash - grw
+        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesGroupDict'): 
+            if (self.renderParent != None):
+                for p in self.particlesDict.values():
+                    p.setRenderParent(self.renderParent.node())
+            for f in self.forceGroupDict.values():
+                f.enable()
             for p in self.particlesDict.values():
-                p.setRenderParent(self.renderParent.node())
-        for f in self.forceGroupDict.values():
-            f.enable()
-        for p in self.particlesDict.values():
-            p.enable()
-        self.fEnabled = 1
+                p.enable()
+            self.fEnabled = 1
 
     def disable(self):
         """disable()"""
