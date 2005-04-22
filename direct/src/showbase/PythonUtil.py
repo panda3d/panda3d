@@ -731,6 +731,177 @@ class Functor:
         _kargs.update(kargs)
         return apply(self._function,_args,_kargs)
 
+class ParamSet:
+    # abstract base class for container of parameter values for a ParamObj
+    # (see below)
+    # specifies default values for every parameter
+    
+    # dict of params and their default values
+    # derived classes should define their own additional params and default
+    # values in the same way
+    Params = {
+        # base class does not define any parameters, but they would appear as
+        # 'name': value,
+        }
+
+    def __init__(self, *args, **kwArgs):
+        ParamSet._compileDefaultParams()
+        if len(args) == 1 and len(kwArgs) == 0:
+            # extract our params from an existing ParamObj instance
+            obj = args[0]
+            self.paramVals = {}
+            for param in self.getParams():
+                self.paramVals[param] = getSetter(obj, param, 'get')()
+        else:
+            assert len(args) == 0
+            if __debug__:
+                for arg in kwArgs.keys():
+                    assert arg in self.getParams()
+            self.paramVals = dict(kwArgs)
+    def getValue(self, param):
+        if param in self.paramVals:
+            return self.paramVals[param]
+        return self._Params[param]
+    def applyTo(self, obj):
+        # Apply our entire set of params to a ParamObj
+        obj.lockParams()
+        for param in self.getParams():
+            getSetter(obj, param)(self.getValue(param))
+        obj.unlockParams()
+    # CLASS METHODS
+    def getParams(cls):
+        # returns safely-mutable list of param names
+        cls._compileDefaultParams()
+        return cls._Params.keys()
+    getParams = classmethod(getParams)
+    def getDefaultValue(cls, param):
+        cls._compileDefaultParams()
+        return cls._Params[param]
+    getDefaultValue = classmethod(getDefaultValue)
+    def _compileDefaultParams(cls):
+        if cls.__dict__.has_key('_Params'):
+            # we've already compiled the defaults for this class
+            return
+        bases = list(cls.__bases__)
+        # bring less-derived classes to the front
+        mostDerivedLast(bases)
+        cls._Params = {}
+        for c in (bases + [cls]):
+            # make sure this base has its dict of param defaults
+            c._compileDefaultParams()
+            if c.__dict__.has_key('Params'):
+                # apply this class' default param values to our dict
+                cls._Params.update(c.Params)
+    _compileDefaultParams = classmethod(_compileDefaultParams)
+
+class ParamObj:
+    # abstract base for classes that want to support a formal parameter
+    # set whose values may be queried, changed, 'bulk' changed, and
+    # extracted/stored/applied all at once (see ParamSet above)
+    
+    # for each param, ParamObj must define getter, setter, and applyer
+    # for each parameter
+    # (replace 'Param' with the name of the parameter):
+    #
+    # getParam() returns current value,
+    # setParam(value) sets current value,
+    # applyParam() (OPTIONAL) tells object to react to newly-set value
+    #              inside applyParam, previous value of param is avaliable
+    #              as self.getPriorValue()
+
+    # to do a bulk change:
+    # obj.lockParams()
+    # obj.setX('foo')
+    # obj.setY(34)
+    # ...
+    # obj.unlockParams()
+
+    # derived class must override this to be the appropriate ParamSet subclass
+    ParamClass = ParamSet
+    
+    def __init__(self):
+        self._paramLockRefCount = 0
+
+        def setterStub(param, value, self=self):
+            # should we apply the value now or should we wait?
+            # if this obj's params are locked, we track which values have
+            # been set, and on unlock, we'll call the applyers for those
+            # values
+            if self._paramLockRefCount > 0:
+                # set the new value; make sure we're not calling ourselves
+                # recursively
+                getSetter(self.__class__, param)(self, value)
+                if param not in self._priorValues:
+                    try:
+                        priorValue = getSetter(self, param, 'get')()
+                    except:
+                        priorValue = None
+                    self._priorValues[param] = priorValue
+                self._paramsSet[param] = None
+            else:
+                # prepare for call to getPriorValue
+                self._oneShotPriorVal = getSetter(self, param, 'get')()
+                # set the new value; make sure we're not calling ourselves
+                # recursively
+                getSetter(self.__class__, param)(self, value)
+                # call the applier, if there is one
+                applier = getattr(self, getSetterName(param, 'apply'), None)
+                if applier is not None:
+                    applier()
+                del self._oneShotPriorVal
+
+        # insert stub funcs for param setters
+        for param in self.ParamClass.getParams():
+            # if the setter is a direct member of self, move the setter
+            # aside
+            setterName = getSetterName(param)
+            if setterName in self.__dict__:
+                self.__dict__[setterName + '_MOVED'] = self.__dict__[setterName]
+            # and replace it with a stub that will a) call the setter and
+            # then the applier, or b) call the setter and queue the applier,
+            # depending on whether our params are locked
+            self.__dict__[setterName] = Functor(setterStub, param)
+                
+    def setDefaultParams(self):
+        # set all the default parameters on ourself
+        self.ParamClass().applyTo(self)
+
+    def lockParams(self):
+        self._paramLockRefCount += 1
+        if self._paramLockRefCount == 1:
+            self._handleLockParams()
+    def unlockParams(self):
+        if self._paramLockRefCount > 0:
+            self._paramLockRefCount -= 1
+            if self._paramLockRefCount == 0:
+                self._handleUnlockParams()
+    def _handleLockParams(self):
+        # this will store the names of the parameters that are modified
+        self._paramsSet = {}
+        # this will store the values of modified params (from prior to
+        # the lock).
+        self._priorValues = {}
+    def _handleUnlockParams(self):
+        self.__curParam = None
+        for param in self._paramsSet:
+            # call the applier, if there is one
+            applier = getattr(self, getSetterName(param, 'apply'), None)
+            if applier is not None:
+                self.__curParam = param
+                applier()
+        del self.__curParam
+        del self._priorValues
+        del self._paramsSet
+    def paramsLocked(self):
+        return self._paramLockRefCount > 0
+    def getPriorValue(self):
+        # call this within an apply function to find out what the prior value
+        # of a param was before the set call(s) corresponding to the call
+        # to apply
+        if hasattr(self, '_oneShotPriorVal'):
+            return self._oneShotPriorVal
+        return self._priorValues[self.__curParam]
+
 def bound(value, bound1, bound2):
     """
     returns value if value is between bound1 and bound2
