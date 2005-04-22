@@ -1032,8 +1032,22 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   object->fillin(scan, manager);
+  manager->register_finalize(object);
 
   return object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+finalize(BamReader *manager) {
+  CDWriter cdata(_cycler);
+  reset_geom_rendering(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1122,6 +1136,9 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 
   dg.add_uint8(_primitive_type);
   dg.add_uint8(_shade_model);
+
+  // Actually, we shouldn't bother writing out _geom_rendering; we'll
+  // just throw it away anyway.
   dg.add_uint16(_geom_rendering);
 }
 
@@ -1166,7 +1183,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _primitive_type = (PrimitiveType)scan.get_uint8();
   _shade_model = (ShadeModel)scan.get_uint8();
-  _geom_rendering = scan.get_uint16();
+
+  // To be removed: we no longer read _geom_rendering from the bam
+  // file; instead, we rederive it in finalize().
+  scan.get_uint16();
+
   _got_usage_hint = false;
   _modified = qpGeom::get_next_modified();
 }
