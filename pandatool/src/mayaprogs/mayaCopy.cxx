@@ -192,18 +192,26 @@ copy_maya_file(const Filename &source, const Filename &dest,
     return false;
   }
 
-  // Finally, copy in any referenced Maya files.  This is untested code.
+  // Finally, copy in any referenced Maya files.
   unsigned int num_refs = refs.length();
+
+  /*
   if (num_refs != 0) {
     maya_cat.warning()
       << "External references are not yet properly supported by mayacopy!\n";
   }
+  */
+
   for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+    //maya_cat.info() << "refs filename: " << refs[ref_index].asChar() << "\n";
+    //maya_cat.info() << "os_specific filename: " << Filename::from_os_specific(refs[ref_index].asChar()) << "\n";
     Filename filename = 
-      _path_replace->convert_path(refs[ref_index].asChar());
-    maya_cat.warning()
+      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
+
+    maya_cat.info()
       << "External ref: " << filename << "\n";
-    /*
+
+    // Now import the file
     ExtraData ed;
     ed._type = FT_maya;
 
@@ -211,7 +219,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
     if (!path.is_valid()) {
       exit(1);
     }
-    */
   }
 
   return true;
