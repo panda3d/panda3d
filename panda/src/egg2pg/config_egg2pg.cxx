@@ -45,23 +45,28 @@ ConfigVariableBool egg_ignore_clamp
 ConfigVariableBool egg_ignore_decals
 ("egg-ignore-decals", false);
 ConfigVariableBool egg_flatten
-("egg-flatten", true);
+("egg-flatten", true,
+ PRC_DESC("This is normally true to flatten out useless nodes after loading "
+          "an egg file.  Set it false if you want to see the complete "
+          "and true hierarchy as the egg loader created it (although the "
+          "extra nodes may have a small impact on render performance)."));
+
+ConfigVariableDouble egg_flatten_radius
+("egg-flatten-radius", 5.0,
+ PRC_DESC("This specifies the minimum cull radius in the egg file.  Nodes "
+          "whose bounding volume is smaller than this radius will be "
+          "flattened tighter than nodes larger than this radius, to "
+          "reduce the node count even further.  The idea is that small "
+          "objects will not need to have their individual components "
+          "culled separately, but large environments should.  This allows "
+          "the user to specify what should be considered \"small\".  Set "
+          "it to 0.0 to disable this feature."));
 
 ConfigVariableBool egg_combine_geoms
 ("egg-combine-geoms", false,
  PRC_DESC("Set this true to combine sibling GeomNodes into a single GeomNode, "
-          "when possible.  This is probably a good idea in general, but we "
-          "have it default to false for now for historical reasons (to avoid "
-          "breaking code that assumes this doesn't happen).  Eventually the "
-          "default may be set to true."));
-
-
-ConfigVariableBool egg_combine_siblings
-("egg-combine-siblings", false,
- PRC_DESC("Set this true to combine siblings of any combinable type into a "
-          "single Node when possible.  It is almost always a bad idea to set "
-          "this true."));
-
+          "when possible.  This usually shouldn't be necessary, since the "
+          "egg loader does a pretty good job of combining these by itself."));
 
 ConfigVariableBool egg_show_collision_solids
 ("egg-show-collision-solids", false);

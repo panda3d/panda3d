@@ -214,9 +214,38 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 int SceneGraphReducer::
 r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
           int combine_siblings_bits) {
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
+      << "SceneGraphReducer::r_flatten(" << *grandparent_node << ", " 
+      << *parent_node << ", " << hex << combine_siblings_bits << dec
+      << ")\n";
+  }
   int num_nodes = 0;
 
   if (parent_node->safe_to_flatten_below()) {
+    if ((combine_siblings_bits & CS_within_radius) != 0) {
+      const BoundingVolume *bv = &parent_node->get_bound();
+      if (bv->is_of_type(BoundingSphere::get_class_type())) {
+        const BoundingSphere *bs = DCAST(BoundingSphere, bv);
+        if (pgraph_cat.is_spam()) {
+          pgraph_cat.spam()
+            << "considering radius of " << *parent_node
+            << ": " << *bs << " vs. " << _combine_radius << "\n";
+        }
+        if (bs->is_empty() || bs->get_radius() <= _combine_radius) {
+          // This node fits within the specified radius; from here on
+          // down, we will have CS_other set, instead of
+          // CS_within_radius.
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
+              << "node fits within radius; flattening tighter.\n";
+          }
+          combine_siblings_bits &= ~CS_within_radius;
+          combine_siblings_bits |= (CS_geom_node | CS_other | CS_recurse);
+        }
+      }
+    }
+
     // First, recurse on each of the children.
     {
       PandaNode::ChildrenCopy cr = parent_node->get_children_copy();

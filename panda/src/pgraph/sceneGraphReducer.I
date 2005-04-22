@@ -23,7 +23,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE SceneGraphReducer::
-SceneGraphReducer() {
+SceneGraphReducer() :
+  _combine_radius(0.0f)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,6 +61,36 @@ set_usage_hint(qpGeom::UsageHint usage_hint) {
 INLINE qpGeom::UsageHint SceneGraphReducer::
 get_usage_hint() const {
   return _transformer.get_usage_hint();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::set_combine_radius
+//       Access: Published
+//  Description: Specifies the radius that is used in conjunction with
+//               CS_within_radius to decide whether a subgraph's
+//               siblings should be combined into a single node or
+//               not.
+//
+//               If the CS_within_radius bit is included in the
+//               combine_siblings_bits parameter passed to flatten,
+//               than any nodes whose bounding volume is smaller than
+//               the indicated radius will be combined together (as if
+//               CS_other were set).
+////////////////////////////////////////////////////////////////////
+INLINE void SceneGraphReducer::
+set_combine_radius(float combine_radius) {
+  _combine_radius = combine_radius;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::get_combine_radius
+//       Access: Published
+//  Description: Returns the radius that is used in conjunction with
+//               CS_within_radius.  See set_combine_radius().
+////////////////////////////////////////////////////////////////////
+INLINE float SceneGraphReducer::
+get_combine_radius() const {
+  return _combine_radius;
 }
 
 

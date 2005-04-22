@@ -36,17 +36,20 @@ load_from_loader(EggLoader &loader) {
   }
 
   if (loader._root != (PandaNode *)NULL && egg_flatten) {
+    SceneGraphReducer gr;
+
     int combine_siblings_bits = 0;
     if (egg_combine_geoms) {
       combine_siblings_bits |= SceneGraphReducer::CS_geom_node;
     }
-    if (egg_combine_siblings) {
-      combine_siblings_bits |= ~0;
+    if (egg_flatten_radius > 0.0) {
+      combine_siblings_bits |= SceneGraphReducer::CS_within_radius;
+      gr.set_combine_radius(egg_flatten_radius);
     }
 
-    SceneGraphReducer gr;
     int num_reduced = gr.flatten(loader._root, combine_siblings_bits);
     //    gr.collect_vertex_data(loader._root);
+    //    gr.unify(loader._root);
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
   }
 

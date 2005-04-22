@@ -56,9 +56,10 @@ PUBLISHED:
   };
 
   enum CombineSiblings {
-    CS_other           = 0x001,
-    CS_geom_node       = 0x002,
-    CS_recurse         = 0x004,
+    CS_geom_node       = 0x001,
+    CS_within_radius   = 0x002,
+    CS_other           = 0x004,
+    CS_recurse         = 0x008,
   };
 
   enum CollectVertexData {
@@ -106,6 +107,9 @@ PUBLISHED:
   INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
   INLINE qpGeom::UsageHint get_usage_hint() const;
 
+  INLINE void set_combine_radius(float combine_radius);
+  INLINE float get_combine_radius() const;
+
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
@@ -147,6 +151,7 @@ protected:
   void r_unify(PandaNode *node);
 
 private:
+  float _combine_radius;
   GeomTransformer _transformer;
 };
 
