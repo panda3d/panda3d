@@ -238,7 +238,7 @@ INLINE void qpGeomVertexWriter::
 set_row(int row) {
   _start_row = row;
   if (has_column()) {
-    set_pointer(_start_row);
+    quick_set_pointer(_start_row);
   }
 }
 
@@ -252,6 +252,18 @@ set_row(int row) {
 INLINE int qpGeomVertexWriter::
 get_start_row() const {
   return _start_row;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::get_write_row
+//       Access: Published
+//  Description: Returns the row index to which the data will be
+//               written at the next call to set_data*() or
+//               add_data*().
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexWriter::
+get_write_row() const {
+  return (int)(_pointer - _pointer_begin) / _stride;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -679,24 +691,45 @@ add_data4i(const int data[4]) {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexWriter::set_pointer
 //       Access: Private
-//  Description: Sets up the internal write pointer, etc. to use the
-//               indicated row.
+//  Description: Sets up the array pointers freshly from the source
+//               object (in case they have been reallocated recently),
+//               and sets the internal pointer to the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_pointer(int row) {
-  nassertv(has_column());
-  if (_vertex_data != (qpGeomVertexData *)NULL) {
+  if (_vertex_data != (const qpGeomVertexData *)NULL) {
     qpGeomVertexArrayData *array_data = _vertex_data->modify_array(_array);
-    _pointer = array_data->modify_data();
-    _pointer_end = _pointer + array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * row;
+    _pointer_begin = array_data->modify_data();
+    _pointer_end = _pointer_begin + array_data->get_data_size_bytes();
 
   } else {
-    _pointer = _array_data->modify_data();
-    _pointer_end = _pointer + _array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * row;
+    _pointer_begin = _array_data->modify_data();
+    _pointer_end = _pointer_begin + _array_data->get_data_size_bytes();
   }
-  _write_row = row;
+  quick_set_pointer(row);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::quick_set_pointer
+//       Access: Private
+//  Description: Sets up the internal pointer to the indicated row,
+//               without first verifying that arrays haven't been
+//               reallocated.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+quick_set_pointer(int row) {
+  nassertv(has_column());
+
+#ifdef _DEBUG
+  if (_vertex_data != (const qpGeomVertexData *)NULL) {
+    const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    nassertv(_pointer_begin == array_data->get_data());
+  } else {
+    nassertv(_pointer_begin == _array_data->get_data());
+  }
+#endif
+
+  _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -707,7 +740,7 @@ set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *qpGeomVertexWriter::
 inc_pointer() {
-#ifndef NDEBUG
+#ifdef _DEBUG
   nassertr(_pointer < _pointer_end, empty_buffer);
   if (_vertex_data != (qpGeomVertexData *)NULL){ 
     const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
@@ -719,7 +752,6 @@ inc_pointer() {
 
   unsigned char *orig_pointer = _pointer;
   _pointer += _stride;
-  ++_write_row;
   return orig_pointer;
 }
 
@@ -735,12 +767,13 @@ INLINE unsigned char *qpGeomVertexWriter::
 inc_add_pointer() {
   if (_pointer >= _pointer_end) {
     // Reset the data pointer.
+    int write_row = get_write_row();
     if (_vertex_data != (qpGeomVertexData *)NULL) {
-      _vertex_data->set_num_rows(max(_write_row + 1, _vertex_data->get_num_rows()));
+      _vertex_data->set_num_rows(max(write_row + 1, _vertex_data->get_num_rows()));
     } else {
-      _array_data->set_num_rows(max(_write_row + 1, _array_data->get_num_rows()));
+      _array_data->set_num_rows(max(write_row + 1, _array_data->get_num_rows()));
     }
-    set_pointer(_write_row);
+    set_pointer(write_row);
   }
   return inc_pointer();
 }

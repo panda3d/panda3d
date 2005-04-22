@@ -91,6 +91,39 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
   _cull_char_pcollector(copy._cull_char_pcollector)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::Constructor
+//       Access: Published
+//  Description: This constructor copies all of the basic properties
+//               of the source VertexData, like usage_hint and
+//               animation tables, but does not copy the actual data,
+//               and it allows you to specify a different format.
+////////////////////////////////////////////////////////////////////
+qpGeomVertexData::
+qpGeomVertexData(const qpGeomVertexData &copy, 
+                 const qpGeomVertexFormat *format) :
+  TypedWritableReferenceCount(copy),
+  _name(copy._name),
+  _format(format),
+  _cycler(copy._cycler),
+  _app_char_pcollector(copy._app_char_pcollector),
+  _cull_char_pcollector(copy._cull_char_pcollector)
+{
+  nassertv(_format->is_registered());
+
+  // Create some empty arrays as required by the format.
+  CDWriter cdata(_cycler);
+
+  UsageHint usage_hint = cdata->_usage_hint;
+  cdata->_arrays.clear();
+  int num_arrays = _format->get_num_arrays();
+  for (int i = 0; i < num_arrays; i++) {
+    PT(qpGeomVertexArrayData) array = new qpGeomVertexArrayData
+      (_format->get_array(i), usage_hint);
+    cdata->_arrays.push_back(array);
+  }
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Copy Assignment Operator
@@ -723,8 +756,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   PStatTimer timer(_scale_color_pcollector);
 
   PT(qpGeomVertexData) new_data = replace_column
-    (InternalName::get_color(), num_components, numeric_type,
-     contents, get_usage_hint(), true);
+    (InternalName::get_color(), num_components, numeric_type, contents);
 
   // Now go through and apply the scale, copying it to the new data.
   qpGeomVertexWriter to(new_data, InternalName::get_color());
@@ -789,8 +821,7 @@ set_color(const Colorf &color, int num_components,
   PStatTimer timer(_set_color_pcollector);
 
   PT(qpGeomVertexData) new_data = replace_column
-    (InternalName::get_color(), num_components, numeric_type,
-     contents, get_usage_hint(), true);
+    (InternalName::get_color(), num_components, numeric_type, contents);
 
   // Now go through and set the new color value.
   qpGeomVertexWriter to(new_data, InternalName::get_color());
@@ -818,9 +849,7 @@ set_color(const Colorf &color, int num_components,
 PT(qpGeomVertexData) qpGeomVertexData::
 replace_column(const InternalName *name, int num_components,
                qpGeomVertexData::NumericType numeric_type,
-               qpGeomVertexData::Contents contents,
-               qpGeomVertexData::UsageHint usage_hint,
-               bool keep_animation) const {
+               qpGeomVertexData::Contents contents) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
 
   // Remove the old description of the type from the format.
@@ -859,12 +888,7 @@ replace_column(const InternalName *name, int num_components,
       << *_format << " to " << *format << "\n";
   }
   
-  PT(qpGeomVertexData) new_data = 
-    new qpGeomVertexData(get_name(), format, usage_hint);
-  if (keep_animation) {
-    new_data->set_transform_blend_table(get_transform_blend_table());
-    new_data->set_slider_table(get_slider_table());
-  }
+  PT(qpGeomVertexData) new_data = new qpGeomVertexData(*this, format);
 
   int j = 0;
   int num_arrays = get_num_arrays();
@@ -1370,17 +1394,18 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
     }
 
     // Now go through and apply the transforms.
+    qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
+    if (!blendi.has_column()) {
+      gobj_cat.warning()
+        << "Vertex data " << get_name()
+        << " has a transform_blend_table, but no transform_blend data.\n";
+      return;
+    }
+
     int ci;
     for (ci = 0; ci < _format->get_num_points(); ci++) {
       qpGeomVertexRewriter data(new_data, _format->get_point(ci));
-      qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
-
-      if (!blendi.has_column()) {
-        gobj_cat.warning()
-          << "Vertex data " << get_name()
-          << " has a transform_blend_table, but no transform_blend data.\n";
-        return;
-      }
+      blendi.set_row(0);
       
       if (data.get_column()->get_num_values() == 4) {
         for (int i = 0; i < num_rows; i++) {
@@ -1400,14 +1425,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
     }
     for (ci = 0; ci < _format->get_num_vectors(); ci++) {
       qpGeomVertexRewriter data(new_data, _format->get_vector(ci));
-      qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
-
-      if (!blendi.has_column()) {
-        gobj_cat.warning()
-          << "Vertex data " << get_name()
-          << " has a transform_blend_table, but no transform_blend data.\n";
-        return;
-      }
+      blendi.set_row(0);
       
       for (int i = 0; i < num_rows; i++) {
         LVector3f vertex = data.get_data3f();

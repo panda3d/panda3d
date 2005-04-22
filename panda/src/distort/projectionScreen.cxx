@@ -609,15 +609,13 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
     if (!vdata->has_column(_texcoord_name)) {
       // We need to add a new column for the new texcoords.
       vdata = vdata->replace_column
-        (_texcoord_name, 2, qpGeom::NT_float32,
-         qpGeom::C_texcoord, qpGeom::UH_dynamic, true);
+        (_texcoord_name, 2, qpGeom::NT_float32, qpGeom::C_texcoord);
       qpgeom->set_vertex_data(vdata);
     }
     if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
       // We need to add a column for color.
       vdata = vdata->replace_column
-        (InternalName::get_color(), 1, qpGeom::NT_packed_dabc,
-         qpGeom::C_color, qpGeom::UH_dynamic, true);
+        (InternalName::get_color(), 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
       qpgeom->set_vertex_data(vdata);
     }
 

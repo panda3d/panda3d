@@ -99,6 +99,7 @@ PUBLISHED:
   INLINE void set_row(int row);
 
   INLINE int get_start_row() const;
+  INLINE int get_write_row() const;
   INLINE bool is_at_end() const;
 
   INLINE void set_data1f(float data);
@@ -139,6 +140,7 @@ private:
   void initialize();
 
   INLINE void set_pointer(int row);
+  INLINE void quick_set_pointer(int row);
   INLINE unsigned char *inc_pointer();
   INLINE unsigned char *inc_add_pointer();
 
@@ -154,11 +156,11 @@ private:
   qpGeomVertexColumn::Packer *_packer;
   int _stride;
 
-  unsigned char *_pointer;
+  unsigned char *_pointer_begin;
   unsigned char *_pointer_end;
+  unsigned char *_pointer;
 
   int _start_row;
-  int _write_row;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL

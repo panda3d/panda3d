@@ -104,9 +104,6 @@ PUBLISHED:
     MN_avoid_dynamic   = 0x004,
   };
 
-  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
-  INLINE qpGeom::UsageHint get_usage_hint() const;
-
   INLINE void set_combine_radius(float combine_radius);
   INLINE float get_combine_radius() const;
 

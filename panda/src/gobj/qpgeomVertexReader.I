@@ -239,7 +239,7 @@ INLINE void qpGeomVertexReader::
 set_row(int row) {
   _start_row = row;
   if (has_column()) {
-    set_pointer(_start_row);
+    quick_set_pointer(_start_row);
   }
 }
 
@@ -253,6 +253,17 @@ set_row(int row) {
 INLINE int qpGeomVertexReader::
 get_start_row() const {
   return _start_row;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::get_read_row
+//       Access: Published
+//  Description: Returns the row index from which the data will be
+//               retrieved by the next call to get_data*().
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexReader::
+get_read_row() const {
+  return (int)(_pointer - _pointer_begin) / _stride;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,23 +386,45 @@ get_data4i() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::set_pointer
 //       Access: Private
-//  Description: Sets up the internal read pointer, etc. to read from
-//               the indicated row.
+//  Description: Sets up the array pointers freshly from the source
+//               object (in case they have been reallocated recently),
+//               and sets the internal pointer to the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::
 set_pointer(int row) {
-  nassertv(has_column());
   if (_vertex_data != (const qpGeomVertexData *)NULL) {
     const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    _pointer = array_data->get_data();
-    _pointer_end = _pointer + array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * row;
+    _pointer_begin = array_data->get_data();
+    _pointer_end = _pointer_begin + array_data->get_data_size_bytes();
 
   } else {
-    _pointer = _array_data->get_data();
-    _pointer_end = _pointer + _array_data->get_data_size_bytes();
-    _pointer += _packer->_column->get_start() + _stride * row;
+    _pointer_begin = _array_data->get_data();
+    _pointer_end = _pointer_begin + _array_data->get_data_size_bytes();
   }
+  quick_set_pointer(row);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::quick_set_pointer
+//       Access: Private
+//  Description: Sets up the internal pointer to the indicated row,
+//               without first verifying that arrays haven't been
+//               reallocated.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexReader::
+quick_set_pointer(int row) {
+  nassertv(has_column());
+
+#ifdef _DEBUG
+  if (_vertex_data != (const qpGeomVertexData *)NULL) {
+    const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    nassertv(_pointer_begin == array_data->get_data());
+  } else {
+    nassertv(_pointer_begin == _array_data->get_data());
+  }
+#endif
+
+  _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,7 +435,7 @@ set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *qpGeomVertexReader::
 inc_pointer() {
-#ifndef NDEBUG
+#ifdef _DEBUG
   nassertr(_pointer < _pointer_end, empty_buffer);
   if (_vertex_data != (const qpGeomVertexData *)NULL){ 
     const qpGeomVertexArrayData *array_data = _vertex_data->get_array(_array);

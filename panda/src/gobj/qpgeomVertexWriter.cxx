@@ -86,8 +86,8 @@ void qpGeomVertexWriter::
 initialize() {
   _array = 0;
   _packer = NULL;
-  _pointer = NULL;
+  _pointer_begin = NULL;
   _pointer_end = NULL;
+  _pointer = NULL;
   _start_row = 0;
-  _write_row = 0;
 }

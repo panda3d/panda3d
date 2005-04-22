@@ -86,6 +86,7 @@ PUBLISHED:
   INLINE void set_row(int row);
 
   INLINE int get_start_row() const;
+  INLINE int get_read_row() const;
   INLINE bool is_at_end() const;
 
   INLINE float get_data1f();
@@ -102,6 +103,7 @@ private:
   void initialize();
 
   INLINE void set_pointer(int row);
+  INLINE void quick_set_pointer(int row);
   INLINE const unsigned char *inc_pointer();
 
   // It is important that we only store *one* of the following two
@@ -116,8 +118,9 @@ private:
   qpGeomVertexColumn::Packer *_packer;
   int _stride;
 
-  const unsigned char *_pointer;
+  const unsigned char *_pointer_begin;
   const unsigned char *_pointer_end;
+  const unsigned char *_pointer;
 
   int _start_row;
 

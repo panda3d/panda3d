@@ -812,6 +812,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     if (orig_geom->is_of_type(qpGeom::get_class_type())) {
       PT(qpGeom) geom = new qpGeom(*DCAST(qpGeom, orig_geom));
       PT(qpGeomVertexData) vdata = geom->modify_vertex_data();
+      vdata->set_usage_hint(qpGeom::UH_stream);
 
       if (vdata->has_column(_target_stage->get_texcoord_name())) {
         qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -831,8 +832,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
           vdata->get_format()->get_column(texcoord_name);
         vdata = vdata->replace_column
           (InternalName::get_texcoord(), column->get_num_components(),
-           column->get_numeric_type(), column->get_contents(),
-           qpGeom::UH_stream, true);
+           column->get_numeric_type(), column->get_contents());
         geom->set_vertex_data(vdata);
 
         qpGeomVertexReader from(vdata, texcoord_name);

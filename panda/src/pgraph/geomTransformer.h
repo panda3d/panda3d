@@ -51,9 +51,6 @@ public:
   GeomTransformer(const GeomTransformer &copy);
   ~GeomTransformer();
 
-  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
-  INLINE qpGeom::UsageHint get_usage_hint() const;
-
   INLINE int get_max_collect_vertices() const;
   INLINE void set_max_collect_vertices(int max_collect_vertices);
 
@@ -79,7 +76,6 @@ public:
   int collect_vertex_data(GeomNode *node, int collect_bits);
 
 private:
-  qpGeom::UsageHint _usage_hint;
   int _max_collect_vertices;
 
   class qpSourceVertices {

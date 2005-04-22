@@ -81,6 +81,8 @@ PUBLISHED:
                    const qpGeomVertexFormat *format, 
                    UsageHint usage_hint);
   qpGeomVertexData(const qpGeomVertexData &copy);
+  qpGeomVertexData(const qpGeomVertexData &copy,
+                   const qpGeomVertexFormat *format);
   void operator = (const qpGeomVertexData &copy);
   virtual ~qpGeomVertexData();
 
@@ -137,8 +139,7 @@ PUBLISHED:
 
   PT(qpGeomVertexData) 
     replace_column(const InternalName *name, int num_components,
-                   NumericType numeric_type, Contents contents,
-                   UsageHint usage_hint, bool keep_animation) const;
+                   NumericType numeric_type, Contents contents) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

@@ -38,32 +38,6 @@ INLINE SceneGraphReducer::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::set_usage_hint
-//       Access: Published
-//  Description: Specifies the ceiling UsageHint that will be applied
-//               to transformed geometry.  If the source geometry's
-//               usage hint is greater (more static) than this, it
-//               will be reduced to this level.  If the source
-//               geometry's usage hit is less (more dynamic) than
-//               this, it will be preserved at its current level.
-////////////////////////////////////////////////////////////////////
-INLINE void SceneGraphReducer::
-set_usage_hint(qpGeom::UsageHint usage_hint) {
-  _transformer.set_usage_hint(usage_hint);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::get_usage_hint
-//       Access: Published
-//  Description: Returns the UsageHint that will be applied to
-//               generated geometry.  See set_usage_hint().
-////////////////////////////////////////////////////////////////////
-INLINE qpGeom::UsageHint SceneGraphReducer::
-get_usage_hint() const {
-  return _transformer.get_usage_hint();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::set_combine_radius
 //       Access: Published
 //  Description: Specifies the radius that is used in conjunction with
