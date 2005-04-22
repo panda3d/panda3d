@@ -21,12 +21,11 @@
 
 #include "pandabase.h"
 
-#include "geom.h"
+#include "qpgeom.h"
 #include "renderAttrib.h"
 #include "textureStage.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "qpgeom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexGenAttrib
@@ -83,6 +82,13 @@ PUBLISHED:
     // lower-right across the point's face.  Without this, each point
     // will have just a single uniform texture coordinate value across
     // its face.
+
+    // Unfortunately, the generated texture coordinates are inverted
+    // (upside-down) from Panda's usual convention, but this is what
+    // the graphics card manufacturers decided to use.  You could use
+    // a texture matrix to re-invert the texture, but that will
+    // probably force software rendering.  You'll have to paint your
+    // textures upside-down if you want true hardware sprites.
     M_point_sprite,
   };
 

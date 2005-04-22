@@ -226,12 +226,11 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   _copy_texture_inverted = true;
 
   // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
-  // texture coordinates via a texture matrix, a fatal flaw.  Without
-  // that support, we don't advertise this capability, and fall back
-  // to always generating quads for textured sprites.
+  // texture coordinates via a texture matrix, so we don't advertise
+  // GR_point_sprite_tex_matrix.
   _supported_geom_rendering = 
     qpGeom::GR_point | qpGeom::GR_point_uniform_size | 
-    qpGeom::GR_point_perspective | /* qpGeom::GR_point_sprite |*/
+    qpGeom::GR_point_perspective | qpGeom::GR_point_sprite |
     qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
     qpGeom::GR_flat_first_vertex;
 }

@@ -1576,6 +1576,21 @@ determine_tex_gen() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_tex_matrix
+//       Access: Private
+//  Description: This is the private implementation of get_tex_matrix().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_tex_matrix() {
+  const RenderAttrib *attrib = get_attrib(TexMatrixAttrib::get_class_type());
+  _tex_matrix = (const TexMatrixAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _tex_matrix = DCAST(TexMatrixAttrib, attrib);
+  }
+  _flags |= F_checked_tex_matrix;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::determine_render_mode
 //       Access: Private
 //  Description: This is the private implementation of get_render_mode().

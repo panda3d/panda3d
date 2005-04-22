@@ -54,7 +54,14 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       int geom_rendering = _state->get_geom_rendering(qpgeom->get_geom_rendering());
 
       GraphicsStateGuardianBase *gsg = traverser->get_gsg();
-      int unsupported_bits = geom_rendering & ~gsg->get_supported_geom_rendering();
+      int gsg_bits = gsg->get_supported_geom_rendering();
+      if (!hardware_point_sprites) {
+        // If support for hardware point sprites or perspective-scaled
+        // points is disabled, we don't allow the GSG to tell us it
+        // supports them.
+        gsg_bits &= ~(qpGeom::GR_point_perspective | qpGeom::GR_point_sprite);
+      }
+      int unsupported_bits = geom_rendering & ~gsg_bits;
       if ((unsupported_bits & qpGeom::GR_point_bits) != 0) {
         // The GSG doesn't support rendering these fancy points
         // directly; we have to render them in software instead.

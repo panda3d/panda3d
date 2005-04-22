@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "qpgeom.h"
 #include "renderAttrib.h"
 #include "textureStage.h"
 #include "transformState.h"
@@ -60,6 +61,8 @@ PUBLISHED:
   const LMatrix4f &get_mat(TextureStage *stage) const;
 
   CPT(TransformState) get_transform(TextureStage *stage) const;
+
+  INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;

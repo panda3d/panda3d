@@ -231,6 +231,25 @@ get_tex_gen() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_tex_matrix
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a TexMatrixAttrib on this state.  It returns a
+//               pointer to the TexMatrixAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const TexMatrixAttrib *RenderState::
+get_tex_matrix() const {
+  if ((_flags & F_checked_tex_matrix) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal tex_matrix cache.
+    ((RenderState *)this)->determine_tex_matrix();
+  }
+  return _tex_matrix;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_render_mode
 //       Access: Published
 //  Description: This function is provided as an optimization, to
@@ -264,6 +283,9 @@ get_geom_rendering(int geom_rendering) const {
   }
   if (get_tex_gen() != (const TexGenAttrib *)NULL) {
     geom_rendering = _tex_gen->get_geom_rendering(geom_rendering);
+  }
+  if (get_tex_matrix() != (const TexMatrixAttrib *)NULL) {
+    geom_rendering = _tex_matrix->get_geom_rendering(geom_rendering);
   }
 
   return geom_rendering;

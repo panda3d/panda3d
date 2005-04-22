@@ -41,6 +41,25 @@ TexMatrixAttrib(const TexMatrixAttrib &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::get_geom_rendering
+//       Access: Published
+//  Description: Returns the union of the Geom::GeomRendering bits
+//               that will be required once this TexMatrixAttrib is
+//               applied to a geom which includes the indicated
+//               geom_rendering bits.
+////////////////////////////////////////////////////////////////////
+INLINE int TexMatrixAttrib::
+get_geom_rendering(int geom_rendering) const {
+  if ((geom_rendering & qpGeom::GR_point_sprite) != 0) {
+    if (!is_empty()) {
+      return geom_rendering |= qpGeom::GR_point_sprite_tex_matrix;
+    }
+  }
+
+  return geom_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexMatrixAttrib::check_stage_list
 //       Access: Private
 //  Description: Builds the linear list of TextureStages if it needs

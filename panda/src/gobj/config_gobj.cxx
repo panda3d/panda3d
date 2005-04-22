@@ -130,6 +130,14 @@ ConfigVariableBool hardware_animated_vertices
           "necessary on your computer's bus.  However, in some cases it "
           "may actually reduce performance."));
 
+ConfigVariableBool hardware_point_sprites
+("hardware-point-sprites", true,
+ PRC_DESC("Set this true to allow the use of hardware extensions when "
+          "rendering perspective-scaled points and point sprites.  When "
+          "false, these large points are always simulated via quads "
+          "computed in software, even if the hardware claims it can "
+          "support them directly."));
+
 ConfigVariableBool matrix_palette
 ("matrix-palette", false,
  PRC_DESC("Set this true to allow the use of the matrix palette when "
