@@ -319,7 +319,9 @@ generate() {
   if (text_flatten) {
     SceneGraphReducer gr;
     gr.apply_attribs(root);
-    gr.flatten(root, ~0);
+    gr.flatten(root, ~SceneGraphReducer::CS_within_radius);
+    gr.collect_vertex_data(root);
+    gr.unify(root);
   }
 
   return root;
