@@ -19,6 +19,7 @@
 #include "sceneGraphReducer.h"
 #include "config_pgraph.h"
 #include "accumulatedAttribs.h"
+#include "boundingSphere.h"
 #include "modelNode.h"
 #include "pointerTo.h"
 #include "plist.h"

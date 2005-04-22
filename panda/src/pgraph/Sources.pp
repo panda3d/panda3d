@@ -104,7 +104,9 @@
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h
 
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+  #define COMBINED_SOURCES \
+    $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
+    $[TARGET]_composite3.cxx $[TARGET]_composite4.cxx
   #define INCLUDED_SOURCES \
     accumulatedAttribs.cxx \
     alphaTestAttrib.cxx \  
