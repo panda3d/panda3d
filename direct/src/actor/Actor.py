@@ -1451,6 +1451,8 @@ class Actor(PandaObject, NodePath):
         print out
 
     def osdAnimBlends(self, animName=None, partName=None, lodName=None):
+        if not onScreenDebug.enabled:
+            return
         # puts anim blending info into the on-screen debug panel
         if animName is None:
             animNames = self.getAnimNames()
