@@ -52,7 +52,7 @@ ConfigVariableBool egg_flatten
           "extra nodes may have a small impact on render performance)."));
 
 ConfigVariableDouble egg_flatten_radius
-("egg-flatten-radius", 5.0,
+("egg-flatten-radius", 0.0,
  PRC_DESC("This specifies the minimum cull radius in the egg file.  Nodes "
           "whose bounding volume is smaller than this radius will be "
           "flattened tighter than nodes larger than this radius, to "
