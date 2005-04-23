@@ -1047,6 +1047,14 @@ make_from_bam(const FactoryParams &params) {
 void qpGeom::
 finalize(BamReader *manager) {
   CDWriter cdata(_cycler);
+
+  // Make sure our GeomVertexData is finalized first.  This may result
+  // in the data getting finalized multiple times, but it doesn't mind
+  // that.
+  if (cdata->_data != (qpGeomVertexData *)NULL) {
+    cdata->_data->finalize(manager);
+  }
+
   reset_geom_rendering(cdata);
 }
 

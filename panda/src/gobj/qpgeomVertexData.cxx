@@ -1533,6 +1533,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 finalize(BamReader *manager) {
+  // NOTE: This method may be called more than once, because the
+  // Geom::finalize() will call it explicitly.  We have to be prepared
+  // to accept multiple finalize() calls.
+
   // Now we need to register the format that we have read from the bam
   // file (since it doesn't come out of the bam file automatically
   // registered).  This may change the format's pointer, which we
