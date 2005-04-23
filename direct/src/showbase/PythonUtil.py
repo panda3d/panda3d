@@ -731,14 +731,142 @@ class Functor:
         _kargs.update(kargs)
         return apply(self._function,_args,_kargs)
 
+"""
+ParamSet/ParamObj
+=================
+
+These two classes support you in the definition of a formal set of
+parameters for an object type. The parameters may be safely queried/set on
+an object instance at any time, and the object will react to newly-set
+values immediately.
+
+ParamSet & ParamObj also provide a mechanism for atomically setting
+multiple parameter values before allowing the object to react to any of the
+new values--useful when two or more parameters are interdependent and there
+is risk of setting an illegal combination in the process of applying a new
+set of values.
+
+To make use of these classes, derive your object from ParamObj. Then define
+a class that derives from ParamSet to define the object's parameters. The
+ParamObj class must declare a class-level reference to its ParamSet class,
+called 'ParamClass'. (See the example classes below.)
+
+Classes that derive from ParamObj must declare a 'get' and 'set' function
+for each parameter. The setter should simply store the value in a location
+where the getter can find it; it should not do any further processing based
+on the new parameter value. Further processing should be implemented in an
+'apply' function. The applier function is optional.
+
+NOTE: the previous value of a parameter is available inside an apply
+function as 'self.getPriorValue()'
+
+The ParamSet class declaration lists the parameters and defines a default
+value for each. ParamSet instances represent a complete set of parameter
+values. A ParamSet instance created with no constructor arguments will
+contain the default values for each parameter. The defaults may be
+overriden by passing keyword arguments to the ParamSet's constructor. If a
+ParamObj instance is passed to the constructor, the ParamSet will extract
+the object's current parameter values.
+
+ParamSet.applyTo(obj) sets all of its parameter values on 'obj'.
+
+SETTERS AND APPLIERS
+====================
+Under normal conditions, a call to a setter function, i.e.
+
+ cam.setFov(90)
+
+will actually result in the following calls being made:
+
+ cam.setFov(90)
+ cam.applyFov()
+
+Calls to several setter functions, i.e.
+
+ cam.setFov(90)
+ cam.setViewType('cutscene')
+
+will result in this call sequence:
+
+ cam.setFov(90)
+ cam.applyFov()
+ cam.setViewType('cutscene')
+ cam.applyViewType()
+
+Suppose that you desire the view type to already be set to 'cutscene' at
+the time when applyFov() is called. You could reverse the order of the set
+calls, but suppose that you also want the fov to be set properly at the
+time when applyViewType() is called.
+
+In this case, you can 'lock' the params, i.e.
+
+ cam.lockParams()
+ cam.setFov(90)
+ cam.setViewType('cutscene')
+ cam.unlockParams()
+
+This will result in the following call sequence:
+
+ cam.setFov(90)
+ cam.setViewType('cutscene')
+ cam.applyFov()
+ cam.applyViewType()
+
+NOTE: Currently the order of the apply calls following an unlock is not
+guaranteed.
+
+EXAMPLE CLASSES
+===============
+Here is an example of a class that uses ParamSet/ParamObj to manage its
+parameters:
+
+class CameraParams(ParamSet):
+    Params = {
+        'viewType': 'normal',
+        'fov': 60,
+        }
+
+class Camera(ParamObj):
+    ParamClass = CameraParams
+    ...
+
+    def getViewType(self):
+        return self.viewType
+    def setViewType(self, viewType):
+        self.viewType = viewType
+    def applyViewType(self):
+        if self.viewType == 'normal':
+            ...
+
+    def getFov(self):
+        return self.fov
+    def setFov(self, fov):
+        self.fov = fov
+    def applyFov(self):
+        base.camera.setFov(self.fov)
+    ...
+
+
+EXAMPLE USAGE
+=============
+
+cam = Camera()
+...
+
+# set up for the cutscene
+savedSettings = CameraParams(cam)
+cam.setViewType('closeup')
+cam.setFov(90)
+...
+
+# cutscene is over, set the camera back
+savedSettings.applyTo(cam)
+del savedSettings
+
+"""
+
 class ParamSet:
-    # abstract base class for container of parameter values for a ParamObj
-    # (see below)
-    # specifies default values for every parameter
-    
-    # dict of params and their default values
-    # derived classes should define their own additional params and default
-    # values in the same way
+    # Base class for a container of parameter values. See documentation above.
     Params = {
         # base class does not define any parameters, but they would appear as
         # 'name': value,
@@ -797,24 +925,7 @@ class ParamSet:
 class ParamObj:
     # abstract base for classes that want to support a formal parameter
     # set whose values may be queried, changed, 'bulk' changed, and
-    # extracted/stored/applied all at once (see ParamSet above)
-    
-    # for each param, ParamObj must define getter, setter, and applyer
-    # for each parameter
-    # (replace 'Param' with the name of the parameter):
-    #
-    # getParam() returns current value,
-    # setParam(value) sets current value,
-    # applyParam() (OPTIONAL) tells object to react to newly-set value
-    #              inside applyParam, previous value of param is avaliable
-    #              as self.getPriorValue()
-
-    # to do a bulk change:
-    # obj.lockParams()
-    # obj.setX('foo')
-    # obj.setY(34)
-    # ...
-    # obj.unlockParams()
+    # extracted/stored/applied all at once (see documentation above)
 
     # derived class must override this to be the appropriate ParamSet subclass
     ParamClass = ParamSet
