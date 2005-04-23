@@ -344,6 +344,11 @@ close_primitive() {
     }
     nassertr(num_added >= get_min_num_vertices_per_primitive(), false);
 #endif
+    if (cdata->_ends.get_ref_count() > 1) {
+      PTA_int new_ends;
+      new_ends.v() = cdata->_ends.v();
+      cdata->_ends = new_ends;
+    }
     cdata->_ends.push_back(get_num_vertices());
 
   } else {
