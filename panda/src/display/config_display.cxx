@@ -202,7 +202,7 @@ ConfigVariableString window_title
 ("window-title", "Panda");
 
 ConfigVariableString framebuffer_mode
-("framebuffer-mode", "rgba double-buffer depth multisample hardware",
+("framebuffer-mode", "rgba double-buffer depth hardware",
  PRC_DESC("A space-separated list of keywords that describe the default "
           "framebuffer properties requested for a window."));
 ConfigVariableInt depth_bits
