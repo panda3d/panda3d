@@ -358,7 +358,8 @@ class ShowBase(DirectObject.DirectObject):
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
     def openWindow(self, props = None, pipe = None, gsg = None,
-                   type = None, name = None, scene = None, aspectRatio = None):
+                   type = None, name = None, scene = None,
+                   size = None, aspectRatio = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -389,6 +390,12 @@ class ShowBase(DirectObject.DirectObject):
         if props == None:
             props = WindowProperties.getDefault()
 
+        if size != None:
+            # If we were given an explicit size, use it; otherwise,
+            # the size from the properties is used.
+            props = WindowProperties(props)
+            props.setSize(size[0], size[1])
+
         if name == None:
             name = 'window%s' % (self.nextWindowIndex)
             self.nextWindowIndex += 1
@@ -398,7 +405,7 @@ class ShowBase(DirectObject.DirectObject):
             win = self.graphicsEngine.makeWindow(gsg, name, 0)
         elif type == 'offscreen':
             win = self.graphicsEngine.makeBuffer(
-                gsg, name, 0, props.getXSize(), props.getYSize(), 0)
+                gsg, name, 0, props.getXSize(), props.getYSize())
             
         if win == None:
             # Couldn't create a window!
