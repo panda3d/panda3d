@@ -46,7 +46,6 @@ extern ConfigVariableDouble extractor_frequency;
 
 extern ConfigVariableInt patcher_buffer_size;
 
-extern ConfigVariableBool early_random_seed;
 extern ConfigVariableBool verify_ssl;
 extern ConfigVariableString ssl_cipher_list;
 extern ConfigVariableList expected_ssl_server;
@@ -63,5 +62,7 @@ extern ConfigVariableInt http_max_connect_count;
 extern ConfigVariableFilename http_client_certificate_filename;
 extern ConfigVariableString http_client_certificate_passphrase;
 extern ConfigVariableList http_username;
+
+extern EXPCL_PANDAEXPRESS void init_libdownloader();
 
 #endif

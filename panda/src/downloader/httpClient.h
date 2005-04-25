@@ -65,6 +65,8 @@ PUBLISHED:
   void operator = (const HTTPClient &copy);
   ~HTTPClient();
 
+  static void init_random_seed();
+
   void set_proxy_spec(const string &proxy_spec);
   string get_proxy_spec() const;
 

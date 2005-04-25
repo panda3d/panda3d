@@ -194,6 +194,29 @@ HTTPClient::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::init_random_seed
+//       Access: Published, Static
+//  Description: This may be called once, presumably at the beginning
+//               of an application, to initialize OpenSSL's random
+//               seed.  On Windows, it is particularly important to
+//               call this at startup if you are going to be perfoming
+//               any https operations or otherwise use encryption,
+//               since the Windows algorithm for getting a random seed
+//               takes 2-3 seconds at startup, but can take 30 seconds
+//               or more after you have opened a 3-D graphics window
+//               and started rendering.
+//
+//               There is no harm in calling this method multiple
+//               times, or in not calling it at all.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+init_random_seed() {
+  // This call is sufficient to kick OpenSSL into generating its
+  // random seed if it hasn't already.
+  RAND_status();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_proxy_spec
 //       Access: Published
 //  Description: Specifies the complete set of proxies to use for all
@@ -1354,13 +1377,6 @@ unload_client_certificate() {
 void HTTPClient::
 initialize_ssl() {
   OpenSSL_add_all_algorithms();
-
-  // Call RAND_status() here to force the random number generator to
-  // initialize early.
-  if (early_random_seed) {
-    RAND_status();
-  }
-
   _ssl_initialized = true;
 }
 

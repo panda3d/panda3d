@@ -62,14 +62,6 @@ ConfigVariableDouble extractor_frequency
 ConfigVariableInt patcher_buffer_size
 ("patcher-buffer-size", 4096);
 
-ConfigVariableBool early_random_seed
-("early-random-seed", true,
- PRC_DESC("Configure this true (the default) to compute the SSL random seed "
-          "early on in the application (specifically, when the first "
-          "HTTPClient is created), or false to defer this until it is actually "
-          "needed, causing a delay the first time a https connection is "
-          "attempted."));
-
 ConfigVariableBool verify_ssl
 ("verify-ssl", true,
  PRC_DESC("Configure this true (the default) to insist on verifying all SSL "
@@ -156,8 +148,49 @@ ConfigVariableList http_username
           "If the server or realm is empty, they will match anything."));
 
 ConfigureFn(config_downloader) {
+  init_libdownloader();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libdownloader
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libdownloader() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
 #ifdef HAVE_SSL
   HTTPChannel::init_type();
+
+  // We need to define this here, rather than above, to guarantee that
+  // it has been initialized by the time we check it.
+  ConfigVariableBool early_random_seed
+    ("early-random-seed", false,
+     PRC_DESC("Configure this true to compute the SSL random seed "
+              "early on in the application (specifically, when the libpandaexpress "
+              "library is loaded), or false to defer this until it is actually "
+              "needed (which will be the first time you open an https connection "
+              "or otherwise use encryption services).  You can also call "
+              "HTTPClient::initialize_ssl() to "
+              "do this when you are ready.  The issue is that on Windows, "
+              "OpenSSL will attempt to "
+              "randomize its seed by crawling through the entire heap of "
+              "allocated memory, which can be extremely large in a Panda "
+              "application, especially if you have already opened a window and "
+              "started rendering; and so this can take as much as 30 seconds "
+              "or more.  For this reason it is best to initialize the random "
+              "seed at startup, when the application is still very small."));
+  if (early_random_seed) {
+    HTTPClient::init_random_seed();
+  }
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenSSL");
