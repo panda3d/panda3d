@@ -5913,7 +5913,7 @@ finish_modify_state() {
       GLP(Disable)(GL_TEXTURE_GEN_R);
       GLP(Disable)(GL_TEXTURE_GEN_Q);
       if (_supports_point_sprite) {
-        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, FALSE);
+        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
       }
 
       TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
@@ -6067,7 +6067,7 @@ finish_modify_state() {
 
       case TexGenAttrib::M_point_sprite:
         nassertv(_supports_point_sprite);
-        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, TRUE);
+        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
         got_point_sprites = true;
         break;
       }
