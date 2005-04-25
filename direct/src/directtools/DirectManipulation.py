@@ -102,8 +102,9 @@ class DirectManipulationControl(PandaObject):
                 direct.select(entry.getIntoNodePath(), direct.fShift)
             else:
                 direct.deselectAll()
-        else:
+        elif self.mode == 'move':
             self.manipulateObjectCleanup()
+        self.mode = None
 
     def manipulateObjectCleanup(self):
         if self.fScaling:
