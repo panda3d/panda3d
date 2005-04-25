@@ -57,6 +57,9 @@ PUBLISHED:
   void set_window_event(const string &window_event);
   string get_window_event() const;
 
+  void set_close_request_event(const string &close_request_event);
+  string get_close_request_event() const;
+
   // Mouse and keyboard routines
   int get_num_input_devices() const;
   string get_input_device_name(int device) const;
@@ -114,6 +117,7 @@ private:
   WindowProperties _requested_properties;
   WindowProperties _rejected_properties;
   string _window_event;
+  string _close_request_event;
   
 public:
   static TypeHandle get_class_type() {

@@ -206,6 +206,53 @@ get_window_event() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::set_close_request_event
+//       Access: Published
+//  Description: Sets the event that is triggered when the user
+//               requests to close the window, e.g. via alt-F4, or
+//               clicking on the close box.
+//
+//               The default for each window is for this event to be
+//               the empty string, which means the window-close
+//               request is handled immediately by Panda (and the
+//               window will be closed without the app getting a
+//               chance to intervene).  If you set this to a nonempty
+//               string, then the window is not closed, but instead
+//               the event is thrown.  It is then up to the app to
+//               respond appropriately, for instance by presenting an
+//               "are you sure?" dialog box, and eventually calling
+//               close_window() when the user is sure.
+//
+//               It is considered poor form to set this string and
+//               then not handle the event.  This can frustrate the
+//               user by making it difficult for him to cleanly shut
+//               down the application (and may force the user to
+//               hard-kill the app, or reboot the machine).
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+set_close_request_event(const string &close_request_event) {
+  MutexHolder holder(_properties_lock);
+  _close_request_event = close_request_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_close_request_event
+//       Access: Published
+//  Description: Returns the name of the event set via
+//               set_close_request_event().  If this string is
+//               nonempty, then when the user requests to close
+//               window, this event will be generated instead.  See
+//               set_close_request_event().
+////////////////////////////////////////////////////////////////////
+string GraphicsWindow::
+get_close_request_event() const {
+  string result;
+  MutexHolder holder(_properties_lock);
+  result = _close_request_event;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_num_input_devices
 //       Access: Published
 //  Description: Returns the number of separate input devices

@@ -28,6 +28,7 @@
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "textEncoder.h"
+#include "throw_event.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -351,13 +352,23 @@ process_events() {
     case ClientMessage:
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
         // This is a message from the window manager indicating that
-        // the user has requested to close the window.  Honor the
-        // request.
-        // TODO: don't call release_gsg() in the window thread.
-        release_gsg();
-        close_window();
-        properties.set_open(false);
-        system_changed_properties(properties);
+        // the user has requested to close the window.
+        string close_request_event = get_close_request_event();
+        if (!close_request_event.empty()) {
+          // In this case, the app has indicated a desire to intercept
+          // the request and process it directly.
+          throw_event(close_request_event);
+
+        } else {
+          // In this case, the default case, the app does not intend
+          // to service the request, so we do by closing the window.
+
+          // TODO: don't call release_gsg() in the window thread.
+          release_gsg();
+          close_window();
+          properties.set_open(false);
+          system_changed_properties(properties);
+        }
       }
       break;
 
