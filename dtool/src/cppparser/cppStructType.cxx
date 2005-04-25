@@ -332,7 +332,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   bool unchanged =
     (rep->_ident == _ident && rep->_scope == _scope);
 
-  for (int i = 0; i < (int)_derivation.size(); i++) {
+  for (int i = 0; i < (int)_derivation.size(); ++i) {
     rep->_derivation[i]._base =
       _derivation[i]._base->substitute_decl(subst, current_scope, global_scope)->as_type();
     if (rep->_derivation[i]._base != _derivation[i]._base) {

@@ -156,7 +156,7 @@ output(ostream &out) const {
     out << "(";
     if (_num_parameters > 0) {
       out << "$1";
-      for (int i = 1; i < _num_parameters; i++) {
+      for (int i = 1; i < _num_parameters; ++i) {
         out << ", $" << i + 1;
       }
     }
@@ -248,7 +248,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
 
       // Is this identifier one of our parameters?
       int pnum = -1;
-      for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); i++) {
+      for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); ++i) {
         if (parameter_names[i] == ident) {
           pnum = i;
         }

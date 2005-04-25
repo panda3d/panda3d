@@ -249,7 +249,7 @@ class DirectCameraControl(PandaObject):
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(direct.camera, ZERO_POINT)
         else:
-            wrt = direct.camera.getTransform( self.camManipRef )
+            wrt = direct.camera.getTransform(self.camManipRef)
             self.camManipRef.setHpr(self.camManipRef,
                                     (-1 * deltaX * 180.0),
                                     (deltaY * 180.0),
@@ -270,7 +270,7 @@ class DirectCameraControl(PandaObject):
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
         # Store the camera/manipRef offset transform
-        t.wrt = direct.camera.getTransform( self.camManipRef )
+        t.wrt = direct.camera.getTransform(self.camManipRef)
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
@@ -288,7 +288,7 @@ class DirectCameraControl(PandaObject):
     def lockCOA(self):
         self.fLockCOA = 1
         direct.message('COA Lock On')
-            
+
     def unlockCOA(self):
         self.fLockCOA = 0
         direct.message('COA Lock Off')
@@ -382,7 +382,7 @@ class DirectCameraControl(PandaObject):
 
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
-            coaDist = Vec3(self.coaMarker.getPos( direct.camera )).length()
+            coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
         # KEH: use current display region for fov
         # sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.dr.fovV))
         sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
@@ -454,7 +454,7 @@ class DirectCameraControl(PandaObject):
 
     def centerCam(self):
         self.centerCamIn(1.0)
-        
+
     def centerCamNow(self):
         self.centerCamIn(0.)
 
@@ -463,7 +463,7 @@ class DirectCameraControl(PandaObject):
         # Record undo point
         direct.pushUndo([direct.camera])
         # Determine marker location
-        markerToCam = self.coaMarker.getPos( direct.camera )
+        markerToCam = self.coaMarker.getPos(direct.camera)
         dist = Vec3(markerToCam - ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * dist
         delta = markerToCam - scaledCenterVec
@@ -491,7 +491,7 @@ class DirectCameraControl(PandaObject):
                                   blendType = 'easeInOut',
                                   task = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
-        
+
     def spawnMoveToView(self, view):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
@@ -525,7 +525,7 @@ class DirectCameraControl(PandaObject):
         self.camManipRef.setPosHpr(self.coaMarker, ZERO_VEC,
                                    hprOffset)
         # Scale center vec by current distance to target
-        offsetDistance = Vec3(direct.camera.getPos(self.camManipRef) - 
+        offsetDistance = Vec3(direct.camera.getPos(self.camManipRef) -
                               ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * (-1.0 * offsetDistance)
         # Now put the camManipRef at that point
@@ -541,15 +541,15 @@ class DirectCameraControl(PandaObject):
                                      blendType = 'easeInOut',
                                      task = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
-        
-        
+
+
     def swingCamAboutWidget(self, degrees, t):
         # Remove existing camera manipulation task
         taskMgr.remove('manipulateCamera')
 
         # Record undo point
         direct.pushUndo([direct.camera])
-        
+
         # Coincident with widget
         self.camManipRef.setPos(self.coaMarker, ZERO_POINT)
         # But aligned with render space
@@ -582,16 +582,16 @@ class DirectCameraControl(PandaObject):
         # At what distance does the object fill 30% of the screen?
         # Assuming radius of 1 on widget
         camY = direct.dr.near * (2.0 * maxScale)/(0.3 * maxDim)
-    
+
         # What is the vector through the center of the screen?
         centerVec = Y_AXIS * camY
-    
+
         # Where is the node relative to the viewpoint
         vWidget2Camera = direct.widget.getPos(direct.camera)
-    
+
         # How far do you move the camera to be this distance from the node?
         deltaMove = vWidget2Camera - centerVec
-    
+
         # Move a target there
         self.camManipRef.setPos(direct.camera, deltaMove)
 
@@ -603,7 +603,7 @@ class DirectCameraControl(PandaObject):
                                         task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
-        fitTask.uponDeath = self.reparentCam                                
+        fitTask.uponDeath = self.reparentCam
 
     def moveToFit(self):
         # How bit is the active widget?
@@ -627,7 +627,7 @@ class DirectCameraControl(PandaObject):
         # Spawn a task to move the widget
         t = direct.widget.lerpPos(Point3(centerVec),
                                   CAM_MOVE_DURATION,
-                                  other = direct.camera, 
+                                  other = direct.camera,
                                   blendType = 'easeInOut',
                                   task = 'moveToFitTask')
         t.uponDeath = lambda state: taskMgr.remove('stickToWidget')

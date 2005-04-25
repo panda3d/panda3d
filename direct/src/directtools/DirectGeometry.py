@@ -17,7 +17,7 @@ class LineNodePath(NodePath):
         # Attach a geomNode to the parent and set self to be
         # the resulting node path
         self.lineNode = GeomNode("lineNode")
-        self.assign(parent.attachNewNode( self.lineNode ))
+        self.assign(parent.attachNewNode(self.lineNode))
         if name:
             self.setName(name)
 
@@ -27,26 +27,26 @@ class LineNodePath(NodePath):
         ls.setThickness(thickness)
         ls.setColor(colorVec)
 
-    def moveTo( self, *_args ):
-        apply( self.lineSegs.moveTo, _args )
+    def moveTo(self, *_args):
+        apply(self.lineSegs.moveTo, _args)
 
-    def drawTo( self, *_args ):
-        apply( self.lineSegs.drawTo, _args )
+    def drawTo(self, *_args):
+        apply(self.lineSegs.drawTo, _args)
 
-    def create( self, frameAccurate = 0 ):
+    def create(self, frameAccurate = 0):
         self.lineSegs.create( self.lineNode, frameAccurate )
 
-    def reset( self ):
+    def reset(self):
         self.lineSegs.reset()
         self.lineNode.removeAllGeoms()
 
-    def isEmpty( self ):
+    def isEmpty(self):
         return self.lineSegs.isEmpty()
 
-    def setThickness( self, thickness ):
-        self.lineSegs.setThickness( thickness )
+    def setThickness(self, thickness):
+        self.lineSegs.setThickness(thickness)
 
-    def setColor( self, *_args ):
+    def setColor(self, *_args):
         apply( self.lineSegs.setColor, _args )
 
     def setVertex( self, *_args):
@@ -66,7 +66,7 @@ class LineNodePath(NodePath):
 
     def getVertexColor( self ):
         return self.lineSegs.getVertexColor()
-    
+
     def drawArrow(self, sv, ev, arrowAngle, arrowLength):
         """
         Do the work of moving the cursor around to draw an arrow from
@@ -193,12 +193,12 @@ def qSlerp(startQuat, endQuat, t):
     destQuat = Quat.identQuat()
     # Calc dot product
     cosOmega = (startQ.getI() * endQuat.getI() +
-                startQ.getJ() * endQuat.getJ() + 
+                startQ.getJ() * endQuat.getJ() +
                 startQ.getK() * endQuat.getK() +
                 startQ.getR() * endQuat.getR())
     # If the above dot product is negative, it would be better to
     # go between the negative of the initial and the final, so that
-    # we take the shorter path.  
+    # we take the shorter path.
     if ( cosOmega < 0.0 ):
         cosOmega *= -1
         startQ.setI(-1 * startQ.getI())
@@ -214,7 +214,7 @@ def qSlerp(startQuat, endQuat, t):
             startScale = math.sin((1.0 - t) * omega)/sinOmega
             endScale = math.sin(t * omega)/sinOmega
         else:
-            # ends very close 
+            # ends very close
             startScale = 1.0 - t
             endScale = t
         destQuat.setI(startScale * startQ.getI() +

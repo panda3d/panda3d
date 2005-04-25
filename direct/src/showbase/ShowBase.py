@@ -49,7 +49,7 @@ class ShowBase(DirectObject.DirectObject):
         self.config = config
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
-        
+
         self.printEnvDebugInfo()
 
         if self.config.GetBool('use-vfs', 1):
@@ -78,11 +78,11 @@ class ShowBase(DirectObject.DirectObject):
 
         # using 'sleep' once per frame to limit CPU usage.
         self.sleepCycle = 0.0
-        
+
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.
         self.exitFunc = None
-        
+
         Task.TaskManager.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         Task.TaskManager.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
         Task.TaskManager.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
@@ -145,7 +145,7 @@ class ShowBase(DirectObject.DirectObject):
         self.setupRender()
         self.setupRender2d()
         self.setupRender2dp()
-        self.setupDataGraph()        
+        self.setupDataGraph()
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
@@ -366,7 +366,7 @@ class ShowBase(DirectObject.DirectObject):
         """
         if pipe == None:
             pipe = self.pipe
-        
+
             if pipe == None:
                 self.makeDefaultPipe()
                 pipe = self.pipe
@@ -421,7 +421,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Set up a 3-d camera for the window by default.
         self.makeCamera(win, scene = scene, aspectRatio = aspectRatio)
-            
+
         return win
 
     def closeWindow(self, win):
@@ -469,7 +469,7 @@ class ShowBase(DirectObject.DirectObject):
         # This is intended to be called only once, at application
         # startup.  It is normally called automatically unless
         # window-type is configured to 'none'.
-        
+
         self.openMainWindow()
 
         # Give the window a chance to truly open.
@@ -504,7 +504,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.win != None:
             return self.win.isValid()
         return 0
-        
+
     def openMainWindow(self):
         """
         Creates the initial, main window for the application, and sets
@@ -535,7 +535,7 @@ class ShowBase(DirectObject.DirectObject):
             self.win = oldWin
             self.winList.append(oldWin)
             success = 0
-        
+
         if self.win != None:
             if isinstance(self.win, GraphicsWindow):
                 self.setupMouse(self.win)
@@ -588,7 +588,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
-    
+
     def setupRender(self):
         """
         Creates the render scene graph, the primary scene graph for
@@ -601,7 +601,7 @@ class ShowBase(DirectObject.DirectObject):
             self.render.node().setAttrib(RescaleNormalAttrib.makeDefault());
         except:
             pass
-        
+
         self.render.setTwoSided(0)
         self.backfaceCullingEnabled = 1
         self.textureEnabled = 1
@@ -628,7 +628,7 @@ class ShowBase(DirectObject.DirectObject):
         # occasionally want to put 3-d geometry under render2d, and
         # it's simplest (and seems to be easier on graphics drivers)
         # if the 2-d scene has been cleared first.
-        
+
         dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
         dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
         #lt = LightTransition.allOff()
@@ -675,7 +675,7 @@ class ShowBase(DirectObject.DirectObject):
         # occasionally want to put 3-d geometry under render2d, and
         # it's simplest (and seems to be easier on graphics drivers)
         # if the 2-d scene has been cleared first.
-        
+
         dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
         dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
         #lt = LightTransition.allOff()
@@ -685,14 +685,14 @@ class ShowBase(DirectObject.DirectObject):
 
         self.render2dp.setMaterialOff(1)
         self.render2dp.setTwoSided(1)
-        
+
         # The normal 2-d DisplayRegion has an aspect ratio that
         # matches the window, but its coordinate system is square.
         # This means anything we parent to render2d gets stretched.
         # For things where that makes a difference, we set up
         # aspect2d, which scales things back to the right aspect
         # ratio.
-        
+
         aspectRatio = self.getAspectRatio()
         self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2dp"))
         # Temporary test for old panda.
@@ -710,7 +710,7 @@ class ShowBase(DirectObject.DirectObject):
         # Returns the actual aspect ratio of the indicated (or main
         # window), or the default aspect ratio if there is not yet a
         # main window.
-        
+
         if self.aspectRatio:
             return self.aspectRatio
 
@@ -753,7 +753,7 @@ class ShowBase(DirectObject.DirectObject):
         camNode = Camera(camName)
         lens = PerspectiveLens()
         lens.setAspectRatio(aspectRatio)
-            
+
         camNode.setLens(lens)
 
         # self.camera is the parent node of all cameras: a node that
@@ -761,7 +761,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.camera == None:
             self.camera = self.render.attachNewNode('camera')
             __builtins__["camera"] = self.camera
-            
+
         cam = self.camera.attachNewNode(camNode)
         dr.setCamera(cam)
 
@@ -801,7 +801,7 @@ class ShowBase(DirectObject.DirectObject):
         # not as clear how useful it is.
         if self.camera2d == None:
             self.camera2d = self.render2d.attachNewNode('camera2d')
-            
+
         camera2d = self.camera2d.attachNewNode(cam2dNode)
         dr.setCamera(camera2d)
 
@@ -834,7 +834,7 @@ class ShowBase(DirectObject.DirectObject):
         # not as clear how useful it is.
         if self.camera2dp == None:
             self.camera2dp = self.render2dp.attachNewNode('camera2dp')
-            
+
         camera2dp = self.camera2dp.attachNewNode(cam2dNode)
         dr.setCamera(camera2dp)
 
@@ -858,7 +858,7 @@ class ShowBase(DirectObject.DirectObject):
         using the indicated window.  If the mouse has already been set
         up for a different window, those structures are deleted first.
         """
-        
+
         if self.buttonThrowers != None:
             for bt in self.buttonThrowers:
                 mw = bt.getParent()
@@ -866,14 +866,14 @@ class ShowBase(DirectObject.DirectObject):
                 bt.removeNode()
                 mw.removeNode()
                 mk.removeNode()
-        
+
         # For each mouse/keyboard device, we create
         #  - MouseAndKeyboard
         #  - MouseWatcher
         #  - ButtonThrower
         # The ButtonThrowers are stored in a list, self.buttonThrowers.
         # Given a ButtonThrower, one can access the MouseWatcher and
-        # MouseAndKeyboard using getParent.  
+        # MouseAndKeyboard using getParent.
         #
         # The MouseAndKeyboard generates mouse events and mouse
         # button/keyboard events; the MouseWatcher passes them through
@@ -969,7 +969,7 @@ class ShowBase(DirectObject.DirectObject):
             32.0 / self.win.getHeight() / aspectRatio,
             1.0, 32.0 / self.win.getHeight())
         #self.mouseWatcherNode.setGeometry(mouseViz)
-        
+
     def getAlt(self):
         return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.alt())
@@ -1079,7 +1079,7 @@ class ShowBase(DirectObject.DirectObject):
 
     # enable/disableAllAudio allow a programmable global override-off for current audio settings.
     # they're meant to be called when app loses audio focus (switched out), so we can turn off sound
-    # without affecting internal sfxActive/musicActive sound settings, so things 
+    # without affecting internal sfxActive/musicActive sound settings, so things
     # come back ok when the app is switched back to
 
     def disableAllAudio(self):
@@ -1130,7 +1130,7 @@ class ShowBase(DirectObject.DirectObject):
         # along with their velocities.  At the beginning of the frame
         # really means after the command prompt, which allows the user
         # to interactively query these deltas meaningfully.
-        
+
         if self.cTrav:
             self.cTrav.resetPrevTransform(self.render)
         return Task.cont
@@ -1182,7 +1182,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.recorder:
             self.recorder.playFrame()
-    
+
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
             # by sleeping here in igLoop so we don't use all available
@@ -1270,7 +1270,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if win:
            win.setClearColor(color)
-                
+
     def toggleBackface(self):
         if self.backfaceCullingEnabled:
             self.backfaceCullingOff()
@@ -1425,14 +1425,14 @@ class ShowBase(DirectObject.DirectObject):
             if self.oobeCullFrustum != None:
                 # First, disable OOBE cull mode.
                 self.oobeCull()
-            
+
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
 
             # Restore the mouse interface node.
             #self.mouseInterface.reparentTo(self.mouseWatcher)
             self.oobeTrackball.reparentTo(self.dataUnused)
-                
+
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
@@ -1462,7 +1462,7 @@ class ShowBase(DirectObject.DirectObject):
 
             # Don't change the camera lens--keep it with the original lens.
             #self.camNode.setLens(self.oobeLens)
-            
+
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
@@ -1525,7 +1525,7 @@ class ShowBase(DirectObject.DirectObject):
         if filename.empty():
             # The screenshot attempt failed for some reason.
             return 0
-        
+
         # Announce to anybody that a screenshot has been taken
         messenger.send('screenshot', [filename])
         return 1

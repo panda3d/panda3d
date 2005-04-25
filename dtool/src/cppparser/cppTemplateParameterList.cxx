@@ -117,7 +117,7 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
 ////////////////////////////////////////////////////////////////////
 bool CPPTemplateParameterList::
 is_fully_specified() const {
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (!_parameters[i]->is_fully_specified()) {
       return false;
     }
@@ -134,7 +134,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 bool CPPTemplateParameterList::
 is_tbd() const {
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     CPPType *type = _parameters[i]->as_type();
     if (type != (CPPType *)NULL &&
         (type->is_tbd() || type->as_class_template_parameter() != NULL)) {
@@ -158,7 +158,7 @@ operator == (const CPPTemplateParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
     return false;
   }
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (*_parameters[i] != *other._parameters[i]) {
       return false;
     }
@@ -186,7 +186,7 @@ operator < (const CPPTemplateParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
     return _parameters.size() < other._parameters.size();
   }
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (*_parameters[i] != *other._parameters[i]) {
       return *_parameters[i] < *other._parameters[i];
     }
@@ -205,7 +205,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   CPPTemplateParameterList *rep = new CPPTemplateParameterList(*this);
 
   bool anything_changed = false;
-  for (int i = 0; i < (int)rep->_parameters.size(); i++) {
+  for (int i = 0; i < (int)rep->_parameters.size(); ++i) {
     rep->_parameters[i] =
       _parameters[i]->substitute_decl(subst, current_scope, global_scope);
     if (rep->_parameters[i] != _parameters[i]) {

@@ -397,7 +397,7 @@ void DSearchPath::
 write(ostream &out, int indent_level) const {
   Directories::const_iterator di;
   for (di = _directories.begin(); di != _directories.end(); ++di) {
-    for (int i = 0; i < indent_level; i++) {
+    for (int i = 0; i < indent_level; ++i) {
       out << ' ';
     }
     out << (*di) << "\n";

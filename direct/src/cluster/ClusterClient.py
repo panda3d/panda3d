@@ -160,7 +160,7 @@ class ClusterClient(DirectObject.DirectObject):
                 server.sendCommandString(commandString)
         if fLocally:
             # Execute locally
-            exec( commandString, __builtins__ )
+            exec(commandString, __builtins__)
 
     def exit(self):
         # Execute remotely
@@ -208,7 +208,7 @@ class ClusterClientSync(ClusterClient):
             ClusterClient.moveCamera(self,xyz,hpr)
             self.waitForSwap=1
 
-        
+
 class DisplayConnection:
     def __init__(self,qcm,serverName,port,msgHandler):
         self.msgHandler = msgHandler
@@ -276,19 +276,19 @@ class DisplayConnection:
 
     # the following should only be called by a synchronized cluster manger
     def sendSwapNow(self):
-        ClusterClient.notify.debug( 
+        ClusterClient.notify.debug(
             "display connect send swap now, packet %d" %
             self.msgHandler.packetNumber)
         datagram = self.msgHandler.makeSwapNowDatagram()
         self.cw.send(datagram, self.tcpConn)
-        
+
     def sendCommandString(self, commandString):
         ClusterClient.notify.debug("send command string: %s" % commandString)
         datagram = self.msgHandler.makeCommandStringDatagram(commandString)
         self.cw.send(datagram, self.tcpConn)
 
     def sendExit(self):
-        ClusterClient.notify.debug( 
+        ClusterClient.notify.debug(
             "display connect send exit, packet %d" %
             self.msgHandler.packetNumber)
         datagram = self.msgHandler.makeExitDatagram()
@@ -389,8 +389,8 @@ def createClusterClient():
         return ClusterClientSync(displayConfigs, base.clusterSyncFlag)
     else:
         return ClusterClient(displayConfigs, base.clusterSyncFlag)
-    
-    
+
+
 class DummyClusterClient(DirectObject.DirectObject):
     """ Dummy class to handle command strings when not in cluster mode """
     notify = DirectNotifyGlobal.directNotify.newCategory("DummyClusterClient")
@@ -400,6 +400,6 @@ class DummyClusterClient(DirectObject.DirectObject):
     def __call__(self, commandString, fLocally = 1, serverList = None):
         if fLocally:
             # Execute locally
-            exec( commandString, __builtins__ )
+            exec(commandString, __builtins__)
 
 

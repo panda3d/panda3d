@@ -23,13 +23,13 @@ class DirectDeviceManager(VrpnClient, DirectObject):
         else:
             # Check config file, if that fails, use default
             self.server = myBase.config.GetString('vrpn-server', 'spacedyne')
-        
+
         # Create a vrpn client
         VrpnClient.__init__(self, self.server)
-    
+
     def createButtons(self, device):
         return DirectButtons(self, device)
-    
+
     def createAnalogs(self, device):
         return DirectAnalogs(self, device)
 
@@ -53,27 +53,27 @@ class DirectButtons(ButtonNode, DirectObject):
         ButtonNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
-    
+
     def __getitem__(self, index):
         if (index < 0) or (index >= self.getNumButtons()):
             raise IndexError
         return self.getButtonState(index)
-    
+
     def __len__(self):
         return self.getNumButtons()
-    
+
     def enable(self):
         self.nodePath.reparentTo(myBase.dataRoot)
-    
+
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
-    
+
     def getName(self):
         return self.name
-    
+
     def getNodePath(self):
         return self.nodePath
-    
+
     def __repr__(self):
         str = self.name + ': '
         for val in self:
@@ -102,21 +102,21 @@ class DirectAnalogs(AnalogNode, DirectObject):
                                                    ANALOG_CENTER)
         self.analogRange = self.analogMax - self.analogMin
 
-    
+
     def __getitem__(self, index):
         if (index < 0) or (index >= self.getNumControls()):
             raise IndexError
         return self.getControlState(index)
-    
+
     def __len__(self):
         return self.getNumControls()
-    
+
     def enable(self):
         self.nodePath.reparentTo(myBase.dataRoot)
-    
+
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
-    
+
     def normalizeWithoutCentering(self, val, minVal = -1, maxVal = 1):
         #
         # This is the old code that doesn't incorporate the centering fix
@@ -129,7 +129,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         # Zero out values in deadband
         val = sign * max(abs(val) - self.analogDeadband, 0.0)
         # Clamp value between analog range min and max and scale about center
-        val = min( max( val, self.analogMin ), self.analogMax )
+        val = min(max(val, self.analogMin), self.analogMax)
         # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) *
                  ((val - self.analogMin) / float(self.analogRange))) + minVal)
@@ -157,7 +157,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
                            float(aMin - (center - deadband)))
         # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) * ((percentVal + 1)/2.0)) + minVal)
-            
+
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:
             return self.normalize(self[chan], minVal, maxVal, sfx)
@@ -166,10 +166,10 @@ class DirectAnalogs(AnalogNode, DirectObject):
 
     def getName(self):
         return self.name
-    
+
     def getNodePath(self):
         return self.nodePath
-    
+
     def __repr__(self):
         str = self.name + ': '
         for val in self:
@@ -187,19 +187,19 @@ class DirectTracker(TrackerNode, DirectObject):
         TrackerNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
-    
+
     def enable(self):
         self.nodePath.reparentTo(myBase.dataRoot)
-    
+
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
-    
+
     def getName(self):
         return self.name
-    
+
     def getNodePath(self):
         return self.nodePath
-    
+
     def __repr__(self):
         return self.name
 
@@ -214,29 +214,29 @@ class DirectDials(DialNode, DirectObject):
         DialNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
-    
+
     def __getitem__(self, index):
         """
         if (index < 0) or (index >= self.getNumDials()):
             raise IndexError
         """
         return self.readDial(index)
-    
+
     def __len__(self):
         return self.getNumDials()
-    
+
     def enable(self):
         self.nodePath.reparentTo(myBase.dataRoot)
-    
+
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
-    
+
     def getName(self):
         return self.name
-    
+
     def getNodePath(self):
         return self.nodePath
-    
+
     def __repr__(self):
         str = self.name + ': '
         for i in range(self.getNumDials()):
@@ -260,19 +260,19 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
         AnalogNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
-    
+
     def enable(self):
         self.nodePath.reparentTo(myBase.dataRoot)
-    
+
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
-    
+
     def getName(self):
         return self.name
-    
+
     def getNodePath(self):
         return self.nodePath
-    
+
     def getTime(self):
         # Assume only one card, use channel 0
         timeBits = int(self.getControlState(0))
@@ -290,7 +290,7 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
                              (self.frames / 30.0))
         return (self.hours, self.minutes, self.seconds, self.frames,
                 self.totalSeconds)
-    
+
     def __repr__(self):
         str = ('%s: %d:%d:%d:%d' % ((self.name,) + self.getTime()[:-1]))
         return str

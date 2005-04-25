@@ -214,7 +214,7 @@ class ClusterServer(DirectObject.DirectObject):
         """ Handle arbitrary command string from client """
         command = self.msgHandler.parseCommandStringDatagram(dgi)
         try:
-            exec( command, __builtins__ )
+            exec(command, __builtins__)
         except:
             pass
 

@@ -46,7 +46,7 @@ is_equivalent(const CPPParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
     return false;
   }
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (!_parameters[i]->_type->is_equivalent(*other._parameters[i]->_type)) {
       return false;
     }
@@ -67,7 +67,7 @@ operator == (const CPPParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
     return false;
   }
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (*_parameters[i] != *other._parameters[i]) {
       return false;
     }
@@ -98,7 +98,7 @@ operator < (const CPPParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
     return _parameters.size() < other._parameters.size();
   }
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (*_parameters[i] != *other._parameters[i]) {
       return *_parameters[i] < *other._parameters[i];
     }
@@ -114,7 +114,7 @@ operator < (const CPPParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 is_tbd() const {
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (_parameters[i]->_type->is_tbd()) {
       return true;
     }
@@ -132,7 +132,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 is_parameter_expr() const {
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (_parameters[i]->_type->is_parameter_expr()) {
       return true;
     }
@@ -150,7 +150,7 @@ is_parameter_expr() const {
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 is_fully_specified() const {
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     if (!_parameters[i]->is_fully_specified()) {
       return false;
     }
@@ -169,7 +169,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
   CPPParameterList *rep = new CPPParameterList;
   bool any_changed = false;
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     CPPInstance *inst =
       _parameters[i]->substitute_decl(subst, current_scope, global_scope)
       ->as_instance();
@@ -197,7 +197,7 @@ CPPParameterList *CPPParameterList::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPParameterList *rep = new CPPParameterList;
   bool any_changed = false;
-  for (int i = 0; i < (int)_parameters.size(); i++) {
+  for (int i = 0; i < (int)_parameters.size(); ++i) {
     CPPInstance *inst = _parameters[i];
     CPPType *new_type = inst->_type;
     if (new_type->is_tbd()) {
@@ -232,7 +232,7 @@ void CPPParameterList::
 output(ostream &out, CPPScope *scope, bool parameter_names,
        int num_default_parameters) const {
   if (!_parameters.empty()) {
-    for (int i = 0; i < (int)_parameters.size(); i++) {
+    for (int i = 0; i < (int)_parameters.size(); ++i) {
       if (i != 0) {
         out << ", ";
       }

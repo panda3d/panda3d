@@ -161,7 +161,7 @@ ConfigTable::Symbol& Config<GetConfig>::GetAll(const ConfigString sym,
    ConfigVariableList var(sym, "DConfig", ConfigFlags::F_dconfig);
 
    int num_values = var.get_num_values();
-   for (int i = 0; i < num_values; i++) {
+   for (int i = 0; i < num_values; ++i) {
      string value = var.get_string_value(i);
      s.push_back(SymbolEnt(SymbolEnt::ConfigFile, value));
    }

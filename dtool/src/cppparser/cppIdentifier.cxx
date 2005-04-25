@@ -78,7 +78,7 @@ operator == (const CPPIdentifier &other) const {
   if (_names.size() != other._names.size()) {
     return false;
   }
-  for (int i = 0; i < (int)_names.size(); i++) {
+  for (int i = 0; i < (int)_names.size(); ++i) {
     if (_names[i] != other._names[i]) {
       return false;
     }
@@ -107,7 +107,7 @@ operator < (const CPPIdentifier &other) const {
   if (_names.size() != other._names.size()) {
     return _names.size() < other._names.size();
   }
-  for (int i = 0; i < (int)_names.size(); i++) {
+  for (int i = 0; i < (int)_names.size(); ++i) {
     if (_names[i] != other._names[i]) {
       return _names[i] < other._names[i];
     }
@@ -492,7 +492,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   CPPIdentifier *rep = new CPPIdentifier(*this);
 
   bool anything_changed = false;
-  for (int i = 0; i < (int)rep->_names.size(); i++) {
+  for (int i = 0; i < (int)rep->_names.size(); ++i) {
     if (_names[i].has_templ()) {
       rep->_names[i].set_templ
         (_names[i].get_templ()->substitute_decl(subst, current_scope, global_scope));

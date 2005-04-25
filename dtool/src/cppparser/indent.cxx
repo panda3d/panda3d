@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 ostream &
 indent(ostream &out, int indent_level) {
-  for (int i = 0; i < indent_level; i++) {
+  for (int i = 0; i < indent_level; ++i) {
     out << ' ';
   }
   return out;

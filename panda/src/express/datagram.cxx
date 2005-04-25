@@ -115,7 +115,7 @@ pad_bytes(size_t size) {
 
   while (size > 0) {
     _data.push_back('\0');
-    size--;
+    --size;
   }
 }
 
@@ -150,7 +150,7 @@ append_data(const void *data, size_t size) {
   //  _data.reserve(_data.size() + size);
 
   const uchar *source = (const uchar *)data;
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; ++i) {
     _data.v().push_back(source[i]);
   }
 }
