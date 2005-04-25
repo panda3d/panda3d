@@ -25,6 +25,7 @@
 #include "mouseButton.h"
 #include "clockObject.h"
 #include "config_util.h"
+#include "throw_event.h"
 
 #include <tchar.h>
 
@@ -998,13 +999,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
     
       case WM_CLOSE:
-        //GraphicsWindow::close_window();  //M.A. changed to the following line
-        close_window();
-        properties.set_open(false);
-        system_changed_properties(properties);
-    
-        // TODO: make sure we release the GSG properly.
-        windisplay_cat.debug() << "ta ta" << endl;
+        // This is a message from the system indicating that the user
+        // has requested to close the window (e.g. alt-f4).
+        {
+          string close_request_event = get_close_request_event();
+          if (!close_request_event.empty()) {
+            // In this case, the app has indicated a desire to intercept
+            // the request and process it directly.
+            throw_event(close_request_event);
+            return 0;
+            
+          } else {
+            // In this case, the default case, the app does not intend
+            // to service the request, so we do by closing the window.
+            close_window();
+            properties.set_open(false);
+            system_changed_properties(properties);
+            
+            // TODO: make sure we release the GSG properly.
+          }
+        }
         break;
     
       case WM_ACTIVATE:
