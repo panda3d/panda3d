@@ -18,7 +18,7 @@
 
 #include "cullBin.h"
 
-PStatCollector CullBin::_cull_bin_pcollector("Cull:Bins");
+PStatCollector CullBin::_cull_bin_pcollector("Cull:Sort");
 PStatCollector CullBin::_draw_bin_pcollector("Draw:Bins");
 
 TypeHandle CullBin::_type_handle;
