@@ -55,11 +55,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             else:
                 if self.gridParent:
                     self.gridParent.delete()
-                    self.gridParent = None
-                    # NOTE: at this point the avatar has been detached from the scene
-                    # graph.  Someone else needs to reparent him to something in the scene graph
-            # TODO: handle DistributedNode parenting
-
+                    self.gridParent = None                    
             
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a

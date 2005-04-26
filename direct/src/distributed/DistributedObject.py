@@ -353,9 +353,27 @@ class DistributedObject(PandaObject):
             # The store must run first so we know the old location
             #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
+            # Give the parent a chance to run code when a new child
+            # sets location to it. For example, the parent may want to
+            # scene graph reparent the child to some subnode it owns.
+            parentObj = self.cr.doId2do.get(parentId)
+            if parentObj:
+                parentObj.handleChildSetLocation(self, zoneId)
             
         def getLocation(self):
             return self.__location
+
+        def handleChildSetLocation(self, childObj, zoneId):
+            self.notify.info("handleChildSetLocation: %s childId: %s zoneId: %s" %
+                             (self.doId, childObj.doId, zoneId))
+            # A new child has just setLocation beneath us.  Give us a
+            # chance to run code when a new child sets location to us. For
+            # example, we may want to scene graph reparent the child to
+            # some subnode we own.
+            
+            # Inheritors should override
+            pass
+
 
     def isLocal(self):
         # This returns true if the distributed object is "local,"
