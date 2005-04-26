@@ -24,6 +24,7 @@
 #include "planeNode.h"
 #include "renderAttrib.h"
 #include "ordered_vector.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ClipPlaneAttrib
@@ -36,15 +37,19 @@
 class EXPCL_PANDA ClipPlaneAttrib : public RenderAttrib {
 private:
   INLINE ClipPlaneAttrib();
+  INLINE ClipPlaneAttrib(const ClipPlaneAttrib &copy);
 
 PUBLISHED:
+
+  // This is the old, deprecated interface to ClipPlaneAttrib.  Do not
+  // use any of these methods for new code; these methods will be
+  // removed soon.
   enum Operation {
     O_set,
     O_add,
     O_remove
   };
 
-  static CPT(RenderAttrib) make_all_off();
   static CPT(RenderAttrib) make(Operation op, 
                                 PlaneNode *plane);
   static CPT(RenderAttrib) make(Operation op, 
@@ -65,8 +70,27 @@ PUBLISHED:
   INLINE CPT(RenderAttrib) add_plane(PlaneNode *plane) const;
   INLINE CPT(RenderAttrib) remove_plane(PlaneNode *plane) const;
 
+
+  // The following is the new, more general interface to the
+  // ClipPlaneAttrib.
+  static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make_all_off();
+
+  INLINE int get_num_on_planes() const;
+  INLINE NodePath get_on_plane(int n) const;
+  INLINE bool has_on_plane(const NodePath &plane) const;
+
+  INLINE int get_num_off_planes() const;
+  INLINE NodePath get_off_plane(int n) const;
+  INLINE bool has_off_plane(const NodePath &plane) const;
+  INLINE bool has_all_off() const;
+
   INLINE bool is_identity() const;
-  INLINE bool is_all_off() const;
+
+  CPT(RenderAttrib) add_on_plane(const NodePath &plane) const;
+  CPT(RenderAttrib) remove_on_plane(const NodePath &plane) const;
+  CPT(RenderAttrib) add_off_plane(const NodePath &plane) const;
+  CPT(RenderAttrib) remove_off_plane(const NodePath &plane) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -79,13 +103,12 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  CPT(RenderAttrib) do_add(const ClipPlaneAttrib *other, Operation op) const;
-  CPT(RenderAttrib) do_remove(const ClipPlaneAttrib *other, Operation op) const;
+  typedef ov_set<NodePath> Planes;
+  Planes _on_planes, _off_planes;
+  bool _off_all_planes;
 
-private:
-  Operation _operation;
-  typedef ov_set< PT(PlaneNode) > Planes;
-  Planes _planes;
+  static CPT(RenderAttrib) _empty_attrib;
+  static CPT(RenderAttrib) _all_off_attrib;
 
 public:
   static void register_with_read_factory();

@@ -19,81 +19,108 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use ClipPlaneAttrib::make() to construct a new
 //               ClipPlaneAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE ClipPlaneAttrib::
 ClipPlaneAttrib() {
-  _operation = O_set;
+  _off_all_planes = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_operation
-//       Access: Published
-//  Description: Returns the basic operation type of the ClipPlaneAttrib.
-//               If this is O_set, the planes listed here completely
-//               replace any planes that were already on.  If this is
-//               O_add, the planes here are added to the set of of
-//               planes that were already on, and if O_remove, the
-//               planes here are removed from the set of planes that
-//               were on.
+//     Function: ClipPlaneAttrib::Copy Constructor
+//       Access: Protected
+//  Description: Use ClipPlaneAttrib::make() to construct a new
+//               ClipPlaneAttrib object.  The copy constructor is only
+//               defined to facilitate methods like add_on_plane().
 ////////////////////////////////////////////////////////////////////
-INLINE ClipPlaneAttrib::Operation ClipPlaneAttrib::
-get_operation() const {
-  return _operation;
+INLINE ClipPlaneAttrib::
+ClipPlaneAttrib(const ClipPlaneAttrib &copy) :
+  _on_planes(copy._on_planes),
+  _off_planes(copy._off_planes),
+  _off_all_planes(copy._off_all_planes)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_num_planes
+//     Function: ClipPlaneAttrib::get_num_on_planes
 //       Access: Published
-//  Description: Returns the number of planes listed in the attribute.
+//  Description: Returns the number of planes that are enabled by
+//               the attribute.
 ////////////////////////////////////////////////////////////////////
 INLINE int ClipPlaneAttrib::
-get_num_planes() const {
-  return _planes.size();
+get_num_on_planes() const {
+  return _on_planes.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_plane
+//     Function: ClipPlaneAttrib::get_on_plane
 //       Access: Published
-//  Description: Returns the nth planes listed in the attribute.
+//  Description: Returns the nth plane enabled by the attribute,
+//               sorted in render order.
 ////////////////////////////////////////////////////////////////////
-INLINE PlaneNode *ClipPlaneAttrib::
-get_plane(int n) const {
-  nassertr(n >= 0 && n < (int)_planes.size(), (PlaneNode *)NULL);
-  return _planes[n];
+INLINE NodePath ClipPlaneAttrib::
+get_on_plane(int n) const {
+  nassertr(n >= 0 && n < (int)_on_planes.size(), NodePath::fail());
+  return _on_planes[n];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::add_plane
+//     Function: ClipPlaneAttrib::has_on_plane
 //       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane added to the list of planes.
+//  Description: Returns true if the indicated plane is enabled by
+//               the attrib, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) ClipPlaneAttrib::
-add_plane(PlaneNode *plane) const {
-  if (_operation == O_remove) {  
-    return compose(make(O_remove, plane));
-  } else {
-    return compose(make(O_add, plane));
-  }
+INLINE bool ClipPlaneAttrib::
+has_on_plane(const NodePath &plane) const {
+  return _on_planes.find(plane) != _on_planes.end();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::remove_plane
+//     Function: ClipPlaneAttrib::get_num_off_planes
 //       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane removed from the list of
-//               planes.
+//  Description: Returns the number of planes that are disabled by
+//               the attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) ClipPlaneAttrib::
-remove_plane(PlaneNode *plane) const {
-  if (_operation == O_remove) {  
-    return compose(make(O_add, plane));
-  } else {
-    return compose(make(O_remove, plane));
-  }
+INLINE int ClipPlaneAttrib::
+get_num_off_planes() const {
+  return _off_planes.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::get_off_plane
+//       Access: Published
+//  Description: Returns the nth plane disabled by the attribute,
+//               sorted in arbitrary (pointer) order.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath ClipPlaneAttrib::
+get_off_plane(int n) const {
+  nassertr(n >= 0 && n < (int)_off_planes.size(), NodePath::fail());
+  return _off_planes[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::has_off_plane
+//       Access: Published
+//  Description: Returns true if the indicated plane is disabled by
+//               the attrib, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ClipPlaneAttrib::
+has_off_plane(const NodePath &plane) const {
+  return _off_planes.find(plane) != _off_planes.end() ||
+    (_off_all_planes && !has_on_plane(plane));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::has_all_off
+//       Access: Published
+//  Description: Returns true if this attrib disables all planes
+//               (although it may also enable some).
+////////////////////////////////////////////////////////////////////
+INLINE bool ClipPlaneAttrib::
+has_all_off() const {
+  return _off_all_planes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,16 +131,5 @@ remove_plane(PlaneNode *plane) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ClipPlaneAttrib::
 is_identity() const {
-  return _operation != O_set && _planes.empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::is_all_off
-//       Access: Published
-//  Description: Returns true if this attrib turns off all planes and
-//               turns none on.
-////////////////////////////////////////////////////////////////////
-INLINE bool ClipPlaneAttrib::
-is_all_off() const {
-  return _operation == O_set && _planes.empty();
+  return _on_planes.empty() && _off_planes.empty() && !_off_all_planes;
 }

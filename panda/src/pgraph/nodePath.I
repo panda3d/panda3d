@@ -510,6 +510,149 @@ get_net_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_attrib
+//       Access: Published
+//  Description: Adds the indicated render attribute to the scene
+//               graph on this node.  This attribute will now apply to
+//               this node and everything below.  If there was already
+//               an attribute of the same type, it is replaced.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_attrib(const RenderAttrib *attrib, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(attrib, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_attrib
+//       Access: Published
+//  Description: Returns the render attribute of the indicated type,
+//               if it is defined on the node, or NULL if it is not.
+//               This checks only what is set on this particular node
+//               level, and has nothing to do with what render
+//               attributes may be inherited from parent nodes.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderAttrib *NodePath::
+get_attrib(TypeHandle type) const {
+  nassertr_always(!is_empty(), NULL);
+  return node()->get_attrib(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_attrib
+//       Access: Published
+//  Description: Returns true if there is a render attribute of the
+//               indicated type defined on this node, or false if
+//               there is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_attrib(TypeHandle type) const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_attrib
+//       Access: Published
+//  Description: Removes the render attribute of the given type from
+//               this node.  This node, and the subgraph below, will
+//               now inherit the indicated render attribute from the
+//               nodes above this one.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_attrib(TypeHandle type) {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_effect
+//       Access: Published
+//  Description: Adds the indicated render effect to the scene
+//               graph on this node.  If there was already an effect
+//               of the same type, it is replaced.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_effect(const RenderEffect *effect) {
+  nassertv_always(!is_empty());
+  node()->set_effect(effect);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_effect
+//       Access: Published
+//  Description: Returns the render effect of the indicated type,
+//               if it is defined on the node, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderEffect *NodePath::
+get_effect(TypeHandle type) const {
+  nassertr_always(!is_empty(), NULL);
+  return node()->get_effect(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_effect
+//       Access: Published
+//  Description: Returns true if there is a render effect of the
+//               indicated type defined on this node, or false if
+//               there is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_effect(TypeHandle type) const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_effect(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_effect
+//       Access: Published
+//  Description: Removes the render effect of the given type from
+//               this node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_effect(TypeHandle type) {
+  nassertv_always(!is_empty());
+  node()->clear_effect(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_effects
+//       Access: Published
+//  Description: Sets the complete RenderEffects that will be applied
+//               this node.  This completely replaces whatever has
+//               been set on this node via repeated calls to
+//               set_attrib().
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_effects(const RenderEffects *effects) {
+  nassertv_always(!is_empty());
+  node()->set_effects(effects);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_effects
+//       Access: Published
+//  Description: Returns the complete RenderEffects that will be
+//               applied to this node.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderEffects *NodePath::
+get_effects() const {
+  nassertr_always(!is_empty(), RenderEffects::make_empty());
+  return node()->get_effects();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_effects
+//       Access: Published
+//  Description: Resets this node to have no render effects.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_effects() {
+  nassertv_always(!is_empty());
+  node()->clear_effects();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_transform
 //       Access: Published
 //  Description: Returns the complete transform object set on this node.

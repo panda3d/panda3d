@@ -28,6 +28,7 @@
 #include "texMatrixAttrib.h"
 #include "materialAttrib.h"
 #include "lightAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "polylightEffect.h"
 #include "fogAttrib.h"
 #include "renderModeAttrib.h"
@@ -41,6 +42,7 @@
 #include "transparencyAttrib.h"
 #include "antialiasAttrib.h"
 #include "texProjectorEffect.h"
+#include "planeNode.h"
 #include "lensNode.h"
 #include "materialPool.h"
 #include "look_at.h"
@@ -2286,7 +2288,7 @@ set_light_off(int priority) {
 //     Function: NodePath::set_light_off
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
-//               using without the indicated Light.  This is different
+//               without using the indicated Light.  This is different
 //               from not specifying the Light; rather, this
 //               specifically contradicts set_light() at a higher node
 //               level (or, with a priority, overrides a set_light()
@@ -2469,6 +2471,214 @@ has_light_off(const NodePath &light) const {
     }
   }
   nassert_raise("Not a Light object.");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_clip_plane
+//       Access: Published
+//  Description: Adds the indicated clipping plane to the list of
+//               planes that apply to geometry at this node and below.
+//               The clipping plane itself, a PlaneNode, should be
+//               parented into the scene graph elsewhere, to represent
+//               the plane's position in space; but until
+//               set_clip_plane() is called it will clip no geometry.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_clip_plane(const NodePath &clip_plane, int priority) {
+  nassertv_always(!is_empty());
+  if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
+    const RenderAttrib *attrib =
+      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      priority = max(priority,
+                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_type()));
+      const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
+      
+      // Modify the existing ClipPlaneAttrib to add the indicated
+      // clip_plane.
+      node()->set_attrib(la->add_on_plane(clip_plane), priority);
+      
+    } else {
+      // Create a new ClipPlaneAttrib for this node.
+      CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, ClipPlaneAttrib::make());
+      node()->set_attrib(la->add_on_plane(clip_plane), priority);
+    }
+    return;
+  }
+  nassert_raise("Not a PlaneNode object.");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_clip_plane_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using no clip_planes at all.  This is different
+//               from not specifying a clip_plane; rather, this
+//               specifically contradicts set_clip_plane() at a higher
+//               node level (or, with a priority, overrides a
+//               set_clip_plane() at a lower level).
+//
+//               If no clip_planes are in effect on a particular piece
+//               of geometry, that geometry is rendered without being
+//               clipped (other than by the viewing frustum).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_clip_plane_off(int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(ClipPlaneAttrib::make_all_off(), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_clip_plane_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               without being clipped by the indicated PlaneNode.
+//               This is different from not specifying the PlaneNode;
+//               rather, this specifically contradicts
+//               set_clip_plane() at a higher node level (or, with a
+//               priority, overrides a set_clip_plane() at a lower
+//               level).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_clip_plane_off(const NodePath &clip_plane, int priority) {
+  nassertv_always(!is_empty());
+
+  if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
+    const RenderAttrib *attrib =
+      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      priority = max(priority,
+                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_type()));
+      const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
+      
+      // Modify the existing ClipPlaneAttrib to add the indicated clip_plane
+      // to the "off" list.  This also, incidentally, removes it from
+      // the "on" list if it is there.
+      node()->set_attrib(la->add_off_plane(clip_plane), priority);
+      
+    } else {
+      // Create a new ClipPlaneAttrib for this node that turns off the
+      // indicated clip_plane.
+      CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, ClipPlaneAttrib::make());
+      node()->set_attrib(la->add_off_plane(clip_plane), priority);
+    }
+    return;
+  }
+  nassert_raise("Not a PlaneNode object.");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_clip_plane
+//       Access: Published
+//  Description: Completely removes any clip planes that may have been
+//               set via set_clip_plane() or set_clip_plane_off() from
+//               this particular node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_clip_plane() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(ClipPlaneAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_clip_plane
+//       Access: Published
+//  Description: Removes any reference to the indicated clipping plane
+//               from the NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_clip_plane(const NodePath &clip_plane) {
+  nassertv_always(!is_empty());
+
+  if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
+    const RenderAttrib *attrib =
+      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, attrib);
+      la = DCAST(ClipPlaneAttrib, la->remove_on_plane(clip_plane));
+      la = DCAST(ClipPlaneAttrib, la->remove_off_plane(clip_plane));
+        
+      if (la->is_identity()) {
+        node()->clear_attrib(ClipPlaneAttrib::get_class_type());
+          
+      } else {
+        int priority = node()->get_state()->get_override(ClipPlaneAttrib::get_class_type());
+        node()->set_attrib(la, priority);
+      }
+    }
+    return;
+  }
+  nassert_raise("Not a PlaneNode object.");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_clip_plane
+//       Access: Published
+//  Description: Returns true if the indicated clipping plane has been
+//               specifically applied to this particular node.  This
+//               means that someone called set_clip_plane() on this
+//               node with the indicated clip_plane.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_clip_plane(const NodePath &clip_plane) const {
+  nassertr_always(!is_empty(), false);
+
+  if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
+    const RenderAttrib *attrib =
+      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
+      return la->has_on_plane(clip_plane);
+    }
+    return false;
+  }
+  nassert_raise("Not a PlaneNode object.");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_clip_plane_off
+//       Access: Published
+//  Description: Returns true if all clipping planes have been
+//               specifically disabled on this particular node.  This
+//               means that someone called set_clip_plane_off() on
+//               this node with no parameters.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_clip_plane_off() const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ClipPlaneAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
+    return la->has_all_off();
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_clip_plane_off
+//       Access: Published
+//  Description: Returns true if the indicated clipping plane has been
+//               specifically disabled on this particular node.  This
+//               means that someone called set_clip_plane_off() on
+//               this node with the indicated clip_plane.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_clip_plane_off(const NodePath &clip_plane) const {
+  nassertr_always(!is_empty(), false);
+  if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
+    const RenderAttrib *attrib =
+      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
+      return la->has_off_plane(clip_plane);
+    }
+  }
+  nassert_raise("Not a PlaneNode object.");
   return false;
 }
 

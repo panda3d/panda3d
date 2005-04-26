@@ -246,6 +246,20 @@ PUBLISHED:
   void set_state(const NodePath &other, const RenderState *state);
   INLINE CPT(RenderState) get_net_state() const;
 
+  INLINE void set_attrib(const RenderAttrib *attrib, int priority = 0);
+  INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
+  INLINE bool has_attrib(TypeHandle type) const;
+  INLINE void clear_attrib(TypeHandle type);
+
+  INLINE void set_effect(const RenderEffect *effect);
+  INLINE const RenderEffect *get_effect(TypeHandle type) const;
+  INLINE bool has_effect(TypeHandle type) const;
+  INLINE void clear_effect(TypeHandle type);
+
+  INLINE void set_effects(const RenderEffects *effects);
+  INLINE const RenderEffects *get_effects() const;
+  INLINE void clear_effects();
+
   INLINE const TransformState *get_transform() const;
   INLINE void clear_transform();
   INLINE void set_transform(const TransformState *transform);
@@ -511,6 +525,15 @@ PUBLISHED:
   bool has_light(const NodePath &light) const;
   bool has_light_off() const;
   bool has_light_off(const NodePath &light) const;
+
+  void set_clip_plane(const NodePath &clip_plane, int priority = 0);
+  void set_clip_plane_off(int priority = 0);
+  void set_clip_plane_off(const NodePath &clip_plane, int priority = 0);
+  void clear_clip_plane();
+  void clear_clip_plane(const NodePath &clip_plane);
+  bool has_clip_plane(const NodePath &clip_plane) const;
+  bool has_clip_plane_off() const;
+  bool has_clip_plane_off(const NodePath &clip_plane) const;
 
   void set_bin(const string &bin_name, int draw_order, int priority = 0);
   void clear_bin();
