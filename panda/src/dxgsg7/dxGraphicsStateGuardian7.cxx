@@ -4508,14 +4508,15 @@ enable_clip_plane(int plane_id, bool enable) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-bind_clip_plane(PlaneNode *plane, int plane_id) {
+bind_clip_plane(const NodePath &plane, int plane_id) {
   // Get the plane in "world coordinates".  This means the plane in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  NodePath plane_np(plane);
-  const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_camera_path());
+  const LMatrix4f &plane_mat = plane.get_mat(_scene_setup->get_camera_path());
   LMatrix4f rel_mat = plane_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
-  Planef world_plane = plane->get_plane() * rel_mat;
+  const PlaneNode *plane_node;
+  DCAST_INTO_V(plane_node, plane.node());
+  Planef world_plane = plane_node->get_plane() * rel_mat;
 
   _pScrn->pD3DDevice->SetClipPlane(plane_id, (float *)world_plane.get_data());
 }

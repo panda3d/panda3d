@@ -199,7 +199,7 @@ protected:
   virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
-  virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
+  virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode();

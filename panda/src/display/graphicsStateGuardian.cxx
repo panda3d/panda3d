@@ -1147,17 +1147,14 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
   bool any_bound = false;
 
   int num_enabled = 0;
-  int num_planes = attrib->get_num_planes();
-  if (attrib->get_operation() == ClipPlaneAttrib::O_remove) {
-    num_planes = 0;
-  }
-  for (int li = 0; li < num_planes; li++) {
-    PlaneNode *plane = attrib->get_plane(li);
-    nassertv(plane != (PlaneNode *)NULL);
+  int num_on_planes = attrib->get_num_on_planes();
+  for (int li = 0; li < num_on_planes; li++) {
+    NodePath plane = attrib->get_on_plane(li);
+    nassertv(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()));
 
     num_enabled++;
 
-    // Planeing should be enabled before we apply any planes.
+    // Clipping should be enabled before we apply any planes.
     enable_clip_planes(true);
     _clip_planes_enabled = true;
     _clip_planes_enabled_this_frame = true;
@@ -1179,7 +1176,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
     // See if there are any unbound plane ids
     if (cur_plane_id == -1) {
       for (i = 0; i < max_planes; i++) {
-        if (_clip_plane_info[i]._plane == (PlaneNode *)NULL) {
+        if (_clip_plane_info[i]._plane.is_empty()) {
           _clip_plane_info[i]._plane = plane;
           cur_plane_id = i;
           break;
@@ -1191,7 +1188,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
     // a currently unused but previously bound id
     if (cur_plane_id == -1) {
       for (i = 0; i < max_planes; i++) {
-        if (!attrib->has_plane(_clip_plane_info[i]._plane)) {
+        if (!attrib->has_on_plane(_clip_plane_info[i]._plane)) {
           _clip_plane_info[i]._plane = plane;
           cur_plane_id = i;
           break;
@@ -1225,7 +1222,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
       
     } else if (cur_plane_id == -1) {
       gsg_cat.warning()
-        << "Failed to bind " << *plane << " to id.\n";
+        << "Failed to bind " << plane << " to id.\n";
     }
   }
 
@@ -1434,7 +1431,7 @@ begin_bind_clip_planes() {
 //               with the plane's properties.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_clip_plane(PlaneNode *plane, int plane_id) {
+bind_clip_plane(const NodePath &plane, int plane_id) {
 }
 
 ////////////////////////////////////////////////////////////////////

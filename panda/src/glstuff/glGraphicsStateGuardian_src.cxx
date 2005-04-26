@@ -5695,12 +5695,13 @@ begin_bind_clip_planes() {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-bind_clip_plane(PlaneNode *plane, int plane_id) {
+bind_clip_plane(const NodePath &plane, int plane_id) {
   GLenum id = get_clip_plane_id(plane_id);
 
-  NodePath plane_np(plane);
-  const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_scene_root());
-  Planef xformed_plane = plane->get_plane() * plane_mat;
+  const LMatrix4f &plane_mat = plane.get_mat(_scene_setup->get_scene_root());
+  const PlaneNode *plane_node;
+  DCAST_INTO_V(plane_node, plane.node());
+  Planef xformed_plane = plane_node->get_plane() * plane_mat;
 
   Planed double_plane(LCAST(double, xformed_plane));
   GLP(ClipPlane)(id, double_plane.get_data());

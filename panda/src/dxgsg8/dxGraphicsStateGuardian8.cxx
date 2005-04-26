@@ -355,6 +355,8 @@ dx_init(void) {
         << "\n";
     }
 
+    _max_lights = d3dCaps.MaxActiveLights;
+    _max_clip_planes = d3dCaps.MaxUserClipPlanes;
     _max_vertex_transforms = d3dCaps.MaxVertexBlendMatrices;
     _max_vertex_transform_indices = d3dCaps.MaxVertexBlendMatrixIndex;
 
@@ -372,7 +374,6 @@ dx_init(void) {
     _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , 0x0);
 
     _pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
-    _clipping_enabled = true;
 
     // these both reflect d3d defaults
     _color_writemask = 0xFFFFFFFF;
@@ -4241,7 +4242,12 @@ bind_light(PointLight *light, int light_id) {
   alight.Attenuation1 = att[1];
   alight.Attenuation2 = att[2];
 
-  HRESULT res = _pD3DDevice->SetLight(light_id, &alight);
+  HRESULT hr = _pD3DDevice->SetLight(light_id, &alight);
+  if (FAILED(hr)) {
+    wdxdisplay8_cat.warning() 
+      << "Could not set light properties for " << light 
+      << " to id " << light_id << ": " << D3DERRORSTRING(hr) << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4282,7 +4288,12 @@ bind_light(DirectionalLight *light, int light_id) {
   alight.Attenuation1 = 0.0f;       // linear
   alight.Attenuation2 = 0.0f;       // quadratic
 
-  HRESULT res = _pD3DDevice->SetLight(light_id, &alight);
+  HRESULT hr = _pD3DDevice->SetLight(light_id, &alight);
+  if (FAILED(hr)) {
+    wdxdisplay8_cat.warning() 
+      << "Could not set light properties for " << light 
+      << " to id " << light_id << ": " << D3DERRORSTRING(hr) << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4332,7 +4343,12 @@ bind_light(Spotlight *light, int light_id) {
   alight.Attenuation1 = att[1];
   alight.Attenuation2 = att[2];
 
-  HRESULT res = _pD3DDevice->SetLight(light_id, &alight);
+  HRESULT hr = _pD3DDevice->SetLight(light_id, &alight);
+  if (FAILED(hr)) {
+    wdxdisplay8_cat.warning() 
+      << "Could not set light properties for " << light 
+      << " to id " << light_id << ": " << D3DERRORSTRING(hr) << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4645,6 +4661,24 @@ do_auto_rescale_normal() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::slot_new_light
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular light id will be used for the first time.
+//               It is intended to allow the derived class to reserve
+//               any additional resources, if required, for the new
+//               light; and also to indicate whether the hardware
+//               supports this many simultaneous lights.
+//
+//               The return value should be true if the additional
+//               light is supported, or false if it is not.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+slot_new_light(int light_id) {
+  return (light_id < _max_lights);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -4667,8 +4701,7 @@ enable_lighting(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_ambient_light(const Colorf &color) {
-  _pD3DDevice->SetRenderState(D3DRS_AMBIENT,
-                                  Colorf_to_D3DCOLOR(color));
+  _pD3DDevice->SetRenderState(D3DRS_AMBIENT, Colorf_to_D3DCOLOR(color));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4680,12 +4713,17 @@ set_ambient_light(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 enable_light(int light_id, bool enable) {
-  HRESULT res = _pD3DDevice->LightEnable(light_id, enable);
+  HRESULT hr = _pD3DDevice->LightEnable(light_id, enable);
 
 #ifdef GSG_VERBOSE
   dxgsg8_cat.debug()
     << "LightEnable(" << light_id << "=" << enable << ")" << endl;
 #endif
+  if (FAILED(hr)) {
+    wdxdisplay8_cat.warning() 
+      << "Could not enable light " << light_id << ": " 
+      << D3DERRORSTRING(hr) << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4704,7 +4742,24 @@ enable_light(int light_id, bool enable) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 slot_new_clip_plane(int plane_id) {
-  return (plane_id < D3DMAXUSERCLIPPLANES);
+  return (plane_id < _max_clip_planes);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_clip_plane
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated clip_plane id.  A specific
+//               PlaneNode will already have been bound to this id via
+//               bind_clip_plane().
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+enable_clip_plane(int plane_id, bool enable) {
+  if (enable) {
+    _clip_plane_bits |= ((DWORD)1 << plane_id);
+  } else {
+    _clip_plane_bits &= ~((DWORD)1 << plane_id);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4716,16 +4771,36 @@ slot_new_clip_plane(int plane_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-bind_clip_plane(PlaneNode *plane, int plane_id) {
+bind_clip_plane(const NodePath &plane, int plane_id) {
   // Get the plane in "world coordinates".  This means the plane in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  NodePath plane_np(plane);
-  const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_camera_path());
+  const LMatrix4f &plane_mat = plane.get_mat(_scene_setup->get_camera_path());
   LMatrix4f rel_mat = plane_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
-  Planef world_plane = plane->get_plane() * rel_mat;
+  const PlaneNode *plane_node;
+  DCAST_INTO_V(plane_node, plane.node());
+  Planef world_plane = plane_node->get_plane() * rel_mat;
 
-  _pD3DDevice->SetClipPlane(plane_id, world_plane.get_data());
+  HRESULT hr = _pD3DDevice->SetClipPlane(plane_id, world_plane.get_data());
+  if (FAILED(hr)) {
+    wdxdisplay8_cat.warning() 
+      << "Could not set clip plane for " << plane 
+      << " to id " << plane_id << ": " << D3DERRORSTRING(hr) << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::end_bind_clip_planes
+//       Access: Protected, Virtual
+//  Description: Called after before bind_clip_plane() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_clip_planes().
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+end_bind_clip_planes() {
+  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 void DXGraphicsStateGuardian8::

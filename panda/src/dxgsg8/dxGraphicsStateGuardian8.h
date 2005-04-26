@@ -167,13 +167,15 @@ public:
   D3DPRESENT_PARAMETERS _PresReset;  // This is built during reset device
 
 protected:
+  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
 
   virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_plane(int plane_id, bool enable);
-  virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
+  virtual void bind_clip_plane(const NodePath &plane, int plane_id);
+  virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode();
 
@@ -225,7 +227,6 @@ protected:
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
   INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
-  INLINE void enable_primitive_clipping(bool val);
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_blend(bool val);
@@ -305,10 +306,12 @@ protected:
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
+  int _max_lights;
+  int _max_clip_planes;
+
   bool _line_smooth_enabled;
   bool _color_material_enabled;
   bool _texturing_enabled;
-  bool _clipping_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
   bool _blend_enabled;

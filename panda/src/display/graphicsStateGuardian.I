@@ -595,9 +595,9 @@ get_light(int light_id) const {
 //  Description: Returns the PlaneNode object that is bound to the
 //               indicated id, or NULL if no PlaneNode is bound.
 ////////////////////////////////////////////////////////////////////
-INLINE PlaneNode *GraphicsStateGuardian::
+INLINE NodePath GraphicsStateGuardian::
 get_clip_plane(int plane_id) const {
-  nassertr(plane_id >= 0 && plane_id < (int)_clip_plane_info.size(), (PlaneNode *)NULL);
+  nassertr(plane_id >= 0 && plane_id < (int)_clip_plane_info.size(), NodePath::fail());
   return _clip_plane_info[plane_id]._plane;
 }
 

@@ -188,14 +188,6 @@ set_color_writemask(UINT color_writemask) {
   }
 }
 
-INLINE void DXGraphicsStateGuardian8::
-enable_primitive_clipping(bool val) {
-  if (_clipping_enabled != val) {
-    _clipping_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_CLIPPING, (DWORD)val);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::enable_fog
 //       Access:
@@ -535,28 +527,6 @@ get_fog_mode_type(Fog::Mode m) const {
   }
   dxgsg8_cat.error() << "Invalid Fog::Mode value" << endl;
   return D3DFOG_EXP;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_clip_plane
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated clip_plane id.  A specific
-//               PlaneNode will already have been bound to this id via
-//               bind_clip_plane().
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_clip_plane(int plane_id, bool enable) {
-  assert(plane_id < D3DMAXUSERCLIPPLANES);
-
-  DWORD bitflag = ((DWORD)1 << plane_id);
-  if (enable) {
-    _clip_plane_bits |= bitflag;
-  } else {
-    _clip_plane_bits &= ~bitflag;
-  }
-
-  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 /**  unimplemented

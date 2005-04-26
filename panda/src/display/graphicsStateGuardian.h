@@ -216,12 +216,12 @@ protected:
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
 
-  INLINE PlaneNode *get_clip_plane(int plane_id) const;
+  INLINE NodePath get_clip_plane(int plane_id) const;
   virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_planes(bool enable);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
-  virtual void bind_clip_plane(PlaneNode *plane, int pane_id);
+  virtual void bind_clip_plane(const NodePath &plane, int pane_id);
   virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode();
@@ -389,7 +389,7 @@ private:
   class ClipPlaneInfo {
   public:
     INLINE ClipPlaneInfo();
-    PT(PlaneNode) _plane;
+    NodePath _plane;
     bool _enabled;
     bool _next_enabled;
   };
