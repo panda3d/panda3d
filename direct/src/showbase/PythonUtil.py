@@ -471,6 +471,21 @@ def adjust(command = None, dim = 1, parent = None, **kw):
         vg.pack(expand = 1, fill = 'x')
     return vg
 
+def difference(a, b):
+    """
+    difference(list, list):
+    """
+    if not a: return b
+    if not b: return a
+    d = []
+    for i in a:
+        if (i not in b) and (i not in d):
+            d.append(i)
+    for i in b:
+        if (i not in a) and (i not in d):
+            d.append(i)
+    return d
+
 def intersection(a, b):
     """
     intersection(list, list):
