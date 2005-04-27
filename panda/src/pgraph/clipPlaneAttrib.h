@@ -61,14 +61,14 @@ PUBLISHED:
                                 PlaneNode *plane1, PlaneNode *plane2,
                                 PlaneNode *plane3, PlaneNode *plane4);
 
-  INLINE Operation get_operation() const;
+  Operation get_operation() const;
 
-  INLINE int get_num_planes() const;
-  INLINE PlaneNode *get_plane(int n) const;
+  int get_num_planes() const;
+  PlaneNode *get_plane(int n) const;
   bool has_plane(PlaneNode *plane) const;
 
-  INLINE CPT(RenderAttrib) add_plane(PlaneNode *plane) const;
-  INLINE CPT(RenderAttrib) remove_plane(PlaneNode *plane) const;
+  CPT(RenderAttrib) add_plane(PlaneNode *plane) const;
+  CPT(RenderAttrib) remove_plane(PlaneNode *plane) const;
 
 
   // The following is the new, more general interface to the
