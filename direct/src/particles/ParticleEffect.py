@@ -57,7 +57,7 @@ class ParticleEffect(NodePath):
     def enable(self):
         """enable()"""
         # band-aid added for client crash - grw
-        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesGroupDict'): 
+        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesDict'): 
             if (self.renderParent != None):
                 for p in self.particlesDict.values():
                     p.setRenderParent(self.renderParent.node())
