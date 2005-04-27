@@ -210,6 +210,9 @@ $[cdefine HAVE_BISON]
 /* Define if we want to use PStats.  */
 $[cdefine DO_PSTATS]
 
+/* Define if we want to type-check downcasts.  */
+$[cdefine DO_DCAST]
+
 /* Define if we want to provide collision system recording and
    visualization tools. */
 $[cdefine DO_COLLISION_RECORDING]
