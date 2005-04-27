@@ -2740,7 +2740,7 @@ apply_texture(TextureContext *tc, int index) {
   //          we dont see this bug cause we never mix textured/untextured
   _pD3DDevice->SetTexture(index, dtc->_pD3DTexture9);
   
-#if 1
+#if 0
   if (dtc!=NULL) {
     dxgsg9_cat.info() << "Setting active DX texture " << index << " : " 
                       << dtc->_tex->get_name() << "\n";
@@ -3015,7 +3015,7 @@ void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
             _pD3DDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_TEXTURE);
             _pD3DDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_CURRENT);
             _pD3DDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE);
-            dxgsg9_cat.info() << "--------------modulating--------------" << endl;
+            //dxgsg9_cat.info() << "--------------modulating--------------" << endl;
             break;
         case TextureApplyAttrib::M_decal:
             // emulates GL_DECAL glTexEnv mode
