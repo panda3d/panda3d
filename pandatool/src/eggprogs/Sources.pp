@@ -8,6 +8,14 @@
 #define UNIX_SYS_LIBS m
 
 #begin bin_target
+  #define TARGET egg-rename
+
+  #define SOURCES \
+    eggRename.cxx eggRename.h
+
+#end bin_target
+
+#begin bin_target
   #define TARGET egg-trans
 
   #define SOURCES \

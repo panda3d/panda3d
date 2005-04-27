@@ -253,7 +253,7 @@ run() {
     // Also quantize the animation channels, if the user so requested.
     quantize_channels();
 
-    // Finally, flag all the groups as the user requested.
+    // flag all the groups as the user requested.
     if (!_flag_groups.empty()) {
       Eggs::iterator ei;
       for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
@@ -1345,7 +1345,6 @@ rename_primitives(EggGroupNode *egg_group, const string &name) {
     }
   }
 }
-
 
 int main(int argc, char *argv[]) {
   EggOptchar prog;
