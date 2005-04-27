@@ -79,6 +79,7 @@ FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
     _active(true), _paused(false), _bExclusive(false),_channel(-1) {
   _pos[0] = 0.0f; _pos[1] = 0.0f; _pos[2] = 0.0f;
   _vel[0] = 0.0f; _vel[1] = 0.0f; _vel[2] = 0.0f;
+  _min_dist = 1.0f; _max_dist = 1000000000.0f;
   nassertv(!file_name.empty());
   nassertv(audio_data != NULL);
 
@@ -142,6 +143,12 @@ if (_bExclusive) {
       float fmod_vel [] = {_vel[0], _vel[2], _vel[1]};
       if(!FSOUND_3D_SetAttributes(_channel, fmod_pos, fmod_vel)) {
           audio_error("Unable to set 3d attributes for "<<_file_name<<"!");
+      }
+
+      if(!FSOUND_3D_SetMinMaxDistance(_channel, _min_dist, _max_dist)) {
+        //Seems like the return value is documented incorrectly, so this error gets
+        //needlessly spammed
+        //audio_error("Unable to set 3d min/max distance for "<<_file_name<<"!");
       }
   }
   // Set looping -- unimplemented
@@ -424,6 +431,13 @@ set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
     fmod_audio_debug("Set 3d position and velocity (px="<<px<<", py="<<py<<", pz="<<pz<<", vx="<<vx<<", vy="<<vy<<", vz="<<vz<<")");
     _pos[0] = px; _pos[1] = py; _pos[2] = pz;
     _vel[0] = vx; _vel[1] = vy; _vel[2] = vz;
+
+    if (FSOUND_Stream_GetMode(_audio) & FSOUND_HW3D) {
+        // Convert from Panda coordinates to Fmod coordinates
+        float fmod_pos [] = {_pos[0], _pos[2], _pos[1]};
+        float fmod_vel [] = {_vel[0], _vel[2], _vel[1]};
+        FSOUND_3D_SetAttributes(_channel, fmod_pos, fmod_vel);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,6 +462,53 @@ get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *
     //float pos [] = {px, py, pz};
     //float vel [] = {vx, vy, vz};
     //FSOUND_3D_GetAttributes(_channel, pos, vel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::set_3d_min_distance
+//       Access: public
+//  Description: Set the distance that this sound begins to fall off. Also
+//               affects the rate it falls off.
+////////////////////////////////////////////////////////////////////
+void FmodAudioSound::set_3d_min_distance(float dist) {
+    fmod_audio_debug("Set 3d min distance (min="<<dist<<")");
+    _min_dist = dist;
+
+    if (FSOUND_Stream_GetMode(_audio) & FSOUND_HW3D) {
+        FSOUND_3D_SetMinMaxDistance(_channel, _min_dist,_max_dist);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::get_3d_min_distance
+//       Access: public
+//  Description: Get the distance that this sound begins to fall off
+////////////////////////////////////////////////////////////////////
+float FmodAudioSound::get_3d_min_distance() const {
+  return _min_dist;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::set_3d_max_distance
+//       Access: public
+//  Description: Set the distance that this sound stops falling off
+////////////////////////////////////////////////////////////////////
+void FmodAudioSound::set_3d_max_distance(float dist) {
+    fmod_audio_debug("Set 3d max distance (max="<<dist<<")");
+    _max_dist = dist;
+
+    if (FSOUND_Stream_GetMode(_audio) & FSOUND_HW3D) {
+        FSOUND_3D_SetMinMaxDistance(_channel, _min_dist,_max_dist);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::get_3d_max_distance
+//       Access: public
+//  Description: Get the distance that this sound stops falling off
+////////////////////////////////////////////////////////////////////
+float FmodAudioSound::get_3d_max_distance() const {
+  return _max_dist;
 }
 
 ////////////////////////////////////////////////////////////////////

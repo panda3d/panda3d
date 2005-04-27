@@ -104,6 +104,21 @@ PUBLISHED:
                                  float *vx, float *vy, float *vz);
 
 
+  // Controls the distance (in units) that this sound begins to fall off.
+  // Also affects the rate it falls off.
+  // Default is 1.0
+  // Closer/Faster, <1.0
+  // Farther/Slower, >1.0
+  virtual void set_3d_min_distance(float dist);
+  virtual float get_3d_min_distance() const;
+
+  // Controls the maximum distance (in units) that this sound stops falling off.
+  // The sound does not stop at that point, it just doesn't get any quieter.
+  // You should rarely need to adjust this.
+  // Default is 1000000000.0
+  virtual void set_3d_max_distance(float dist);
+  virtual float get_3d_max_distance() const;
+
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 

@@ -59,9 +59,9 @@ FmodAudioManager() {
   _listener_vel[0]     = 0.0f; _listener_vel[1]     = 0.0f;     _listener_vel[2] = 0.0f;
   _listener_forward[0] = 0.0f; _listener_forward[1] = 1.0f; _listener_forward[2] = 0.0f;
   _listener_up[0]      = 0.0f; _listener_up[1]      = 0.0f;      _listener_up[2] = 1.0f;
-  _distance_factor     = audio_distance_factor;
-  _doppler_factor      = audio_doppler_factor;
-  _drop_off_factor     = audio_drop_off_factor;
+  _distance_factor     = .3048f;
+  _doppler_factor      = 1.0f;
+  _drop_off_factor     = 1.0f;
 
   _cache_limit = audio_cache_limit;
   _concurrent_sound_limit = 0;
@@ -642,15 +642,6 @@ stop_all_sounds() {
 void FmodAudioManager::
 audio_3d_update() {
     audio_debug("FmodAudioManager::audio_3d_update()");
-    //convert panda coordinates to fmod coordinates
-    float fmod_pos [] = {_listener_pos[0], _listener_pos[2], _listener_pos[1]};
-    float fmod_vel [] = {_listener_vel[0], _listener_vel[2], _listener_vel[1]};
-    float fmod_forward [] = {_listener_forward[0], _listener_forward[2], _listener_forward[1]};
-    float fmod_up [] = {_listener_up[0], _listener_up[2], _listener_up[1]};
-
-    FSOUND_3D_Listener_SetAttributes(fmod_pos, fmod_vel,
-                                         fmod_forward[0], fmod_forward[1], fmod_forward[2],
-                                         fmod_up[0], fmod_up[1], fmod_up[2]);
     FSOUND_Update();
 }
 
@@ -668,7 +659,15 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
     _listener_forward[0] = fx; _listener_forward[1] = fy; _listener_forward[2] = fz;
     _listener_up[0]      = ux; _listener_up[1]      = uy; _listener_up[2]      = uz;
 
-    //FSOUND_3D_Listener_SetAttributes(_listener_pos, _listener_vel, fx, fz, fy, ux, uz, uy);
+    //convert panda coordinates to fmod coordinates
+    float fmod_pos [] = {_listener_pos[0], _listener_pos[2], _listener_pos[1]};
+    float fmod_vel [] = {_listener_vel[0], _listener_vel[2], _listener_vel[1]};
+    float fmod_forward [] = {_listener_forward[0], _listener_forward[2], _listener_forward[1]};
+    float fmod_up [] = {_listener_up[0], _listener_up[2], _listener_up[1]};
+
+    FSOUND_3D_Listener_SetAttributes(fmod_pos, fmod_vel,
+                                         fmod_forward[0], fmod_forward[1], fmod_forward[2],
+                                         fmod_up[0], fmod_up[1], fmod_up[2]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -715,7 +714,7 @@ audio_3d_set_distance_factor(float factor) {
     }
     if (_distance_factor != factor){
         _distance_factor = factor;
-        FSOUND_3D_SetDistanceFactor(_distance_factor);
+        FSOUND_3D_SetDistanceFactor(_distance_factor*3.28f); // convert from feet to meters
     }
 }
 

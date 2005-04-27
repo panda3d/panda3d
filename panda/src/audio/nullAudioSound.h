@@ -64,6 +64,10 @@ public:
 
   void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
   void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
+  void set_3d_min_distance(float dist);
+  float get_3d_min_distance() const;
+  void set_3d_max_distance(float dist);
+  float get_3d_max_distance() const;
   
   AudioSound::SoundStatus status() const;
 

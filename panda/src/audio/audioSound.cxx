@@ -50,3 +50,25 @@ void AudioSound::
 get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
   // Intentionally blank.
 }
+
+void AudioSound::
+set_3d_min_distance(float dist) {
+  // Intentionally blank.
+}
+
+float AudioSound::
+get_3d_min_distance() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
+void AudioSound::
+set_3d_max_distance(float dist) {
+  // Intentionally blank.
+}
+
+float AudioSound::
+get_3d_max_distance() const {
+  // Intentionally blank.
+  return 0.0f;
+}

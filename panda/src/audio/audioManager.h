@@ -128,9 +128,10 @@ PUBLISHED:
                                                 float *fx, float *fy, float *fz,
                                                 float *ux, float *uy, float *uz);
  
-  // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
+  // Control the "relative scale that sets the distance factor" units for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
+  // Default is 1.0 which is adjust in panda to be feet.
   virtual void audio_3d_set_distance_factor(float factor);
   virtual float audio_3d_get_distance_factor() const;
 
@@ -141,6 +142,7 @@ PUBLISHED:
   virtual float audio_3d_get_doppler_factor() const;
 
   // Exaggerate or diminish the effect of distance on sound. Default is 1.0
+  // Valid range is 0 to 10
   // Faster drop off, use >1.0
   // Slower drop off, use <1.0
   virtual void audio_3d_set_drop_off_factor(float factor);

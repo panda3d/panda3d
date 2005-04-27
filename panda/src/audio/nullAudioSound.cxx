@@ -118,6 +118,24 @@ void NullAudioSound::get_3d_attributes(float *px, float *py, float *pz, float *v
   // Intentionally blank.
 }
 
+void NullAudioSound::set_3d_min_distance(float dist) {
+  // Intentionally blank.
+}
+
+float NullAudioSound::get_3d_min_distance() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
+void NullAudioSound::set_3d_max_distance(float dist) {
+  // Intentionally blank.
+}
+
+float NullAudioSound::get_3d_max_distance() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
 AudioSound::SoundStatus NullAudioSound::status() const {
   return AudioSound::READY; 
 }
