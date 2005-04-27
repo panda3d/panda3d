@@ -384,6 +384,49 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::length
+//       Access: Published
+//  Description: Returns the length of the vector, by the Pythagorean
+//               theorem.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
+length() const {
+  return csqrt((*this).dot(*this));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::length_squared
+//       Access: Published
+//  Description: Returns the square of the vector's length, cheap and
+//               easy.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
+length_squared() const {
+  return (*this).dot(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::normalize
+//       Access: Published
+//  Description: Normalizes the vector in place.  Returns true if the
+//               vector was normalized, false if it was a zero-length
+//               vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LVecBase3)::
+normalize() {
+  FLOATTYPE l2 = length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    set(0.0f, 0.0f, 0.0f);
+    return false;
+
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
+    (*this) /= csqrt(l2);
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::dot
 //       Access: Published
 //  Description:

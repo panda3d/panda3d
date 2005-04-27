@@ -81,7 +81,7 @@ cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE_LINMATH FLOATTYPE
-length(const FLOATNAME(LVector3) &a) {
+length(const FLOATNAME(LVecBase3) &a) {
   return a.length();
 }
 
@@ -92,7 +92,7 @@ length(const FLOATNAME(LVector3) &a) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE_LINMATH FLOATNAME(LVector3)
-normalize(const FLOATNAME(LVector3) &v) {
+normalize(const FLOATNAME(LVecBase3) &v) {
   FLOATNAME(LVector3) v1 = v;
   v1.normalize();
   return v1;

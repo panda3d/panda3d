@@ -48,11 +48,11 @@ cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b);
 
 // Length of a vector.
 INLINE_LINMATH FLOATTYPE
-length(const FLOATNAME(LVector3) &a);
+length(const FLOATNAME(LVecBase3) &a);
 
 // A normalized vector.
 INLINE_LINMATH FLOATNAME(LVector3)
-normalize(const FLOATNAME(LVector3) &v);
+normalize(const FLOATNAME(LVecBase3) &v);
 
 INLINE_LINMATH void
 generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase3) &value);
