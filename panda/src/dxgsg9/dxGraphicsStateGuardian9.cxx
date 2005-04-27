@@ -2586,7 +2586,7 @@ prepare_texture(Texture *tex) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-apply_texture(TextureContext *tc) {
+apply_texture(TextureContext *tc, int index) {
   if (tc==NULL) {
     // The texture wasn't bound properly or something, so ensure
     // texturing is disabled and just return.
@@ -2738,11 +2738,12 @@ apply_texture(TextureContext *tc) {
   
   // bugbug:  does this handle the case of untextured geometry?
   //          we dont see this bug cause we never mix textured/untextured
-  _pD3DDevice->SetTexture(0,dtc->_pD3DTexture9);
+  _pD3DDevice->SetTexture(index, dtc->_pD3DTexture9);
   
-#if 0
+#if 1
   if (dtc!=NULL) {
-    dxgsg9_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
+    dxgsg9_cat.info() << "Setting active DX texture " << index << " : " 
+                      << dtc->_tex->get_name() << "\n";
   }
 #endif
   
@@ -2983,11 +2984,13 @@ void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
     {D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
 
     //if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
+    /*
     if (bCanJustEnable && (TexBlendMode==_CurTexBlendMode)) {
         // just reset COLOROP 0 to enable pipeline, rest is already set properly
         _pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, TexBlendColorOp1[TexBlendMode] );
         return;
     }
+    */
 
     _pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, TexBlendColorOp1[TexBlendMode] );
 
@@ -2996,12 +2999,23 @@ void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
         case TextureApplyAttrib::M_modulate:
             // emulates GL_MODULATE glTexEnv mode
             // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
+            /*
             _pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             _pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
             _pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
             _pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
             _pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
-
+            */
+            // Program Stage 0:
+            //_pD3DDevice->SetTexture(0, pTex0 );
+            _pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+            _pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+            // Program Stage 1:
+            //_pD3DDevice->SetTexture(1, pTex1 );
+            _pD3DDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+            _pD3DDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_CURRENT);
+            _pD3DDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE);
+            dxgsg9_cat.info() << "--------------modulating--------------" << endl;
             break;
         case TextureApplyAttrib::M_decal:
             // emulates GL_DECAL glTexEnv mode
@@ -3174,11 +3188,16 @@ issue_texture(const TextureAttrib *attrib) {
   if (attrib->is_off()) {
     enable_texturing(false);
   } else {
-    Texture *tex = attrib->get_texture();
-    nassertv(tex != (Texture *)NULL);
+    int num_stages = attrib->get_num_on_stages();
+    //dxgsg9_cat.info() << "num_on_texture: " << num_stages << endl;
+    for (int i=0; i<num_stages; ++i){
+      TextureStage *stage = attrib->get_on_stage(i);
+      Texture *tex = attrib->get_on_texture(stage);
+      nassertv(tex != (Texture *)NULL);
 
-    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
-    apply_texture(tc);
+      TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+      apply_texture(tc, 1-i);
+    }
   }
 }
 

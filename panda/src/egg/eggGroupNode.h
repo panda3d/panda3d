@@ -141,6 +141,8 @@ PUBLISHED:
   int triangulate_polygons(int flags);
   void mesh_triangles(int flags);
 
+  int rename_nodes(vector_string strip_prefix, bool recurse);
+
   int remove_unused_vertices(bool recurse);
   int remove_invalid_primitives(bool recurse);
   void clear_connected_shading();

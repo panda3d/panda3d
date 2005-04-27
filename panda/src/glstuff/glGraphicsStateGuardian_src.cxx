@@ -2789,7 +2789,7 @@ prepare_texture(Texture *tex) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-apply_texture(TextureContext *tc) {
+apply_texture(TextureContext *tc, int index) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   add_to_texture_record(gtc);

@@ -108,7 +108,7 @@ public:
   INLINE bool draw_display_list(GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual void apply_texture(TextureContext *tc);
+  virtual void apply_texture(TextureContext *tc, int index=0);
   virtual void release_texture(TextureContext *tc);
 
   virtual GeomContext *prepare_geom(Geom *geom);

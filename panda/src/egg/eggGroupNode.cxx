@@ -767,6 +767,35 @@ mesh_triangles(int flags) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::rename_nodes
+//       Access: Published
+//  Description: Rename by stripping out the prefix
+////////////////////////////////////////////////////////////////////
+int EggGroupNode::
+rename_nodes(vector_string strip_prefix, bool recurse) {
+  int num_renamed = 0;
+  for (unsigned int ni=0; ni<strip_prefix.size(); ++ ni) {
+    string axe_name = strip_prefix[ni];
+    if (this->get_name().find(axe_name)!= -1) {
+      string new_name = this->get_name().substr(axe_name.size());
+      //cout << "renaming " << this->get_name() << "->" << new_name << endl;
+      this->set_name(new_name);
+      num_renamed += 1;
+    }
+  }
+  if (recurse) {
+    EggGroupNode::iterator ci;
+    for (ci = begin(); ci != end(); ++ci) {
+      if ((*ci)->is_of_type(EggGroupNode::get_class_type())) {
+        EggGroupNode *group_child = DCAST(EggGroupNode, *ci);
+        num_renamed += group_child->rename_nodes(strip_prefix, recurse);
+      }
+    }
+  }
+  return num_renamed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::remove_unused_vertices
 //       Access: Published
 //  Description: Removes all vertices from VertexPools within this

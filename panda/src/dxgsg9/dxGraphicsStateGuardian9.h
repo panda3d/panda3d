@@ -91,7 +91,7 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual void apply_texture(TextureContext *tc);
+  virtual void apply_texture(TextureContext *tc, int index=0);
   virtual void release_texture(TextureContext *tc);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,

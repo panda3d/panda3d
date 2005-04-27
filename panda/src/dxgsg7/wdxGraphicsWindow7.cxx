@@ -159,7 +159,7 @@ make_current(void) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
 open_window(void) {
-  
+
   if (!choose_device(0, NULL)) {
     wdxdisplay7_cat.error() << "Unable to find suitable rendering device.\n";
     return false;
