@@ -171,6 +171,9 @@ public:
 PUBLISHED:
   virtual bool is_dynamic() const;
 
+  // Temporary.
+  virtual bool is_qpgeom() const;
+
   INLINE GeomBindType get_binding(int attr) const;
   INLINE bool has_any_texcoords() const;
   INLINE bool has_texcoords(const InternalName *name) const;

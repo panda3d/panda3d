@@ -809,7 +809,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     const GeomInfo &geom_info = (*gi);
     const Geom *orig_geom = geom_info._geom_node->get_geom(geom_info._index);
 
-    if (orig_geom->is_of_type(qpGeom::get_class_type())) {
+    if (orig_geom->is_qpgeom()) {
       PT(qpGeom) geom = new qpGeom(*DCAST(qpGeom, orig_geom));
       PT(qpGeomVertexData) vdata = geom->modify_vertex_data();
       vdata->set_usage_hint(qpGeom::UH_stream);

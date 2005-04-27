@@ -24,7 +24,7 @@
 #endif
 
 
-#ifndef NDEBUG
+#ifdef DO_DCAST
 ////////////////////////////////////////////////////////////////////
 //     Function: _dcast_verify
 //  Description: This function performs the actual check that the
@@ -67,5 +67,6 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
 
   return true;
 }
-#endif  // NDEBUG
+#endif  // DO_DCAST
+
 

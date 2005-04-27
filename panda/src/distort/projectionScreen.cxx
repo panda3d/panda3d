@@ -601,7 +601,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
 
   const LMatrix3f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
-  if (geom->is_of_type(qpGeom::get_class_type())) {
+  if (geom->is_qpgeom()) {
     qpGeom *qpgeom = DCAST(qpGeom, geom);
     // Iterate through all the vertices in the Geom.
 
@@ -812,7 +812,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
-  if (geom->is_of_type(qpGeom::get_class_type())) {
+  if (geom->is_qpgeom()) {
     PT(qpGeom) new_geom = new qpGeom(*DCAST(qpGeom, geom));
 
     qpGeomVertexRewriter vertex(new_geom->modify_vertex_data(), 

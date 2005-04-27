@@ -106,6 +106,18 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::is_qpgeom
+//       Access: Published, Virtual
+//  Description: Returns true if this is a new-style qpGeom class,
+//               false otherwise.  Temporary until the experimental
+//               Geom rewrite becomes the actual Geom implementation.
+////////////////////////////////////////////////////////////////////
+bool qpGeom::
+is_qpgeom() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::set_usage_hint
 //       Access: Published
 //  Description: Changes the UsageHint hint for all of the primitives

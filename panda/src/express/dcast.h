@@ -68,12 +68,12 @@ INLINE WantType *_dcast_ref(WantType *&, TypedObject *ptr);
 template<class WantType>
 INLINE const WantType *_dcast_ref(WantType *&, const TypedObject *ptr);
 
-#ifndef NDEBUG
+#ifdef DO_DCAST
 // _dcast_verify performs the actual verification.
 EXPCL_PANDAEXPRESS bool
 _dcast_verify(TypeHandle want_handle, size_t want_size, 
               const TypedObject *ptr);
-#endif  // NDEBUG
+#endif  // DO_DCAST
 
 #define DCAST_INTO_V(to_pointer, from_pointer) \
   { \

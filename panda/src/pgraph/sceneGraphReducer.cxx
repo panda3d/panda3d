@@ -684,7 +684,7 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
     GeomNode *geom_node = DCAST(GeomNode, node);
     int num_geoms = geom_node->get_num_geoms();
     for (int i = 0; i < num_geoms; ++i) {
-      if (geom_node->get_geom(i)->is_of_type(qpGeom::get_class_type())) {
+      if (geom_node->get_geom(i)->is_qpgeom()) {
         const qpGeom *geom = DCAST(qpGeom, geom_node->get_geom(i));
 
         // Check whether the geom is animated or dynamic, and skip it

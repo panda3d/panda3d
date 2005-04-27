@@ -48,9 +48,14 @@ load_from_loader(EggLoader &loader) {
     }
 
     int num_reduced = gr.flatten(loader._root, combine_siblings_bits);
-    //    gr.collect_vertex_data(loader._root);
-    //    gr.unify(loader._root);
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
+    if (egg_unify) {
+      gr.collect_vertex_data(loader._root);
+      gr.unify(loader._root);
+      if (egg2pg_cat.is_debug()) {
+        egg2pg_cat.debug() << "Unified.\n";
+      }
+    }
   }
 
   return loader._root;

@@ -568,6 +568,18 @@ is_dynamic() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::is_qpgeom
+//       Access: Published, Virtual
+//  Description: Returns true if this is a new-style qpGeom class,
+//               false otherwise.  Temporary until the experimental
+//               Geom rewrite becomes the actual Geom implementation.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+is_qpgeom() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::prepare
 //       Access: Published
 //  Description: Indicates that the geom should be enqueued to be

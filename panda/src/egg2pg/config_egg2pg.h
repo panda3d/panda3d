@@ -41,6 +41,7 @@ extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_filters;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_clamp;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_decals;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_flatten;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_unify;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_flatten_radius;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_combine_geoms;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_show_collision_solids;

@@ -354,7 +354,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
     const Geom *geom = get_geom(i);
     
     // Temporary test until the experimental Geom rewrite is final.
-    if (geom->is_of_type(qpGeom::get_class_type())) {
+    if (geom->is_qpgeom()) {
       const qpGeom *qpgeom = DCAST(qpGeom, geom);
       qpgeom->calc_tight_bounds(min_point, max_point, found_any,
                                 qpgeom->get_vertex_data()->animate_vertices(),
@@ -481,11 +481,11 @@ unify() {
     const GeomEntry &entry = (*gi);
     
     bool unified = false;
-    if (entry._geom->is_of_type(qpGeom::get_class_type())) {
+    if (entry._geom->is_qpgeom()) {
       Geoms::iterator gj;
       for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
         GeomEntry &new_entry = (*gj);
-        if (new_entry._geom->is_of_type(qpGeom::get_class_type())) {
+        if (new_entry._geom->is_qpgeom()) {
           if (entry._state == new_entry._state) {
             // Both states match, so try to combine the primitives.
             if (DCAST(qpGeom, new_entry._geom)->copy_primitives_from
@@ -512,7 +512,7 @@ unify() {
   // Finally, go back through and unify the resulting geom(s).
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    if (entry._geom->is_of_type(qpGeom::get_class_type())) {
+    if (entry._geom->is_qpgeom()) {
       DCAST(qpGeom, entry._geom)->unify_in_place();
     }
   }

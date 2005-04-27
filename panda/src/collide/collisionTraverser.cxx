@@ -741,7 +741,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
     ci = _colliders.find(entry.get_from_node_path());
     nassertv(ci != _colliders.end());
 
-    if (geom->is_of_type(qpGeom::get_class_type())) {
+    if (geom->is_qpgeom()) {
       const qpGeom *qpgeom = DCAST(qpGeom, geom);
       if (qpgeom->get_primitive_type() == qpGeom::PT_polygons) {
         const qpGeomVertexData *data =qpgeom->get_vertex_data();

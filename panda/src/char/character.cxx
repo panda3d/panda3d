@@ -377,7 +377,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) Character::
 copy_geom(const Geom *source, const Character *from) {
-  if (source->is_of_type(qpGeom::get_class_type())) {
+  if (source->is_qpgeom()) {
     CPT(qpGeom) qpsource = DCAST(qpGeom, source);
     CPT(qpGeomVertexFormat) format = qpsource->get_vertex_data()->get_format();
     if (format->get_animation().get_animation_type() == qpGeom::AT_none) {

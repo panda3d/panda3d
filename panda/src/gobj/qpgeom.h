@@ -66,6 +66,7 @@ PUBLISHED:
 
   // Temporary.
   virtual Geom *make_copy() const;
+  virtual bool is_qpgeom() const;
 
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;

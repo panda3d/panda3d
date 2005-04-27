@@ -54,7 +54,7 @@ _dcast_get_typehandle(WantType *) {
 template<class WantType>
 INLINE WantType *
 _dcast(WantType *, TypedObject *ptr) {
-#ifndef NDEBUG
+#ifdef DO_DCAST
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
   if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (WantType *)NULL;
@@ -75,7 +75,7 @@ _dcast(WantType *, TypedObject *ptr) {
 template<class WantType>
 INLINE const WantType *
 _dcast(WantType *, const TypedObject *ptr) {
-#ifndef NDEBUG
+#ifdef DO_DCAST
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
   if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (const WantType *)NULL;

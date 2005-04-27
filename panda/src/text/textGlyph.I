@@ -83,7 +83,7 @@ get_geom(qpGeom::UsageHint usage_hint) const {
   // it is also critical for the DynamicTextGlyph, which depends on
   // this behavior to properly count references to this glyph.
   PT(Geom) new_geom = _geom->make_copy();
-  if (new_geom->is_of_type(qpGeom::get_class_type())) {
+  if (new_geom->is_qpgeom()) {
     qpGeom *qpgeom = DCAST(qpGeom, new_geom);
     qpgeom->set_usage_hint(usage_hint);
     if (qpgeom->get_vertex_data()->get_usage_hint() != usage_hint) {

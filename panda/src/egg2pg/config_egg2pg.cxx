@@ -62,6 +62,14 @@ ConfigVariableDouble egg_flatten_radius
           "the user to specify what should be considered \"small\".  Set "
           "it to 0.0 to disable this feature."));
 
+ConfigVariableBool egg_unify
+("egg-unify", true,
+ PRC_DESC("When this is true, then in addition to flattening the scene graph "
+          "nodes, the egg loader will also as many Geoms as possible within "
+          "a given node into a single Geom.  This has theoretical performance "
+          "benefits, especially on higher-end graphics cards, but it also "
+          "slightly slows down egg loading."));
+
 ConfigVariableBool egg_combine_geoms
 ("egg-combine-geoms", false,
  PRC_DESC("Set this true to combine sibling GeomNodes into a single GeomNode, "

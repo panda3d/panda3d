@@ -196,7 +196,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch,
 
     for (int i = 0; i < geode->get_num_geoms(); i++) {
       const Geom *geom = geode->get_geom(i);
-      if (geom->is_of_type(qpGeom::get_class_type())) {
+      if (geom->is_qpgeom()) {
         CPT(qpGeom) qpgeom = DCAST(qpGeom, geom);
 
         bool found_points = false;

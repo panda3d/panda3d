@@ -147,7 +147,7 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
   TexCoordf min_uv, max_uv;
   Vertexf min_xyz, max_xyz;
 
-  if (geom->is_of_type(qpGeom::get_class_type())) {
+  if (geom->is_qpgeom()) {
     const qpGeom *qpgeom = DCAST(qpGeom, geom);
     qpGeomVertexReader texcoord(qpgeom->get_vertex_data());
     qpGeomVertexReader vertex(qpgeom->get_vertex_data());

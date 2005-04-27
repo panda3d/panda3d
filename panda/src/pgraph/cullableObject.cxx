@@ -46,7 +46,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   if (_geom != (Geom *)NULL) {
     // Temporary test and dcast until the experimental Geom rewrite
     // becomes the actual Geom rewrite.
-    if (_geom->is_of_type(qpGeom::get_class_type())) {
+    if (_geom->is_qpgeom()) {
       _munger = munger;
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       _munged_data = qpgeom->get_vertex_data();
