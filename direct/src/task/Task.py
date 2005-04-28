@@ -312,6 +312,8 @@ class TaskManager:
 
     doLaterCleanupCounter = 2000
 
+    OsdPrefix = 'task.'
+
     def __init__(self):
         self.running = 0
         self.stepping = 0
@@ -935,7 +937,49 @@ class TaskManager:
         # Ask for the time last frame
         return globalClock.getFrameTime(), globalClock.getFrameCount()
 
-
+    def startOsd(self):
+        self.add(self.doOsd, 'taskMgr.doOsd')
+        self._osdEnabled = None
+    def osdEnabled(self):
+        return hasattr(self, '_osdEnabled')
+    def stopOsd(self):
+        onScreenDebug.removeAllWithPrefix(TaskManager.OsdPrefix)
+        self.remove('taskMgr.doOsd')
+        del self._osdEnabled
+    def doOsd(self, task):
+        import fpformat
+        prefix = TaskManager.OsdPrefix
+        onScreenDebug.removeAllWithPrefix(prefix)
+        i = 0
+        taskNameWidth = 32
+        dtWidth = 10
+        priorityWidth = 10
+        totalDt = 0
+        totalAvgDt = 0
+        for taskPriList in self.taskList:
+            priority = `taskPriList.getPriority()`
+            for task in taskPriList:
+                if task is None:
+                    break
+                if task.isRemoved():
+                    taskName = '(R)' + task.name
+                else:
+                    taskName = task.name
+                totalDt = totalDt + task.dt
+                totalAvgDt = totalAvgDt + task.avgDt
+                onScreenDebug.add(
+                    ('%s%02s.%s' % (prefix, i, task.name)).ljust(taskNameWidth),
+                    '%s %s %s %s' % (
+                    fpformat.fix(task.dt*1000, 2).rjust(dtWidth),
+                    fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth),
+                    fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth),
+                    priority.rjust(priorityWidth)))
+                i += 1
+        onScreenDebug.add(('%s%02s.total' % (prefix, i)).ljust(taskNameWidth),
+                          '%s %s' % (
+            fpformat.fix(totalDt*1000, 2).rjust(dtWidth),
+            fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth),))
+        return cont
 """
 
 import Task
