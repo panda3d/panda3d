@@ -947,15 +947,25 @@ class TaskManager:
         self.remove('taskMgr.doOsd')
         del self._osdEnabled
     def doOsd(self, task):
+        if not onScreenDebug.enabled:
+            return
         import fpformat
         prefix = TaskManager.OsdPrefix
         onScreenDebug.removeAllWithPrefix(prefix)
-        i = 0
         taskNameWidth = 32
         dtWidth = 10
         priorityWidth = 10
         totalDt = 0
         totalAvgDt = 0
+        i = 0
+        onScreenDebug.add(
+            ('%s%02i.taskList' % (prefix, i)).ljust(taskNameWidth),
+            '%s %s %s %s' % (
+            'dt(ms)'.rjust(dtWidth),
+            'avg'.rjust(dtWidth),
+            'max'.rjust(dtWidth),
+            'priority'.rjust(priorityWidth),))
+        i += 1
         for taskPriList in self.taskList:
             priority = `taskPriList.getPriority()`
             for task in taskPriList:
@@ -968,14 +978,14 @@ class TaskManager:
                 totalDt = totalDt + task.dt
                 totalAvgDt = totalAvgDt + task.avgDt
                 onScreenDebug.add(
-                    ('%s%02s.%s' % (prefix, i, task.name)).ljust(taskNameWidth),
+                    ('%s%02i.%s' % (prefix, i, task.name)).ljust(taskNameWidth),
                     '%s %s %s %s' % (
                     fpformat.fix(task.dt*1000, 2).rjust(dtWidth),
                     fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth),
                     fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth),
                     priority.rjust(priorityWidth)))
                 i += 1
-        onScreenDebug.add(('%s%02s.total' % (prefix, i)).ljust(taskNameWidth),
+        onScreenDebug.add(('%s%02i.total' % (prefix, i)).ljust(taskNameWidth),
                           '%s %s' % (
             fpformat.fix(totalDt*1000, 2).rjust(dtWidth),
             fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth),))
