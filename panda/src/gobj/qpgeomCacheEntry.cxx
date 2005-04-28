@@ -57,6 +57,10 @@ record() {
   cache_mgr->_geom_cache_record_pcollector.add_level(1);
   _last_frame_used = ClockObject::get_global_clock()->get_frame_count();
 
+  if (PStatClient::is_connected()) {
+    qpGeomCacheManager::_geom_cache_active_pcollector.add_level(1);
+  }
+
   // Increment our own reference count while we're in the queue, just
   // so we don't have to play games with it later--this is inner-loop
   // stuff.
@@ -86,7 +90,14 @@ refresh() {
   remove_from_list();
   insert_before(cache_mgr->_list);
 
-  _last_frame_used = ClockObject::get_global_clock()->get_frame_count();
+  int current_frame = ClockObject::get_global_clock()->get_frame_count();
+  if (PStatClient::is_connected()) {
+    if (_last_frame_used != current_frame) {
+      qpGeomCacheManager::_geom_cache_active_pcollector.add_level(1);
+    }
+  }
+
+  _last_frame_used = current_frame;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,6 +125,13 @@ erase() {
   --cache_mgr->_total_size;
   cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
   cache_mgr->_geom_cache_erase_pcollector.add_level(1);
+
+  if (PStatClient::is_connected()) {
+    int current_frame = ClockObject::get_global_clock()->get_frame_count();
+    if (_last_frame_used == current_frame) {
+      qpGeomCacheManager::_geom_cache_active_pcollector.sub_level(1);
+    }
+  }
 
   return this;
 }

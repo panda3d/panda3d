@@ -170,6 +170,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Vertex buffer switch:Vertex",      { 0.8, 0.0, 0.6 } },
   { 1, "Vertex buffer switch:Index",       { 0.8, 0.6, 0.3 } },
   { 1, "Geom cache size",                  { 0.6, 0.8, 0.6 },  "", 500 },
+  { 1, "Geom cache size:Active",           { 0.9, 1.0, 0.3 },  "", 500 },
   { 1, "Geom cache operations",            { 1.0, 0.6, 0.6 },  "", 500 },
   { 1, "Geom cache operations:record",     { 0.2, 0.4, 0.8 } },
   { 1, "Geom cache operations:erase",      { 0.4, 0.8, 0.2 } },

@@ -23,6 +23,7 @@
 qpGeomCacheManager *qpGeomCacheManager::_global_ptr = NULL;
 
 PStatCollector qpGeomCacheManager::_geom_cache_size_pcollector("Geom cache size");
+PStatCollector qpGeomCacheManager::_geom_cache_active_pcollector("Geom cache size:Active");
 PStatCollector qpGeomCacheManager::_geom_cache_record_pcollector("Geom cache operations:record");
 PStatCollector qpGeomCacheManager::_geom_cache_erase_pcollector("Geom cache operations:erase");
 PStatCollector qpGeomCacheManager::_geom_cache_evict_pcollector("Geom cache operations:evict");
@@ -105,6 +106,12 @@ evict_old_entries() {
     }
 
     entry->evict_callback();
+
+    if (PStatClient::is_connected()) {
+      if (entry->_last_frame_used == current_frame) {
+        qpGeomCacheManager::_geom_cache_active_pcollector.sub_level(1);
+      }
+    }
 
     --_total_size;
     entry->remove_from_list();

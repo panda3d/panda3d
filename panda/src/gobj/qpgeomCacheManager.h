@@ -87,6 +87,7 @@ private:
 
 public:
   static PStatCollector _geom_cache_size_pcollector;
+  static PStatCollector _geom_cache_active_pcollector;
   static PStatCollector _geom_cache_record_pcollector;
   static PStatCollector _geom_cache_erase_pcollector;
   static PStatCollector _geom_cache_evict_pcollector;

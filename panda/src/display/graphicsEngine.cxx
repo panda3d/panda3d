@@ -501,6 +501,7 @@ render_frame() {
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
   CullTraverser::_geoms_pcollector.clear_level();
+  qpGeomCacheManager::_geom_cache_active_pcollector.clear_level();
   qpGeomCacheManager::_geom_cache_record_pcollector.clear_level();
   qpGeomCacheManager::_geom_cache_erase_pcollector.clear_level();
   qpGeomCacheManager::_geom_cache_evict_pcollector.clear_level();
