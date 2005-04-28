@@ -308,7 +308,7 @@ class FSM(DirectObject.DirectObject):
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
             if request[0] in string.uppercase:
-                raise RequestedDenied, request
+                raise RequestDenied, request
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.

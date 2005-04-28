@@ -1,4 +1,4 @@
-from direct.directbase.TestStart import *
+from pandac.PandaModules import *
 from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
@@ -45,8 +45,10 @@ class ParticleFloorTest(NodePath):
     def start(self):
         self.f.enable()
 
-pt=ParticleFloorTest()
-pt.reparentTo(render)
-pt.start()
-camera.setY(-10.0)
-run()
+if __name__ == "__main__":
+    from direct.directbase.TestStart import *
+    pt=ParticleFloorTest()
+    pt.reparentTo(render)
+    pt.start()
+    camera.setY(-10.0)
+    run()

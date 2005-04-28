@@ -1,4 +1,3 @@
-from direct.directbase.ThreeUpStart import *
 
 class RotationTest(NodePath):
     def __init__(self):
@@ -87,8 +86,10 @@ class RotationTest(NodePath):
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()
 
-test=RotationTest()
-test.reparentTo(render)
-test.setup()
-camera.setY(-10.0)
-run()
+if __name__ == "__main__":
+    from direct.directbase.ThreeUpStart import *
+    test=RotationTest()
+    test.reparentTo(render)
+    test.setup()
+    camera.setY(-10.0)
+    run()

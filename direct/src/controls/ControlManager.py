@@ -4,7 +4,7 @@ from direct.showbase.ShowBaseGlobal import *
 #from PythonUtil import *
 #from IntervalGlobal import *
 
-from otp.avatar import Avatar
+#from otp.avatar import Avatar
 from direct.directnotify import DirectNotifyGlobal
 #import GhostWalker
 #import GravityWalker

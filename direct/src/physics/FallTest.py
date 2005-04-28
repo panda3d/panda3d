@@ -1,4 +1,3 @@
-from direct.directbase.ThreeUpStart import *
 
 class FallTest(NodePath):
     def __init__(self):
@@ -77,8 +76,10 @@ class FallTest(NodePath):
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()
 
-test=FallTest()
-test.reparentTo(render)
-test.setup()
-camera.setY(-10.0)
-run()
+if __name__ == "__main__":
+    from direct.directbase.ThreeUpStart import *
+    test=FallTest()
+    test.reparentTo(render)
+    test.setup()
+    camera.setY(-10.0)
+    run()
