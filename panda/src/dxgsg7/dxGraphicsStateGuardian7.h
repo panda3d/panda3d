@@ -114,9 +114,12 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
 
-  virtual void bind_light(PointLight *light, int light_id);
-  virtual void bind_light(DirectionalLight *light, int light_id);
-  virtual void bind_light(Spotlight *light, int light_id);
+  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+                          int light_id);
 
   //virtual bool begin_frame();
   virtual bool begin_scene();

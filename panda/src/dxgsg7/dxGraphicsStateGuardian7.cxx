@@ -3962,22 +3962,22 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-bind_light(PointLight *light, int light_id) {
+bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
+  const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
-  LPoint3f pos = light->get_point() * rel_mat;
+  LPoint3f pos = light_obj->get_point() * rel_mat;
 
   D3DCOLORVALUE black;
   black.r = black.g = black.b = black.a = 0.0f;
   D3DLIGHT7  alight;
   alight.dltType =  D3DLIGHT_POINT;
-  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
   alight.dcvAmbient  =  black ;
-  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
@@ -3986,7 +3986,7 @@ bind_light(PointLight *light, int light_id) {
   alight.dvRange =  D3DLIGHT_RANGE_MAX;
   alight.dvFalloff =  1.0f;
 
-  const LVecBase3f &att = light->get_attenuation();
+  const LVecBase3f &att = light_obj->get_attenuation();
   alight.dvAttenuation0 = (D3DVALUE)att[0];
   alight.dvAttenuation1 = (D3DVALUE)att[1];
   alight.dvAttenuation2 = (D3DVALUE)att[2];
@@ -4003,14 +4003,14 @@ bind_light(PointLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-bind_light(DirectionalLight *light, int light_id) {
+bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
+  const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
-  LVector3f dir = light->get_direction() * rel_mat;
+  LVector3f dir = light_obj->get_direction() * rel_mat;
 
   D3DCOLORVALUE black;
   black.r = black.g = black.b = black.a = 0.0f;
@@ -4019,9 +4019,9 @@ bind_light(DirectionalLight *light, int light_id) {
   ZeroMemory(&alight, sizeof(D3DLIGHT7));
 
   alight.dltType =  D3DLIGHT_DIRECTIONAL;
-  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
   alight.dcvAmbient  =  black ;
-  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
   alight.dvDirection = *(D3DVECTOR *)dir.get_data();
 
@@ -4044,15 +4044,15 @@ bind_light(DirectionalLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-bind_light(Spotlight *light, int light_id) {
-  Lens *lens = light->get_lens();
+bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
+  Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
 
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
+  const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
   LPoint3f pos = lens->get_nodal_point() * rel_mat;
   LVector3f dir = lens->get_view_vector() * rel_mat;
@@ -4065,8 +4065,8 @@ bind_light(Spotlight *light, int light_id) {
 
   alight.dltType =  D3DLIGHT_SPOT;
   alight.dcvAmbient  =  black ;
-  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
   alight.dvPosition = *(D3DVECTOR *)pos.get_data();
 
@@ -4077,7 +4077,7 @@ bind_light(Spotlight *light, int light_id) {
   alight.dvTheta =  0.0f;
   alight.dvPhi =  lens->get_hfov();
 
-  const LVecBase3f &att = light->get_attenuation();
+  const LVecBase3f &att = light_obj->get_attenuation();
   alight.dvAttenuation0 = (D3DVALUE)att[0];
   alight.dvAttenuation1 = (D3DVALUE)att[1];
   alight.dvAttenuation2 = (D3DVALUE)att[2];
@@ -4512,7 +4512,8 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   // Get the plane in "world coordinates".  This means the plane in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  const LMatrix4f &plane_mat = plane.get_mat(_scene_setup->get_camera_path());
+  CPT(TransformState) transform = plane.get_transform(_scene_setup->get_camera_path());
+  const LMatrix4f &plane_mat = transform->get_mat();
   LMatrix4f rel_mat = plane_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());

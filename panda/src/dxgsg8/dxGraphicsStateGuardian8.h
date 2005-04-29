@@ -143,9 +143,12 @@ public:
   virtual void issue_tex_gen(const TexGenAttrib *attrib);
   virtual void issue_shade_model(const ShadeModelAttrib *attrib);
 
-  virtual void bind_light(PointLight *light, int light_id);
-  virtual void bind_light(DirectionalLight *light, int light_id);
-  virtual void bind_light(Spotlight *light, int light_id);
+  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+                          int light_id);
 
   virtual bool begin_frame();
   virtual bool begin_scene();
