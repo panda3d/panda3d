@@ -107,6 +107,16 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\python\lib
             File /nonfatal /r ${PSOURCE}\thirdparty\win-extras\*
 
+            DetailPrint "Extracting models ..."
+            SetDetailsPrint textonly
+            SetOutPath $INSTDIR\models
+            File /r /x CVS ${PANDA}\models\*
+
+            DetailPrint "Extracting samples ..."
+            SetDetailsPrint textonly
+            SetOutPath $INSTDIR\samples
+            File /r /x CVS ${PSOURCE}\samples\*
+
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
             WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/manual/"
@@ -114,27 +124,28 @@ Section "${SMDIRECTORY}" SecCore
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Website"
             SetOutPath $INSTDIR\samples\RubiksCube
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Test - Rubiks Cube.lnk" "$INSTDIR\bin\ppython.exe" "rubiksCube.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Test"
+            CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials"
+
+            FindFirst $0 $1 $INSTDIR\samples\*
+            loop:
+                DetailPrint "Sample: $1"
+                StrCmp $1 "" done
+                StrCmp $1 "." next
+                StrCmp $1 ".." next
+                CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1"
+                SetOutPath $INSTDIR\samples\$1
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Run Tutorial.lnk" "$INSTDIR\bin\ppython.exe" "$1.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Tutorial: $1"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Browse Tutorial.lnk" "$INSTDIR\samples\$1"
+            next:
+                FindNext $0 $1
+                Goto loop
+            done:
+
         !endif
 
+
 SectionEnd
-
-!ifndef PPGAME
-Section "Sample Worlds" SecSamples
-        SectionIn 1 2 3
-
-        DetailPrint "Extracting models ..."
-        SetDetailsPrint textonly
-        SetOutPath $INSTDIR\models
-        File /r /x CVS ${PANDA}\models\*
-
-        DetailPrint "Extracting samples ..."
-        SetDetailsPrint textonly
-        SetOutPath $INSTDIR\samples
-        File /r /x CVS ${PSOURCE}\samples\*
-
-        SetDetailsPrint both
-SectionEnd
-!endif
 
 
 Section -post
