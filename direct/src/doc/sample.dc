@@ -58,7 +58,10 @@ struct AvatarObject {
 };
 
 
-// Single inheritance is supported, but not multiple inheritance.
+// Single inheritance and multiple inheritance are both supported, but
+// to use multiple inheritance you have to (for now) define
+// "dc-multiple-inheritance 1" in your Config.prc file.
+
 dclass DistributedObjectHolder : DistributedObject {
   dropObject(AvatarObject object);
 
