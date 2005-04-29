@@ -219,9 +219,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     def takedownPhysics(self):
         assert(self.debugPrint("takedownPhysics()"))
         if hasattr(self, "phys"):
-            del self.phys
             for i in self.nodes:
                 i.removeNode()
+            del self.phys
         if self.ship != None:
             self.ship.worldVelocity = Vec3.zero()
             
