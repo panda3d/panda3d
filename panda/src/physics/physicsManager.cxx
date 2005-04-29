@@ -55,7 +55,7 @@ PhysicsManager::
 //                For synchronizing across distributed computers
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-init_random_seed(void) {
+init_random_seed() {
   // Use the random seed specified by the physics_manager_random_seed
   // Config Variable
   srand(_random_seed);
@@ -125,7 +125,7 @@ remove_physical(Physical *p) {
 void PhysicsManager::
 remove_physical_node(PhysicalNode *p) {
   nassertv(p);
-  for (int i = 0; i < p->get_num_physicals(); i++) {
+  for (int i = 0; i < p->get_num_physicals(); ++i) {
     remove_physical(p->get_physical(i));
   }
 }
