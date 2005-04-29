@@ -746,6 +746,21 @@ class Functor:
         _kargs.update(kargs)
         return apply(self._function,_args,_kargs)
 
+class Stack:
+    def __init__(self):
+        self.__list = []
+    def push(self, item):
+        self.__list.append(item)
+    def top(self):
+        # return the item on the top of the stack without popping it off
+        return self.__list[-1]
+    def pop(self):
+        return self.__list.pop()
+    def clear(self):
+        self.__list = []
+    def __len__(self):
+        return len(self.__list)
+
 """
 ParamSet/ParamObj
 =================
@@ -947,6 +962,12 @@ class ParamObj:
     
     def __init__(self):
         self._paramLockRefCount = 0
+        # this holds dictionaries of parameter values prior to the set that we
+        # are performing
+        self._priorValuesStack = Stack()
+        # this holds the name of the parameter that we are currently modifying
+        # at the top of the stack
+        self._curParamStack = Stack()
 
         def setterStub(param, value, self=self):
             # should we apply the value now or should we wait?
@@ -957,24 +978,29 @@ class ParamObj:
                 # set the new value; make sure we're not calling ourselves
                 # recursively
                 getSetter(self.__class__, param)(self, value)
-                if param not in self._priorValues:
+                priorValues = self._priorValuesStack.top()
+                if param not in priorValues:
                     try:
                         priorValue = getSetter(self, param, 'get')()
                     except:
                         priorValue = None
-                    self._priorValues[param] = priorValue
+                    priorValues[param] = priorValue
                 self._paramsSet[param] = None
             else:
                 # prepare for call to getPriorValue
-                self._oneShotPriorVal = getSetter(self, param, 'get')()
+                self._priorValuesStack.push({
+                    param: getSetter(self, param, 'get')()
+                    })
                 # set the new value; make sure we're not calling ourselves
                 # recursively
                 getSetter(self.__class__, param)(self, value)
                 # call the applier, if there is one
                 applier = getattr(self, getSetterName(param, 'apply'), None)
                 if applier is not None:
+                    self._curParamStack.push(param)
                     applier()
-                del self._oneShotPriorVal
+                    self._curParamStack.pop()
+                self._priorValuesStack.pop()
 
         # insert stub funcs for param setters
         for param in self.ParamClass.getParams():
@@ -1006,27 +1032,23 @@ class ParamObj:
         self._paramsSet = {}
         # this will store the values of modified params (from prior to
         # the lock).
-        self._priorValues = {}
+        self._priorValuesStack.push({})
     def _handleUnlockParams(self):
-        self.__curParam = None
         for param in self._paramsSet:
             # call the applier, if there is one
             applier = getattr(self, getSetterName(param, 'apply'), None)
             if applier is not None:
-                self.__curParam = param
+                self._curParamStack.push(param)
                 applier()
-        del self.__curParam
-        del self._priorValues
+                self._curParamStack.pop()
+        self._priorValuesStack.pop()
         del self._paramsSet
     def paramsLocked(self):
         return self._paramLockRefCount > 0
     def getPriorValue(self):
         # call this within an apply function to find out what the prior value
-        # of a param was before the set call(s) corresponding to the call
-        # to apply
-        if hasattr(self, '_oneShotPriorVal'):
-            return self._oneShotPriorVal
-        return self._priorValues[self.__curParam]
+        # of the param was
+        return self._priorValuesStack.top()[self._curParamStack.top()]
 
 def bound(value, bound1, bound2):
     """
