@@ -76,7 +76,8 @@ operator = (const CollisionEntry &copy) {
 LPoint3f CollisionEntry::
 get_surface_point(const NodePath &space) const {
   nassertr(has_surface_point(), LPoint3f::zero());
-  return _surface_point * _into_node_path.get_mat(space);
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  return _surface_point * transform->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +92,8 @@ get_surface_point(const NodePath &space) const {
 LVector3f CollisionEntry::
 get_surface_normal(const NodePath &space) const {
   nassertr(has_surface_normal(), LVector3f::zero());
-  return _surface_normal * _into_node_path.get_mat(space);
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  return _surface_normal * transform->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,7 +115,8 @@ get_interior_point(const NodePath &space) const {
   if (!has_interior_point()) {
     return get_surface_point(space);
   }
-  return _interior_point * _into_node_path.get_mat(space);
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  return _interior_point * transform->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +132,8 @@ get_interior_point(const NodePath &space) const {
 bool CollisionEntry::
 get_all(const NodePath &space, LPoint3f &surface_point,
         LVector3f &surface_normal, LPoint3f &interior_point) const {
-  const LMatrix4f &mat = _into_node_path.get_mat(space);
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  const LMatrix4f &mat = transform->get_mat();
   bool all_ok = true;
 
   if (!has_surface_point()) {

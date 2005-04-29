@@ -276,7 +276,8 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
     if (space.is_empty()) {
       verts.push_back(vertex);
     } else {
-      const LMatrix4f &mat = space.get_mat(rel_to);
+      CPT(TransformState) transform = space.get_transform(rel_to);
+      const LMatrix4f &mat = transform->get_mat();
       verts.push_back(vertex * mat);
     }
   }
@@ -302,7 +303,8 @@ get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
     const NodePath &space = _vertices[vi].get_space(rel_to);
     LVecBase4f vertex = _vertices[vi].get_vertex();
     if (!space.is_empty()) {
-      const LMatrix4f &mat = space.get_mat(rel_to);
+      CPT(TransformState) transform = space.get_transform(rel_to);
+      const LMatrix4f &mat = transform->get_mat();
       vertex = vertex * mat;
     }
     LPoint3f v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);

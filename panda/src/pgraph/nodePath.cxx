@@ -1850,14 +1850,14 @@ set_pos_quat_scale_shear(const NodePath &other,
 //               space of the bottom node, relative to the other
 //               path's bottom node's coordinate space.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &NodePath::
+LMatrix4f NodePath::
 get_mat(const NodePath &other) const {
   CPT(TransformState) transform = get_transform(other);
-  // We can safely assume the transform won't go away when the
-  // function returns, since its reference count is also held in the
-  // cache.  This assumption allows us to return a reference to the
-  // matrix, instead of having to return a matrix on the stack.
-  nassertr(transform->get_ref_count() > 1, LMatrix4f::ident_mat());
+  // We can't safely return a reference to the matrix, because we
+  // can't assume the transform won't go away when the function
+  // returns.  If the transform was partially modified by, say, a
+  // CompassEffect, it won't be stored in the cache, and thus we might
+  // have the only reference to it.
   return transform->get_mat();
 }
 
@@ -1884,7 +1884,8 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 LPoint3f NodePath::
 get_relative_point(const NodePath &other, const LVecBase3f &point) const {
-  LPoint3f rel_point = LPoint3f(point) * other.get_mat(*this);
+  CPT(TransformState) transform = other.get_transform(*this);
+  LPoint3f rel_point = LPoint3f(point) * transform->get_mat();
   return rel_point;
 }
 
@@ -1897,7 +1898,8 @@ get_relative_point(const NodePath &other, const LVecBase3f &point) const {
 ////////////////////////////////////////////////////////////////////
 LVector3f NodePath::
 get_relative_vector(const NodePath &other, const LVecBase3f &vec) const {
-  LVector3f rel_vector = LVector3f(vec) * other.get_mat(*this);
+  CPT(TransformState) transform = other.get_transform(*this);
+  LVector3f rel_vector = LVector3f(vec) * transform->get_mat();
   return rel_vector;
 }
 
@@ -1912,8 +1914,8 @@ void NodePath::
 look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv_always(!is_empty());
 
-  NodePath parent = get_parent();
-  LPoint3f rel_point = point * other.get_mat(parent);
+  CPT(TransformState) transform = other.get_transform(get_parent());
+  LPoint3f rel_point = point * transform->get_mat();
 
   LPoint3f pos = get_pos();
 
@@ -1933,8 +1935,8 @@ void NodePath::
 heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv_always(!is_empty());
 
-  NodePath parent = get_parent();
-  LPoint3f rel_point = point * other.get_mat(parent);
+  CPT(TransformState) transform = other.get_transform(get_parent());
+  LPoint3f rel_point = point * transform->get_mat();
 
   LPoint3f pos = get_pos();
 
@@ -4185,8 +4187,8 @@ void NodePath::
 do_billboard_axis(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
 
-  NodePath parent = get_parent();
-  LMatrix4f rel_mat = camera.get_mat(parent);
+  CPT(TransformState) transform = camera.get_transform(get_parent());
+  const LMatrix4f &rel_mat = transform->get_mat();
 
   LVector3f up = LVector3f::up();
   LVector3f rel_pos = -rel_mat.get_row3(3);
@@ -4218,8 +4220,8 @@ void NodePath::
 do_billboard_point_eye(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
 
-  NodePath parent = get_parent();
-  LMatrix4f rel_mat = camera.get_mat(parent);
+  CPT(TransformState) transform = camera.get_transform(get_parent());
+  const LMatrix4f &rel_mat = transform->get_mat();
 
   LVector3f up = LVector3f::up() * rel_mat;
   LVector3f rel_pos = LVector3f::forward() * rel_mat;
@@ -4249,8 +4251,8 @@ void NodePath::
 do_billboard_point_world(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
 
-  NodePath parent = get_parent();
-  LMatrix4f rel_mat = camera.get_mat(parent);
+  CPT(TransformState) transform = camera.get_transform(get_parent());
+  const LMatrix4f &rel_mat = transform->get_mat();
 
   LVector3f up = LVector3f::up();
   LVector3f rel_pos = -rel_mat.get_row3(3);

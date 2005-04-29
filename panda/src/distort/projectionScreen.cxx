@@ -196,7 +196,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   // First, get the relative coordinate space of the projector.
   LMatrix4f rel_mat;
   NodePath this_np(this);
-  rel_mat = projector.get_mat(this_np);
+  rel_mat = projector.get_transform(this_np)->get_mat();
 
   // Create a GeomNode to hold this mesh.
   PT(GeomNode) geom_node = new GeomNode(screen_name);
@@ -442,7 +442,8 @@ recompute_if_stale(const NodePath &this_np) {
 
     } else {
       // Get the relative transform to ensure it hasn't changed.
-      const LMatrix4f &top_mat = this_np.get_mat(_projector);
+      CPT(TransformState) transform = this_np.get_transform(_projector);
+      const LMatrix4f &top_mat = transform->get_mat();
       if (!_rel_top_mat.almost_equal(top_mat)) {
         _rel_top_mat = top_mat;
         _computed_rel_top_mat = true;
@@ -556,7 +557,7 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
     NodePath true_np = np.get_node_path();
-    rel_mat = true_np.get_mat(_projector);
+    rel_mat = true_np.get_transform(_projector)->get_mat();
     computed_rel_mat = true;
 
     if (distort_cat.is_spam()) {
@@ -785,7 +786,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
     NodePath true_np = np.get_node_path();
-    rel_mat = true_np.get_mat(camera);
+    rel_mat = true_np.get_transform(camera)->get_mat();
     computed_rel_mat = true;
   }
 

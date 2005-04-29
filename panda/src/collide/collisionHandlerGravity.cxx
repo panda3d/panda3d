@@ -191,7 +191,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal();
     // This is asking: what is the normal of the avatar that the avatar
     // is colliding with relative to the plane.
-    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * highest->get_into_node_path().get_mat(from_node_path);
+    CPT(TransformState) transform = highest->get_into_node_path().get_transform(from_node_path);
+    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * transform->get_mat();
   } else {
     _contact_normal = highest->get_surface_normal(from_node_path);
   }

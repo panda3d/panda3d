@@ -465,7 +465,7 @@ PUBLISHED:
                                 const LVecBase3f &scale,
                                 const LVecBase3f &shear);
 
-  const LMatrix4f &get_mat(const NodePath &other) const;
+  LMatrix4f get_mat(const NodePath &other) const;
   void set_mat(const NodePath &other, const LMatrix4f &mat);
 
   LPoint3f get_relative_point(const NodePath &other, const LVecBase3f &point) const;

@@ -82,7 +82,7 @@ prepare_collider(const ColliderDef &def) {
     }
     */
 
-    gbv->xform(def._node_path.get_mat(NodePath()));
+    gbv->xform(def._node_path.get_net_transform()->get_mat());
     _local_bounds.push_back(gbv);
   }
 

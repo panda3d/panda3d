@@ -486,8 +486,7 @@ reextract() {
   LMatrix4f m = _orig;
   if (!_rel_to.is_empty()) {
     NodePath root;
-    const LMatrix4f &rel_mat = root.get_mat(_rel_to);
-    m = _orig * rel_mat;
+    m = _orig * root.get_transform(_rel_to)->get_mat();
   }
 
   m.get_row3(_translation,3);
@@ -507,8 +506,7 @@ recompute() {
 
   if (!_rel_to.is_empty()) {
     NodePath root;
-    const LMatrix4f &rel_mat = _rel_to.get_mat(root);
-    _orig = _orig * rel_mat;
+    _orig = _orig * _rel_to.get_transform(root)->get_mat();
   }
 
   if (_invert) {

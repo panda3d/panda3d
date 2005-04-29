@@ -3962,8 +3962,8 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
-  LPoint3f pos = light_obj->get_point() * light_mat;
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root());
+  LPoint3f pos = light_obj->get_point() * transform->get_mat();
 
   LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
   GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
@@ -4002,8 +4002,8 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
-  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
-  LVector3f dir = light_obj->get_direction() * light_mat;
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root());
+  LVector3f dir = light_obj->get_direction() * transform->get_mat();
   LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
   GLP(Lightfv)(id, GL_POSITION, fdir.get_data());
 
@@ -4046,7 +4046,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root());
+  const LMatrix4f &light_mat = transform->get_mat();
   LPoint3f pos = lens->get_nodal_point() * light_mat;
   LVector3f dir = lens->get_view_vector() * light_mat;
 
@@ -5698,10 +5699,10 @@ void CLP(GraphicsStateGuardian)::
 bind_clip_plane(const NodePath &plane, int plane_id) {
   GLenum id = get_clip_plane_id(plane_id);
 
-  const LMatrix4f &plane_mat = plane.get_mat(_scene_setup->get_scene_root());
+  CPT(TransformState) transform = plane.get_transform(_scene_setup->get_scene_root());
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());
-  Planef xformed_plane = plane_node->get_plane() * plane_mat;
+  Planef xformed_plane = plane_node->get_plane() * transform->get_mat();
 
   Planed double_plane(LCAST(double, xformed_plane));
   GLP(ClipPlane)(id, double_plane.get_data());

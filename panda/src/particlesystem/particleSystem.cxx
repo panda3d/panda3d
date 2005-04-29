@@ -179,7 +179,9 @@ birth_particle(void) {
   // go from birth space to render space
   NodePath physical_np(get_physical_node());
   NodePath render_np(render_node);
-  const LMatrix4f &birth_to_render_xform = physical_np.get_mat(render_np);
+
+  CPT(TransformState) transform = physical_np.get_transform(render_np);
+  const LMatrix4f &birth_to_render_xform = transform->get_mat();
   world_pos = new_pos * birth_to_render_xform;
 
   //  cout << "New particle at " << world_pos << endl;
@@ -272,7 +274,8 @@ spawn_child_system(BaseParticle *bp) {
   NodePath parent_np(parent);
   NodePath physical_np(get_physical_node());
 
-  const LMatrix4f &old_system_to_parent_xform = physical_np.get_mat(parent_np);
+  CPT(TransformState) transform = physical_np.get_transform(parent_np);
+  const LMatrix4f &old_system_to_parent_xform = transform->get_mat();
 
   LMatrix4f child_space_xform = old_system_to_parent_xform *
     bp->get_lcs();
