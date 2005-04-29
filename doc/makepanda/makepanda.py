@@ -751,6 +751,11 @@ if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
 #
 ##########################################################################################
 
+for x in PACKAGES:
+    if (OMIT.count(x)==0):
+        if (DTOOLCONFIG.has_key("HAVE_"+x)):
+            DTOOLCONFIG["HAVE_"+x] = '1'
+
 DTOOLCONFIG["HAVE_NET"] = DTOOLCONFIG["HAVE_NSPR"]
 
 if (OMIT.count("NVIDIACG")==0):
@@ -775,17 +780,6 @@ if (OPTIMIZE <= 3):
 
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
-
-##########################################################################################
-#
-# Add the package selections to DTOOLCONFIG
-#
-##########################################################################################
-
-for x in PACKAGES:
-    if (OMIT.count(x)==0):
-        if (DTOOLCONFIG.has_key("HAVE_"+x)):
-            DTOOLCONFIG["HAVE_"+x] = '1'
 
 ##########################################################################################
 #
