@@ -5062,7 +5062,11 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
       return NULL;
     }
     CPT(TransformState) transform = comp->get_node()->get_transform();
-    return r_get_partial_transform(comp->get_next(), n - 1)->compose(transform);
+    CPT(TransformState) partial = r_get_partial_transform(comp->get_next(), n - 1);
+    if (partial == (const TransformState *)NULL) {
+      return NULL;
+    }
+    return partial->compose(transform);
   }
 }
 
