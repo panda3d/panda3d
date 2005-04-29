@@ -1142,7 +1142,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     if (got_mat) {
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row(cdata->_first_vertex + i);
-        const LVecBase3f &vertex = reader.get_data3f();
+        LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1160,7 +1160,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     } else {
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row(cdata->_first_vertex + i);
-        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1184,7 +1184,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     if (got_mat) {
       while (!index.is_at_end()) {
         reader.set_row(index.get_data1i());
-        const LVecBase3f &vertex = reader.get_data3f();
+        LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1202,7 +1202,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     } else {
       while (!index.is_at_end()) {
         reader.set_row(index.get_data1i());
-        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),

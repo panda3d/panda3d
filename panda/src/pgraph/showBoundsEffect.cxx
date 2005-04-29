@@ -30,8 +30,9 @@ TypeHandle ShowBoundsEffect::_type_handle;
 //  Description: Constructs a new ShowBoundsEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ShowBoundsEffect::
-make() {
+make(bool tight) {
   ShowBoundsEffect *effect = new ShowBoundsEffect;
+  effect->_tight = tight;
   return return_new(effect);
 }
 
@@ -64,25 +65,10 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 int ShowBoundsEffect::
 compare_to_impl(const RenderEffect *other) const {
-  // All ShowBoundsEffects are equivalent--there are no properties to
-  // store.
-  return 0;
-}
+  const ShowBoundsEffect *ta;
+  DCAST_INTO_R(ta, other, 0);
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShowBoundsEffect::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ShowBoundsEffect
-//               types to specify what the default property for a
-//               ShowBoundsEffect of this type should be.
-//
-//               This should return a newly-allocated ShowBoundsEffect of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of ShowBoundsEffect is.
-////////////////////////////////////////////////////////////////////
-RenderEffect *ShowBoundsEffect::
-make_default_impl() const {
-  return new ShowBoundsEffect;
+  return (int)_tight - (int)ta->_tight;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +91,7 @@ register_with_read_factory() {
 void ShowBoundsEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
+  dg.add_bool(_tight);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,4 +124,5 @@ make_from_bam(const FactoryParams &params) {
 void ShowBoundsEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
+  _tight = scan.get_bool();
 }

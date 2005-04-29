@@ -4710,7 +4710,23 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
 void NodePath::
 show_bounds() {
   nassertv_always(!is_empty());
-  node()->set_effect(ShowBoundsEffect::make());
+  node()->set_effect(ShowBoundsEffect::make(false));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::show_tight_bounds
+//       Access: Published
+//  Description: Similar to show_bounds(), this draws a bounding box
+//               representing the "tight" bounds of this node and all
+//               of its descendants.  The bounding box is recomputed
+//               every frame by reexamining all of the vertices; this
+//               is far from efficient, but this is intended for
+//               debugging.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+show_tight_bounds() {
+  nassertv_always(!is_empty());
+  node()->set_effect(ShowBoundsEffect::make(true));
 }
 
 ////////////////////////////////////////////////////////////////////

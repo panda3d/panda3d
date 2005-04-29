@@ -37,12 +37,16 @@ private:
   INLINE ShowBoundsEffect();
 
 PUBLISHED:
-  static CPT(RenderEffect) make();
+  static CPT(RenderEffect) make(bool tight = false);
+
+  INLINE bool get_tight() const;
 
 protected:
   virtual bool safe_to_combine() const;
   virtual int compare_to_impl(const RenderEffect *other) const;
-  virtual RenderEffect *make_default_impl() const;
+
+private:
+  bool _tight;
 
 public:
   static void register_with_read_factory();

@@ -358,7 +358,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
       const qpGeom *qpgeom = DCAST(qpGeom, geom);
       qpgeom->calc_tight_bounds(min_point, max_point, found_any,
                                 qpgeom->get_vertex_data()->animate_vertices(),
-                                !transform->is_identity(), mat);
+                                !next_transform->is_identity(), mat);
 
     } else {
       Geom::VertexIterator vi = geom->make_vertex_iterator();

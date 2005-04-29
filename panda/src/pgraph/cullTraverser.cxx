@@ -35,6 +35,7 @@
 #include "portalClipper.h"
 #include "qpgeom.h"
 #include "qpgeomTristrips.h"
+#include "qpgeomLinestrips.h"
 #include "qpgeomVertexWriter.h"
 
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
@@ -166,7 +167,7 @@ traverse(CullTraverserData &data) {
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
       // up now.
-      show_bounds(data);
+      show_bounds(data, node_effects->has_show_tight_bounds());
     }
 
     data.apply_transform_and_state(this);
@@ -267,21 +268,35 @@ traverse_below(CullTraverserData &data) {
 //               external bounding volume.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-show_bounds(CullTraverserData &data) {
+show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
 
-  PT(Geom) bounds_viz = make_bounds_viz(node->get_bound());
-  if (bounds_viz != (Geom *)NULL) {
-    _geoms_pcollector.add_level(2);
-    CullableObject *outer_viz = 
-      new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                         data._render_transform);
-    _cull_handler->record_object(outer_viz, this);
+  if (tight) {
+    PT(Geom) bounds_viz = make_tight_bounds_viz(node);
 
-    CullableObject *inner_viz = 
-      new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                         data._render_transform);
-    _cull_handler->record_object(inner_viz, this);
+    if (bounds_viz != (Geom *)NULL) {
+      _geoms_pcollector.add_level(1);
+      CullableObject *outer_viz = 
+        new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
+                           data._render_transform);
+      _cull_handler->record_object(outer_viz, this);
+    }
+    
+  } else {
+    PT(Geom) bounds_viz = make_bounds_viz(node->get_bound());
+
+    if (bounds_viz != (Geom *)NULL) {
+      _geoms_pcollector.add_level(2);
+      CullableObject *outer_viz = 
+        new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
+                           data._render_transform);
+      _cull_handler->record_object(outer_viz, this);
+      
+      CullableObject *inner_viz = 
+        new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
+                           data._render_transform);
+      _cull_handler->record_object(inner_viz, this);
+    }
   }
 }
 
@@ -305,7 +320,7 @@ make_bounds_viz(const BoundingVolume &vol) {
       static const int num_stacks = 8;
 
       PT(qpGeomVertexData) vdata = new qpGeomVertexData
-        ("collision", qpGeomVertexFormat::get_v3(),
+        ("bounds", qpGeomVertexFormat::get_v3(),
          qpGeom::UH_stream);
       qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
       
@@ -345,6 +360,67 @@ make_bounds_viz(const BoundingVolume &vol) {
     pgraph_cat.warning()
       << "Don't know how to draw a representation of "
       << vol.get_class_type() << "\n";
+  }
+
+  return geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::make_tight_bounds_viz
+//       Access: Private
+//  Description: Returns a bounding-box visualization of the indicated
+//               node's "tight" bounding volume.
+////////////////////////////////////////////////////////////////////
+PT(Geom) CullTraverser::
+make_tight_bounds_viz(PandaNode *node) {
+  PT(Geom) geom;
+
+  NodePath np = NodePath::any_path(node);
+
+  LPoint3f n, x;
+  bool found_any = false;
+  node->calc_tight_bounds(n, x, found_any, TransformState::make_identity());
+  if (found_any) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("bounds", qpGeomVertexFormat::get_v3(),
+      qpGeom::UH_stream);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    
+    vertex.add_data3f(n[0], n[1], n[2]);
+    vertex.add_data3f(n[0], n[1], x[2]);
+    vertex.add_data3f(n[0], x[1], n[2]);
+    vertex.add_data3f(n[0], x[1], x[2]);
+    vertex.add_data3f(x[0], n[1], n[2]);
+    vertex.add_data3f(x[0], n[1], x[2]);
+    vertex.add_data3f(x[0], x[1], n[2]);
+    vertex.add_data3f(x[0], x[1], x[2]);
+  
+    PT(qpGeomLinestrips) strip = new qpGeomLinestrips(qpGeom::UH_stream);
+
+    // We wind one long linestrip around the wireframe cube.  This
+    // does require backtracking a few times here and there.
+    strip->add_vertex(0);
+    strip->add_vertex(1);
+    strip->add_vertex(3);
+    strip->add_vertex(2);
+    strip->add_vertex(0);
+    strip->add_vertex(4);
+    strip->add_vertex(5);
+    strip->add_vertex(7);
+    strip->add_vertex(6);
+    strip->add_vertex(4);
+    strip->add_vertex(6);
+    strip->add_vertex(2);
+    strip->add_vertex(3);
+    strip->add_vertex(7);
+    strip->add_vertex(5);
+    strip->add_vertex(1);
+    strip->close_primitive();
+      
+    PT(qpGeom) qpgeom = new qpGeom;
+    qpgeom->set_vertex_data(vdata);
+    qpgeom->add_primitive(strip);
+    geom = qpgeom.p();
   }
 
   return geom;
@@ -508,7 +584,7 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
       // up now.
-      show_bounds(data);
+      show_bounds(data, node_effects->has_show_tight_bounds());
     }
 
     data.apply_transform_and_state(this);

@@ -24,5 +24,19 @@
 //               ShowBoundsEffect object.
 ////////////////////////////////////////////////////////////////////
 INLINE ShowBoundsEffect::
-ShowBoundsEffect() {
+ShowBoundsEffect() :
+  _tight(false)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShowBoundsEffect::get_tight
+//       Access: Published
+//  Description: Returns true if the "tight" flag was set, meaning the
+//               effect should compute and draw the tight bounding-box
+//               of the node's vertices every frame.
+////////////////////////////////////////////////////////////////////
+INLINE bool ShowBoundsEffect::
+get_tight() const {
+  return _tight;
 }

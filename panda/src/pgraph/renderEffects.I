@@ -184,6 +184,23 @@ has_show_bounds() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::has_show_tight_bounds
+//       Access: Public
+//  Description: If has_show_bounds() returns true, this will return
+//               true if the ShowBoundsEffect in question requests
+//               showing a "tight" bound.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderEffects::
+has_show_tight_bounds() const {
+  if ((_flags & F_checked_show_bounds) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal show_bounds cache.
+    ((RenderEffects *)this)->determine_show_bounds();
+  }
+  return ((_flags & F_has_show_tight_bounds) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::has_cull_callback
 //       Access: Public
 //  Description: This function is provided as an optimization, to

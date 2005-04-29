@@ -97,6 +97,7 @@ PUBLISHED:
 public:
   INLINE bool has_decal() const;
   INLINE bool has_show_bounds() const;
+  INLINE bool has_show_tight_bounds() const;
 
   INLINE bool has_cull_callback() const;
   void cull_callback(CullTraverser *trav, CullTraverserData &data,
@@ -148,10 +149,11 @@ private:
     F_has_decal                = 0x0002,
     F_checked_show_bounds      = 0x0004,
     F_has_show_bounds          = 0x0008,
-    F_checked_cull_callback    = 0x0010,
-    F_has_cull_callback        = 0x0020,
-    F_checked_adjust_transform = 0x0040,
-    F_has_adjust_transform     = 0x0080,
+    F_has_show_tight_bounds    = 0x0010,
+    F_checked_cull_callback    = 0x0020,
+    F_has_cull_callback        = 0x0040,
+    F_checked_adjust_transform = 0x0080,
+    F_has_adjust_transform     = 0x0100,
   };
   int _flags;
 

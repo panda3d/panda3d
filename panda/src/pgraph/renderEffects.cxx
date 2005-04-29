@@ -592,6 +592,10 @@ determine_show_bounds() {
   const RenderEffect *effect = get_effect(ShowBoundsEffect::get_class_type());
   if (effect != (const RenderEffect *)NULL) {
     _flags |= F_has_show_bounds;
+    const ShowBoundsEffect *sba = DCAST(ShowBoundsEffect, effect);
+    if (sba->get_tight()) {
+      _flags |= F_has_show_tight_bounds;
+    }
   }
   _flags |= F_checked_show_bounds;
 }

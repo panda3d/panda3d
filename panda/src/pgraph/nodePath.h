@@ -703,6 +703,7 @@ PUBLISHED:
   void prepare_scene(GraphicsStateGuardianBase *gsg);
 
   void show_bounds();
+  void show_tight_bounds();
   void hide_bounds();
   PT(BoundingVolume) get_bounds() const;
   void force_recompute_bounds();
