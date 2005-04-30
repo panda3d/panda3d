@@ -40,6 +40,8 @@ PStatReader(PStatServer *manager, PStatMonitor *monitor) :
   _monitor(monitor),
   _writer(manager, 0)
 {
+  set_tcp_header_size(4);
+  _writer.set_tcp_header_size(4);
   _udp_port = 0;
   _client_data = new PStatClientData(this);
   _monitor->set_client_data(_client_data);
