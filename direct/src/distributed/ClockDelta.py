@@ -311,14 +311,9 @@ class ClockDelta(DirectObject.DirectObject):
         Preserves the lower NetworkTimeBits of the networkTime value,
         and extends the sign bit all the way up.
         """
-        if 1:
-            r = ((networkTime & NetworkTimeMask) << NetworkTimeTopBits) >> NetworkTimeTopBits
-        else:
-            if networkTime < 0:
-                # flip the sign, mask it as if it were positive, flip the sign back:
-                r = (networkTime * -1 & NetworkTimeSignedMask) * -1
-            else:
-                r = networkTime & NetworkTimeSignedMask
+        # this may not be exacly what is wanted (it wraps the value), but
+        # it matches the output that the old code did with Python 2.2.2.
+        r = ((networkTime+32768) & NetworkTimeMask) - 32768
         assert -32768 <= r <= 32767
         return r
 
