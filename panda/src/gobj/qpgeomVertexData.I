@@ -30,21 +30,6 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_name
-//       Access: Published
-//  Description: Changes the name of the vertex data.  This name is
-//               reported on the PStats graph for vertex computations.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexData::
-set_name(const string &name) {
-  _name = name;
-  _app_char_pcollector = 
-    PStatCollector(PStatCollector(_app_animation_pcollector, name), "Vertices");
-  _cull_char_pcollector =
-    PStatCollector(PStatCollector(_cull_animation_pcollector, name), "Vertices");
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_format
 //       Access: Published
 //  Description: Returns a pointer to the GeomVertexFormat structure
@@ -247,43 +232,6 @@ INLINE UpdateSeq qpGeomVertexData::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::animate_vertices
-//       Access: Published
-//  Description: Returns a GeomVertexData that represents the results
-//               of computing the vertex animation on the CPU for this
-//               GeomVertexData.
-//
-//               If there is no CPU-defined vertex animation on this
-//               object, this just returns the original object.
-//
-//               If there is vertex animation, but the VertexTransform
-//               values have not changed since last time, this may
-//               return the same pointer it returned previously.  Even
-//               if the VertexTransform values have changed, it may
-//               still return the same pointer, but with its contents
-//               modified (this is preferred, since it allows the
-//               graphics backend to update vertex buffers optimally).
-////////////////////////////////////////////////////////////////////
-INLINE CPT(qpGeomVertexData) qpGeomVertexData::
-animate_vertices() const {
-  return do_animate_vertices(true);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::animate_vertices_cull
-//       Access: Public
-//  Description: Does exactly the same thing as animate_vertices(),
-//               but when PStats is enabled, it records the time spent
-//               as during the cull step instead of the app step.
-//               This is intended to be called from the cull callback,
-//               rather the called directly by the user.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(qpGeomVertexData) qpGeomVertexData::
-animate_vertices_cull() const {
-  return do_animate_vertices(false);
 }
 
 ////////////////////////////////////////////////////////////////////

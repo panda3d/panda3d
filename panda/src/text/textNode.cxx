@@ -51,10 +51,14 @@
 #include "dcast.h"
 #include "bamFile.h"
 #include "zStream.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 
 #include <stdio.h>
 
 TypeHandle TextNode::_type_handle;
+
+static PStatCollector text_generate_collector("*:Generate Text");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
@@ -204,6 +208,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) TextNode::
 generate() {
+  PStatTimer timer(text_generate_collector);
   if (text_cat.is_debug()) {
     text_cat.debug()
       << "Rebuilding " << get_type() << " " << get_name()

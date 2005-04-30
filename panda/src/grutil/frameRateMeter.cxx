@@ -27,7 +27,7 @@
 #include "pStatTimer.h"
 #include <stdio.h>  // For sprintf/snprintf
 
-PStatCollector FrameRateMeter::_show_fps_pcollector("Cull:Show fps");
+PStatCollector FrameRateMeter::_show_fps_pcollector("*:Show fps");
 
 TypeHandle FrameRateMeter::_type_handle;
 

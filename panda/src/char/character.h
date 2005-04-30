@@ -105,10 +105,8 @@ private:
   Parts _parts;
 
   // Statistics
-  PStatCollector _app_char_pcollector;
-  PStatCollector _cull_char_pcollector;
-  static PStatCollector _app_animation_pcollector;
-  static PStatCollector _cull_animation_pcollector;
+  PStatCollector _char_pcollector;
+  static PStatCollector _animation_pcollector;
 
 public:
   static void register_with_read_factory();

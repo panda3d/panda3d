@@ -24,7 +24,7 @@
 qpGeomMunger::Registry *qpGeomMunger::_registry = NULL;
 TypeHandle qpGeomMunger::_type_handle;
 
-PStatCollector qpGeomMunger::_munge_pcollector("Cull:Munge");
+PStatCollector qpGeomMunger::_munge_pcollector("*:Munge");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::Constructor

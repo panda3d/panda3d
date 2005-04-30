@@ -364,7 +364,7 @@ set_max_segment(int size) {
 //               it notifies the ConnectionManager.
 ////////////////////////////////////////////////////////////////////
 bool Connection::
-send_datagram(const NetDatagram &datagram) {
+send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   nassertr(_socket != (PRFileDesc *)NULL, false);
 
   if (PR_GetDescType(_socket) == PR_DESC_SOCKET_UDP) {
@@ -393,7 +393,7 @@ send_datagram(const NetDatagram &datagram) {
   }
 
   // We might queue up TCP packets for later sending.
-  if (datagram.get_length() >= 0x10000) {
+  if (tcp_header_size == 2 && datagram.get_length() >= 0x10000) {
     net_cat.error()
       << "Attempt to send TCP datagram of " << datagram.get_length()
       << " bytes--too long!\n";
@@ -401,7 +401,7 @@ send_datagram(const NetDatagram &datagram) {
     return false;
   }
 
-  DatagramTCPHeader header(datagram);
+  DatagramTCPHeader header(datagram, tcp_header_size);
 
   PR_Lock(_write_mutex);
   _queued_data += header.get_header();
@@ -409,7 +409,7 @@ send_datagram(const NetDatagram &datagram) {
   _queued_count++;
   
   if (net_cat.is_debug()) {
-    header.verify_datagram(datagram);
+    header.verify_datagram(datagram, tcp_header_size);
   }
 
   if (!_collect_tcp || 

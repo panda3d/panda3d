@@ -76,6 +76,14 @@ ConfigVariableBool egg_combine_geoms
           "when possible.  This usually shouldn't be necessary, since the "
           "egg loader does a pretty good job of combining these by itself."));
 
+ConfigVariableBool egg_rigid_geometry
+("egg-rigid-geometry", false,
+ PRC_DESC("Set this true to create rigid pieces of an animated character as "
+          "separate static nodes, or false to leave these in with the parent "
+          "node as vertex-animated geometry.  Setting this true means less "
+          "geometry has to be vertex-animated, but there will tend to be "
+          "more separate pieces."));
+
 ConfigVariableBool egg_show_collision_solids
 ("egg-show-collision-solids", false);
 

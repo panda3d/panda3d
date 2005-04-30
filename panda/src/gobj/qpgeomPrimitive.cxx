@@ -32,8 +32,8 @@
 
 TypeHandle qpGeomPrimitive::_type_handle;
 
-PStatCollector qpGeomPrimitive::_decompose_pcollector("Cull:Munge:Decompose");
-PStatCollector qpGeomPrimitive::_rotate_pcollector("Cull:Munge:Rotate");
+PStatCollector qpGeomPrimitive::_decompose_pcollector("*:Munge:Decompose");
+PStatCollector qpGeomPrimitive::_rotate_pcollector("*:Munge:Rotate");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::Default Constructor

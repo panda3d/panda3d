@@ -39,6 +39,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
   _raw_mode = false;
+  _tcp_header_size = datagram_tcp16_header_size;
   _immediate = (num_threads <= 0);
 
   for (int i = 0; i < num_threads; i++) {
@@ -116,7 +117,7 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
     if (_raw_mode) {
       return connection->send_raw_datagram(copy);
     } else {
-      return connection->send_datagram(copy);
+      return connection->send_datagram(copy, _tcp_header_size);
     }
   } else {
     return _queue.insert(copy);
@@ -162,7 +163,7 @@ send(const Datagram &datagram, const PT(Connection) &connection,
     if (_raw_mode) {
       return connection->send_raw_datagram(copy);
     } else {
-      return connection->send_datagram(copy);
+      return connection->send_datagram(copy, _tcp_header_size);
     }
   } else {
     return _queue.insert(copy);
@@ -244,6 +245,31 @@ get_raw_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::set_tcp_header_size
+//       Access: Public
+//  Description: Sets the header size of TCP packets.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
+////////////////////////////////////////////////////////////////////
+void ConnectionWriter::
+set_tcp_header_size(int tcp_header_size) {
+  _tcp_header_size = tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::get_tcp_header_size
+//       Access: Public
+//  Description: Returns the current setting of TCP header size.
+//               See set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+int ConnectionWriter::
+get_tcp_header_size() const {
+  return _tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::clear_manager
 //       Access: Protected
 //  Description: This should normally only be called when the
@@ -286,7 +312,7 @@ thread_run() {
     if (_raw_mode) {
       datagram.get_connection()->send_raw_datagram(datagram);
     } else {
-      datagram.get_connection()->send_datagram(datagram);
+      datagram.get_connection()->send_datagram(datagram, _tcp_header_size);
     }
   }
 }

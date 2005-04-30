@@ -140,6 +140,16 @@ ConfigVariableBool compose_componentwise
           "operations when possible.  If this is false, the compositions "
           "are always computed by matrix."));
 
+ConfigVariableBool uniquify_matrix
+("uniquify-matrix", false,
+ PRC_DESC("Set this true to look up arbitarary 4x4 transform matrices in the "
+          "cache, to ensure that two differently-computed transforms that "
+          "happen to encode the same matrix (an unlikely occurrence) will be "
+          "collapsed into a single pointer (a tiny benefit).  We're usually "
+          "better off not paying the cost of this comparison, and just "
+          "assuming that any two differently-computed transforms are "
+          "essentially different."));
+
 ConfigVariableBool paranoid_const
 ("paranoid-const", false,
  PRC_DESC("Set this true to double-check that nothing is inappropriately "

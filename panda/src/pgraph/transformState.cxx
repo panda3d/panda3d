@@ -29,7 +29,9 @@
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 UpdateSeq TransformState::_last_cycle_detect;
-PStatCollector TransformState::_cache_update_pcollector("App:State Cache");
+PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
+PStatCollector TransformState::_transform_compose_pcollector("*:State Cache:Compose Transform");
+PStatCollector TransformState::_transform_invert_pcollector("*:State Cache:Invert Transform");
 
 TypeHandle TransformState::_type_handle;
 
@@ -159,20 +161,16 @@ operator < (const TransformState &other) const {
     return c < 0;
   }
 
-  /*
-  // Otherwise, compare the matrices.
-  return get_mat() < other.get_mat();
-  */
+  // Otherwise, compare the matrices . . .
+  if (uniquify_matrix) {
+    // . . . but only if the user thinks that's a worthwhile
+    // comparison.
+    return get_mat() < other.get_mat();
 
-  // On second thought, we don't gain a lot of benefit by going
-  // through all the work of comparing different transforms by matrix.
-  // Doing so ensures that two differently-computed transforms that
-  // happen to encode the same matrix (an unlikely occurrence) will be
-  // collapsed into a single pointer (a tiny benefit).  We're better
-  // off not paying the cost of this comparison, and just assuming
-  // that any two differently-computed transforms are essentially
-  // different.
-  return (this < &other);
+  } else {
+    // If not, we just compare the pointers.
+    return (this < &other);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1068,6 +1066,8 @@ return_new(TransformState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_compose(const TransformState *other) const {
+  PStatTimer timer(_transform_compose_pcollector);
+
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
@@ -1122,6 +1122,8 @@ do_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_invert_compose(const TransformState *other) const {
+  PStatTimer timer(_transform_invert_pcollector);
+
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 

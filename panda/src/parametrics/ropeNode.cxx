@@ -37,7 +37,7 @@
 
 TypeHandle RopeNode::_type_handle;
 
-PStatCollector RopeNode::_rope_node_pcollector("Cull:RopeNode");
+PStatCollector RopeNode::_rope_node_pcollector("*:RopeNode");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::CData::make_copy

@@ -82,6 +82,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
   _raw_mode = false;
+  _tcp_header_size = datagram_tcp16_header_size;
   _polling = (num_threads <= 0);
 
   _shutdown = false;
@@ -330,6 +331,9 @@ get_num_threads() const {
 //               raw mode).  In raw mode, datagram headers are not
 //               expected; instead, all the data available on the pipe
 //               is treated as a single datagram.
+//
+//               This is similar to set_tcp_header_size(0), except that it
+//               also turns off headers for UDP packets.
 ////////////////////////////////////////////////////////////////////
 void ConnectionReader::
 set_raw_mode(bool mode) {
@@ -345,6 +349,31 @@ set_raw_mode(bool mode) {
 bool ConnectionReader::
 get_raw_mode() const {
   return _raw_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::set_tcp_header_size
+//       Access: Public
+//  Description: Sets the header size of TCP packets.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+set_tcp_header_size(int tcp_header_size) {
+  _tcp_header_size = tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::get_tcp_header_size
+//       Access: Public
+//  Description: Returns the current setting of TCP header size.
+//               See set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+int ConnectionReader::
+get_tcp_header_size() const {
+  return _tcp_header_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -542,11 +571,11 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     pprerror("PR_GetSockName");
   }
 
-  // First, we have to read the first datagram_tcp_header_size bytes.
-  while (header_bytes_read < datagram_tcp_header_size) {
+  // First, we have to read the first _tcp_header_size bytes.
+  while (header_bytes_read < _tcp_header_size) {
     PRInt32 bytes_read =
       PR_Recv(socket, buffer + header_bytes_read,
-              datagram_tcp_header_size - header_bytes_read, 0,
+              _tcp_header_size - header_bytes_read, 0,
               PR_INTERVAL_NO_TIMEOUT);
 
     if (bytes_read < 0) {
@@ -582,7 +611,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 
   // Now we must decode the header to determine how big the datagram
   // is.  This means we must have read at least a full header.
-  if (header_bytes_read != datagram_tcp_header_size) {
+  if (header_bytes_read != _tcp_header_size) {
     // This should actually be impossible, by the read-loop logic
     // above.
     net_cat.error()
@@ -591,8 +620,8 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     return;
   }
 
-  DatagramTCPHeader header(buffer);
-  PRInt32 size = header.get_datagram_size();
+  DatagramTCPHeader header(buffer, _tcp_header_size);
+  PRInt32 size = header.get_datagram_size(_tcp_header_size);
 
   // We have to loop until the entire datagram is read.
   NetDatagram datagram;
@@ -657,7 +686,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   }
 
   // And now do whatever we need to do to process the datagram.
-  if (!header.verify_datagram(datagram)) {
+  if (!header.verify_datagram(datagram, _tcp_header_size)) {
     net_cat.error()
       << "Ignoring invalid TCP datagram.\n";
   } else {

@@ -27,10 +27,11 @@
 
 #include <ctype.h>
 
-static const int current_pstat_major_version = 2;
-static const int current_pstat_minor_version = 1;
+static const int current_pstat_major_version = 3;
+static const int current_pstat_minor_version = 0;
 // Initialized at 2.0 on 5/18/01, when version numbers were first added.
 // Incremented to 2.1 on 5/21/01 to add support for TCP frame data.
+// Incremented to 3.0 on 4/28/05 to bump TCP headers to 32 bits.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_current_pstat_major_version
@@ -109,8 +110,6 @@ struct LevelCollectorProperties {
 
 static TimeCollectorProperties time_properties[] = {
   { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
-  { 1, "App:PStats",                       { 0.4, 0.8, 1.0 } },
-  { 1, "App:Animation",                    { 1.0, 0.0, 1.0 } },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
@@ -123,14 +122,15 @@ static TimeCollectorProperties time_properties[] = {
   { 0, "App:Show code:Nametags:3d:Contents", { 0.0, 0.5, 0.0 } },
   { 0, "App:Show code:Nametags:3d:Adjust",   { 0.5, 0.0, 0.5 } },
   { 1, "Cull",                             { 0.0, 1.0, 0.0 },  1.0 / 30.0 },
-  { 1, "Cull:Animate vertices",            { 1.0, 0.5, 0.3 },  1.0 / 30.0 },
-  { 1, "Cull:Show fps",                    { 0.5, 0.8, 1.0 } },
   { 1, "Cull:Sort",                        { 0.3, 0.6, 0.3 } },
-  { 0, "Cull:Munge",                       { 0.3, 0.3, 0.9 } },
-  { 0, "Cull:Munge:Points",                { 0.2, 0.8, 0.4 } },
-  { 0, "Cull:Munge:Data",                  { 0.7, 0.5, 0.2 } },
-  { 0, "Cull:Munge:Rotate",                { 0.9, 0.8, 0.5 } },
-  { 0, "Cull:Munge:Decompose",             { 0.1, 0.3, 0.1 } },
+  { 1, "*:Show fps",                       { 0.5, 0.8, 1.0 } },
+  { 0, "*:Munge",                          { 0.3, 0.3, 0.9 } },
+  { 0, "*:Munge:Points",                   { 0.2, 0.8, 0.4 } },
+  { 0, "*:Munge:Data",                     { 0.7, 0.5, 0.2 } },
+  { 0, "*:Munge:Rotate",                   { 0.9, 0.8, 0.5 } },
+  { 0, "*:Munge:Decompose",                { 0.1, 0.3, 0.1 } },
+  { 1, "*:PStats",                         { 0.4, 0.8, 1.0 } },
+  { 1, "*:Animation",                      { 1.0, 0.0, 1.0 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },

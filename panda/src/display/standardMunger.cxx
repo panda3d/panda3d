@@ -95,6 +95,7 @@ munge_data_impl(const qpGeomVertexData *data) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
     if (table != (TransformBlendTable *)NULL &&
+        table->get_num_transforms() != 0 &&
         table->get_max_simultaneous_transforms() <= 
         _gsg->get_max_vertex_transforms()) {
       if (matrix_palette && 

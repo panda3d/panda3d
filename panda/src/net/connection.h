@@ -66,7 +66,7 @@ PUBLISHED:
   void set_max_segment(int size);
 
 private:
-  bool send_datagram(const NetDatagram &datagram);
+  bool send_datagram(const NetDatagram &datagram, int tcp_header_size);
   bool send_raw_datagram(const NetDatagram &datagram);
   bool do_flush();
   bool check_send_error(PRInt32 result, PRErrorCode errcode, PRInt32 bytes_to_send);

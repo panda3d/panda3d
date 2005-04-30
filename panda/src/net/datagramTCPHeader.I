@@ -18,18 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::get_datagram_size
-//       Access: Public
-//  Description: Returns the number of bytes in the associated
-//               datagram.
-////////////////////////////////////////////////////////////////////
-INLINE int DatagramTCPHeader::
-get_datagram_size() const {
-  DatagramIterator di(_header);
-  return di.get_uint16();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DatagramTCPHeader::get_header
 //       Access: Public
 //  Description: Returns a pointer to a block of data of length

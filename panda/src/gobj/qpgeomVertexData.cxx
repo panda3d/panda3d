@@ -28,11 +28,10 @@
 
 TypeHandle qpGeomVertexData::_type_handle;
 
-PStatCollector qpGeomVertexData::_convert_pcollector("Cull:Munge:Convert");
-PStatCollector qpGeomVertexData::_scale_color_pcollector("Cull:Munge:Scale color");
-PStatCollector qpGeomVertexData::_set_color_pcollector("Cull:Munge:Set color");
-PStatCollector qpGeomVertexData::_app_animation_pcollector("App:Animation");
-PStatCollector qpGeomVertexData::_cull_animation_pcollector("Cull:Animation");
+PStatCollector qpGeomVertexData::_convert_pcollector("*:Munge:Convert");
+PStatCollector qpGeomVertexData::_scale_color_pcollector("*:Munge:Scale color");
+PStatCollector qpGeomVertexData::_set_color_pcollector("*:Munge:Set color");
+PStatCollector qpGeomVertexData::_animation_pcollector("*:Animation");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
@@ -42,8 +41,9 @@ PStatCollector qpGeomVertexData::_cull_animation_pcollector("Cull:Animation");
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
 qpGeomVertexData() :
-  _app_char_pcollector(_app_animation_pcollector),
-  _cull_char_pcollector(_cull_animation_pcollector)
+  _char_pcollector(_animation_pcollector, "unnamed"),
+  _skinning_pcollector(_char_pcollector, "Skinning"),
+  _morphs_pcollector(_char_pcollector, "Morphs")
 {
 }
 
@@ -58,8 +58,9 @@ qpGeomVertexData(const string &name,
                  qpGeomVertexData::UsageHint usage_hint) :
   _name(name),
   _format(format),
-  _app_char_pcollector(PStatCollector(_app_animation_pcollector, name), "Vertices"),
-  _cull_char_pcollector(PStatCollector(_cull_animation_pcollector, name), "Vertices")
+  _char_pcollector(PStatCollector(_animation_pcollector, name)),
+  _skinning_pcollector(_char_pcollector, "Skinning"),
+  _morphs_pcollector(_char_pcollector, "Morphs")
 {
   nassertv(_format->is_registered());
 
@@ -87,8 +88,9 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
   _name(copy._name),
   _format(copy._format),
   _cycler(copy._cycler),
-  _app_char_pcollector(copy._app_char_pcollector),
-  _cull_char_pcollector(copy._cull_char_pcollector)
+  _char_pcollector(copy._char_pcollector),
+  _skinning_pcollector(copy._skinning_pcollector),
+  _morphs_pcollector(copy._morphs_pcollector)
 {
 }
 
@@ -107,8 +109,9 @@ qpGeomVertexData(const qpGeomVertexData &copy,
   _name(copy._name),
   _format(format),
   _cycler(copy._cycler),
-  _app_char_pcollector(copy._app_char_pcollector),
-  _cull_char_pcollector(copy._cull_char_pcollector)
+  _char_pcollector(copy._char_pcollector),
+  _skinning_pcollector(copy._skinning_pcollector),
+  _morphs_pcollector(copy._morphs_pcollector)
 {
   nassertv(_format->is_registered());
 
@@ -136,8 +139,9 @@ operator = (const qpGeomVertexData &copy) {
   _name = copy._name;
   _format = copy._format;
   _cycler = copy._cycler;
-  _app_char_pcollector = copy._app_char_pcollector;
-  _cull_char_pcollector = copy._cull_char_pcollector;
+  _char_pcollector = copy._char_pcollector;
+  _skinning_pcollector = copy._skinning_pcollector;
+  _morphs_pcollector = copy._morphs_pcollector;
 
   CDWriter cdata(_cycler);
   clear_cache();
@@ -169,6 +173,20 @@ qpGeomVertexData::
       _cycler.release_write_stage(i, cdata);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_name
+//       Access: Published
+//  Description: Changes the name of the vertex data.  This name is
+//               reported on the PStats graph for vertex computations.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_name(const string &name) {
+  _name = name;
+  _char_pcollector = PStatCollector(_animation_pcollector, name);
+  _skinning_pcollector = PStatCollector(_char_pcollector, "Skinning");
+  _morphs_pcollector = PStatCollector(_char_pcollector, "Morphs");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -833,6 +851,96 @@ set_color(const Colorf &color, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::animate_vertices
+//       Access: Published
+//  Description: Returns a GeomVertexData that represents the results
+//               of computing the vertex animation on the CPU for this
+//               GeomVertexData.
+//
+//               If there is no CPU-defined vertex animation on this
+//               object, this just returns the original object.
+//
+//               If there is vertex animation, but the VertexTransform
+//               values have not changed since last time, this may
+//               return the same pointer it returned previously.  Even
+//               if the VertexTransform values have changed, it may
+//               still return the same pointer, but with its contents
+//               modified (this is preferred, since it allows the
+//               graphics backend to update vertex buffers optimally).
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+animate_vertices() const {
+  CDReader cdata(_cycler);
+
+  if (_format->get_animation().get_animation_type() != AT_panda) {
+    return this;
+  }
+
+  UpdateSeq modified;
+  if (cdata->_transform_blend_table != (TransformBlendTable *)NULL) {
+    if (cdata->_slider_table != (SliderTable *)NULL) {
+      modified = 
+        max(cdata->_transform_blend_table->get_modified(),
+            cdata->_slider_table->get_modified());
+    } else {
+      modified = cdata->_transform_blend_table->get_modified();
+    }
+
+  } else if (cdata->_slider_table != (SliderTable *)NULL) {
+    modified = cdata->_slider_table->get_modified();
+
+  } else {
+    // No transform blend table or slider table--ergo, no vertex
+    // animation.
+    return this;
+  }
+
+  if (cdata->_animated_vertices_modified == modified &&
+      cdata->_animated_vertices != (qpGeomVertexData *)NULL) {
+    // No changes.
+    return cdata->_animated_vertices;
+  }
+  CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
+  cdataw->_animated_vertices_modified = modified;
+  ((qpGeomVertexData *)this)->update_animated_vertices(cdataw);
+  return cdataw->_animated_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::bytewise_copy
+//       Access: Private, Static
+//  Description: Quickly copies data without the need to convert it.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+bytewise_copy(unsigned char *to, int to_stride,
+              const unsigned char *from, int from_stride,
+              const qpGeomVertexColumn *from_type,
+              int num_records) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "bytewise_copy(" << (void *)to << ", " << to_stride
+      << ", " << (const void *)from << ", " << from_stride
+      << ", " << *from_type << ", " << num_records << ")\n";
+  }
+  if (to_stride == from_type->get_total_bytes() && 
+      from_stride == from_type->get_total_bytes()) {
+    // Fantastic!  It's just a linear array of this one data type.
+    // Copy the whole thing all at once.
+    memcpy(to, from, num_records * from_type->get_total_bytes());
+
+  } else {
+    // Ok, it's interleaved in with other data.  Copy them one record
+    // at a time.
+    while (num_records > 0) {
+      memcpy(to, from, from_type->get_total_bytes());
+      to += to_stride;
+      from += from_stride;
+      num_records--;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::replace_column
 //       Access: Published
 //  Description: Returns a new GeomVertexData object, suitable for
@@ -1086,84 +1194,6 @@ get_color_info(const qpGeomVertexArrayData *&array_data,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::do_animate_vertices
-//       Access: Private
-//  Description: This is the private implementation of
-//               animate_vertices() and animate_vertices_cull().
-////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexData) qpGeomVertexData::
-do_animate_vertices(bool from_app) const {
-  CDReader cdata(_cycler);
-
-  if (_format->get_animation().get_animation_type() != AT_panda) {
-    return this;
-  }
-
-  UpdateSeq modified;
-  if (cdata->_transform_blend_table != (TransformBlendTable *)NULL) {
-    if (cdata->_slider_table != (SliderTable *)NULL) {
-      modified = 
-        max(cdata->_transform_blend_table->get_modified(),
-            cdata->_slider_table->get_modified());
-    } else {
-      modified = cdata->_transform_blend_table->get_modified();
-    }
-
-  } else if (cdata->_slider_table != (SliderTable *)NULL) {
-    modified = cdata->_slider_table->get_modified();
-
-  } else {
-    // No transform blend table or slider table--ergo, no vertex
-    // animation.
-    return this;
-  }
-
-  if (cdata->_animated_vertices_modified == modified &&
-      cdata->_animated_vertices != (qpGeomVertexData *)NULL) {
-    // No changes.
-    return cdata->_animated_vertices;
-  }
-  CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
-  cdataw->_animated_vertices_modified = modified;
-  ((qpGeomVertexData *)this)->update_animated_vertices(cdataw, from_app);
-  return cdataw->_animated_vertices;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::bytewise_copy
-//       Access: Private, Static
-//  Description: Quickly copies data without the need to convert it.
-////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-bytewise_copy(unsigned char *to, int to_stride,
-              const unsigned char *from, int from_stride,
-              const qpGeomVertexColumn *from_type,
-              int num_records) {
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
-      << "bytewise_copy(" << (void *)to << ", " << to_stride
-      << ", " << (const void *)from << ", " << from_stride
-      << ", " << *from_type << ", " << num_records << ")\n";
-  }
-  if (to_stride == from_type->get_total_bytes() && 
-      from_stride == from_type->get_total_bytes()) {
-    // Fantastic!  It's just a linear array of this one data type.
-    // Copy the whole thing all at once.
-    memcpy(to, from, num_records * from_type->get_total_bytes());
-
-  } else {
-    // Ok, it's interleaved in with other data.  Copy them one record
-    // at a time.
-    while (num_records > 0) {
-      memcpy(to, from, from_type->get_total_bytes());
-      to += to_stride;
-      from += from_stride;
-      num_records--;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::packed_argb_to_uint8_rgba
 //       Access: Private, Static
 //  Description: Quickly converts DirectX-style color to OpenGL-style
@@ -1302,7 +1332,7 @@ do_set_num_rows(int n, qpGeomVertexData::CDWriter &cdata) {
 //               existing animated_vertices object.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
+update_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   int num_rows = get_num_rows();
 
   if (gobj_cat.is_debug()) {
@@ -1311,15 +1341,12 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
       << "\n";
   }
 
-#ifdef DO_PSTATS
-  PStatCollector &collector = from_app ? _app_char_pcollector : _cull_char_pcollector;
-  PStatTimer timer(collector);
-#endif
+  PStatTimer timer(_char_pcollector);
 
   if (cdata->_animated_vertices == (qpGeomVertexData *)NULL) {
-    CPT(qpGeomVertexFormat) animated_format = get_post_animated_format();
+    CPT(qpGeomVertexFormat) new_format = _format->get_post_animated_format();
     cdata->_animated_vertices = 
-      new qpGeomVertexData(get_name(), animated_format,
+      new qpGeomVertexData(get_name(), new_format,
                            min(get_usage_hint(), UH_dynamic));
   }
   PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
@@ -1334,6 +1361,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   // First, apply all of the morphs.
   CPT(SliderTable) slider_table = cdata->_slider_table;
   if (slider_table != (SliderTable *)NULL) {
+    PStatTimer timer2(_morphs_pcollector);
     int num_morphs = _format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
       CPT(InternalName) slider_name = _format->get_morph_slider(mi);
@@ -1384,6 +1412,7 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   // Then apply the transforms.
   CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table;
   if (tb_table != (TransformBlendTable *)NULL) {
+    PStatTimer timer3(_skinning_pcollector);
 
     // Recompute all the blends up front, so we don't have to test
     // each one for staleness at each vertex.
@@ -1435,29 +1464,6 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
       }
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::get_post_animated_format
-//       Access: Private
-//  Description: Returns a suitable vertex format for sending the
-//               animated vertices to the graphics backend.  This is
-//               the same format as the source format, with the
-//               CPU-animation data elements removed.
-////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexFormat) qpGeomVertexData::
-get_post_animated_format() const {
-  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
-
-  new_format->remove_column(InternalName::get_transform_blend());
-
-  int num_morphs = _format->get_num_morphs();
-  for (int mi = 0; mi < num_morphs; mi++) {
-    CPT(InternalName) delta_name = _format->get_morph_delta(mi);
-    new_format->remove_column(delta_name);
-  }
-
-  return qpGeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1589,7 +1595,7 @@ void qpGeomVertexData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
-  _name = scan.get_string();
+  set_name(scan.get_string());
   manager->read_pointer(scan);
 
   manager->read_cdata(scan, _cycler);

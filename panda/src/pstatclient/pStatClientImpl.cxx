@@ -48,6 +48,8 @@ PStatClientImpl(PStatClient *client) :
   _reader(this, 0),
   _writer(this, pstats_threaded_write ? 1 : 0)
 {
+  _reader.set_tcp_header_size(4);
+  _writer.set_tcp_header_size(4);
   _is_connected = false;
   _got_udp_port = false;
   _collectors_reported = 0;

@@ -27,7 +27,8 @@
 
 #include <prtypes.h>
 
-static const int datagram_tcp_header_size = sizeof(PRUint16);
+static const int datagram_tcp16_header_size = sizeof(PRUint16);
+static const int datagram_tcp32_header_size = sizeof(PRUint32);
 
 class NetDatagram;
 
@@ -41,13 +42,13 @@ class NetDatagram;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DatagramTCPHeader {
 public:
-  DatagramTCPHeader(const NetDatagram &datagram);
-  DatagramTCPHeader(const void *data);
+  DatagramTCPHeader(const NetDatagram &datagram, int header_size);
+  DatagramTCPHeader(const void *data, int header_size);
 
-  INLINE int get_datagram_size() const;
+  int get_datagram_size(int header_size) const;
   INLINE string get_header() const;
 
-  bool verify_datagram(const NetDatagram &datagram) const;
+  bool verify_datagram(const NetDatagram &datagram, int header_size) const;
 
 private:
   // The actual data for the header is stored (somewhat recursively)

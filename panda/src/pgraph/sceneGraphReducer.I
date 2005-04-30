@@ -87,6 +87,7 @@ get_combine_radius() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
 apply_attribs(PandaNode *node, int attrib_types) {
+  PStatTimer timer(_apply_collector);
   AccumulatedAttribs attribs;
   r_apply_attribs(node, attribs, attrib_types, _transformer);
 }
@@ -122,6 +123,7 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 ////////////////////////////////////////////////////////////////////
 INLINE int SceneGraphReducer::
 collect_vertex_data(PandaNode *root, int collect_bits) {
+  PStatTimer timer(_collect_collector);
   return r_collect_vertex_data(root, collect_bits, _transformer);
 }
 
@@ -137,6 +139,7 @@ collect_vertex_data(PandaNode *root, int collect_bits) {
 ////////////////////////////////////////////////////////////////////
 INLINE int SceneGraphReducer::
 make_nonindexed(PandaNode *root, int nonindexed_bits) {
+  PStatTimer timer(_make_nonindexed_collector);
   return r_make_nonindexed(root, nonindexed_bits);
 }
 
@@ -148,5 +151,6 @@ make_nonindexed(PandaNode *root, int nonindexed_bits) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
 unify(PandaNode *root) {
+  PStatTimer timer(_unify_collector);
   r_unify(root);
 }

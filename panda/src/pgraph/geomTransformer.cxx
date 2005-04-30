@@ -25,6 +25,13 @@
 #include "transformTable.h"
 #include "transformBlendTable.h"
 #include "sliderTable.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
+
+static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
+static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");
+static PStatCollector apply_set_color_collector("*:Flatten:apply:set color");
+static PStatCollector apply_scale_color_collector("*:Flatten:apply:scale color");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Constructor
@@ -67,6 +74,7 @@ GeomTransformer::
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_vertices(Geom *geom, const LMatrix4f &mat) {
+  PStatTimer timer(apply_vertex_collector);
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
@@ -209,6 +217,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 bool GeomTransformer::
 transform_texcoords(Geom *geom, const InternalName *from_name, 
                     const InternalName *to_name, const LMatrix4f &mat) {
+  PStatTimer timer(apply_texcoord_collector);
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
@@ -329,6 +338,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 set_color(Geom *geom, const Colorf &color) {
+  PStatTimer timer(apply_set_color_collector);
   bool transformed = false;
 
   if (geom->is_qpgeom()) {
@@ -407,6 +417,7 @@ set_color(GeomNode *node, const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_colors(Geom *geom, const LVecBase4f &scale) {
+  PStatTimer timer(apply_scale_color_collector);
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);

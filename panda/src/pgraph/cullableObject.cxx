@@ -28,7 +28,7 @@
 #include "qpgeomVertexReader.h"
 #include "qpgeomTriangles.h"
 
-PStatCollector CullableObject::_munge_points_pcollector("Cull:Munge:Points");
+PStatCollector CullableObject::_munge_points_pcollector("*:Munge:Points");
 
 CullableObject *CullableObject::_deleted_chain = (CullableObject *)NULL;
 int CullableObject::_num_ever_allocated = 0;
@@ -75,7 +75,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // a GSG-friendly form.
       qpgeom->munge_geom(munger, qpgeom, _munged_data);
       CPT(qpGeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices_cull();
+        _munged_data->animate_vertices();
 #ifndef NDEBUG
       if (show_cpu_animation && animated_vertices != _munged_data) {
         // These vertices were CPU-animated, so flash them.

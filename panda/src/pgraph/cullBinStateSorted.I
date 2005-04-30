@@ -48,14 +48,18 @@ operator < (const ObjectData &other) const {
     if (ta != tb) {
       return ta < tb;
     }
-
-    // Then, sort by all the other states, in no particular order,
-    // just as long as objects with identical state are all grouped
-    // together.
-    return sa < sb;
   }
 
-  return 0;
+  // Then group objects by transform, since these are supposed to be
+  // expensive too.
+  if (_object->_transform != other._object->_transform) {
+    return _object->_transform < other._object->_transform;
+  }
+      
+  // Then, sort by all the other states, in no particular order,
+  // just as long as objects with identical state are all grouped
+  // together.
+  return sa < sb;
 }
 
 

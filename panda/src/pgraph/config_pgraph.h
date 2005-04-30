@@ -39,6 +39,7 @@ extern ConfigVariableBool unambiguous_graph;
 extern ConfigVariableBool allow_unrelated_wrt;
 extern ConfigVariableBool paranoid_compose;
 extern ConfigVariableBool compose_componentwise;
+extern ConfigVariableBool uniquify_matrix;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
 extern ConfigVariableInt max_collect_vertices;

@@ -33,7 +33,7 @@
 
 TypeHandle SheetNode::_type_handle;
 
-PStatCollector SheetNode::_sheet_node_pcollector("Cull:SheetNode");
+PStatCollector SheetNode::_sheet_node_pcollector("*:SheetNode");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SheetNode::CData::make_copy

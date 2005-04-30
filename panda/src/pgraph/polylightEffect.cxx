@@ -19,7 +19,6 @@
 #include "polylightEffect.h"
 #include "polylightNode.h"
 #include "config_pgraph.h"
-#include "pStatTimer.h"
 #include "nodePath.h"
 #include "pmap.h"
 #include "colorScaleAttrib.h"
@@ -29,8 +28,6 @@
 #include <math.h>
 
 TypeHandle PolylightEffect::_type_handle;
-
-PStatCollector PolylightEffect::_cull_pcollector("Cull:Polylight");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::make
@@ -137,8 +134,6 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   float light_scale; // Variable to calculate attenuation 
   float weight_scale = 1.0f; // Variable to compensate snap of color when you walk inside the light volume
   float Rcollect, Gcollect, Bcollect;
-
-  PStatTimer timer(_cull_pcollector);
 
   const NodePath &root = scene->get_scene_root();
   //const NodePath &camera = scene->get_camera_path();

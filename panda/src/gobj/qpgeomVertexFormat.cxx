@@ -34,7 +34,8 @@ TypeHandle qpGeomVertexFormat::_type_handle;
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexFormat::
 qpGeomVertexFormat() :
-  _is_registered(false)
+  _is_registered(false),
+  _post_animated_format(NULL)
 {
 }
 
@@ -45,7 +46,8 @@ qpGeomVertexFormat() :
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexFormat::
 qpGeomVertexFormat(const qpGeomVertexArrayFormat *array_format) :
-  _is_registered(false)
+  _is_registered(false),
+  _post_animated_format(NULL)
 {
   add_array(array_format);
 }
@@ -59,7 +61,8 @@ qpGeomVertexFormat::
 qpGeomVertexFormat(const qpGeomVertexFormat &copy) :
   _is_registered(false),
   _animation(copy._animation),
-  _arrays(copy._arrays)
+  _arrays(copy._arrays),
+  _post_animated_format(NULL)
 {
 }
 
@@ -70,7 +73,7 @@ qpGeomVertexFormat(const qpGeomVertexFormat &copy) :
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 operator = (const qpGeomVertexFormat &copy) {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
 
   _animation = copy._animation;
   _arrays = copy._arrays;
@@ -88,6 +91,47 @@ qpGeomVertexFormat::
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_post_animated_format
+//       Access: Published
+//  Description: Returns a suitable vertex format for sending the
+//               animated vertices to the graphics backend.  This is
+//               the same format as the source format, with the
+//               CPU-animation data elements removed.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexFormat) qpGeomVertexFormat::
+get_post_animated_format() const {
+  nassertr(is_registered(), NULL);
+
+  if (_post_animated_format == (qpGeomVertexFormat *)NULL) {
+    PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*this);
+    new_format->remove_column(InternalName::get_transform_blend());
+    
+    int num_morphs = get_num_morphs();
+    for (int mi = 0; mi < num_morphs; mi++) {
+      CPT(InternalName) delta_name = get_morph_delta(mi);
+      new_format->remove_column(delta_name);
+    }
+
+    CPT(qpGeomVertexFormat) registered = 
+      qpGeomVertexFormat::register_format(new_format);
+    ((qpGeomVertexFormat *)this)->_post_animated_format = registered;
+    if (_post_animated_format != this) {
+      // We only keep the reference count if the new pointer is not
+      // the same as this, to avoid a circular dependency.
+      _post_animated_format->ref();
+    }
+  }
+
+  _post_animated_format->test_ref_count_integrity();
+
+  return _post_animated_format;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::modify_array
 //       Access: Published
@@ -100,7 +144,7 @@ qpGeomVertexFormat::
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat *qpGeomVertexFormat::
 modify_array(int array) {
-  nassertr(!_is_registered, NULL);
+  nassertr(!is_registered(), NULL);
   nassertr(array >= 0 && array < (int)_arrays.size(), NULL);
 
   if (_arrays[array]->is_registered() ||
@@ -121,7 +165,7 @@ modify_array(int array) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 set_array(int array, const qpGeomVertexArrayFormat *format) {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
   nassertv(array >= 0 && array < (int)_arrays.size());
   _arrays[array] = (qpGeomVertexArrayFormat *)format;
 }
@@ -136,7 +180,7 @@ set_array(int array, const qpGeomVertexArrayFormat *format) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 remove_array(int array) {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
 
   nassertv(array >= 0 && array < (int)_arrays.size());
   _arrays.erase(_arrays.begin() + array);
@@ -155,7 +199,7 @@ remove_array(int array) {
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexFormat::
 add_array(const qpGeomVertexArrayFormat *array_format) {
-  nassertr(!_is_registered, -1);
+  nassertr(!is_registered(), -1);
 
   int new_array = (int)_arrays.size();
   _arrays.push_back((qpGeomVertexArrayFormat *)array_format);
@@ -175,7 +219,7 @@ add_array(const qpGeomVertexArrayFormat *array_format) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 insert_array(int array, const qpGeomVertexArrayFormat *array_format) {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
   nassertv(array >= 0 && array <= (int)_arrays.size());
 
   _arrays.insert(_arrays.begin() + array, (qpGeomVertexArrayFormat *)array_format);
@@ -192,7 +236,7 @@ insert_array(int array, const qpGeomVertexArrayFormat *array_format) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 clear_arrays() {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
 
   _arrays.clear();
 }
@@ -327,7 +371,7 @@ get_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 remove_column(const InternalName *name) {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
 
   // Since the format's not registered, it doesn't yet have an index
   // of columns--so we have to search all of the arrays, one at a
@@ -500,7 +544,7 @@ make_registry() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 do_register() {
-  nassertv(!_is_registered);
+  nassertv(!is_registered());
   nassertv(_columns_by_name.empty());
 
   for (int array = 0; array < (int)_arrays.size(); ++array) {
@@ -612,6 +656,12 @@ do_unregister() {
   _vectors.clear();
   _texcoords.clear();
   _morphs.clear();
+
+  if (_post_animated_format != (qpGeomVertexFormat *)NULL && 
+      _post_animated_format != this) {
+    unref_delete(_post_animated_format);
+  }
+  _post_animated_format = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,7 +25,8 @@
 #include "renderState.h"
 #include "accumulatedAttribs.h"
 #include "geomTransformer.h"
-
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 #include "typedObject.h"
 #include "pointerTo.h"
 
@@ -150,6 +151,12 @@ protected:
 private:
   float _combine_radius;
   GeomTransformer _transformer;
+
+  static PStatCollector _flatten_collector;
+  static PStatCollector _apply_collector;
+  static PStatCollector _collect_collector;
+  static PStatCollector _make_nonindexed_collector;
+  static PStatCollector _unify_collector;
 };
 
 #include "sceneGraphReducer.I"

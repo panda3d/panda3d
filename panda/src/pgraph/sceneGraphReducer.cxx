@@ -25,6 +25,12 @@
 #include "plist.h"
 #include "pmap.h"
 
+PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
+PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
+PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
+PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
+PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::flatten
 //       Access: Published
@@ -46,6 +52,7 @@
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 flatten(PandaNode *root, int combine_siblings_bits) {
+  PStatTimer timer(_flatten_collector);
   int num_total_nodes = 0;
   int num_pass_nodes;
 

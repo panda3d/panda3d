@@ -146,6 +146,7 @@ is_in_view_impl() {
     // The node and its descendants are completely enclosed within
     // the frustum.  No need to cull further.
     _view_frustum = (GeometricBoundingVolume *)NULL;
+    _guard_band = (GeometricBoundingVolume *)NULL;
 
   } else {
     if (node()->is_final()) {

@@ -33,7 +33,7 @@
 PStatCollector PStatClient::_total_size_pcollector("Memory usage");
 PStatCollector PStatClient::_cpp_size_pcollector("Memory usage:C++");
 PStatCollector PStatClient::_interpreter_size_pcollector("Memory usage:Interpreter");
-PStatCollector PStatClient::_pstats_pcollector("App:PStats");
+PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 
 PStatClient *PStatClient::_global_pstats = NULL;
 

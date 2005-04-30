@@ -85,6 +85,9 @@ PUBLISHED:
   void set_raw_mode(bool mode);
   bool get_raw_mode() const;
 
+  void set_tcp_header_size(int tcp_header_size);
+  int get_tcp_header_size() const;
+
 protected:
   virtual void receive_datagram(const NetDatagram &datagram)=0;
 
@@ -123,6 +126,7 @@ protected:
 
 private:
   bool _raw_mode;
+  int _tcp_header_size;
   bool _shutdown;
 
   typedef pvector<PRThread *> Threads;

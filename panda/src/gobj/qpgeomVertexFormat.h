@@ -80,6 +80,8 @@ PUBLISHED:
   INLINE const qpGeomVertexAnimationSpec &get_animation() const;
   INLINE void set_animation(const qpGeomVertexAnimationSpec &animation);
 
+  CPT(qpGeomVertexFormat) get_post_animated_format() const;
+
   INLINE int get_num_arrays() const;
   INLINE const qpGeomVertexArrayFormat *get_array(int array) const;
   qpGeomVertexArrayFormat *modify_array(int array);
@@ -204,6 +206,8 @@ private:
   };
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
+
+  const qpGeomVertexFormat *_post_animated_format;
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<qpGeomVertexFormat *, IndirectCompareTo<qpGeomVertexFormat> > Formats;

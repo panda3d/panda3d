@@ -587,6 +587,12 @@ determine_bin_home(EggBin *egg_bin) {
   // different joints, then the entire bin must be considered dynamic.
   // (We'll indicate a dynamic bin by returning NULL.)
 
+  if (!egg_rigid_geometry) {
+    // If we don't have egg-rigid-geometry enabled, then all geometry
+    // is considered dynamic.
+    return NULL;
+  }
+
   // We need to keep track of the one joint we've encountered so far,
   // to see if all the vertices are referenced by the same joint.
   EggGroupNode *home = NULL;
@@ -681,8 +687,12 @@ determine_bin_home(EggBin *egg_bin) {
       // putting an explicit "<DCS> { none }" entry in the joint.  In
       // this case, we return NULL to treat the geometry as dynamic
       // (and animate it by animating its vertices), but display lists
-      // and vertex buffers will perform better if as much geometry as
-      // possible is rigid.
+      // and vertex buffers will perform better if more geometry is
+      // rigid.  There's a tradeoff, though, since the cull traverser
+      // will have to do more work with additional transforms in the
+      // scene graph, and this may also break up the geometry into
+      // more individual pieces, which is the biggest limiting factor
+      // on modern PC graphics cards.
       return NULL;
     }
 

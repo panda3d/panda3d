@@ -37,7 +37,9 @@
 RenderState::States *RenderState::_states = NULL;
 CPT(RenderState) RenderState::_empty_state;
 UpdateSeq RenderState::_last_cycle_detect;
-PStatCollector RenderState::_cache_update_pcollector("App:State Cache");
+PStatCollector RenderState::_cache_update_pcollector("*:State Cache:Update");
+PStatCollector RenderState::_state_compose_pcollector("*:State Cache:Compose State");
+PStatCollector RenderState::_state_invert_pcollector("*:State Cache:Invert State");
 
 TypeHandle RenderState::_type_handle;
 
@@ -1132,6 +1134,8 @@ return_new(RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 do_compose(const RenderState *other) const {
+  PStatTimer timer(_state_compose_pcollector);
+
   // First, build a new Attributes member that represents the union of
   // this one and that one.
   Attributes::const_iterator ai = _attributes.begin();
@@ -1197,6 +1201,8 @@ do_compose(const RenderState *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 do_invert_compose(const RenderState *other) const {
+  PStatTimer timer(_state_invert_pcollector);
+
   Attributes::const_iterator ai = _attributes.begin();
   Attributes::const_iterator bi = other->_attributes.begin();
 

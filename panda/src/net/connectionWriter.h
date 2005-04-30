@@ -63,6 +63,9 @@ PUBLISHED:
   void set_raw_mode(bool mode);
   bool get_raw_mode() const;
 
+  void set_tcp_header_size(int tcp_header_size);
+  int get_tcp_header_size() const;
+
 protected:
   void clear_manager();
 
@@ -76,6 +79,7 @@ protected:
 
 private:
   bool _raw_mode;
+  int _tcp_header_size;
   DatagramQueue _queue;
 
   typedef pvector<PRThread *> Threads;

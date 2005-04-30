@@ -200,6 +200,8 @@ private:
   static UpdateSeq _last_cycle_detect;
 
   static PStatCollector _cache_update_pcollector;
+  static PStatCollector _transform_compose_pcollector;
+  static PStatCollector _transform_invert_pcollector;
 
 private:
   // This is the actual data within the TransformState.

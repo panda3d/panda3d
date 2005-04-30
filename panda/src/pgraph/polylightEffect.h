@@ -29,7 +29,6 @@
 #include "pmap.h"
 #include "notify.h"
 #include "sceneSetup.h"
-#include "pStatCollector.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -102,8 +101,6 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-  static PStatCollector _cull_pcollector;
 
 private:
   static TypeHandle _type_handle;

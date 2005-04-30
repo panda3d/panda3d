@@ -2222,14 +2222,15 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   }
 
   const qpGeomVertexAnimationSpec &animation = 
-    vertex_data->get_format()->get_animation();
+    _vertex_data->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == qpGeom::AT_hardware);
   if (hardware_animation) {
     // Set up the transform matrices for vertex blending.
+    nassertr(_supports_vertex_blend, false);
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
     _glVertexBlendARB(animation.get_num_transforms() - 1);
-    
-    const TransformTable *table = vertex_data->get_transform_table();
+
+    const TransformTable *table = _vertex_data->get_transform_table();
     if (table != (TransformTable *)NULL) {
       if (animation.get_indexed_transforms()) {
         // We are loading the indexed matrix palette.  The ARB decided

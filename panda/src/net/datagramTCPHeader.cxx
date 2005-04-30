@@ -30,14 +30,33 @@
 //               already-constructed NetDatagram.
 ////////////////////////////////////////////////////////////////////
 DatagramTCPHeader::
-DatagramTCPHeader(const NetDatagram &datagram) {
+DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
   const string &str = datagram.get_message();
-  PRUint16 size = str.length();
-  nassertv(size == str.length());
+  switch (header_size) {
+  case 0:
+    break;
 
-  // Now pack the header.
-  _header.add_uint16(size);
-  nassertv((int)_header.get_length() == datagram_tcp_header_size);
+  case datagram_tcp16_header_size:
+    {
+      PRUint16 size = str.length();
+      nassertv(size == str.length());
+      _header.add_uint16(size);
+    }
+    break;
+
+  case datagram_tcp32_header_size:
+    {
+      PRUint32 size = str.length();
+      nassertv(size == str.length());
+      _header.add_uint32(size);
+    }
+    break;
+
+  default:
+    nassertv(false);
+  }
+
+  nassertv((int)_header.get_length() == header_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +67,32 @@ DatagramTCPHeader(const NetDatagram &datagram) {
 //               just read from a socket.
 ////////////////////////////////////////////////////////////////////
 DatagramTCPHeader::
-DatagramTCPHeader(const void *data) : _header(data, datagram_tcp_header_size) {
+DatagramTCPHeader(const void *data, int header_size) : 
+  _header(data, header_size) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramTCPHeader::get_datagram_size
+//       Access: Public
+//  Description: Returns the number of bytes in the associated
+//               datagram.
+////////////////////////////////////////////////////////////////////
+int DatagramTCPHeader::
+get_datagram_size(int header_size) const {
+  DatagramIterator di(_header);
+  switch (header_size) {
+  case 0:
+    return 0;
+
+  case datagram_tcp16_header_size:
+    return di.get_uint16();
+
+  case datagram_tcp32_header_size:
+    return di.get_uint32();
+  }
+
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,23 +103,23 @@ DatagramTCPHeader(const void *data) : _header(data, datagram_tcp_header_size) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DatagramTCPHeader::
-verify_datagram(const NetDatagram &datagram) const {
-  const string &str = datagram.get_message();
-  PRUint16 size = str.length();
-  nassertr(size == str.length(), false);
+verify_datagram(const NetDatagram &datagram, int header_size) const {
+  if (header_size == 0) {
+    // No way to validate without a header, so everything is valid.
+    return true;
+  }
 
-  if (size == get_datagram_size()) {
+  const string &str = datagram.get_message();
+  int actual_size = str.length();
+  int expected_size = get_datagram_size(header_size);
+  if (actual_size == expected_size) {
     return true;
   }
 
   if (net_cat.is_debug()) {
     net_cat.debug()
-      << "Invalid datagram!\n";
-    if (size != get_datagram_size()) {
-      net_cat.debug()
-        << "  size is " << size << " bytes, header reports "
-        << get_datagram_size() << "\n";
-    }
+      << "Invalid datagram!  Size is " << actual_size
+      << " bytes, header reports " << expected_size << "\n";
 
     // We write the hex dump into a ostringstream first, to guarantee
     // an atomic write to the output stream in case we're threaded.

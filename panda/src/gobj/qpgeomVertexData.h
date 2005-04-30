@@ -87,7 +87,7 @@ PUBLISHED:
   virtual ~qpGeomVertexData();
 
   INLINE const string &get_name() const;
-  INLINE void set_name(const string &name);
+  void set_name(const string &name);
 
   INLINE const qpGeomVertexFormat *get_format() const;
   INLINE UsageHint get_usage_hint() const;
@@ -135,7 +135,7 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               NumericType numeric_type, Contents contents) const;
 
-  INLINE CPT(qpGeomVertexData) animate_vertices() const;
+  CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
     replace_column(const InternalName *name, int num_components,
@@ -147,8 +147,6 @@ PUBLISHED:
   void clear_cache();
 
 public:
-  INLINE CPT(qpGeomVertexData) animate_vertices_cull() const;
-
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
                       int &num_values, NumericType &numeric_type, 
@@ -178,8 +176,6 @@ public:
   static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
 
 private:
-  CPT(qpGeomVertexData) do_animate_vertices(bool from_app) const;
-
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
                             const qpGeomVertexColumn *from_type,
@@ -248,17 +244,16 @@ private:
 
 private:
   bool do_set_num_rows(int n, CDWriter &cdata);
-  void update_animated_vertices(CDWriter &cdata, bool from_app);
-  CPT(qpGeomVertexFormat) get_post_animated_format() const;
+  void update_animated_vertices(CDWriter &cdata);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;
   static PStatCollector _set_color_pcollector;
-  static PStatCollector _app_animation_pcollector;
-  static PStatCollector _cull_animation_pcollector;
+  static PStatCollector _animation_pcollector;
 
-  PStatCollector _app_char_pcollector;
-  PStatCollector _cull_char_pcollector;
+  PStatCollector _char_pcollector;
+  PStatCollector _skinning_pcollector;
+  PStatCollector _morphs_pcollector;
 
 public:
   static void register_with_read_factory();

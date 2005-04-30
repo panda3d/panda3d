@@ -95,7 +95,6 @@ traverse(const NodePath &root, bool python_cull_control) {
   if (allow_portal_cull || python_cull_control) {
     // This _view_frustum is in cull_center space
     PT(GeometricBoundingVolume) vf = _view_frustum;
-    pgraph_cat.debug() << "_view_frustum is " << *_view_frustum << "\n";
 
     GeometricBoundingVolume *local_frustum = NULL;
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
@@ -104,7 +103,6 @@ traverse(const NodePath &root, bool python_cull_control) {
       
       local_frustum = DCAST(GeometricBoundingVolume, bv);
     }
-    pgraph_cat.debug() << "local_frustum is " << *local_frustum << "\n";
       
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
@@ -130,7 +128,6 @@ traverse(const NodePath &root, bool python_cull_control) {
     CullTraverserData my_data(data, portal_viewer._previous);
     my_data._render_transform = my_data._render_transform->compose(transform);
     traverse(my_data);
-    pgraph_cat.debug() << "******finished portal culling*********\n";
 
   } else {
     CullTraverserData data(root, get_render_transform(),
