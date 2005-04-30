@@ -221,7 +221,7 @@ protected:
   virtual void enable_clip_planes(bool enable);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
-  virtual void bind_clip_plane(const NodePath &plane, int pane_id);
+  virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode();

@@ -87,7 +87,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
-  void prepare_colliders(CollisionLevelState &state, const NodePath &root);
+  typedef pvector<CollisionLevelState> LevelStates;
+  void prepare_colliders(LevelStates &level_states, const NodePath &root);
 
   void r_traverse(CollisionLevelState &level_state);
 
@@ -107,6 +108,8 @@ private:
                                 const GeometricBoundingVolume *solid_gbv);
 
   void r_reset_prev_transform(PandaNode *node);
+
+  PStatCollector &get_pass_collector(int pass);
 
 private:
   PT(CollisionHandler) _default_handler;
@@ -138,6 +141,8 @@ private:
   static PStatCollector _collisions_pcollector;
   static PStatCollector _reset_prev_pcollector;
   PStatCollector _this_pcollector;
+  typedef pvector<PStatCollector> PassCollectors;
+  PassCollectors _pass_collectors;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {

@@ -156,13 +156,13 @@ INLINE BitMask<WordType, num_bits>::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_num_bits
-//       Access: Published
+//       Access: Published, Static
 //  Description: Returns the number of bits available to set in the
 //               bitmask.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE int BitMask<WordType, num_bits>::
-get_num_bits() const {
+get_num_bits() {
   return num_bits;
 }
 

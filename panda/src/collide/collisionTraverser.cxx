@@ -107,7 +107,7 @@ add_collider(const NodePath &collider, CollisionHandler *handler) {
       if (hi == _handlers.end()) {
         _handlers.insert(Handlers::value_type(handler, 1));
       } else {
-        (*hi).second++;
+        ++(*hi).second;
       }
     }
 
@@ -123,7 +123,7 @@ add_collider(const NodePath &collider, CollisionHandler *handler) {
     if (hi == _handlers.end()) {
       _handlers.insert(Handlers::value_type(handler, 1));
     } else {
-      (*hi).second++;
+      ++(*hi).second;
     }
   }
 
@@ -226,7 +226,7 @@ get_handler(const NodePath &collider) const {
   Colliders::const_iterator ci = _colliders.find(collider);
   if (ci != _colliders.end()) {
     return (*ci).second;
-  };
+  }
   return NULL;
 }
 
@@ -279,15 +279,22 @@ traverse(const NodePath &root) {
   }
 #endif  // DO_COLLISION_RECORDING
 
-  CollisionLevelState level_state(root);
-  prepare_colliders(level_state, root);
-
+  LevelStates level_states;
+  prepare_colliders(level_states, root);
+  
   Handlers::iterator hi;
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
     (*hi).first->begin_group();
   }
 
-  r_traverse(level_state);
+  // Make a number of passes, one for each group of 32 Colliders (or
+  // whatever number of bits we have available in CurrentMask).
+  for (size_t pass = 0; pass < level_states.size(); ++pass) {
+#ifdef DO_PSTATS
+    PStatTimer pass_timer(get_pass_collector(pass));
+#endif
+    r_traverse(level_states[pass]);
+  }
 
   hi = _handlers.begin();
   while (hi != _handlers.end()) {
@@ -450,7 +457,7 @@ write(ostream &out, int indent_level) const {
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
       
       int num_solids = cnode->get_num_solids();
-      for (int i = 0; i < num_solids; i++) {
+      for (int i = 0; i < num_solids; ++i) {
         cnode->get_solid(i)->write(out, indent_level + 4);
       }
     }
@@ -464,9 +471,13 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-prepare_colliders(CollisionLevelState &level_state, const NodePath &root) {
-  level_state.clear();
-  level_state.reserve(_colliders.size());
+prepare_colliders(CollisionTraverser::LevelStates &level_states, 
+                  const NodePath &root) {
+  int num_colliders = _colliders.size();
+  int max_colliders = CollisionLevelState::get_max_colliders();
+
+  CollisionLevelState level_state(root);
+  level_state.reserve(min(num_colliders, max_colliders));
 
   OrderedColliders::iterator oci;
   for (oci = _ordered_colliders.begin(); 
@@ -492,12 +503,25 @@ prepare_colliders(CollisionLevelState &level_state, const NodePath &root) {
       def._node_path = cnode_path;
       
       int num_solids = cnode->get_num_solids();
-      for (int s = 0; s < num_solids; s++) {
+      for (int s = 0; s < num_solids; ++s) {
         CollisionSolid *collider = cnode->get_solid(s);
         def._collider = collider;
         level_state.prepare_collider(def);
+        --num_colliders;
+
+        if (level_state.get_num_colliders() == max_colliders) {
+          // That's the limit.  Save off this level state and make a
+          // new one.
+          level_states.push_back(level_state);
+          level_state.reserve(min(num_colliders, max_colliders));
+          level_state.clear();
+        }
       }
     }
+  }
+
+  if (level_state.get_num_colliders() != 0) {
+    level_states.push_back(level_state);
   }
 }
 
@@ -531,7 +555,7 @@ r_traverse(CollisionLevelState &level_state) {
     }
 
     int num_colliders = level_state.get_num_colliders();
-    for (int c = 0; c < num_colliders; c++) {
+    for (int c = 0; c < num_colliders; ++c) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
@@ -572,7 +596,7 @@ r_traverse(CollisionLevelState &level_state) {
     }
 
     int num_colliders = level_state.get_num_colliders();
-    for (int c = 0; c < num_colliders; c++) {
+    for (int c = 0; c < num_colliders; ++c) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
@@ -610,7 +634,7 @@ r_traverse(CollisionLevelState &level_state) {
   } else {
     // Otherwise, visit all the children.
     int num_children = node->get_num_children();
-    for (int i = 0; i < num_children; i++) {
+    for (int i = 0; i < num_children; ++i) {
       CollisionLevelState next_state(level_state, node->get_child(i));
       r_traverse(next_state);
     }
@@ -637,7 +661,7 @@ compare_collider_to_node(CollisionEntry &entry,
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, entry._into_node);
     int num_solids = cnode->get_num_solids();
-    for (int s = 0; s < num_solids; s++) {
+    for (int s = 0; s < num_solids; ++s) {
       entry._into = cnode->get_solid(s);
       if (entry._from != entry._into) {
         const BoundingVolume &solid_bv = entry._into->get_bound();
@@ -678,7 +702,7 @@ compare_collider_to_geom_node(CollisionEntry &entry,
     GeomNode *gnode;
     DCAST_INTO_V(gnode, entry._into_node);
     int num_geoms = gnode->get_num_geoms();
-    for (int s = 0; s < num_geoms; s++) {
+    for (int s = 0; s < num_geoms; ++s) {
       entry._into = (CollisionSolid *)NULL;
       const Geom *geom = DCAST(Geom, gnode->get_geom(s));
       if (geom != (Geom *)NULL) {
@@ -862,7 +886,26 @@ r_reset_prev_transform(PandaNode *node) {
 
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
-  for (int i = 0; i < num_children; i++) {
+  for (int i = 0; i < num_children; ++i) {
     r_reset_prev_transform(children.get_child(i));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::get_pass_collector
+//       Access: Private
+//  Description: Returns the PStatCollector suitable for timing the
+//               nth pass.
+////////////////////////////////////////////////////////////////////
+PStatCollector &CollisionTraverser::
+get_pass_collector(int pass) {
+  nassertr(pass >= 0, _this_pcollector);
+  while ((int)_pass_collectors.size() <= pass) {
+    ostringstream name;
+    name << "pass " << (_pass_collectors.size() + 1);
+    PStatCollector col(_this_pcollector, name.str());
+    _pass_collectors.push_back(col);
+  }
+
+  return _pass_collectors[pass];
 }

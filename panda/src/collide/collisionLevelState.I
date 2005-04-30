@@ -44,6 +44,46 @@ CollisionLevelState(const CollisionLevelState &parent, PandaNode *child) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionLevelState::
+CollisionLevelState(const CollisionLevelState &copy) :
+  _node_path(copy._node_path),
+  _colliders(copy._colliders),
+  _current(copy._current),
+  _local_bounds(copy._local_bounds),
+  _parent_bounds(copy._parent_bounds)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionLevelState::
+operator = (const CollisionLevelState &copy) {
+  _node_path = copy._node_path;
+  _colliders = copy._colliders;
+  _current = copy._current;
+  _local_bounds = copy._local_bounds;
+  _parent_bounds = copy._parent_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::get_max_colliders
+//       Access: Public, Static
+//  Description: Returns the maximum number of colliders that may be
+//               added to the CollisionLevelState at any one time.
+////////////////////////////////////////////////////////////////////
+INLINE int CollisionLevelState::
+get_max_colliders() {
+  return sizeof(CurrentMask) * 8;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_node_path
 //       Access: Public
 //  Description: Returns the NodePath representing the node instance
@@ -197,7 +237,7 @@ omit_collider(int n) {
 //  Description: Returns a single bit associated with the nth
 //               collider.
 ////////////////////////////////////////////////////////////////////
-INLINE CollisionLevelState::ColliderMask CollisionLevelState::
+INLINE CollisionLevelState::CurrentMask CollisionLevelState::
 get_mask(int n) const {
-  return ((ColliderMask)1) << n;
+  return ((CurrentMask)1) << n;
 }

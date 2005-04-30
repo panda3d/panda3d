@@ -50,7 +50,7 @@ PUBLISHED:
 
   INLINE ~BitMask();
 
-  INLINE int get_num_bits() const;
+  INLINE static int get_num_bits();
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);

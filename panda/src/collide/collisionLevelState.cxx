@@ -36,12 +36,14 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::reserve
 //       Access: Public
-//  Description:
+//  Description: Indicates an intention to add the indicated number of
+//               colliders to the level state.
 ////////////////////////////////////////////////////////////////////
 void CollisionLevelState::
-reserve(int max_colliders) {
-  _colliders.reserve(max_colliders);
-  _local_bounds.reserve(max_colliders);
+reserve(int num_colliders) {
+  nassertv(num_colliders <= get_max_colliders());
+  _colliders.reserve(num_colliders);
+  _local_bounds.reserve(num_colliders);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +55,7 @@ reserve(int max_colliders) {
 void CollisionLevelState::
 prepare_collider(const ColliderDef &def) {
   int index = (int)_colliders.size();
+  nassertv(index < get_max_colliders());
   _colliders.push_back(def);
 
   CollisionSolid *collider = def._collider;
@@ -85,10 +88,12 @@ prepare_collider(const ColliderDef &def) {
     gbv->xform(def._node_path.get_net_transform()->get_mat());
     _local_bounds.push_back(gbv);
   }
-
-  _current |= get_mask(index);
+  
+  CurrentMask mask = get_mask(index); 
+  _current |= mask;
 
   _parent_bounds = _local_bounds;
+  nassertv(mask != 0);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,11 +49,15 @@ public:
 
   INLINE CollisionLevelState(const NodePath &node_path);
   INLINE CollisionLevelState(const CollisionLevelState &parent, 
-                               PandaNode *child);
+                             PandaNode *child);
+  INLINE CollisionLevelState(const CollisionLevelState &copy);
+  INLINE void operator = (const CollisionLevelState &copy);
 
   void clear();
-  void reserve(int max_colliders);
+  void reserve(int num_colliders);
   void prepare_collider(const ColliderDef &def);
+
+  INLINE static int get_max_colliders();
 
   bool any_in_bounds();
   void apply_transform();
@@ -74,20 +78,20 @@ public:
   INLINE void omit_collider(int n);
 
 private:
-  // ColliderMask here is a locally-defined value that simply serves
+  // CurrentMask here is a locally-defined value that simply serves
   // to keep track of the colliders that are still interested in the
   // current node.  Don't confuse it with CollideMask, which is a set
   // of user-defined bits that specify which CollisionSolids may
   // possibly intersect with each other.
-  typedef int ColliderMask;
+  typedef unsigned int CurrentMask;
 
-  INLINE ColliderMask get_mask(int n) const;
+  INLINE CurrentMask get_mask(int n) const;
 
   WorkingNodePath _node_path;
 
   typedef PTA(ColliderDef) Colliders;
   Colliders _colliders;
-  ColliderMask _current;
+  CurrentMask _current;
 
   typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
   BoundingVolumes _local_bounds;
