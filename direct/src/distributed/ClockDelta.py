@@ -311,11 +311,14 @@ class ClockDelta(DirectObject.DirectObject):
         Preserves the lower NetworkTimeBits of the networkTime value,
         and extends the sign bit all the way up.
         """
-        if networkTime < 0:
-            # flip the sign, mask it as if it were positive, flip the sign back:
-            r = (networkTime * -1 & NetworkTimeSignedMask) * -1
+        if 1:
+            r = ((networkTime & NetworkTimeMask) << NetworkTimeTopBits) >> NetworkTimeTopBits
         else:
-            r = networkTime & NetworkTimeSignedMask
+            if networkTime < 0:
+                # flip the sign, mask it as if it were positive, flip the sign back:
+                r = (networkTime * -1 & NetworkTimeSignedMask) * -1
+            else:
+                r = networkTime & NetworkTimeSignedMask
         assert -32768 <= r <= 32767
         return r
 
