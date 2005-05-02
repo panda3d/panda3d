@@ -92,13 +92,17 @@ void Texture::
 setup_texture(Texture::TextureType texture_type, int x_size, int y_size, 
               int z_size, Texture::ComponentType component_type, 
               Texture::Format format) {
+#ifndef NDEBUG
+  if (texture_type == TT_cube_map) {
+    // Cube maps must always consist of six square images.
+    nassertv(x_size == y_size && z_size == 6);
+  }
+#endif
+
   _texture_type = texture_type;
   _x_size = x_size;
   _y_size = y_size;
   _z_size = z_size;
-  if (_texture_type == TT_cube_map) {
-    _z_size = 6;
-  }
   set_component_type(component_type);
   set_format(format);
 
@@ -386,10 +390,9 @@ write_pages(const Filename &fullpath_template) {
 //               multiple times, one for each page (z value).  Cube
 //               maps have exactly 6 pages, while 3-d textures can
 //               have any number and can dynamically grow as each page
-//               is loaded.  For the first page loaded (or when
-//               reloading z == 0), this also sets the texture
-//               parameters; for subsequent pages, the texture
-//               parameters must match those which were loaded
+//               is loaded.  For the first page loaded, this also sets
+//               the texture parameters; for subsequent pages, the
+//               texture parameters must match those which were loaded
 //               previously.
 //
 //               This also implicitly sets keep_ram_image to false if
@@ -451,13 +454,17 @@ load(const PNMImage &pnmimage, int z) {
       // Eh?
       nassertr(false, false);
       _format = F_rgb;
-    };
+    }
   }
 
-  if (!_loaded_from_disk || z == 0) {
+  if (!_loaded_from_disk) {
+#ifndef NDEBUG
     if (_texture_type == TT_1d_texture) {
       nassertr(pnmimage.get_y_size() == 1, false);
+    } else if (_texture_type == TT_cube_map) {
+      nassertr(pnmimage.get_x_size() == pnmimage.get_y_size(), false);
     }
+#endif
     _x_size = pnmimage.get_x_size();
     _y_size = pnmimage.get_y_size();
     _num_components = num_components;

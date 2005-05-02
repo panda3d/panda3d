@@ -34,7 +34,6 @@
 #include "material.h"
 #include "depthTestAttrib.h"
 #include "renderModeAttrib.h"
-#include "textureApplyAttrib.h"
 #include "fog.h"
 #include "pointerToArray.h"
 
@@ -91,7 +90,7 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual void apply_texture(TextureContext *tc, int index=0);
+  void apply_texture(TextureContext *tc, int index);
   virtual void release_texture(TextureContext *tc);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
@@ -109,7 +108,6 @@ public:
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
@@ -296,7 +294,7 @@ protected:
   //GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
-  TextureApplyAttrib::Mode _CurTexBlendMode;
+  TextureStage::Mode _CurTexBlendMode;
   D3DTEXTUREFILTERTYPE _CurTexMagFilter,_CurTexMinFilter,_CurTexMipFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
@@ -332,7 +330,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
   INLINE bool GetDXReady(void)  { return _bDXisReady;}
-  void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
+  void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);

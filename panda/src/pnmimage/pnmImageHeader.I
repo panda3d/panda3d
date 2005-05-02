@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
@@ -32,7 +32,7 @@ PNMImageHeader() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
@@ -47,7 +47,7 @@ PNMImageHeader(const PNMImageHeader &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::
@@ -61,7 +61,7 @@ operator = (const PNMImageHeader &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
@@ -70,7 +70,7 @@ INLINE PNMImageHeader::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_color_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the image type of the image, as an enumerated
 //               value.  This is really just the number of channels
 //               cast to the enumerated type.
@@ -83,7 +83,7 @@ get_color_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_num_channels
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of channels in the image.
 ////////////////////////////////////////////////////////////////////
 INLINE int PNMImageHeader::
@@ -94,7 +94,7 @@ get_num_channels() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::is_grayscale
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: This static variant of is_grayscale() returns true if
 //               the indicated image type represents a grayscale
 //               image, false otherwise.
@@ -106,7 +106,7 @@ is_grayscale(PNMImageHeader::ColorType color_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::is_grayscale
-//       Access: Public
+//       Access: Published
 //  Description: Returns false if the image is a full-color image, and
 //               has red, green, and blue components; true if it is a
 //               grayscale image and has only a gray component.  (The
@@ -120,7 +120,7 @@ is_grayscale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::has_alpha
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: This static variant of has_alpha() returns true if
 //               the indicated image type includes an alpha channel,
 //               false otherwise.
@@ -132,7 +132,7 @@ has_alpha(PNMImageHeader::ColorType color_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::has_alpha
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the image includes an alpha channel,
 //               false otherwise.  Unlike is_grayscale(), if this
 //               returns false it is an error to call any of the
@@ -145,7 +145,7 @@ has_alpha() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_maxval
-//       Access: Public
+//       Access: Published
 //  Description: Returns the maximum channel value allowable for any
 //               pixel in this image; for instance, 255 for a typical
 //               8-bit-per-channel image.  A pixel with this value is
@@ -158,7 +158,7 @@ get_maxval() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_x_size
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of pixels in the X direction.
 //               This is one more than the largest allowable X
 //               coordinate.
@@ -170,7 +170,7 @@ get_x_size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_y_size
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of pixels in the Y direction.
 //               This is one more than the largest allowable Y
 //               coordinate.
@@ -182,7 +182,7 @@ get_y_size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::has_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the PNMImageHeader knows what type it
 //               is, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ has_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_type
-//       Access: Public
+//       Access: Published
 //  Description: If the file type is known (e.g. has_type() returns
 //               true), returns its PNMFileType pointer; otherwise,
 //               returns NULL.
@@ -205,7 +205,7 @@ get_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::set_type
-//       Access: Public
+//       Access: Published
 //  Description: Sets the file type of this PNMImage.  This will be
 //               the default type used when an image is read, if the
 //               type cannot be determined by magic number or inferred

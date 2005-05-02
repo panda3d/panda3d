@@ -27,7 +27,6 @@ CLP(TextureContext)(Texture *tex) :
   TextureContext(tex)
 {
   _index = 0;
-  _priority = 0.5; // For keeping resident in texture memory
 
   _already_applied = false;
 }

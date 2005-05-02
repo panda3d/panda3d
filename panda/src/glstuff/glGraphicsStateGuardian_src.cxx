@@ -1439,9 +1439,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   Texture *tex = geom->get_texture();
   if(tex != NULL) {
     // set up the texture-rendering state
-    modify_state(RenderState::make
-                 (TextureAttrib::make(tex),
-                  TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
+    modify_state(RenderState::make(TextureAttrib::make(tex)));
     tex_x_size = tex->get_x_size();
     tex_y_size = tex->get_y_size();
   }
@@ -2759,12 +2757,12 @@ end_draw_primitives() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::prepare_texture
 //       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given texture, and returns a newly-allocated
-//               TextureContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_texture() with this same pointer (which
-//               will also delete the pointer).
+//  Description: Creates whatever structures the GSG requires to
+//               represent the texture internally, and returns a
+//               newly-allocated TextureContext object with this data.
+//               It is the responsibility of the calling function to
+//               later call release_texture() with this same pointer
+//               (which will also delete the pointer).
 //
 //               This function should not be called directly to
 //               prepare a texture.  Instead, call Texture::prepare().
@@ -2773,42 +2771,10 @@ TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
   CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
   GLP(GenTextures)(1, &gtc->_index);
-
-  bind_texture(gtc);
-  GLP(PrioritizeTextures)(1, &gtc->_index, &gtc->_priority);
-  specify_texture(tex);
-  apply_texture_immediate(gtc, tex);
-
   report_my_gl_errors();
+
+  apply_texture(gtc);
   return gtc;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_texture
-//       Access: Public, Virtual
-//  Description: Makes the texture the currently available texture for
-//               rendering.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-apply_texture(TextureContext *tc, int index) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
-  add_to_texture_record(gtc);
-  bind_texture(gtc);
-
-  int dirty = gtc->get_dirty_flags();
-  if ((dirty & (Texture::DF_wrap | Texture::DF_filter | Texture::DF_border)) != 0) {
-    // We need to re-specify the texture properties.
-    specify_texture(gtc->_texture);
-  }
-  if ((dirty & (Texture::DF_image | Texture::DF_mipmap | Texture::DF_border)) != 0) {
-    // We need to re-apply the image.
-    apply_texture_immediate(gtc, gtc->_texture);
-  }
-
-  gtc->clear_dirty_flags();
-
-  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3283,7 +3249,14 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
-  bind_texture(tc);
+
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  GLenum target = get_texture_target(tex->get_texture_type());
+  if (target == GL_NONE) {
+    // Invalid texture, can't copy to it.
+    return;
+  }
+  GLP(BindTexture)(target, gtc->_index);
 
   if (z >= 0) {
     // Copy to a cube map face.
@@ -3439,7 +3412,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::apply_material(const Material *material) {
+void CLP(GraphicsStateGuardian)::
+apply_material(const Material *material) {
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
 
   GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
@@ -3781,18 +3755,6 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
       << "Unknown rescale_normal mode " << (int)mode << endl;
   }
   report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_texture_apply
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_texture_apply(const TextureApplyAttrib *) {
-  // This attrib is no longer used; it is replaced by the parameters
-  // within TextureStage.
-  return;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4390,501 +4352,6 @@ set_read_buffer(const RenderBuffer &rb) {
   report_my_gl_errors();
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_texture
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-bind_texture(TextureContext *tc) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  report_my_gl_errors();
-
-#ifdef GSG_VERBOSE
-  Texture *tex = tc->_texture;
-  GLCAT.spam()
-    << "glBindTexture(): " << tex->get_name() << "(" << (int)gtc->_index
-    << ")" << endl;
-#endif
-
-  GLenum target = get_texture_target(tc->_texture->get_texture_type());
-  if (target != GL_NONE) {
-    GLP(BindTexture)(target, gtc->_index);
-  }
-
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::specify_texture
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-specify_texture(Texture *tex) {
-  GLenum target = get_texture_target(tex->get_texture_type());
-  if (target == GL_NONE) {
-    // Unsupported target (e.g. 3-d texturing on GL 1.1).
-    return;
-  }
-
-  GLP(TexParameteri)(target, GL_TEXTURE_WRAP_S,
-                     get_texture_wrap_mode(tex->get_wrap_u()));
-  if (target != GL_TEXTURE_1D) {
-    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_T,
-                       get_texture_wrap_mode(tex->get_wrap_v()));
-  }
-  if (target == GL_TEXTURE_3D) {
-    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_R,
-                       get_texture_wrap_mode(tex->get_wrap_w()));
-  }
-
-  Colorf border_color = tex->get_border_color();
-  GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
-                      border_color.get_data());
-
-  Texture::FilterType minfilter = tex->get_minfilter();
-  Texture::FilterType magfilter = tex->get_magfilter();
-  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
-
-#ifndef NDEBUG
-  if (CLP(force_mipmaps)) {
-    minfilter = Texture::FT_linear_mipmap_linear;
-    magfilter = Texture::FT_linear;
-    uses_mipmaps = true;
-  }
-#endif
-
-  if (_supports_generate_mipmap && 
-      (auto_generate_mipmaps || !tex->might_have_ram_image())) {
-    // If the hardware can automatically generate mipmaps, ask it to
-    // do so now, but only if the texture requires them.
-    GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
-
-  } else if (!tex->might_have_ram_image()) {
-    // If the hardware can't automatically generate mipmaps, but it's
-    // a dynamically generated texture (that is, the RAM image isn't
-    // available so it didn't pass through the CPU), then we'd better
-    // not try to enable mipmap filtering, since we can't generate
-    // mipmaps.
-    uses_mipmaps = false;
-  }
- 
-  GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
-                     get_texture_filter_type(minfilter, !uses_mipmaps));
-  GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
-                     get_texture_filter_type(magfilter, true));
-
-  report_my_gl_errors();
-}
-
-#ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: compute_gl_image_size
-//  Description: Calculates how many bytes GL will expect to read for
-//               a texture image, based on the number of pixels and
-//               the GL format and type.  This is only used for
-//               debugging.
-////////////////////////////////////////////////////////////////////
-static int
-compute_gl_image_size(int x_size, int y_size, int z_size, 
-                      int external_format, int type) {
-  int num_components = 0;
-  switch (external_format) {
-  case GL_COLOR_INDEX:
-  case GL_STENCIL_INDEX:
-  case GL_DEPTH_COMPONENT:
-  case GL_RED:
-  case GL_GREEN:
-  case GL_BLUE:
-  case GL_ALPHA:
-  case GL_LUMINANCE:
-    num_components = 1;
-    break;
-
-  case GL_LUMINANCE_ALPHA:
-    num_components = 2;
-    break;
-
-  case GL_BGR:
-  case GL_RGB:
-    num_components = 3;
-    break;
-
-  case GL_BGRA:
-  case GL_RGBA:
-    num_components = 4;
-    break;
-  }
-
-  int pixel_width = 0;
-  switch (type) {
-  case GL_UNSIGNED_BYTE:
-    pixel_width = 1 * num_components;
-    break;
-
-  case GL_UNSIGNED_SHORT:
-    pixel_width = 2 * num_components;
-    break;
-
-  case GL_UNSIGNED_BYTE_3_3_2:
-    nassertr(num_components == 3, 0);
-    pixel_width = 1;
-    break;
-
-  case GL_FLOAT:
-    pixel_width = 4 * num_components;
-    break;
-  }
-
-  return x_size * y_size * z_size * pixel_width;
-}
-#endif  // NDEBUG
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_texture_immediate
-//       Access: Protected
-//  Description: Sends the texture image to GL.  This can be used to
-//               render a texture in immediate mode, or as part of the
-//               process of creating a GL texture object.
-//
-//               The return value is true if successful, or false if
-//               the texture has no image.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
-  CPTA_uchar image = tex->get_ram_image();
-  if (image.is_null()) {
-    return false;
-  }
-
-  int width = tex->get_x_size();
-  int height = tex->get_y_size();
-  int depth = tex->get_z_size();
-
-  GLint internal_format = get_internal_image_format(tex->get_format());
-  GLint external_format = get_external_image_format(tex->get_format());
-  GLenum component_type = get_component_type(tex->get_component_type());
-
-  // Ensure that the texture fits within the GL's specified limits.
-  int max_dimension;
-  switch (tex->get_texture_type()) {
-  case Texture::TT_3d_texture:
-    max_dimension = _max_3d_texture_dimension;
-    break;
-
-  case Texture::TT_cube_map:
-    max_dimension = _max_cube_map_dimension;
-    break;
-
-  default:
-    max_dimension = _max_texture_dimension;
-  }
-
-  if (max_dimension == 0) {
-    // Guess this GL doesn't support cube mapping/3d textures.
-    report_my_gl_errors();
-    return false;
-  }
-
-  int texel_size = tex->get_num_components() * tex->get_component_width();
-
-  // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
-  // of expensive and it doesn't look great; it would have been better
-  // if the user had specified max-texture-dimension to reduce the
-  // texture at load time instead.  Of course, the user doesn't always
-  // know ahead of time what the hardware limits are.
-  if (max_dimension > 0) {
-    if (width > max_dimension) {
-      int byte_chunk = texel_size;
-      int stride = 1;
-      int new_width = width;
-      while (new_width > max_dimension) {
-        stride <<= 1;
-        new_width >>= 1;
-      }
-      GLCAT.info()
-        << "Reducing width of " << tex->get_name()
-        << " from " << width << " to " << new_width << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      width = new_width;
-    }
-    if (height > max_dimension) {
-      int byte_chunk = width * texel_size;
-      int stride = 1;
-      int new_height = height;
-      while (new_height > max_dimension) {
-        stride <<= 1;
-        new_height >>= 1;
-      }
-      GLCAT.info()
-        << "Reducing height of " << tex->get_name()
-        << " from " << height << " to " << new_height << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      height = new_height;
-    }
-    if (depth > max_dimension) {
-      int byte_chunk = height * width * texel_size;
-      int stride = 1;
-      int new_depth = depth;
-      while (new_depth > max_dimension) {
-        stride <<= 1;
-        new_depth >>= 1;
-      }
-      GLCAT.info()
-        << "Reducing depth of " << tex->get_name()
-        << " from " << depth << " to " << new_depth << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      depth = new_depth;
-    }
-  }
-
-  if (!_supports_bgr) {
-    // If the GL doesn't claim to support BGR, we may have to reverse
-    // the component ordering of the image.
-    image = fix_component_ordering(image, external_format, tex);
-  }
-
-#ifndef NDEBUG
-  int wanted_size = 
-    compute_gl_image_size(width, height, depth, external_format, component_type);
-  nassertr(wanted_size == (int)image.size(), false);
-#endif  // NDEBUG
-
-  GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
-
-  bool uses_mipmaps = (tex->uses_mipmaps() && !CLP(ignore_mipmaps)) || CLP(force_mipmaps);
-
-#ifndef NDEBUG
-  if (CLP(force_mipmaps)) {
-    uses_mipmaps = true;
-  }
-#endif
-
-  bool success = true;
-
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
-    // A cube map must load six different 2-d images (which are stored
-    // as the six pages of the system ram image).
-    if (!_supports_cube_map) {
-      report_my_gl_errors();
-      return false;
-    }
-
-    size_t page_size = height * width * texel_size;
-    const unsigned char *image_base = image;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-       internal_format, width, height, depth, external_format, component_type,
-       image_base);
-    image_base += page_size;
-    
-    nassertr((size_t)(image_base - image) == image.size(), false);
-
-  } else {
-    // Any other kind of texture can be loaded all at once.
-    success = upload_texture_image
-      (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
-       internal_format, width, height, depth, external_format, component_type,
-       image);
-  }
-
-  if (success) {
-    gtc->_already_applied = true;
-    gtc->_internal_format = internal_format;
-    gtc->_width = width;
-    gtc->_height = height;
-    gtc->_depth = depth;
-
-#ifndef NDEBUG
-    if (uses_mipmaps && CLP(save_mipmaps)) {
-      save_mipmap_images(tex);
-    }
-#endif
-
-    report_my_gl_errors();
-    return true;
-  }
-
-  report_my_gl_errors();
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_texture_image
-//       Access: Protected
-//  Description: Loads a texture image, or one page of a cube map
-//               image, from system RAM to texture memory.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-upload_texture_image(CLP(TextureContext) *gtc, 
-                     bool uses_mipmaps, 
-                     GLenum target, GLint internal_format, 
-                     int width, int height, int depth,
-                     GLint external_format, GLenum component_type, 
-                     const unsigned char *image) {
-  if (target == GL_NONE) {
-    // Unsupported target (e.g. 3-d texturing on GL 1.1).
-    return false;
-  }
-  PStatTimer timer(_load_texture_pcollector);
-
-  if (uses_mipmaps) {
-#ifndef NDEBUG
-    if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
-      build_phony_mipmaps(gtc->_texture);
-      report_my_gl_errors();
-      return true;
-      
-    } else 
-#endif 
-      if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
-        // We only need to build the mipmaps by hand if the GL
-        // doesn't support generating them automatically.
-        bool success = true;
-#ifdef DO_PSTATS
-        _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type) * 4 / 3);
-#endif
-        switch (target) {
-        case GL_TEXTURE_1D:
-          GLUP(Build1DMipmaps)(target, internal_format, width,
-                               external_format, component_type, image);
-          break;
-
-        case GL_TEXTURE_3D:
-#ifdef GLU_VERSION_1_3
-          GLUP(Build3DMipmaps)(target, internal_format,
-                               width, height, depth,
-                               external_format, component_type, image);
-#else  // GLU_VERSION_1_3
-          // Prior to GLU 1.3, there was no gluBuild3DMipmaps() call.
-          // Just fall through and load the texture without mipmaps.
-          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          success = false;
-#endif  // GLU_VERSION_1_3
-          break;
-
-        default:
-          GLUP(Build2DMipmaps)(target, internal_format,
-                               width, height,
-                               external_format, component_type, image);
-        }
-
-        report_my_gl_errors();
-        if (success) {
-          return true;
-        }
-      }
-  }
-
-  if (!gtc->_already_applied || 
-      gtc->_internal_format != internal_format ||
-      gtc->_width != width ||
-      gtc->_height != height ||
-      gtc->_depth != depth) {
-    // We need to reload a new image.
-#ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
-#endif
-    switch (target) {
-    case GL_TEXTURE_1D:
-      GLP(TexImage1D)(target, 0, internal_format,
-                      width, 0,
-                      external_format, component_type, image);
-      break;
-
-    case GL_TEXTURE_3D:
-      if (_supports_3d_texture) {
-        _glTexImage3D(target, 0, internal_format,
-                      width, height, depth, 0,
-                      external_format, component_type, image);
-      } else {
-        report_my_gl_errors();
-        return false;
-      }
-      break;
-
-    default:
-      GLP(TexImage2D)(target, 0, internal_format,
-                      width, height, 0,
-                      external_format, component_type, image);
-    }
-
-  } else {
-    // We can reload the image over the previous image, possibly
-    // saving on texture memory fragmentation.
-    switch (target) {
-    case GL_TEXTURE_1D:
-      GLP(TexSubImage1D)(target, 0, 0, width, 
-                         external_format, component_type, image);
-      break;
-
-    case GL_TEXTURE_3D:
-      if (_supports_3d_texture) {
-        _glTexSubImage3D(target, 0, 0, 0, 0, width, height, depth,
-                         external_format, component_type, image);
-      } else {
-        report_my_gl_errors();
-        return false;
-      }
-      break;
-
-    default:
-      GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
-                         external_format, component_type, image);
-      break;
-    }
-  }
-
-  // Report the error message explicitly if the GL texture creation
-  // failed.
-  GLenum error_code = GLP(GetError)();
-  if (error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
-    GLCAT.error()
-      << "GL texture creation failed for " << gtc->_texture->get_name();
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error(false)
-        << " : " << error_string;
-    }
-    GLCAT.error(false)
-      << "\n";
-  }
-
-  return true;
-}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -6376,6 +5843,509 @@ do_issue_texture() {
   _needs_tex_mat = true;
 
   report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::specify_texture
+//       Access: Protected
+//  Description: Specifies the texture parameters.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+specify_texture(Texture *tex) {
+  GLenum target = get_texture_target(tex->get_texture_type());
+  if (target == GL_NONE) {
+    // Unsupported target (e.g. 3-d texturing on GL 1.1).
+    return;
+  }
+
+  GLP(TexParameteri)(target, GL_TEXTURE_WRAP_S,
+                     get_texture_wrap_mode(tex->get_wrap_u()));
+  if (target != GL_TEXTURE_1D) {
+    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_T,
+                       get_texture_wrap_mode(tex->get_wrap_v()));
+  }
+  if (target == GL_TEXTURE_3D) {
+    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_R,
+                       get_texture_wrap_mode(tex->get_wrap_w()));
+  }
+
+  Colorf border_color = tex->get_border_color();
+  GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
+                      border_color.get_data());
+
+  Texture::FilterType minfilter = tex->get_minfilter();
+  Texture::FilterType magfilter = tex->get_magfilter();
+  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+
+#ifndef NDEBUG
+  if (CLP(force_mipmaps)) {
+    minfilter = Texture::FT_linear_mipmap_linear;
+    magfilter = Texture::FT_linear;
+    uses_mipmaps = true;
+  }
+#endif
+
+  if (_supports_generate_mipmap && 
+      (auto_generate_mipmaps || !tex->might_have_ram_image())) {
+    // If the hardware can automatically generate mipmaps, ask it to
+    // do so now, but only if the texture requires them.
+    GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
+
+  } else if (!tex->might_have_ram_image()) {
+    // If the hardware can't automatically generate mipmaps, but it's
+    // a dynamically generated texture (that is, the RAM image isn't
+    // available so it didn't pass through the CPU), then we'd better
+    // not try to enable mipmap filtering, since we can't generate
+    // mipmaps.
+    uses_mipmaps = false;
+  }
+ 
+  GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
+                     get_texture_filter_type(minfilter, !uses_mipmaps));
+  GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
+                     get_texture_filter_type(magfilter, true));
+
+  report_my_gl_errors();
+}
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: compute_gl_image_size
+//  Description: Calculates how many bytes GL will expect to read for
+//               a texture image, based on the number of pixels and
+//               the GL format and type.  This is only used for
+//               debugging.
+////////////////////////////////////////////////////////////////////
+static int
+compute_gl_image_size(int x_size, int y_size, int z_size, 
+                      int external_format, int type) {
+  int num_components = 0;
+  switch (external_format) {
+  case GL_COLOR_INDEX:
+  case GL_STENCIL_INDEX:
+  case GL_DEPTH_COMPONENT:
+  case GL_RED:
+  case GL_GREEN:
+  case GL_BLUE:
+  case GL_ALPHA:
+  case GL_LUMINANCE:
+    num_components = 1;
+    break;
+
+  case GL_LUMINANCE_ALPHA:
+    num_components = 2;
+    break;
+
+  case GL_BGR:
+  case GL_RGB:
+    num_components = 3;
+    break;
+
+  case GL_BGRA:
+  case GL_RGBA:
+    num_components = 4;
+    break;
+  }
+
+  int pixel_width = 0;
+  switch (type) {
+  case GL_UNSIGNED_BYTE:
+    pixel_width = 1 * num_components;
+    break;
+
+  case GL_UNSIGNED_SHORT:
+    pixel_width = 2 * num_components;
+    break;
+
+  case GL_UNSIGNED_BYTE_3_3_2:
+    nassertr(num_components == 3, 0);
+    pixel_width = 1;
+    break;
+
+  case GL_FLOAT:
+    pixel_width = 4 * num_components;
+    break;
+  }
+
+  return x_size * y_size * z_size * pixel_width;
+}
+#endif  // NDEBUG
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_texture
+//       Access: Protected
+//  Description: Updates OpenGL with the current information for this
+//               texture, and makes it the current texture available
+//               for rendering.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+apply_texture(TextureContext *tc) {
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+  add_to_texture_record(gtc);
+  GLenum target = get_texture_target(gtc->_texture->get_texture_type());
+  if (target == GL_NONE) {
+    return;
+  }
+  GLP(BindTexture)(target, gtc->_index);
+
+  int dirty = gtc->get_dirty_flags();
+  if ((dirty & (Texture::DF_wrap | Texture::DF_filter | Texture::DF_border)) != 0) {
+    // We need to re-specify the texture properties.
+    specify_texture(gtc->_texture);
+  }
+  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+    // We need to re-upload the image.
+    upload_texture(gtc);
+  }
+
+  gtc->clear_dirty_flags();
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::upload_texture
+//       Access: Protected
+//  Description: Uploads the entire texture image to OpenGL, including
+//               all pages.
+//
+//               The return value is true if successful, or false if
+//               the texture has no image.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+upload_texture(CLP(TextureContext) *gtc) {
+  Texture *tex = gtc->_texture;
+  CPTA_uchar image = tex->get_ram_image();
+  if (image.is_null()) {
+    return false;
+  }
+
+  int width = tex->get_x_size();
+  int height = tex->get_y_size();
+  int depth = tex->get_z_size();
+
+  GLint internal_format = get_internal_image_format(tex->get_format());
+  GLint external_format = get_external_image_format(tex->get_format());
+  GLenum component_type = get_component_type(tex->get_component_type());
+
+  // Ensure that the texture fits within the GL's specified limits.
+  int max_dimension;
+  switch (tex->get_texture_type()) {
+  case Texture::TT_3d_texture:
+    max_dimension = _max_3d_texture_dimension;
+    break;
+
+  case Texture::TT_cube_map:
+    max_dimension = _max_cube_map_dimension;
+    break;
+
+  default:
+    max_dimension = _max_texture_dimension;
+  }
+
+  if (max_dimension == 0) {
+    // Guess this GL doesn't support cube mapping/3d textures.
+    report_my_gl_errors();
+    return false;
+  }
+
+  int texel_size = tex->get_num_components() * tex->get_component_width();
+
+  // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
+  // of expensive and it doesn't look great; it would have been better
+  // if the user had specified max-texture-dimension to reduce the
+  // texture at load time instead.  Of course, the user doesn't always
+  // know ahead of time what the hardware limits are.
+  if (max_dimension > 0) {
+    if (width > max_dimension) {
+      int byte_chunk = texel_size;
+      int stride = 1;
+      int new_width = width;
+      while (new_width > max_dimension) {
+        stride <<= 1;
+        new_width >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing width of " << tex->get_name()
+        << " from " << width << " to " << new_width << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      width = new_width;
+    }
+    if (height > max_dimension) {
+      int byte_chunk = width * texel_size;
+      int stride = 1;
+      int new_height = height;
+      while (new_height > max_dimension) {
+        stride <<= 1;
+        new_height >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing height of " << tex->get_name()
+        << " from " << height << " to " << new_height << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      height = new_height;
+    }
+    if (depth > max_dimension) {
+      int byte_chunk = height * width * texel_size;
+      int stride = 1;
+      int new_depth = depth;
+      while (new_depth > max_dimension) {
+        stride <<= 1;
+        new_depth >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing depth of " << tex->get_name()
+        << " from " << depth << " to " << new_depth << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      depth = new_depth;
+    }
+  }
+
+  if (!_supports_bgr) {
+    // If the GL doesn't claim to support BGR, we may have to reverse
+    // the component ordering of the image.
+    image = fix_component_ordering(image, external_format, tex);
+  }
+
+#ifndef NDEBUG
+  int wanted_size = 
+    compute_gl_image_size(width, height, depth, external_format, component_type);
+  nassertr(wanted_size == (int)image.size(), false);
+#endif  // NDEBUG
+
+  GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
+
+  bool uses_mipmaps = (tex->uses_mipmaps() && !CLP(ignore_mipmaps)) || CLP(force_mipmaps);
+
+#ifndef NDEBUG
+  if (CLP(force_mipmaps)) {
+    uses_mipmaps = true;
+  }
+#endif
+
+  bool success = true;
+
+  if (tex->get_texture_type() == Texture::TT_cube_map) {
+    // A cube map must load six different 2-d images (which are stored
+    // as the six pages of the system ram image).
+    if (!_supports_cube_map) {
+      report_my_gl_errors();
+      return false;
+    }
+
+    size_t page_size = height * width * texel_size;
+    const unsigned char *image_base = image;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    nassertr((size_t)(image_base - image) == image.size(), false);
+
+  } else {
+    // Any other kind of texture can be loaded all at once.
+    success = upload_texture_image
+      (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
+       internal_format, width, height, depth, external_format, component_type,
+       image);
+  }
+
+  if (success) {
+    gtc->_already_applied = true;
+    gtc->_internal_format = internal_format;
+    gtc->_width = width;
+    gtc->_height = height;
+    gtc->_depth = depth;
+
+#ifndef NDEBUG
+    if (uses_mipmaps && CLP(save_mipmaps)) {
+      save_mipmap_images(tex);
+    }
+#endif
+
+    report_my_gl_errors();
+    return true;
+  }
+
+  report_my_gl_errors();
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::upload_texture_image
+//       Access: Protected
+//  Description: Loads a texture image, or one page of a cube map
+//               image, from system RAM to texture memory.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+upload_texture_image(CLP(TextureContext) *gtc, 
+                     bool uses_mipmaps, 
+                     GLenum target, GLint internal_format, 
+                     int width, int height, int depth,
+                     GLint external_format, GLenum component_type, 
+                     const unsigned char *image) {
+  if (target == GL_NONE) {
+    // Unsupported target (e.g. 3-d texturing on GL 1.1).
+    return false;
+  }
+  PStatTimer timer(_load_texture_pcollector);
+
+  if (uses_mipmaps) {
+#ifndef NDEBUG
+    if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
+      build_phony_mipmaps(gtc->_texture);
+      report_my_gl_errors();
+      return true;
+      
+    } else 
+#endif 
+      if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
+        // We only need to build the mipmaps by hand if the GL
+        // doesn't support generating them automatically.
+        bool success = true;
+#ifdef DO_PSTATS
+        _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type) * 4 / 3);
+#endif
+        switch (target) {
+        case GL_TEXTURE_1D:
+          GLUP(Build1DMipmaps)(target, internal_format, width,
+                               external_format, component_type, image);
+          break;
+
+        case GL_TEXTURE_3D:
+#ifdef GLU_VERSION_1_3
+          GLUP(Build3DMipmaps)(target, internal_format,
+                               width, height, depth,
+                               external_format, component_type, image);
+#else  // GLU_VERSION_1_3
+          // Prior to GLU 1.3, there was no gluBuild3DMipmaps() call.
+          // Just fall through and load the texture without mipmaps.
+          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          success = false;
+#endif  // GLU_VERSION_1_3
+          break;
+
+        default:
+          GLUP(Build2DMipmaps)(target, internal_format,
+                               width, height,
+                               external_format, component_type, image);
+        }
+
+        report_my_gl_errors();
+        if (success) {
+          return true;
+        }
+      }
+  }
+
+  if (!gtc->_already_applied || 
+      gtc->_internal_format != internal_format ||
+      gtc->_width != width ||
+      gtc->_height != height ||
+      gtc->_depth != depth) {
+    // We need to reload a new image.
+#ifdef DO_PSTATS
+    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
+#endif
+    switch (target) {
+    case GL_TEXTURE_1D:
+      GLP(TexImage1D)(target, 0, internal_format,
+                      width, 0,
+                      external_format, component_type, image);
+      break;
+
+    case GL_TEXTURE_3D:
+      if (_supports_3d_texture) {
+        _glTexImage3D(target, 0, internal_format,
+                      width, height, depth, 0,
+                      external_format, component_type, image);
+      } else {
+        report_my_gl_errors();
+        return false;
+      }
+      break;
+
+    default:
+      GLP(TexImage2D)(target, 0, internal_format,
+                      width, height, 0,
+                      external_format, component_type, image);
+    }
+
+  } else {
+    // We can reload the image over the previous image, possibly
+    // saving on texture memory fragmentation.
+    switch (target) {
+    case GL_TEXTURE_1D:
+      GLP(TexSubImage1D)(target, 0, 0, width, 
+                         external_format, component_type, image);
+      break;
+
+    case GL_TEXTURE_3D:
+      if (_supports_3d_texture) {
+        _glTexSubImage3D(target, 0, 0, 0, 0, width, height, depth,
+                         external_format, component_type, image);
+      } else {
+        report_my_gl_errors();
+        return false;
+      }
+      break;
+
+    default:
+      GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
+                         external_format, component_type, image);
+      break;
+    }
+  }
+
+  // Report the error message explicitly if the GL texture creation
+  // failed.
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
+    GLCAT.error()
+      << "GL texture creation failed for " << gtc->_texture->get_name();
+    if (error_string != (const GLubyte *)NULL) {
+      GLCAT.error(false)
+        << " : " << error_string;
+    }
+    GLCAT.error(false)
+      << "\n";
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

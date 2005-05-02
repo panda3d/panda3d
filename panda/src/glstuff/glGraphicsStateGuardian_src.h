@@ -29,7 +29,6 @@
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
 #include "textureStage.h"
-#include "textureApplyAttrib.h"
 #include "antialiasAttrib.h"
 #include "renderModeAttrib.h"
 #include "pointerToArray.h"
@@ -108,7 +107,6 @@ public:
   INLINE bool draw_display_list(GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual void apply_texture(TextureContext *tc, int index=0);
   virtual void release_texture(TextureContext *tc);
 
   virtual GeomContext *prepare_geom(Geom *geom);
@@ -141,7 +139,6 @@ public:
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_antialias(const AntialiasAttrib *);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
@@ -235,15 +232,6 @@ protected:
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  void bind_texture(TextureContext *tc);
-  void specify_texture(Texture *tex);
-  bool apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex);
-  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
-                            GLenum target, GLint internal_format, 
-                            int width, int height, int depth,
-                            GLint external_format, GLenum component_type, 
-                            const unsigned char *image);
-
   static GLenum get_numeric_type(qpGeom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
@@ -269,6 +257,15 @@ protected:
 
   void do_auto_rescale_normal();
   void do_issue_texture();
+  void specify_texture(Texture *tex);
+  void apply_texture(TextureContext *tc);
+  bool upload_texture(CLP(TextureContext) *gtc);
+  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
+                            GLenum target, GLint internal_format, 
+                            int width, int height, int depth,
+                            GLint external_format, GLenum component_type, 
+                            const unsigned char *image);
+
   void do_point_size();
 
 #ifndef NDEBUG

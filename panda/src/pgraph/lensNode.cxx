@@ -22,12 +22,13 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "geomNode.h"
 
 TypeHandle LensNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LensNode::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LensNode::
@@ -50,7 +51,7 @@ LensNode(const LensNode &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LensNode::xform
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Transforms the contents of this PandaNode by the
 //               indicated matrix, if it means anything to do so.  For
 //               most kinds of PandaNodes, this does nothing.
@@ -63,7 +64,7 @@ xform(const LMatrix4f &mat) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LensNode::make_copy
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns a newly-allocated Node that is a shallow copy
 //               of this one.  It will be a different Node pointer,
 //               but its internal data may or may not be shared with
@@ -76,7 +77,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LensNode::is_in_view
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the given point is within the bounds
 //               of the lens of the LensNode (i.e. if the camera can
 //               see the point).
@@ -90,6 +91,41 @@ is_in_view(const LPoint3f &pos) {
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);
   int ret = gbv->contains(pos);
   return (ret != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::show_frustum
+//       Access: Published
+//  Description: Enables the drawing of the lens's frustum to aid in
+//               visualization.  This actually creates a GeomNode
+//               which is parented to the LensNode.
+////////////////////////////////////////////////////////////////////
+void LensNode::
+show_frustum() {
+  if (_shown_frustum != (PandaNode *)NULL) {
+    hide_frustum();
+  }
+  PT(GeomNode) geom_node = new GeomNode("frustum");
+  _shown_frustum = geom_node;
+  add_child(_shown_frustum);
+
+  if (_lens != (Lens *)NULL) {
+    geom_node->add_geom(_lens->make_geometry());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::hide_frustum
+//       Access: Published
+//  Description: Disables the drawing of the lens's frustum to aid in
+//               visualization.
+////////////////////////////////////////////////////////////////////
+void LensNode::
+hide_frustum() {
+  if (_shown_frustum != (PandaNode *)NULL) {
+    remove_child(_shown_frustum);
+    _shown_frustum = (PandaNode *)NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -30,9 +30,6 @@ public:
   // This is the GL "name" of the texture object.
   GLuint _index;
 
-  // This is a GL texture priority.
-  GLfloat _priority;
-
   // These are the parameters that we specified with the last
   // glTexImage2D() call.  If none of these have changed, we can
   // reload the texture image with a glTexSubImage2D().

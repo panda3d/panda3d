@@ -18,8 +18,8 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: copy_lens
-//       Access: Public
+//     Function: LensNode::copy_lens
+//       Access: Published
 //  Description: Sets up the LensNode using a copy of the
 //               indicated Lens.  If the original Lens is
 //               changed or destroyed, this LensNode is not
@@ -28,11 +28,14 @@
 INLINE void LensNode::
 copy_lens(const Lens &lens) {
   _lens = lens.make_copy();
+  if (_shown_frustum != (PandaNode *)NULL) {
+    show_frustum();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_lens
-//       Access: Public
+//     Function: LensNode::set_lens
+//       Access: Published
 //  Description: Sets up the LensNode using this particular Lens
 //               pointer.  If the lens is subsequently modified, the
 //               LensNode properties immediately reflect the change.
@@ -40,11 +43,14 @@ copy_lens(const Lens &lens) {
 INLINE void LensNode::
 set_lens(Lens *lens) {
   _lens = lens;
+  if (_shown_frustum != (PandaNode *)NULL) {
+    show_frustum();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_lens
-//       Access: Public
+//     Function: LensNode::get_lens
+//       Access: Published
 //  Description: Returns a pointer to the particular Lens
 //               associated with this LensNode, or NULL if there is
 //               not yet a Lens associated.

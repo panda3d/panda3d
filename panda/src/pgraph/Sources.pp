@@ -94,7 +94,6 @@
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
-    textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
@@ -192,7 +191,6 @@
     switchNode.cxx \
     texMatrixAttrib.cxx \
     texProjectorEffect.cxx \
-    textureApplyAttrib.cxx \
     textureAttrib.cxx \
     texGenAttrib.cxx \
     textureCollection.cxx \
@@ -286,7 +284,6 @@
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
-    textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \

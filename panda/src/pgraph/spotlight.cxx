@@ -142,6 +142,54 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Spotlight::make_spot
+//       Access: Published, Static
+//  Description: Returns a newly-generated Texture that renders a
+//               circular spot image as might be cast from the
+//               spotlight.  This may be projected onto target
+//               geometry (for instance, via
+//               NodePath::project_texture()) instead of actually
+//               enabling the light itself, as a cheesy way to make a
+//               high-resolution spot appear on the geometry.
+//
+//               pixel_width specifies the height and width of the new
+//               texture in pixels, full_radius is a value in the
+//               range 0..1 that indicates the relative size of the
+//               fully bright center spot, and fg and bg are the
+//               colors of the interior and exterior of the spot,
+//               respectively.
+////////////////////////////////////////////////////////////////////
+PT(Texture) Spotlight::
+make_spot(int pixel_width, float full_radius, Colorf &fg, Colorf &bg) {
+  int num_channels;
+  if (fg[0] == fg[1] && fg[1] == fg[2] &&
+      bg[0] == bg[1] && bg[1] == bg[2]) {
+    // grayscale
+    num_channels = 1;
+  } else {
+    // color
+    num_channels = 3;
+  }
+  if (fg[3] != 1.0f || bg[3] != 1.0f) {
+    // with alpha.
+    ++num_channels;
+  }
+  PNMImage image(pixel_width, pixel_width, num_channels);
+  image.render_spot(LCAST(double, fg), LCAST(double, bg), full_radius, 1.0);
+
+  PT(Texture) tex = new Texture("spot");
+  tex->load(image);
+  tex->set_border_color(bg);
+  tex->set_wrap_u(Texture::WM_border_color);
+  tex->set_wrap_v(Texture::WM_border_color);
+
+  tex->set_minfilter(Texture::FT_linear);
+  tex->set_magfilter(Texture::FT_linear);
+
+  return tex;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Spotlight::bind
 //       Access: Public, Virtual
 //  Description:
@@ -149,80 +197,6 @@ write(ostream &out, int indent_level) const {
 void Spotlight::
 bind(GraphicsStateGuardianBase *gsg, const NodePath &light, int light_id) {
   gsg->bind_light(this, light, light_id);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Spotlight::make_image
-//       Access: Public
-//  Description: Generates an image into the indicated texture of a
-//               circle with a soft edge that corresponds to the
-//               falloff of the spotlight.  This is intended to be
-//               used to implement projected texture spotlights; the
-//               image can be applied to geometry with UV's computed
-//               appropriate to simulate the texture's region of
-//               influence.
-//
-//               Returns true if the image is successfully generated,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool Spotlight::
-make_image(Texture *texture, float radius) {
-  if (texture == NULL) {
-    pgraph_cat.error()
-      << "Spotlight::make_image() - NULL texture" << endl;
-    return false;
-  }
-  int size = min(texture->get_x_size(), texture->get_y_size());
-  if (size == 0) {
-    size = 64;
-  }
-
-  PNMImage image(size, size, 1);
-
-  const Colorf &c4 = get_color();
-  const RGBColord color(c4[0], c4[1], c4[2]);
-
-  int half_width = (size - 2) / 2;
-  float dXY = 1 / (float)half_width;
-  float Y = dXY + dXY;
-  float X, YY, dist_from_center, intensity;
-  int tx, ty, tx2, ty2;
-
-  for (int y = 0; y < half_width; y++, Y += dXY) {
-    X = dXY * y + dXY;
-    YY = Y * Y;
-    ty = y + half_width;
-
-    for (int x = y; x < half_width; x++, X += dXY) {
-      dist_from_center = (float)sqrt(X * X + YY);
-      float D = dist_from_center;
-      if (D <= radius)
-        intensity = 1.0f;
-          else if (D < 1.0f)
-        intensity = pow(cos((D-radius) /
-                (1.0f-radius) * (MathNumbers::pi_f*0.5f)), get_exponent());
-      else
-        intensity = 0;
-
-      tx = x + half_width;
-
-      image.set_xel(tx, ty, color * intensity);
-      image.set_xel(tx, size - ty - 1, color * intensity);
-      image.set_xel(size - tx - 1, ty, color * intensity);
-      image.set_xel(size - tx - 1, size - ty - 1, color * intensity);
-
-      tx2 = ty; ty2 = tx;
-
-      image.set_xel(tx2, ty2, color * intensity);
-      image.set_xel(tx2, size - ty2 - 1, color * intensity);
-      image.set_xel(size - tx2 - 1, ty2, color * intensity);
-      image.set_xel(size - tx2 - 1, size - ty2 - 1, color * intensity);
-    }
-  }
-
-  texture->load(image);
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

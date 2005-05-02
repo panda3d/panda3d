@@ -25,7 +25,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_header
-//       Access: Public
+//       Access: Published
 //  Description: Opens up the image file and tries to read its header
 //               information to determine its size, number of
 //               channels, etc.  If successful, updates the header
@@ -46,7 +46,7 @@ read_header(const Filename &filename, PNMFileType *type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_reader
-//       Access: Public
+//       Access: Published
 //  Description: Returns a newly-allocated PNMReader of the suitable
 //               type for reading from the indicated image filename,
 //               or NULL if the filename cannot be read for some
@@ -94,7 +94,7 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_reader
-//       Access: Public
+//       Access: Published
 //  Description: Returns a newly-allocated PNMReader of the suitable
 //               type for reading from the already-opened image file,
 //               or NULL if the file cannot be read for some reason.
@@ -224,7 +224,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_writer
-//       Access: Public
+//       Access: Published
 //  Description: Returns a newly-allocated PNMWriter of the suitable
 //               type for writing an image to the indicated filename,
 //               or NULL if the filename cannot be written for some
@@ -278,7 +278,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_writer
-//       Access: Public
+//       Access: Published
 //  Description: Returns a newly-allocated PNMWriter of the suitable
 //               type for writing to the already-opened image file, or
 //               NULL if the file cannot be written for some reason.
@@ -357,7 +357,7 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_magic_number
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Ensures that the first n bytes of the file are read
 //               into magic_number.  If magic_number is initially
 //               nonempty, assumes these represent the first few bytes
@@ -380,7 +380,7 @@ read_magic_number(istream *file, string &magic_number, int num_bytes) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void PNMImageHeader::

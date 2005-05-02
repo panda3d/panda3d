@@ -23,7 +23,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clear
-//       Access: Public
+//       Access: Published
 //  Description: Frees all memory allocated for the image, and clears
 //               all its parameters (size, color, type, etc).
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clear
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of clear() reinitializes the image to an
 //               empty (black) image with the given dimensions.
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ clear(int x_size, int y_size, int num_channels,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_from
-//       Access: Public
+//       Access: Published
 //  Description: Makes this image become a copy of the other image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
@@ -94,7 +94,7 @@ copy_from(const PNMImage &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_header_from
-//       Access: Public
+//       Access: Published
 //  Description: Copies just the header information into this image.
 //               This will blow away any image data stored in the
 //               image.  The new image data will be allocated, but
@@ -115,7 +115,7 @@ copy_header_from(const PNMImageHeader &header) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::fill_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire image (except the alpha channel) to
 //               the given color.
 ////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ fill_val(xelval red, xelval green, xelval blue) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::alpha_fill_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire alpha channel to the given level.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
@@ -152,7 +152,7 @@ alpha_fill_val(xelval alpha) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
-//       Access: Public
+//       Access: Published
 //  Description: Reads the indicated image filename.  If type is
 //               non-NULL, it is a suggestion for the type of file it
 //               is.  Returns true if successful, false on error.
@@ -170,7 +170,7 @@ read(const Filename &filename, PNMFileType *type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
-//       Access: Public
+//       Access: Published
 //  Description: Reads the image data from the indicated stream.  
 //
 //               The filename is advisory only, and may be used
@@ -194,7 +194,7 @@ read(istream &data, const string &filename, PNMFileType *type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of read() uses an already-existing
 //               PNMReader to read the image file.  You can get a
 //               reader via the PNMImageHeader::make_reader() methods.
@@ -236,7 +236,7 @@ read(PNMReader *reader) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes the image to the indicated filename.  If type
 //               is non-NULL, it is a suggestion for the type of image
 //               file to write.
@@ -257,7 +257,7 @@ write(const Filename &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes the image to the indicated ostream.
 //
 //               The filename is advisory only, and may be used
@@ -283,7 +283,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::write
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of write() uses an already-existing
 //               PNMWriter to write the image file.  You can get a
 //               writer via the PNMImageHeader::make_writer() methods.
@@ -313,7 +313,7 @@ write(PNMWriter *writer) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_color_type
-//       Access: Public
+//       Access: Published
 //  Description: Translates the image to or from grayscale, color, or
 //               four-color mode.  Grayscale images are converted to
 //               full-color images with R, G, B set to the original
@@ -364,7 +364,7 @@ set_color_type(PNMImage::ColorType color_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::make_grayscale
-//       Access: Public
+//       Access: Published
 //  Description: Converts the image from RGB to grayscale.  Any alpha
 //               channel, if present, is left undisturbed.  The
 //               optional rc, gc, bc values represent the relative
@@ -389,7 +389,7 @@ make_grayscale(double rc, double gc, double bc) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_maxval
-//       Access: Public
+//       Access: Published
 //  Description: Rescales the image to the indicated maxval.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
@@ -429,7 +429,7 @@ set_maxval(xelval maxval) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_channel_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth component color at the indicated
 //               pixel.  The channel index should be in the range
 //               0..(get_num_channels()-1).  The channels are ordered B,
@@ -464,7 +464,7 @@ get_channel_val(int x, int y, int channel) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_channel_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the nth component color at the indicated
 //               pixel.  The channel index should be in the range
 //               0..(get_num_channels()-1).  The channels are ordered B,
@@ -503,7 +503,7 @@ set_channel_val(int x, int y, int channel, xelval value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::blend
-//       Access: Public
+//       Access: Published
 //  Description: Smoothly blends the indicated pixel value in with
 //               whatever was already in the image, based on the given
 //               alpha value.  An alpha of 1.0 is fully opaque and
@@ -546,7 +546,7 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_sub_image
-//       Access: Public
+//       Access: Published
 //  Description: Copies a rectangular area of another image into a
 //               rectangular area of this image.  Both images must
 //               already have been initialized.  The upper-left corner
@@ -598,7 +598,7 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::blend_sub_image
-//       Access: Public
+//       Access: Published
 //  Description: Behaves like copy_sub_image(), except the alpha
 //               channel of the copy is used to blend the copy into
 //               the destination image, instead of overwriting pixels
@@ -646,10 +646,73 @@ blend_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::render_spot
+//       Access: Published
+//  Description: Renders a solid-color circle, with a fuzzy edge, into
+//               the center of the PNMImage.  If the PNMImage is
+//               non-square, this actually renders an ellipse.
+//
+//               The min_radius and max_radius are in the scale 0..1,
+//               where 1.0 means the full width of the image.  If
+//               min_radius == max_radius, there is no fuzzy edge;
+//               otherwise, the pixels between min_radius and
+//               max_radius are smoothly blended between fg and bg
+//               colors.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+render_spot(const Colord &fg, const Colord &bg,
+            double min_radius, double max_radius) {
+  double x_scale = 2.0 / _x_size;
+  double y_scale = 2.0 / _y_size;
+
+  // If the width is even, x_center1 == x_center0.  If the width is
+  // odd, x_center1 == x_center0 + 1.
+  int x_center0 = _x_size / 2;
+  int y_center0 = _y_size / 2;
+  int x_center1 = (_x_size + 1) / 2;
+  int y_center1 = (_y_size + 1) / 2;
+
+  double min_r2 = min_radius * min_radius;
+  double max_r2 = max_radius * max_radius;
+
+  for (int yi = 0; yi < y_center1; ++yi) {
+    double y = yi * y_scale;
+    for (int xi = 0; xi < x_center1; ++xi) {
+      double x = xi * x_scale;
+      double d2 = (x * x + y * y);
+      if (d2 <= min_r2) {
+        set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, fg);
+        set_xel_a(x_center0 + xi, y_center1 - 1 - yi, fg);
+        set_xel_a(x_center1 - 1 - xi, y_center0 + yi, fg);
+        set_xel_a(x_center0 + xi, y_center0 + yi, fg);
+
+      } else if (d2 >= max_r2) {
+        set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, bg);
+        set_xel_a(x_center0 + xi, y_center1 - 1 - yi, bg);
+        set_xel_a(x_center1 - 1 - xi, y_center0 + yi, bg);
+        set_xel_a(x_center0 + xi, y_center0 + yi, bg);
+
+      } else {
+        double d = sqrt(d2);
+        d = (d - min_radius) / (max_radius - min_radius);
+        d2 = d * d;
+        double t = (3.0 * d2) - (2.0 * d * d2);
+        Colord c = fg + t * (bg - fg);
+
+        set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, c);
+        set_xel_a(x_center0 + xi, y_center1 - 1 - yi, c);
+        set_xel_a(x_center1 - 1 - xi, y_center0 + yi, c);
+        set_xel_a(x_center0 + xi, y_center0 + yi, c);
+      }
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::setup_rc
-//       Access: Public
+//       Access: Published
 //  Description: Sets the _default_rc,bc,gc values appropriately
 //               according to the color type of the image, so that
 //               get_bright() will return a meaningful value for both

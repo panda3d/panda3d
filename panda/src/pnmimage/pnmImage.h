@@ -144,6 +144,10 @@ PUBLISHED:
   INLINE void set_xel(int x, int y, double r, double g, double b);
   INLINE void set_xel(int x, int y, double gray);
 
+  INLINE Colord get_xel_a(int x, int y) const;
+  INLINE void set_xel_a(int x, int y, const Colord &value);
+  INLINE void set_xel_a(int x, int y, double r, double g, double b, double a);
+
   INLINE double get_red(int x, int y) const;
   INLINE double get_green(int x, int y) const;
   INLINE double get_blue(int x, int y) const;
@@ -182,6 +186,9 @@ PUBLISHED:
   void blend_sub_image(const PNMImage &copy, int xto, int yto,
                        int xfrom = 0, int yfrom = 0,
                        int x_size = -1, int y_size = -1);
+
+  void render_spot(const Colord &fg, const Colord &bg,
+                   double min_radius, double max_radius);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.

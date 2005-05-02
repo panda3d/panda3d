@@ -52,8 +52,12 @@ PUBLISHED:
 
   bool is_in_view(const LPoint3f &pos);
 
+  void show_frustum();
+  void hide_frustum();
+
 protected:
   PT(Lens) _lens;
+  PT(PandaNode) _shown_frustum;
 
 public:
   static void register_with_read_factory();

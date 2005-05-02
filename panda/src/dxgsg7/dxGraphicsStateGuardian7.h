@@ -32,7 +32,6 @@
 #include "material.h"
 #include "depthTestAttrib.h"
 #include "renderModeAttrib.h"
-#include "textureApplyAttrib.h"
 #include "fog.h"
 #include "pointerToArray.h"
 #include "graphicsWindow.h"
@@ -88,7 +87,7 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual void apply_texture(TextureContext *tc);
+  void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
@@ -106,7 +105,6 @@ public:
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
@@ -293,7 +291,7 @@ protected:
   // GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
-  TextureApplyAttrib::Mode _CurTexBlendMode;
+  TextureStage::Mode _CurTexBlendMode;
   D3DTEXTUREMAGFILTER _CurTexMagFilter;
   D3DTEXTUREMINFILTER _CurTexMinFilter;
   D3DTEXTUREMIPFILTER _CurTexMipFilter;
@@ -332,7 +330,7 @@ public:
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
   INLINE bool GetDXReady(void)  { return _dx_ready;}
-  void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
+  void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
 

@@ -14,7 +14,6 @@
 #include "switchNode.cxx"
 #include "texMatrixAttrib.cxx"
 #include "texProjectorEffect.cxx"
-#include "textureApplyAttrib.cxx"
 #include "textureAttrib.cxx"
 #include "texGenAttrib.cxx"
 #include "textureCollection.cxx"

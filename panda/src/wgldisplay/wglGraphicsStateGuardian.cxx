@@ -86,7 +86,13 @@ framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex) {
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
-  bind_texture(tc);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  GLenum target = get_texture_target(tex->get_texture_type());
+  if (target == GL_NONE) {
+    // Invalid texture, can't bind it.
+    return false;
+  }
+  GLP(BindTexture)(target, gtc->_index);
 
   if (get_properties().is_single_buffered()) {
     _wglBindTexImageARB(buffer->_pbuffer, WGL_FRONT_LEFT_ARB);

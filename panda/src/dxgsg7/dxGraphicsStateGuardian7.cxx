@@ -598,7 +598,7 @@ dx_init( void) {
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
 
-    _CurTexBlendMode = TextureApplyAttrib::M_modulate;
+    _CurTexBlendMode = TextureStage::M_modulate;
     SetTextureBlendMode(_CurTexBlendMode,FALSE);
     _texturing_enabled = false;
     _pScrn->pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
@@ -1749,9 +1749,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     Texture *tex = geom->get_texture();
     if(tex !=NULL) {
       // set up the texture-rendering state
-      modify_state(RenderState::make
-                   (TextureAttrib::make(tex),
-                    TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
+      modify_state(RenderState::make(TextureAttrib::make(tex)));
       tex_xsize = tex->get_x_size();
       tex_ysize = tex->get_y_size();
     }
@@ -3315,7 +3313,7 @@ prepare_texture(Texture *tex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::apply_texture
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Makes the texture the currently available texture for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
@@ -3583,13 +3581,9 @@ apply_fog(Fog *fog) {
   }
 }
 
-void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bCanJustEnable) {
+void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bCanJustEnable) {
 
-/*class TextureApplyAttrib {
-  enum Mode {
-    M_modulate,M_decal,M_blend,M_replace,M_add};
-*/
-    static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyAttrib::Mode maxval*/ 10] =
+    static D3DTEXTUREOP TexBlendColorOp1[/* TextureStage::Mode maxval*/ 10] =
     {D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
 
     //if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
@@ -3603,7 +3597,7 @@ void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
 
     switch (TexBlendMode) {
 
-        case TextureApplyAttrib::M_modulate:
+        case TextureStage::M_modulate:
             // emulates GL_MODULATE glTexEnv mode
             // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
@@ -3613,7 +3607,7 @@ void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyAttrib::M_decal:
+        case TextureStage::M_decal:
             // emulates GL_DECAL glTexEnv mode
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
@@ -3622,13 +3616,13 @@ void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyAttrib::M_replace:
+        case TextureStage::M_replace:
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
             break;
-        case TextureApplyAttrib::M_add:
+        case TextureStage::M_add:
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
@@ -3638,7 +3632,7 @@ void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
             _pScrn->pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyAttrib::M_blend:
+        case TextureStage::M_blend:
             dxgsg7_cat.error()
             << "Impossible to emulate GL_BLEND in DX exactly " << (int) TexBlendMode << endl;
 /*
@@ -3843,15 +3837,6 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
     dxgsg7_cat.error()
       << "Unknown rescale_normal mode " << (int)mode << endl;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::issue_texture_apply
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-issue_texture_apply(const TextureApplyAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////

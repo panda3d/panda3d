@@ -60,12 +60,13 @@ PUBLISHED:
   
   INLINE const LVecBase3f &get_attenuation() const;
   INLINE void set_attenuation(const LVecBase3f &attenuation);
+
+  static PT(Texture) make_spot(int pixel_width, float full_radius,
+                               Colorf &fg, Colorf &bg);
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id);
-
-  bool make_image(Texture *texture, float radius);
 
 protected:
   virtual void fill_viz_geom(GeomNode *viz_geom);

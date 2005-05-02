@@ -76,7 +76,6 @@ class RenderModeAttrib;
 class AntialiasAttrib;
 class RescaleNormalAttrib;
 class ColorBlendAttrib;
-class TextureApplyAttrib;
 class ColorWriteAttrib;
 class AlphaTestAttrib;
 class DepthTestAttrib;
@@ -135,7 +134,6 @@ public:
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 
   virtual TextureContext *prepare_texture(Texture *tex)=0;
-  virtual void apply_texture(TextureContext *tc, int index=0)=0;
   virtual void release_texture(TextureContext *tc)=0;
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
@@ -222,7 +220,6 @@ public:
   virtual void issue_render_mode(const RenderModeAttrib *) { }
   virtual void issue_antialias(const AntialiasAttrib *) { }
   virtual void issue_rescale_normal(const RescaleNormalAttrib *) { }
-  virtual void issue_texture_apply(const TextureApplyAttrib *) { }
   virtual void issue_color_write(const ColorWriteAttrib *) { }
   virtual void issue_depth_test(const DepthTestAttrib *) { }
   virtual void issue_depth_write(const DepthWriteAttrib *) { }

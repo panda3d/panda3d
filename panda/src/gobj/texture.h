@@ -147,7 +147,7 @@ PUBLISHED:
   INLINE void setup_3d_texture(int x_size, int y_size, int z_size,
                                ComponentType component_type, Format format);
   INLINE void setup_cube_map();
-  INLINE void setup_cube_map(int x_size, int y_size,
+  INLINE void setup_cube_map(int size,
                              ComponentType component_type, Format format);
 
   bool read(const Filename &fullpath, int z = 0,

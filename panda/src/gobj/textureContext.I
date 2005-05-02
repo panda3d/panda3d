@@ -26,7 +26,7 @@ INLINE TextureContext::
 TextureContext(Texture *tex) :
   _texture(tex)
 {
-  _dirty_flags = 0;
+  _dirty_flags = ~0;
 }
 
 ////////////////////////////////////////////////////////////////////

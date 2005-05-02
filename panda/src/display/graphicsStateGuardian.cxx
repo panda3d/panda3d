@@ -252,10 +252,15 @@ get_prepared_objects() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prepare_texture
 //       Access: Public, Virtual
-//  Description: Prepares the indicated texture for retained-mode
-//               rendering.  In the future, this texture may be
-//               applied simply by calling apply_texture() with the
-//               value returned by this function.
+//  Description: Creates whatever structures the GSG requires to
+//               represent the texture internally, and returns a
+//               newly-allocated TextureContext object with this data.
+//               It is the responsibility of the calling function to
+//               later call release_texture() with this same pointer
+//               (which will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *GraphicsStateGuardian::
 prepare_texture(Texture *) {
@@ -263,23 +268,11 @@ prepare_texture(Texture *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::apply_texture
-//       Access: Public, Virtual
-//  Description: Applies the texture previously indicated via a call
-//               to prepare_texture() to the graphics state, so that
-//               geometry rendered in the future will be rendered with
-//               the given texture.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-apply_texture(TextureContext *, int index) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the resources previously allocated via a call
 //               to prepare_texture(), including deleting the
-//               TextureContext itself, if necessary.
+//               TextureContext itself, if it is non-NULL.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_texture(TextureContext *) {
@@ -289,9 +282,10 @@ release_texture(TextureContext *) {
 //     Function: GraphicsStateGuardian::prepare_geom
 //       Access: Public, Virtual
 //  Description: Prepares the indicated Geom for retained-mode
-//               rendering.  The value returned by this function will
-//               be passed back into future calls to draw_tristrip(),
-//               etc., along with the Geom pointer.
+//               rendering, by creating whatever structures are
+//               necessary in the GSG (for instance, vertex buffers).
+//               Returns the newly-allocated GeomContext that can be
+//               used to render the geom.
 ////////////////////////////////////////////////////////////////////
 GeomContext *GraphicsStateGuardian::
 prepare_geom(Geom *) {
@@ -303,7 +297,10 @@ prepare_geom(Geom *) {
 //       Access: Public, Virtual
 //  Description: Frees the resources previously allocated via a call
 //               to prepare_geom(), including deleting the GeomContext
-//               itself, if necessary.
+//               itself, if it is non-NULL.
+//
+//               This function should not be called directly to
+//               prepare a Geom.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_geom(GeomContext *) {

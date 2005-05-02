@@ -85,7 +85,6 @@
 #include "switchNode.h"
 #include "texMatrixAttrib.h"
 #include "texProjectorEffect.h"
-#include "textureApplyAttrib.h"
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
 #include "transformState.h"
@@ -324,7 +323,6 @@ init_libpgraph() {
   SwitchNode::init_type();
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();
-  TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
   TexGenAttrib::init_type();
   TransformState::init_type();
@@ -380,7 +378,6 @@ init_libpgraph() {
   SwitchNode::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TexProjectorEffect::register_with_read_factory();
-  TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
   TexGenAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();

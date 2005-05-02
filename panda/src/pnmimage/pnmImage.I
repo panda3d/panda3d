@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
@@ -29,7 +29,7 @@ PNMImage() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
@@ -42,7 +42,7 @@ PNMImage(const Filename &filename, PNMFileType *type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
@@ -56,7 +56,7 @@ PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
@@ -71,7 +71,7 @@ PNMImage(const PNMImage &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Copy Assigment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
@@ -81,7 +81,7 @@ operator = (const PNMImage &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
@@ -92,7 +92,7 @@ INLINE PNMImage::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clamp_val
-//       Access: Public
+//       Access: Published
 //  Description: A handy function to clamp values to
 //               [0..get_maxval()].
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ clamp_val(int input_value) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::to_val
-//       Access: Public
+//       Access: Published
 //  Description: A handy function to scale values from [0..1] to
 //               [0..get_maxval()].
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ to_val(double input_value) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::from_val
-//       Access: Public
+//       Access: Published
 //  Description: A handy function to scale values from
 //               [0..get_maxval()] to [0..1].
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ from_val(xelval input_value) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::fill
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire image (except the alpha channel) to
 //               the given color.
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ fill(double red, double green, double blue) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::fill
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire image (except the alpha channel) to
 //               the given grayscale level.
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ fill(double gray) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::fill_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire image (except the alpha channel) to
 //               the given grayscale level.
 ////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ fill_val(xelval gray) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::alpha_fill
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire alpha channel to the given level.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
@@ -170,7 +170,7 @@ alpha_fill(double alpha) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::is_valid
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the image has been read in or
 //               correctly initialized with a height and width.  If
 //               this returns false, virtually all member functions
@@ -183,7 +183,7 @@ is_valid() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_num_channels
-//       Access: Public
+//       Access: Published
 //  Description: Changes the number of channels associated with the
 //               image.  The new number of channels must be an integer
 //               in the range 1 through 4, inclusive.  This will
@@ -198,7 +198,7 @@ set_num_channels(int num_channels) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::add_alpha
-//       Access: Public
+//       Access: Published
 //  Description: Adds an alpha channel to the image, if it does not
 //               already have one.  The alpha channel is initialized
 //               to zeros.
@@ -210,7 +210,7 @@ add_alpha() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::remove_alpha
-//       Access: Public
+//       Access: Published
 //  Description: Removes the image's alpha channel, if it exists.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
@@ -220,7 +220,7 @@ remove_alpha() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::make_grayscale
-//       Access: Public
+//       Access: Published
 //  Description: Converts the image from RGB to grayscale.  Any alpha
 //               channel, if present, is left undisturbed.
 ////////////////////////////////////////////////////////////////////
@@ -231,7 +231,7 @@ make_grayscale() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::make_rgb
-//       Access: Public
+//       Access: Published
 //  Description: Converts the image from grayscale to RGB.  Any alpha
 //               channel, if present, is left undisturbed.
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +242,7 @@ make_rgb() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_xel_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the RGB color at the indicated pixel.  Each
 //               component is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ get_xel_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel_val
-//       Access: Public
+//       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
 //               component is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -264,7 +264,7 @@ set_xel_val(int x, int y, const xel &value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel_val
-//       Access: Public
+//       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
 //               component is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +275,7 @@ set_xel_val(int x, int y, xelval r, xelval g, xelval b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel_val
-//       Access: Public
+//       Access: Published
 //  Description: Changes all three color components at the indicated
 //               pixel to the same value.  The value is in the range
 //               0..maxval.
@@ -287,7 +287,7 @@ set_xel_val(int x, int y, xelval gray) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_red_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the red component color at the indicated
 //               pixel.  The value returned is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -298,7 +298,7 @@ get_red_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_green_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the green component color at the indicated
 //               pixel.  The value returned is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -309,7 +309,7 @@ get_green_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_blue_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the blue component color at the indicated
 //               pixel.  The value returned is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
@@ -320,7 +320,7 @@ get_blue_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_gray_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the gray component color at the indicated
 //               pixel.  This only has a meaningful value for
 //               grayscale images; for other image types, this returns
@@ -335,7 +335,7 @@ get_gray_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_alpha_val
-//       Access: Public
+//       Access: Published
 //  Description: Returns the alpha component color at the indicated
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value returned is in the
@@ -348,7 +348,7 @@ get_alpha_val(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_red_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the red component color only at the indicated
 //               pixel.  The value given should be in the range
 //               0..maxval.
@@ -360,7 +360,7 @@ set_red_val(int x, int y, xelval r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_green_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the green component color only at the indicated
 //               pixel.  The value given should be in the range
 //               0..maxval.
@@ -372,7 +372,7 @@ set_green_val(int x, int y, xelval g) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_blue_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the blue component color only at the indicated
 //               pixel.  The value given should be in the range
 //               0..maxval.
@@ -384,7 +384,7 @@ set_blue_val(int x, int y, xelval b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_gray_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the gray component color at the indicated
 //               pixel.  This is only meaningful for grayscale images;
 //               for other image types, this simply sets the blue
@@ -401,7 +401,7 @@ set_gray_val(int x, int y, xelval gray) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_alpha_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the alpha component color only at the indicated
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value given should be in
@@ -414,7 +414,7 @@ set_alpha_val(int x, int y, xelval a) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_xel
-//       Access: Public
+//       Access: Published
 //  Description: Returns the RGB color at the indicated pixel.  Each
 //               component is a double in the range 0..1.
 ////////////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ get_xel(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
-//       Access: Public
+//       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
 //               component is a double in the range 0..1.
 ////////////////////////////////////////////////////////////////////
@@ -438,7 +438,7 @@ set_xel(int x, int y, const RGBColord &value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
-//       Access: Public
+//       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
 //               component is a double in the range 0..1.
 ////////////////////////////////////////////////////////////////////
@@ -449,7 +449,7 @@ set_xel(int x, int y, double r, double g, double b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
-//       Access: Public
+//       Access: Published
 //  Description: Changes all three color components at the indicated
 //               pixel to the same value.  The value is a double in
 //               the range 0..1.
@@ -460,8 +460,57 @@ set_xel(int x, int y, double gray) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_xel_a
+//       Access: Published
+//  Description: Returns the RGBA color at the indicated pixel.  Each
+//               component is a double in the range 0..1.
+////////////////////////////////////////////////////////////////////
+INLINE Colord PNMImage::
+get_xel_a(int x, int y) const {
+  if (has_alpha()) {
+    return Colord(from_val(get_red_val(x, y)),
+                  from_val(get_green_val(x, y)),
+                  from_val(get_blue_val(x, y)),
+                  from_val(get_alpha_val(x, y)));
+  } else {
+    return Colord(from_val(get_red_val(x, y)),
+                  from_val(get_green_val(x, y)),
+                  from_val(get_blue_val(x, y)),
+                  0.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_xel_a
+//       Access: Published
+//  Description: Changes the RGBA color at the indicated pixel.  Each
+//               component is a double in the range 0..1.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+set_xel_a(int x, int y, const Colord &value) {
+  set_xel_val(x, y, to_val(value[0]), to_val(value[1]), to_val(value[2]));
+  if (has_alpha()) {
+    set_alpha_val(x, y, to_val(value[3]));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_xel_a
+//       Access: Published
+//  Description: Changes the RGBA color at the indicated pixel.  Each
+//               component is a double in the range 0..1.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+set_xel_a(int x, int y, double r, double g, double b, double a) {
+  set_xel_val(x, y, to_val(r), to_val(g), to_val(b));
+  if (has_alpha()) {
+    set_alpha_val(x, y, to_val(a));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_red
-//       Access: Public
+//       Access: Published
 //  Description: Returns the red component color at the indicated
 //               pixel.  The value returned is a double in the range
 //               0..1.
@@ -473,7 +522,7 @@ get_red(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_green
-//       Access: Public
+//       Access: Published
 //  Description: Returns the green component color at the indicated
 //               pixel.  The value returned is a double in the range
 //               0..1.
@@ -485,7 +534,7 @@ get_green(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_blue
-//       Access: Public
+//       Access: Published
 //  Description: Returns the blue component color at the indicated
 //               pixel.  The value returned is a double in the range
 //               0..1.
@@ -497,7 +546,7 @@ get_blue(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_gray
-//       Access: Public
+//       Access: Published
 //  Description: Returns the gray component color at the indicated
 //               pixel.  This only has a meaningful value for
 //               grayscale images; for other image types, this returns
@@ -512,7 +561,7 @@ get_gray(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_alpha
-//       Access: Public
+//       Access: Published
 //  Description: Returns the alpha component color at the indicated
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value returned is a double
@@ -525,7 +574,7 @@ get_alpha(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_red
-//       Access: Public
+//       Access: Published
 //  Description: Sets the red component color only at the indicated
 //               pixel.  The value given should be a double in the
 //               range 0..1.
@@ -537,7 +586,7 @@ set_red(int x, int y, double r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_green
-//       Access: Public
+//       Access: Published
 //  Description: Sets the green component color only at the indicated
 //               pixel.  The value given should be a double in the
 //               range 0..1.
@@ -549,7 +598,7 @@ set_green(int x, int y, double r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_blue
-//       Access: Public
+//       Access: Published
 //  Description: Sets the blue component color only at the indicated
 //               pixel.  The value given should be a double in the
 //               range 0..1.
@@ -561,7 +610,7 @@ set_blue(int x, int y, double r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_gray
-//       Access: Public
+//       Access: Published
 //  Description: Sets the gray component color at the indicated
 //               pixel.  This is only meaningful for grayscale images;
 //               for other image types, this simply sets the blue
@@ -578,7 +627,7 @@ set_gray(int x, int y, double r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_alpha
-//       Access: Public
+//       Access: Published
 //  Description: Sets the alpha component color only at the indicated
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value given should be in
@@ -591,7 +640,7 @@ set_alpha(int x, int y, double r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_channel
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth component color at the indicated
 //               pixel.  The channel index should be in the range
 //               0..(get_num_channels()-1).  The channels are ordered B,
@@ -607,7 +656,7 @@ get_channel(int x, int y, int channel) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_channel_val
-//       Access: Public
+//       Access: Published
 //  Description: Sets the nth component color at the indicated
 //               pixel.  The channel index should be in the range
 //               0..(get_num_channels()-1).  The channels are ordered B,
@@ -623,7 +672,7 @@ set_channel(int x, int y, int channel, double value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_bright
-//       Access: Public
+//       Access: Published
 //  Description: Returns the linear brightness of the given xel, as a
 //               double in the range 0..1.  This flavor of
 //               get_bright() returns the correct grayscale brightness
@@ -636,7 +685,7 @@ get_bright(int x, int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_bright
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of get_bright() works correctly only for
 //               color images.  It returns a single brightness value
 //               for the RGB color at the indicated pixel, based on
@@ -651,7 +700,7 @@ get_bright(int x, int y, double rc, double gc, double bc) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_bright
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of get_bright() works correctly only for
 //               four-channel images.  It returns a single brightness
 //               value for the RGBA color at the indicated pixel,
@@ -667,7 +716,7 @@ get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::blend
-//       Access: Public
+//       Access: Published
 //  Description: Smoothly blends the indicated pixel value in with
 //               whatever was already in the image, based on the given
 //               alpha value.  An alpha of 1.0 is fully opaque and
@@ -681,7 +730,7 @@ blend(int x, int y, const RGBColord &val, double alpha) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Array Operator
-//       Access: Public
+//       Access: Published
 //  Description: Allows the PNMImage to appear to be a 2-d array of
 //               xels.
 ////////////////////////////////////////////////////////////////////
@@ -692,7 +741,7 @@ operator [] (int y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Array Operator
-//       Access: Public
+//       Access: Published
 //  Description: Allows the PNMImage to appear to be a 2-d array of
 //               xels.
 ////////////////////////////////////////////////////////////////////
@@ -703,7 +752,7 @@ operator [] (int y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::box_filter
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of box_filter() will apply the filter
 //               over the entire image without resizing or copying;
 //               the effect is that of a blur operation.
@@ -715,7 +764,7 @@ box_filter(double radius) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::gaussian_filter
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of gaussian_filter() will apply the filter
 //               over the entire image without resizing or copying;
 //               the effect is that of a blur operation.

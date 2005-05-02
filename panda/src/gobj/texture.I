@@ -105,7 +105,7 @@ setup_3d_texture(int x_size, int y_size, int z_size,
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_cube_map() {
-  setup_cube_map(0, 1, T_unsigned_byte, F_rgb);
+  setup_cube_map(0, T_unsigned_byte, F_rgb);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,12 +114,16 @@ setup_cube_map() {
 //  Description: Sets the texture as an empty cube map texture with
 //               the specified dimensions and properties.  Follow up
 //               with set_ram_image() or modify_ram_image() to fill
-//               the image data.
+//               the image data.  
+//
+//               Note that a cube map should always consist of six
+//               square images, so x_size and y_size will be the same,
+//               and z_size is always 6.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-setup_cube_map(int x_size, int y_size, ComponentType component_type, 
+setup_cube_map(int size, ComponentType component_type, 
                Format format) {
-  setup_texture(TT_cube_map, x_size, y_size, 6, component_type, format);
+  setup_texture(TT_cube_map, size, size, 6, component_type, format);
 }
 
 ////////////////////////////////////////////////////////////////////
