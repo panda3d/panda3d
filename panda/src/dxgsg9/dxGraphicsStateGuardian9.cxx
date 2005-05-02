@@ -3500,7 +3500,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   alight.Range =  __D3DLIGHT_RANGE_MAX;
   alight.Falloff =  1.0f;
   alight.Theta =  0.0f;
-  alight.Phi =  lens->get_hfov();
+  alight.Phi = deg_2_rad(lens->get_hfov());
 
   const LVecBase3f &att = light_obj->get_attenuation();
   alight.Attenuation0 = att[0];

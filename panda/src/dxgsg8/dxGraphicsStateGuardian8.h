@@ -307,8 +307,8 @@ protected:
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
-  int _max_lights;
-  int _max_clip_planes;
+  unsigned int _max_lights;
+  unsigned int _max_clip_planes;
 
   bool _line_smooth_enabled;
   bool _color_material_enabled;

@@ -4060,14 +4060,19 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   alight.dvRange =  D3DLIGHT_RANGE_MAX;
   alight.dvFalloff =  1.0f;
   alight.dvTheta =  0.0f;
-  alight.dvPhi =  lens->get_hfov();
+  alight.dvPhi = deg_2_rad(lens->get_hfov());
 
   const LVecBase3f &att = light_obj->get_attenuation();
   alight.dvAttenuation0 = (D3DVALUE)att[0];
   alight.dvAttenuation1 = (D3DVALUE)att[1];
   alight.dvAttenuation2 = (D3DVALUE)att[2];
 
-  HRESULT res = _pScrn->pD3DDevice->SetLight(light_id, &alight);
+  HRESULT hr = _pScrn->pD3DDevice->SetLight(light_id, &alight);
+  if (FAILED(hr)) {
+    wdxdisplay7_cat.warning() 
+      << "Could not set light properties for " << light 
+      << " to id " << light_id << "\n";
+  }
 }
 
 #if 0
