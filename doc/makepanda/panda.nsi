@@ -29,6 +29,9 @@ SetCompressor ${COMPRESSOR}
 
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION runFunction
+!define MUI_FINISHPAGE_RUN_TEXT "Run the Panda Greeting Card"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${PSOURCE}\doc\LICENSE"
@@ -52,6 +55,11 @@ InstType "Typical"
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
 var READABLE
+var TUTNAME
+
+Function runFunction
+        ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk"
+FunctionEnd
 
 Section "${SMDIRECTORY}" SecCore
         SectionIn 1 2 3 RO
@@ -122,22 +130,22 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
             WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/manual/"
+            SetOutPath $INSTDIR\samples\GreetingCard
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\bin\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
+            SetOutPath $INSTDIR
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Manual"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Website"
-            SetOutPath $INSTDIR\samples\RubiksCube
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Test - Rubiks Cube.lnk" "$INSTDIR\bin\ppython.exe" "rubiksCube.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Test"
             CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials"
 
             FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:
-                DetailPrint "Sample: $1"
                 StrCmp $1 "" done
 		Push $1
-		Push "\"
 		Push "--"
+		Push "\"
 	        Call StrRep
-	        Push " "
-                Push "-"
+	        Push "-"
+                Push " "
                 Call StrRep
                 Pop $R0
                 StrCpy $READABLE $R0
@@ -145,6 +153,21 @@ Section "${SMDIRECTORY}" SecCore
                 SetOutPath $INSTDIR\samples\$1
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Browse Tutorial.lnk" "$INSTDIR\samples\$1"
+                FindFirst $2 $3 $INSTDIR\samples\$1\Tut-*.py
+                iloop:
+                    StrCmp $3 "" idone
+                    StrCpy $TUTNAME $3 -3 4
+                    Push $TUTNAME
+                    Push "-"
+                    Push " "
+                    Call StrRep
+                    Pop $R0
+                    StrCpy $TUTNAME $R0
+                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\bin\ppython.exe" "$3" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\bin\ppython.exe" "$3" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    FindNext $2 $3
+                    goto iloop
+                idone:
             next:
                 FindNext $0 $1
                 Goto loop
