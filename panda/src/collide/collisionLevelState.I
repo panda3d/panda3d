@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLevelState::
 CollisionLevelState(const NodePath &node_path) :
-  _node_path(node_path)
+  _node_path(node_path),
+  _current(0)
 {
 }
 

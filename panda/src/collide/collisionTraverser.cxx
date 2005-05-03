@@ -513,8 +513,8 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
           // That's the limit.  Save off this level state and make a
           // new one.
           level_states.push_back(level_state);
-          level_state.reserve(min(num_colliders, max_colliders));
           level_state.clear();
+          level_state.reserve(min(num_colliders, max_colliders));
         }
       }
     }
