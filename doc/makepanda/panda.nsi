@@ -51,6 +51,8 @@ InstType "Typical"
 
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
+var READABLE
+
 Section "${SMDIRECTORY}" SecCore
         SectionIn 1 2 3 RO
 
@@ -126,17 +128,23 @@ Section "${SMDIRECTORY}" SecCore
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Test - Rubiks Cube.lnk" "$INSTDIR\bin\ppython.exe" "rubiksCube.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Test"
             CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials"
 
-            FindFirst $0 $1 $INSTDIR\samples\*
+            FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:
                 DetailPrint "Sample: $1"
                 StrCmp $1 "" done
-                StrCmp $1 "." next
-                StrCmp $1 ".." next
-                CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1"
+		Push $1
+		Push "\"
+		Push "--"
+	        Call StrRep
+	        Push " "
+                Push "-"
+                Call StrRep
+                Pop $R0
+                StrCpy $READABLE $R0
+                CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\$READABLE"
                 SetOutPath $INSTDIR\samples\$1
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Run Tutorial.lnk" "$INSTDIR\bin\ppython.exe" "$1.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Tutorial: $1"
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Tutorials\$1\Browse Tutorial.lnk" "$INSTDIR\samples\$1"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Browse Tutorial.lnk" "$INSTDIR\samples\$1"
             next:
                 FindNext $0 $1
                 Goto loop
@@ -550,3 +558,50 @@ Function un.IsUserAdmin
                 Push 1
 
 FunctionEnd
+
+Function StrRep
+
+  ;Written by dirtydingus 2003-02-20 04:30:09 
+  ; USAGE
+  ;Push String to do replacement in (haystack)
+  ;Push String to replace (needle)
+  ;Push Replacement
+  ;Call StrRep
+  ;Pop $R0 result
+  ;StrCpy $Result STR $R0
+
+  Exch $R4 ; $R4 = Replacement String
+  Exch
+  Exch $R3 ; $R3 = String to replace (needle)
+  Exch 2
+  Exch $R1 ; $R1 = String to do replacement in (haystack)
+  Push $R2 ; Replaced haystack
+  Push $R5 ; Len (needle)
+  Push $R6 ; len (haystack)
+  Push $R7 ; Scratch reg
+  StrCpy $R2 ""
+  StrLen $R5 $R3
+  StrLen $R6 $R1
+loop:
+  StrCpy $R7 $R1 $R5
+  StrCmp $R7 $R3 found
+  StrCpy $R7 $R1 1 ; - optimization can be removed if U know len needle=1
+  StrCpy $R2 "$R2$R7"
+  StrCpy $R1 $R1 $R6 1
+  StrCmp $R1 "" done loop
+found:
+  StrCpy $R2 "$R2$R4"
+  StrCpy $R1 $R1 $R6 $R5
+  StrCmp $R1 "" done loop
+done:
+  StrCpy $R3 $R2
+  Pop $R7
+  Pop $R6
+  Pop $R5
+  Pop $R2
+  Pop $R1
+  Pop $R4
+  Exch $R3
+	
+FunctionEnd
+
