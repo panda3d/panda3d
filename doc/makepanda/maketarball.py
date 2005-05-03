@@ -44,7 +44,6 @@ def writefile(dest,desiredcontents):
 PANDASOURCE=os.path.dirname(os.path.abspath(sys.path[0]))
 
 if ((os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.py"))==0) or
-    (os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.sln"))==0) or
     (os.path.exists(os.path.join(PANDASOURCE,"dtool","src","dtoolbase","dtoolbase.h"))==0) or
     (os.path.exists(os.path.join(PANDASOURCE,"panda","src","pandabase","pandabase.h"))==0)):
     sys.exit("I am unable to locate the root of the panda source tree.")
