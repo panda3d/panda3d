@@ -135,7 +135,6 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Manual"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Website"
-            CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Tutorials"
 
             FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:
