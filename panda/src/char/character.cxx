@@ -46,7 +46,8 @@ Character(const Character &copy) :
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
   _parts(copy._parts),
-  _char_pcollector(copy._char_pcollector)
+  _joints_pcollector(copy._joints_pcollector),
+  _skinning_pcollector(copy._skinning_pcollector)
 {
   // Now make a copy of the joint/slider hierarchy.  We could just use
   // the copy_subgraph feature of the PartBundleNode's copy
@@ -64,7 +65,8 @@ Character(const Character &copy) :
 Character::
 Character(const string &name) :
   PartBundleNode(name, new CharacterJointBundle(name)),
-  _char_pcollector(PStatCollector(_animation_pcollector, name), "Joints")
+  _joints_pcollector(PStatCollector(_animation_pcollector, name), "Joints"),
+  _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices")
 {
 }
 
@@ -159,7 +161,7 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
 
-  PStatTimer timer(_char_pcollector);
+  PStatTimer timer(_joints_pcollector);
 
   double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
@@ -204,7 +206,7 @@ update_to_now() {
 ////////////////////////////////////////////////////////////////////
 void Character::
 update() {
-  PStatTimer timer(_char_pcollector);
+  PStatTimer timer(_joints_pcollector);
   do_update();
 }
 
@@ -217,13 +219,14 @@ update() {
 void Character::
 force_update() {
   // Statistics
-  PStatTimer timer(_char_pcollector);
+  PStatTimer timer(_joints_pcollector);
 
   // First, update all the joints and sliders.
   get_bundle()->force_update();
 
   // Now update the vertices.
   if (_computed_vertices != (ComputedVertices *)NULL) {
+    PStatTimer timer2(_skinning_pcollector);
     _computed_vertices->update(this);
   }
 }
@@ -248,6 +251,7 @@ do_update() {
   // slow operation.
   if (any_changed || even_animation) {
     if (_computed_vertices != (ComputedVertices *)NULL) {
+      PStatTimer timer2(_skinning_pcollector);
       _computed_vertices->update(this);
     }
   }
@@ -307,7 +311,9 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
   const Character *from_char;
   DCAST_INTO_V(from_char, from);
   NodeMap node_map;
-  r_copy_char(this, from_char, from_char, node_map);
+  JointMap joint_map;
+  SliderMap slider_map;
+  r_copy_char(this, from_char, from_char, node_map, joint_map, slider_map);
   copy_node_pointers(from_char, node_map);
 }
 
@@ -322,7 +328,9 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
 ////////////////////////////////////////////////////////////////////
 void Character::
 r_copy_char(PandaNode *dest, const PandaNode *source,
-            const Character *from, Character::NodeMap &node_map) {
+            const Character *from, Character::NodeMap &node_map,
+            Character::JointMap &joint_map, Character::SliderMap &slider_map) {
+
   if (source->is_geom_node()) {
     const GeomNode *source_gnode;
     GeomNode *dest_gnode;
@@ -334,7 +342,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
     for (int i = 0; i < num_geoms; i++) {
       const Geom *geom = source_gnode->get_geom(i);
       const RenderState *state = source_gnode->get_geom_state(i);
-      dest_gnode->add_geom(copy_geom(geom, from), state);
+      dest_gnode->add_geom(copy_geom(geom, from, joint_map, slider_map), state);
     }
   }
 
@@ -357,7 +365,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
       // have parented to a Character and expect copy_subgraph() to
       // work correctly.  Too bad.
       dest_child = source_child->make_copy();
-      r_copy_char(dest_child, source_child, from, node_map);
+      r_copy_char(dest_child, source_child, from, node_map, joint_map, slider_map);
     }
     dest->add_child(dest_child, source_sort);
     node_map[source_child] = dest_child;
@@ -373,7 +381,8 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 //               returns the same Geom.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) Character::
-copy_geom(const Geom *source, const Character *from) {
+copy_geom(const Geom *source, const Character *from,
+          Character::JointMap &joint_map, Character::SliderMap &slider_map) {
   if (source->is_qpgeom()) {
     CPT(qpGeom) qpsource = DCAST(qpGeom, source);
     CPT(qpGeomVertexFormat) format = qpsource->get_vertex_data()->get_format();
@@ -385,9 +394,9 @@ copy_geom(const Geom *source, const Character *from) {
     PT(qpGeom) dest = new qpGeom(*qpsource);
     PT(qpGeomVertexData) vdata = dest->modify_vertex_data();
 
-    vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table()));
-    vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table()));
-    vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table()));
+    vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table(), joint_map));
+    vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table(), joint_map));
+    vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table(), slider_map));
 
     return dest.p();
 
@@ -496,13 +505,14 @@ copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::redirect_transform_table
-//       Access: Public
+//       Access: Private
 //  Description: Creates a new TransformTable, similar to the
 //               indicated one, with the joint and slider pointers
 //               redirected into this object.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformTable) Character::
-redirect_transform_table(const TransformTable *source) {
+redirect_transform_table(const TransformTable *source,
+                         Character::JointMap &joint_map) {
   if (source == (TransformTable *)NULL) {
     return NULL;
   }
@@ -512,13 +522,9 @@ redirect_transform_table(const TransformTable *source) {
   int num_transforms = dest->get_num_transforms();
   for (int i = 0; i < num_transforms; ++i) {
     const VertexTransform *vt = dest->get_transform(i);
-    if (vt->is_of_type(JointVertexTransform::get_class_type())) {
-      const JointVertexTransform *jvt = DCAST(JointVertexTransform, vt);
-      CharacterJoint *joint = find_joint(jvt->get_joint()->get_name());
-      if (joint != (CharacterJoint *)NULL) {
-        CPT(JointVertexTransform) new_jvt = new JointVertexTransform(joint);
-        dest->set_transform(i, new_jvt);
-      }
+    PT(JointVertexTransform) new_jvt = redirect_joint(vt, joint_map);
+    if (new_jvt != (JointVertexTransform *)NULL) {
+      dest->set_transform(i, new_jvt);
     }
   }
 
@@ -527,13 +533,14 @@ redirect_transform_table(const TransformTable *source) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::redirect_transform_blend_table
-//       Access: Public
+//       Access: Private
 //  Description: Creates a new TransformBlendTable, similar to the
 //               indicated one, with the joint and slider pointers
 //               redirected into this object.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformBlendTable) Character::
-redirect_transform_blend_table(const TransformBlendTable *source) {
+redirect_transform_blend_table(const TransformBlendTable *source,
+                               Character::JointMap &joint_map) {
   if (source == (TransformBlendTable *)NULL) {
     return NULL;
   }
@@ -546,13 +553,9 @@ redirect_transform_blend_table(const TransformBlendTable *source) {
     int num_transforms = blend.get_num_transforms();
     for (int j = 0; j < num_transforms; ++j) {
       const VertexTransform *vt = blend.get_transform(j);
-      if (vt->is_of_type(JointVertexTransform::get_class_type())) {
-        const JointVertexTransform *jvt = DCAST(JointVertexTransform, vt);
-        CharacterJoint *joint = find_joint(jvt->get_joint()->get_name());
-        if (joint != (CharacterJoint *)NULL) {
-          CPT(JointVertexTransform) new_jvt = new JointVertexTransform(joint);
-          blend.set_transform(j, new_jvt);
-        }
+      PT(JointVertexTransform) new_jvt = redirect_joint(vt, joint_map);
+      if (new_jvt != (JointVertexTransform *)NULL) {
+        blend.set_transform(j, new_jvt);
       }
     }
     dest->set_blend(i, blend);
@@ -563,13 +566,14 @@ redirect_transform_blend_table(const TransformBlendTable *source) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::redirect_slider_table
-//       Access: Public
+//       Access: Private
 //  Description: Creates a new SliderTable, similar to the
 //               indicated one, with the joint and slider pointers
 //               redirected into this object.
 ////////////////////////////////////////////////////////////////////
 CPT(SliderTable) Character::
-redirect_slider_table(const SliderTable *source) {
+redirect_slider_table(const SliderTable *source,
+                      Character::SliderMap &slider_map) {
   if (source == (SliderTable *)NULL) {
     return NULL;
   }
@@ -579,17 +583,73 @@ redirect_slider_table(const SliderTable *source) {
   int num_sliders = dest->get_num_sliders();
   for (int i = 0; i < num_sliders; ++i) {
     const VertexSlider *vs = dest->get_slider(i);
-    if (vs->is_of_type(CharacterVertexSlider::get_class_type())) {
-      const CharacterVertexSlider *cvs = DCAST(CharacterVertexSlider, vs);
-      CharacterSlider *slider = find_slider(cvs->get_char_slider()->get_name());
-      if (slider != (CharacterSlider *)NULL) {
-        CPT(CharacterVertexSlider) new_cvs = new CharacterVertexSlider(slider);
-        dest->set_slider(i, new_cvs);
-      }
+    PT(CharacterVertexSlider) new_cvs = redirect_slider(vs, slider_map);
+    if (new_cvs != (CharacterVertexSlider *)NULL) {
+      dest->set_slider(i, new_cvs);
     }
   }
 
   return SliderTable::register_table(dest);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::redirect_joint
+//       Access: Private
+//  Description: Creates a new JointVertexTransform that is similar to
+//               the indicated one, but points into this character.
+//               If one was already created (in the JointMap), returns
+//               it instead.
+////////////////////////////////////////////////////////////////////
+PT(JointVertexTransform) Character::
+redirect_joint(const VertexTransform *vt, Character::JointMap &joint_map) {
+  JointMap::iterator ji;
+  ji = joint_map.find(vt);
+  if (ji != joint_map.end()) {
+    return (*ji).second;
+  }
+
+  PT(JointVertexTransform) new_jvt;
+  
+  if (vt->is_of_type(JointVertexTransform::get_class_type())) {
+    const JointVertexTransform *jvt = DCAST(JointVertexTransform, vt);
+    CharacterJoint *joint = find_joint(jvt->get_joint()->get_name());
+    if (joint != (CharacterJoint *)NULL) {
+      new_jvt = new JointVertexTransform(joint);
+    }
+  }
+
+  joint_map[vt] = new_jvt;
+  return new_jvt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::redirect_slider
+//       Access: Private
+//  Description: Creates a new CharacterVertexSlider that is similar to
+//               the indicated one, but points into this character.
+//               If one was already created (in the SliderMap), returns
+//               it instead.
+////////////////////////////////////////////////////////////////////
+PT(CharacterVertexSlider) Character::
+redirect_slider(const VertexSlider *vs, Character::SliderMap &slider_map) {
+  SliderMap::iterator ji;
+  ji = slider_map.find(vs);
+  if (ji != slider_map.end()) {
+    return (*ji).second;
+  }
+
+  PT(CharacterVertexSlider) new_cvs;
+
+  if (vs->is_of_type(CharacterVertexSlider::get_class_type())) {
+    const CharacterVertexSlider *cvs = DCAST(CharacterVertexSlider, vs);
+    CharacterSlider *slider = find_slider(cvs->get_char_slider()->get_name());
+    if (slider != (CharacterSlider *)NULL) {
+      new_cvs = new CharacterVertexSlider(slider);
+    }
+  }
+
+  slider_map[vs] = new_cvs;
+  return new_cvs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -689,8 +749,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 #ifdef DO_PSTATS
   // Reinitialize our collectors with our name, now that we know it.
   if (has_name()) {
-    _char_pcollector = 
+    _joints_pcollector = 
       PStatCollector(PStatCollector(_animation_pcollector, get_name()), "Joints");
+    _skinning_pcollector = 
+      PStatCollector(PStatCollector(_animation_pcollector, get_name()), "Vertices");
   }
 #endif
 }

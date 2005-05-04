@@ -24,6 +24,8 @@
 #include "computedVertices.h"
 #include "characterJoint.h"
 #include "characterSlider.h"
+#include "characterVertexSlider.h"
+#include "jointVertexTransform.h"
 #include "partBundleNode.h"
 #include "vector_PartGroupStar.h"
 #include "pointerTo.h"
@@ -78,15 +80,25 @@ private:
   void copy_joints(PartGroup *copy, PartGroup *orig);
 
   typedef pmap<const PandaNode *, PandaNode *> NodeMap;
+  typedef pmap<const VertexTransform *, PT(JointVertexTransform) > JointMap;
+  typedef pmap<const VertexSlider *, PT(CharacterVertexSlider) > SliderMap;
 
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
   void r_copy_char(PandaNode *dest, const PandaNode *source,
-                   const Character *from, NodeMap &node_map);
-  PT(Geom) copy_geom(const Geom *source, const Character *from);
+                   const Character *from, NodeMap &node_map,
+                   JointMap &joint_map, SliderMap &slider_map);
+  PT(Geom) copy_geom(const Geom *source, const Character *from,
+                     JointMap &joint_map, SliderMap &slider_map);
   void copy_node_pointers(const Character *from, const NodeMap &node_map);
-  CPT(TransformTable) redirect_transform_table(const TransformTable *source);
-  CPT(TransformBlendTable) redirect_transform_blend_table(const TransformBlendTable *source);
-  CPT(SliderTable) redirect_slider_table(const SliderTable *source);
+  CPT(TransformTable) redirect_transform_table(const TransformTable *source,
+                                               JointMap &joint_map);
+  CPT(TransformBlendTable) redirect_transform_blend_table(const TransformBlendTable *source,
+                                                          JointMap &joint_map);
+  CPT(SliderTable) redirect_slider_table(const SliderTable *source,
+                                         SliderMap &slider_map);
+
+  PT(JointVertexTransform) redirect_joint(const VertexTransform *vt, JointMap &joint_map);
+  PT(CharacterVertexSlider) redirect_slider(const VertexSlider *vs, SliderMap &slider_map);
 
   // These are the actual dynamic vertex pools for this Character's
   // ComputedVertices--the vertices that it will recompute each frame
@@ -105,7 +117,8 @@ private:
   Parts _parts;
 
   // Statistics
-  PStatCollector _char_pcollector;
+  PStatCollector _joints_pcollector;
+  PStatCollector _skinning_pcollector;
   static PStatCollector _animation_pcollector;
 
 public:
