@@ -12,8 +12,7 @@
 
 # Let's set up a default window size of 800x600.  The user can
 # override this in his or her personal prc file.
-win-width 800
-win-height 600
+win-size 800 600
 
 # Define the display types that have been compiled in.  Panda will
 # pick one of these by going through the list in this order until one
