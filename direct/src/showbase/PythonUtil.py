@@ -94,8 +94,8 @@ if __debug__:
                 r+=i
             return r
 
+#-----------------------------------------------------------------------------
 
-
 def traceFunctionCall(frame):
     """
     return a string that shows the call frame with calling arguments.
@@ -183,9 +183,8 @@ def trace(frame, event, arg):
 def troff():
     sys.settrace(None)
 
+#-----------------------------------------------------------------------------
 
-
-
 def apropos(obj, *args):
     """
     Obsolete, use pdir
