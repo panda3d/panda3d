@@ -39,14 +39,8 @@ PUBLISHED:
   // data should be stored in.
 
   // The hint is provided as a performance optimization only, and does
-  // not constraing actual usage; although it may be an important
+  // not constrain actual usage; although it may be an important
   // optimization.
-
-  // In general, the hint may only be specified at the time the data
-  // object is constructed.  If you need to change it, you must create
-  // a new object (but in many cases you can just assign the same
-  // internal data pointer to the new object, to keep the same
-  // client-side memory).
 
   enum UsageHint {
     // The following are intentionally ordered from most dynamic to
