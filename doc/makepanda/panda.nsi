@@ -151,7 +151,7 @@ Section "${SMDIRECTORY}" SecCore
                 CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\$READABLE"
                 SetOutPath $INSTDIR\samples\$1
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Browse Tutorial.lnk" "$INSTDIR\samples\$1"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
                 FindFirst $2 $3 $INSTDIR\samples\$1\Tut-*.py
                 iloop:
                     StrCmp $3 "" idone
