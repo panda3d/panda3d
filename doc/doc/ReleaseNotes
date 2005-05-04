@@ -1,3 +1,19 @@
+------------------------  RELEASE 1.0.3  ------------------------
+
+  * The binary release contains a brand new collection of
+    sample programs.  The new sample programs are much better.
+
+  * If you install the windows binary release, the
+    sample programs can now be run from the start menu.
+
+  * Lighting under DirectX was broken. This has been repaired.
+
+  * The binary release has been compiled with support for pstats.
+    (Previously, it was compiled with pstats disabled).
+
+  * Various changes to make panda3d more compatible with
+    the 'epydoc' documentation-generation system.
+
 ------------------------  RELEASE 1.0.2  ------------------------
 
 This is a bugfix release.
