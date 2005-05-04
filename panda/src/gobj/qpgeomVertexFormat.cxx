@@ -117,6 +117,8 @@ get_post_animated_format() const {
       new_format->remove_column(delta_name);
     }
 
+    new_format->_animation.set_none();
+
     CPT(qpGeomVertexFormat) registered = 
       qpGeomVertexFormat::register_format(new_format);
     ((qpGeomVertexFormat *)this)->_post_animated_format = registered;

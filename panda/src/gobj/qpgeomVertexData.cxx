@@ -92,6 +92,10 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
   _skinning_pcollector(copy._skinning_pcollector),
   _morphs_pcollector(copy._morphs_pcollector)
 {
+  CDWriter cdata(_cycler);
+  // It's important that we *not* copy the animated_vertices pointer.
+  cdata->_animated_vertices = NULL;
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,6 +130,10 @@ qpGeomVertexData(const qpGeomVertexData &copy,
       (_format->get_array(i), usage_hint);
     cdata->_arrays.push_back(array);
   }
+
+  // It's important that we *not* copy the animated_vertices pointer.
+  cdata->_animated_vertices = NULL;
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -1351,11 +1359,11 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   }
   PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
 
-  // We have to make a complete copy of data first so we can modify
-  // it.  If we were clever, we could maybe just figure out the subset
-  // of the data that might have changed since last frame, but that's
-  // too much trouble (and isn't obviously faster than just copying
-  // the whole thing).
+  // We have to make a complete copy of the data first so we can
+  // modify it.  If we were clever, we could maybe just figure out the
+  // subset of the data that might have changed since last frame, but
+  // that's too much trouble (and isn't obviously faster than just
+  // copying the whole thing).
   new_data->copy_from(this, true);
 
   // First, apply all of the morphs.
