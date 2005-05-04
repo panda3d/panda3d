@@ -3,6 +3,8 @@ from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 
+BreakOnTimeout = config.GetBool("break-on-timeout", 0)
+
 
 class AsyncRequest(DirectObject):
     """
@@ -75,6 +77,9 @@ class AsyncRequest(DirectObject):
         call this base method to cleanup.
         """
         assert self.notify.debugCall("neededObjects: %s"%(self.neededObjects,))
+        global BreakOnTimeout
+        if BreakOnTimeout:
+            import pdb; pdb.set_trace()
         self.delete()
 
     def _checkCompletion(self, name, context, distObj):
@@ -110,7 +115,7 @@ class AsyncRequest(DirectObject):
                 self._checkCompletion, [None])
             self.air.queryObjectSnapshot(doId, context)
 
-    def createObject(self, name, className, context=None):
+    def createObject(self, name, className, context=None, values=None):
         """
         Create a new database object.  You can get the doId from within
         your self.finish() function.
@@ -123,7 +128,10 @@ class AsyncRequest(DirectObject):
             context=self.air.allocateContext()
         self.accept(
             "doRequestResponse-%s"%(context,), self._checkCompletion, [name])
-        self.air.requestDatabaseGenerate(className, context)
+        if values is None:
+            self.air.requestDatabaseGenerate(className, context)
+        else:
+            self.air.requestDatabaseGenerate2(className, context, values=values)
 
     def finish(self):
         """
