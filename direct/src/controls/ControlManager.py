@@ -127,6 +127,14 @@ class ControlManager:
             oldControls.delete()
             del self.controls[name]
 
+    if __debug__:
+        def lockControls(self):
+            self.ignoreUse=True
+
+        def unlockControls(self):
+            if hasattr(self, "ignoreUse"):
+                del self.ignoreUse
+    
     def use(self, name, avatar):
         """
         name is a key (string) that was previously passed to add().
@@ -136,6 +144,8 @@ class ControlManager:
         See also: add().
         """
         assert self.notify.debugCall(id(self))
+        if __debug__ and hasattr(self, "ignoreUse"):
+            return
         controls = self.controls.get(name)
 
         if controls is not None:
