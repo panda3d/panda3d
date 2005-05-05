@@ -1252,6 +1252,11 @@ do_issue_light() {
             enable_light(i, true);
             _light_info[i]._enabled = true;
             _light_info[i]._next_enabled = true;
+          
+            if (!any_bound) {
+              begin_bind_lights();
+              any_bound = true;
+            }
             light_obj->bind(this, light, i);
             break;
           }
