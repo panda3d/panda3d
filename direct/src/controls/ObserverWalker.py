@@ -41,7 +41,7 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         # Set up the collision sphere
         # This is a sphere on the ground to detect barrier collisions
         self.cSphere = CollisionSphere(0.0, 0.0, 0.0, avatarRadius)
-        cSphereNode = CollisionNode('NPW.cSphereNode')
+        cSphereNode = CollisionNode('Observer.cSphereNode')
         cSphereNode.addSolid(self.cSphere)
         self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
 
