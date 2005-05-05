@@ -156,7 +156,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 (oldZoneId != zoneId)):
                 self.zoneId = zoneId
                 self.parentId = parentId
-                self.air.changeDOZoneInTables(self, zoneId, oldZoneId)
+                self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
                 messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
                 # if we are not going into the quiet zone, send a 'logical' zone
                 # change message
