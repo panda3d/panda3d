@@ -108,6 +108,25 @@ class ControlManager:
         controls.setCollisionsActive(0)
         self.controls[name] = controls
 
+    def remove(self, name):
+        """
+        name is any key that was used to refer to the
+            the controls when they were added (e.g. 
+            using the add(<controls>, <name>) call).
+        
+        Remove a control instance from the list of available control systems.
+        
+        See also: add().
+        """
+        assert self.notify.debugCall(id(self))
+        oldControls = self.controls.get(name)
+        if oldControls is not None:
+            print "Removing controls:", name
+            oldControls.disableAvatarControls()
+            oldControls.setCollisionsActive(0)
+            oldControls.delete()
+            del self.controls[name]
+
     def use(self, name, avatar):
         """
         name is a key (string) that was previously passed to add().
