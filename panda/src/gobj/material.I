@@ -24,10 +24,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
 Material() {
-  _ambient.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _ambient.set(1.0f, 1.0f, 1.0f, 1.0f);
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _specular.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _emission.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _specular.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _emission.set(0.0f, 0.0f, 0.0f, 1.0f);
   _shininess = 0.0;
   _flags = 0;
 }

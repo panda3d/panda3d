@@ -60,13 +60,13 @@ class qpGeom;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomMunger : public TypedReferenceCount, public qpGeomEnums {
 public:
-  qpGeomMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state);
+  qpGeomMunger();
   qpGeomMunger(const qpGeomMunger &copy);
   void operator = (const qpGeomMunger &copy);
   virtual ~qpGeomMunger();
 
   INLINE bool is_registered() const;
-  INLINE static CPT(qpGeomMunger) register_munger(qpGeomMunger *munger);
+  INLINE static PT(qpGeomMunger) register_munger(qpGeomMunger *munger);
 
   INLINE CPT(qpGeomVertexFormat) munge_format(const qpGeomVertexFormat *format,
                                               const qpGeomVertexAnimationSpec &animation) const;
@@ -74,7 +74,7 @@ public:
   INLINE CPT(qpGeomVertexData) munge_data(const qpGeomVertexData *data) const;
   void remove_data(const qpGeomVertexData *data);
 
-  // Also see Geom::munge_geom() for the primary interface.
+  void munge_geom(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
 
 public:
   INLINE int compare_to(const qpGeomMunger &other) const;
@@ -132,7 +132,7 @@ private:
   class EXPCL_PANDA Registry {
   public:
     Registry();
-    CPT(qpGeomMunger) register_munger(qpGeomMunger *munger);
+    PT(qpGeomMunger) register_munger(qpGeomMunger *munger);
     void unregister_munger(qpGeomMunger *munger);
 
     Mungers _mungers;

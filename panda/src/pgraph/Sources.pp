@@ -91,6 +91,7 @@
     shadeModelAttrib.I shadeModelAttrib.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
+    stateMunger.I stateMunger.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
@@ -188,6 +189,7 @@
     shadeModelAttrib.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
+    stateMunger.cxx \
     switchNode.cxx \
     texMatrixAttrib.cxx \
     texProjectorEffect.cxx \
@@ -281,6 +283,7 @@
     shadeModelAttrib.I shadeModelAttrib.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
+    stateMunger.I stateMunger.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \

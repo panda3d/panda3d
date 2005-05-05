@@ -162,11 +162,11 @@ ConfigVariableBool display_list_animation
 
 ConfigVariableBool connect_triangle_strips
 ("connect-triangle-strips", true,
- PRC_DESC("Set this true to set a batch of triangle strips to the graphics "
+ PRC_DESC("Set this true to send a batch of triangle strips to the graphics "
           "card as one long triangle strip, connected by degenerate "
           "triangles, or false to send them as separate triangle strips "
-          "with no degenerate triangles.  In many cases, using one long "
-          "triangle strip can help performance by reducing the number "
+          "with no degenerate triangles.  On PC hardware, using one long "
+          "triangle strip may help performance by reducing the number "
           "of separate graphics calls that have to be made."));
 
 ConfigVariableBool use_qpgeom

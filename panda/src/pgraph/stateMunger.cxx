@@ -1,0 +1,50 @@
+// Filename: stateMunger.cxx
+// Created by:  drose (04May05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "stateMunger.h"
+
+TypeHandle StateMunger::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: StateMunger::munge_state
+//       Access: Public
+//  Description: Given an input state, returns the munged state.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) StateMunger::
+munge_state(const RenderState *state) {
+  CPT(RenderState) ptstate = state;
+  StateMap::iterator mi = _state_map.find(ptstate);
+  if (mi != _state_map.end()) {
+    return (*mi).second;
+  }
+
+  CPT(RenderState) result = munge_state_impl(state);
+  _state_map[ptstate] = result;
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StateMunger::munge_state_impl
+//       Access: Protected, Virtual
+//  Description: Given an input state, returns the munged state.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) StateMunger::
+munge_state_impl(const RenderState *state) {
+  return state;
+}

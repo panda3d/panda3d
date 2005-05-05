@@ -41,6 +41,8 @@
 #include "colorWriteAttrib.h"
 #include "colorBlendAttrib.h"
 #include "textureAttrib.h"
+#include "materialAttrib.h"
+#include "lightAttrib.h"
 #include "transparencyAttrib.h"
 #include "config_display.h"
 #include "qpgeomMunger.h"
@@ -100,6 +102,8 @@ PUBLISHED:
 
   virtual int get_supported_geom_rendering() const;
 
+  INLINE bool get_color_scale_via_lighting() const;
+
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
@@ -118,7 +122,7 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -193,6 +197,7 @@ public:
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
   virtual void issue_color(const ColorAttrib *attrib);
   virtual void issue_light(const LightAttrib *attrib);
+  virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_blend(const ColorBlendAttrib *attrib);
@@ -207,6 +212,10 @@ public:
                           int light_id);
 
 protected:
+  void do_issue_light();
+  virtual void do_issue_material();
+  virtual void do_issue_texture();
+
   INLINE NodePath get_light(int light_id) const;
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
@@ -230,6 +239,8 @@ protected:
   virtual void free_pointers();
   virtual void close_gsg();
   void panic_deactivate();
+
+  void determine_light_color_scale();
 
   INLINE void set_properties(const FrameBufferProperties &properties);
 
@@ -313,6 +324,14 @@ protected:
 
   CPT(TextureAttrib) _pending_texture;
   bool _texture_stale;
+  CPT(LightAttrib) _pending_light;
+  bool _light_stale;
+  CPT(MaterialAttrib) _pending_material;
+  bool _material_stale;
+
+  bool _has_material_force_color;
+  Colorf _material_force_color;
+  LVecBase4f _light_color_scale;
 
   bool _needs_reset;
   bool _closing_gsg;
@@ -332,6 +351,7 @@ protected:
   bool _supports_generate_mipmap;
   bool _supports_render_texture;
   int _supported_geom_rendering;
+  bool _color_scale_via_lighting;
 
 public:
   // Statistics

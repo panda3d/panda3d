@@ -23,6 +23,7 @@
 #include "cullTraverser.h"
 #include "sceneSetup.h"
 #include "lens.h"
+#include "stateMunger.h"
 #include "pStatTimer.h"
 #include "qpgeomVertexWriter.h"
 #include "qpgeomVertexReader.h"
@@ -42,7 +43,7 @@ TypeHandle CullableObject::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
-           const qpGeomMunger *munger, const CullTraverser *traverser) {
+           qpGeomMunger *munger, const CullTraverser *traverser) {
   if (_geom != (Geom *)NULL) {
     // Temporary test and dcast until the experimental Geom rewrite
     // becomes the actual Geom rewrite.
@@ -73,7 +74,12 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
       // Now invoke the munger to ensure the resulting geometry is in
       // a GSG-friendly form.
-      qpgeom->munge_geom(munger, qpgeom, _munged_data);
+      munger->munge_geom(qpgeom, _munged_data);
+
+      StateMunger *state_munger;
+      DCAST_INTO_V(state_munger, munger);
+      _state = state_munger->munge_state(_state);
+
       CPT(qpGeomVertexData) animated_vertices = 
         _munged_data->animate_vertices();
 #ifndef NDEBUG

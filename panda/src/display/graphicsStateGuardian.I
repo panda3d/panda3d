@@ -316,6 +316,19 @@ get_supports_render_texture() const {
   return _supports_render_texture;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_color_scale_via_lighting
+//       Access: Published
+//  Description: Returns true if this particular GSG can implement (or
+//               would prefer to implement) set color and/or color
+//               scale using materials and/or ambient lights, or
+//               false if we need to actually munge the color.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_color_scale_via_lighting() const {
+  return _color_scale_via_lighting;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene

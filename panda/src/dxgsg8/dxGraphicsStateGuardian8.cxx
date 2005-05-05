@@ -33,7 +33,6 @@
 #include "spotlight.h"
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
-#include "lightAttrib.h"
 #include "shadeModelAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
@@ -413,8 +412,8 @@ dx_init(void) {
     _has_scene_graph_color = false;
 
     // Apply a default material when materials are turned off.
-    Material empty;
-    apply_material(&empty);
+    _pending_material = NULL;
+    do_issue_material();
 
 //  GL stuff that hasnt been translated to DX
     // none of these are implemented
@@ -3556,7 +3555,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomMunger) DXGraphicsStateGuardian8::
+PT(qpGeomMunger) DXGraphicsStateGuardian8::
 get_geom_munger(const RenderState *state) {
   PT(DXGeomMunger8) munger = new DXGeomMunger8(this, state);
   return qpGeomMunger::register_munger(munger);
@@ -3702,44 +3701,6 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   
   nassertr(tex->has_ram_image(), false);
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::apply_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-apply_material(const Material *material) {
-  D3DMATERIAL8 cur_material;
-  cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
-  cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
-  cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
-  cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
-  cur_material.Power = material->get_shininess();
-
-  _pD3DDevice->SetMaterial(&cur_material);
-
-  if (material->has_diffuse()) {
-    // If the material specifies an diffuse color, use it.
-    _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-  } else {
-    // Otherwise, the diffuse color comes from the object color.
-    _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
-  }
-  if (material->has_ambient()) {
-    // If the material specifies an ambient color, use it.
-    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
-  } else {
-    // Otherwise, the ambient color comes from the object color.
-    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-  }
-
-  if (material->get_local()) {
-    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
-  } else {
-    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
-  }    
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3978,42 +3939,6 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-issue_texture(const TextureAttrib *attrib) {
-  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
-  if (attrib->is_off()) {
-    enable_texturing(false);
-  } else {
-    Texture *tex = attrib->get_texture();
-    nassertv(tex != (Texture *)NULL);
-
-    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
-    apply_texture(tc);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-issue_material(const MaterialAttrib *attrib) {
-  const Material *material = attrib->get_material();
-  if (material != (const Material *)NULL) {
-    apply_material(material);
-  } else {
-    // Apply a default material when materials are turned off.
-    Material empty;
-    apply_material(&empty);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::issue_render_mode
 //       Access: Public, Virtual
 //  Description:
@@ -4218,7 +4143,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   black.r = black.g = black.b = black.a = 0.0f;
   D3DLIGHT8 alight;
   alight.Type =  D3DLIGHT_POINT;
-  alight.Diffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
+  alight.Diffuse  = get_light_color(light_obj);
   alight.Ambient  =  black ;
   alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
@@ -4267,7 +4192,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   ZeroMemory(&alight, sizeof(D3DLIGHT8));
 
   alight.Type =  D3DLIGHT_DIRECTIONAL;
-  alight.Diffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
+  alight.Diffuse  = get_light_color(light_obj);
   alight.Ambient  =  black ;
   alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
@@ -4318,7 +4243,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   alight.Type =  D3DLIGHT_SPOT;
   alight.Ambient  =  black ;
-  alight.Diffuse  = *(D3DCOLORVALUE *)(light_obj->get_color().get_data());
+  alight.Diffuse  = get_light_color(light_obj);
   alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
 
   alight.Position = *(D3DVECTOR *)pos.get_data();
@@ -4532,6 +4457,25 @@ get_index_type(qpGeom::NumericType numeric_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_light_color
+//       Access: Public
+//  Description: Returns the array of four floats that should be
+//               issued as the light's color, as scaled by the current
+//               value of _light_color_scale, in the case of
+//               color_scale_via_lighting.
+////////////////////////////////////////////////////////////////////
+const D3DCOLORVALUE &DXGraphicsStateGuardian8::
+get_light_color(Light *light) const {
+  static Colorf c;
+  c = light->get_color();
+  c.set(c[0] * _light_color_scale[0],
+        c[1] * _light_color_scale[1],
+        c[2] * _light_color_scale[2],
+        c[3] * _light_color_scale[3]);
+  return *(D3DCOLORVALUE *)c.get_data();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_draw_buffer
 //       Access: Protected
 //  Description: Sets up the glDrawBuffer to render into the buffer
@@ -4653,6 +4597,86 @@ do_auto_rescale_normal() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::do_issue_texture
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+do_issue_texture() {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+
+  CPT(TextureAttrib) new_texture = _pending_texture->filter_to_max(_max_texture_stages);
+
+  if (new_texture->is_off()) {
+    enable_texturing(false);
+  } else {
+    Texture *tex = new_texture->get_texture();
+    nassertv(tex != (Texture *)NULL);
+
+    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+    apply_texture(tc);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::do_issue_material
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+do_issue_material() {
+  static Material empty;
+  const Material *material;
+  if (_pending_material == (MaterialAttrib *)NULL || 
+      _pending_material->is_off()) {
+    material = &empty;
+  } else {
+    material = _pending_material->get_material();
+  }
+
+  D3DMATERIAL8 cur_material;
+  cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
+  cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
+  cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
+  cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
+  cur_material.Power = material->get_shininess();
+
+  if (material->has_diffuse()) {
+    // If the material specifies an diffuse color, use it.
+    _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+  } else {
+    // Otherwise, the diffuse color comes from the object color.
+    if (_has_material_force_color) {
+      cur_material.Diffuse = *(D3DCOLORVALUE *)_material_force_color.get_data();
+      _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+    } else {
+      _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+    }
+  }
+  if (material->has_ambient()) {
+    // If the material specifies an ambient color, use it.
+    _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
+  } else {
+    // Otherwise, the ambient color comes from the object color.
+    if (_has_material_force_color) {
+      cur_material.Ambient = *(D3DCOLORVALUE *)_material_force_color.get_data();
+      _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+    } else {
+      _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
+    }
+  }
+
+  _pD3DDevice->SetMaterial(&cur_material);
+
+  if (material->get_local()) {
+    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
+  } else {
+    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::slot_new_light
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
@@ -4693,7 +4717,13 @@ enable_lighting(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_ambient_light(const Colorf &color) {
-  _pD3DDevice->SetRenderState(D3DRS_AMBIENT, Colorf_to_D3DCOLOR(color));
+  Colorf c = color;
+  c.set(c[0] * _light_color_scale[0],
+        c[1] * _light_color_scale[1],
+        c[2] * _light_color_scale[2],
+        c[3] * _light_color_scale[3]);
+
+  _pD3DDevice->SetRenderState(D3DRS_AMBIENT, Colorf_to_D3DCOLOR(c));
 }
 
 ////////////////////////////////////////////////////////////////////

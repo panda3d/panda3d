@@ -57,6 +57,7 @@ extern EXPCL_PANDA ConfigVariableBool copy_texture_inverted;
 extern EXPCL_PANDA ConfigVariableBool window_inverted;
 extern EXPCL_PANDA ConfigVariableBool depth_offset_decals;
 extern EXPCL_PANDA ConfigVariableBool auto_generate_mipmaps;
+extern EXPCL_PANDA ConfigVariableBool color_scale_via_lighting;
 
 extern EXPCL_PANDA ConfigVariableInt win_size;
 extern EXPCL_PANDA ConfigVariableInt win_origin;

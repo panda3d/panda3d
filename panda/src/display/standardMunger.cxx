@@ -37,15 +37,56 @@ StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
                StandardMunger::NumericType numeric_type,
                StandardMunger::Contents contents) :
-  qpGeomMunger(gsg, state),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents)
 {
   _gsg = DCAST(GraphicsStateGuardian, gsg);
-  _color = state->get_color();
-  _color_scale = state->get_color_scale();
   _render_mode = state->get_render_mode();
+
+  _munge_color = false;
+  _munge_color_scale = false;
+
+  CPT(ColorAttrib) color_attrib = state->get_color();
+  CPT(ColorScaleAttrib) color_scale_attrib = state->get_color_scale();
+
+  if (color_attrib != (ColorAttrib *)NULL && 
+      color_attrib->get_color_type() == ColorAttrib::T_flat) {
+
+    if (!_gsg->get_color_scale_via_lighting()) {
+      // We only need to munge the color directly if the GSG says it
+      // can't cheat the color via lighting (presumably, in this case,
+      // by applying a material).
+      _color = color_attrib->get_color();
+      if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+          color_scale_attrib->has_scale()) {
+        const LVecBase4f &cs = color_scale_attrib->get_scale();
+        _color.set(_color[0] * cs[0],
+                   _color[1] * cs[1],
+                   _color[2] * cs[2],
+                   _color[3] * cs[3]);
+      }
+      _munge_color = true;
+    }
+
+  } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+             color_scale_attrib->has_scale()) {
+    _color_scale = color_scale_attrib->get_scale();
+    if (!_gsg->get_color_scale_via_lighting() || _color_scale[3] != 1.0f) {
+      // We only need to apply the color scale by directly munging the
+      // color if the GSG says it can't cheat this via lighting (for
+      // instance, by applying an ambient light).  Or, since we assume
+      // lighting can't scale the alpha component, if the color scale
+      // involves alpha.
+
+      // Known bug: if there is a material on an object that would
+      // obscure the effect of color_scale, we scale the lighting
+      // anyway, thus applying the effect even if it should be
+      // obscured.  It doesn't seem worth the effort to detect this
+      // contrived situation and handle it correctly.
+      _munge_color_scale = true;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,25 +108,12 @@ CPT(qpGeomVertexData) StandardMunger::
 munge_data_impl(const qpGeomVertexData *data) {
   CPT(qpGeomVertexData) new_data = data;
 
-  if (_color != (ColorAttrib *)NULL && 
-      _color->get_color_type() == ColorAttrib::T_flat) {
-    Colorf color = _color->get_color();
-    if (_color_scale != (ColorScaleAttrib *)NULL &&
-        _color_scale->has_scale()) {
-      const LVecBase4f &cs = _color_scale->get_scale();
-      color.set(color[0] * cs[0],
-                color[1] * cs[1],
-                color[2] * cs[2],
-                color[3] * cs[3]);
-    }
-    new_data = new_data->set_color(color, _num_components, _numeric_type,
+  if (_munge_color) {
+    new_data = new_data->set_color(_color, _num_components, _numeric_type,
                                    _contents);
-
-  } else if (_color_scale != (ColorScaleAttrib *)NULL &&
-             _color_scale->has_scale()) {
-    const LVecBase4f &cs = _color_scale->get_scale();
-    new_data = new_data->scale_color(cs, _num_components, _numeric_type,
-                                     _contents);
+  } else if (_munge_color_scale) {
+    new_data = new_data->scale_color(_color_scale, _num_components, 
+                                     _numeric_type, _contents);
   }
 
   qpGeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
@@ -189,17 +217,30 @@ munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
 int StandardMunger::
 compare_to_impl(const qpGeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
-  if (_color != om->_color) {
-    return _color < om->_color ? -1 : 1;
-  }
-  if (_color_scale != om->_color_scale) {
-    return _color_scale < om->_color_scale ? -1 : 1;
-  }
   if (_render_mode != om->_render_mode) {
     return _render_mode < om->_render_mode ? -1 : 1;
   }
 
-  return qpGeomMunger::compare_to_impl(other);
+  if (_munge_color != om->_munge_color) {
+    return (int)_munge_color - (int)om->_munge_color;
+  }
+  if (_munge_color_scale != om->_munge_color_scale) {
+    return (int)_munge_color_scale - (int)om->_munge_color_scale;
+  }
+  if (_munge_color) {
+    int compare = _color.compare_to(om->_color);
+    if (compare != 0) {
+      return compare;
+    }
+  }
+  if (_munge_color_scale) {
+    int compare = _color_scale.compare_to(om->_color_scale);
+    if (compare != 0) {
+      return compare;
+    }
+  }
+
+  return StateMunger::compare_to_impl(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,12 +256,43 @@ compare_to_impl(const qpGeomMunger *other) const {
 int StandardMunger::
 geom_compare_to_impl(const qpGeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
-  if (_color != om->_color) {
-    return _color < om->_color ? -1 : 1;
+  if (_munge_color != om->_munge_color) {
+    return (int)_munge_color - (int)om->_munge_color;
   }
-  if (_color_scale != om->_color_scale) {
-    return _color_scale < om->_color_scale ? -1 : 1;
+  if (_munge_color_scale != om->_munge_color_scale) {
+    return (int)_munge_color_scale - (int)om->_munge_color_scale;
+  }
+  if (_munge_color) {
+    int compare = _color.compare_to(om->_color);
+    if (compare != 0) {
+      return compare;
+    }
+  }
+  if (_munge_color_scale) {
+    int compare = _color_scale.compare_to(om->_color_scale);
+    if (compare != 0) {
+      return compare;
+    }
   }
 
-  return qpGeomMunger::geom_compare_to_impl(other);
+  return StateMunger::geom_compare_to_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StandardMunger::munge_state_impl
+//       Access: Protectes, Virtual
+//  Description: Given an input state, returns the munged state.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) StandardMunger::
+munge_state_impl(const RenderState *state) {
+  CPT(RenderState) munged_state = state;
+
+  if (_munge_color) {
+    munged_state = munged_state->remove_attrib(ColorAttrib::get_class_type());
+    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_type());
+  } else if (_munge_color_scale) {
+    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_type());
+  }
+
+  return munged_state;
 }

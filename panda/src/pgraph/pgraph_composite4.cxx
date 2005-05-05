@@ -11,6 +11,7 @@
 #include "shadeModelAttrib.cxx"
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
+#include "stateMunger.cxx"
 #include "switchNode.cxx"
 #include "texMatrixAttrib.cxx"
 #include "texProjectorEffect.cxx"

@@ -123,19 +123,17 @@ public:
   virtual void release_index_buffer(IndexBufferContext *ibc);
   const unsigned char *setup_primitive(const qpGeomPrimitive *data);
 
-  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
-  virtual void apply_material(const Material *material);
   void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
-  virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_antialias(const AntialiasAttrib *);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
@@ -151,6 +149,8 @@ public:
 #ifdef HAVE_CGGL
   virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
 #endif
+
+  virtual void do_issue_material();
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id);
@@ -170,6 +170,7 @@ public:
   void dump_state(void);
 
   void issue_scaled_color(const Colorf &color) const;
+  const float *get_light_color(Light *light) const;
 
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
@@ -256,7 +257,7 @@ protected:
   static CPT(RenderState) get_flat_state();
 
   void do_auto_rescale_normal();
-  void do_issue_texture();
+  virtual void do_issue_texture();
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);

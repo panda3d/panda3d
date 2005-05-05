@@ -45,7 +45,7 @@ is_registered() const {
 //               normally; you should use only the returned value from
 //               this point on.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(qpGeomMunger) qpGeomMunger::
+INLINE PT(qpGeomMunger) qpGeomMunger::
 register_munger(qpGeomMunger *munger) {
   return get_registry()->register_munger(munger);
 }

@@ -20,7 +20,7 @@
 #define STANDARDMUNGER_H
 
 #include "pandabase.h"
-#include "qpgeomMunger.h"
+#include "stateMunger.h"
 #include "graphicsStateGuardian.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -36,7 +36,7 @@
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StandardMunger : public qpGeomMunger {
+class EXPCL_PANDA StandardMunger : public StateMunger {
 public:
   StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
                  int num_components, NumericType numeric_type,
@@ -48,24 +48,29 @@ protected:
   virtual int compare_to_impl(const qpGeomMunger *other) const;
   virtual bool munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
   virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
+  virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
 private:
   int _num_components;
   NumericType _numeric_type;
   Contents _contents;
   CPT(GraphicsStateGuardian) _gsg;
-  CPT(ColorAttrib) _color;
-  CPT(ColorScaleAttrib) _color_scale;
   CPT(RenderModeAttrib) _render_mode;
+
+  bool _munge_color;
+  bool _munge_color_scale;
+
+  Colorf _color;
+  LVecBase4f _color_scale;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    qpGeomMunger::init_type();
+    StateMunger::init_type();
     register_type(_type_handle, "StandardMunger",
-                  qpGeomMunger::get_class_type());
+                  StateMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

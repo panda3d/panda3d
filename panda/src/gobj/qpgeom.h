@@ -105,9 +105,6 @@ PUBLISHED:
   // Temporarily virtual.
   virtual void transform_vertices(const LMatrix4f &mat);
 
-  void munge_geom(const qpGeomMunger *munger,
-                  CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
-
   // Temporarily virtual.
   virtual bool check_valid() const;
 
@@ -227,6 +224,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class CacheEntry;
+  friend class qpGeomMunger;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeom &obj);

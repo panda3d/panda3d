@@ -145,7 +145,7 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
 
-  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state)=0;
+  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;
@@ -204,8 +204,6 @@ public:
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex)=0;
   virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex)=0;
-
-  virtual void apply_material(const Material *material)=0;
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 

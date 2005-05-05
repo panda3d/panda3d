@@ -158,6 +158,17 @@ ConfigVariableBool auto_generate_mipmaps
           "false by default because some drivers (Intel) seem to do a "
           "poor job of generating mipmaps when needed."));
 
+ConfigVariableBool color_scale_via_lighting
+("color-scale-via-lighting", true,
+ PRC_DESC("When this is true, Panda will try to implement ColorAttribs and "
+          "ColorScaleAttribs using the lighting interface, by "
+          "creating a default material and/or an ambient light if "
+          "necessary, even if lighting is ostensibly disabled.  This "
+          "avoids the need to munge the vertex data to change each vertex's "
+          "color.  Set this false to avoid this trickery, so that lighting "
+          "is only enabled when the application specifically enables "
+          "it."));
+
 ConfigVariableInt win_size
 ("win-size", "640 480",
  PRC_DESC("This is the default size at which to open a new window.  This "

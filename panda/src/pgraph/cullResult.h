@@ -66,7 +66,7 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
-  INLINE CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  INLINE PT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
@@ -75,7 +75,7 @@ private:
 
   GraphicsStateGuardianBase *_gsg;
 
-  typedef pmap<CPT(RenderState), CPT(qpGeomMunger) > Mungers;
+  typedef pmap<CPT(RenderState), PT(qpGeomMunger) > Mungers;
   Mungers _mungers;
 
   typedef pvector< PT(CullBin) > Bins;

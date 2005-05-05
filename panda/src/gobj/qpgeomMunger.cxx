@@ -32,7 +32,7 @@ PStatCollector qpGeomMunger::_munge_pcollector("*:Munge");
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomMunger::
-qpGeomMunger(const GraphicsStateGuardianBase *, const RenderState *) :
+qpGeomMunger() :
   _is_registered(false)
 {
 #ifndef NDEBUG
@@ -90,6 +90,79 @@ remove_data(const qpGeomVertexData *data) {
   // GeomVertexData while we were in the process of unregistering,
   // causing a recursive re-entry.
   nassertv(_is_registered);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::munge_geom
+//       Access: Published
+//  Description: Applies the indicated munger to the geom and its
+//               data, and returns a (possibly different) geom and
+//               data, according to the munger's whim.  
+//
+//               The assumption is that for a particular geom and a
+//               particular munger, the result will always be the
+//               same; so this result may be cached.
+////////////////////////////////////////////////////////////////////
+void qpGeomMunger::
+munge_geom(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data) {
+  CPT(qpGeomVertexData) source_data = data;
+
+  // Look up the munger in the geom's cache--maybe we've recently
+  // applied it.
+  {
+    qpGeom::CDReader cdata(geom->_cycler);
+    qpGeom::CacheEntry temp_entry(source_data, this);
+    temp_entry.local_object();
+    qpGeom::Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
+    if (ci != cdata->_cache.end()) {
+      qpGeom::CacheEntry *entry = (*ci);
+
+      if (geom->get_modified() <= entry->_geom_result->get_modified() &&
+          data->get_modified() <= entry->_data_result->get_modified()) {
+        // The cache entry is still good; use it.
+
+        // Record a cache hit, so this element will stay in the cache a
+        // while longer.
+        entry->refresh();
+        geom = entry->_geom_result;
+        data = entry->_data_result;
+        return;
+      }
+
+      // The cache entry is stale, remove it.
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Cache entry " << *entry << " is stale, removing.\n";
+      }
+      entry->erase();
+      qpGeom::CDWriter cdataw(((qpGeom *)geom.p())->_cycler, cdata);
+      cdataw->_cache.erase(entry);
+    }
+  }
+
+  // Ok, invoke the munger.
+  PStatTimer timer(_munge_pcollector);
+
+  CPT(qpGeom) orig_geom = geom;
+  data = munge_data(data);
+  munge_geom_impl(geom, data);
+
+  {
+    // Record the new result in the cache.
+    qpGeom::CacheEntry *entry;
+    {
+      qpGeom::CDWriter cdata(((qpGeom *)orig_geom.p())->_cycler);
+      entry = new qpGeom::CacheEntry((qpGeom *)orig_geom.p(), source_data, this,
+                                     geom, data);
+      bool inserted = cdata->_cache.insert(entry).second;
+      nassertv(inserted);
+    }
+    
+    // And tell the cache manager about the new entry.  (It might
+    // immediately request a delete from the cache of the thing we
+    // just added.)
+    entry->record();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,7 +359,7 @@ Registry() {
 //               normally; you should use only the returned value from
 //               this point on.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomMunger) qpGeomMunger::Registry::
+PT(qpGeomMunger) qpGeomMunger::Registry::
 register_munger(qpGeomMunger *munger) {
   if (munger->is_registered()) {
     return munger;

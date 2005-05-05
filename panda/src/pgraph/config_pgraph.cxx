@@ -82,6 +82,7 @@
 #include "shadeModelAttrib.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
+#include "stateMunger.h"
 #include "switchNode.h"
 #include "texMatrixAttrib.h"
 #include "texProjectorEffect.h"
@@ -320,6 +321,7 @@ init_libpgraph() {
   ShadeModelAttrib::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
+  StateMunger::init_type();
   SwitchNode::init_type();
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();

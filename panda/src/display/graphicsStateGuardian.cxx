@@ -131,6 +131,17 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_render_texture = false;
 
   _supported_geom_rendering = 0;
+
+  // If this is true, then we can apply a color and/or color scale by
+  // twiddling the material and/or ambient light (which could mean
+  // enabling lighting even without a LightAttrib).
+  _color_scale_via_lighting = color_scale_via_lighting;
+
+  if (!use_qpgeom) {
+    // The old Geom interface doesn't really work too well with the
+    // color_scale_via_lighting trick.
+    _color_scale_via_lighting = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,6 +234,14 @@ reset() {
   _blend_mode_stale = false;
   _pending_texture = NULL;
   _texture_stale = false;
+  _pending_light = NULL;
+  _light_stale = false;
+  _pending_material = NULL;
+  _material_stale = false;
+
+  _has_material_force_color = false;
+  _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -356,7 +375,7 @@ release_index_buffer(IndexBufferContext *) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomMunger) GraphicsStateGuardian::
+PT(qpGeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state) {
   // The default implementation returns no munger at all, but
   // presumably, every kind of GSG needs some special munging action,
@@ -886,6 +905,12 @@ issue_color_scale(const ColorScaleAttrib *attrib) {
   if (_texture_involves_color_scale) {
     _texture_stale = true;
   }
+  if (_color_scale_via_lighting) {
+    _light_stale = true;
+    _material_stale = true;
+
+    determine_light_color_scale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -929,153 +954,39 @@ issue_color(const ColorAttrib *attrib) {
     _vertex_colors_enabled = true;
     break;
   }
+
+  if (_color_scale_via_lighting) {
+    _light_stale = true;
+    _material_stale = true;
+
+    determine_light_color_scale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::issue_light
 //       Access: Public, Virtual
-//  Description: The default implementation of issue_light() assumes
-//               we have a limited number of hardware lights
-//               available.  This function assigns each light to a
-//               different hardware light id, trying to keep each
-//               light associated with the same id where possible, but
-//               reusing id's when necessary.  When it is no longer
-//               possible to reuse existing id's (e.g. all id's are in
-//               use), slot_new_light() is called to prepare the next
-//               sequential light id.
-//
-//               It will call apply_light() each time a light is
-//               assigned to a particular id for the first time in a
-//               given frame, and it will subsequently call
-//               enable_light() to enable or disable each light as the
-//               frame is rendered, as well as enable_lighting() to
-//               enable or disable overall lighting.
-//
-//               If this model of hardware lights with id's does not
-//               apply to a particular graphics engine, it should
-//               override this function to do something more
-//               appropriate instead.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_light(const LightAttrib *attrib) {
-  // Initialize the current ambient light total and newly enabled
-  // light list
-  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
-  int i;
-  int max_lights = (int)_light_info.size();
-  for (i = 0; i < max_lights; i++) {
-    _light_info[i]._next_enabled = false;
-  }
+  // By default, we don't apply the light attrib right away, since
+  // it might have a dependency on the current ColorScaleAttrib.
+  _pending_light = attrib;
+  _light_stale = true;
+}
 
-  bool any_bound = false;
-
-  int num_enabled = 0;
-  int num_on_lights = attrib->get_num_on_lights();
-  for (int li = 0; li < num_on_lights; li++) {
-    NodePath light = attrib->get_on_light(li);
-    nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
-    Light *light_obj = light.node()->as_light();
-
-    num_enabled++;
-
-    // Lighting should be enabled before we apply any lights.
-    enable_lighting(true);
-    _lighting_enabled = true;
-    _lighting_enabled_this_frame = true;
-
-    if (light_obj->get_type() == AmbientLight::get_class_type()) {
-      // Ambient lights don't require specific light ids; simply add
-      // in the ambient contribution to the current total
-      cur_ambient_light += light_obj->get_color();
-        
-    } else {
-      // Check to see if this light has already been bound to an id
-      int cur_light_id = -1;
-      for (i = 0; i < max_lights; i++) {
-        if (_light_info[i]._light == light) {
-          // Light has already been bound to an id, we only need to
-          // enable the light, not reapply it.
-          cur_light_id = -2;
-          enable_light(i, true);
-          _light_info[i]._enabled = true;
-          _light_info[i]._next_enabled = true;
-          break;
-        }
-      }
-        
-      // See if there are any unbound light ids
-      if (cur_light_id == -1) {
-        for (i = 0; i < max_lights; i++) {
-          if (_light_info[i]._light.is_empty()) {
-            _light_info[i]._light = light;
-            cur_light_id = i;
-            break;
-          }
-        }
-      }
-        
-      // If there were no unbound light ids, see if we can replace
-      // a currently unused but previously bound id
-      if (cur_light_id == -1) {
-        for (i = 0; i < max_lights; i++) {
-          if (!attrib->has_on_light(_light_info[i]._light)) {
-            _light_info[i]._light = light;
-            cur_light_id = i;
-            break;
-          }
-        }
-      }
-
-      // If we *still* don't have a light id, slot a new one.
-      if (cur_light_id == -1) {
-        if (slot_new_light(max_lights)) {
-          cur_light_id = max_lights;
-          _light_info.push_back(LightInfo());
-          max_lights++;
-          nassertv(max_lights == (int)_light_info.size());
-        }
-      }
-        
-      if (cur_light_id >= 0) {
-        enable_light(cur_light_id, true);
-        _light_info[cur_light_id]._enabled = true;
-        _light_info[cur_light_id]._next_enabled = true;
-        
-        if (!any_bound) {
-          begin_bind_lights();
-          any_bound = true;
-        }
-
-        // This is the first time this frame that this light has been
-        // bound to this particular id.
-        light_obj->bind(this, light, cur_light_id);
-
-      } else if (cur_light_id == -1) {
-        gsg_cat.warning()
-          << "Failed to bind " << light << " to id.\n";
-      }
-    }
-  }
-
-  // Disable all unused lights
-  for (i = 0; i < max_lights; i++) {
-    if (!_light_info[i]._next_enabled) {
-      enable_light(i, false);
-      _light_info[i]._enabled = false;
-    }
-  }
-
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
-    enable_lighting(false);
-    _lighting_enabled = false;
-  } else {
-    set_ambient_light(cur_ambient_light);
-  }
-
-  if (any_bound) {
-    end_bind_lights();
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_material
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_material(const MaterialAttrib *attrib) {
+  // By default, we don't apply the material attrib right away, since
+  // it might have a dependency on the current ColorScaleAttrib.
+  _pending_material = attrib;
+  _material_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1279,6 +1190,181 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::do_issue_light
+//       Access: Protected
+//  Description: This implementation of issue_light() assumes
+//               we have a limited number of hardware lights
+//               available.  This function assigns each light to a
+//               different hardware light id, trying to keep each
+//               light associated with the same id where possible, but
+//               reusing id's when necessary.  When it is no longer
+//               possible to reuse existing id's (e.g. all id's are in
+//               use), slot_new_light() is called to prepare the next
+//               sequential light id.
+//
+//               It will call apply_light() each time a light is
+//               assigned to a particular id for the first time in a
+//               given frame, and it will subsequently call
+//               enable_light() to enable or disable each light as the
+//               frame is rendered, as well as enable_lighting() to
+//               enable or disable overall lighting.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+do_issue_light() {
+  // Initialize the current ambient light total and newly enabled
+  // light list
+  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
+  int i;
+  int max_lights = (int)_light_info.size();
+  for (i = 0; i < max_lights; i++) {
+    _light_info[i]._next_enabled = false;
+  }
+
+  bool any_bound = false;
+
+  int num_enabled = 0;
+  if (_pending_light != (LightAttrib *)NULL) {
+    int num_on_lights = _pending_light->get_num_on_lights();
+    for (int li = 0; li < num_on_lights; li++) {
+      NodePath light = _pending_light->get_on_light(li);
+      nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
+      Light *light_obj = light.node()->as_light();
+      
+      num_enabled++;
+      
+      // Lighting should be enabled before we apply any lights.
+      enable_lighting(true);
+      _lighting_enabled = true;
+      _lighting_enabled_this_frame = true;
+      
+      if (light_obj->get_type() == AmbientLight::get_class_type()) {
+        // Ambient lights don't require specific light ids; simply add
+        // in the ambient contribution to the current total
+        cur_ambient_light += light_obj->get_color();
+        
+      } else {
+        // Check to see if this light has already been bound to an id
+        int cur_light_id = -1;
+        for (i = 0; i < max_lights; i++) {
+          if (_light_info[i]._light == light) {
+            // Light has already been bound to an id; reuse the same id.
+            cur_light_id = -2;
+            enable_light(i, true);
+            _light_info[i]._enabled = true;
+            _light_info[i]._next_enabled = true;
+            light_obj->bind(this, light, i);
+            break;
+          }
+        }
+        
+        // See if there are any unbound light ids
+        if (cur_light_id == -1) {
+          for (i = 0; i < max_lights; i++) {
+            if (_light_info[i]._light.is_empty()) {
+              _light_info[i]._light = light;
+              cur_light_id = i;
+              break;
+            }
+          }
+        }
+        
+        // If there were no unbound light ids, see if we can replace
+        // a currently unused but previously bound id
+        if (cur_light_id == -1) {
+          for (i = 0; i < max_lights; i++) {
+            if (!_pending_light->has_on_light(_light_info[i]._light)) {
+              _light_info[i]._light = light;
+              cur_light_id = i;
+              break;
+            }
+          }
+        }
+        
+        // If we *still* don't have a light id, slot a new one.
+        if (cur_light_id == -1) {
+          if (slot_new_light(max_lights)) {
+            cur_light_id = max_lights;
+            _light_info.push_back(LightInfo());
+            max_lights++;
+            nassertv(max_lights == (int)_light_info.size());
+          }
+        }
+        
+        if (cur_light_id >= 0) {
+          enable_light(cur_light_id, true);
+          _light_info[cur_light_id]._enabled = true;
+          _light_info[cur_light_id]._next_enabled = true;
+          
+          if (!any_bound) {
+            begin_bind_lights();
+            any_bound = true;
+          }
+          
+          // This is the first time this frame that this light has been
+          // bound to this particular id.
+          light_obj->bind(this, light, cur_light_id);
+          
+        } else if (cur_light_id == -1) {
+          gsg_cat.warning()
+            << "Failed to bind " << light << " to id.\n";
+        }
+      }
+    }
+  }
+    
+  // Disable all unused lights
+  for (i = 0; i < max_lights; i++) {
+    if (!_light_info[i]._next_enabled) {
+      enable_light(i, false);
+      _light_info[i]._enabled = false;
+    }
+  }
+
+  // If no lights were enabled, disable lighting
+  if (num_enabled == 0) {
+    if (_color_scale_via_lighting && (_has_material_force_color || _light_color_scale != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f))) {
+      // Unless we need lighting anyway to apply a color or color
+      // scale.
+      enable_lighting(true);
+      _lighting_enabled = true;
+      _lighting_enabled_this_frame = true;
+      set_ambient_light(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+
+    } else {
+      enable_lighting(false);
+      _lighting_enabled = false;
+    }
+
+  } else {
+    set_ambient_light(cur_ambient_light);
+  }
+
+  if (any_bound) {
+    end_bind_lights();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::do_issue_material
+//       Access: Protected, Virtual
+//  Description: Should be overridden by derived classes to actually
+//               apply the material saved in _pending_material.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+do_issue_material() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::do_issue_texture
+//       Access: Protected, Virtual
+//  Description: Should be overridden by derived classes to actually
+//               apply the texture saved in _pending_texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+do_issue_texture() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::slot_new_light
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
@@ -1470,6 +1556,21 @@ finish_modify_state() {
     _blend_mode_stale = false;
     set_blend_mode();
   }
+
+  if (_texture_stale) {
+    _texture_stale = false;
+    do_issue_texture();
+  }
+
+  if (_material_stale) {
+    _material_stale = false;
+    do_issue_material();
+  }
+
+  if (_light_stale) {
+    _light_stale = false;
+    do_issue_light();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1526,6 +1627,41 @@ panic_deactivate() {
       << "Deactivating " << get_type() << ".\n";
     set_active(false);
     throw_event("panic-deactivate-gsg", this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::determine_light_color_scale
+//       Access: Protected
+//  Description: Called whenever the color or color scale is changed,
+//               if _color_scale_via_lighting is true.  This will
+//               rederive _material_force_color and _light_color_scale
+//               appropriately.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+determine_light_color_scale() {
+  if (_has_scene_graph_color) {
+    // If we have a scene graph color, it, plus the color scale, goes
+    // directly into the material; we don't color scale the
+    // lights--this allows an alpha color scale to work properly.
+    _has_material_force_color = true;
+    _material_force_color = _scene_graph_color;
+    _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!_color_blend_involves_color_scale && _color_scale_enabled) {
+      _material_force_color.set(_scene_graph_color[0] * _current_color_scale[0],
+                                _scene_graph_color[1] * _current_color_scale[1],
+                                _scene_graph_color[2] * _current_color_scale[2],
+                                _scene_graph_color[3] * _current_color_scale[3]);
+    }
+
+  } else {
+    // Otherise, leave the materials alone, but we might still scale
+    // the lights.
+    _has_material_force_color = false;
+    _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!_color_blend_involves_color_scale && _color_scale_enabled) {
+      _light_color_scale = _current_color_scale;
+    }
   }
 }
 

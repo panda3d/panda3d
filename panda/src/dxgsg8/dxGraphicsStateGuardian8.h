@@ -115,20 +115,17 @@ public:
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                                            const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                                        const RenderBuffer &rb);
 
-  virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
-  virtual void issue_texture(const TextureAttrib *attrib);
-  virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
@@ -160,6 +157,8 @@ public:
 
   static D3DFORMAT get_index_type(qpGeom::NumericType numeric_type);
 
+  const D3DCOLORVALUE &get_light_color(Light *light) const;
+
 public:
   // recreate_tex_callback needs these to be public
   DXScreenData *_pScrn;
@@ -168,6 +167,8 @@ public:
   D3DPRESENT_PARAMETERS _PresReset;  // This is built during reset device
 
 protected:
+  virtual void do_issue_material();
+
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -192,6 +193,7 @@ protected:
   static CPT(RenderState) get_flat_state();
 
   void do_auto_rescale_normal();
+  virtual void do_issue_texture();
 
   bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
@@ -204,10 +206,10 @@ protected:
   bool _auto_rescale_normal;
 
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
-                    void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-                    D3DXVECTOR3 *pCenter, float fRadius,
-                    DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
-                    DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
+                      void *pIndexSpace,DWORD dwIndexSpaceByteSize,
+                      D3DXVECTOR3 *pCenter, float fRadius,
+                      DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
+                      DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
   HRESULT ReleaseAllDeviceObjects(void);
   HRESULT RecreateAllDeviceObjects(void);
   HRESULT DeleteAllDeviceObjects(void);

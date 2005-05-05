@@ -861,8 +861,8 @@ reset() {
   cfa->issue(this);
   ta->issue(this);
 
-  Material empty;
-  apply_material(&empty);
+  _pending_material = NULL;
+  do_issue_material();
 
   if (CLP(cheap_textures)) {
     GLCAT.info()
@@ -1157,7 +1157,8 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1227,7 +1228,8 @@ draw_line(GeomLine *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1304,7 +1306,8 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1677,7 +1680,8 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1758,7 +1762,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1837,7 +1842,8 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -1920,7 +1926,8 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -2021,7 +2028,8 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -2119,7 +2127,8 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
+      _color_scale_via_lighting) {
     issue_color = issue_color_gl;
   } else {
     issue_color = issue_scaled_color_gl;
@@ -3206,7 +3215,7 @@ setup_primitive(const qpGeomPrimitive *data) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomMunger) CLP(GraphicsStateGuardian)::
+PT(qpGeomMunger) CLP(GraphicsStateGuardian)::
 get_geom_munger(const RenderState *state) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return qpGeomMunger::register_munger(munger);
@@ -3404,52 +3413,6 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-apply_material(const Material *material) {
-  GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
-
-  GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
-  GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
-  GLP(Materialf)(face, GL_SHININESS, material->get_shininess());
-
-  if (material->has_ambient() && material->has_diffuse()) {
-    // The material has both an ambient and diffuse specified.  This
-    // means we do not need glMaterialColor().
-    GLP(Disable)(GL_COLOR_MATERIAL);
-    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
-    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
-
-  } else if (material->has_ambient()) {
-    // The material specifies an ambient, but not a diffuse component.
-    // The diffuse component comes from the object's color.
-    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
-    GLP(ColorMaterial)(face, GL_DIFFUSE);
-    GLP(Enable)(GL_COLOR_MATERIAL);
-
-  } else if (material->has_diffuse()) {
-    // The material specifies a diffuse, but not an ambient component.
-    // The ambient component comes from the object's color.
-    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
-    GLP(ColorMaterial)(face, GL_AMBIENT);
-    GLP(Enable)(GL_COLOR_MATERIAL);
-
-  } else {
-    // The material specifies neither a diffuse nor an ambient
-    // component.  Both components come from the object's color.
-    GLP(ColorMaterial)(face, GL_AMBIENT_AND_DIFFUSE);
-    GLP(Enable)(GL_COLOR_MATERIAL);
-  }
-
-  GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
-  GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_fog
 //       Access: Public, Virtual
 //  Description:
@@ -3593,24 +3556,6 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
   }
 }
 #endif
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_material(const MaterialAttrib *attrib) {
-  const Material *material = attrib->get_material();
-  if (material != (const Material *)NULL) {
-    apply_material(material);
-  } else {
-    // Apply a default material when materials are turned off.
-    Material empty;
-    apply_material(&empty);
-  }
-  report_my_gl_errors();
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_render_mode
@@ -3904,6 +3849,77 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_material
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_material() {
+  static Material empty;
+  const Material *material;
+  if (_pending_material == (MaterialAttrib *)NULL || 
+      _pending_material->is_off()) {
+    material = &empty;
+  } else {
+    material = _pending_material->get_material();
+  }
+
+  GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
+
+  GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
+  GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
+  GLP(Materialf)(face, GL_SHININESS, material->get_shininess());
+
+  if (material->has_ambient() && material->has_diffuse()) {
+    // The material has both an ambient and diffuse specified.  This
+    // means we do not need glMaterialColor().
+    GLP(Disable)(GL_COLOR_MATERIAL);
+    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
+    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
+
+  } else if (material->has_ambient()) {
+    // The material specifies an ambient, but not a diffuse component.
+    // The diffuse component comes from the object's color.
+    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
+    if (_has_material_force_color) {
+      GLP(Disable)(GL_COLOR_MATERIAL);
+      GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
+    } else {
+      GLP(ColorMaterial)(face, GL_DIFFUSE);
+      GLP(Enable)(GL_COLOR_MATERIAL);
+    }
+
+  } else if (material->has_diffuse()) {
+    // The material specifies a diffuse, but not an ambient component.
+    // The ambient component comes from the object's color.
+    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    if (_has_material_force_color) {
+      GLP(Disable)(GL_COLOR_MATERIAL);
+      GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
+    } else {
+      GLP(ColorMaterial)(face, GL_AMBIENT);
+      GLP(Enable)(GL_COLOR_MATERIAL);
+    }
+
+  } else {
+    // The material specifies neither a diffuse nor an ambient
+    // component.  Both components come from the object's color.
+    if (_has_material_force_color) {
+      GLP(Disable)(GL_COLOR_MATERIAL);
+      GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
+      GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
+    } else {
+      GLP(ColorMaterial)(face, GL_AMBIENT_AND_DIFFUSE);
+      GLP(Enable)(GL_COLOR_MATERIAL);
+    }
+  }
+
+  GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
+  GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
@@ -3916,7 +3932,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
@@ -3956,7 +3972,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w.
@@ -4000,7 +4016,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
@@ -4985,6 +5001,25 @@ issue_scaled_color(const Colorf &color) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_light_color
+//       Access: Public
+//  Description: Returns the array of four floats that should be
+//               issued as the light's color, as scaled by the current
+//               value of _light_color_scale, in the case of
+//               color_scale_via_lighting.
+////////////////////////////////////////////////////////////////////
+const float *CLP(GraphicsStateGuardian)::
+get_light_color(Light *light) const {
+  static Colorf c;
+  c = light->get_color();
+  c.set(c[0] * _light_color_scale[0],
+        c[1] * _light_color_scale[1],
+        c[2] * _light_color_scale[2],
+        c[3] * _light_color_scale[3]);
+  return c.get_data();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::slot_new_light
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
@@ -5029,7 +5064,12 @@ enable_lighting(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_ambient_light(const Colorf &color) {
-  GLP(LightModelfv)(GL_LIGHT_MODEL_AMBIENT, color.get_data());
+  Colorf c = color;
+  c.set(c[0] * _light_color_scale[0],
+        c[1] * _light_color_scale[1],
+        c[2] * _light_color_scale[2],
+        c[3] * _light_color_scale[3]);
+  GLP(LightModelfv)(GL_LIGHT_MODEL_AMBIENT, c.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5305,12 +5345,6 @@ set_blend_mode() {
 void CLP(GraphicsStateGuardian)::
 finish_modify_state() {
   GraphicsStateGuardian::finish_modify_state();
-
-  // Apply the texture, if it needs to be reapplied.
-  if (_texture_stale) {
-    _texture_stale = false;
-    do_issue_texture();
-  }
 
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
@@ -5656,7 +5690,7 @@ do_auto_rescale_normal() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_texture
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: This is called by finish_modify_state() when the
 //               texture state has changed.
 ////////////////////////////////////////////////////////////////////

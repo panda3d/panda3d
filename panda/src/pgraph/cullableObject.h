@@ -58,7 +58,7 @@ public:
   INLINE bool has_decals() const;
 
   void munge_geom(GraphicsStateGuardianBase *gsg,
-                  const qpGeomMunger *munger, const CullTraverser *traverser);
+                  qpGeomMunger *munger, const CullTraverser *traverser);
   INLINE void draw(GraphicsStateGuardianBase *gsg);
 
 public:
@@ -77,7 +77,7 @@ PUBLISHED:
 
 public:
   CPT(Geom) _geom;
-  CPT(qpGeomMunger) _munger;
+  PT(qpGeomMunger) _munger;
   CPT(qpGeomVertexData) _munged_data;
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
