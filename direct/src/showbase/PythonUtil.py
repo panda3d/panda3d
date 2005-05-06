@@ -780,6 +780,9 @@ a class that derives from ParamSet to define the object's parameters. The
 ParamObj class must declare a class-level reference to its ParamSet class,
 called 'ParamClass'. (See the example classes below.)
 
+The ParamObj base class provides 'get' and 'set' functions for each
+parameter if they are not defined.
+
 Classes that derive from ParamObj must declare a 'get' and 'set' function
 for each parameter. The setter should simply store the value in a location
 where the getter can find it; it should not do any further processing based
@@ -959,7 +962,9 @@ class ParamObj:
     # derived class must override this to be the appropriate ParamSet subclass
     ParamClass = ParamSet
     
-    def __init__(self):
+    def __init__(self, params=None):
+        # If you pass in a ParamClass obj, its values will be applied to this
+        # object in the constructor.
         self._paramLockRefCount = 0
         # this holds dictionaries of parameter values prior to the set that we
         # are performing
@@ -968,15 +973,14 @@ class ParamObj:
         # at the top of the stack
         self._curParamStack = Stack()
 
-        def setterStub(param, value, self=self):
+        def setterStub(param, setterFunc, self,
+                       value):
             # should we apply the value now or should we wait?
             # if this obj's params are locked, we track which values have
             # been set, and on unlock, we'll call the applyers for those
             # values
             if self._paramLockRefCount > 0:
-                # set the new value; make sure we're not calling ourselves
-                # recursively
-                getSetter(self.__class__, param)(self, value)
+                setterFunc(value)
                 priorValues = self._priorValuesStack.top()
                 if param not in priorValues:
                     try:
@@ -990,9 +994,7 @@ class ParamObj:
                 self._priorValuesStack.push({
                     param: getSetter(self, param, 'get')()
                     })
-                # set the new value; make sure we're not calling ourselves
-                # recursively
-                getSetter(self.__class__, param)(self, value)
+                setterFunc(value)
                 # call the applier, if there is one
                 applier = getattr(self, getSetterName(param, 'apply'), None)
                 if applier is not None:
@@ -1003,16 +1005,39 @@ class ParamObj:
 
         # insert stub funcs for param setters
         for param in self.ParamClass.getParams():
-            # if the setter is a direct member of self, move the setter
-            # aside
             setterName = getSetterName(param)
+            getterName = getSetterName(param, 'get')
+
+            # is there a setter defined?
+            if not hasattr(self, setterName):
+                # no; provide the default
+                def defaultSetter(self, value, param=param):
+                    setattr(self, param, value)
+                self.__class__.__dict__[setterName] = defaultSetter
+
+            # is there a getter defined?
+            if not hasattr(self, getterName):
+                # no; provide the default. If there is no value set, return the default
+                def defaultGetter(self, param=param,
+                                  default=self.ParamClass.getDefaultValue(param)):
+                    return getattr(self, param, default)
+                self.__class__.__dict__[getterName] = defaultGetter
+
+            # grab a reference to the setter
+            setterFunc = getattr(self, setterName)
+            # if the setter is a direct member of this instance, move the setter
+            # aside
             if setterName in self.__dict__:
                 self.__dict__[setterName + '_MOVED'] = self.__dict__[setterName]
-            # and replace it with a stub that will a) call the setter and
-            # then the applier, or b) call the setter and queue the applier,
-            # depending on whether our params are locked
-            self.__dict__[setterName] = Functor(setterStub, param)
-                
+                setterFunc = self.__dict__[setterName]
+            # install a setter stub that will a) call the real setter and
+            # then the applier, or b) call the setter and queue the
+            # applier, depending on whether our params are locked
+            self.__dict__[setterName] = Functor(setterStub, param, setterFunc, self)
+
+        if params is not None:
+            params.applyTo(self)
+
     def setDefaultParams(self):
         # set all the default parameters on ourself
         self.ParamClass().applyTo(self)
