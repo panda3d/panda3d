@@ -150,6 +150,11 @@ class FSM(DirectObject.DirectObject):
         # states.
         self.__requestQueue = []
 
+        if __debug__:
+            from direct.fsm.ClassicFSM import _debugFsms
+            import weakref
+            _debugFsms[name]=weakref.ref(self)
+
     def __del__(self):
         self.cleanup()
 
