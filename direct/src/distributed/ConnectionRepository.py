@@ -92,6 +92,16 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
                 readResult = dcFile.read(Filename(dcFileName))
                 if not readResult:
                     self.notify.error("Could not read dc file: %s" % (dcFileName))
+
+        if not dcFile.allObjectsValid():
+            names = []
+            for i in range(dcFile.getNumTypedefs()):
+                td = dcFile.getTypedef(i)
+                if td.isBogusTypedef():
+                    names.append(td.getName())
+            nameList = ', '.join(names)
+            self.notify.error("Undefined types in DC file: " + nameList)
+            
         self.hashVal = dcFile.getHash()
 
         # Now import all of the modules required by the DC file.
