@@ -667,6 +667,24 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::rename_char
+//       Access: Public
+//  Description: Renames the ith character to the indicated name.
+//               This name must not already be used by another
+//               character in the collection.
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+rename_char(int i, const string &name) {
+  nassertv(i >= 0 && i < (int)_characters.size());
+
+  EggCharacterData *char_data = _characters[i];
+  if (char_data->get_name() != name) {
+    nassertv(get_character_by_name(name) == (EggCharacterData *)NULL);
+    char_data->rename_char(name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterCollection::write
 //       Access: Public, Virtual
 //  Description:

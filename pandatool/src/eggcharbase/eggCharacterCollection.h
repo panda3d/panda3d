@@ -54,6 +54,8 @@ public:
 
   INLINE EggCharacterData *get_character_by_model_index(int model_index) const;
 
+  void rename_char(int i, const string &name);
+
   virtual void write(ostream &out, int indent_level = 0) const;
   void check_errors(ostream &out, bool force_initial_rest_frame);
 

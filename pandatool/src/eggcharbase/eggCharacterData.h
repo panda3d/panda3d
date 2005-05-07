@@ -66,6 +66,8 @@ public:
   EggCharacterData(EggCharacterCollection *collection);
   virtual ~EggCharacterData();
 
+  void rename_char(const string &name);
+
   void add_model(int model_index, EggNode *model_root, EggData *egg_data);
   INLINE int get_num_models() const;
   INLINE int get_model_index(int n) const;

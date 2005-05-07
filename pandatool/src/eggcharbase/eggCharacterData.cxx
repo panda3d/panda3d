@@ -65,6 +65,26 @@ EggCharacterData::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::rename_char
+//       Access: Public
+//  Description: Renames all of the models in the character data to
+//               the indicated name.  This is the name that is used to
+//               identify unique skeleton hierarchies; if you set two
+//               different models to the same name, they will be
+//               loaded together as if they are expected to have the
+//               same skeleton hierarchy.
+////////////////////////////////////////////////////////////////////
+void EggCharacterData::
+rename_char(const string &name) {
+  Models::iterator mi;
+  for (mi = _models.begin(); mi != _models.end(); ++mi) {
+    (*mi)._model_root->set_name(name);
+  }
+
+  set_name(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::add_model
 //       Access: Public
 //  Description: Indicates that the given model_index (with the
