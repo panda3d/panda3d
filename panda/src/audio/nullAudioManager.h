@@ -42,6 +42,9 @@ public:
 
   virtual void set_volume(float);
   virtual float get_volume() const;
+
+  virtual void set_play_rate(float);
+  virtual float get_play_rate() const;
   
   virtual void set_active(bool);
   virtual bool get_active() const;

@@ -86,6 +86,14 @@ float NullAudioSound::get_balance() const {
   return 0; 
 }
 
+void NullAudioSound::set_play_rate(float) {
+  // Intentionally blank.
+}
+
+float NullAudioSound::get_play_rate() const {
+  return 0; 
+}
+
 void NullAudioSound::set_active(bool) {
   // Intentionally blank.
 }

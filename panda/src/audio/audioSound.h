@@ -79,6 +79,11 @@ PUBLISHED:
   // inits to 0.0.
   virtual void set_balance(float balance_right=0.0) = 0;
   virtual float get_balance() const = 0;
+  
+  // play_rate is any positive float value.
+  // inits to 1.0.
+  virtual void set_play_rate(float play_rate=1.0f) = 0;
+  virtual float get_play_rate() const = 0;
 
   // inits to manager's state.
   virtual void set_active(bool flag=true) = 0;

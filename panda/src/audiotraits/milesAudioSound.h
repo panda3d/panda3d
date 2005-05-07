@@ -92,6 +92,11 @@ public:
   // inits to 0.0.
   void set_balance(float balance_right=0.0f);
   float get_balance() const;
+  
+  // play_rate is any positive float value.
+  // inits to 1.0.
+  void set_play_rate(float play_rate=1.0f);
+  float get_play_rate() const;
 
   // inits to manager's state.
   void set_active(bool active=true);
@@ -121,8 +126,10 @@ private:
   PT(MilesAudioManager) _manager;
   float _volume; // 0..1.0
   float _balance; // -1..1
+  float _play_rate; // 0..1.0
   mutable float _length; // in seconds.
   unsigned long _loop_count;
+  S32 _original_playback_rate;
   
   // This is the string that throw_event() will throw
   // when the sound finishes playing.  It is not triggered

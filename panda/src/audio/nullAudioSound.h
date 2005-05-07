@@ -51,6 +51,9 @@ public:
   
   void set_balance(float);
   float get_balance() const;
+  
+  void set_play_rate(float);
+  float get_play_rate() const;
 
   void set_active(bool);
   bool get_active() const;

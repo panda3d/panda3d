@@ -151,6 +151,24 @@ namespace {
     }
   }
 
+  S32
+  Get_playback_rate(HAUDIO audio) {
+    if (audio) {
+      switch (audio->type) {
+      case AIL_QUICK_XMIDI_TYPE:
+      case AIL_QUICK_DLS_XMIDI_TYPE:
+        return AIL_sequence_tempo((HSEQUENCE)audio->handle);
+        break;
+      case AIL_QUICK_DIGITAL_TYPE:
+      case AIL_QUICK_MPEG_DIGITAL_TYPE:
+        return AIL_sample_playback_rate((HSAMPLE)audio->handle);
+        break;
+      }
+    }
+    return 0;
+  }
+
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,6 +189,8 @@ MilesAudioSound(MilesAudioManager* manager,
       <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
   // Make our own copy of the sound header data:
   _audio=AIL_quick_copy(sd->_audio);
+  _play_rate = 1.0f;
+  _original_playback_rate = Get_playback_rate(_audio);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,6 +431,53 @@ float MilesAudioSound::
 get_volume() const {
   miles_audio_debug("get_volume() returning "<<_volume);
   return _volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSound::
+//       Access: 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSound::
+set_play_rate(float play_rate) {
+  miles_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
+  // Set the play_rate:
+  _play_rate=play_rate;
+  if (_audio) {
+    // Account for the category of sound:
+    play_rate*=_manager->get_play_rate();
+    switch (_audio->type) {
+    case AIL_QUICK_XMIDI_TYPE:
+    case AIL_QUICK_DLS_XMIDI_TYPE:
+      // midi uses whole percentage values 100 == 100%
+      _audio->speed = S32(play_rate*100.0f);
+      if ((_audio->speed != -1) && (AIL_quick_status(_audio) == QSTAT_PLAYING)) {
+        AIL_set_sequence_tempo((HSEQUENCE)_audio->handle, _audio->speed, 0);
+      }
+      audio_debug("  play_rate for this midi is now "<<_audio->speed);
+      break;
+    case AIL_QUICK_DIGITAL_TYPE:
+    case AIL_QUICK_MPEG_DIGITAL_TYPE:
+      // wave and mp3 use sample rate (e.g. 44100)
+      _audio->speed = S32(play_rate*_original_playback_rate);
+      if ((_audio->speed != -1) && (AIL_quick_status(_audio) == QSTAT_PLAYING)) {
+        AIL_set_sample_playback_rate((HSAMPLE)_audio->handle, _audio->speed);
+      }
+      audio_debug("  play_rate for this wav or mp3 is now "<<_audio->speed);
+      break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSound::get_play_rate
+//       Access: 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float MilesAudioSound::
+get_play_rate() const {
+  miles_audio_debug("get_play_rate() returning "<<_play_rate);
+  return _play_rate;
 }
 
 ////////////////////////////////////////////////////////////////////

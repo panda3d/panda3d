@@ -69,6 +69,7 @@ MilesAudioManager() {
   _cleanup_required = true;
   _active = audio_active;
   _volume = audio_volume;
+  _play_rate = 1.0f;
   _cache_limit = audio_cache_limit;
   _concurrent_sound_limit = 0;
   _is_valid = true;
@@ -529,6 +530,35 @@ float MilesAudioManager::
 get_volume() const {
   audio_debug("MilesAudioManager::get_volume() returning "<<_volume);
   return _volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_play_rate
+//       Access: Public
+//  Description: set the overall play rate
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_play_rate(float play_rate) {
+  audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
+  if (_play_rate!=play_rate) {
+    _play_rate = play_rate;
+    // Tell our AudioSounds to adjust:
+    AudioSet::iterator i=_sounds_on_loan.begin();
+    for (; i!=_sounds_on_loan.end(); ++i) {
+      (**i).set_play_rate((**i).get_play_rate());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_play_rate
+//       Access: Public
+//  Description: get the overall speed/pitch/play rate
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::
+get_play_rate() const {
+  audio_debug("MilesAudioManager::get_play_rate() returning "<<_play_rate);
+  return _play_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
