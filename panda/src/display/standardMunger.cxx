@@ -72,7 +72,7 @@ StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
   } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
              color_scale_attrib->has_scale()) {
     _color_scale = color_scale_attrib->get_scale();
-    if (!_gsg->get_color_scale_via_lighting() || _color_scale[3] != 1.0f) {
+    if (!_gsg->get_color_scale_via_lighting() || _color_scale[3] < 0.999f) {
       // We only need to apply the color scale by directly munging the
       // color if the GSG says it can't cheat this via lighting (for
       // instance, by applying an ambient light).  Or, since we assume
