@@ -28,9 +28,9 @@
 #include "renderState.h"
 #include "pointerTo.h"
 #include "pmap.h"
+#include "auxSceneData.h"
 
 class DisplayRegion;
-class AuxSceneData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Camera
