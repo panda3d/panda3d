@@ -45,7 +45,7 @@ PUBLISHED:
 public:
   // These comparison functions are common to all things PointerTo, so
   // they're defined up here.
-#ifndef WIN32_VC
+#if 0
   INLINE bool operator == (const void *other) const;
   INLINE bool operator != (const void *other) const;
   INLINE bool operator > (const void *other) const;

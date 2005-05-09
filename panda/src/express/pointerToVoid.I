@@ -59,7 +59,7 @@ get_hash() const {
   return (size_t)_void_ptr;
 }
 
-#ifndef WIN32_VC
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToVoid::Equivalence operator
 //       Access: Public
