@@ -47,7 +47,8 @@ class AsyncRequest(DirectObject):
         self.air=air
         self.replyToChannelId=replyToChannelId
         self.neededObjects={}
-        self.timeoutTask=taskMgr.doMethodLater(timeout, self.timeout, "AsyncRequestTimer-%s"%(id(self,)))
+        self.timeoutTask=taskMgr.doMethodLater(
+            timeout, self.timeout, "AsyncRequestTimer-%s"%(id(self,)))
 
     def delete(self):
         assert self.notify.debugCall()
