@@ -389,7 +389,7 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
   // Temporary: the ComputedVertices object currently doesn't support
   // multitexture.
-  character->_cv._texcoords = _texcoords[InternalName::get_texcoord()];
+  character->_cv._texcoords = _texcoords[InternalName::get_texcoord().p()];
 
   // Finally, add in all the morph definitions.
   Morphs::const_iterator mi;
