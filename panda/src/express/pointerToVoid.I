@@ -48,3 +48,185 @@ INLINE bool PointerToVoid::
 is_null() const {
   return (_void_ptr == (void *)NULL);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::get_hash
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE size_t PointerToVoid::
+get_hash() const {
+  return (size_t)_void_ptr;
+}
+
+#ifndef WIN32_VC
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Equivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator == (const void *other) const {
+  return _void_ptr == other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Nonequivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator != (const void *other) const {
+  return _void_ptr != other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator > (const void *other) const {
+  return _void_ptr > other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Less-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator <= (const void *other) const {
+  return _void_ptr <= other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator >= (const void *other) const {
+  return _void_ptr >= other;
+}
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Equivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator == (void *other) const {
+  return _void_ptr == other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Nonequivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator != (void *other) const {
+  return _void_ptr != other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator > (void *other) const {
+  return _void_ptr > other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Less-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator <= (void *other) const {
+  return _void_ptr <= other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator >= (void *other) const {
+  return _void_ptr >= other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Equivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator == (const PointerToVoid &other) const {
+  return _void_ptr == other._void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Nonequivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator != (const PointerToVoid &other) const {
+  return _void_ptr != other._void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator > (const PointerToVoid &other) const {
+  return _void_ptr > other._void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Less-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator <= (const PointerToVoid &other) const {
+  return _void_ptr <= other._void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Greater-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator >= (const PointerToVoid &other) const {
+  return _void_ptr >= other._void_ptr;
+}
+#endif  // WIN32_VC
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Less-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator < (const void *other) const {
+  return _void_ptr < other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Less-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator < (const PointerToVoid &other) const {
+  return _void_ptr < other._void_ptr;
+}
+

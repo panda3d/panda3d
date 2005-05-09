@@ -24,6 +24,7 @@
 #include "datagram.h"
 #include "factoryParam.h"
 #include "namable.h"
+#include "nodeCachedReferenceCount.h"
 #include "referenceCount.h"
 #include "typedObject.h"
 #include "typedReferenceCount.h"
@@ -63,6 +64,7 @@ ConfigureFn(config_util) {
   Datagram::init_type();
   FactoryParam::init_type();
   Namable::init_type();
+  NodeCachedReferenceCount::init_type();
   ReferenceCount::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();

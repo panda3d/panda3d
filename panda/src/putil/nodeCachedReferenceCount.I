@@ -1,5 +1,5 @@
-// Filename: cachedTypedWritableReferenceCount.I
-// Created by:  drose (25Jan05)
+// Filename: nodeCachedReferenceCount.I
+// Created by:  drose (07May05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,7 +18,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::Constructor
+//     Function: NodeCachedReferenceCount::Constructor
 //       Access: Protected
 //  Description: The ReferenceCount constructor is protected because
 //               you almost never want to create just a ReferenceCount
@@ -30,13 +30,13 @@
 //               reference-counting to some other class via
 //               inheritance.
 ////////////////////////////////////////////////////////////////////
-INLINE CachedTypedWritableReferenceCount::
-CachedTypedWritableReferenceCount() {
-  _cache_ref_count = 0;
+INLINE NodeCachedReferenceCount::
+NodeCachedReferenceCount() {
+  _node_ref_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::Copy Constructor
+//     Function: NodeCachedReferenceCount::Copy Constructor
 //       Access: Protected
 //  Description: The copies of reference-counted objects do not
 //               themselves inherit the reference count!
@@ -45,13 +45,13 @@ CachedTypedWritableReferenceCount() {
 //               never want to create just a ReferenceCount object by
 //               itself, and it's probably a mistake if you try.
 ////////////////////////////////////////////////////////////////////
-INLINE CachedTypedWritableReferenceCount::
-CachedTypedWritableReferenceCount(const CachedTypedWritableReferenceCount &copy) : TypedWritableReferenceCount(copy) {
-  _cache_ref_count = 0;
+INLINE NodeCachedReferenceCount::
+NodeCachedReferenceCount(const NodeCachedReferenceCount &copy) : CachedTypedWritableReferenceCount(copy) {
+  _node_ref_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::Copy Assignment Operator
+//     Function: NodeCachedReferenceCount::Copy Assignment Operator
 //       Access: Protected
 //  Description: The copies of reference-counted objects do not
 //               themselves inherit the reference count!
@@ -63,8 +63,8 @@ CachedTypedWritableReferenceCount(const CachedTypedWritableReferenceCount &copy)
 //               derived class that implements this operator and then
 //               calls up the inheritance chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void CachedTypedWritableReferenceCount::
-operator = (const CachedTypedWritableReferenceCount &copy) {
+INLINE void NodeCachedReferenceCount::
+operator = (const NodeCachedReferenceCount &copy) {
   nassertv(this != NULL);
 
   // If this assertion fails, our own pointer was recently deleted.
@@ -74,13 +74,13 @@ operator = (const CachedTypedWritableReferenceCount &copy) {
   // instance of a class that derives from ReferenceCount.  Or maybe
   // your headers are out of sync, and you need to make clean in
   // direct or some higher tree.
-  nassertv(_cache_ref_count != -100);
+  nassertv(_node_ref_count != -100);
 
-  TypedWritableReferenceCount::operator = (copy);
+  CachedTypedWritableReferenceCount::operator = (copy);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::Destructor
+//     Function: NodeCachedReferenceCount::Destructor
 //       Access: Protected
 //  Description: The ReferenceCount destructor is protected to
 //               discourage users from accidentally trying to delete a
@@ -90,8 +90,8 @@ operator = (const CachedTypedWritableReferenceCount &copy) {
 //               to something that inherits from ReferenceCount, not
 //               just a plain old ReferenceCount object.
 ////////////////////////////////////////////////////////////////////
-INLINE CachedTypedWritableReferenceCount::
-~CachedTypedWritableReferenceCount() {
+INLINE NodeCachedReferenceCount::
+~NodeCachedReferenceCount() {
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to delete an object that
@@ -101,12 +101,12 @@ INLINE CachedTypedWritableReferenceCount::
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_cache_ref_count != -100);
+  nassertv(_node_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_cache_ref_count >= 0);
+  nassertv(_node_ref_count >= 0);
 
   // If this assertion fails, someone tried to delete this object
   // while its reference count was still positive.  Maybe you tried
@@ -118,31 +118,31 @@ INLINE CachedTypedWritableReferenceCount::
   // constructor for a ReferenceCount object, and then bitwise
   // copied a dynamically allocated value--reference count and
   // all--onto a locally allocated one.
-  nassertv(_cache_ref_count == 0);
+  nassertv(_node_ref_count == 0);
 
 #ifndef NDEBUG
   // Ok, all clear to delete.  Now set the reference count to -100,
   // so we'll have a better chance of noticing if we happen to have
   // a stray pointer to it still out there.
-  _cache_ref_count = -100;
+  _node_ref_count = -100;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::get_cache_ref_count
+//     Function: NodeCachedReferenceCount::get_node_ref_count
 //       Access: Published
 //  Description: Returns the current reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int CachedTypedWritableReferenceCount::
-get_cache_ref_count() const {
+INLINE int NodeCachedReferenceCount::
+get_node_ref_count() const {
 #ifndef NDEBUG
   test_ref_count_integrity();
 #endif
-  return _cache_ref_count;
+  return _node_ref_count;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::cache_ref
+//     Function: NodeCachedReferenceCount::node_ref
 //       Access: Published
 //  Description: Explicitly increments the reference count.
 //
@@ -155,8 +155,8 @@ get_cache_ref_count() const {
 //
 //               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int CachedTypedWritableReferenceCount::
-cache_ref() const {
+INLINE int NodeCachedReferenceCount::
+node_ref() const {
   nassertr(this != NULL, 0);
 
   // If this assertion fails, we're trying to delete an object that
@@ -166,19 +166,19 @@ cache_ref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_cache_ref_count != -100, 0);
+  nassertr(_node_ref_count != -100, 0);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertr(_cache_ref_count >= 0, 0);
+  nassertr(_node_ref_count >= 0, 0);
 
   ref();
-  return AtomicAdjust::inc(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
+  return AtomicAdjust::inc(((NodeCachedReferenceCount *)this)->_node_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::cache_unref
+//     Function: NodeCachedReferenceCount::node_unref
 //       Access: Published
 //  Description: Explicitly decrements the reference count.  Note that
 //               the object will not be implicitly deleted by unref()
@@ -202,8 +202,8 @@ cache_ref() const {
 //
 //               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int CachedTypedWritableReferenceCount::
-cache_unref() const {
+INLINE int NodeCachedReferenceCount::
+node_unref() const {
   nassertr(this != NULL, false);
 
   // If this assertion fails, we're trying to delete an object that
@@ -213,30 +213,30 @@ cache_unref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_cache_ref_count != -100, false);
+  nassertr(_node_ref_count != -100, false);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertr(_cache_ref_count >= 0, false);
+  nassertr(_node_ref_count >= 0, false);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
-  nassertr(_cache_ref_count > 0, false);
+  nassertr(_node_ref_count > 0, false);
 
   unref();
-  return AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
+  return AtomicAdjust::dec(((NodeCachedReferenceCount *)this)->_node_ref_count);
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::test_ref_count_integrity
+//     Function: NodeCachedReferenceCount::test_ref_count_integrity
 //       Access: Published
 //  Description: Does some easy checks to make sure that the reference
 //               count isn't completely bogus.
 ////////////////////////////////////////////////////////////////////
-INLINE void CachedTypedWritableReferenceCount::
+INLINE void NodeCachedReferenceCount::
 test_ref_count_integrity() const {
 #ifndef NDEBUG
   nassertv(this != NULL);
@@ -248,19 +248,43 @@ test_ref_count_integrity() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_cache_ref_count != -100);
+  nassertv(_node_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_cache_ref_count >= 0);
+  nassertv(_node_ref_count >= 0);
 
-  TypedWritableReferenceCount::test_ref_count_integrity();
+  CachedTypedWritableReferenceCount::test_ref_count_integrity();
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: cache_unref_delete
+//     Function: NodeCachedReferenceCount::get_referenced_bits
+//       Access: Published
+//  Description: Returns the union of the values defined in the
+//               Referenced enum that represents the various things
+//               that appear to be holding a pointer to this object.
+//
+//               If R_node is included, at least one node is holding a
+//               pointer; if R_cache is included, at least one cache
+//               element is.
+////////////////////////////////////////////////////////////////////
+INLINE int NodeCachedReferenceCount::
+get_referenced_bits() const {
+  int result = 0;
+  if (get_node_ref_count() != 0) {
+    result |= R_node;
+  }
+  if (get_cache_ref_count() != 0) {
+    result |= R_cache;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: node_unref_delete
 //  Description: This global helper function will unref the given
 //               ReferenceCount object, and if the reference count
 //               reaches zero, automatically delete it.  It can't be a
@@ -271,8 +295,8 @@ test_ref_count_integrity() const {
 ////////////////////////////////////////////////////////////////////
 template<class RefCountType>
 INLINE void
-cache_unref_delete(RefCountType *ptr) {
-  ptr->cache_unref();
+node_unref_delete(RefCountType *ptr) {
+  ptr->node_unref();
   if (ptr->get_ref_count() == 0) {
 #ifndef NDEBUG
     if (get_leak_memory()) {

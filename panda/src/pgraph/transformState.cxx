@@ -32,6 +32,8 @@ UpdateSeq TransformState::_last_cycle_detect;
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector TransformState::_transform_compose_pcollector("*:State Cache:Compose Transform");
 PStatCollector TransformState::_transform_invert_pcollector("*:State Cache:Invert Transform");
+PStatCollector TransformState::_node_counter("TransformStates:On nodes");
+PStatCollector TransformState::_cache_counter("TransformStates:Cached");
 
 TypeHandle TransformState::_type_handle;
 
@@ -1498,6 +1500,28 @@ calc_mat() {
     compose_matrix(_mat, _scale, _shear, get_hpr(), _pos);
   }
   _flags |= F_mat_known;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::update_pstats
+//       Access: Private
+//  Description: Moves the TransformState object from one PStats category
+//               to another, so that we can track in PStats how many
+//               pointers are held by nodes, and how many are held in
+//               the cache only.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+update_pstats(int old_referenced_bits, int new_referenced_bits) {
+  if ((old_referenced_bits & R_node) != 0) {
+    _node_counter.sub_level(1);
+  } else if ((old_referenced_bits & R_cache) != 0) {
+    _cache_counter.sub_level(1);
+  }
+  if ((new_referenced_bits & R_node) != 0) {
+    _node_counter.add_level(1);
+  } else if ((new_referenced_bits & R_cache) != 0) {
+    _cache_counter.add_level(1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

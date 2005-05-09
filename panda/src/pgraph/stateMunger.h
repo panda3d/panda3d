@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "qpgeomMunger.h"
+#include "renderState.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StateMunger

@@ -1,5 +1,5 @@
-// Filename: pointerToBase.h
-// Created by:  drose (27Sep04)
+// Filename: nodePointerToBase.h
+// Created by:  drose (07May05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef POINTERTOBASE_H
-#define POINTERTOBASE_H
+#ifndef NODEPOINTERTOBASE_H
+#define NODEPOINTERTOBASE_H
 
 #include "pandabase.h"
 #include "pointerToVoid.h"
-#include "referenceCount.h"
-#include "typedef.h"
+#include "nodeCachedReferenceCount.h"
 #include "memoryUsage.h"
 #include "config_express.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PointerToBase
-// Description : This is the base class for PointerTo and
-//               ConstPointerTo.  Don't try to use it directly; use
-//               either derived class instead.
+//       Class : NodePointerToBase
+// Description : This is similar to PointerToBase, but it manages
+//               objects of type NodeCachedReferenceCount, and it
+//               updates the node_ref_count instead of the regular
+//               ref_count.  It is intended for use only in PandaNode,
+//               to hold a pointer to RenderState and TransformState,
+//               although it could be used by any object that wanted
+//               to maintain a separate reference count for reporting
+//               purposes.
 ////////////////////////////////////////////////////////////////////
 template <class T>
-class PointerToBase : public PointerToVoid {
+class NodePointerToBase : public PointerToVoid {
 public:
   typedef T To;
 
 protected:
-  INLINE PointerToBase(To *ptr);
-  INLINE PointerToBase(const PointerToBase<T> &copy);
-  INLINE ~PointerToBase();
+  INLINE NodePointerToBase(To *ptr);
+  INLINE NodePointerToBase(const NodePointerToBase<T> &copy);
+  INLINE ~NodePointerToBase();
 
   void reassign(To *ptr);
-  INLINE void reassign(const PointerToBase<To> &copy);
+  INLINE void reassign(const NodePointerToBase<To> &copy);
 
   // No assignment or retrieval functions are declared in
-  // PointerToBase, because we will have to specialize on const
+  // NodePointerToBase, because we will have to specialize on const
   // vs. non-const later.
 
 PUBLISHED:
@@ -56,11 +60,11 @@ PUBLISHED:
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
+INLINE ostream &operator <<(ostream &out, const NodePointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }
 
-#include "pointerToBase.I"
+#include "nodePointerToBase.I"
 
 #endif

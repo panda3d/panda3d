@@ -52,7 +52,7 @@ PUBLISHED:
   INLINE int get_cache_ref_count() const;
   INLINE int cache_ref() const;
   INLINE int cache_unref() const;
-  INLINE void test_cache_ref_count_integrity() const;
+  INLINE void test_ref_count_integrity() const;
 
 private:
   int _cache_ref_count;

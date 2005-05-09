@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "cachedTypedWritableReferenceCount.h"
+#include "nodeCachedReferenceCount.h"
 #include "pointerTo.h"
 #include "luse.h"
 #include "pset.h"
@@ -54,7 +54,7 @@ class FactoryParams;
 //               instead of modifying a TransformState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformState : public CachedTypedWritableReferenceCount {
+class EXPCL_PANDA TransformState : public NodeCachedReferenceCount {
 protected:
   TransformState();
 
@@ -128,6 +128,11 @@ PUBLISHED:
   CPT(TransformState) invert_compose(const TransformState *other) const;
 
   int unref() const;
+
+  INLINE int cache_ref() const;
+  INLINE int cache_unref() const;
+  INLINE int node_ref() const;
+  INLINE int node_unref() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -203,6 +208,9 @@ private:
   static PStatCollector _transform_compose_pcollector;
   static PStatCollector _transform_invert_pcollector;
 
+  static PStatCollector _node_counter;
+  static PStatCollector _cache_counter;
+
 private:
   // This is the actual data within the TransformState.
   INLINE void check_singular() const;
@@ -220,6 +228,9 @@ private:
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
+
+  INLINE void consider_update_pstats(int old_referenced_bits) const;
+  static void update_pstats(int old_referenced_bits, int new_referenced_bits);
 
   enum Flags {
     F_is_identity        = 0x0001,
@@ -260,9 +271,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    CachedTypedWritableReferenceCount::init_type();
+    NodeCachedReferenceCount::init_type();
     register_type(_type_handle, "TransformState",
-                  CachedTypedWritableReferenceCount::get_class_type());
+                  NodeCachedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

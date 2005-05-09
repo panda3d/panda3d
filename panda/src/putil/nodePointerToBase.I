@@ -1,5 +1,5 @@
-// Filename: pointerToBase.I
-// Created by:  drose (27Sep04)
+// Filename: nodePointerToBase.I
+// Created by:  drose (07May05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,47 +18,47 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::Constructor
+//     Function: NodePointerToBase::Constructor
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE PointerToBase<T>::
-PointerToBase(To *ptr) {
+INLINE NodePointerToBase<T>::
+NodePointerToBase(To *ptr) {
   reassign(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::Copy Constructor
+//     Function: NodePointerToBase::Copy Constructor
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE PointerToBase<T>::
-PointerToBase(const PointerToBase<T> &copy) {
+INLINE NodePointerToBase<T>::
+NodePointerToBase(const NodePointerToBase<T> &copy) {
   reassign(copy);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::Destructor
+//     Function: NodePointerToBase::Destructor
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE PointerToBase<T>::
-~PointerToBase() {
+INLINE NodePointerToBase<T>::
+~NodePointerToBase() {
   reassign((To *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::reassign
+//     Function: NodePointerToBase::reassign
 //       Access: Protected
-//  Description: This is the main work of the PointerTo family.  When
+//  Description: This is the main work of the NodePointerTo family.  When
 //               the pointer is reassigned, decrement the old
 //               reference count and increment the new one.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-void PointerToBase<T>::
+void NodePointerToBase<T>::
 reassign(To *ptr) {
   if (ptr != (To *)_void_ptr) {
     // First save the old pointer; we won't delete it until we have
@@ -70,7 +70,7 @@ reassign(To *ptr) {
 
     _void_ptr = (void *)ptr;
     if (ptr != (To *)NULL) {
-      ptr->ref();
+      ptr->node_ref();
 #ifdef DO_MEMORY_USAGE
       if (MemoryUsage::get_track_memory_usage()) {
         // Make sure the MemoryUsage record knows what the TypeHandle
@@ -89,46 +89,47 @@ reassign(To *ptr) {
 
     // Now delete the old pointer.
     if (old_ptr != (To *)NULL) {
-      unref_delete(old_ptr);
+      node_unref_delete(old_ptr);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::reassign
+//     Function: NodePointerToBase::reassign
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE void PointerToBase<T>::
-reassign(const PointerToBase<To> &copy) {
+INLINE void NodePointerToBase<T>::
+reassign(const NodePointerToBase<To> &copy) {
   reassign((To *)copy._void_ptr);
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::clear
+//     Function: NodePointerToBase::clear
 //       Access: Published
-//  Description: A convenient way to set the PointerTo object to NULL.
+//  Description: A convenient way to set the NodePointerTo object to NULL.
 //               (Assignment to a NULL pointer also works, of course.)
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE void PointerToBase<T>::
+INLINE void NodePointerToBase<T>::
 clear() {
   reassign((To *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToBase::output
+//     Function: NodePointerToBase::output
 //       Access: Published
-//  Description: A handy function to output PointerTo's as a hex
+//  Description: A handy function to output NodePointerTo's as a hex
 //               pointer followed by a reference count.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE void PointerToBase<T>::
+INLINE void NodePointerToBase<T>::
 output(ostream &out) const {
   out << _void_ptr;
   if (_void_ptr != (void *)NULL) {
-    out << ":" << ((To *)_void_ptr)->get_ref_count();
+    out << ":" << ((To *)_void_ptr)->get_node_ref_count() << "/"
+        << ((To *)_void_ptr)->get_ref_count();
   }
 }

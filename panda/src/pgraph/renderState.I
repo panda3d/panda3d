@@ -62,6 +62,74 @@ get_override(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::cache_ref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+cache_ref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::cache_ref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::cache_ref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::cache_unref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+cache_unref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::cache_unref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::cache_unref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::node_ref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+node_ref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::node_ref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::node_ref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::node_unref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+node_unref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::node_unref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::node_unref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_draw_order
 //       Access: Published
 //  Description: Returns the draw order indicated by the
@@ -323,6 +391,20 @@ is_destructing() const {
 #else
   return false;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::consider_update_pstats
+//       Access: Private
+//  Description: Calls update_pstats() if the state of the referenced
+//               bits has changed from the indicated value.
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+consider_update_pstats(int old_referenced_bits) const {
+  int new_referenced_bits = get_referenced_bits();
+  if (old_referenced_bits != new_referenced_bits) {
+    update_pstats(old_referenced_bits, new_referenced_bits);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

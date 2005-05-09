@@ -438,6 +438,74 @@ get_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::cache_ref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+cache_ref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::cache_ref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::cache_ref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::cache_unref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+cache_unref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::cache_unref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::cache_unref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::node_ref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+node_ref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::node_ref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::node_ref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::node_unref
+//       Access: Published
+//  Description: Overrides this method to update PStats appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+node_unref() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  int result = NodeCachedReferenceCount::node_unref();
+  consider_update_pstats(old_referenced_bits);
+  return result;
+#else  // DO_PSTATS
+  return NodeCachedReferenceCount::node_unref();
+#endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::check_singular
 //       Access: Private
 //  Description: Ensures that we know whether the matrix is singular.
@@ -561,6 +629,20 @@ is_destructing() const {
 #else
   return false;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::consider_update_pstats
+//       Access: Private
+//  Description: Calls update_pstats() if the state of the referenced
+//               bits has changed from the indicated value.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+consider_update_pstats(int old_referenced_bits) const {
+  int new_referenced_bits = get_referenced_bits();
+  if (old_referenced_bits != new_referenced_bits) {
+    update_pstats(old_referenced_bits, new_referenced_bits);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,31 @@ protected:
 
 PUBLISHED:
   INLINE bool is_null() const;
+  INLINE size_t get_hash() const;
+
+public:
+  // These comparison functions are common to all things PointerTo, so
+  // they're defined up here.
+#ifndef WIN32_VC
+  INLINE bool operator == (const void *other) const;
+  INLINE bool operator != (const void *other) const;
+  INLINE bool operator > (const void *other) const;
+  INLINE bool operator <= (const void *other) const;
+  INLINE bool operator >= (const void *other) const;
+  INLINE bool operator == (void *other) const;
+  INLINE bool operator != (void *other) const;
+  INLINE bool operator > (void *other) const;
+  INLINE bool operator <= (void *other) const;
+  INLINE bool operator >= (void *other) const;
+
+  INLINE bool operator == (const PointerToVoid &other) const;
+  INLINE bool operator != (const PointerToVoid &other) const;
+  INLINE bool operator > (const PointerToVoid &other) const;
+  INLINE bool operator <= (const PointerToVoid &other) const;
+  INLINE bool operator >= (const PointerToVoid &other) const;
+#endif  // WIN32_VC
+  INLINE bool operator < (const void *other) const;
+  INLINE bool operator < (const PointerToVoid &other) const;
 
 protected:
   // Within the PointerToVoid class, we only store a void pointer.

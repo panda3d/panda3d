@@ -39,6 +39,9 @@
     load_prc_file.h \
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
+    nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
+    nodePointerToBase.h nodePointerToBase.I \
+    nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerBase.h pipelineCyclerBase.I \
@@ -71,6 +74,9 @@
     load_prc_file.cxx \
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
+    nodeCachedReferenceCount.cxx \
+    nodePointerToBase.cxx \
+    nodePointerTo.cxx \
     pipeline.cxx \
     pipelineCycler.cxx \
     pipelineCyclerBase.cxx \
@@ -114,6 +120,9 @@
     modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \
+    nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
+    nodePointerToBase.h nodePointerToBase.I \
+    nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerBase.h pipelineCyclerBase.I \

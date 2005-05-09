@@ -40,6 +40,8 @@ UpdateSeq RenderState::_last_cycle_detect;
 PStatCollector RenderState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector RenderState::_state_compose_pcollector("*:State Cache:Compose State");
 PStatCollector RenderState::_state_invert_pcollector("*:State Cache:Invert State");
+PStatCollector RenderState::_node_counter("RenderStates:On nodes");
+PStatCollector RenderState::_cache_counter("RenderStates:Cached");
 
 TypeHandle RenderState::_type_handle;
 
@@ -1610,6 +1612,29 @@ determine_render_mode() {
   }
   _flags |= F_checked_render_mode;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::update_pstats
+//       Access: Private
+//  Description: Moves the RenderState object from one PStats category
+//               to another, so that we can track in PStats how many
+//               pointers are held by nodes, and how many are held in
+//               the cache only.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+update_pstats(int old_referenced_bits, int new_referenced_bits) {
+  if ((old_referenced_bits & R_node) != 0) {
+    _node_counter.sub_level(1);
+  } else if ((old_referenced_bits & R_cache) != 0) {
+    _cache_counter.sub_level(1);
+  }
+  if ((new_referenced_bits & R_node) != 0) {
+    _node_counter.add_level(1);
+  } else if ((new_referenced_bits & R_cache) != 0) {
+    _cache_counter.add_level(1);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::register_with_read_factory

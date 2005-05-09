@@ -24,6 +24,3 @@
 #include "lineStreamBuf.cxx"
 #include "load_prc_file.cxx"
 #include "modifierButtons.cxx"
-#include "mouseButton.cxx"
-#include "mouseData.cxx"
-

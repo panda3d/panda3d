@@ -37,6 +37,7 @@
 #include "luse.h"
 #include "ordered_vector.h"
 #include "pointerTo.h"
+#include "nodePointerTo.h"
 #include "pointerToArray.h"
 #include "notify.h"
 
@@ -315,10 +316,10 @@ private:
     Up _up;
     Paths _paths;
 
-    CPT(RenderState) _state;
+    NCPT(RenderState) _state;
     CPT(RenderEffects) _effects;
-    CPT(TransformState) _transform;
-    CPT(TransformState) _prev_transform;
+    NCPT(TransformState) _transform;
+    NCPT(TransformState) _prev_transform;
 
     TagData _tag_data;
 
