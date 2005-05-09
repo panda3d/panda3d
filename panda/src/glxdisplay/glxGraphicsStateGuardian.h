@@ -47,6 +47,7 @@
 // these functions are defined, and the system glx.h sometimes doesn't
 // declare these typedefs.
 typedef __GLXextFuncPtr (* PFNGLXGETPROCADDRESSPROC) (const GLubyte *procName);
+typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsStateGuardian
