@@ -237,7 +237,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
     (*si) = slider;
 
-    bool inserted = _sliders_by_name.insert(SlidersByName::value_type(name, slider)).second;
+    bool inserted = _sliders_by_name.insert(SlidersByName::value_type(name, slider.p())).second;
     nassertr(inserted, pi);
   }
 

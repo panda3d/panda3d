@@ -548,14 +548,12 @@ get_data1i(const unsigned char *pointer) {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return qpGeomVertexData::unpack_abcd_d(dword);
     }
-    break;
 
   case NT_packed_dabc:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return qpGeomVertexData::unpack_abcd_b(dword);
     }
-    break;
 
   case NT_float32:
     return (int)*(const PN_float32 *)pointer;
