@@ -58,6 +58,9 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
+  void quantize_color();
+
+private:
   Type _type;
   Colorf _color;
 

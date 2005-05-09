@@ -21,20 +21,33 @@
 TypeHandle StateMunger::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StateMunger::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+StateMunger::
+~StateMunger() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StateMunger::munge_state
 //       Access: Public
 //  Description: Given an input state, returns the munged state.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) StateMunger::
 munge_state(const RenderState *state) {
-  CPT(RenderState) ptstate = state;
-  StateMap::iterator mi = _state_map.find(ptstate);
+  WCPT(RenderState) pt_state = state;
+
+  StateMap::iterator mi = _state_map.find(pt_state);
   if (mi != _state_map.end()) {
-    return (*mi).second;
+    if (!(*mi).first.was_deleted() &&
+        !(*mi).second.was_deleted()) {
+      return (*mi).second.p();
+    }
   }
 
   CPT(RenderState) result = munge_state_impl(state);
-  _state_map[ptstate] = result;
+  _state_map[pt_state] = result;
 
   return result;
 }

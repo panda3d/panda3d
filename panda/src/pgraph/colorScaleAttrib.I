@@ -28,6 +28,7 @@ ColorScaleAttrib(bool off, const LVecBase4f &scale) :
   _off(off),
   _scale(scale)
 {
+  quantize_scale();
   _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
 }
 

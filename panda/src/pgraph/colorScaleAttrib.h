@@ -58,6 +58,9 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
+  void quantize_scale();
+
+private:
   bool _off;
   bool _has_scale;
   LVecBase4f _scale;

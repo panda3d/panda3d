@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "qpgeomMunger.h"
 #include "renderState.h"
+#include "weakPointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StateMunger
@@ -34,12 +35,13 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StateMunger : public qpGeomMunger {
 public:
+  virtual ~StateMunger();
   CPT(RenderState) munge_state(const RenderState *state);
 
 protected:
   CPT(RenderState) munge_state_impl(const RenderState *state);
 
-  typedef pmap<CPT(RenderState), CPT(RenderState) > StateMap;
+  typedef pmap< WCPT(RenderState), WCPT(RenderState) > StateMap;
   StateMap _state_map;
 
 public:

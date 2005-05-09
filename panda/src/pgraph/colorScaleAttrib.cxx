@@ -82,6 +82,7 @@ CPT(RenderAttrib) ColorScaleAttrib::
 set_scale(const LVecBase4f &scale) const {
   ColorScaleAttrib *attrib = new ColorScaleAttrib(*this);
   attrib->_scale = scale;
+  attrib->quantize_scale();
   attrib->_has_scale = !scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
 }
@@ -235,6 +236,21 @@ make_default_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::quantize_scale
+//       Access: Private
+//  Description: Quantizes the color scale to the nearest multiple of
+//               1000, just to prevent runaway accumulation of
+//               only slightly-different ColorScaleAttribs.
+////////////////////////////////////////////////////////////////////
+void ColorScaleAttrib::
+quantize_scale() {
+  _scale[0] = cfloor(_scale[0] * 1000.0f + 0.5f) * 0.001f;
+  _scale[1] = cfloor(_scale[1] * 1000.0f + 0.5f) * 0.001f;
+  _scale[2] = cfloor(_scale[2] * 1000.0f + 0.5f) * 0.001f;
+  _scale[3] = cfloor(_scale[3] * 1000.0f + 0.5f) * 0.001f;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -295,5 +311,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _off = scan.get_bool();
   _scale.read_datagram(scan);
+  quantize_scale();
   _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
 }

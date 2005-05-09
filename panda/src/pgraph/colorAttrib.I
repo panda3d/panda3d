@@ -28,6 +28,7 @@ ColorAttrib(ColorAttrib::Type type, const Colorf &color) :
   _type(type),
   _color(color)
 {
+  quantize_color();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -146,6 +146,21 @@ make_default_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::quantize_color
+//       Access: Private
+//  Description: Quantizes the color color to the nearest multiple of
+//               1000, just to prevent runaway accumulation of
+//               only slightly-different ColorAttribs.
+////////////////////////////////////////////////////////////////////
+void ColorAttrib::
+quantize_color() {
+  _color[0] = cfloor(_color[0] * 1000.0f + 0.5f) * 0.001f;
+  _color[1] = cfloor(_color[1] * 1000.0f + 0.5f) * 0.001f;
+  _color[2] = cfloor(_color[2] * 1000.0f + 0.5f) * 0.001f;
+  _color[3] = cfloor(_color[3] * 1000.0f + 0.5f) * 0.001f;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -203,4 +218,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _type = (Type)scan.get_int8();
   _color.read_datagram(scan);
+  quantize_color();
 }
