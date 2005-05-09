@@ -131,7 +131,8 @@ void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
               int reference_model) {
   int num_models = joint_data->get_num_models();
-  for (int i = 0; i < num_models; i++) {
+  int i;
+  for (i = 0; i < num_models; i++) {
     if (joint_data->has_model(i)) {
       int num_frames = char_data->get_num_frames(i);
 
@@ -169,7 +170,7 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
 
 
   int num_children = joint_data->get_num_children();
-  for (int i = 0; i < num_children; i++) {
+  for (i = 0; i < num_children; i++) {
     EggJointData *next_joint_data = joint_data->get_child(i);
     retarget_anim(char_data, next_joint_data, reference_model);
   }
