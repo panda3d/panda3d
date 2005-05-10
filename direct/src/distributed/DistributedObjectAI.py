@@ -478,3 +478,23 @@ class DistributedObjectAI(DirectObject.DirectObject):
         # If this distributed object is a DistributedGrid return 1.  0 by default
         return 0
 
+    # Wrapper functions to have a cleaner, more object oriented approach to
+    # the messenger functionality.
+
+    def accept(self, event, method, extraArgs=[]):
+        return self.air.messenger.accept(event, self, method, extraArgs, 1)
+
+    def acceptOnce(self, event, method, extraArgs=[]):
+        return self.air.messenger.accept(event, self, method, extraArgs, 0)
+
+    def ignore(self, event):
+        return self.air.messenger.ignore(event, self)
+
+    def ignoreAll(self):
+        return self.air.messenger.ignoreAll(self)
+
+    def isAccepting(self, event):
+        return self.air.messenger.isAccepting(event, self)
+
+    def isIgnoring(self, event):
+        return self.air.messenger.isIgnoring(event, self)
