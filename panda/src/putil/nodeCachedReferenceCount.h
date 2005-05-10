@@ -59,7 +59,7 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
   INLINE int node_ref() const;
   INLINE int node_unref() const;
-  INLINE void test_ref_count_integrity() const;
+  INLINE bool test_ref_count_integrity() const;
 
   enum Referenced {
     R_node  = 0x001,
@@ -67,6 +67,9 @@ PUBLISHED:
   };
 
   INLINE int get_referenced_bits() const;
+
+protected:
+  bool do_test_ref_count_integrity() const;
   
 private:
   int _node_ref_count;

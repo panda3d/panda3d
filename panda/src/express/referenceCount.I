@@ -188,21 +188,7 @@ get_ref_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
 ref() const {
-  nassertr(this != NULL, 0);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != deleted_ref_count, 0);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertr(_ref_count >= 0, 0);
+  nassertr(test_ref_count_integrity(), 0);
 
   return AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
 }
@@ -234,26 +220,12 @@ ref() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
 unref() const {
-  nassertr(this != NULL, false);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != deleted_ref_count, false);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertr(_ref_count >= 0, false);
+  nassertr(test_ref_count_integrity(), 0);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
-  nassertr(_ref_count > 0, false);
+  nassertr(_ref_count > 0, 0);
   return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
 }
 
@@ -262,26 +234,15 @@ unref() const {
 //     Function: ReferenceCount::test_ref_count_integrity
 //       Access: Published
 //  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.
+//               count isn't completely bogus.  Returns true if ok,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
+INLINE bool ReferenceCount::
 test_ref_count_integrity() const {
 #ifndef NDEBUG
-  nassertv(this != NULL);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertv(_ref_count != deleted_ref_count);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertv(_ref_count >= 0);
+  return do_test_ref_count_integrity();
+#else
+  return true;
 #endif
 }
 

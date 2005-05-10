@@ -30,6 +30,8 @@
 #include "renderModeAttrib.h"
 #include "texGenAttrib.h"
 #include "texMatrixAttrib.h"
+#include "qpgeomMunger.h"
+#include "weakPointerTo.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -215,6 +217,16 @@ private:
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
 
+  // This is here to provide a quick cache of GSG + RenderState ->
+  // GeomMunger for the cull phase.  It is here because it is faster
+  // to look up the GSG in the RenderState pointer than vice-versa,
+  // since there are likely to be far fewer GSG's than RenderStates.
+  // The code to manage this map lives in
+  // GraphicsStateGuardian::get_geom_munger().
+  typedef pmap<WCPT(GraphicsStateGuardianBase), PT(qpGeomMunger) > Mungers;
+  Mungers _mungers;
+  Mungers::const_iterator _last_mi;
+
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
   static UpdateSeq _last_cycle_detect;
@@ -305,6 +317,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class GraphicsStateGuardian;
 };
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {

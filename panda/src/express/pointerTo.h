@@ -85,6 +85,7 @@ public:
 PUBLISHED:
   INLINE PointerTo(To *ptr = (To *)NULL);
   INLINE PointerTo(const PointerTo<T> &copy);
+  INLINE ~PointerTo();
 
 public:
   INLINE To &operator *() const;
@@ -142,6 +143,7 @@ PUBLISHED:
   INLINE ConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
+  INLINE ~ConstPointerTo();
 
 public:
   INLINE const To &operator *() const;

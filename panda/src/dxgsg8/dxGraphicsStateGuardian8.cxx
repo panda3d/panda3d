@@ -3550,13 +3550,13 @@ release_index_buffer(IndexBufferContext *ibc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::get_geom_munger
+//     Function: DXGraphicsStateGuardian8::make_geom_munger
 //       Access: Public, Virtual
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomMunger) DXGraphicsStateGuardian8::
-get_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state) {
   PT(DXGeomMunger8) munger = new DXGeomMunger8(this, state);
   return qpGeomMunger::register_munger(munger);
 }

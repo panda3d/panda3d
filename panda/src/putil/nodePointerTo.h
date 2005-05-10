@@ -24,9 +24,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodePointerTo
-// Description : 
-
-//               This implements the special NodePointerTo template
+// Description : This implements the special NodePointerTo template
 //               class, which works just like PointerTo except it
 //               manages the objects node_ref_count instead of the
 //               normal ref_count.
@@ -37,6 +35,7 @@ public:
   typedef TYPENAME NodePointerToBase<T>::To To;
   INLINE NodePointerTo(To *ptr = (To *)NULL);
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
+  INLINE ~NodePointerTo();
 
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
@@ -61,6 +60,7 @@ public:
   INLINE NodeConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE NodeConstPointerTo(const NodePointerTo<T> &copy);
   INLINE NodeConstPointerTo(const NodeConstPointerTo<T> &copy);
+  INLINE ~NodeConstPointerTo();
 
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;

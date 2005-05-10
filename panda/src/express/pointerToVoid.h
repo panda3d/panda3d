@@ -45,24 +45,6 @@ PUBLISHED:
 public:
   // These comparison functions are common to all things PointerTo, so
   // they're defined up here.
-#if 0
-  INLINE bool operator == (const void *other) const;
-  INLINE bool operator != (const void *other) const;
-  INLINE bool operator > (const void *other) const;
-  INLINE bool operator <= (const void *other) const;
-  INLINE bool operator >= (const void *other) const;
-  INLINE bool operator == (void *other) const;
-  INLINE bool operator != (void *other) const;
-  INLINE bool operator > (void *other) const;
-  INLINE bool operator <= (void *other) const;
-  INLINE bool operator >= (void *other) const;
-
-  INLINE bool operator == (const PointerToVoid &other) const;
-  INLINE bool operator != (const PointerToVoid &other) const;
-  INLINE bool operator > (const PointerToVoid &other) const;
-  INLINE bool operator <= (const PointerToVoid &other) const;
-  INLINE bool operator >= (const PointerToVoid &other) const;
-#endif  // WIN32_VC
   INLINE bool operator < (const void *other) const;
   INLINE bool operator < (const PointerToVoid &other) const;
 

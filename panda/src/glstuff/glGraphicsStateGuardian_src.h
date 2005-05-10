@@ -123,7 +123,7 @@ public:
   virtual void release_index_buffer(IndexBufferContext *ibc);
   const unsigned char *setup_primitive(const qpGeomPrimitive *data);
 
-  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);

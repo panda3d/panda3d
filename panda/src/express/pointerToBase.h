@@ -42,8 +42,12 @@ protected:
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE ~PointerToBase();
 
-  void reassign(To *ptr);
+  INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
+
+#ifdef DO_MEMORY_USAGE
+  void update_type(To *ptr);
+#endif  // DO_MEMORY_USAGE
 
   // No assignment or retrieval functions are declared in
   // PointerToBase, because we will have to specialize on const

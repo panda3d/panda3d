@@ -289,7 +289,7 @@
 // to help track memory leaks, and also report total memory usage on
 // PStats.  There is some small overhead for having this ability
 // available, even if it is unused.
-#defer DO_MEMORY_USAGE $[<= $[OPTIMIZE], 3]
+#defer DO_MEMORY_USAGE $[<= $[OPTIMIZE], 2]
 
 // Do you want to compile in support for pipelining?  This enables
 // setting and accessing multiple different copies of frame-specific

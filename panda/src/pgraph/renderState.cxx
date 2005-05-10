@@ -65,6 +65,7 @@ RenderState() {
   }
   _saved_entry = _states->end();
   _flags = 0;
+  _last_mi = _mungers.end();
 }
 
 ////////////////////////////////////////////////////////////////////

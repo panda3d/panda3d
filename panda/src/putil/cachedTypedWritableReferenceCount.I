@@ -157,21 +157,7 @@ get_cache_ref_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int CachedTypedWritableReferenceCount::
 cache_ref() const {
-  nassertr(this != NULL, 0);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertr(_cache_ref_count != -100, 0);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertr(_cache_ref_count >= 0, 0);
+  nassertr(test_ref_count_integrity(), 0);
 
   ref();
   return AtomicAdjust::inc(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
@@ -204,31 +190,16 @@ cache_ref() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int CachedTypedWritableReferenceCount::
 cache_unref() const {
-  nassertr(this != NULL, false);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertr(_cache_ref_count != -100, false);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertr(_cache_ref_count >= 0, false);
+  nassertr(test_ref_count_integrity(), 0);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
-  nassertr(_cache_ref_count > 0, false);
+  nassertr(_cache_ref_count > 0, 0);
 
   unref();
   return AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CachedTypedWritableReferenceCount::test_ref_count_integrity
@@ -236,26 +207,12 @@ cache_unref() const {
 //  Description: Does some easy checks to make sure that the reference
 //               count isn't completely bogus.
 ////////////////////////////////////////////////////////////////////
-INLINE void CachedTypedWritableReferenceCount::
+INLINE bool CachedTypedWritableReferenceCount::
 test_ref_count_integrity() const {
 #ifndef NDEBUG
-  nassertv(this != NULL);
-
-  // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Possibly you used a real pointer instead of a
-  // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Maybe you tried to create an
-  // automatic (local variable) instance of a class that derives from
-  // ReferenceCount.  Or maybe your headers are out of sync, and you
-  // need to make clean in direct or some higher tree.
-  nassertv(_cache_ref_count != -100);
-
-  // If this assertion fails, the reference counts are all screwed
-  // up altogether.  Maybe some errant code stomped all over memory
-  // somewhere.
-  nassertv(_cache_ref_count >= 0);
-
-  TypedWritableReferenceCount::test_ref_count_integrity();
+  return do_test_ref_count_integrity();
+#else
+  return true;
 #endif
 }
 

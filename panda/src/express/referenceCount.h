@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE int ref() const;
   INLINE int unref() const;
 
-  INLINE void test_ref_count_integrity() const;
+  INLINE bool test_ref_count_integrity() const;
 
 public:
   INLINE void local_object();
@@ -60,6 +60,9 @@ public:
 
   INLINE void weak_ref(WeakPointerToVoid *ptv);
   INLINE void weak_unref(WeakPointerToVoid *ptv);
+
+protected:
+  bool do_test_ref_count_integrity() const;
 
 private:
   enum { 

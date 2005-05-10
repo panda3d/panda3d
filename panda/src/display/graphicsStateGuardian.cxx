@@ -371,12 +371,52 @@ release_index_buffer(IndexBufferContext *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_geom_munger
+//       Access: Public
+//  Description: Looks up or creates a GeomMunger object to munge
+//               vertices appropriate to this GSG for the indicated
+//               state.
+////////////////////////////////////////////////////////////////////
+PT(qpGeomMunger) GraphicsStateGuardian::
+get_geom_munger(const RenderState *state) {
+  // Before we even look up the map, see if the _last_mi value points
+  // to this GSG.  This is likely because we tend to visit the same
+  // state multiple times during a frame.  Also, this might well be
+  // the only GSG in the world anyway.
+  if (!state->_mungers.empty()) {
+    RenderState::Mungers::const_iterator mi = state->_last_mi;
+    if ((*mi).first == this && !(*mi).first.was_deleted()) {
+      return (*mi).second;
+    }
+  }
+
+  // Nope, we have to loop up in the map.
+  RenderState::Mungers::const_iterator mi = state->_mungers.find(this);
+  if (mi != state->_mungers.end() && !(*mi).first.was_deleted()) {
+    ((RenderState *)state)->_last_mi = mi;
+    return (*mi).second;
+  }
+
+  // Nothing in the map; create a new entry.
+  PT(qpGeomMunger) munger = make_geom_munger(state);
+
+  // Cast the RenderState to a non-const object.  We can do this
+  // because we are only updating a cache within the RenderState, not
+  // really changing any of its properties.
+  RenderState *nc_state = (RenderState *)state;
+  mi = nc_state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
+  nc_state->_last_mi = mi;
+
+  return munger;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::make_geom_munger
 //       Access: Public, Virtual
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomMunger) GraphicsStateGuardian::
-get_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state) {
   // The default implementation returns no munger at all, but
   // presumably, every kind of GSG needs some special munging action,
   // so real GSG's will override this to return something more

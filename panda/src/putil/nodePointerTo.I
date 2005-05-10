@@ -40,6 +40,16 @@ NodePointerTo(const NodePointerTo<T> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePointerTo::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodePointerTo<T>::
+~NodePointerTo() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Dereference operator
 //       Access: Public
 //  Description:
@@ -148,6 +158,16 @@ INLINE NodeConstPointerTo<T>::
 NodeConstPointerTo(const NodeConstPointerTo<T> &copy) :
   NodePointerToBase<T>((const NodePointerToBase<T> &)copy)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeConstPointerTo::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodeConstPointerTo<T>::
+~NodeConstPointerTo() {
 }
 
 ////////////////////////////////////////////////////////////////////

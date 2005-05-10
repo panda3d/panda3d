@@ -115,7 +115,7 @@ public:
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                                            const RenderBuffer &rb);

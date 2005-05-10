@@ -3210,13 +3210,13 @@ setup_primitive(const qpGeomPrimitive *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_geom_munger
+//     Function: GLGraphicsStateGuardian::make_geom_munger
 //       Access: Public, Virtual
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomMunger) CLP(GraphicsStateGuardian)::
-get_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return qpGeomMunger::register_munger(munger);
 }

@@ -58,7 +58,7 @@ INLINE PointerToBase<T>::
 //               reference count and increment the new one.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-void PointerToBase<T>::
+INLINE void PointerToBase<T>::
 reassign(To *ptr) {
   if (ptr != (To *)_void_ptr) {
     // First save the old pointer; we won't delete it until we have
@@ -73,16 +73,7 @@ reassign(To *ptr) {
       ptr->ref();
 #ifdef DO_MEMORY_USAGE
       if (MemoryUsage::get_track_memory_usage()) {
-        // Make sure the MemoryUsage record knows what the TypeHandle
-        // is, if we know it ourselves.
-        TypeHandle type = get_type_handle(To);
-        if (type == TypeHandle::none()) {
-          do_init_type(To);
-          type = get_type_handle(To);
-        }
-        if (type != TypeHandle::none()) {
-          MemoryUsage::update_type(ptr, type);
-        }
+        update_type(ptr);
       }
 #endif
     }
@@ -104,6 +95,28 @@ INLINE void PointerToBase<T>::
 reassign(const PointerToBase<To> &copy) {
   reassign((To *)copy._void_ptr);
 }
+
+#ifdef DO_MEMORY_USAGE
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::update_type
+//       Access: Protected
+//  Description: Ensures that the MemoryUsage record for the pointer
+//               has the right type of object, if we know the type
+//               ourselves.
+////////////////////////////////////////////////////////////////////
+template<class T>
+void PointerToBase<T>::
+update_type(To *ptr) {
+  TypeHandle type = get_type_handle(To);
+  if (type == TypeHandle::none()) {
+    do_init_type(To);
+    type = get_type_handle(To);
+  }
+  if (type != TypeHandle::none()) {
+    MemoryUsage::update_type(ptr, type);
+  }
+}
+#endif  // DO_MEMORY_USAGE
 
 
 ////////////////////////////////////////////////////////////////////

@@ -122,7 +122,8 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  PT(qpGeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
