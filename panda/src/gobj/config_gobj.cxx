@@ -170,10 +170,11 @@ ConfigVariableBool connect_triangle_strips
           "of separate graphics calls that have to be made."));
 
 ConfigVariableBool use_qpgeom
-("use-qpgeom", false,
+("use-qpgeom", true,
  PRC_DESC("A temporary variable while the experimental Geom rewrite is "
           "underway.  Set this true if you want to use the experimental "
-          "code.  You don't really want to set this true."));
+          "code.  This is now the default setting, as the formerly "
+          "experimental code appears to be more robust."));
 
 ConfigVariableBool support_old_geom
 ("support-old-geom", true,
