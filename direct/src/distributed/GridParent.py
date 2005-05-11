@@ -24,6 +24,8 @@ class GridParent:
         # to the new node, set it's position to the new grid cell origin.
         self.av = av
         self.grid = None
+        # NOTE: this node gets renamed when it is put on a zone, so if you
+        # are looking for it by name, try cellOrigin*.
         self.cellOrigin = NodePath("cellOrigin")
 
     def delete(self):
@@ -62,6 +64,8 @@ class GridParent:
 
         # Set the gridNode's position
         self.cellOrigin.setPos(*cellPos)
+        # For readability when debugging, append the zone to the name
+        self.cellOrigin.setName("cellOrigin-%s" % (zoneId))
 
         # Reparent our avatar to this node
         if not teleport:
