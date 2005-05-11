@@ -56,6 +56,10 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
                 if self.gridParent:
                     self.gridParent.delete()
                     self.gridParent = None                    
+        else:
+            if self.gridParent:
+                self.gridParent.delete()
+                self.gridParent = None
             
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
