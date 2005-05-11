@@ -4661,7 +4661,7 @@ do_issue_material() {
     // Otherwise, the ambient color comes from the object color.
     if (_has_material_force_color) {
       cur_material.Ambient = *(D3DCOLORVALUE *)_material_force_color.get_data();
-      _pD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+      _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
     } else {
       _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
     }
@@ -4782,6 +4782,7 @@ enable_clip_plane(int plane_id, bool enable) {
   } else {
     _clip_plane_bits &= ~((DWORD)1 << plane_id);
   }
+  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4810,20 +4811,6 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
       << "Could not set clip plane for " << plane 
       << " to id " << plane_id << ": " << D3DERRORSTRING(hr) << "\n";
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::end_bind_clip_planes
-//       Access: Protected, Virtual
-//  Description: Called after before bind_clip_plane() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_clip_planes().
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-end_bind_clip_planes() {
-  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 void DXGraphicsStateGuardian8::
