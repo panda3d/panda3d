@@ -1427,6 +1427,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
             if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
             if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
+            if (opts.count("WINCOMDLG")):   cmd = cmd + ' comdlg32.lib'
             if (opts.count("WINUSER")):     cmd = cmd + " user32.lib"
             if (opts.count("WINMM")):       cmd = cmd + " winmm.lib"
             if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
@@ -1475,6 +1476,9 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             for max in ["MAX5","MAX6","MAX7"]:
                 if PkgSelected(opts,max):
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/core.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/edmodel.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/gfx.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/geom.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/mesh.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/maxutil.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
@@ -5614,10 +5618,10 @@ for VER in ["5","6","65"]:
 for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
-    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINUSER", "MAXEGGDEF"]
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
     CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc', obj='maxegg'+VER+'_MaxEgg.res')
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
-    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dle', obj=[
+    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
                 'maxegg'+VER+'_composite1.obj',
                 'maxegg'+VER+'_MaxEgg.res',
                 'libeggbase.lib',
