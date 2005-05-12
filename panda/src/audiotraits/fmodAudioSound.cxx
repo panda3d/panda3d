@@ -356,6 +356,24 @@ float FmodAudioSound::get_balance() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::set_play_rate
+//       Access: public
+//  Description: NOT IMPLEMENTED! DO NOT USE!
+////////////////////////////////////////////////////////////////////
+void FmodAudioSound::set_play_rate(float rate) {
+  audio_error("set_play_rate not implemented under fmod");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::get_play_rate
+//       Access: public
+//  Description: NOT IMPLEMENTED! DO NOT USE!
+////////////////////////////////////////////////////////////////////
+float FmodAudioSound::get_play_rate() const {
+  return 1.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::set_active
 //       Access: public
 //  Description: 

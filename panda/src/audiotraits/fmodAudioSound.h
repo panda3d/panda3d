@@ -66,6 +66,11 @@ public:
   void set_balance(float balance_right=0.0);
   float get_balance() const;
 
+  // play_rate is any positive float value.
+  // inits to 1.0.
+  void set_play_rate(float play_rate=1.0f);
+  float get_play_rate() const;
+
   // inits to manager's state.
   void set_active(bool active=true);
   bool get_active() const;
