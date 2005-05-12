@@ -96,10 +96,12 @@ Section "${SMDIRECTORY}" SecCore
 
         !else
 
-            SetOutPath $INSTDIR\bin
-            File /nonfatal /r ${PANDA}\bin\*.dle
-            File /nonfatal /r ${PANDA}\bin\*.dlo
-            File /nonfatal /r ${PANDA}\bin\*.dlm
+            SetOutPath $INSTDIR\plugins
+            File /nonfatal /r ${PANDA}\plugins\*.dle
+            File /nonfatal /r ${PANDA}\plugins\*.dlo
+            File /nonfatal /r ${PANDA}\plugins\*.dlm
+            File /nonfatal /r ${PANDA}\plugins\*.mll
+            File /nonfatal /r ${PANDA}\plugins\*.mel
             SetOutPath $INSTDIR\pandac\input
             File /r ${PANDA}\pandac\input\*
             SetOutPath $INSTDIR\bin
