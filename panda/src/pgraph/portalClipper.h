@@ -82,6 +82,8 @@ public:
   INLINE void draw_to(float x, float y, float z);
   void draw_to(const LVecBase3f &v);
 
+  void draw_current_portal();
+
   INLINE float get_plane_depth(float x, float z, Planef *portal_plane);
 
   INLINE BoundingHexahedron *get_reduced_frustum() const;

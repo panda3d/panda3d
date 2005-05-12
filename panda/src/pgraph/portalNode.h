@@ -31,12 +31,13 @@
 //       Description : A node in the scene graph that can hold a 
 //                     Portal Polygon, which is a rectangle. Other 
 //                     types of polygons are not supported for
-//                     now. It also holds a PT(PandaNode) Zone that 
+//                     now. It also holds a PT(PandaNode) Cell that 
 //                     this portal is connected to
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);
+  PortalNode(const string &name, LPoint3f pos, float scale=10.0);
 
 protected:
   PortalNode(const PortalNode &copy);
@@ -69,15 +70,16 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint3f &get_vertex(int n) const;
 
-  INLINE void set_zone_in(const NodePath &zone);
-  INLINE NodePath get_zone_in() const;
+  INLINE void set_cell_in(const NodePath &cell);
+  INLINE NodePath get_cell_in() const;
 
-  INLINE void set_zone_out(const NodePath &zone);
-  INLINE NodePath get_zone_out() const;
+  INLINE void set_cell_out(const NodePath &cell);
+  INLINE NodePath get_cell_out() const;
 
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
 
+  //  void draw () const;
 
 protected:
   virtual BoundingVolume *recompute_bound();
@@ -101,8 +103,8 @@ private:
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
 
-  NodePath _zone_in;  // This is the zone it resides in
-  NodePath _zone_out;  // This is the zone it leads out to
+  NodePath _cell_in;  // This is the cell it resides in
+  NodePath _cell_out;  // This is the cell it leads out to
 
   bool _visible;
 

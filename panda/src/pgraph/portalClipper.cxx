@@ -134,10 +134,28 @@ draw_hexahedron(BoundingHexahedron *frustum) {
   draw_to(frustum->get_point(2));
 }
 ////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::draw the current visible portal
+//       Access: Public
+//  Description: _portal_node is the current portal, draw it.
+//           
+////////////////////////////////////////////////////////////////////
+void PortalClipper::
+draw_current_portal()
+{
+  move_to(_portal_node->get_vertex(0));
+  draw_to(_portal_node->get_vertex(1));
+  draw_to(_portal_node->get_vertex(2));
+  draw_to(_portal_node->get_vertex(3));
+}
+////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::draw the lines
 //       Access: Public
 //  Description: Draw all the lines in the buffer
-//           
+//               Yellow portal is the original geometry of the portal
+//               Cyan portal is the minmax adjusted portal
+//               Red portal is the clipped against frustum portal
+//               Blue frustum is the frustum through portal
+//               White frustum is the camera frustum
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
 draw_lines()
@@ -221,8 +239,11 @@ prepare_portal(const NodePath &node_path)
   // Get the Portal Node from this node_path
   PandaNode *node = node_path.node();
   _portal_node = NULL;
-  if (node->is_of_type(PortalNode::get_class_type()))
+  if (node->is_of_type(PortalNode::get_class_type())) {  
     _portal_node = DCAST(PortalNode, node);
+    // lets draw the portal anyway
+    //draw_current_portal();
+  }
 
   // walk the portal
   _num_vert = 0;

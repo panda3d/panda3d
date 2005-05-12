@@ -169,38 +169,38 @@ get_vertex(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::set_zone_in
+//     Function: PortalNode::set_cell_in
 //       Access: Published
-//  Description: Sets the zone that this portal belongs to
+//  Description: Sets the cell that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE void PortalNode::set_zone_in(const NodePath &zone) {
-  _zone_in = zone;
+INLINE void PortalNode::set_cell_in(const NodePath &cell) {
+  _cell_in = cell;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::get_zone_in
+//     Function: PortalNode::get_cell_in
 //       Access: Published
-//  Description: Sets the zone that this portal belongs to
+//  Description: Sets the cell that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE NodePath PortalNode::get_zone_in() const {
-  return _zone_in;
+INLINE NodePath PortalNode::get_cell_in() const {
+  return _cell_in;
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::set_zone_out
+//     Function: PortalNode::set_cell_out
 //       Access: Published
-//  Description: Sets the zone that this portal leads out to
+//  Description: Sets the cell that this portal leads out to
 ////////////////////////////////////////////////////////////////////
-INLINE void PortalNode::set_zone_out(const NodePath &zone) {
-  _zone_out = zone;
+INLINE void PortalNode::set_cell_out(const NodePath &cell) {
+  _cell_out = cell;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::get_zone_out
+//     Function: PortalNode::get_cell_out
 //       Access: Published
-//  Description: Sets the zone that this portal leads out to
+//  Description: Sets the cell that this portal leads out to
 ////////////////////////////////////////////////////////////////////
-INLINE NodePath PortalNode::get_zone_out() const {
-  return _zone_out;
+INLINE NodePath PortalNode::get_cell_out() const {
+  return _cell_out;
 }
 
 ////////////////////////////////////////////////////////////////////

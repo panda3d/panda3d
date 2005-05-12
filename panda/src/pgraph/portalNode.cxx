@@ -37,7 +37,10 @@ TypeHandle PortalNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::Constructor
 //       Access: Public
-//  Description:
+//  Description: Default constructor, just an empty node, no geo
+//               This is used to read portal from model. You can also
+//               use this from python to create an empty portal. Then
+//               you can set the vertices yourself, with addVertex.
 ////////////////////////////////////////////////////////////////////
 PortalNode::
 PortalNode(const string &name) :
@@ -46,8 +49,31 @@ PortalNode(const string &name) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
-  _zone_in = NULL;
-  _zone_out = NULL;
+  _cell_in = NULL;
+  _cell_out = NULL;
+  _visible = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::Constructor
+//       Access: Public
+//  Description: Create a default rectangle as portal. Use this
+//               to create an arbitrary portal and setup from Python
+////////////////////////////////////////////////////////////////////
+PortalNode::
+PortalNode(const string &name, LPoint3f pos, float scale) :
+  PandaNode(name),
+  _from_portal_mask(PortalMask::all_on()),
+  _into_portal_mask(PortalMask::all_on()),
+  _flags(0)
+{
+  add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]-1.0*scale));
+  add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]-1.0*scale));
+  add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
+  add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]+1.0*scale));
+
+  _cell_in = NULL;
+  _cell_out = NULL;
   _visible = true;
 }
 
@@ -63,8 +89,8 @@ PortalNode(const PortalNode &copy) :
   _into_portal_mask(copy._into_portal_mask),
   _flags(copy._flags)
 {
-  _zone_in = copy._zone_in;
-  _zone_out = copy._zone_in;
+  _cell_in = copy._cell_in;
+  _cell_out = copy._cell_in;
   _visible = copy._visible;
 }
 
@@ -169,7 +195,7 @@ has_cull_callback() const {
 //               will be called during the cull traversal to perform
 //               reduced frustum culling. Basically, once the scenegraph
 //               comes across a portal node, it calculates a CulltraverserData
-//               with which zone, this portal leads out to and the new frustum.
+//               with which cell, this portal leads out to and the new frustum.
 //               Then it traverses that child
 //
 //               The return value is true if this node should be
@@ -178,8 +204,8 @@ has_cull_callback() const {
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PortalClipper *portal_viewer = trav->get_portal_clipper();
-  if (!_zone_out.is_empty() && portal_viewer) {
-    //CullTraverserData next_data(data, _zone_out);
+  if (is_visible() && !_cell_out.is_empty() && portal_viewer) {
+    //CullTraverserData next_data(data, _cell_out);
     pgraph_cat.debug() << "checking portal node  " << *this << endl;
     PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
     PT(BoundingVolume) reduced_frustum;
@@ -197,23 +223,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       
       // trasform it to cull_center space
       CPT(TransformState) cull_center_transform = 
-        portal_viewer->_scene_setup->get_cull_center().get_transform(_zone_out);
+        portal_viewer->_scene_setup->get_cull_center().get_transform(_cell_out);
       vf->xform(cull_center_transform->get_mat());
       
       pgraph_cat.spam() << "vf is " << *vf << "\n";
     
-      // Get the net trasform of the _zone_out
-      CPT(TransformState) zone_transform = _zone_out.get_net_transform();
+      // Get the net trasform of the _cell_out
+      CPT(TransformState) cell_transform = _cell_out.get_net_transform();
       
-      CullTraverserData next_data(_zone_out, trav->get_render_transform()->compose(zone_transform),
-                                  zone_transform,
+      CullTraverserData next_data(_cell_out, trav->get_render_transform()->compose(cell_transform),
+                                  cell_transform,
                                   trav->get_initial_state(), vf, 
                                   trav->get_guard_band());
 
-      pgraph_cat.spam() << "cull_callback: traversing " << _zone_out.get_name() << endl;
+      pgraph_cat.spam() << "cull_callback: traversing " << _cell_out.get_name() << endl;
 
-      // Make this zone show with the reduced frustum
-      _zone_out.show();
+      // Make this cell show with the reduced frustum
+      _cell_out.show();
 
       // all nodes visible through this portal, should have this node's frustum
       BoundingHexahedron *old_bh = portal_viewer->get_reduced_frustum();
@@ -221,7 +247,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       trav->traverse(next_data);
 
       // make sure traverser is not drawing this node again
-      _zone_out.hide();
+      _cell_out.hide();
 
       // reset portal viewer frustum for the siblings;
       portal_viewer->set_reduced_frustum(old_bh);
@@ -245,6 +271,22 @@ output(ostream &out) const {
   PandaNode::output(out);
 }
 
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::draw
+//       Access: Public
+//  Description: Draws the vertices of this portal rectangle to the 
+//               screen with a line 
+
+////////////////////////////////////////////////////////////////////
+void PortalNode::
+draw() const {
+  move_to(get_vertex(0));
+  draw_to(get_vertex(1));
+  draw_to(get_vertex(2));
+  draw_to(get_vertex(3));
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::recompute_bound
