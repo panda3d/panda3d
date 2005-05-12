@@ -129,6 +129,15 @@ ConfigVariableBool support_render_texture
           "offscreen renders will be copied to a texture instead of directly "
           "rendered there."));
 
+ConfigVariableBool support_rescale_normal
+("support-rescale-normal", true,
+ PRC_DESC("Set this true allow use of the rescale-normal feature, if it "
+          "is supported by your graphics card.  This allows lighting normals "
+          "to be uniformly counter-scaled, instead of re-normalized, "
+          "in the presence of a uniform scale, which should in principle be "
+          "a bit faster.  This feature is only supported "
+          "by the OpenGL API."));
+
 ConfigVariableBool copy_texture_inverted
 ("copy-texture-inverted", false,
  PRC_DESC("Set this true to indicate that the GSG in use will invert textures when "

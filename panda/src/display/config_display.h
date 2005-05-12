@@ -53,6 +53,7 @@ extern EXPCL_PANDA ConfigVariableBool prefer_parasite_buffer;
 extern EXPCL_PANDA ConfigVariableBool prefer_single_buffer;
 
 extern EXPCL_PANDA ConfigVariableBool support_render_texture;
+extern EXPCL_PANDA ConfigVariableBool support_rescale_normal;
 extern EXPCL_PANDA ConfigVariableBool copy_texture_inverted;
 extern EXPCL_PANDA ConfigVariableBool window_inverted;
 extern EXPCL_PANDA ConfigVariableBool depth_offset_decals;

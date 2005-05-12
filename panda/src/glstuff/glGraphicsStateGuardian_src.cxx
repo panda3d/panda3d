@@ -3665,13 +3665,13 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
   switch (mode) {
   case RescaleNormalAttrib::M_none:
     GLP(Disable)(GL_NORMALIZE);
-    if (_supports_rescale_normal) {
+    if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
     }
     break;
 
   case RescaleNormalAttrib::M_rescale:
-    if (_supports_rescale_normal) {
+    if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Enable)(GL_RESCALE_NORMAL);
       GLP(Disable)(GL_NORMALIZE);
     } else {
@@ -3681,7 +3681,7 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
 
   case RescaleNormalAttrib::M_normalize:
     GLP(Enable)(GL_NORMALIZE);
-    if (_supports_rescale_normal) {
+    if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
     }
     break;
@@ -5665,13 +5665,13 @@ do_auto_rescale_normal() {
     if (IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
       // If there's no scale at all, don't do anything.
       GLP(Disable)(GL_NORMALIZE);
-      if (_supports_rescale_normal) {
+      if (_supports_rescale_normal && support_rescale_normal) {
         GLP(Disable)(GL_RESCALE_NORMAL);
       }
       
     } else {
       // There's a uniform scale; use the rescale feature if available.
-      if (_supports_rescale_normal) {
+      if (_supports_rescale_normal && support_rescale_normal) {
         GLP(Enable)(GL_RESCALE_NORMAL);
         GLP(Disable)(GL_NORMALIZE);
       } else {
@@ -5682,7 +5682,7 @@ do_auto_rescale_normal() {
   } else {
     // If there's a non-uniform scale, normalize everything.
     GLP(Enable)(GL_NORMALIZE);
-    if (_supports_rescale_normal) {
+    if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
     }
   }
