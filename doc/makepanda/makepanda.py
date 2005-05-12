@@ -1911,6 +1911,8 @@ CopyFile(PREFIX+"/", "doc/LICENSE")
 CopyFile(PREFIX+"/", "doc/ReleaseNotes")
 CopyTree(PREFIX+'/Pmw', 'thirdparty/Pmw')
 CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
+CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts", ".mel")
+CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts", ".ms")
 
 ########################################################################
 ##
