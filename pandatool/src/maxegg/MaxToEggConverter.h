@@ -25,7 +25,11 @@
 
 /* 3ds Max Includes, with bonus(!) memory protection
  */
+
 #ifdef MAX5
+//Disable the "Too many actual parameters in istdplug.h" warning in Max5
+#pragma warning(push)
+#pragma warning(disable: 4002)
 #include "pre_max_include.h"
 #endif
 #include "Max.h"
@@ -36,9 +40,12 @@
 #include "resource.h"
 #include "stdmat.h"
 #include "phyexp.h"
+#include "surf_api.h"
 #ifdef MAX5
 #include "post_max_include.h"
+#pragma warning(pop)
 #endif
+
 
 /* Panda Includes
  */
@@ -49,6 +56,7 @@
 #include "eggTexture.h"
 #include "eggVertex.h"
 #include "eggVertexPool.h"
+#include "eggNurbsCurve.h"
 #include "pandatoolbase.h"
 #include "somethingToEgg.h"
 #include "somethingToEggConverter.h"
@@ -95,8 +103,13 @@ class MaxToEggConverter : public SomethingToEggConverter {
   //Sets the interface to 3dsMax.
   void setMaxInterface(Interface *pInterface);
 
+  void set_selection_list(ULONG *list, int len) {
+    _selection_list = list; _selection_len = len; }
+  void set_double_sided(bool flag) {double_sided = flag;}
+
  private:
   double _current_frame;
+  ULONG *_selection_list; int _selection_len;
 
   bool convert_flip(double start_frame, double end_frame, 
                     double frame_inc, double output_frame_rate);
@@ -122,10 +135,9 @@ class MaxToEggConverter : public SomethingToEggConverter {
                                  const string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
-  void make_nurbs_curve(const MDagPath &dag_path, 
-                        const MFnNurbsCurve &curve,
-                        EggGroup *group);
-  */
+ */
+  bool make_nurbs_curve(NURBSCVCurve *curve, const string &name,
+                        TimeValue time, EggGroup *egg_group);
   void make_polyset(INode *max_node,
                     Mesh *mesh,
                     EggGroup *egg_group,
@@ -162,6 +174,7 @@ class MaxToEggConverter : public SomethingToEggConverter {
   MaxNodeTree _tree;
   
   int _cur_tref;
+  bool double_sided;
 
  public:
   //MayaShaders _shaders;

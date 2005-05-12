@@ -36,7 +36,7 @@ class MaxToEgg : public SomethingToEgg
  protected:
   // If true, various windows pop-up alerts will announce when certain tasks
   // begin.
-  bool alertOnBegin;
+  bool confirmExport;
   // The local pointer to the 3ds max interface we keep around to get the
   // scene graph. If we ever get this to run standalone, we'll need an
   // alternate way to set this other than through MaxEggPlugin. 
@@ -44,6 +44,8 @@ class MaxToEgg : public SomethingToEgg
   // False initially, but premanently switches to true when a file is 
   // sucessfully converted.
   bool successfulOutput;
+  bool doubleSided;
+  virtual bool handle_args(Args &args);
 
  public:
   MaxToEgg();
@@ -51,7 +53,7 @@ class MaxToEgg : public SomethingToEgg
   bool IsSuccessful();
   //Returns a pointer to the class name.
   char *MyClassName();
-  void Run();
+  void Run(ULONG *selection_list, int len);
   void SetMaxInterface(Interface *pInterface);
 };
 

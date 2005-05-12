@@ -39,6 +39,8 @@ MaxToEggConverter(const string &program_name) :
   _transform_type = TT_model;
   _cur_tref = 0;
   _current_frame = 0;
+  _selection_list = NULL;
+  _selection_len = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,7 +197,7 @@ convert_max(bool from_selection) {
   if (_from_selection) {
     all_ok = _tree.build_selected_hierarchy(maxInterface->GetRootNode());
   } else {
-    all_ok = _tree.build_complete_hierarchy(maxInterface->GetRootNode());
+    all_ok = _tree.build_complete_hierarchy(maxInterface->GetRootNode(), _selection_list, _selection_len);
   }
 
   if (all_ok) {
@@ -398,22 +400,23 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
       // Find all joints in the hierarchy
       MaxNodeDesc *node_desc = _tree.get_node(i);
       if (node_desc->is_joint()) {
-	tgroup = new EggGroup();
-	INode *max_node = node_desc->get_max_node();
+	      tgroup = new EggGroup();
+	      INode *max_node = node_desc->get_max_node();
 
-	if (node_desc->_parent && node_desc->_parent->is_joint()) {
-	  // If this joint also has a joint as a parent, the parent's 
-	  // transformation has to be divided out of this joint's TM
-	  get_joint_transform(max_node, node_desc->_parent->get_max_node(), 
-			      tgroup);
-	} else {
-	  get_joint_transform(max_node, NULL, tgroup);
-	}
+	      if (node_desc->_parent && node_desc->_parent->is_joint()) {
+	      // If this joint also has a joint as a parent, the parent's 
+	      // transformation has to be divided out of this joint's TM
+	      get_joint_transform(max_node, node_desc->_parent->get_max_node(), 
+			                      tgroup);
+	      } else {
+	        get_joint_transform(max_node, NULL, tgroup);
+	      }
+        
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
         if (!anim->add_data(tgroup->get_transform())) {
-	  // *** log an error
-	}
-	delete tgroup;
+	        // *** log an error
+	      }
+	      delete tgroup;
       }
     }
     
@@ -441,10 +444,10 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 ////////////////////////////////////////////////////////////////////
 bool MaxToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
-  int num_nodes = _tree.get_num_nodes();
+  //int num_nodes = _tree.get_num_nodes();
 
   _tree.clear_egg(&get_egg_data(), egg_root, NULL);
-  for (int i = 0; i < num_nodes; i++) {
+  for (int i = 0; i < _tree.get_num_nodes(); i++) {
     if (!process_model_node(_tree.get_node(i))) {
       return false;
     }
@@ -480,15 +483,15 @@ process_model_node(MaxNodeDesc *node_desc) {
   state = max_node->EvalWorldState(_current_frame * GetTicksPerFrame());
 
   if (node_desc->is_joint()) {
+    EggGroup *egg_group = _tree.get_egg_group(node_desc);
     // Don't bother with joints unless we're getting an animatable
     // model.
     if (_animation_convert == AC_model) { 
-      EggGroup *egg_group = _tree.get_egg_group(node_desc);
       get_joint_transform(max_node, egg_group);
     }
   } else {
     if (state.obj) {
-      EggGroup *egg_group;
+      EggGroup *egg_group = NULL;
       TriObject *myMaxTriObject;
       Mesh max_mesh;
       //Call the correct exporter based on what type of object this is.
@@ -497,10 +500,10 @@ process_model_node(MaxNodeDesc *node_desc) {
         case GEOMOBJECT_CLASS_ID:
 	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
 		       "Found a geometric object in the hierarchy!" );
-	  egg_group = _tree.get_egg_group(node_desc);
+    egg_group = _tree.get_egg_group(node_desc);
 	  get_transform(max_node, egg_group);
-	  
-	  //Try converting this geometric object to a mesh we can use.
+    
+    //Try converting this geometric object to a mesh we can use.
 	  if (!state.obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) {
 	    Logger::Log(MTEC, Logger::SAT_OTHER_ERROR, 
 			"Cannot create geometry from state.obj!");
@@ -523,7 +526,25 @@ process_model_node(MaxNodeDesc *node_desc) {
 	  if (myMaxTriObject != state.obj)
 	    delete myMaxTriObject;
 	  break;
-	  
+
+        case SHAPE_CLASS_ID:
+    if (state.obj->ClassID() == EDITABLE_SURF_CLASS_ID) {
+	    Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+		         "Found a NURB object in the hierarchy!" );
+      NURBSSet getSet;
+      if (GetNURBSSet(state.obj, time, getSet, TRUE)) {
+        NURBSObject *nObj = getSet.GetNURBSObject(0);
+        if (nObj->GetType() == kNCVCurve) {
+          //It's a CV Curve, process it
+          egg_group = _tree.get_egg_group(node_desc);
+      	  get_transform(max_node, egg_group);
+          make_nurbs_curve((NURBSCVCurve *)nObj, string(max_node->GetName()),
+                           time, egg_group);
+        }
+      }
+    }
+    break;
+
         case CAMERA_CLASS_ID:
 	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
 		       "Found a camera object in the hierarchy!" );
@@ -538,6 +559,13 @@ process_model_node(MaxNodeDesc *node_desc) {
 	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
 		       "Found a helper object in the hierarchy!" );
 	  break;
+/*        default:
+          char buf[1024];
+          sprintf(buf, "Unknown Superclass ID: %x, ClassID: %x,%x", state.obj->SuperClassID(),
+            state.obj->ClassID().PartA(), state.obj->ClassID().PartB());
+	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+		       buf ); */
+
       }
     }
   }
@@ -1246,7 +1274,7 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
   }
 
   return egg_curve;
-}
+} */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxToEggConverter::make_nurbs_curve
@@ -1255,10 +1283,12 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
 //               curve, not a trim curve) to a corresponding egg
 //               structure and attaches it to the indicated egg group.
 ////////////////////////////////////////////////////////////////////
-void MaxToEggConverter::
-make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
-                 EggGroup *egg_group) {
-  MStatus status;
+bool MaxToEggConverter::
+make_nurbs_curve(NURBSCVCurve *curve, const string &name,
+                 TimeValue time, EggGroup *egg_group) 
+{
+                   
+/*  MStatus status;
   string name = curve.name().asChar();
 
   if (mayaegg_cat.is_spam()) {
@@ -1290,12 +1320,19 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
   }
 
   //  MFnNurbsCurve::Form form = curve.form();
+*/
 
-  int degree = curve.degree();
-  int cvs = curve.numCVs();
-  int knots = curve.numKnots();
+  int degree = curve->GetOrder();
+  int cvs = curve->GetNumCVs();
+  int knots = curve->GetNumKnots();
+  int i;
 
-  assert(knots == cvs + degree - 1);
+  if (knots != cvs + degree) {
+    char buf[1024];
+    sprintf(buf, "NURBS knots count incorrect. Order %d, CVs %d, knots %d", degree, cvs, knots);
+    Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, buf);
+    return false;
+  }
 
   string vpool_name = name + ".cvs";
   EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -1303,38 +1340,32 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 
   EggNurbsCurve *egg_curve = new EggNurbsCurve(name);
   egg_group->add_child(egg_curve);
-  egg_curve->setup(degree + 1, knots + 2);
+  egg_curve->setup(degree, knots);
 
-  int i;
-
-  egg_curve->set_knot(0, knot_array[0]);
-  for (i = 0; i < knots; i++) {
-    egg_curve->set_knot(i + 1, knot_array[i]);
-  }
-  egg_curve->set_knot(knots + 1, knot_array[knots - 1]);
+  for (i = 0; i < knots; i++)
+    egg_curve->set_knot(i, curve->GetKnot(i));
 
   LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
-  for (i = 0; i < egg_curve->get_num_cvs(); i++) {
-    double v[4];
-    MStatus status = cv_array[i].get(v);
-    if (!status) {
-      status.perror("MPoint::get");
+  for (i = 0; i < cvs; i++) {
+    NURBSControlVertex *cv = curve->GetCV(i);
+    if (!cv) {
+      char buf[1024];
+      sprintf(buf, "Error getting CV %d", i);
+      Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, buf);
+      return false;
     } else {
       EggVertex vert;
-      LPoint4d p4d(v[0], v[1], v[2], v[3]);
+      LPoint4d p4d(0, 0, 0, 1.0);
+      cv->GetPosition(time, p4d[0], p4d[1], p4d[2]);
       p4d = p4d * vertex_frame_inv;
       vert.set_pos(p4d);
       egg_curve->add_vertex(vpool->create_unique_vertex(vert));
     }
   }
 
-  MayaShader *shader = _shaders.find_shader_for_node(curve.object());
-  if (shader != (MayaShader *)NULL) {
-    set_shader_attributes(*egg_curve, *shader);
-  }
+  return true;
 }
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxToEggConverter::make_polyset
@@ -1348,7 +1379,7 @@ make_polyset(INode *max_node, Mesh *mesh,
              EggGroup *egg_group, Shader *default_shader) {
 	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Entered make_poly_set." );
 
-  bool double_sided = false;
+  //bool double_sided = false;
 
   // *** I think this needs to have a plugin written to support
   /*

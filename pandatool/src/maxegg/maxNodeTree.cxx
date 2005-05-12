@@ -23,10 +23,19 @@
 #include "eggXfmSAnim.h"
 #include "eggData.h"
 
+#ifdef MAX5
+//Disable the "Too many actual parameters in istdplug.h" warning in Max5
+#pragma warning(push)
+#pragma warning(disable: 4002)
 #include "pre_max_include.h"
+#endif
 #include "Max.h"
+#ifdef MAX5
 #include "post_max_include.h"
+#pragma warning(pop)
+#endif
 #include "maxToEggConverter.h"
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::Constructor
@@ -73,13 +82,30 @@ build_joint(INode *max_node, MaxNodeDesc *node_joint) {
   return node_desc;
 }
 
+bool MaxNodeTree::node_in_list(ULONG handle, ULONG *list, int len) {
+  if (!list) return true;
+  for (int i = 0; i < len; i++)
+    if (list[i] == handle) return true;
+  return false;
+}
+
+bool MaxNodeTree::is_joint(INode *node) {
+  Control *c = node->GetTMController();
+  return (node->GetBoneNodeOnOff() ||                    //joints
+         (c &&                                           //bipeds
+         ((c->ClassID() == BIPSLAVE_CONTROL_CLASS_ID) ||
+         (c->ClassID() == BIPBODY_CONTROL_CLASS_ID) ||
+         (c->ClassID() == FOOTPRINT_CLASS_ID))));
+}
+
 bool MaxNodeTree::
-r_build_hierarchy(INode *root) {
-  build_node(root);
+r_build_hierarchy(INode *root, ULONG *selection_list, int len) {
+  if (node_in_list(root->GetHandle(), selection_list, len))
+    build_node(root);
   // Export children
   for ( int i = 0; i < root->NumberOfChildren(); i++ ) {
     // *** Should probably be checking the return value of the following line
-    r_build_hierarchy(root->GetChildNode(i));
+    r_build_hierarchy(root->GetChildNode(i), selection_list, len);
   }
   return true;
 }
@@ -90,7 +116,7 @@ r_build_hierarchy(INode *root) {
 //               up the corresponding tree.
 ////////////////////////////////////////////////////////////////////
 bool MaxNodeTree::
-build_complete_hierarchy(INode *root) {
+build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
 
   // Get the entire Max scene.
   if (root == NULL) {
@@ -99,7 +125,7 @@ build_complete_hierarchy(INode *root) {
   }
     
   bool all_ok = true;
-  r_build_hierarchy(root);
+  r_build_hierarchy(root, selection_list, len);
 
   if (all_ok) {
     _root->check_pseudo_joints(false);
@@ -462,5 +488,8 @@ find_node(INode* max_node)
 MaxNodeDesc *MaxNodeTree::
 find_joint(INode* max_node) 
 {
-  return find_node(max_node)->_joint_entry;
+  MaxNodeDesc *node = find_node(max_node);
+  if (!node || (is_joint(max_node) && !node->is_node_joint()))
+    node = build_node(max_node);
+  return node->_joint_entry;
 }

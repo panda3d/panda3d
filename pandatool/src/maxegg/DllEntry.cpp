@@ -13,7 +13,7 @@
 
 #include "MaxEgg.h"
 
-extern ClassDesc2* GetMaxEggPluginDesc();
+extern ClassDesc* GetMaxEggPluginDesc();
 
 HINSTANCE hInstance;
 int controlsInit = FALSE;

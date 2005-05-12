@@ -37,7 +37,7 @@ public:
   MaxNodeTree();
   MaxNodeDesc *build_node(INode *max_node);
   MaxNodeDesc *build_joint(INode *max_node, MaxNodeDesc *node_joint);
-  bool build_complete_hierarchy(INode *root);
+  bool build_complete_hierarchy(INode *root, ULONG *selection_list, int len);
   bool build_selected_hierarchy(INode *root);
   MaxNodeDesc *find_node(INode *max_node);
   MaxNodeDesc *find_joint(INode *max_node);
@@ -61,7 +61,9 @@ private:
 
   MaxNodeDesc *r_build_node(INode *max_node);
   MaxNodeDesc *r_build_joint(MaxNodeDesc *node_desc, INode *max_node);
-  bool r_build_hierarchy(INode *root);
+  bool node_in_list(ULONG handle, ULONG *list, int len);
+  bool r_build_hierarchy(INode *root, ULONG *selection_list, int len);
+  bool is_joint(INode *node);
 
   typedef pmap<ULONG, MaxNodeDesc *> NodesByPath;
   NodesByPath _nodes_by_path;

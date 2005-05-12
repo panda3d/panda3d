@@ -28,13 +28,17 @@ MaxToEgg::MaxToEgg() : SomethingToEgg("3D Studio Max",".max")
   add_transform_options();
 
   set_program_description("This program converts 3D Studio Max model files to egg.");
-  add_option("p", "", 0,
+  /*add_option("p", "", 0,
 	     "Generate polygon output only.  Convert scene to triangle mesh "
-	     "before converting.", &MaxToEgg::dispatch_none, &alertOnBegin);
+	     "before converting.", &MaxToEgg::dispatch_none, &alertOnBegin);*/
+  add_option("bface", "", 0,
+	     "Export all polygons as double-sided ",
+	     &MaxToEgg::dispatch_none, &doubleSided);
   //Fill in the member variables.
   pMaxInterface = null;
   successfulOutput = false;
-  alertOnBegin = false;
+  confirmExport = true;
+  doubleSided = false;
 }
 
 /* IsSuccessful() - Indicates if conversion was successful.
@@ -52,7 +56,7 @@ char *MaxToEgg::MyClassName()
 /* Run() - Runs the conversion.  Creates a MaxToEggConverter, populates it
    with the scene graph, and then writes out the egg file.
 */
-void MaxToEgg::Run() 
+void MaxToEgg::Run(ULONG *selection_list, int len) 
 {
   MaxToEggConverter converter;
 
@@ -66,9 +70,11 @@ void MaxToEgg::Run()
   converter.set_egg_data( &_data, false );
   // applies the parameters from the command line options
   apply_parameters(converter);
+  converter.set_double_sided(doubleSided);
+  converter.set_selection_list(selection_list, len);
   
   //Now, do the actual file conversion.
-  if (converter.convert_file(_input_filename)) {
+  if (confirmExport && converter.convert_file(_input_filename)) {
     successfulOutput=true;
     write_egg_file();
     Logger::Log( MTE, Logger::SAT_DEBUG_SPAM_LEVEL, "Egg file written!" );
@@ -85,4 +91,35 @@ void MaxToEgg::Run()
 void MaxToEgg::SetMaxInterface(Interface *pInterface) 
 {
   pMaxInterface = pInterface;
+}
+
+bool MaxToEgg::handle_args(Args &args) {
+  char msg[3072];
+
+  //If "auto overwrite" was not checked, ask if the user wishes to overwrite the file
+  if (_allow_last_param && !_got_output_filename && args.size() > 1) {
+    _got_output_filename = true;
+    _output_filename = Filename::from_os_specific(args.back());
+    args.pop_back();
+
+    if (!verify_output_file_safe()) {
+      sprintf(msg, "Overwrite file \"%s\"?", _output_filename.to_os_specific().c_str());
+      confirmExport = 
+        ( MessageBox(pMaxInterface->GetMAXHWnd(), msg, "Panda3D Exporter", MB_YESNO | MB_ICONQUESTION)
+          == IDYES );
+    }
+  }
+
+  //Attempt to catch if the output file is read-only
+  if (confirmExport) {
+    _output_filename.make_dir();
+    if (access(Filename(_output_filename.get_dirname()).to_os_specific().c_str(), 2) ||
+        (access(_output_filename.to_os_specific().c_str(), 2) && errno != ENOENT)) {
+      sprintf(msg, "Error attempting to open \"%s\"\n\nDestination file is in use or read-only", _output_filename.to_os_specific().c_str());
+      MessageBox(pMaxInterface->GetMAXHWnd(), msg, "Panda3D Exporter", MB_OK | MB_ICONERROR);
+      confirmExport = false;
+    }
+  }
+
+  return SomethingToEgg::handle_args(args);
 }

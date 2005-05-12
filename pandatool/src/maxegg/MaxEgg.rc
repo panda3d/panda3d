@@ -26,42 +26,76 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOGEX 0, 0, 374, 169
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
-    WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
+IDD_PANEL DIALOGEX 0, 0, 109, 192
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    CTEXT           "MaxToEgg Exporter",IDC_STATIC,7,7,360,10
-    CTEXT           "By Corey Revilla, Ken Strickland, and Steve Osman.",
-                    IDC_STATIC,7,21,360,19
-    CONTROL         "Also create .BAM file",IDC_MAKE_BAM,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,35,138,81,10
-    PUSHBUTTON      "Done",IDC_DONE,303,139,50,14
-    GROUPBOX        "",IDC_STATIC,21,38,333,93
-    CONTROL         "Animation",IDC_ANIMATION,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,27,38,49,10
-    CONTROL         "model only",IDC_MODEL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED | WS_GROUP | WS_TABSTOP,35,51,60,12
-    CONTROL         "animation channel only",IDC_CHAN,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,35,65,92,
+    CTEXT           "Panda 3D EGG Exporter",IDC_PANEL_TITLE,6,6,96,11,
+                    WS_BORDER
+    LTEXT           "Eggs",IDC_EGGS_LABEL,6,19,62,8
+    CONTROL         "Custom1",IDC_LIST_EGGS,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | 
+                    WS_TABSTOP,6,28,96,69,WS_EX_CLIENTEDGE
+    CONTROL         "Add...",IDC_ADD_EGG,"CustButton",WS_TABSTOP,6,102,24,12
+    CONTROL         "Edit...",IDC_EDIT_EGG,"CustButton",WS_TABSTOP,36,102,30,
                     12
-    CONTROL         "pose",IDC_POSE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED | WS_TABSTOP,35,80,60,12
-    CONTROL         "strobe",IDC_STROBE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED | WS_TABSTOP,35,95,60,12
-    CONTROL         "model and animation channel",IDC_BOTH,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,35,110,110,
+    CONTROL         "Remove",IDC_REMOVE_EGG,"CustButton",WS_TABSTOP,72,102,
+                    30,12
+    CONTROL         "Overwrite Existing Files",IDC_OVERWRITE_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,126,103,8,
+                    WS_EX_TRANSPARENT
+    CONTROL         "Export Now",IDC_EXPORT,"CustButton",WS_TABSTOP,5,164,96,
+                    18
+    CONTROL         "Pview Output",IDC_PVIEW_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,6,138,103,8,WS_EX_TRANSPARENT
+    CONTROL         "Log Output",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,6,148,90,11
+END
+
+IDD_EGG_DETAILS DIALOGEX 0, 0, 256, 169
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Export Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Export Type:",IDC_STATIC,6,5,54,8
+    CONTROL         "Model",IDC_MODEL,"Button",BS_AUTORADIOBUTTON,54,4,38,12
+    CONTROL         "Animation",IDC_ANIMATION,"Button",BS_AUTORADIOBUTTON,96,
+                    4,50,12
+    CONTROL         "Both",IDC_BOTH,"Button",BS_AUTORADIOBUTTON,150,4,35,12
+    CONTROL         "Pose",IDC_POSE,"Button",BS_AUTORADIOBUTTON,186,4,36,12
+    GROUPBOX        "Options",IDC_STATIC,6,18,246,126,WS_GROUP
+    LTEXT           "Filename",IDC_STATIC,12,30,66,8
+    CONTROL         "Custom1",IDC_FILENAME,"CustEdit",WS_TABSTOP,12,42,180,
                     12
-    EDITTEXT        IDC_CN,254,54,71,12,ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_SF,303,70,22,12,ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_IF,303,103,22,12,ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_EF,303,87,22,12,ES_AUTOHSCROLL | WS_DISABLED
-    LTEXT           "Character Name",IDC_CN_LABEL,187,56,54,10,WS_DISABLED
-    LTEXT           "Start Frame",IDC_SF_LABEL,187,72,48,10,WS_DISABLED
-    LTEXT           "End Frame",IDC_EF_LABEL,187,88,45,10,WS_DISABLED
-    LTEXT           "Frame Increment",IDC_IF_LABEL,187,105,64,10,WS_DISABLED
-    PUSHBUTTON      "Cancel",IDC_CANCEL,250,139,50,14
+    CONTROL         "Browse...",IDC_BROWSE,"CustButton",WS_TABSTOP,198,42,48,
+                    12
+    CONTROL         "Export Entire Scene",IDC_EXPORT_ALL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,12,60,114,8
+    CONTROL         "Export Meshes:",IDC_EXPORT_SELECTED,"Button",
+                    BS_AUTORADIOBUTTON,12,71,114,8
+    LISTBOX         IDC_LIST_EXPORT,12,84,114,36,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Add...",IDC_ADD_EXPORT,"CustButton",WS_TABSTOP,12,126,
+                    54,12
+    CONTROL         "Remove...",IDC_REMOVE_EXPORT,"CustButton",WS_TABSTOP,72,
+                    126,54,12
+    CONTROL         "Export All Frames",IDC_EXP_ALL_FRAMES,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,144,60,96,8
+    CONTROL         "Use Range:",IDC_EXP_SEL_FRAMES,"Button",
+                    BS_AUTORADIOBUTTON | BS_VCENTER,144,70,102,11
+    LTEXT           "Start Frame",IDC_SF_LABEL,144,86,42,8,WS_DISABLED
+    CONTROL         "Custom4",IDC_SF,"CustEdit",WS_DISABLED | WS_TABSTOP,186,
+                    84,48,12
+    LTEXT           "End Frame",IDC_EF_LABEL,144,103,42,8,WS_DISABLED
+    CONTROL         "Custom5",IDC_EF,"CustEdit",WS_DISABLED | WS_TABSTOP,186,
+                    101,48,12
+    CONTROL         "Double-sided Polygons",IDC_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,144,126,102,12
+    CONTROL         "OK",IDC_OK,"CustButton",WS_TABSTOP,162,150,42,12
+    CONTROL         "Cancel",IDC_CANCEL,"CustButton",WS_TABSTOP,210,150,42,
+                    12
 END
 
 
@@ -75,8 +109,13 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_PANEL, DIALOG
     BEGIN
+        BOTTOMMARGIN, 182
+    END
+
+    IDD_EGG_DETAILS, DIALOG
+    BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 367
+        RIGHTMARGIN, 249
         TOPMARGIN, 7
         BOTTOMMARGIN, 162
     END
@@ -134,7 +173,7 @@ BEGIN
         BEGIN
             VALUE "FileVersion", "4.0.0.0"
             VALUE "InternalName", "MaxEgg"
-//            VALUE "OriginalFilename", "MaxEgg.dle"
+            VALUE "OriginalFilename", "MaxEgg.dle"
             VALUE "ProductName", "3ds max"
             VALUE "ProductVersion", "4.0.0.0"
             VALUE "FileDescription", "Panda3D .egg exporter"
@@ -157,8 +196,8 @@ END
 STRINGTABLE 
 BEGIN
     IDS_LIBDESCRIPTION      "Panda3D .egg exporter"
-    IDS_CATEGORY            "egg"
-    IDS_CLASS_NAME          "MaxEgg"
+    IDS_CATEGORY            "Exporters"
+    IDS_CLASS_NAME          "Panda3D"
     IDS_PARAMS              "Parameters"
     IDS_SPIN                "Spin"
 END
