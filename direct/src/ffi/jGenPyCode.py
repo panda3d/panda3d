@@ -75,7 +75,7 @@ from direct.ffi import FFIConstants
 DoGenPyCode.outputDir = PANDAC
 DoGenPyCode.extensionsDir = EXTENSIONS
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
-DoGenPyCode.codeLibs = ['libpandaexpress','libpanda','libpandaphysics','libpandafx','libdirect']
+DoGenPyCode.codeLibs = ['libpandaexpress','libpanda','libpandaphysics','libpandafx','libdirect','libpandaegg']
 DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
 
 #print "outputDir = ",DoGenPyCode.outputDir
