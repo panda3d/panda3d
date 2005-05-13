@@ -32,6 +32,7 @@ Options:
   -h          print this message
   -v          verbose
   -d dir      directory to write output code
+  -m dir      directory to write HTML manual (optional)
   -x dir      directory to pull extension code from
   -i lib      interrogate library
   -e dir      directory to search for *.in files (may be repeated)
@@ -47,6 +48,8 @@ of libraries that are to be instrumented.
 
 # Initialize variables
 outputDir = ''
+directDir = ''
+manualDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
@@ -96,6 +99,8 @@ def doGetopts():
                 FFIConstants.notify.setDebug(1)
         elif (flag == '-d'):
             outputDir = value
+        elif (flag == '-m'):
+            manualDir = value
         elif (flag == '-x'):
             extensionsDir = value
         elif (flag == '-i'):
@@ -181,6 +186,8 @@ def doErrorCheck():
 
 def run():
     global outputDir
+    global directDir
+    global manualDir
     global extensionsDir
     global interrogateLib
     global codeLibs
@@ -195,5 +202,12 @@ def run():
     db = FFIInterrogateDatabase.FFIInterrogateDatabase(etcPath = etcPath)
     db.generateCode(outputDir, extensionsDir)
 
+    if manualDir != '' and directDir != '':
+        import epydoc.cli
+        import direct.directbase.DirectStart
+        cmd = ["epydoc","-n","Panda3D","-o",manualDir,"--docformat","panda","--ignore-param-mismatch",outputDir,directDir]
+        sys.argv = cmd
+        epydoc.cli.cli()
+
     if doSqueeze:
-        db.squeezeGeneratedCode(outputDir, deleteSourceAfterSqueeze)
+        db.squeezeGeneratedCode(outputDir,deleteSourceAfterSqueeze)
