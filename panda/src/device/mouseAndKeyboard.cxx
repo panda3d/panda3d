@@ -37,10 +37,12 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _device(device)
 {
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
+  _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _button_events = new ButtonEventList;
 }
@@ -83,6 +85,14 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
     output.set_data(_button_events_output, EventParameter(_button_events));
   }
 
+  // Get the window size.
+  WindowProperties properties = _window->get_properties();
+  int w = properties.get_x_size();
+  int h = properties.get_y_size();
+
+  _pixel_size->set_value(LPoint2f(w, h));
+  output.set_data(_pixel_size_output, EventParameter(_pixel_size));
+
   if (_window->has_pointer(_device)) {
     const MouseData &mdata = _window->get_pointer(_device);
 
@@ -90,10 +100,6 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
       // Get mouse motion in pixels.
       _pixel_xy->set_value(LPoint2f(mdata._xpos, mdata._ypos));
       output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
-
-      WindowProperties properties = _window->get_properties();
-      int w = properties.get_x_size();
-      int h = properties.get_y_size();
 
       // Normalize pixel motion to range [-1,1].
       float xf = (float)(2 * mdata._xpos) / (float)w - 1.0f;

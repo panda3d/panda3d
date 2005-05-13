@@ -60,10 +60,12 @@ protected:
 private:
   // outputs
   int _pixel_xy_output;
+  int _pixel_size_output;
   int _xy_output;
   int _button_events_output;
 
   PT(EventStoreVec2) _pixel_xy;
+  PT(EventStoreVec2) _pixel_size;
   PT(EventStoreVec2) _xy;
   PT(ButtonEventList) _button_events;
 
