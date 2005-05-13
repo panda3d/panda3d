@@ -138,6 +138,7 @@ cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
 cp --recursive direct        $RPM_BUILD_ROOT/usr/share/panda3d/direct
 cp --recursive built/pandac  $RPM_BUILD_ROOT/usr/share/panda3d/pandac
 cp --recursive built/Pmw     $RPM_BUILD_ROOT/usr/share/panda3d/Pmw
+cp --recursive built/epydoc  $RPM_BUILD_ROOT/usr/share/panda3d/epydoc
 cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/share/panda3d/direct/__init__.py
 cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor
 cp --recursive built/models  $RPM_BUILD_ROOT/usr/share/panda3d/models
@@ -161,6 +162,7 @@ for x in $RPM_BUILD_ROOT/usr/share/panda3d/direct/src/* ; do
   fi
 done
 python -c "import compileall ; compileall.compile_dir('$RPM_BUILD_ROOT/usr/share/panda3d/Pmw');"
+python -c "import compileall ; compileall.compile_dir('$RPM_BUILD_ROOT/usr/share/panda3d/epydoc');"
 python -c "import compileall ; compileall.compile_dir('$RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor');"
 
 chmod -R 555 $RPM_BUILD_ROOT/usr/share/panda3d
