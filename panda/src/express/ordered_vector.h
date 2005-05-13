@@ -201,6 +201,7 @@ public:
   bool verify_list_nonunique() const;
 
   INLINE void push_back(const VALUE_TYPE &key);
+  INLINE void pop_back();
 
 private:
   INLINE ITERATOR nci(CONST_ITERATOR i);

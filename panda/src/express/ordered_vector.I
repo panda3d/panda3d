@@ -634,6 +634,17 @@ push_back(const value_type &key) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::pop_back
+//       Access: Public
+//  Description: Removes the last element at the end of the vector.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE void ordered_vector<Key, Compare>::
+pop_back() {
+  _vector.pop_back();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::nci
 //       Access: Private
 //  Description: I.e. "non-const iterator".  This function is used to
