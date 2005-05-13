@@ -32,7 +32,6 @@ Options:
   -h          print this message
   -v          verbose
   -d dir      directory to write output code
-  -m dir      directory to write HTML manual (optional)
   -x dir      directory to pull extension code from
   -i lib      interrogate library
   -e dir      directory to search for *.in files (may be repeated)
@@ -40,6 +39,7 @@ Options:
   -O          no C++ comments or assertion statements
   -n          Don't use squeezeTool to squeeze the result into one .pyz file
   -s          Don't delete source files after squeezing
+  -m          Generate the API reference manual as well
 
 Any additional names listed on the command line are taken to be names
 of libraries that are to be instrumented.
@@ -49,13 +49,13 @@ of libraries that are to be instrumented.
 # Initialize variables
 outputDir = ''
 directDir = ''
-manualDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
 etcPath = []
 doSqueeze = True
 deleteSourceAfterSqueeze = True
+generateManual = False
 
 def doGetopts():
     global outputDir
@@ -64,6 +64,7 @@ def doGetopts():
     global codeLibs
     global doSqueeze
     global deleteSourceAfterSqueeze
+    global generateManual
     global etcPath
 
     # These options are allowed but are flagged as warnings (they are
@@ -79,7 +80,7 @@ def doGetopts():
 
     # Extract the args the user passed in
     try:
-        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rnsgtpo')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rnsgtpom')
     except Exception, e:
         # User passed in a bad option, print the error and the help, then exit
         print e
@@ -99,8 +100,6 @@ def doGetopts():
                 FFIConstants.notify.setDebug(1)
         elif (flag == '-d'):
             outputDir = value
-        elif (flag == '-m'):
-            manualDir = value
         elif (flag == '-x'):
             extensionsDir = value
         elif (flag == '-i'):
@@ -116,6 +115,8 @@ def doGetopts():
             doSqueeze = False
         elif (flag == '-s'):
             deleteSourceAfterSqueeze = False
+        elif (flag == '-m'):
+            generateManual = True
         elif (flag in ['-g', '-t', '-p', '-o']):
             FFIConstants.notify.warning("option is deprecated: %s" % (flag))
             
@@ -187,11 +188,12 @@ def doErrorCheck():
 def run():
     global outputDir
     global directDir
-    global manualDir
     global extensionsDir
     global interrogateLib
     global codeLibs
     global doSqueeze
+    global deleteSourceAfterSqueeze
+    global generateManual
     global etcPath
 
     doGetopts()
@@ -202,10 +204,11 @@ def run():
     db = FFIInterrogateDatabase.FFIInterrogateDatabase(etcPath = etcPath)
     db.generateCode(outputDir, extensionsDir)
 
-    if manualDir != '' and directDir != '':
+    if generateManual:
         import epydoc.cli
         import direct.directbase.DirectStart
-        cmd = ["epydoc","-n","Panda3D","-o",manualDir,"--docformat","panda","--ignore-param-mismatch",outputDir,directDir]
+        mandir = os.path.join(outputDir,"docs")
+        cmd = ["epydoc","-n","Panda3D","-o",mandir,"--docformat","panda","--ignore-param-mismatch",outputDir,directDir]
         sys.argv = cmd
         epydoc.cli.cli()
 
