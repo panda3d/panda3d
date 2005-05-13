@@ -1685,13 +1685,20 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
   // Get the attribute pointers.
-  Attributes::iterator ai;
-  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
-    Attribute &attribute = (*ai);
+  for (size_t i = 0; i < _attributes.size(); ++i) {
+    Attribute &attribute = _attributes[i];
 
-    attribute._attrib = DCAST(RenderAttrib, p_list[pi++]);
-    nassertr(attribute._attrib != (RenderAttrib *)NULL, pi);
-    attribute._type = attribute._attrib->get_type();
+    TypedWritable *ptr = p_list[pi++];
+    while (ptr == NULL && i < _attributes.size()) {
+      // This is an attribute that we weren't able to load from the
+      // bam file.  Remove it.
+      _attributes.pop_back();
+      ptr = p_list[pi++];
+    }
+    if (i < _attributes.size()) {
+      attribute._attrib = DCAST(RenderAttrib, ptr);
+      attribute._type = attribute._attrib->get_type();
+    }
   }
 
   // Now make sure the array is properly sorted.  (It won't
