@@ -523,41 +523,6 @@ begin_frame() {
   // up to release in the past frame, and load up any newly requested
   // textures.
   _prepared_objects->update(this);
-  
-  // Undo any lighting we had enabled last frame, to force the lights
-  // to be reissued, in case their parameters or positions have
-  // changed between frames.
-  if (_lighting_enabled_this_frame) {
-    for (int i = 0; i < (int)_light_info.size(); i++) {
-      if (_light_info[i]._enabled) {
-        enable_light(i, false);
-        _light_info[i]._enabled = false;
-      }
-      _light_info[i]._light = NodePath();
-    }
-
-    // Also force the lighting state to unlit, so that issue_light()
-    // will be guaranteed to be called next frame even if we have the
-    // same set of light pointers we had this frame.
-    modify_state(get_unlit_state());
-
-    _lighting_enabled_this_frame = false;
-  }
-
-  // Ditto for the clipping planes.
-  if (_clip_planes_enabled_this_frame) {
-    for (int i = 0; i < (int)_clip_plane_info.size(); i++) {
-      if (_clip_plane_info[i]._enabled) {
-        enable_clip_plane(i, false);
-        _clip_plane_info[i]._enabled = false;
-      }
-      _clip_plane_info[i]._plane = (PlaneNode *)NULL;
-    }
-
-    modify_state(get_unclipped_state());
-
-    _clip_planes_enabled_this_frame = false;
-  }
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -590,6 +555,42 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 begin_scene() {
+  
+  // Undo any lighting we had enabled last scene, to force the lights
+  // to be reissued, in case their parameters or positions have
+  // changed between scenes.
+  if (_lighting_enabled_this_frame) {
+    for (int i = 0; i < (int)_light_info.size(); i++) {
+      if (_light_info[i]._enabled) {
+        enable_light(i, false);
+        _light_info[i]._enabled = false;
+      }
+      _light_info[i]._light = NodePath();
+    }
+
+    // Also force the lighting state to unlit, so that issue_light()
+    // will be guaranteed to be called next frame even if we have the
+    // same set of light pointers we had this frame.
+    modify_state(get_unlit_state());
+
+    _lighting_enabled_this_frame = false;
+  }
+
+  // Ditto for the clipping planes.
+  if (_clip_planes_enabled_this_frame) {
+    for (int i = 0; i < (int)_clip_plane_info.size(); i++) {
+      if (_clip_plane_info[i]._enabled) {
+        enable_clip_plane(i, false);
+        _clip_plane_info[i]._enabled = false;
+      }
+      _clip_plane_info[i]._plane = (PlaneNode *)NULL;
+    }
+
+    modify_state(get_unclipped_state());
+
+    _clip_planes_enabled_this_frame = false;
+  }
+
   return true;
 }
 
