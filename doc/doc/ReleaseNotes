@@ -1,3 +1,19 @@
+------------------------  RELEASE 1.0.4  ------------------------
+
+  * This version includes the new Max exporter and the new Maya
+    export panel.
+
+  * We have added --docs option to makepanda (to regenerate the
+    panda documentation).  This uses the epydoc
+    documentation-generation system.
+
+  * Several bugs in the new tutorials have been repaired.
+
+  * A bug in fmod positional audio has been fixed.
+
+  * Makepanda now puts the maya and max plugins in a
+    separate 'plugins' directory, for convenience.
+
 ------------------------  RELEASE 1.0.3  ------------------------
 
   * The binary release contains a brand new collection of
