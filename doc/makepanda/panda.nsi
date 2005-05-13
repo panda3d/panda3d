@@ -113,7 +113,9 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\SceneEditor
             File /r /x CVS ${PSOURCE}\SceneEditor\*.*
             SetOutPath $INSTDIR\Pmw
-            File /r /x CVS ${PANDA}\Pmw\*.*
+            File /r /x CVS ${PANDA}\Pmw\*
+            SetOutPath $INSTDIR\epydoc
+            File /r /x CVS ${PANDA}\epydoc\*
             SetOutPath $INSTDIR
             File /r /x CVS ${PSOURCE}\doc\ReleaseNotes
             SetOutPath $INSTDIR\python\lib
