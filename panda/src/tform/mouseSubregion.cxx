@@ -41,8 +41,9 @@ MouseSubregion(const string &name) :
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _button_events = new ButtonEventList;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,6 +70,8 @@ MouseSubregion::
 ////////////////////////////////////////////////////////////////////
 void MouseSubregion::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+  bool has_mouse = false;
+
   if (input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
@@ -97,11 +100,35 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
       }
 
-      // Only send the button events if the mouse is within the
-      // display region.
-      output.set_data(_button_events_output, input.get_data(_button_events_input));
+      has_mouse = true;
     }
   }
+
+  if (has_mouse) {
+    // If we have the mouse, send all of the mouse buttons.
+    output.set_data(_button_events_output, input.get_data(_button_events_input));
+  } else {
+    // Otherwise, send only the button-up events.
+    _button_events->clear();
+
+    if (input.has_data(_button_events_input)) {
+      const ButtonEventList *button_events;
+      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+      int num_events = button_events->get_num_events();
+      for (int i = 0; i < num_events; i++) {
+        const ButtonEvent &be = button_events->get_event(i);
+        if (be._type == ButtonEvent::T_up) {
+          // Don't suppress this button event; pass it through.
+          _button_events->add_event(be);
+        }
+      }
+    }
+
+    if (_button_events->get_num_events() != 0) {
+      output.set_data(_button_events_output, EventParameter(_button_events));
+    }
+  }
+
 
   // Now scale the window size.
   if (input.has_data(_pixel_size_input)) {

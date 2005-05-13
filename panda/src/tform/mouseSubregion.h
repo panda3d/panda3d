@@ -75,8 +75,9 @@ private:
   int _button_events_output;
 
   PT(EventStoreVec2) _pixel_xy;
-  PT(EventStoreVec2) _xy;
   PT(EventStoreVec2) _pixel_size;
+  PT(EventStoreVec2) _xy;
+  PT(ButtonEventList) _button_events;
 
 public:
   static TypeHandle get_class_type() {
