@@ -20,6 +20,7 @@
 
 #include "driveInterface.h"
 #include "buttonThrower.h"
+#include "mouseSubregion.h"
 #include "mouseWatcher.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
@@ -58,6 +59,7 @@ ConfigureFn(config_tform) {
   DriveInterface::init_type();
   ButtonThrower::init_type();
   MouseInterfaceNode::init_type();
+  MouseSubregion::init_type();
   MouseWatcher::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();

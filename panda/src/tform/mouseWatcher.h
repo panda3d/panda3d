@@ -193,11 +193,13 @@ protected:
 private:
   // inputs
   int _pixel_xy_input;
+  int _pixel_size_input;
   int _xy_input;
   int _button_events_input;
 
   // outputs
   int _pixel_xy_output;
+  int _pixel_size_output;
   int _xy_output;
   int _button_events_output;
 

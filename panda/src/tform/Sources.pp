@@ -14,6 +14,7 @@
     config_tform.h \
     driveInterface.I driveInterface.h \
     mouseInterfaceNode.I mouseInterfaceNode.h \
+    mouseSubregion.I mouseSubregion.h \
     mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
@@ -26,6 +27,7 @@
     config_tform.cxx \
     driveInterface.cxx \
     mouseInterfaceNode.cxx \
+    mouseSubregion.cxx \
     mouseWatcher.cxx \
     mouseWatcherGroup.cxx \
     mouseWatcherParameter.cxx mouseWatcherRegion.cxx  \
@@ -36,6 +38,7 @@
     buttonThrower.I buttonThrower.h \
     driveInterface.I driveInterface.h \
     mouseInterfaceNode.I mouseInterfaceNode.h \
+    mouseSubregion.I mouseSubregion.h \
     mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \

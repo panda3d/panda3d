@@ -44,10 +44,12 @@ MouseWatcher(const string &name) :
   DataNode(name) 
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
+  _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
+  _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
@@ -1103,4 +1105,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     // Transmit all buttons.
     output.set_data(_button_events_output, input.get_data(_button_events_input));
   }
+
+  // We always pass the pixel_size data through.
+  output.set_data(_pixel_size_output, input.get_data(_pixel_size_input));
 }

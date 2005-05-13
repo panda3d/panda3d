@@ -1,4 +1,3 @@
-
 #include "mouseWatcher.cxx"
 #include "mouseWatcherGroup.cxx"
 #include "mouseWatcherParameter.cxx"
