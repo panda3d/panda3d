@@ -1391,12 +1391,12 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
     if (dll==0): sys.exit("Syntax error in CompileLink directive")
 
     if (COMPILER=="MSVC7"):
-        ALLTARGETS.append(PREFIX+"/bin/"+dll)
-        dllsuffix = dll[:-4]
-        lib = PREFIX+"/lib/"+dllsuffix+".lib"
-        dll = PREFIX+"/bin/"+dll
-        if ((dllsuffix != ".exe") and (dllsuffix != ".dll")):
+        lib = PREFIX+"/lib/"+dll[:-4]+".lib"
+        if ((dll[-4:] != ".exe") and (dll[-4:] != ".dll")):
             dll = PREFIX+"/plugins/"+dll
+        else:
+            dll = PREFIX+"/bin/"+dll
+        ALLTARGETS.append(dll)
         wobj = []
         for x in obj:
             suffix = x[-4:]
@@ -1408,7 +1408,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             else: sys.exit("unknown suffix in object list.")
         if (older(dll, wobj+xdep)):
             cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
-            if (dllsuffix!=".exe"): cmd = cmd + " /DLL"
+            if (dll[-4:]!=".exe"): cmd = cmd + " /DLL"
             if (OPTIMIZE==1): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
             if (OPTIMIZE==2): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
             if (OPTIMIZE==3): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
@@ -1911,8 +1911,8 @@ CopyFile(PREFIX+"/", "doc/LICENSE")
 CopyFile(PREFIX+"/", "doc/ReleaseNotes")
 CopyTree(PREFIX+'/Pmw', 'thirdparty/Pmw')
 CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
-CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts", ".mel")
-CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts", ".ms")
+CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".mel")
+CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".ms")
 
 ########################################################################
 ##
@@ -5794,7 +5794,7 @@ for VER in ["5","6","65"]:
            'pandatool/src/cvscopy']
     OPTS=['MAYA'+VER, 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-    CompileLink(dll='libmayasavepview.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayasavepview'+VER+'_mayaSavePview.obj',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
