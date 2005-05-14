@@ -162,14 +162,6 @@ def prettyTime(t):
     if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
     return str(seconds)+" sec"
 
-########################################################################
-##
-## MakeDirectory
-##
-## Make a directory in the build tree
-##
-########################################################################
-
 def MakeDirectory(path):
     if os.path.isdir(path): return 0
     os.mkdir(path)
@@ -190,6 +182,7 @@ PREFIX="built"
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
+GENMAN=0
 PPGAME=0
 THIRDPARTY="thirdparty"
 VERSION="0.0.0"
@@ -486,8 +479,8 @@ def usage(problem):
     sys.exit(1)
 
 def parseopts(args):
-    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,PPGAME
-    global COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
+    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,GENMAN
+    global PPGAME,COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
@@ -508,6 +501,7 @@ def parseopts(args):
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--genman"): GENMAN=1
             elif (option=="--ppgame"): PPGAME=value
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
@@ -832,6 +826,8 @@ def printStatus(header,warnings):
         print "Makepanda: Thirdparty dir:",THIRDPARTY
         print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
+        if (GENMAN): print "Makepanda: Generate API reference manual"
+        else       : print "Makepanda: Don't generate API reference manual"
         if (sys.platform == "win32"):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
@@ -6199,9 +6195,11 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
     ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
     if (sys.platform=="win32"):
-        oscmd(PREFIX+"/bin/genpycode.exe")
+        if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
+        else       : oscmd(PREFIX+"/bin/genpycode.exe")
     else:
-        oscmd(PREFIX+"/bin/genpycode")
+        if (GENMAN): oscmd(PREFIX+"/bin/genpycode -m")
+        else       : oscmd(PREFIX+"/bin/genpycode")
     updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################
