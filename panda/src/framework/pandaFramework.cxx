@@ -41,6 +41,7 @@ PandaFramework() :
   _is_open = false;
   _made_default_pipe = false;
   _window_title = string();
+  _engine = (GraphicsEngine *)NULL;
   _start_time = 0.0;
   _frame_count = 0;
   _wireframe_enabled = false;
