@@ -112,6 +112,7 @@ DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/extensions]'
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
 DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
+DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
 
 #if $[>= $[OPTIMIZE], 4]
 FFIConstants.wantComments = 0
