@@ -487,6 +487,23 @@ set_card_actual(float left, float right, float bottom, float top) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_card_decal
+//       Access: Published
+//  Description: Sets the card_decal flag.  When this is true, the
+//               text is decalled onto the card, which is necessary if
+//               the TextNode is to be rendered in the 3-d world
+//               without putting it in a bin.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_card_decal(bool card_decal) {
+  if (card_decal) {
+    _flags |= F_card_decal;
+  } else {
+    _flags &= ~F_card_decal;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_card
 //       Access: Published
 //  Description: Specifies that a card will not be drawn behind the
@@ -506,6 +523,16 @@ clear_card() {
 INLINE bool TextNode::
 has_card() const {
   return (_flags & F_has_card) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_card_decal
+//       Access: Published
+//  Description: Returns the card_decal flag.  See set_card_decal().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextNode::
+get_card_decal() const {
+  return (_flags & F_card_decal) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -635,6 +662,33 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
 INLINE CoordinateSystem TextNode::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_usage_hint
+//       Access: Published
+//  Description: Specifies the UsageHint that will be applied to
+//               generated geometry.  The default is UH_static, which
+//               is probably the right setting, but if you know the
+//               TextNode's geometry will have a short lifespan, it
+//               may be better to set it to UH_stream.  See
+//               geomEnums.h.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_usage_hint(qpGeom::UsageHint usage_hint) {
+  _assembler.set_usage_hint(usage_hint);
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_usage_hint
+//       Access: Published
+//  Description: Returns the UsageHint that will be applied to
+//               generated geometry.  See set_usage_hint().
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::UsageHint TextNode::
+get_usage_hint() const {
+  return _assembler.get_usage_hint();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1056,33 +1110,6 @@ INLINE void TextNode::
 clear_glyph_shift() {
   TextProperties::clear_glyph_shift();
   invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_usage_hint
-//       Access: Published
-//  Description: Specifies the UsageHint that will be applied to
-//               generated geometry.  The default is UH_static, which
-//               is probably the right setting, but if you know the
-//               TextNode's geometry will have a short lifespan, it
-//               may be better to set it to UH_stream.  See
-//               geomEnums.h.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_usage_hint(qpGeom::UsageHint usage_hint) {
-  _assembler.set_usage_hint(usage_hint);
-  invalidate_no_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_usage_hint
-//       Access: Published
-//  Description: Returns the UsageHint that will be applied to
-//               generated geometry.  See set_usage_hint().
-////////////////////////////////////////////////////////////////////
-INLINE qpGeom::UsageHint TextNode::
-get_usage_hint() const {
-  return _assembler.get_usage_hint();
 }
 
 

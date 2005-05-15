@@ -105,8 +105,10 @@ PUBLISHED:
                                  float bottom, float top);
   INLINE void set_card_actual(float left, float right,
                               float bottom, float top);
+  INLINE void set_card_decal(bool card_decal);
   INLINE void clear_card();
   INLINE bool has_card() const;
+  INLINE bool get_card_decal() const;
   INLINE bool is_card_as_margin() const;
   INLINE LVecBase4f get_card_as_set() const;
   INLINE LVecBase4f get_card_actual() const;
@@ -118,9 +120,12 @@ PUBLISHED:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
 
+  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
+  INLINE qpGeom::UsageHint get_usage_hint() const;
+
   // These methods are inherited from TextProperties, but we override
   // here so we can flag the TextNode as dirty when they have been
-  // change.
+  // changed.
 
   INLINE void set_font(TextFont *font);
   INLINE void clear_font();
@@ -170,12 +175,9 @@ PUBLISHED:
   INLINE void set_glyph_shift(float glyph_shift);
   INLINE void clear_glyph_shift();
 
-  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
-  INLINE qpGeom::UsageHint get_usage_hint() const;
-
   // These methods are inherited from TextEncoder, but we override
   // here so we can flag the TextNode as dirty when they have been
-  // change.
+  // changed.
   INLINE void set_text(const string &text);
   INLINE void set_text(const string &text, Encoding encoding);
   INLINE void clear_text();
@@ -268,6 +270,7 @@ private:
     F_needs_rebuild    =  0x0100,
     F_needs_measure    =  0x0200,
     F_has_overflow     =  0x0400,
+    F_card_decal       =  0x0800,
   };
 
   int _flags;

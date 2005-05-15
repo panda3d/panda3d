@@ -48,6 +48,7 @@
 #include "accumulatedAttribs.h"
 #include "renderState.h"
 #include "renderModeAttrib.h"
+#include "decalEffect.h"
 #include "dcast.h"
 #include "bamFile.h"
 #include "zStream.h"
@@ -247,7 +248,8 @@ generate() {
     LMatrix4f::convert_mat(CS_zup_right, _coordinate_system) *
     _transform;
 
-  root->set_transform(TransformState::make_mat(mat));
+  CPT(TransformState) transform = TransformState::make_mat(mat);
+  root->set_transform(transform);
 
   wstring wtext = get_wtext();
 
@@ -282,21 +284,18 @@ generate() {
   // Incidentally, that means we don't need to measure the text now.
   _flags &= ~F_needs_measure;
 
+  // Now flatten our hierarchy to get rid of the transforms we put in,
+  // applying them to the vertices.
+
+  if (text_flatten) {
+    SceneGraphReducer gr;
+    gr.apply_attribs(root);
+    gr.flatten(root, ~SceneGraphReducer::CS_within_radius);
+    gr.collect_vertex_data(root);
+    gr.unify(root);
+  }
 
   // Now deal with the decorations.
-
-  if (has_frame()) {
-    PT(PandaNode) frame_root = make_frame();
-    root->add_child(frame_root, get_draw_order() + 1);
-    frame_root->set_attrib(ColorAttrib::make_flat(get_frame_color()));
-    if (get_frame_color()[3] != 1.0f) {
-      frame_root->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-    }
-
-    if (has_bin()) {
-      frame_root->set_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 1));
-    }
-  }
 
   if (has_card()) {
     PT(PandaNode) card_root;
@@ -304,7 +303,7 @@ generate() {
       card_root = make_card_with_border();
     else
       card_root = make_card();
-    root->add_child(card_root, get_draw_order());
+    card_root->set_transform(transform);
     card_root->set_attrib(ColorAttrib::make_flat(get_card_color()));
     if (get_card_color()[3] != 1.0f) {
       card_root->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
@@ -316,17 +315,36 @@ generate() {
     if (has_bin()) {
       card_root->set_attrib(CullBinAttrib::make(get_bin(), get_draw_order()));
     }
+
+    // We always apply attribs down to the card vertices.
+    SceneGraphReducer gr;
+    gr.apply_attribs(card_root);
+
+    // In order to decal the text onto the card, the card must
+    // become the parent of the text.
+    card_root->add_child(root);
+    root = card_root;
+
+    if (get_card_decal()) {
+      card_root->set_effect(DecalEffect::make());
+    }
   }
 
-  // Now flatten our hierarchy to get rid of the transforms we put in,
-  // applying them to the vertices.
+  if (has_frame()) {
+    PT(PandaNode) frame_root = make_frame();
+    frame_root->set_transform(transform);
+    root->add_child(frame_root, get_draw_order() + 1);
+    frame_root->set_attrib(ColorAttrib::make_flat(get_frame_color()));
+    if (get_frame_color()[3] != 1.0f) {
+      frame_root->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    }
 
-  if (text_flatten) {
+    if (has_bin()) {
+      frame_root->set_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 1));
+    }
+
     SceneGraphReducer gr;
-    gr.apply_attribs(root);
-    gr.flatten(root, ~SceneGraphReducer::CS_within_radius);
-    gr.collect_vertex_data(root);
-    gr.unify(root);
+    gr.apply_attribs(frame_root);
   }
 
   return root;
