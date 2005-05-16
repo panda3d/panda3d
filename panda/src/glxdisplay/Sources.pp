@@ -23,7 +23,5 @@
     glxGraphicsPipe.I glxGraphicsPipe.h \
     glxGraphicsWindow.I glxGraphicsWindow.h
 
-  #define IGATESCAN glxGraphicsPipe.h
-
 #end lib_target
 
