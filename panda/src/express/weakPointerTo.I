@@ -60,7 +60,7 @@ template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
   nassertr(!this->was_deleted(), *((To *)NULL));
-  return *((To *)_void_ptr);
+  return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 operator -> () const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ template<class T>
 INLINE WeakPointerTo<T>::
 operator TYPENAME WeakPointerToBase<T>::To *() const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 p() const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ operator = (const WeakPointerTo<T> &copy) {
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const To *ptr) :
-  WeakPointerToBase<T>((WeakConstPointerTo<T>::To *)ptr)
+  WeakPointerToBase<T>((TYPENAME WeakConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -211,7 +211,7 @@ template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
   nassertr(!this->was_deleted(), *((To *)NULL));
-  return *((To *)_void_ptr);
+  return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 operator -> () const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,7 +241,7 @@ template<class T>
 INLINE WeakConstPointerTo<T>::
 operator const TYPENAME WeakPointerToBase<T>::To *() const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,7 +255,7 @@ template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 p() const {
   nassertr(!this->was_deleted(), (To *)NULL);
-  return (To *)_void_ptr;
+  return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

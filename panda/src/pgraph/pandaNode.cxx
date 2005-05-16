@@ -373,8 +373,8 @@ PandaNode::
 PandaNode::
 PandaNode(const PandaNode &copy) :
   TypedWritable(copy),
-  Namable(copy),
-  ReferenceCount(copy)
+  ReferenceCount(copy),
+  Namable(copy)
 {
   // Copying a node does not copy its children.
 

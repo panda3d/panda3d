@@ -258,10 +258,10 @@ base64_decode(const string &s) {
     }
 
     for (int i = 0; i < 64; i++) {
-      base64_invert[base64_table[i]] = i;
+      base64_invert[(int)base64_table[i]] = i;
     }
 
-    base64_invert['='] = 0;
+    base64_invert[(int)'='] = 0;
 
     got_base64_invert = true;
   }

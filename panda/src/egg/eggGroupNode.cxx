@@ -774,9 +774,9 @@ mesh_triangles(int flags) {
 int EggGroupNode::
 rename_nodes(vector_string strip_prefix, bool recurse) {
   int num_renamed = 0;
-  for (unsigned int ni=0; ni<strip_prefix.size(); ++ ni) {
+  for (unsigned int ni = 0; ni < strip_prefix.size(); ++ni) {
     string axe_name = strip_prefix[ni];
-    if (this->get_name().find(axe_name)!= -1) {
+    if (this->get_name().substr(0, axe_name.size()) == axe_name) {
       string new_name = this->get_name().substr(axe_name.size());
       //cout << "renaming " << this->get_name() << "->" << new_name << endl;
       this->set_name(new_name);

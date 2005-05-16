@@ -333,7 +333,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         //maya_cat.debug() << pla[j].name() << " is(pla) " << pla[j].node().apiTypeStr() << endl;
         string pla_name = pla[j].name().asChar();
         // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
-        if (pla_name.find("outAlpha") != -1) {
+        if (pla_name.find("outAlpha") != string::npos) {
           maya_cat.debug() << pl.name() << " ignoring: " << pla_name << endl;
           continue;
         }
@@ -342,9 +342,10 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->read_surface_color(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
-          int loc = color_p->_texture_name.find('.',0);
-          if( loc != string::npos )
+          size_t loc = color_p->_texture_name.find('.',0);
+          if (loc != string::npos) {
             color_p->_texture_name.resize(loc);
+          }
           maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
         }
         else {
@@ -352,8 +353,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
           int loc = _texture_name.find('.',0);
-          if( loc != string::npos )
+          if (loc != string::npos) {
             _texture_name.resize(loc);
+          }
           maya_cat.debug() << "uv_name : " << _texture_name << endl;
           first = false;
         }
