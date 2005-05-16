@@ -70,8 +70,7 @@ allocate(TYPENAME dallocator<Type>::size_type n, allocator<void>::const_pointer)
 
 template<class Type>
 INLINE void dallocator<Type>::
-//deallocate(dallocator<Type>::pointer p, allocator<Type>::size_type) {
-deallocate(void *p, allocator<Type>::size_type) {
+deallocate(TYPENAME pallocator<Type>::pointer p, TYPENAME pallocator<Type>::size_type) {
   (*global_operator_delete)(p);
 }
 

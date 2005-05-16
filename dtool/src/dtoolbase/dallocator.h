@@ -84,6 +84,7 @@ public:
   typedef TYPENAME allocator<Type>::reference reference;
   typedef TYPENAME allocator<Type>::const_pointer const_pointer;
   typedef TYPENAME allocator<Type>::const_reference const_reference;
+  typedef TYPENAME allocator<Type>::size_type size_type;
 
   INLINE dallocator() throw();
 
@@ -92,7 +93,16 @@ public:
   INLINE dallocator(const dallocator<U> &copy) throw() { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
-  INLINE void deallocate(void *p, size_type n);
+  INLINE void deallocate(pointer p, size_type n);
+
+  template<class Subtype>
+  INLINE void destroy(Subtype *p) {
+    p->~Subtype();
+  }
+  template<class Subtype>
+  INLINE void construct(Subtype *p, const Subtype &value) {
+    ::new(p) Subtype(value);
+  }
 
   template<class U> struct rebind { 
     typedef dallocator<U> other; 

@@ -87,12 +87,13 @@ public:
 template<class Type>
 class pallocator : public allocator<Type> {
 public:
-  // There seems to be a bug in VC++ 2003 that requires these typedefs
-  // to be made explicitly.
+  // Nowadays we cannot implicitly inherit typedefs from base classes
+  // in a template class; we must explicitly copy them here.
   typedef TYPENAME allocator<Type>::pointer pointer;
   typedef TYPENAME allocator<Type>::reference reference;
   typedef TYPENAME allocator<Type>::const_pointer const_pointer;
   typedef TYPENAME allocator<Type>::const_reference const_reference;
+  typedef TYPENAME allocator<Type>::size_type size_type;
 
   INLINE pallocator() throw();
 
@@ -101,7 +102,18 @@ public:
   INLINE pallocator(const pallocator<U> &) throw() { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
-  INLINE void deallocate(void *p, size_type n);
+  INLINE void deallocate(pointer p, size_type n);
+
+  // The gcc 4.0 version seems to pass any old type to construct() and
+  // destroy(), so we need template methods.
+  template<class Subtype>
+  INLINE void destroy(Subtype *p) {
+    p->~Subtype();
+  }
+  template<class Subtype>
+  INLINE void construct(Subtype *p, const Subtype &value) {
+    ::new(p) Subtype(value);
+  }
 
   template<class U> struct rebind { 
     typedef pallocator<U> other;
