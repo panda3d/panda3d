@@ -170,9 +170,6 @@ parse_code(const string &word, int &code) {
 ////////////////////////////////////////////////////////////////////
 bool RangeDescription::
 parse_bracket(const string &str) {
-  int last = 0;
-  bool continue_hyphen = false;
-
   string::const_iterator si;
   si = str.begin();
   while (si != str.end()) {
