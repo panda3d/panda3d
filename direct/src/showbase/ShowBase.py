@@ -965,10 +965,11 @@ class ShowBase(DirectObject.DirectObject):
 
         aspectRatio = self.getAspectRatio()
         # Scale the smiley face to 32x32 pixels.
+        height = self.win.getYSize()
         lilsmiley.setScale(
-            32.0 / self.win.getHeight() / aspectRatio,
-            1.0, 32.0 / self.win.getHeight())
-        #self.mouseWatcherNode.setGeometry(mouseViz)
+            32.0 / height / aspectRatio,
+            1.0, 32.0 / height)
+        self.mouseWatcherNode.setGeometry(mouseViz.node())
 
     def getAlt(self):
         return self.mouseWatcherNode.getModifierButtons().isDown(
