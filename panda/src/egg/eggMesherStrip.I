@@ -63,9 +63,8 @@ INLINE float EggMesherStrip::
 coplanarity(const EggMesherStrip &other) const {
   if (_planar && other._planar) {
     return 1.0 - dot(_plane_normal, other._plane_normal);
-  } else {
-    return 3.0;
   }
+  return 3.0;
 }
 
 ////////////////////////////////////////////////////////////////////
