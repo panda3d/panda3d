@@ -3,8 +3,8 @@
   * This version includes the new Max exporter and the new Maya
     export panel.
 
-  * We have added --docs option to makepanda (to regenerate the
-    panda documentation).  This uses the epydoc
+  * We have added the --genman option to makepanda (to
+    regenerate the API reference manual).  This uses the epydoc
     documentation-generation system.
 
   * Several bugs in the new tutorials have been repaired.
