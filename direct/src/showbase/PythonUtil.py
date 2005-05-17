@@ -761,7 +761,7 @@ class Stack:
         return len(self.__list)
 
 """
-ParamSet/ParamObj
+ParamObj/ParamSet
 =================
 
 These two classes support you in the definition of a formal set of
@@ -776,18 +776,21 @@ is risk of setting an illegal combination in the process of applying a new
 set of values.
 
 To make use of these classes, derive your object from ParamObj. Then define
-a class that derives from ParamSet to define the object's parameters. The
-ParamObj class must declare a class-level reference to its ParamSet class,
-called 'ParamClass'. (See the example classes below.)
+a 'ParamSet' subclass that derives from the parent class' 'ParamSet' class,
+and define the object's parameters within its ParamSet class. (see examples
+below)
 
 The ParamObj base class provides 'get' and 'set' functions for each
-parameter if they are not defined.
+parameter if they are not defined. These default implementations
+respectively set the parameter value directly on the object, and expect the
+value to be available in that location for retrieval.
 
-Classes that derive from ParamObj must declare a 'get' and 'set' function
-for each parameter. The setter should simply store the value in a location
-where the getter can find it; it should not do any further processing based
-on the new parameter value. Further processing should be implemented in an
-'apply' function. The applier function is optional.
+Classes that derive from ParamObj can optionally declare a 'get' and 'set'
+function for each parameter. The setter should simply store the value in a
+location where the getter can find it; it should not do any further
+processing based on the new parameter value. Further processing should be
+implemented in an 'apply' function. The applier function is optional, and
+there is no default implementation.
 
 NOTE: the previous value of a parameter is available inside an apply
 function as 'self.getPriorValue()'
@@ -852,14 +855,12 @@ EXAMPLE CLASSES
 Here is an example of a class that uses ParamSet/ParamObj to manage its
 parameters:
 
-class CameraParams(ParamSet):
-    Params = {
-        'viewType': 'normal',
-        'fov': 60,
-        }
-
 class Camera(ParamObj):
-    ParamClass = CameraParams
+    class ParamSet(ParamObj.ParamSet):
+        Params = {
+            'viewType': 'normal',
+            'fov': 60,
+            }
     ...
 
     def getViewType(self):
@@ -886,7 +887,7 @@ cam = Camera()
 ...
 
 # set up for the cutscene
-savedSettings = CameraParams(cam)
+savedSettings = cam.ParamSet(cam)
 cam.setViewType('closeup')
 cam.setFov(90)
 ...
@@ -897,74 +898,83 @@ del savedSettings
 
 """
 
-class ParamSet:
-    # Base class for a container of parameter values. See documentation above.
-    Params = {
-        # base class does not define any parameters, but they would appear as
-        # 'name': value,
-        }
-
-    def __init__(self, *args, **kwArgs):
-        ParamSet._compileDefaultParams()
-        if len(args) == 1 and len(kwArgs) == 0:
-            # extract our params from an existing ParamObj instance
-            obj = args[0]
-            self.paramVals = {}
-            for param in self.getParams():
-                self.paramVals[param] = getSetter(obj, param, 'get')()
-        else:
-            assert len(args) == 0
-            if __debug__:
-                for arg in kwArgs.keys():
-                    assert arg in self.getParams()
-            self.paramVals = dict(kwArgs)
-    def getValue(self, param):
-        if param in self.paramVals:
-            return self.paramVals[param]
-        return self._Params[param]
-    def applyTo(self, obj):
-        # Apply our entire set of params to a ParamObj
-        obj.lockParams()
-        for param in self.getParams():
-            getSetter(obj, param)(self.getValue(param))
-        obj.unlockParams()
-    # CLASS METHODS
-    def getParams(cls):
-        # returns safely-mutable list of param names
-        cls._compileDefaultParams()
-        return cls._Params.keys()
-    getParams = classmethod(getParams)
-    def getDefaultValue(cls, param):
-        cls._compileDefaultParams()
-        return cls._Params[param]
-    getDefaultValue = classmethod(getDefaultValue)
-    def _compileDefaultParams(cls):
-        if cls.__dict__.has_key('_Params'):
-            # we've already compiled the defaults for this class
-            return
-        bases = list(cls.__bases__)
-        # bring less-derived classes to the front
-        mostDerivedLast(bases)
-        cls._Params = {}
-        for c in (bases + [cls]):
-            # make sure this base has its dict of param defaults
-            c._compileDefaultParams()
-            if c.__dict__.has_key('Params'):
-                # apply this class' default param values to our dict
-                cls._Params.update(c.Params)
-    _compileDefaultParams = classmethod(_compileDefaultParams)
-
 class ParamObj:
     # abstract base for classes that want to support a formal parameter
     # set whose values may be queried, changed, 'bulk' changed, and
     # extracted/stored/applied all at once (see documentation above)
 
-    # derived class must override this to be the appropriate ParamSet subclass
-    ParamClass = ParamSet
+    # ParamSet subclass: container of parameter values. Derived class must
+    # derive a new ParamSet class if they wish to define new params. See
+    # documentation above.
+    class ParamSet:
+        Params = {
+            # base class does not define any parameters, but they would
+            # appear here as 'name': value,
+            }
+
+        def __init__(self, *args, **kwArgs):
+            self.__class__._compileDefaultParams()
+            if len(args) == 1 and len(kwArgs) == 0:
+                # extract our params from an existing ParamObj instance
+                obj = args[0]
+                self.paramVals = {}
+                for param in self.getParams():
+                    self.paramVals[param] = getSetter(obj, param, 'get')()
+            else:
+                assert len(args) == 0
+                if __debug__:
+                    for arg in kwArgs.keys():
+                        assert arg in self.getParams()
+                self.paramVals = dict(kwArgs)
+        def getValue(self, param):
+            if param in self.paramVals:
+                return self.paramVals[param]
+            return self._Params[param]
+        def applyTo(self, obj):
+            # Apply our entire set of params to a ParamObj
+            obj.lockParams()
+            for param in self.getParams():
+                getSetter(obj, param)(self.getValue(param))
+            obj.unlockParams()
+        # CLASS METHODS
+        def getParams(cls):
+            # returns safely-mutable list of param names
+            cls._compileDefaultParams()
+            return cls._Params.keys()
+        getParams = classmethod(getParams)
+        def getDefaultValue(cls, param):
+            cls._compileDefaultParams()
+            return cls._Params[param]
+        getDefaultValue = classmethod(getDefaultValue)
+        def _compileDefaultParams(cls):
+            if cls.__dict__.has_key('_Params'):
+                # we've already compiled the defaults for this class
+                return
+            bases = list(cls.__bases__)
+            # bring less-derived classes to the front
+            mostDerivedLast(bases)
+            cls._Params = {}
+            for c in (bases + [cls]):
+                # make sure this base has its dict of param defaults
+                c._compileDefaultParams()
+                if c.__dict__.has_key('Params'):
+                    # apply this class' default param values to our dict
+                    cls._Params.update(c.Params)
+        _compileDefaultParams = classmethod(_compileDefaultParams)
+    # END PARAMSET SUBCLASS
     
-    def __init__(self, params=None):
-        # If you pass in a ParamClass obj, its values will be applied to this
+    def __init__(self, *args, **kwArgs):
+        # If you pass in a ParamSet obj, its values will be applied to this
         # object in the constructor.
+        params = None
+        if len(args) == 1 and len(kwArgs) == 0:
+            # if there's one argument, assume that it's a ParamSet
+            params = args[0]
+        elif len(kwArgs) > 0:
+            assert len(args) == 0
+            # if we've got keyword arguments, make a ParamSet out of them
+            params = self.ParamSet(**kwArgs)
+            
         self._paramLockRefCount = 0
         # this holds dictionaries of parameter values prior to the set that we
         # are performing
@@ -1004,7 +1014,7 @@ class ParamObj:
                 self._priorValuesStack.pop()
 
         # insert stub funcs for param setters
-        for param in self.ParamClass.getParams():
+        for param in self.ParamSet.getParams():
             setterName = getSetterName(param)
             getterName = getSetterName(param, 'get')
 
@@ -1017,9 +1027,10 @@ class ParamObj:
 
             # is there a getter defined?
             if not hasattr(self, getterName):
-                # no; provide the default. If there is no value set, return the default
+                # no; provide the default. If there is no value set, return
+                # the default
                 def defaultGetter(self, param=param,
-                                  default=self.ParamClass.getDefaultValue(param)):
+                                  default=self.ParamSet.getDefaultValue(param)):
                     return getattr(self, param, default)
                 self.__class__.__dict__[getterName] = defaultGetter
 
@@ -1033,14 +1044,15 @@ class ParamObj:
             # install a setter stub that will a) call the real setter and
             # then the applier, or b) call the setter and queue the
             # applier, depending on whether our params are locked
-            self.__dict__[setterName] = Functor(setterStub, param, setterFunc, self)
+            self.__dict__[setterName] = Functor(setterStub, param,
+                                                setterFunc, self)
 
         if params is not None:
             params.applyTo(self)
 
     def setDefaultParams(self):
         # set all the default parameters on ourself
-        self.ParamClass().applyTo(self)
+        self.ParamSet().applyTo(self)
 
     def lockParams(self):
         self._paramLockRefCount += 1
