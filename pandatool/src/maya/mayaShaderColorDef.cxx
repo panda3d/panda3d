@@ -352,7 +352,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           maya_cat.debug() << pl.name() << " first:connectedTo: " << pla_name << endl;
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
-          int loc = _texture_name.find('.',0);
+          size_t loc = _texture_name.find('.',0);
           if (loc != string::npos) {
             _texture_name.resize(loc);
           }

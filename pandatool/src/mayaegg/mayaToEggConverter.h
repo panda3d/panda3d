@@ -30,6 +30,7 @@
 #include "coordinateSystem.h"
 #include "globPattern.h"
 #include "pvector.h"
+#include "vector_string.h"
 
 #include "pre_maya_include.h"
 #include <maya/MDagPath.h>
@@ -137,7 +138,8 @@ private:
   //  void set_shader_attributes(EggPrimitive &primitive,
   //                             const MayaShader &shader);
   void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                             const MItMeshPolygon *pi=NULL, const pvector<string> uvset_names=NULL);
+                             const MItMeshPolygon *pi = NULL, 
+                             const vector_string &uvset_names = vector_string());
   void apply_texture_properties(EggTexture &tex, 
                                 const MayaShaderColorDef &color_def);
   bool compare_texture_properties(EggTexture &tex, 

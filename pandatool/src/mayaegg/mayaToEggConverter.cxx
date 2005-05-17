@@ -1649,7 +1649,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
-  pvector<string> uvset_names;
+  vector_string uvset_names;
   MStringArray maya_uvset_names;
   status = mesh.getUVSetNames(maya_uvset_names);
   if (!status) {
@@ -2241,7 +2241,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                      const MItMeshPolygon *pi, const pvector<string> uvset_names) {
+                      const MItMeshPolygon *pi, const vector_string &uvset_names) {
 
   //mayaegg_cat.spam() << "  set_shader_attributes : begin\n";
 
@@ -2257,11 +2257,12 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
       string uvset_name = color_def->_texture_name;
       // look for this name in maya's uvset_names
       if (uvset_names.size()){
-        if (uvset_name.length())
-            uvset_name.resize(uvset_name.length()-1);
+        if (uvset_name.length()) {
+          uvset_name.resize(uvset_name.length() - 1);
+        }
         mayaegg_cat.spam() << "looking for uvset_name: " << uvset_name << " ";
-        for (size_t uvi=0; uvi<uvset_names.size(); ++uvi){
-          if (uvset_names[uvi].find(uvset_name) != -1) {
+        for (size_t uvi = 0; uvi < uvset_names.size(); ++uvi){
+          if (uvset_names[uvi].find(uvset_name) != string::npos) {
             uvset_name = uvset_names[uvi];
             mayaegg_cat.spam() << "found maya uvset_name: " << uvset_name << endl;
           }
