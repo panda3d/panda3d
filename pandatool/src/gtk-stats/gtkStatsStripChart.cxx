@@ -362,7 +362,7 @@ expose_event_impl(GdkEventExpose *event) {
 gint GtkStatsStripChart::
 button_press_event_impl(GdkEventButton *button) {
   if (button->type == GDK_2BUTTON_PRESS && button->button == 1) {
-    int collector_index = get_collector_under_pixel(button->x, button->y);
+    int collector_index = get_collector_under_pixel((int)button->x, (int)button->y);
     collector_picked(collector_index);
     return true;
   }

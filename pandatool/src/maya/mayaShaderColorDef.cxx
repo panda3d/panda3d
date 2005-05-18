@@ -321,7 +321,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
 
     MFnDependencyNode layered_fn(color);
     MPlugArray color_pa;
-    MStatus status = layered_fn.getConnections(color_pa);
+    layered_fn.getConnections(color_pa);
     maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
     bool first = true;
     for (size_t i=0; i<color_pa.length(); ++i) {
