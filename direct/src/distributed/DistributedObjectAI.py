@@ -271,23 +271,36 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if self.air:
             self.air.sendUpdateToChannel(self, channelId, fieldName, args)
 
-    def generateWithRequired(self, zoneId, optionalFields=[]):
-        assert self.notify.debugStateCall(self)
-        # have we already allocated a doId?
-        if self.__preallocDoId:
-            self.__preallocDoId = 0
-            return self.generateWithRequiredAndId(
-                self.doId, zoneId, optionalFields)
+    if wantOtpServer:
+        def generateWithRequired(self, zoneId, optionalFields=[]):
+            assert self.notify.debugStateCall(self)
+            # have we already allocated a doId?
+            if self.__preallocDoId:
+                self.__preallocDoId = 0
+                return self.generateWithRequiredAndId(
+                    self.doId, zoneId, optionalFields)
 
-        # The repository is the one that really does the work
-        self.air.generateWithRequired(self, zoneId, optionalFields)
-        if wantOtpServer:
-            #HACK:
-            if not hasattr(self, 'parentId'):
-                parentId = self.air.districtId
-                self.parentId = parentId
-        self.zoneId = zoneId
-        self.generate()
+            # The repository is the one that really does the work
+            parentId = self.air.districtId
+            #self.parentId = parentId
+            self.air.generateWithRequired(self, zoneId, parentId, optionalFields)
+            parentId = self.air.districtId
+            self.parentId = parentId
+            self.zoneId = zoneId
+            self.generate()
+    else:
+        def generateWithRequired(self, zoneId, optionalFields=[]):
+            assert self.notify.debugStateCall(self)
+            # have we already allocated a doId?
+            if self.__preallocDoId:
+                self.__preallocDoId = 0
+                return self.generateWithRequiredAndId(
+                    self.doId, zoneId, optionalFields)
+
+            # The repository is the one that really does the work
+            self.air.generateWithRequired(self, zoneId, optionalFields)
+            self.zoneId = zoneId
+            self.generate()
 
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
