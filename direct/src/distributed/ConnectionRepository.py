@@ -111,9 +111,10 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             # Maybe the module name is represented as "moduleName/AI".
             suffix = moduleName.split('/')
             moduleName = suffix[0]
-            if self.dcSuffix and self.dcSuffix in suffix[1:]:
+            suffix=suffix[1:]
+            if self.dcSuffix in suffix:
                 moduleName += self.dcSuffix
-            elif self.dcSuffix == 'UD' and 'AI' in suffix[1:]: #HACK:
+            elif self.dcSuffix == 'UD' and 'AI' in suffix: #HACK:
                 moduleName += 'AI'
 
             importSymbols = []
@@ -123,9 +124,10 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
                 # Maybe the symbol name is represented as "symbolName/AI".
                 suffix = symbolName.split('/')
                 symbolName = suffix[0]
-                if self.dcSuffix and self.dcSuffix in suffix[1:]:
+                suffix=suffix[1:]
+                if self.dcSuffix in suffix:
                     symbolName += self.dcSuffix
-                elif self.dcSuffix == 'UD' and 'AI' in suffix[1:]: #HACK:
+                elif self.dcSuffix == 'UD' and 'AI' in suffix: #HACK:
                     symbolName += 'AI'
 
                 importSymbols.append(symbolName)
