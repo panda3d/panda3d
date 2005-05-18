@@ -23,6 +23,15 @@
 TypeHandle NurbsCurveInterface::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveInterface::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NurbsCurveInterface::
+~NurbsCurveInterface() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::set_cv_weight
 //       Access: Published
 //  Description: Sets the weight of the indicated CV without affecting

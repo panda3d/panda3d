@@ -33,6 +33,15 @@
 TypeHandle MovingPartMatrix::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPartMatrix::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MovingPartMatrix::
+~MovingPartMatrix() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPartMatrix::get_blend_value
 //       Access: Public
 //  Description: Attempts to blend the various matrix values

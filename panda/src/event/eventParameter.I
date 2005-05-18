@@ -214,6 +214,38 @@ operator << (ostream &out, const EventParameter &param) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::Default Constructor
+//       Access: Private
+//  Description: This constructor is only for make_from_bam().
+////////////////////////////////////////////////////////////////////
+template<class Type>
+EventStoreValue<Type>::
+EventStoreValue() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Type>
+EventStoreValue<Type>::
+EventStoreValue(const Type &value) : 
+  _value(value) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Type>
+EventStoreValue<Type>::
+~EventStoreValue() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EventStoreValue::set_value
 //       Access: Public
 //  Description: Changes the value stored in the parameter.  It is

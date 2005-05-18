@@ -37,6 +37,7 @@ class ParametricCurve;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveInterface {
 PUBLISHED:
+  virtual ~NurbsCurveInterface();
   virtual void set_order(int order)=0;
   virtual int get_order() const=0;
 

@@ -39,6 +39,7 @@ protected:
 public:
   INLINE MovingPartScalar(PartGroup *parent, const string &name,
                           const float &initial_value = 0);
+  virtual ~MovingPartScalar();
 
   virtual void get_blend_value(const PartBundle *root);
 

@@ -486,7 +486,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
 
   LPoint2f p = to_2d(from_center - dist * get_normal());
-  float edge_dist;
+  float edge_dist = 0.0f;
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
   if (cpa != (ClipPlaneAttrib *)NULL) {

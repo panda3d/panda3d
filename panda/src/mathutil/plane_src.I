@@ -196,6 +196,7 @@ intersects_line(FLOATTYPE &t,
                 const FLOATNAME(LVector3) &delta) const {
   FLOATTYPE denom = ::dot(get_normal(), delta);
   if (IS_NEARLY_ZERO(denom)) {
+    t = 0.0f;
     return false;
   }
 

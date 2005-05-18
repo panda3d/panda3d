@@ -31,6 +31,15 @@
 TypeHandle MovingPartScalar::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPartScalar::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MovingPartScalar::
+~MovingPartScalar() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPartScalar::get_blend_value
 //       Access: Public
 //  Description: Attempts to blend the various scalar values

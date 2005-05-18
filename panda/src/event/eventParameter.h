@@ -113,10 +113,10 @@ private:
 template<class Type>
 class EventStoreValue : public EventStoreValueBase {
 private:
-  // This constructor is only for make_from_bam().
-  EventStoreValue() { }
+  INLINE EventStoreValue();
 public:
-  EventStoreValue(const Type &value) : _value(value) { }
+  INLINE EventStoreValue(const Type &value);
+  virtual ~EventStoreValue();
 
   INLINE void set_value(const Type &value);
   INLINE const Type &get_value() const;

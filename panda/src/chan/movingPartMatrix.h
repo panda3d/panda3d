@@ -40,6 +40,7 @@ public:
   INLINE MovingPartMatrix(PartGroup *parent, const string &name,
                           const LMatrix4f &initial_value =
                           LMatrix4f::ident_mat());
+  virtual ~MovingPartMatrix();
 
   virtual void get_blend_value(const PartBundle *root);
 
