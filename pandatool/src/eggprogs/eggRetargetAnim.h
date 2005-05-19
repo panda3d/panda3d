@@ -23,8 +23,8 @@
 
 #include "eggCharacterFilter.h"
 #include "luse.h"
-
 #include "pvector.h"
+#include "pset.h"
 
 class EggCharacterData;
 class EggJointData;
@@ -43,9 +43,10 @@ public:
   void run();
 
   void retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-                     int reference_model);
+                     int reference_model, const pset<string> &keep_names);
 
   Filename _reference_filename;
+  vector_string _keep_joints;
 };
 
 #endif

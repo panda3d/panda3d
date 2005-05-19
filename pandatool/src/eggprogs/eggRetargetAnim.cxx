@@ -54,6 +54,12 @@ EggRetargetAnim() {
      "Read the reference model from the indicated egg file.  All of the "
      "animations will be retargeted to match the indicated file.",
      &EggRetargetAnim::dispatch_filename, NULL, &_reference_filename);
+
+  add_option
+    ("keep", "joint[,joint...]", 0,
+     "Preserve the full animation on the named joint(s).  This is especially "
+     "appropriate for the root joint.",
+     &EggRetargetAnim::dispatch_vector_string_comma, NULL, &_keep_joints);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,8 +119,16 @@ run() {
   EggCharacterData *char_data = _collection->get_character(0);
   nout << "Processing " << char_data->get_name() << "\n";
 
+  typedef pset<string> Names;
+  Names keep_names;
+
+  vector_string::const_iterator si;
+  for (si = _keep_joints.begin(); si != _keep_joints.end(); ++si) {
+    keep_names.insert(*si);
+  }
+
   EggJointData *root_joint = char_data->get_root_joint();
-  retarget_anim(char_data, root_joint, reference_model);
+  retarget_anim(char_data, root_joint, reference_model, keep_names);
   root_joint->do_rebuild();
 
   write_eggs();
@@ -129,50 +143,54 @@ run() {
 ////////////////////////////////////////////////////////////////////
 void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-              int reference_model) {
-  int num_models = joint_data->get_num_models();
-  int i;
-  for (i = 0; i < num_models; i++) {
-    if (joint_data->has_model(i)) {
-      int num_frames = char_data->get_num_frames(i);
+              int reference_model, const pset<string> &keep_names) {
+  if (keep_names.find(joint_data->get_name()) != keep_names.end()) {
+    // Don't retarget this joint; keep the translation and scale and whatever.
 
-      EggBackPointer *back = joint_data->get_model(i);
-      nassertv(back != (EggBackPointer *)NULL);
-      EggJointPointer *joint;
-      DCAST_INTO_V(joint, back);
-
-      LMatrix4d ref = joint_data->get_frame(reference_model, 0);
-      LVecBase3d ref_scale, ref_shear, ref_hpr, ref_translate;
-      if (!decompose_matrix(ref, ref_scale, ref_shear, ref_hpr, ref_translate)) {
-        nout << "Could not decompose rest frame for " 
-             << joint_data->get_name() << "\n";
-      } else {
-        int f;
-        for (f = 0; f < num_frames; f++) {
-          LMatrix4d mat = joint_data->get_frame(i, f);
-          
-          LVecBase3d scale, shear, hpr, translate;
-          if (decompose_matrix(mat, scale, shear, hpr, translate)) {
-            compose_matrix(mat, ref_scale, ref_shear, hpr, ref_translate);
-          } else {
-            nout << "Could not decompose matrix for " << joint_data->get_name()
-                 << "\n";
-          }
-          
-          if (!joint->add_rebuild_frame(mat)) {
-            nout << "Unable to combine animations.\n";
-            exit(1);
+  } else {
+    // Retarget this joint.
+    int num_models = joint_data->get_num_models();
+    for (int i = 0; i < num_models; i++) {
+      if (joint_data->has_model(i)) {
+        int num_frames = char_data->get_num_frames(i);
+        
+        EggBackPointer *back = joint_data->get_model(i);
+        nassertv(back != (EggBackPointer *)NULL);
+        EggJointPointer *joint;
+        DCAST_INTO_V(joint, back);
+        
+        LMatrix4d ref = joint_data->get_frame(reference_model, 0);
+        LVecBase3d ref_scale, ref_shear, ref_hpr, ref_translate;
+        if (!decompose_matrix(ref, ref_scale, ref_shear, ref_hpr, ref_translate)) {
+          nout << "Could not decompose rest frame for " 
+               << joint_data->get_name() << "\n";
+        } else {
+          int f;
+          for (f = 0; f < num_frames; f++) {
+            LMatrix4d mat = joint_data->get_frame(i, f);
+            
+            LVecBase3d scale, shear, hpr, translate;
+            if (decompose_matrix(mat, scale, shear, hpr, translate)) {
+              compose_matrix(mat, ref_scale, ref_shear, hpr, ref_translate);
+            } else {
+              nout << "Could not decompose matrix for " << joint_data->get_name()
+                   << "\n";
+            }
+            
+            if (!joint->add_rebuild_frame(mat)) {
+              nout << "Unable to combine animations.\n";
+              exit(1);
+            }
           }
         }
       }
     }
   }
 
-
   int num_children = joint_data->get_num_children();
-  for (i = 0; i < num_children; i++) {
+  for (int i = 0; i < num_children; i++) {
     EggJointData *next_joint_data = joint_data->get_child(i);
-    retarget_anim(char_data, next_joint_data, reference_model);
+    retarget_anim(char_data, next_joint_data, reference_model, keep_names);
   }
 }
 
