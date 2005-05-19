@@ -24,7 +24,7 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionHandlerQueue
 // Description : A special kind of CollisionHandler that does nothing
 //               except remember the CollisionEntries detected the

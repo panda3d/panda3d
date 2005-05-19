@@ -25,7 +25,7 @@
 
 class CollisionEntry;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionHandler
 // Description : The abstract interface to a number of classes that
 //               decide what to do when a collision is detected.  One

@@ -28,7 +28,7 @@
 #include "coordinateSystem.h"
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BoundingHexahedron
 // Description : This defines a bounding convex hexahedron.  It is
 //               typically used to represent a frustum, but may

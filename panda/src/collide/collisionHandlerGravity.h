@@ -23,7 +23,7 @@
 
 #include "collisionHandlerPhysical.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionHandlerGravity
 // Description : A specialized kind of CollisionHandler that sets the
 //               Z height of the collider to a fixed linear offset

@@ -27,7 +27,7 @@
 
 class PandaNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : AccumulatedAttribs
 // Description : This class is used by the SceneGraphReducer to
 //               maintain and accumulate the set of attributes we have

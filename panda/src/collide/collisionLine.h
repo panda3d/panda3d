@@ -23,7 +23,7 @@
 
 #include "collisionRay.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionLine
 // Description : An infinite line, similar to a CollisionRay, except
 //               that it extends in both directions.  It is, however,

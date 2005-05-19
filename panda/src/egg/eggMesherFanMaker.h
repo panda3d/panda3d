@@ -32,7 +32,7 @@
 
 class EggMesher;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggMesherFanMaker
 // Description : This class is used by EggMesher::find_fans() to
 //               attempt to make an EggTriangleFan out of the polygons

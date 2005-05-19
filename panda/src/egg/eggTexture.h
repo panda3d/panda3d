@@ -325,7 +325,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : UniqueEggTextures
 // Description : An STL function object for sorting textures into
 //               order by properties.  Returns true if the two

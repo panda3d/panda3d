@@ -37,7 +37,7 @@ class PandaNode;
 class RenderState;
 class TransformState;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : MultitexReducer
 // Description : This object presents an interface for generating new
 //               texture images that represent the combined images

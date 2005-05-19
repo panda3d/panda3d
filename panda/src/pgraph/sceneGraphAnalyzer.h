@@ -31,7 +31,7 @@ class GeomNode;
 class Geom;
 class Texture;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : SceneGraphAnalyzer
 // Description : A handy class that can scrub over a scene graph and
 //               collect interesting statistics on it.

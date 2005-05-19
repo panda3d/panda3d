@@ -29,7 +29,7 @@
 #include "pmap.h"
 #include <math.h>
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMakerEntity
 // Description : This represents a single vertex value, or color
 //               value, or normal value, or some such thing, added to
@@ -51,7 +51,7 @@ public:
 };
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMakerEntityMap
 // Description : A map of some kind of entity, above, to an integer
 //               index number.  This collects together identical

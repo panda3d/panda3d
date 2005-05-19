@@ -32,7 +32,7 @@
 class Datagram;
 class DatagramIterator;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : IoPtaDatagramLinMath
 // Description : This class is used to read and write a PTA_something
 //               (where something is some kind of LinMath object like

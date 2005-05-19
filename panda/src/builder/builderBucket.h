@@ -39,7 +39,7 @@ class Geom;
 class PandaNode;
 class GeomNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BuilderBucket
 // Description : The main grouping tool for BuilderPrims.  See the
 //               comments at the beginning of builder.h.

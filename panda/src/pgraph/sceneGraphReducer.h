@@ -32,7 +32,7 @@
 
 class PandaNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : SceneGraphReducer
 // Description : An interface for simplifying ("flattening") scene
 //               graphs by eliminating unneeded nodes and collapsing

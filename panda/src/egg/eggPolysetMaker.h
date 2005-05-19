@@ -25,7 +25,7 @@
 
 #include "dcast.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggPolysetMaker
 // Description : A specialization on EggBinMaker for making polysets
 //               that share the same basic rendering characteristic.

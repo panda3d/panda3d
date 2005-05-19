@@ -26,7 +26,7 @@
 
 class PandaNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : DeferredNodeProperty
 // Description : This class keeps track of all the state we must make
 //               note of during the graph traversal, but cannot apply

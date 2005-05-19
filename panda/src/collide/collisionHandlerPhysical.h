@@ -28,7 +28,7 @@
 #include "pointerTo.h"
 #include "pandaNode.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionHandlerPhysical
 // Description : The abstract base class for a number of
 //               CollisionHandlers that have some physical effect on

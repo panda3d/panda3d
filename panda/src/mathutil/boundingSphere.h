@@ -23,7 +23,7 @@
 
 #include "finiteBoundingVolume.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BoundingSphere
 // Description : This defines a bounding sphere, consisting of a
 //               center and a radius.  It is always a sphere, and

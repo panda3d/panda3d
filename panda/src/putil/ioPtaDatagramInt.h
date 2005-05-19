@@ -27,7 +27,7 @@
 class Datagram;
 class DatagramIterator;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : IoPtaDatagramInt
 // Description : This class is used to read and write a PTA_int from a
 //               Datagram, in support of Bam.  It's not intended to be

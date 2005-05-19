@@ -29,7 +29,7 @@ class BoundingHexahedron;
 class BoundingLine;
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BoundingVolume
 // Description : This is an abstract class for any volume in any sense
 //               which can be said to define the locality of reference

@@ -36,7 +36,7 @@ class GeomNode;
 class CollisionNode;
 class CullTraverserData;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionSolid
 // Description : The abstract base class for all things that can
 //               collide with other things in the world, and all the

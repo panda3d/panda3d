@@ -23,7 +23,7 @@
 
 #include "collisionSphere.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionInvSphere
 // Description : An inverted sphere: this is a sphere whose collision
 //               surface is the inside surface of the sphere.

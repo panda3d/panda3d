@@ -181,7 +181,7 @@ INLINE ostream &operator << (ostream &out, const EggVertex &vert) {
   return out;
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : UniqueEggVertices
 // Description : An STL function object for sorting vertices into
 //               order by properties.  Returns true if the two

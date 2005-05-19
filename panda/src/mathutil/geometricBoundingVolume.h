@@ -26,7 +26,7 @@
 #include "luse.h"
 #include "lmatrix.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : GeometricBoundingVolume
 // Description : This is another abstract class, for a general class
 //               of bounding volumes that actually enclose points in

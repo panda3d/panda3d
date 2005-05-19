@@ -23,7 +23,7 @@
 
 #include "collisionSolid.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionTube
 // Description : This implements a solid roughly in cylindrical shape.
 //               It's not called a CollisionCylinder because it's not

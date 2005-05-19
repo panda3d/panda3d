@@ -42,7 +42,7 @@ class EggNode;
 class EggVertex;
 class InternalName;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMaker
 // Description : An object to collect together all the vertices of a
 //               character, indicate what the transform space of each

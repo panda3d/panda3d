@@ -36,7 +36,7 @@ class EggPrimitive;
 class EggTexture;
 class EggMaterial;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggRenderState
 // Description : This class is used within this package only to record
 //               the render state that should be assigned to each

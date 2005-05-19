@@ -27,7 +27,7 @@
 #include "notify.h"
 #include "dSearchPath.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggData
 // Description : This is the primary interface into all the egg data,
 //               and the root of the egg file structure.  An EggData

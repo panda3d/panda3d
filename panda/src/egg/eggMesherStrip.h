@@ -27,7 +27,7 @@
 
 class EggMesherEdge;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggMesherStrip
 // Description : Represents a triangle strip or quad strip in
 //               progress, as assembled by the mesher.  It might also

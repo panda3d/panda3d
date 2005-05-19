@@ -60,7 +60,7 @@ class PolylightNode;
 class EggRenderState;
 class CharacterMaker;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggLoader
 // Description : Converts an egg data structure, possibly read from an
 //               egg file but not necessarily, into a scene graph

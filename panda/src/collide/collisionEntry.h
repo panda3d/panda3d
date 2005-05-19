@@ -34,7 +34,7 @@
 #include "nodePath.h"
 #include "clipPlaneAttrib.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionEntry
 // Description : Defines a single collision event.  One of these is
 //               created for each collision detected by a

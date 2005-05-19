@@ -28,7 +28,7 @@
 #include "vector_string.h"
 #include "pointerTo.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionHandlerEvent
 // Description : A specialized kind of CollisionHandler that throws an
 //               event for each collision detected.  The event thrown

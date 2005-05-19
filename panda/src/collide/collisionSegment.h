@@ -25,7 +25,7 @@
 
 class LensNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CollisionSegment
 // Description : A finite line segment, with two specific endpoints
 //               but no thickness.  It's similar to a CollisionRay,

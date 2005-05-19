@@ -29,7 +29,7 @@ class GeomNode;
 class RenderState;
 class InternalName;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
 // Description : An object specifically designed to transform the
 //               vertices of a Geom without disturbing indexing or

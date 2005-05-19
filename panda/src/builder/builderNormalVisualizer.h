@@ -32,7 +32,7 @@
 
 #include "pvector.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BuilderNormalVisualizer
 // Description : A useful class for collecting information about
 //               vertices and their associated normals as geometry is

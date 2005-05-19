@@ -24,7 +24,7 @@
 #include "geometricBoundingVolume.h"
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : FiniteBoundingVolume
 // Description : A special kind of GeometricBoundingVolume that is
 //               known to be finite.  It is possible to query this

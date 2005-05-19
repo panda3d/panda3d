@@ -43,7 +43,7 @@ class MovingPartBase;
 class EggLoader;
 class PandaNode;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CharacterMaker
 // Description : Converts an EggGroup hierarchy, beginning with a
 //               group with <Dart> set, to a character node with

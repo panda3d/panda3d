@@ -23,7 +23,7 @@
 
 #include "geometricBoundingVolume.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : BoundingLine
 // Description : This funny bounding volume is an infinite line with
 //               no thickness and extending to infinity in both

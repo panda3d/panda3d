@@ -24,7 +24,7 @@
 #include "typedObject.h"
 #include <string>
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : Namable
 // Description : A base class for all things which can have a name.
 //               The name is either empty or nonempty, but it is never
@@ -62,7 +62,7 @@ private:
 
 INLINE ostream &operator << (ostream &out, const Namable &n);
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : NamableOrderByName
 // Description : An STL function object for sorting an array of
 //               pointers to Namables into order by name.  Returns

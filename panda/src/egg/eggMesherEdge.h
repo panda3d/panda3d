@@ -26,7 +26,7 @@
 
 class EggMesherStrip;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : EggMesherEdge
 // Description : Represents one edge of a triangle, as used by the
 //               EggMesher to discover connected triangles.  The edge

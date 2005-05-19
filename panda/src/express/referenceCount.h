@@ -32,7 +32,7 @@
 #include <typeinfo>
 #endif
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ReferenceCount
 // Description : A base class for all things that want to be
 //               reference-counted.  ReferenceCount works in
@@ -99,7 +99,7 @@ private:
 template<class RefCountType>
 INLINE void unref_delete(RefCountType *ptr);
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : RefCountProxy
 // Description : A "proxy" to use to make a reference-countable object
 //               whenever the object cannot inherit from
@@ -134,7 +134,7 @@ private:
 };
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : RefCountObj
 // Description : Another kind of proxy, similar to RefCountProxy.
 //               This one works by inheriting from the indicated base
