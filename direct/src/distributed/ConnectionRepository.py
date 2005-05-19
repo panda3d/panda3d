@@ -161,7 +161,7 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType:
+                if type(classDef) not in (types.ClassType, types.TypeType):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
