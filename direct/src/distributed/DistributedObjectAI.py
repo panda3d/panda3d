@@ -282,9 +282,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
             # The repository is the one that really does the work
             parentId = self.air.districtId
-            #self.parentId = parentId
-            self.air.generateWithRequired(self, zoneId, parentId, optionalFields)
-            parentId = self.air.districtId
+            self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
             self.parentId = parentId
             self.zoneId = zoneId
             self.generate()
