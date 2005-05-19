@@ -522,6 +522,24 @@ def sameElements(a, b):
             return 0
     return 1
 
+def makeList(x):
+    """returns x, converted to a list"""
+    if type(x) is types.ListType:
+        return x
+    elif type(x) is types.TupleType:
+        return list(x)
+    else:
+        return [x,]
+
+def makeTuple(x):
+    """returns x, converted to a tuple"""
+    if type(x) is types.ListType:
+        return tuple(x)
+    elif type(x) is types.TupleType:
+        return x
+    else:
+        return (x,)
+
 def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
     return dict([(k,value) for k in L])
