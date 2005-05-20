@@ -302,22 +302,32 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
-    def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
-        assert self.notify.debugStateCall(self)
-        # have we already allocated a doId?
-        if self.__preallocDoId:
-            assert doId == self.__preallocDoId
-            self.__preallocDoId = 0
+    if wantOtpServer:
+        def generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields=[]):
+            assert self.notify.debugStateCall(self)
+            # have we already allocated a doId?
+            if self.__preallocDoId:
+                assert doId == self.__preallocDoId
+                self.__preallocDoId = 0
 
-        # The repository is the one that really does the work
-        self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
-        if wantOtpServer:
-            #HACK:
-            if not hasattr(self, 'parentId'):
-                parentId = self.air.districtId
-                self.parentId = parentId
-        self.zoneId = zoneId
-        self.generate()
+            # The repository is the one that really does the work
+            self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
+            self.parentId = parentId
+            self.zoneId = zoneId
+            self.__location = (parentId, zoneId)
+            self.generate()
+    else:
+        def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
+            assert self.notify.debugStateCall(self)
+            # have we already allocated a doId?
+            if self.__preallocDoId:
+                assert doId == self.__preallocDoId
+                self.__preallocDoId = 0
+
+            # The repository is the one that really does the work
+            self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
+            self.zoneId = zoneId
+            self.generate()
 
     if wantOtpServer:
         def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
