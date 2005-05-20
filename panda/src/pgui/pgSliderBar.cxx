@@ -152,10 +152,12 @@ setup(float width, float height, float range) {
   }
     
   _slider->set_slider_bar(this);
-  _slider->setup(_slider->get_name());
+  //_slider->setup(_slider->get_name());
+  _slider->setup("");
   _slider->set_drag_n_drop(true);
+  _slider->set_frame(-1,1,-1.5,1.5);
   _slider_button.set_scale(_scale);
-  _slider_button.set_pos(0, 0, -_scale*0.5); // center it
+  _slider_button.set_pos(0, 0, 0); // center it
 
   // if left or right button to control slider desired, create them
   if (!_slider_only) {
@@ -172,15 +174,19 @@ setup(float width, float height, float range) {
   }
 
   PGFrameStyle style;
-  style.set_width(0.05f, 0.05f);
+  style.set_width(0.3f, 0.3f);
 
+  /*
   style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_in);
   //set_frame_style(0, style);
+  */
 
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_out);
-  //set_bar_style(style);
+  _slider->set_frame_style(PGButton::S_ready, style);
+  style.set_type(PGFrameStyle::T_bevel_in);
+  _slider->set_frame_style(PGButton::S_depressed, style);
 }
 
 ////////////////////////////////////////////////////////////////////

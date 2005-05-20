@@ -75,7 +75,7 @@ class DirectSliderBar(DirectFrame):
             #figure out what is happening?????
             #self.guiItem.setState(0)
             #self.guiItem.clearStateDef(0)
-            self.guiItem.setFrame(-3.0, 3.0, -0.25, 0.25)
+            self.guiItem.setFrame(-3.0, 3.0, -0.125, 0.125)
             self.barStyle.setWidth(0.05, 0.05)
             self.barStyle.setColor(0.6,0.6,0.6,1)
             self.barStyle.setType(PGFrameStyle.TBevelIn)
@@ -90,9 +90,9 @@ class DirectSliderBar(DirectFrame):
 
         self.guiItem.setActive(1)
 
-        self.barStyle.setColor(0.8,0.8,0.8,1)
-        self.barStyle.setType(PGFrameStyle.TBevelOut)
-        self.updateBarStyle()
+        #self.barStyle.setColor(0.8,0.8,0.8,1)
+        #self.barStyle.setType(PGFrameStyle.TBevelOut)
+        #self.updateBarStyle()
 
         if (self['command'] != None):
             # Attach command function to slider button movement
