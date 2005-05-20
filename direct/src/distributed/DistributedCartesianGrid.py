@@ -137,8 +137,9 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
 
     def removeObjectFromGrid(self, av):
         # TODO: WHAT LOCATION SHOULD WE SET THIS TO?
-        av.reparentTo(hidden)
-        av.b_setLocation(0,0)
+        #av.reparentTo(hidden)
+        av.detachNode()
+        #av.b_setLocation(0,0)
         
         
     def handleAvatarZoneChange(self, av, zoneId):
