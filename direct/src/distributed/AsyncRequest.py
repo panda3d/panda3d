@@ -3,7 +3,8 @@ from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 
-BreakOnTimeout = config.GetBool("break-on-timeout", 0)
+if __debug__:
+    BreakOnTimeout = config.GetBool("break-on-timeout", 0)
 
 
 class AsyncRequest(DirectObject):
@@ -78,9 +79,12 @@ class AsyncRequest(DirectObject):
         call this base method to cleanup.
         """
         assert self.notify.debugCall("neededObjects: %s"%(self.neededObjects,))
-        global BreakOnTimeout
-        if BreakOnTimeout:
-            import pdb; pdb.set_trace()
+        if __debug__:
+            global BreakOnTimeout
+            if BreakOnTimeout:
+                print "\n\nself.neededObjects =", self.neededObjects
+                print "\ntimed out after %s seconds."%(task.delayTime,)
+                import pdb; pdb.set_trace()
         self.delete()
 
     def _checkCompletion(self, name, context, distObj):
