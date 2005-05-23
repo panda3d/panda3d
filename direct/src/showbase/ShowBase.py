@@ -16,7 +16,8 @@ from EventManagerGlobal import *
 from PythonUtil import *
 from direct.particles.ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
-from direct.interval.IntervalManager import ivalMgr
+#from direct.interval.IntervalManager import ivalMgr
+from direct.interval import IntervalManager
 from InputStateGlobal import inputState
 
 from direct.task import Task
@@ -99,7 +100,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
-        self.aspectRatio = ConfigVariableDouble('aspect-ratio', 0)
+        self.aspectRatio = ConfigVariableDouble('aspect-ratio', 0).getValue()
 
         self.windowType = self.config.GetString('window-type', 'onscreen')
         self.requireWindow = self.config.GetBool('require-window', 1)
@@ -1145,7 +1146,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def ivalLoop(self, state):
         # Execute all intervals in the global ivalMgr.
-        ivalMgr.step()
+        IntervalManager.ivalMgr.step()
         return Task.cont
 
     def shadowCollisionLoop(self, state):

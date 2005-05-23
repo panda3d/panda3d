@@ -2,33 +2,36 @@ from pandac.PandaModules import *
 from ParticleManagerGlobal import *
 from direct.showbase.PhysicsManagerGlobal import *
 
-from pandac import ParticleSystem
-from pandac import BaseParticleFactory
-from pandac import PointParticleFactory
-from pandac import ZSpinParticleFactory
+from pandac.PandaModules import ParticleSystem
+from pandac.PandaModules import BaseParticleFactory
+from pandac.PandaModules import PointParticleFactory
+from pandac.PandaModules import ZSpinParticleFactory
 #import OrientedParticleFactory
-from pandac import BaseParticleRenderer
-from pandac import PointParticleRenderer
-from pandac import LineParticleRenderer
-from pandac import GeomParticleRenderer
-from pandac import SparkleParticleRenderer
-from pandac import SpriteParticleRenderer
-from pandac import BaseParticleEmitter
-from pandac import BoxEmitter
-from pandac import DiscEmitter
-from pandac import LineEmitter
-from pandac import PointEmitter
-from pandac import RectangleEmitter
-from pandac import RingEmitter
-from pandac import SphereSurfaceEmitter
-from pandac import SphereVolumeEmitter
-from pandac import TangentRingEmitter
+from pandac.PandaModules import BaseParticleRenderer
+from pandac.PandaModules import PointParticleRenderer
+from pandac.PandaModules import LineParticleRenderer
+from pandac.PandaModules import GeomParticleRenderer
+from pandac.PandaModules import SparkleParticleRenderer
+#from pandac.PandaModules import SpriteParticleRenderer
+from pandac.PandaModules import BaseParticleEmitter
+from pandac.PandaModules import BoxEmitter
+from pandac.PandaModules import DiscEmitter
+from pandac.PandaModules import LineEmitter
+from pandac.PandaModules import PointEmitter
+from pandac.PandaModules import RectangleEmitter
+from pandac.PandaModules import RingEmitter
+from pandac.PandaModules import SphereSurfaceEmitter
+from pandac.PandaModules import SphereVolumeEmitter
+from pandac.PandaModules import TangentRingEmitter
+
+import SpriteParticleRendererExt
+
 import string
 import os
 from direct.directnotify import DirectNotifyGlobal
 import sys
 
-class Particles(ParticleSystem.ParticleSystem):
+class Particles(ParticleSystem):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('Particles')
     id = 1
@@ -39,7 +42,7 @@ class Particles(ParticleSystem.ParticleSystem):
             Particles.id += 1
         else:
             self.name = name
-        ParticleSystem.ParticleSystem.__init__(self, poolSize)
+        ParticleSystem.__init__(self, poolSize)
         # self.setBirthRate(0.02)
         # self.setLitterSize(10)
         # self.setLitterSpread(0)
@@ -102,16 +105,16 @@ class Particles(ParticleSystem.ParticleSystem):
             self.factory = None
         self.factoryType = type
         if (type == "PointParticleFactory"):
-            self.factory = PointParticleFactory.PointParticleFactory()
+            self.factory = PointParticleFactory()
         elif (type == "ZSpinParticleFactory"):
-            self.factory = ZSpinParticleFactory.ZSpinParticleFactory()
+            self.factory = ZSpinParticleFactory()
         elif (type == "OrientedParticleFactory"):
-            self.factory = OrientedParticleFactory.OrientedParticleFactory()
+            self.factory = OrientedParticleFactory()
         else:
             print "unknown factory type: %s" % type
             return None
         self.factory.setLifespanBase(0.5)
-        ParticleSystem.ParticleSystem.setFactory(self, self.factory)
+        ParticleSystem.setFactory(self, self.factory)
 
     def setRenderer(self, type):
         if (self.rendererType == type):
@@ -120,12 +123,12 @@ class Particles(ParticleSystem.ParticleSystem):
             self.renderer = None
         self.rendererType = type
         if (type == "PointParticleRenderer"):
-            self.renderer = PointParticleRenderer.PointParticleRenderer()
+            self.renderer = PointParticleRenderer()
             self.renderer.setPointSize(1.0)
         elif (type == "LineParticleRenderer"):
-            self.renderer = LineParticleRenderer.LineParticleRenderer()
+            self.renderer = LineParticleRenderer()
         elif (type == "GeomParticleRenderer"):
-            self.renderer = GeomParticleRenderer.GeomParticleRenderer()
+            self.renderer = GeomParticleRenderer()
             # This was moved here because we do not want to download
             # the direct tools with toontown.
             if __dev__:
@@ -134,11 +137,11 @@ class Particles(ParticleSystem.ParticleSystem):
                 bbox = DirectSelection.DirectBoundingBox(npath)
                 self.renderer.setGeomNode(bbox.lines.node())
         elif (type == "SparkleParticleRenderer"):
-            self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
+            self.renderer = SparkleParticleRenderer()
         elif (type == "SpriteParticleRenderer"):
-            self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
+            self.renderer = SpriteParticleRendererExt.SpriteParticleRendererExt()
             if (self.renderer.getSourceType() ==
-                SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
+                SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
                 # Use current default texture 
                 # See sourceTextureName SpriteParticleRenderer-extensions.py
                 self.renderer.setTextureFromFile()
@@ -149,7 +152,7 @@ class Particles(ParticleSystem.ParticleSystem):
         else:
             print "unknown renderer type: %s" % type
             return None
-        ParticleSystem.ParticleSystem.setRenderer(self, self.renderer)
+        ParticleSystem.setRenderer(self, self.renderer)
 
     def setEmitter(self, type):
         """setEmitter(type)"""
@@ -159,28 +162,28 @@ class Particles(ParticleSystem.ParticleSystem):
             self.emitter = None
         self.emitterType = type
         if (type == "BoxEmitter"):
-            self.emitter = BoxEmitter.BoxEmitter()
+            self.emitter = BoxEmitter()
         elif (type == "DiscEmitter"):
-            self.emitter = DiscEmitter.DiscEmitter()
+            self.emitter = DiscEmitter()
         elif (type == "LineEmitter"):
-            self.emitter = LineEmitter.LineEmitter()
+            self.emitter = LineEmitter()
         elif (type == "PointEmitter"):
-            self.emitter = PointEmitter.PointEmitter()
+            self.emitter = PointEmitter()
         elif (type == "RectangleEmitter"):
-            self.emitter = RectangleEmitter.RectangleEmitter()
+            self.emitter = RectangleEmitter()
         elif (type == "RingEmitter"):
-            self.emitter = RingEmitter.RingEmitter()
+            self.emitter = RingEmitter()
         elif (type == "SphereSurfaceEmitter"):
-            self.emitter = SphereSurfaceEmitter.SphereSurfaceEmitter()
+            self.emitter = SphereSurfaceEmitter()
         elif (type == "SphereVolumeEmitter"):
-            self.emitter = SphereVolumeEmitter.SphereVolumeEmitter()
+            self.emitter = SphereVolumeEmitter()
             self.emitter.setRadius(1.0)
         elif (type == "TangentRingEmitter"):
-            self.emitter = TangentRingEmitter.TangentRingEmitter()
+            self.emitter = TangentRingEmitter()
         else:
             print "unknown emitter type: %s" % type
             return None
-        ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
+        ParticleSystem.setEmitter(self, self.emitter)
 
     def addForce(self, force):
         if (force.isLinear()):
@@ -344,7 +347,7 @@ class Particles(ParticleSystem.ParticleSystem):
         elif (self.rendererType == "SpriteParticleRenderer"):
             file.write('# Sprite parameters\n')
             if (self.renderer.getSourceType() ==
-                SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
+                SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
                 tex = self.renderer.getTexture()
                 file.write(targ + '.renderer.setTexture(loader.loadTexture(\'' + tex.getName() + '\'))\n')
             else:

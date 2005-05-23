@@ -152,7 +152,6 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             if classDef == None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
-
             if classDef is None:
                 self.notify.info("No class definition for %s." % (className))
             else:
@@ -161,11 +160,15 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) not in (types.ClassType, types.TypeType):
-                    self.notify.error("Symbol %s is not a class name." % (className))
-                else:
-                    dclass.setClassDef(classDef)
-
+                # rhh this seems to fail with new system not sure why ?
+                #print "---classname " +className
+                #print type(classDef)
+                #print types.ClassType
+                #if type(classDef) != types.ClassType:
+                #    self.notify.error("Symbol %s is not a class name." % (className))
+                #else:
+                #    dclass.setClassDef(classDef)
+                dclass.setClassDef(classDef)
             self.dclassesByName[className] = dclass
             if number >= 0:
                 self.dclassesByNumber[number] = dclass

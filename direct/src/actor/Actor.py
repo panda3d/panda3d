@@ -1,7 +1,7 @@
 """Actor module: contains the Actor class"""
 
 from direct.showbase.PandaObject import *
-from pandac import LODNode
+from pandac.PandaModules import LODNode
 import types
 
 class Actor(PandaObject, NodePath):
@@ -355,7 +355,7 @@ class Actor(PandaObject, NodePath):
         If one is not supplied as an argument, make one
         """
         if (node == None):
-            lod = LODNode.LODNode("lod")
+            lod = LODNode("lod")
             self.__LODNode = self.__geomNode.attachNewNode(lod)
         else:
             self.__LODNode = self.__geomNode.attachNewNode(node)            
@@ -504,9 +504,8 @@ class Actor(PandaObject, NodePath):
         It used to be legal to let the animName default to the
         currently-playing anim, but this was confusing and could lead
         to the wrong anim's play rate getting set.  Better to insist
-        on this parameter.
-        
-        NOTE: sets play rate on all LODs"""
+        on this parameter.       
+        NOTE: sets play rate on all LODs"""       
         for control in self.getAnimControls(animName, partName):
             control.setPlayRate(rate)
 

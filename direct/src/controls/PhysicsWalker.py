@@ -18,7 +18,7 @@ from direct.showbase.ShowBaseGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
-from pandac import PhysicsManager
+from pandac.PandaModules import PhysicsManager
 import math
 
 #import LineStream

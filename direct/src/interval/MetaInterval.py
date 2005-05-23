@@ -325,6 +325,7 @@ class MetaInterval(CMetaInterval):
     # with all of their associated Python callbacks:
 
     def setManager(self, manager):
+        rogerroger
         self.__manager = manager
         CMetaInterval.setManager(self, manager)
 

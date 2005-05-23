@@ -39,3 +39,5 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
             Actor.Actor.delete(self)
 
 
+    def loop(self, animName, restart=1, partName=None,fromFrame=None, toFrame=None):       
+        return Actor.Actor.loop(self,animName,restart,partName,fromFrame,toFrame);

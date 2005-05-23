@@ -523,7 +523,7 @@ class GravityWalker(DirectObject.DirectObject):
                     # rotMat is the rotation matrix corresponding to
                     # our previous heading.
                     rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                    step=rotMat.xform(self.vel) + (self.priorParent * dt)
+                    step=(self.priorParent * dt) + rotMat.xform(self.vel)
                     self.avatarNodePath.setFluidPos(Point3(
                             self.avatarNodePath.getPos()+step))
                 if 0:

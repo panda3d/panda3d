@@ -1,7 +1,7 @@
 """RandomNumGen module: contains the RandomNumGen class"""
 
 from direct.directnotify import DirectNotifyGlobal
-from pandac import Mersenne
+from pandac.PandaModules import Mersenne
 
 def randHash(num):
     """ this returns a random 16-bit integer, given a seed integer.

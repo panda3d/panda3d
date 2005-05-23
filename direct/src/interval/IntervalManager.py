@@ -1,4 +1,5 @@
 from pandac.PandaModules import *
+from pandac import PandaModules 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import EventManager
 import Interval
@@ -12,33 +13,51 @@ class IntervalManager(CIntervalManager):
     # the Python extensions is to add support for Python-based
     # intervals (like MetaIntervals).
 
-    def __init__(self, globalPtr = 0):
-        # Pass globalPtr == 1 to the constructor to trick it into
-        # "constructing" a Python wrapper around the global
-        # CIntervalManager object.
-
-        if globalPtr:
-            #CIntervalManager.__init__(self, None)            
-            cObj = CIntervalManager.getGlobalPtr()
-            self.this = cObj.this
-            self.userManagesMemory = 0
-
-        else:
-            CIntervalManager.__init__(self)
-
-        # Set up a custom event queue for handling C++ events from
-        # intervals.
-        self.eventQueue = EventQueue()
-        self.eventManager = EventManager.EventManager(self.eventQueue)
-        self.setEventQueue(self.eventQueue)
-        
-        self.ivals = []
-        self.removedIvals = {}
+    if PandaModules.__dict__.has_key("Dtool_PyNavtiveInterface"):
+        def __init__(self, globalPtr = 0):
+            # Pass globalPtr == 1 to the constructor to trick it into
+            # "constructing" a Python wrapper around the global
+            # CIntervalManager object.
+            ##self.cObj = CIntervalManager.getGlobalPtr()
+            ##Dtool_BarrowThisRefrence(self,self.cObj)
+            ##self.dd = self        
+            if globalPtr:
+                self.cObj = CIntervalManager.getGlobalPtr()
+                Dtool_BarrowThisRefrence(self,self.cObj)
+                self.dd = self
+            else:
+                CIntervalManager.__init__(self)           
+            self.eventQueue = EventQueue()
+            self.MyEventmanager = EventManager.EventManager(self.eventQueue)        
+            self.setEventQueue(self.eventQueue)
+            self.ivals = []
+            self.removedIvals = {}
+    else:  ## the old interface
+        def __init__(self, globalPtr = 0):
+            # Pass globalPtr == 1 to the constructor to trick it into
+            # "constructing" a Python wrapper around the global
+            # CIntervalManager object.
+            if globalPtr:
+                #CIntervalManager.__init__(self, None)
+                cObj = CIntervalManager.getGlobalPtr()
+                self.this = cObj.this
+                self.userManagesMemory = 0
+            else:
+                CIntervalManager.__init__(self)
+            # Set up a custom event queue for handling C++ events from
+            # intervals.
+            self.eventQueue = EventQueue()
+            self.MyEventmanager = EventManager.EventManager(self.eventQueue)
+            self.setEventQueue(self.eventQueue)
+            self.ivals = []
+            self.removedIvals = {}     
+    
+                
 
     def addInterval(self, interval):
         index = self.addCInterval(interval, 1)
         self.__storeInterval(interval, index)
-
+        
     def removeInterval(self, interval):
         index = self.findCInterval(interval.getName())
         if index >= 0:
@@ -54,8 +73,7 @@ class IntervalManager(CIntervalManager):
         return None
 
     def finishIntervalsMatching(self, pattern):
-        count = 0
-        
+        count = 0       
         maxIndex = self.getMaxIndex()
         for index in range(maxIndex):
             ival = self.getCInterval(index)
@@ -77,7 +95,6 @@ class IntervalManager(CIntervalManager):
     def step(self):
         # This method should be called once per frame to perform all
         # of the per-frame processing on the active intervals.
-        
         # Call C++ step, then do the Python stuff.
         CIntervalManager.step(self)
         self.__doPythonCallbacks()
@@ -86,7 +103,6 @@ class IntervalManager(CIntervalManager):
         # This method should be called during an emergency cleanup
         # operation, to automatically pause or finish all active
         # intervals tagged with autoPause or autoFinish set true.
-        
         # Call C++ interrupt, then do the Python stuff.
         CIntervalManager.interrupt(self)
         self.__doPythonCallbacks()
@@ -94,7 +110,6 @@ class IntervalManager(CIntervalManager):
     def __doPythonCallbacks(self):
         # This method does all of the required Python post-processing
         # after performing some C++-level action.
-        
         # It is important to call all of the python callbacks on the
         # just-removed intervals before we call any of the callbacks
         # on the still-running intervals.
@@ -118,7 +133,7 @@ class IntervalManager(CIntervalManager):
         # C++.  We use a custom event queue so we can service all of
         # these immediately, rather than waiting for the global event
         # queue to be serviced (which might not be till next frame).
-        self.eventManager.doEvents()
+        self.MyEventmanager.doEvents()
         
         
     def __storeInterval(self, interval, index):
@@ -127,8 +142,9 @@ class IntervalManager(CIntervalManager):
         assert(self.ivals[index] == None or self.ivals[index] == interval)
         self.ivals[index] = interval
 
-    def __repr__(self):
-        return self.__str__()
+
+    #def __repr__(self):
+    #    return self.__str__()
 
 # The global IntervalManager object.
 ivalMgr = IntervalManager(1)

@@ -17,7 +17,7 @@ animations based on control events.
 from direct.showbase.ShowBaseGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal
-from pandac import PhysicsManager
+from pandac.PandaModules import PhysicsManager
 import math
 
 import PhysicsWalker

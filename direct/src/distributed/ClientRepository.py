@@ -411,6 +411,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         return  distObj
 
     def generateWithRequiredOtherFields(self, dclass, doId, di, parentId = None, zoneId = None):
+        print "---------------------------"
+        print doId
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.

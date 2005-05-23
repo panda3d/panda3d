@@ -23,36 +23,36 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
 
     # These have their FFI functions exposed for efficiency
     def setSmH(self, h, t):
-        self.private__overloaded_setH_ptrNodePath_float(h)
+        self.setH(h)
 
     def setSmZ(self, z, t):
-        self.private__overloaded_setZ_ptrNodePath_float(z)
+        self.setZ(z)
         
     def setSmXY(self, x, y, t):
-        self.private__overloaded_setX_ptrNodePath_float(x)
-        self.private__overloaded_setY_ptrNodePath_float(y)
+        self.setX(x)
+        self.setY(y)
         
     def setSmXZ(self, x, z, t):
-        self.private__overloaded_setX_ptrNodePath_float(x)
-        self.private__overloaded_setZ_ptrNodePath_float(z)
+        self.setX(x)
+        self.setZ(z)
         
     def setSmPos(self, x, y, z, t):
-        self.private__overloaded_setPos_ptrNodePath_float_float_float(x,y,z)
+        self.setPos(x,y,z)
         
     def setSmHpr(self, h, p, r, t):
-        self.private__overloaded_setHpr_ptrNodePath_float_float_float(h,p,r)
+        self.setHpr(h,p,r)
         
     def setSmXYH(self, x, y, h, t):
-        self.private__overloaded_setX_ptrNodePath_float(x)
-        self.private__overloaded_setY_ptrNodePath_float(y)
-        self.private__overloaded_setH_ptrNodePath_float(h)
+        self.setX(x)
+        self.setY(y)
+        self.setH(h)
         
     def setSmXYZH(self, x, y, z, h, t):
-        self.private__overloaded_setPos_ptrNodePath_float_float_float(x,y,z)
-        self.private__overloaded_setH_ptrNodePath_float(h)
+        self.setPos(x,y,z)
+        self.setH(h)
         
     def setSmPosHpr(self, x, y, z, h, p, r, t):
-        self.private__overloaded_setPosHpr_ptrNodePath_float_float_float_float_float_float(x,y,z,h,p,r)
+        self.setPosHpr(x,y,z,h,p,r)
         
     def clearSmoothing(self, bogus = None):
         pass
@@ -60,16 +60,16 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
 
     # Do we use these on the AIx?
     def setComponentX(self, x):
-        self.private__overloaded_setX_ptrNodePath_float(x)
+        self.setX(x)
     def setComponentY(self, y):
-        self.private__overloaded_setY_ptrNodePath_float(y)
+        self.setY(y)
     def setComponentZ(self, z):
-        self.private__overloaded_setZ_ptrNodePath_float(z)
+        self.setZ(z)
     def setComponentH(self, h):
-        self.private__overloaded_setH_ptrNodePath_float(h)
+        self.setH(h)
     def setComponentP(self, p):
-        self.private__overloaded_setP_ptrNodePath_float(p)
+        self.setP(p)
     def setComponentR(self, r):
-        self.private__overloaded_setR_ptrNodePath_float(r)
+        self.setR(r)
     def setComponentT(self, t):
         pass

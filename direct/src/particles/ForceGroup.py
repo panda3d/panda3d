@@ -2,7 +2,7 @@ from pandac.PandaModules import *
 from direct.showbase.DirectObject import *
 from direct.showbase.PhysicsManagerGlobal import *
 
-from pandac import ForceNode
+#from pandac import ForceNode
 from direct.directnotify import DirectNotifyGlobal
 import sys
 
@@ -18,7 +18,7 @@ class ForceGroup(DirectObject):
         else:
             self.name = name
 
-        self.node = ForceNode.ForceNode(self.name)
+        self.node = ForceNode(self.name)
         self.nodePath = NodePath(self.node)
         self.fEnabled = 0
 

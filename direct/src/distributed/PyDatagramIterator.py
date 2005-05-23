@@ -5,7 +5,6 @@
 
 from pandac.PandaModules import *
 # Import the type numbers
-from pandac.DCSubatomicType import *
 
 class PyDatagramIterator(DatagramIterator):
 
