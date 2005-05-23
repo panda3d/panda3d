@@ -135,8 +135,8 @@ class DoInterestManager(DirectObject.DirectObject):
         def printInterests(self):
             print "*********************** Interest Sets **************"
             print "(Interest ID, Description, Scope, Event, Mode)"
-            for i in DoInterestManager._interests.keys():
-                print DoInterestManager._interests[i]
+            for i in DoInterestManager._interests.values():
+                print i
             print "****************************************************"
             for i in DoInterestManager._debug_currentInterests:
                 print i
