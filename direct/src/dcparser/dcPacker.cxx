@@ -1096,7 +1096,7 @@ handle_switch(const DCSwitchParameter *switch_parameter) {
 
   if (new_parent == (DCPackerInterface *)NULL) {
     // This means an invalid value was packed for the key.
-    _pack_error = true;
+    _range_error = true;
     return;
   }
 

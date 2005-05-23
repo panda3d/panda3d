@@ -442,28 +442,48 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
 
   if (!Notify::ptr()->has_assert_failed()) {
     ostringstream strm;
-    
-    PyObject *tuple = PySequence_Tuple(sequence);
-    if (tuple == (PyObject *)NULL) {
+
+    if (as_parameter() != (DCParameter *)NULL) {
+      // If it's a parameter-type field, the value may or may not be a
+      // sequence.
       PyObject *str = PyObject_Str(sequence);
       nassertr(str != (PyObject *)NULL, false);
-      strm << "Arguments to field " << get_name()
-           << " not a sequence: " << PyString_AsString(str);
+      
+      if (packer.had_pack_error()) {
+        strm << "Incorrect arguments to field: " << get_name()
+             << " = " << PyString_AsString(str);
+      } else {
+        strm << "Value out of range on field: " << get_name()
+             << " = " << PyString_AsString(str);
+      }
       Py_DECREF(str);
 
     } else {
-      PyObject *str = PyObject_Str(tuple);
+      // If it's a molecular or atomic field, the value should be a
+      // sequence.
+      PyObject *tuple = PySequence_Tuple(sequence);
+      if (tuple == (PyObject *)NULL) {
+        PyObject *str = PyObject_Str(sequence);
+        nassertr(str != (PyObject *)NULL, false);
 
-      if (packer.had_pack_error()) {
-        strm << "Incorrect arguments to field: " << get_name()
+        strm << "Value for " << get_name() << " not a sequence: " \
              << PyString_AsString(str);
+        Py_DECREF(str);
+
       } else {
-        strm << "Value out of range on field: " << get_name()
-             << PyString_AsString(str);
+        PyObject *str = PyObject_Str(tuple);
+        
+        if (packer.had_pack_error()) {
+          strm << "Incorrect arguments to field: " << get_name()
+               << PyString_AsString(str);
+        } else {
+          strm << "Value out of range on field: " << get_name()
+               << PyString_AsString(str);
+        }
+        
+        Py_DECREF(str);
+        Py_DECREF(tuple);
       }
-      
-      Py_DECREF(str);
-      Py_DECREF(tuple);
     }
 
     nassert_raise(strm.str());
