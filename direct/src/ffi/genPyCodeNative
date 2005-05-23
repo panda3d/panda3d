@@ -1,0 +1,21 @@
+#! /bin/sh
+
+
+
+if [ -d ${DIRECT}/lib/pandac ] ; then
+
+    find ${DIRECT}/lib/pandac/. -type f -maxdepth 1 -print0 | xargs -0 rm
+    
+    cp ${DIRECT}/src/extensions_native/PandaModules.py            ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaModules.py         ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaphysicsModules.py  ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/__init__.py*               ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaeggModules.py      ${DIRECT}/lib/pandac/.      
+    cp ${DIRECT}/src/extensions_native/libpiratesModules.py       ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libdirectModules.py        ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaexpressModules.py  ${DIRECT}/lib/pandac/.     
+    cp ${DIRECT}/src/extensions_native/libtoontownModules.py      ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libotpModules.py           ${DIRECT}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandafxModules.py       ${DIRECT}/lib/pandac/.
+    
+fi    

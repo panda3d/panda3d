@@ -6,6 +6,7 @@
   #define INSTALL_SCRIPTS $[INSTALL_SCRIPTS] genPyCode.bat
 #else
   #define INSTALL_SCRIPTS $[INSTALL_SCRIPTS] genPyCode
+  #define INSTALL_SCRIPTS $[INSTALL_SCRIPTS] genPyCodeNative
 #endif
 
 #include $[THISDIRPREFIX]genPyCode.pp
