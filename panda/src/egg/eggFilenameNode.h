@@ -46,6 +46,14 @@ PUBLISHED:
   INLINE const Filename &get_fullpath() const;
   INLINE void set_fullpath(const Filename &fullpath);
 
+public:
+  class IndirectOrderByBasename {
+  public:
+    bool operator () (const EggFilenameNode *a, const EggFilenameNode *b) const {
+      return a->get_filename().get_basename() < b->get_filename().get_basename();
+    }
+  };
+
 private:
   Filename _filename;
   Filename _fullpath;

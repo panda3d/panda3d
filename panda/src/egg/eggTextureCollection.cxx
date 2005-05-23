@@ -422,6 +422,20 @@ sort_by_tref() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCollection::sort_by_basename
+//       Access: Public
+//  Description: Sorts all the textures into alphabetical order by
+//               the basename part (including extension) of the
+//               filename.  Subsequent operations using begin()/end()
+//               will traverse in this sorted order.
+////////////////////////////////////////////////////////////////////
+void EggTextureCollection::
+sort_by_basename() {
+  sort(_ordered_textures.begin(), _ordered_textures.end(),
+       EggFilenameNode::IndirectOrderByBasename());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::add_texture
 //       Access: Public
 //  Description: Explicitly adds a new texture to the collection.

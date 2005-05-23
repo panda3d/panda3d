@@ -83,6 +83,7 @@ PUBLISHED:
 
   void uniquify_trefs();
   void sort_by_tref();
+  void sort_by_basename();
 
 public:
   // Can be used to traverse all the textures in the collection, in
