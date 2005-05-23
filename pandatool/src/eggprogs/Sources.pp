@@ -72,3 +72,11 @@
     eggToC.cxx eggToC.h
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET egg-list-textures
+
+  #define SOURCES \
+    eggListTextures.cxx eggListTextures.h
+
+#end bin_target

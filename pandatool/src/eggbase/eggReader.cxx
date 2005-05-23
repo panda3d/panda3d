@@ -59,6 +59,9 @@ EggReader() {
 
   _tex_type = (PNMFileType *)NULL;
   _delod = -1.0;
+
+  _got_tex_dirname = false;
+  _got_tex_extension = false;
 }
 
 ////////////////////////////////////////////////////////////////////
