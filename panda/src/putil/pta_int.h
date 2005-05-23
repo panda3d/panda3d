@@ -38,8 +38,10 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerToBase<RefCountObj<vector
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerToArray<int>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, ConstPointerToArray<int>)
 
+BEGIN_PUBLISH
 typedef PointerToArray<int> PTA_int;
 typedef ConstPointerToArray<int> CPTA_int;
+END_PUBLISH
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -32,6 +32,7 @@ public:
   Buffer(int size);
   ~Buffer();
 
+PUBLISHED:
   INLINE int get_length(void) const;
 
 #ifndef CPPPARSER

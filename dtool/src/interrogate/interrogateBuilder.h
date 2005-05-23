@@ -59,7 +59,7 @@ public:
   void read_command_file(istream &in);
   void do_command(const string &command, const string &params);
   void build();
-  void write_code(ostream &out, InterrogateModuleDef *def);
+  void write_code(ostream &out_code,ostream *out_include, InterrogateModuleDef *def);
   InterrogateModuleDef *make_module_def(int file_identifier);
 
   static string clean_identifier(const string &name);
@@ -68,8 +68,10 @@ public:
 
   string get_preferred_name(CPPType *type);
   static string hash_string(const string &name, int shift_offset);
+  TypeIndex get_type(CPPType *type, bool global);
 
 private:
+public:
   typedef set<string> Commands;
   typedef map<string, string> CommandParams;
   void insert_param_list(InterrogateBuilder::Commands &commands,
@@ -108,7 +110,7 @@ private:
                int flags, const string &expression = string());
 
   TypeIndex get_atomic_string_type();
-  TypeIndex get_type(CPPType *type, bool global);
+//  TypeIndex get_type(CPPType *type, bool global);
 
   void define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype);
   void define_wrapped_type(InterrogateType &itype, CPPPointerType *cpptype);

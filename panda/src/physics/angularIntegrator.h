@@ -30,8 +30,9 @@
 //               forces to them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
-public:
+PUBLISHED:
   virtual ~AngularIntegrator();
+public:
 
   void integrate(Physical *physical, AngularForceVector &forces,
                  float dt);

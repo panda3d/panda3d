@@ -29,6 +29,9 @@
 #include "cppStructType.h"
 #include "cppTypeDeclaration.h"
 #include "notify.h"
+#include "cppTypedef.h"
+#include "cppEnumType.h"
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::resolve_type
@@ -818,6 +821,47 @@ is_PyObject(CPPType *type) {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_ostream
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyObject.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::is_ostream(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_ostream(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "ostream");
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_PyObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyObject *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_ostream(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_ostream(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return is_ostream(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_pointer:
+    return is_ostream(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::involves_unpublished
 //       Access: Public, Static
@@ -1313,3 +1357,171 @@ has_protected_destructor(CPPType *type) {
   // No explicit destructor.
   return false;
 }
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::has_protected_destructor
+//       Access: Public, Static
+//  Description: Returns true if the destructor for the given class or
+//               struct is protected or private, or false if the
+//               destructor is public or absent.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::IsExported(CPPType *in_type)
+{
+
+  string name = in_type->get_local_name(&parser);
+  if (name.empty()) {
+      return false;
+  }
+
+    //return true;
+
+    // this question is about the base type 
+    CPPType *base_type = resolve_type(unwrap(in_type));
+    //CPPType *base_type = in_type;
+    // Ok export Rules..
+    //    Classes and Structs and Unions are exported only if they have a 
+    //    function that is exported..      
+    // function is the easiest case.  
+
+    if (base_type->_vis <= min_vis)
+        return true;
+
+    if (in_type->_vis <= min_vis)
+        return true;
+
+
+    if (base_type->get_subtype() == CPPDeclaration::ST_struct) 
+    {
+            CPPStructType *sstruct_type = base_type->as_struct_type();
+            CPPStructType *struct_type =sstruct_type->resolve_type(&parser, &parser)->as_struct_type();
+            CPPScope *scope = struct_type->_scope;
+
+            CPPScope::Declarations::const_iterator di;
+            for (di = scope->_declarations.begin();di != scope->_declarations.end(); di++)
+                if ((*di)->_vis <= min_vis) 
+                    return true;
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_instance) 
+    {
+        CPPInstance *inst = base_type->as_instance();
+        if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
+        {
+            CPPInstance *function = inst;
+            CPPFunctionType *ftype = function->_type->resolve_type(&parser, &parser)->as_function_type();
+            if (ftype->_vis <= min_vis)
+                return true;
+        }
+        else 
+        {
+            if (inst->_vis <= min_vis)
+                return true;
+        }
+
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_typedef) 
+    {
+        CPPTypedef *tdef = base_type->as_typedef();
+        if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) 
+        {
+            CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
+            return IsExported(struct_type);
+        }
+
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) 
+    {
+        CPPType *type = base_type->as_type_declaration()->_type;
+        if (type->get_subtype() == CPPDeclaration::ST_struct)
+        {
+            CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+            CPPScope *scope = struct_type->_scope;
+            return IsExported(struct_type);
+
+        }
+        else if (type->get_subtype() == CPPDeclaration::ST_enum) 
+        {
+            CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
+            if (type->_vis <= min_vis)
+                return true;
+        }
+    }
+
+
+//    printf("---------------------> Visibility Failed  %s %d Vis=%d, Minvis=%d\n",
+//        base_type->get_fully_scoped_name().c_str(),
+//        base_type->get_subtype(),
+//        base_type->_vis,
+//        min_vis);
+
+    return false;
+};
+
+bool TypeManager::IsLocal(CPPType *in_type)
+{
+    // A local means it was compiled in this scope of work..
+    // IE a should actualy generate code for this objects....
+   CPPType *base_type = resolve_type(unwrap(in_type));
+
+
+   if(base_type->_file._source == CPPFile::S_local)
+       return true;
+
+    return false;
+
+
+    if (base_type->get_subtype() == CPPDeclaration::ST_struct) 
+    {
+            CPPStructType *struct_type = base_type->as_struct_type();
+            if (struct_type->_file._source == CPPFile::S_local)
+                return  true;
+
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_instance) 
+    {
+        CPPInstance *inst = base_type->as_instance();
+        if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
+        {
+            CPPInstance *function = inst;
+            CPPFunctionType *ftype = function->_type->resolve_type(&parser, &parser)->as_function_type();
+            if (ftype->_file._source == CPPFile::S_local)
+                return true;
+        }
+        else 
+        {
+            if (inst->_file._source == CPPFile::S_local)
+                return true;
+        }
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_typedef) 
+    {
+        CPPTypedef *tdef = base_type->as_typedef();
+        if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) 
+        {
+            CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
+            return IsLocal(struct_type);
+
+
+        }
+    }
+    else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) 
+    {
+        CPPType *type = base_type->as_type_declaration()->_type;
+        if (type->get_subtype() == CPPDeclaration::ST_struct)
+        {
+            CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+            if (struct_type->_file._source == CPPFile::S_local)
+                return true;
+
+        }
+        else if (type->get_subtype() == CPPDeclaration::ST_enum) 
+        {
+            CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
+            if (enum_type->_file._source != CPPFile::S_local)
+                return true;
+        }
+    }
+
+  if (base_type->_file._source == CPPFile::S_local)
+      return true; 
+
+ return false;
+};

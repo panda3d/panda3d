@@ -24,6 +24,7 @@
 #include "interfaceMakerC.h"
 #include "interfaceMakerPythonObj.h"
 #include "interfaceMakerPythonSimple.h"
+#include "interfaceMakerPythonNative.h"
 #include "functionRemap.h"
 
 #include "interrogateType.h"
@@ -53,19 +54,8 @@
 #include <algorithm>
 
 InterrogateBuilder builder;
-
-/*
-static string
-upcase_string(const string &str) {
-  string result;
-  for (string::const_iterator si = str.begin();
-       si != str.end();
-       ++si) {
-    result += toupper(*si);
-  }
-  return result;
-}
-*/
+std::string     EXPORT_IMPORT_PREFEX;
+bool            inside_python_native = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::add_source_file
@@ -238,18 +228,24 @@ build() {
   for (di = parser._declarations.begin();
        di != parser._declarations.end();
        ++di) {
-    if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
+    if ((*di)->get_subtype() == CPPDeclaration::ST_instance) 
+    {
       CPPInstance *inst = (*di)->as_instance();
-      if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
+      if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
+      {
         // Here's a function declaration.
         scan_function(inst);
 
-      } else {
+      }
+      else 
+      {
         // Here's a data element declaration.
         scan_element(inst, (CPPStructType *)NULL, &parser);
       }
 
-    } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
+    }
+    else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) 
+    {
       CPPTypedef *tdef = (*di)->as_typedef();
       if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
         // A typedef counts as a declaration.  This lets us pick up
@@ -263,9 +259,9 @@ build() {
       CPPType *type = (*di)->as_type_declaration()->_type;
       type->_vis = (*di)->_vis;
 
-      if (type->get_subtype() == CPPDeclaration::ST_struct) {
-        CPPStructType *struct_type =
-          type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+      if (type->get_subtype() == CPPDeclaration::ST_struct)
+      {
+        CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
         scan_struct_type(struct_type);
 
       } else if (type->get_subtype() == CPPDeclaration::ST_enum) {
@@ -293,8 +289,7 @@ build() {
 //  Description: Generates all the code necessary to the indicated
 //               output stream.
 ////////////////////////////////////////////////////////////////////
-void InterrogateBuilder::
-write_code(ostream &out, InterrogateModuleDef *def) {
+void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   typedef vector<InterfaceMaker *> InterfaceMakers;
   InterfaceMakers makers;
 
@@ -313,8 +308,18 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     makers.push_back(maker);
   }
 
-  InterfaceMakers::iterator mi;
+  if (build_python_native  ) {
+    InterfaceMakerPythonNative *maker = new InterfaceMakerPythonNative(def);
+    makers.push_back(maker);
+  }
 
+
+  EXPORT_IMPORT_PREFEX = std::string("EXPCL_") + def->module_name;
+  for (size_t i=0; i<EXPORT_IMPORT_PREFEX.size(); i++)
+      EXPORT_IMPORT_PREFEX[i] = toupper(EXPORT_IMPORT_PREFEX[i]);
+
+
+  InterfaceMakers::iterator mi;
   // First, make all the wrappers.
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->generate_wrappers();
@@ -330,15 +335,25 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   }
 
   // Now, begin the actual output.  Start with the #include lines.
-  if (!no_database) {
-    out << "#include \"dtoolbase.h\"\n"
+
+  if (!no_database) 
+  {
+    out_code << "#include \"dtoolbase.h\"\n"
         << "#include \"interrogate_request.h\"\n"
         << "#include \"dconfig.h\"\n";
   }
+
+
+  ostringstream declaration_bodies;
+
   if (watch_asserts) {
-    out << "#include \"notify.h\"\n";
+    declaration_bodies << "#include \"notify.h\"\n";
   }
-  out << "\n";
+
+  declaration_bodies << "#include <sstream>\n";
+
+  declaration_bodies << "#include \"py_panda.h\"  \n";
+  declaration_bodies << "\n";
   
   IncludeFiles::const_iterator ifi;
   for (ifi = _include_files.begin();
@@ -348,41 +363,54 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     char delimiter = (*ifi).second;
     if (should_include(filename)) {
       if (delimiter == '"') {
-        out << "#include \"" << filename << "\"\n";
+        declaration_bodies << "#include \"" << filename << "\"\n";
       } else {
-        out << "#include <" << filename << ">\n";
+        declaration_bodies << "#include <" << filename << ">\n";
       }
     }
   }
-  out << "\n";
+  declaration_bodies << "\n";
+
 
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
-    (*mi)->write_includes(out);
+    (*mi)->write_includes(declaration_bodies);
   }
 
   if (generate_spam) {
-    out << "#include \"config_interrogatedb.h\"\n"
+    declaration_bodies << "#include \"config_interrogatedb.h\"\n"
         << "#include \"notifyCategoryProxy.h\"\n\n"
         << "NotifyCategoryDeclNoExport(in_" << library_name << ");\n"
         << "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
   }
 
-  out << "\n";
+  declaration_bodies << "\n";
+
+
 
   // And now the prototypes.
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
-    (*mi)->write_prototypes(out);
+    (*mi)->write_prototypes(declaration_bodies,out_include);
   }
+  declaration_bodies << "\n";
 
-  out << "\n";
+//  if(out_include != NULL)
+//    (*out_include) << declaration_bodies.str();
+//  else
+    out_code << declaration_bodies.str();
+
   
   // Followed by the function bodies.
-  out << function_bodies.str() << "\n";
+  out_code << function_bodies.str() << "\n";
+
+    for (mi = makers.begin(); mi != makers.end(); ++mi) {
+      (*mi)->write_module_support(out_code,out_include,def);
+    }
+
 
   if (output_module_specific) {
     // Output whatever stuff we should output if this were a module.
     for (mi = makers.begin(); mi != makers.end(); ++mi) {
-      (*mi)->write_module(out, def);
+      (*mi)->write_module(out_code,out_include, def);
     }
   }
 
@@ -410,7 +438,7 @@ write_code(ostream &out, InterrogateModuleDef *def) {
 
   if (output_function_pointers) {
     // Write out the table of function pointers.
-    out << "static void *_in_fptrs[" << num_wrappers << "] = {\n";
+    out_code << "static void *_in_fptrs[" << num_wrappers << "] = {\n";
     int next_index = 1;
     map<int, FunctionRemap *>::iterator ii;
     for (ii = wrappers_by_index.begin();
@@ -418,78 +446,83 @@ write_code(ostream &out, InterrogateModuleDef *def) {
          ++ii) {
       int this_index = (*ii).first;
       while (next_index < this_index) {
-        out << "  (void *)0,\n";
+        out_code << "  (void *)0,\n";
         next_index++;
       }
       assert(next_index == this_index);
       FunctionRemap *remap = (*ii).second;
 
-      out << "  (void *)&" << remap->_wrapper_name << ",\n";
+      out_code << "  (void *)&" << remap->_wrapper_name << ",\n";
       next_index++;
     }
     while (next_index < num_wrappers + 1) {
-      out << "  (void *)0,\n";
+      out_code << "  (void *)0,\n";
       next_index++;
     }
-    out << "};\n\n";
+    out_code << "};\n\n";
   }
+
 
   if (save_unique_names) {
     // Write out the table of unique names, in no particular order.
-    out << "static InterrogateUniqueNameDef _in_unique_names["
+    out_code << "static InterrogateUniqueNameDef _in_unique_names["
         << num_wrappers << "] = {\n";
     for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
-      out << "  { \""
+      out_code << "  { \""
           << remap->_unique_name << "\", "
           << remap->_wrapper_index - 1 << " },\n";
     }
-    out << "};\n\n";
+    out_code << "};\n\n";
   }
+
+//if(1==2)
+{
 
   if (!no_database) {
     // Now build the module definition structure to add ourselves to
     // the global interrogate database.
-    out << "static InterrogateModuleDef _in_module_def = {\n"
+    out_code << "static InterrogateModuleDef _in_module_def = {\n"
         << "  " << def->file_identifier << ",  /* file_identifier */\n"
         << "  \"" << def->library_name << "\",  /* library_name */\n"
         << "  \"" << def->library_hash_name << "\",  /* library_hash_name */\n"
         << "  \"" << def->module_name << "\",  /* module_name */\n";
     if (def->database_filename != (const char *)NULL) {
-      out << "  \"" << def->database_filename
+      out_code << "  \"" << def->database_filename
           << "\",  /* database_filename */\n";
     } else {
-      out << "  (const char *)0,  /* database_filename */\n";
+      out_code << "  (const char *)0,  /* database_filename */\n";
     }
 
     if (save_unique_names) {
-      out << "  _in_unique_names,\n"
+      out_code << "  _in_unique_names,\n"
           << "  " << num_wrappers << ",  /* num_unique_names */\n";
     } else {
-      out << "  (InterrogateUniqueNameDef *)0,  /* unique_names */\n"
+      out_code << "  (InterrogateUniqueNameDef *)0,  /* unique_names */\n"
           << "  0,  /* num_unique_names */\n";
     }
 
-    if (output_function_pointers) {
-      out << "  _in_fptrs,\n"
+    if (output_function_pointers) { 
+      out_code << "  _in_fptrs,\n"
           << "  " << num_wrappers << ",  /* num_fptrs */\n";
     } else {
-      out << "  (void **)0,  /* fptrs */\n"
+      out_code << "  (void **)0,  /* fptrs */\n"
           << "  0,  /* num_fptrs */\n";
     }
 
-    out << "  1,  /* first_index */\n"
+    out_code << "  1,  /* first_index */\n"
         << "  " << InterrogateDatabase::get_ptr()->get_next_index()
         << "  /* next_index */\n"
         << "};\n\n";
 
     // And now write the static-init code that tells the interrogate
     // database to load up this module.
-    out << "Configure(_in_configure_" << library_name << ");\n"
+    out_code << "Configure(_in_configure_" << library_name << ");\n"
         << "ConfigureFn(_in_configure_" << library_name << ") {\n"
         << "  interrogate_request_module(&_in_module_def);\n"
         << "}\n\n";
   }
+}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -938,10 +971,9 @@ scan_function(CPPFunctionGroup *fgroup) {
 void InterrogateBuilder::
 scan_function(CPPInstance *function) {
   assert(function != (CPPInstance *)NULL);
-  assert(function->_type != (CPPType *)NULL &&
-         function->_type->as_function_type() != (CPPFunctionType *)NULL);
-  CPPFunctionType *ftype =
-    function->_type->resolve_type(&parser, &parser)->as_function_type();
+  assert(function->_type != (CPPType *)NULL &&  function->_type->as_function_type() != (CPPFunctionType *)NULL);
+
+  CPPFunctionType *ftype =  function->_type->resolve_type(&parser, &parser)->as_function_type();
   assert(ftype != (CPPFunctionType *)NULL);
 
   CPPScope *scope = &parser;
@@ -1040,7 +1072,8 @@ scan_struct_type(CPPStructType *type) {
 
   // Check if any of the members are exported.  If none of them are,
   // and the type itself is not marked for export, then never mind.
-  if (type->_vis > min_vis) {
+  if (type->_vis > min_vis) 
+  {
     CPPScope *scope = type->_scope;
 
     bool any_exported = false;
@@ -1713,7 +1746,8 @@ get_type(CPPType *type, bool global) {
     // If it's an extension type of some kind, it might be scoped.
     if (ext_type->_ident != (CPPIdentifier *)NULL) {
       CPPScope *scope = ext_type->_ident->get_scope(&parser, &parser);
-      while (scope->as_template_scope() != (CPPTemplateScope *)NULL) {
+      while (scope->as_template_scope() != (CPPTemplateScope *)NULL)
+      {
         assert(scope->get_parent_scope() != scope);
         scope = scope->get_parent_scope();
         assert(scope != (CPPScope *)NULL);
@@ -1734,19 +1768,23 @@ get_type(CPPType *type, bool global) {
     }
   }
 
-  if (forced || !in_ignoretype(true_name)) {
+  if (forced || !in_ignoretype(true_name)) 
+  {
     itype._flags |= InterrogateType::F_fully_defined;
 
-    if (type->as_simple_type() != (CPPSimpleType *)NULL) {
+    if (type->as_simple_type() != (CPPSimpleType *)NULL) 
+    {
       define_atomic_type(itype, type->as_simple_type());
 
-    } else if (type->as_pointer_type() != (CPPPointerType *)NULL) {
+    } else if (type->as_pointer_type() != (CPPPointerType *)NULL)
+    {
       define_wrapped_type(itype, type->as_pointer_type());
 
     } else if (type->as_const_type() != (CPPConstType *)NULL) {
       define_wrapped_type(itype, type->as_const_type());
 
-    } else if (type->as_struct_type() != (CPPStructType *)NULL) {
+    } else if (type->as_struct_type() != (CPPStructType *)NULL) 
+    {
       define_struct_type(itype, type->as_struct_type(), index, forced);
 
     } else if (type->as_enum_type() != (CPPEnumType *)NULL) {
@@ -1930,9 +1968,12 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
        bi != cpptype->_derivation.end();
        ++bi) {
     const CPPStructType::Base &base = (*bi);
-    if (base._vis <= V_public) {
+    if (base._vis <= V_public) 
+    {
+
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
       TypeIndex base_index = get_type(base_type, true);
+
       
       if (base_index == 0) {
         nout << *cpptype << " reports a derivation from an invalid type.\n";
@@ -1946,6 +1987,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         
         // Do we need to synthesize upcast and downcast functions?
         bool generate_casts = false;
+
+        // Function To Generate all castsss Posible..
         if (base._is_virtual) {
           // We do in the presence of virtual inheritance.
           generate_casts = true;
@@ -1972,6 +2015,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         }
         
         if (generate_casts) {
+        
+
           d._upcast = get_cast_function(base_type, cpptype, "upcast");
           d._flags |= InterrogateType::DF_upcast;
           
@@ -2008,12 +2053,15 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         }
       }
 
-    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) 
+    {
       CPPType *type = (*di)->as_type_declaration()->_type;
 
-      if ((*di)->_vis <= min_vis) {
+      if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) 
+      {
         if (type->as_struct_type() != (CPPStructType *)NULL ||
-            type->as_enum_type() != (CPPEnumType *)NULL) {
+            type->as_enum_type() != (CPPEnumType *)NULL) 
+        {
           // Here's a nested class or enum definition.
           type->_vis = (*di)->_vis;
 
@@ -2021,7 +2069,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           assert(nested_type != (CPPExtensionType *)NULL);
 
           // Only try to export named types.
-          if (nested_type->_ident != (CPPIdentifier *)NULL) {
+          if (nested_type->_ident != (CPPIdentifier *)NULL) 
+          {
             TypeIndex nested_index = get_type(nested_type, false);
             itype._nested_types.push_back(nested_index);
           }
@@ -2129,7 +2178,8 @@ void InterrogateBuilder::
 define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
               CPPStructType *struct_type, CPPScope *scope) {
   CPPFunctionGroup::Instances::const_iterator fi;
-  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) 
+  {
     CPPInstance *function = (*fi);
     define_method(function, itype, struct_type, scope);
   }

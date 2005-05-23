@@ -101,6 +101,7 @@ public:
   friend class InterrogateBuilder;
   friend class InterfaceMakerC;
   friend class InterfaceMakerPythonSimple;
+  friend class InterfaceMakerPythonNative;
   friend class FunctionRemap;
 };
 

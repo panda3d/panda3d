@@ -135,7 +135,9 @@ private:
     F_unpublished          = 0x100000,
   };
 
+public:
   int _flags;
+
   string _scoped_name;
   string _true_name;
   string _comment;
@@ -220,5 +222,15 @@ INLINE ostream &operator << (ostream &out, const InterrogateType::EnumValue &d);
 INLINE istream &operator >> (istream &in, InterrogateType::EnumValue &d);
 
 #include "interrogateType.I"
+
+#include <set>
+#include <map>
+struct Dtool_PyTypedObject;
+typedef std::map< int , Dtool_PyTypedObject *>   RunTimeTypeDictionary;
+typedef std::set<int >                           RunTimeTypeList;
+
+extern "C" EXPCL_DTOOL  RunTimeTypeDictionary & GetRunTimeDictionary();
+extern "C" EXPCL_DTOOL  RunTimeTypeList & GetRunTimeTypeList();
+
 
 #endif

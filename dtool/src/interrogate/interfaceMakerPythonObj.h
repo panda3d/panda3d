@@ -44,10 +44,10 @@ public:
   InterfaceMakerPythonObj(InterrogateModuleDef *def);
   virtual ~InterfaceMakerPythonObj();
 
-  virtual void write_prototypes(ostream &out);
+  virtual void write_prototypes(ostream &out,ostream *out_h);
   virtual void write_functions(ostream &out);
 
-  virtual void write_module(ostream &out, InterrogateModuleDef *def);
+  virtual void write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def);
 
   virtual bool synthesize_this_parameter();
 

@@ -30,6 +30,7 @@ class VirtualFileMount;
 class VirtualFileList;
 class VirtualFileSystem;
 
+
 ////////////////////////////////////////////////////////////////////
 //       Class : VirtualFile
 // Description : The abstract base class for a file or directory
@@ -92,6 +93,7 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const VirtualFile &file);
+
 
 #include "virtualFile.I"
 

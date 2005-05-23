@@ -56,13 +56,13 @@ public:
   virtual void generate_wrappers();
 
   virtual void write_includes(ostream &out);
-  virtual void write_prototypes(ostream &out);
+  virtual void write_prototypes(ostream &out, ostream *out_h);
   virtual void write_functions(ostream &out);
+  virtual void write_module_support(ostream &out,ostream *out_h,InterrogateModuleDef *moduledefdef) {};
 
-  virtual void write_module(ostream &out, InterrogateModuleDef *def);
+  virtual void write_module(ostream &out, ostream *out_h,InterrogateModuleDef *def);
 
-  virtual ParameterRemap *
-  remap_parameter(CPPType *struct_type, CPPType *param_type);
+  virtual ParameterRemap *  remap_parameter(CPPType *struct_type, CPPType *param_type);
 
   virtual bool synthesize_this_parameter();
   virtual bool separate_overloading();
@@ -71,7 +71,7 @@ public:
 
   static ostream &indent(ostream &out, int indent_level);
 
-protected:
+public:
   class Function {
   public:
     Function(const string &name,
@@ -126,8 +126,7 @@ protected:
   record_function_wrapper(InterrogateFunction &ifunc, 
                           FunctionWrapperIndex wrapper_index);
 
-  Object *
-  record_object(TypeIndex type_index);
+  virtual Object *  record_object(TypeIndex type_index);
 
   void hash_function_signature(FunctionRemap *remap);
   

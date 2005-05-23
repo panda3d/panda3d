@@ -27,6 +27,8 @@
 #include "pystub.h"
 #include "notify.h"
 
+#include "set"
+
 // If our system getopt() doesn't come with getopt_long_only(), then use
 // the GNU flavor that we've got in tool for this purpose.
 #ifndef HAVE_GETOPT_LONG_ONLY
@@ -40,6 +42,7 @@ string module_name;
 string library_name;
 bool build_c_wrappers = false;
 bool build_python_wrappers = false;
+bool build_python_native_wrappers = false;
 bool track_interpreter = false;
 
 // Short command-line options.
@@ -52,6 +55,7 @@ enum CommandOptions {
   CO_library,
   CO_c,
   CO_python,
+  CO_python_native,
   CO_track_interpreter,
 };
 
@@ -61,6 +65,7 @@ static struct option long_options[] = {
   { "library", required_argument, NULL, CO_library },
   { "c", no_argument, NULL, CO_c },
   { "python", no_argument, NULL, CO_python },
+  { "python-native", no_argument, NULL, CO_python_native },
   { "track-interpreter", no_argument, NULL, CO_track_interpreter },
   { NULL }
 };
@@ -78,8 +83,88 @@ upcase_string(const string &str) {
 }
 */
 
-int
-write_python_table(ostream &out) {
+int write_python_table_native(ostream &out) 
+{
+  out << "\n#include \"dtoolbase.h\"\n"
+      << "#include \"interrogate_request.h\"\n\n"
+      << "#undef _POSIX_C_SOURCE\n"
+      << "#include \"py_panda.h\"\n\n";
+
+  int count = 0;
+
+  std::set<std::string >    Libraries;
+
+
+//  out << "extern \"C\" {\n";
+
+  // Walk through all of the Python functions.
+  int num_functions = interrogate_number_of_functions();
+  int fi;
+  for (fi = 0; fi < num_functions; fi++) 
+  {
+    FunctionIndex function_index = interrogate_get_function(fi);
+
+    // Consider only those that belong in the module we asked for.
+    if (interrogate_function_has_module_name(function_index) &&
+        module_name == interrogate_function_module_name(function_index)) 
+    {
+        // if it has a library name add it to set of libraries
+        if(interrogate_function_has_library_name(function_index))
+            Libraries.insert(interrogate_function_library_name(function_index));
+    }
+  }
+
+  for(int ti = 0; ti < interrogate_number_of_types(); ti++)
+  {
+    TypeIndex thetype  = interrogate_get_type(ti);
+    if(interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype))
+    {
+        if(interrogate_type_has_library_name(thetype))
+            Libraries.insert(interrogate_type_library_name(thetype));
+    }
+  }
+
+
+
+  std::set<std::string >::iterator ii;
+  for(ii = Libraries.begin(); ii != Libraries.end(); ii++)
+  {
+      printf("Referencing Library %s\n",(*ii).c_str());
+      out << "extern  LibrayDef "<< *ii << "_moddef ;\n";
+  }
+
+
+
+
+      out << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
+      << "#else\n"
+      << "extern \"C\" void init" << library_name << "();\n"
+      << "#endif\n\n"
+
+      << "void init" << library_name << "() \n{\n";
+  if (track_interpreter) {
+    out << "    in_interpreter = 1;\n";
+  }
+
+  out << "  LibrayDef   *defs[] = {";
+  for(ii = Libraries.begin(); ii != Libraries.end(); ii++)
+    out << "&"<< *ii << "_moddef,";
+
+  out << " NULL };\n ";
+
+    
+  out << "  Dtool_PyModuleInitHelper( defs, \"" << library_name << "\");\n";
+  out << "\n\n\n}\n";
+
+  return count;
+}
+
+
+
+
+int write_python_table(ostream &out) 
+{
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"
@@ -175,8 +260,8 @@ write_python_table(ostream &out) {
   return count;
 }
 
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
   extern char *optarg;
   extern int optind;
   int flag;
@@ -204,6 +289,10 @@ main(int argc, char *argv[]) {
       build_python_wrappers = true;
       break;
 
+    case CO_python_native:
+      build_python_native_wrappers = true;
+      break;
+
     case CO_track_interpreter:
       track_interpreter = true;
       break;
@@ -226,7 +315,7 @@ main(int argc, char *argv[]) {
 
   output_code_filename.set_text();
 
-  if (!build_c_wrappers && !build_python_wrappers) {
+  if (!build_c_wrappers && !build_python_wrappers && !build_python_native_wrappers) {
     build_c_wrappers = true;
   }
 
@@ -253,16 +342,24 @@ main(int argc, char *argv[]) {
   }
 
   // Now output the table.
-  if (!output_code_filename.empty()) {
+  if (!output_code_filename.empty()) 
+  {
     ofstream output_code;
 
-    if (!output_code_filename.open_write(output_code)) {
+    if (!output_code_filename.open_write(output_code)) 
+    {
       nout << "Unable to write to " << output_code_filename << "\n";
     } else {
+
       if (build_python_wrappers) {
         int count = write_python_table(output_code);
         nout << count << " python function wrappers exported.\n";
       }
+
+      if (build_python_native_wrappers) {
+        write_python_table_native(output_code);
+      }
+
     }
   }
 

@@ -41,8 +41,9 @@
 #include "cppParameterList.h"
 #include "notify.h"
 
-static InterrogateType dummy_type;
+ InterrogateType dummy_type;
 
+ 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Function::Constructor
 //       Access: Public
@@ -58,7 +59,7 @@ Function(const string &name,
 {
   _has_this = false;
 }
-
+ 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Function::Destructor
 //       Access: Public
@@ -135,45 +136,83 @@ void InterfaceMaker::
 generate_wrappers() {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
+
   // We use a while loop rather than a simple for loop, because we
   // might increase the number of types recursively during the
   // traversal.
   int ti = 0;
-  while (ti < idb->get_num_all_types()) {
-    TypeIndex type_index = idb->get_all_type(ti);
-    record_object(type_index);
+  while (ti < idb->get_num_all_types())
+  {
+        TypeIndex type_index = idb->get_all_type(ti);
+        record_object(type_index);
+
+
+         if(interrogate_type_is_enum(ti))
+         {
+             int enum_count = interrogate_type_number_of_enum_values(ti);
+             for(int xx = 0; xx< enum_count; xx++)
+             {
+//                 printf("   PyModule_AddIntConstant(module,\"%s\",%d)\n",interrogate_type_enum_value_name(ti,xx),interrogate_type_enum_value(ti,xx));
+             }
+         }
+
+
     ++ti;
+//    printf(" New Type %d\n",ti);
+  }
+
+  int gi = 0;
+  while( gi = idb->get_num_global_elements())
+  {
+    printf(" Global Type = %d",gi);
+    TypeIndex type_index = idb->get_global_element(gi);
+    record_object(type_index);
+
   }
 
   int num_functions = idb->get_num_global_functions();
-  for (int fi = 0; fi < num_functions; fi++) {
+  for (int fi = 0; fi < num_functions; fi++) 
+  {
     FunctionIndex func_index = idb->get_global_function(fi);
     record_function(dummy_type, func_index);
   }    
 
+
+
   int num_manifests = idb->get_num_global_manifests();
-  for (int mi = 0; mi < num_manifests; mi++) {
+  for (int mi = 0; mi < num_manifests; mi++) 
+  {
     ManifestIndex manifest_index = idb->get_global_manifest(mi);
     const InterrogateManifest &iman = idb->get_manifest(manifest_index);
-    if (iman.has_getter()) {
+    if (iman.has_getter()) 
+    {
       FunctionIndex func_index = iman.get_getter();
       record_function(dummy_type, func_index);
     }
+    printf(" Manafests %d\n",mi);
   }    
 
+
+
   int num_elements = idb->get_num_global_elements();
-  for (int ei = 0; ei < num_elements; ei++) {
+  for (int ei = 0; ei < num_elements; ei++) 
+  {
+    printf(" Element %d\n",ei);
+
     ElementIndex element_index = idb->get_global_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) {
+    if (ielement.has_getter()) 
+    {
       FunctionIndex func_index = ielement.get_getter();
       record_function(dummy_type, func_index);
     }
-    if (ielement.has_setter()) {
+    if (ielement.has_setter()) 
+    {
       FunctionIndex func_index = ielement.get_setter();
       record_function(dummy_type, func_index);
     }
   }    
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,7 +234,7 @@ write_includes(ostream &) {
 //               write_functions().
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
-write_prototypes(ostream &out) {
+write_prototypes(ostream &out,ostream *out_h) {
   _function_writers.write_prototypes(out);
 }
 
@@ -217,7 +256,7 @@ write_functions(ostream &out) {
 //               support a module file.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
-write_module(ostream &, InterrogateModuleDef *) {
+write_module(ostream &, ostream *out_h,InterrogateModuleDef *) {
 }
 
 
@@ -256,7 +295,8 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
 
   if (manage_reference_counts) {
     if (TypeManager::is_pointer_to_base(param_type) ||
-        TypeManager::is_const_ref_to_pointer_to_base(param_type)) {
+        TypeManager::is_const_ref_to_pointer_to_base(param_type))
+    {
       CPPType *pt_type = TypeManager::unwrap_reference(param_type);
 
       // Don't convert PointerTo<>'s to pointers for methods of the
@@ -370,15 +410,18 @@ make_function_remap(const InterrogateType &itype,
                     CPPInstance *cppfunc, int num_default_parameters) {
   FunctionRemap *remap = 
     new FunctionRemap(itype, ifunc, cppfunc, num_default_parameters, this);
-  if (remap->_is_valid) {
-    if (separate_overloading()) {
+  if (remap->_is_valid) 
+  {
+    if (separate_overloading()) 
+    {
       hash_function_signature(remap);
       remap->_unique_name =
         get_unique_prefix() + _def->library_hash_name + remap->_hash;
       remap->_wrapper_name = 
         get_wrapper_prefix() + _def->library_hash_name + remap->_hash;
       remap->_reported_name = remap->_wrapper_name;
-      if (true_wrapper_names) {
+      if (true_wrapper_names) 
+      {
         remap->_reported_name = 
           InterrogateBuilder::clean_identifier(remap->_cppfunc->get_local_name(&parser));
       }
@@ -454,17 +497,21 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
   Function *func = new Function(wrapper_name, itype, ifunc);
   _functions.push_back(func);
 
+
+//  printf(" Function Name = %s\n",ifunc.get_name().c_str());
+
   // Now get all the valid FunctionRemaps for the function.
-  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) 
+  {
     InterrogateFunction::Instances::const_iterator ii;
-    for (ii = ifunc._instances->begin();
-         ii != ifunc._instances->end();
-         ++ii) {
+    for (ii = ifunc._instances->begin();ii != ifunc._instances->end();++ii) 
+    {
       CPPInstance *cppfunc = (*ii).second;
       CPPFunctionType *ftype = cppfunc->_type->as_function_type();
       int max_default_parameters = 0;
       
-      if (separate_overloading()) {
+      if (separate_overloading()) 
+      {
         // Count up the number of default parameters this function might
         // take.
         CPPParameterList *parameters = ftype->_parameters;
@@ -556,16 +603,18 @@ record_object(TypeIndex type_index) {
 
   Function *function;
 
-  int num_constructors = itype.number_of_constructors();
-  for (int ci = 0; ci < num_constructors; ci++) {
-    function = record_function(itype, itype.get_constructor(ci));
-    object->_constructors.push_back(function);
-  }
+      int num_constructors = itype.number_of_constructors();
+      for (int ci = 0; ci < num_constructors; ci++) 
+      {
+          function = record_function(itype, itype.get_constructor(ci));
+          object->_constructors.push_back(function);
+      }
 
-  if (itype.has_destructor() && !itype.destructor_is_inherited()) {
-    function = record_function(itype, itype.get_destructor());
-    object->_destructor = function;
-  }
+    if (itype.has_destructor() && !itype.destructor_is_inherited()) 
+    {
+        function = record_function(itype, itype.get_destructor());
+        object->_destructor = function;
+    }
   
   int num_methods = itype.number_of_methods();
   int mi;
@@ -581,11 +630,14 @@ record_object(TypeIndex type_index) {
   }
   
   int num_derivations = itype.number_of_derivations();
-  for (int di = 0; di < num_derivations; di++) {
-    if (itype.derivation_has_upcast(di)) {
+  for (int di = 0; di < num_derivations; di++) 
+  {
+    if (itype.derivation_has_upcast(di)) 
+    {
       record_function(itype, itype.derivation_get_upcast(di));
     }
-    if (itype.derivation_has_downcast(di)) {
+    if (itype.derivation_has_downcast(di)) 
+    {
       // Downcasts are methods of the base class, not the child class.
       TypeIndex base_type_index = itype.get_derivation(di);
       const InterrogateType &base_type = idb->get_type(base_type_index);
@@ -594,21 +646,25 @@ record_object(TypeIndex type_index) {
   }
 
   int num_elements = itype.number_of_elements();
-  for (int ei = 0; ei < num_elements; ei++) {
+  for (int ei = 0; ei < num_elements; ei++)
+  {
     ElementIndex element_index = itype.get_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) {
+    if (ielement.has_getter()) 
+    {
       FunctionIndex func_index = ielement.get_getter();
       record_function(itype, func_index);
     }
-    if (ielement.has_setter()) {
+    if (ielement.has_setter()) 
+    {
       FunctionIndex func_index = ielement.get_setter();
       record_function(itype, func_index);
     }
   }    
 
   int num_nested = itype.number_of_nested_types();
-  for (int ni = 0; ni < num_nested; ni++) {
+  for (int ni = 0; ni < num_nested; ni++) 
+  {
     TypeIndex nested_index = itype.get_nested_type(ni);
     record_object(nested_index);
   }
@@ -796,3 +852,4 @@ write_spam_message(ostream &out, FunctionRemap *remap) const {
   out << "\\n\";\n"
     "  }\n";
 }
+

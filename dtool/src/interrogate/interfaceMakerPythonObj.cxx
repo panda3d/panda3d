@@ -15,7 +15,7 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-
+ 
 #include "interfaceMakerPythonObj.h"
 #include "interrogateBuilder.h"
 #include "interrogate.h"
@@ -58,7 +58,7 @@ InterfaceMakerPythonObj::
 //               write_functions().
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonObj::
-write_prototypes(ostream &out) {
+write_prototypes(ostream &out,ostream *out_h) {
   Functions::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi);
@@ -66,7 +66,7 @@ write_prototypes(ostream &out) {
   }
 
   out << "\n";
-  InterfaceMakerPython::write_prototypes(out);
+  InterfaceMakerPython::write_prototypes(out,out_h);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,8 +102,8 @@ write_functions(ostream &out) {
 //               support a module file.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonObj::
-write_module(ostream &out, InterrogateModuleDef *def) {
-  InterfaceMakerPython::write_module(out, def);
+write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
+  InterfaceMakerPython::write_module(out,out_h, def);
 
   out << "static PyMethodDef python_obj_funcs[] = {\n";
 

@@ -40,7 +40,7 @@ public:
   virtual void write_includes(ostream &out);
 
 protected:
-  void test_assert(ostream &out, int indent_level) const;
+  virtual void test_assert(ostream &out, int indent_level) const;
 };
 
 #endif

@@ -47,7 +47,11 @@ write_includes(ostream &out) {
       << "  #include \"Python/Python.h\"\n"
       << "#else\n"
       << "  #include \"Python.h\"\n"
-      << "#endif\n\n";
+      << "#endif\n"
+      << "#ifdef HAVE_LONG_LONG\n"
+      << "#undef HAVE_LONG_LONG\n"
+      << "#endif \n";
+
 }
 
 ////////////////////////////////////////////////////////////////////

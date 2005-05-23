@@ -41,6 +41,7 @@ extern bool true_wrapper_names;
 extern bool build_c_wrappers;
 extern bool build_python_wrappers;
 extern bool build_python_obj_wrappers;
+extern bool build_python_native;
 extern bool track_interpreter;
 extern bool save_unique_names;
 extern bool no_database;

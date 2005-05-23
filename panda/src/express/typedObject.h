@@ -24,6 +24,7 @@
 #include "typeHandle.h"
 #include "register_type.h"
 
+#include "set"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TypedObject
@@ -120,6 +121,7 @@ PUBLISHED:
   INLINE int get_type_index() const;
   INLINE bool is_of_type(TypeHandle handle) const;
   INLINE bool is_exact_type(TypeHandle handle) const;
+  INLINE int  get_best_parent_from_Set(const std::set<int> &) const;
 
 public:
   // Derived classes should override this function to call

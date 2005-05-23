@@ -15,7 +15,7 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-
+ 
 #include "interfaceMakerC.h"
 #include "interrogateBuilder.h"
 #include "interrogate.h"
@@ -56,7 +56,7 @@ InterfaceMakerC::
 //               write_functions().
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerC::
-write_prototypes(ostream &out) {
+write_prototypes(ostream &out,ostream *out_h) {
   Functions::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi);
@@ -64,7 +64,7 @@ write_prototypes(ostream &out) {
   }
 
   out << "\n";
-  InterfaceMaker::write_prototypes(out);
+  InterfaceMaker::write_prototypes(out,out_h);
 }
 
 ////////////////////////////////////////////////////////////////////

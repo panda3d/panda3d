@@ -18,7 +18,7 @@
 
 #include "functionRemap.h"
 #include "typeManager.h"
-#include "interrogate.h"
+#include "interrogate.h" 
 #include "parameterRemap.h"
 #include "parameterRemapThis.h"
 #include "interfaceMaker.h"
@@ -32,6 +32,8 @@
 #include "interrogateType.h"
 #include "notify.h"
 
+extern bool inside_python_native;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FunctionRemap::Constructor
 //       Access: Public
@@ -43,6 +45,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
               InterfaceMaker *interface) {
   _return_type = (ParameterRemap *)NULL;
   _void_return = true;
+  _ForcedVoidReturn = false;
   _has_this = false;
   _first_true_parameter = 0;
   _num_default_parameters = num_default_parameters;
@@ -98,8 +101,7 @@ get_parameter_name(int n) const {
 //               are returning a value, or the empty string if we
 //               return nothing.
 ////////////////////////////////////////////////////////////////////
-string FunctionRemap::
-call_function(ostream &out, int indent_level, bool convert_result,
+string FunctionRemap::call_function(ostream &out, int indent_level, bool convert_result,
               const string &container, const vector_string &pexprs) const {
   string return_expr;
 
@@ -114,8 +116,10 @@ call_function(ostream &out, int indent_level, bool convert_result,
       InterfaceMaker::indent(out, indent_level)
         << "unref_delete(" << container << ");\n";
     } else {
-      InterfaceMaker::indent(out, indent_level)
-        << "delete " << container << ";\n";
+        if(inside_python_native)
+          InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self); \n";
+        else
+            InterfaceMaker::indent(out, indent_level) << " delete " << container << ";\n";
     }
 
   } else if (_type == T_typecast_method) {
@@ -342,7 +346,8 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << _expression;
     }
 
-  } else if (_type == T_setter) {
+  } else if (_type == T_setter) 
+  {
     if (!container.empty()) {
       call << "(" << container << ")->" << _expression;
     } else {
@@ -353,6 +358,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     _parameters[0]._remap->pass_parameter(call, get_parameter_expr(_first_true_parameter, pexprs));
 
   } else {
+
     if (_type == T_constructor) {
       // Constructors are called differently.
       call << _cpptype->get_local_name(&parser);
@@ -547,6 +553,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
     // If our return type isn't something we can deal with, treat the
     // function as if it returns NULL.
     _void_return = true;
+    _ForcedVoidReturn = true;
     CPPType *void_type = TypeManager::get_void_type();
     _return_type = interface->remap_parameter(_cpptype, void_type);
     assert(_return_type != (ParameterRemap *)NULL);

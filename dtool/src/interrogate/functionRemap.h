@@ -87,6 +87,7 @@ public:
   Parameters _parameters;
   ParameterRemap *_return_type;
   bool _void_return;
+  bool _ForcedVoidReturn;
   bool _has_this;
   int _first_true_parameter;
   int _num_default_parameters;
@@ -109,16 +110,10 @@ public:
   CPPFunctionType *_ftype;
 
   bool _is_valid;
-
 private:
-  string
-  get_call_str(const string &container, const vector_string &pexprs) const;
-
-  string
-  get_parameter_expr(int n, const vector_string &pexprs) const;
-
-  bool
-  setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface);
+  string get_call_str(const string &container, const vector_string &pexprs) const;
+  string get_parameter_expr(int n, const vector_string &pexprs) const;
+  bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface);
 };
 
 #endif

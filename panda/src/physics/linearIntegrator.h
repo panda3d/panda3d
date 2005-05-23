@@ -31,8 +31,9 @@
 //               forces to them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearIntegrator : public BaseIntegrator {
-public:
+PUBLISHED:
   virtual ~LinearIntegrator();
+public:
 
   void integrate(Physical *physical, LinearForceVector &forces,
                  float dt);

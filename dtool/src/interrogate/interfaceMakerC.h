@@ -37,7 +37,7 @@ public:
   InterfaceMakerC(InterrogateModuleDef *def);
   virtual ~InterfaceMakerC();
 
-  virtual void write_prototypes(ostream &out);
+  virtual void write_prototypes(ostream &out,ostream *out_h);
   virtual void write_functions(ostream &out);
 
   virtual bool synthesize_this_parameter();

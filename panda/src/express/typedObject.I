@@ -82,3 +82,15 @@ is_exact_type(TypeHandle handle) const {
 #endif
   return get_type() == handle;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedObject::is_exact_type
+//       Access: Public
+//  Description: Returns true if the current object is the indicated
+//               type exactly.
+////////////////////////////////////////////////////////////////////
+INLINE int TypedObject::
+get_best_parent_from_Set(const std::set<int> &inset) const
+{
+    return get_type().get_best_parent_from_Set(inset);
+}

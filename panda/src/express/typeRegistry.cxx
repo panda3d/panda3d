@@ -615,5 +615,42 @@ look_up(TypeHandle handle, TypedObject *object) const {
 
   return _handle_registry[handle._index];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_type_by_id
+//       Access: Private
+///////////////////////////////////////////////////////////////////
+TypeHandle  TypeRegistry::find_type_by_id(int id) const
+{
+  if (id < 0 ||id >= (int)_handle_registry.size()) 
+  {
+    express_cat->fatal()
+      << "Invalid TypeHandle index " << id
+      << "!  Is memory corrupt?\n";
+    //nassertr(false, NULL);
+    return TypeHandle::none();
+  }
+
+    return _handle_registry[id]->_handle;
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_best_parent_from_Set
+//       Access: Private
+///////////////////////////////////////////////////////////////////
+extern "C" int get_best_parent_from_Set(int id, const std::set<int> &set)
+{
+    // most common case..
+    if(set.find(id) != set.end())
+        return id;
+
+    TypeHandle th = TypeRegistry::ptr()->find_type_by_id(id);
+    if(th == TypeHandle::none())
+        return -1;
+
+    return th.get_best_parent_from_Set(set);
+}
+
+
 #endif  // NDEBUG
 

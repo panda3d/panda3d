@@ -84,6 +84,9 @@ public:
   static bool involves_unpublished(CPPType *type);
   static bool involves_protected(CPPType *type);
 
+  static bool is_ostream(CPPType *type);
+  static bool is_pointer_to_ostream(CPPType *type);
+
   static CPPType *unwrap_pointer(CPPType *type);
   static CPPType *unwrap_reference(CPPType *type);
   static CPPType *unwrap_const(CPPType *type);
@@ -107,6 +110,11 @@ public:
   static string get_function_name(CPPInstance *function);
 
   static bool has_protected_destructor(CPPType *type);
+
+
+  static bool IsExported(CPPType *type);
+  static bool IsLocal(CPPType *type);
+
 };
 
 #endif

@@ -48,6 +48,7 @@ private:
   Files _files;
 };
 
+
 #include "virtualFileList.I"
 
 #endif

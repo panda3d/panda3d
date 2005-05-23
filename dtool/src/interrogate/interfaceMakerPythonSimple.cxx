@@ -11,7 +11,7 @@
 // along with this source code; you will also find a current copy of
 // the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
-// To contact the maintainers of this program write to
+// To contact the maintainers of this program    write to
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ InterfaceMakerPythonSimple::
 //               write_functions().
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonSimple::
-write_prototypes(ostream &out) {
+write_prototypes(ostream &out,ostream *out_h) {
   Functions::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi);
@@ -64,7 +64,7 @@ write_prototypes(ostream &out) {
   }
 
   out << "\n";
-  InterfaceMakerPython::write_prototypes(out);
+  InterfaceMakerPython::write_prototypes(out,out_h);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,8 +92,8 @@ write_functions(ostream &out) {
 //               support a module file.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonSimple::
-write_module(ostream &out, InterrogateModuleDef *def) {
-  InterfaceMakerPython::write_module(out, def);
+write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
+  InterfaceMakerPython::write_module(out,out_h, def);
 
   out << "static PyMethodDef python_simple_funcs[] = {\n";
 
@@ -215,8 +215,7 @@ write_function_for(ostream &out, InterfaceMaker::Function *func) {
 //  Description: Writes out the particular function that handles a
 //               single instance of an overloaded function.
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonSimple::
-write_function_instance(ostream &out, InterfaceMaker::Function *func,
+void InterfaceMakerPythonSimple::write_function_instance(ostream &out, InterfaceMaker::Function *func,
                         FunctionRemap *remap) {
   out << "/*\n"
       << " * Python simple wrapper for\n"
@@ -435,7 +434,8 @@ pack_return_value(ostream &out, int indent_level,
   CPPType *orig_type = remap->_return_type->get_orig_type();
   CPPType *type = remap->_return_type->get_new_type();
 
-  if (remap->_return_type->new_type_is_atomic_string()) {
+  if (remap->_return_type->new_type_is_atomic_string()) 
+  {
     if (TypeManager::is_char_pointer(orig_type)) {
       indent(out, indent_level)
         << "return PyString_FromString(" << return_expr << ");\n";
@@ -446,11 +446,13 @@ pack_return_value(ostream &out, int indent_level,
         << return_expr << ".data(), " << return_expr << ".length());\n";
     }
 
-  } else if (TypeManager::is_unsigned_longlong(type)) {
+  } else if (TypeManager::is_unsigned_longlong(type)) 
+  {
     indent(out, indent_level)
       << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";
 
-  } else if (TypeManager::is_longlong(type)) {
+  } else if (TypeManager::is_longlong(type)) 
+  {
     indent(out, indent_level)
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
 

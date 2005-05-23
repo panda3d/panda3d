@@ -1,4 +1,11 @@
 
+forcetype PointerToBase< RefCountObj< pvector<LPoint2f>>>
+forcetype PointerToBase< RefCountObj< pvector<LPoint3f>>>
+
+forcetype PointerToBase< RefCountObj< pvector<LVector3f>>>
+
+forcetype PointerToBase< RefCountObj< pvector<LVecBase4f>>>
+
 renametype LPoint2f LPoint2f
 renametype LPoint3f LPoint3f
 renametype LPoint4f LPoint4f

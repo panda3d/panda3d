@@ -51,7 +51,7 @@
 // Note that in the above example, unlike an STL vector (but like a
 // C-style array), assigning a PointerToArray object from another
 // simply copies the pointer, and does not copy individual elements.
-// (Of course, reference counts are adjusted appropriately.)  If you
+// (Of course, reference counts are adjusted appropriately7.)  If you
 // actually wanted an element-by-element copy of the array, you would
 // do this:
 //

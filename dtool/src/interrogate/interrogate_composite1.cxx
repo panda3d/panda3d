@@ -8,6 +8,7 @@
 #include "interfaceMaker.cxx"
 #include "interfaceMakerC.cxx"
 #include "interfaceMakerPython.cxx"
+#include "interfaceMakerPythonNative.cxx"
 #include "interfaceMakerPythonObj.cxx"
 #include "interfaceMakerPythonSimple.cxx"
 

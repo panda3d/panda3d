@@ -229,6 +229,11 @@ EXPCL_DTOOLCONFIG TypeIndex interrogate_function_class(FunctionIndex function);
 EXPCL_DTOOLCONFIG bool interrogate_function_has_module_name(FunctionIndex function);
 EXPCL_DTOOLCONFIG const char *interrogate_function_module_name(FunctionIndex function);
 
+// This returns the library name reported for the function, if
+// available.
+EXPCL_DTOOLCONFIG bool interrogate_function_has_library_name(FunctionIndex function);
+EXPCL_DTOOLCONFIG const char *interrogate_function_library_name(FunctionIndex function);
+
 // This is true for virtual member functions.  It's not likely that
 // this will be important to the scripting language.
 EXPCL_DTOOLCONFIG bool interrogate_function_is_virtual(FunctionIndex function);
@@ -387,6 +392,11 @@ EXPCL_DTOOLCONFIG const char *interrogate_type_comment(TypeIndex type);
 // This returns the module name reported for the type, if available.
 EXPCL_DTOOLCONFIG bool interrogate_type_has_module_name(TypeIndex type);
 EXPCL_DTOOLCONFIG const char *interrogate_type_module_name(TypeIndex type);
+
+// This returns the library name reported for the type, if available.
+EXPCL_DTOOLCONFIG bool interrogate_type_has_library_name(TypeIndex type);
+EXPCL_DTOOLCONFIG const char *interrogate_type_library_name(TypeIndex type);
+
 
 // If interrogate_type_is_atomic() returns true, the type is one of
 // the basic C types enumerated in AtomicToken, above.  The type may

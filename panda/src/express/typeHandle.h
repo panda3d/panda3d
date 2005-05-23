@@ -25,6 +25,8 @@
 
 #include "config_express.h"
 
+#include "set"
+
 // The following illustrates the convention for declaring a type that
 // uses TypeHandle.  In this example, ThisThingie inherits from
 // TypedObject, which automatically supplies some type-differentiation
@@ -114,6 +116,8 @@ PUBLISHED:
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = (TypedObject *)NULL) const;
+  
+  INLINE  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;

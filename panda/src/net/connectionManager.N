@@ -1,1 +1,2 @@
 forcetype PointerTo<Connection>
+forcetype PointerToBase<Connection>

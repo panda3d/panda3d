@@ -218,6 +218,18 @@ interrogate_function_module_name(FunctionIndex function) {
 }
 
 bool
+interrogate_function_has_library_name(FunctionIndex function) {
+  return InterrogateDatabase::get_ptr()->get_function(function).has_library_name();
+}
+
+const char *
+interrogate_function_library_name(FunctionIndex function) {
+  return InterrogateDatabase::get_ptr()->get_function(function).get_library_name();
+}
+
+
+
+bool
 interrogate_function_is_virtual(FunctionIndex function) {
   return InterrogateDatabase::get_ptr()->get_function(function).is_virtual();
 }
@@ -400,6 +412,17 @@ const char *
 interrogate_type_module_name(TypeIndex type) {
   return InterrogateDatabase::get_ptr()->get_type(type).get_module_name();
 }
+
+bool
+interrogate_type_has_library_name(TypeIndex type) {
+  return InterrogateDatabase::get_ptr()->get_type(type).has_library_name();
+}
+
+const char *
+interrogate_type_library_name(TypeIndex type) {
+  return InterrogateDatabase::get_ptr()->get_type(type).get_library_name();
+}
+
 
 bool
 interrogate_type_is_atomic(TypeIndex type) {

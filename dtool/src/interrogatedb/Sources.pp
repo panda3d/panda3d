@@ -27,6 +27,6 @@
 
   #define INSTALL_HEADERS \
     interrogate_interface.h interrogate_request.h vector_int.h \
-    config_interrogatedb.h
+    config_interrogatedb.h py_panda.h
 
 #end lib_target

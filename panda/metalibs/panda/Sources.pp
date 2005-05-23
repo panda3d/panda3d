@@ -22,6 +22,7 @@
 #define LOCAL_LIBS \
   downloader express pandabase
 #define OTHER_LIBS \
+  pandaexpress:m \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m
 

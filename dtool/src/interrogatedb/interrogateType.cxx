@@ -224,3 +224,17 @@ remap_indices(const IndexRemapper &remap) {
   }
 
 }
+
+EXPCL_DTOOLCONFIG RunTimeTypeDictionary & GetRunTimeDictionary()
+{
+    static RunTimeTypeDictionary dict;
+    return dict;
+};
+
+
+EXPCL_DTOOLCONFIG RunTimeTypeList & GetRunTimeTypeList()
+{
+    static RunTimeTypeList list;
+    return list;
+};
+

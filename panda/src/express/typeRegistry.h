@@ -48,9 +48,11 @@ public:
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const string &name);
+  TypeHandle find_type_by_id(int id) const;
 
 PUBLISHED:
   TypeHandle find_type(const string &name) const;
+
 
   string get_name(TypeHandle type, TypedObject *object) const;
   INLINE bool is_derived_from(TypeHandle child, TypeHandle base,
@@ -110,6 +112,10 @@ private:
 
   static TypeRegistry *_global_pointer;
 };
+
+///////////////////////////////////////////
+// Helper function to allow for "C" interaction into the type system
+extern "C" EXPCL_PANDAEXPRESS  int get_best_parent_from_Set(int id, const std::set<int> &set);
 
 #include "typeRegistry.I"
 
