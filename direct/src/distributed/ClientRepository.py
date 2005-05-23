@@ -5,7 +5,7 @@ from MsgTypes import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 import CRCache
-import ConnectionRepository
+from direct.distributed.ConnectionRepository import ConnectionRepository
 from direct.showbase import PythonUtil
 import ParentMgr
 import RelatedObjectMgr
@@ -14,7 +14,7 @@ from ClockDelta import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
-class ClientRepository(ConnectionRepository.ConnectionRepository):
+class ClientRepository(ConnectionRepository):
     """
     This maintains a client-side connection with a Panda server.
     It currently supports several different versions of the server:
@@ -25,7 +25,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
     def __init__(self):
-        ConnectionRepository.ConnectionRepository.__init__(self, base.config)
+        ConnectionRepository.__init__(self, base.config)
 
         self.context=100000
         self.setClientDatagram(1)
@@ -36,11 +36,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # with set locationa and set interest
             self.old_setzone_interest_handle = None
 
-        # Dict of {DistributedObject ids : DistributedObjects}
-        self.doId2do = {}
-        if wantOtpServer:
-            # Dict of {parent DistributedObject id : {zoneIds : [child DistributedObject ids]}}
-            self.__doHierarchy = {}
         self.readDCFile()
         self.cache=CRCache.CRCache()
         self.serverDelta = 0
@@ -917,30 +912,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def replaceMethod(self, oldMethod, newFunction):
         return 0
 
-    def getAllOfType(self, type):
-        # Returns a list of all DistributedObjects in the repository
-        # of a particular type.
-        result = []
-        for obj in self.doId2do.values():
-            if isinstance(obj, type):
-                result.append(obj)
-        return result
-
-    def findAnyOfType(self, type):
-        # Searches the repository for any object of the given type.
-        for obj in self.doId2do.values():
-            if isinstance(obj, type):
-                return obj
-        return None
-
     def isLocalId(self,id):
         return ((id >= self.DOIDbase) and (id < self.DOIDlast))
 
     def haveCreateAuthority(self):
         return (self.DOIDlast > self.DOIDnext)
-
-    def getDoHierarchy(self):
-        return self.__doHierarchy
 
     def getWorld(self, doId):
         # Get the world node for this object

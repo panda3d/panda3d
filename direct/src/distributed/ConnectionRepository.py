@@ -2,13 +2,15 @@ from pandac.PandaModules import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.DoInterestManager import DoInterestManager
+from direct.distributed.DoCollectionManager import DoCollectionManager
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 import types
 import imp
 
-class ConnectionRepository(DoInterestManager, CConnectionRepository):
+class ConnectionRepository(
+        DoInterestManager, DoCollectionManager, CConnectionRepository):
     """
     This is a base class for things that know how to establish a
     connection (and exchange datagrams) with a gameserver.  This
@@ -20,6 +22,7 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
     def __init__(self, config):
         assert self.notify.debugCall()
         DoInterestManager.__init__(self)
+        DoCollectionManager.__init__(self)
         CConnectionRepository.__init__(self)
         self.setPythonRepository(self)
 
@@ -55,20 +58,6 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         # This is the string that is appended to symbols read from the
         # DC file.  The AIRepository will redefine this to 'AI'.
         self.dcSuffix = ''
-
-    if __debug__:
-        def printObjects(self):
-            format="%10s %10s %10s %30s %20s"
-            title=format%("parentId", "zoneId", "doId", "dclass", "name")
-            print title
-            print '-'*len(title)
-            for distObj in self.doId2do.values():
-                print format%(
-                    distObj.__dict__.get("parentId"),
-                    distObj.__dict__.get("zoneId"),
-                    distObj.__dict__.get("doId"),
-                    distObj.dclass.getName(),
-                    distObj.__dict__.get("name"))
 
     def readDCFile(self, dcFileNames = None):
         """
@@ -413,21 +402,3 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         if self.networkPlugPulled():
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
             self.setSimulatedDisconnect(0)
-
-    def doFind(self, str):
-        """
-        Returns list of distributed objects with matching str in value.
-        """
-        for value in self.doId2do.values():
-            if `value`.find(str) >= 0:
-                return value
-
-    def doFindAll(self, str):
-        """
-        Returns list of distributed objects with matching str in value.
-        """
-        matches = []
-        for value in self.doId2do.values():
-            if `value`.find(str) >= 0:
-                matches.append(value)
-        return matches
