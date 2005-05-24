@@ -879,7 +879,7 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
         out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary,METH_VARARGS,\"Used to Items Into a types (tp_dict)\"}, \n"; 
     }
 
-    out << "  { NULL, NULL ,NULL,NULL}\n" << "};\n\n";
+    out << "  { NULL, NULL ,0,NULL}\n" << "};\n\n";
 
     out << "struct LibrayDef " << moduledefdef->library_name <<"_moddef = {python_simple_funcs,BuildInstants};\n";
     if(out_h != NULL)

@@ -66,8 +66,8 @@ using namespace std;
 #define IMPORT_THIS  __declspec(dllimport) 
 #define IMPORT_FROM_SHARED_LIB __declspec(dllimport) 
 #else
-#define EXPORT_THIS DTOOL_C_LINKAGE        
-#define IMPORT_THIS DTOOL_C_LINKAGE        
+#define EXPORT_THIS 
+#define IMPORT_THIS 
 #define IMPORT_FROM_SHARED_LIB 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////
