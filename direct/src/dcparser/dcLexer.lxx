@@ -479,6 +479,16 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_CASE;
 }
 
+"default" {
+  accept();
+  return KW_DEFAULT;
+}
+
+"break" {
+  accept();
+  return KW_BREAK;
+}
+
 "int8" {
   accept();
   return KW_INT8;

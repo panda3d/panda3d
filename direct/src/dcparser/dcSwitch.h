@@ -56,8 +56,11 @@ PUBLISHED:
   DCField *get_field_by_name(int case_index, const string &name) const;
 
 public:
+  bool is_field_valid() const;
   int add_case(const string &value);
+  bool add_default();
   bool add_field(DCField *field);
+  void add_break();
 
   const DCPackerInterface *apply_switch(const char *value_data, size_t length) const;
 
@@ -77,24 +80,41 @@ public:
   typedef pvector<DCField *> Fields;
   typedef pmap<string, DCField *> FieldsByName;
 
-  class SwitchCase : public DCPackerInterface {
+  class SwitchFields : public DCPackerInterface {
   public:
-    SwitchCase(const string &name, const string &value);
-    ~SwitchCase();
+    SwitchFields(const string &name);
+    ~SwitchFields();
     virtual DCPackerInterface *get_nested_field(int n) const;
 
     bool add_field(DCField *field);
-    bool do_check_match_switch_case(const SwitchCase *other) const;
+    bool do_check_match_switch_case(const SwitchFields *other) const;
+
+    void output(ostream &out, bool brief) const;
+    void write(ostream &out, bool brief, int indent_level) const;
 
   protected:
     virtual bool do_check_match(const DCPackerInterface *other) const;
 
   public:
-    string _value;
     Fields _fields;
     FieldsByName _fields_by_name;
     bool _has_default_value;
   };
+
+  class SwitchCase {
+  public:
+    SwitchCase(const string &value, SwitchFields *fields);
+    ~SwitchCase();
+
+    bool do_check_match_switch_case(const SwitchCase *other) const;
+
+  public:
+    string _value;
+    SwitchFields *_fields;
+  };
+
+private:
+  SwitchFields *start_new_case();
 
 private:
   string _name;
@@ -102,7 +122,26 @@ private:
 
   typedef pvector<SwitchCase *> Cases;
   Cases _cases;
+  SwitchFields *_default_case;
 
+  // All SwitchFields created and used by the DCSwitch object are also
+  // stored here; this is the vector that "owns" the pointers.
+  typedef pvector<SwitchFields *> CaseFields;
+  CaseFields _case_fields;
+
+  // All nested DCField objects that have been added to one or more of
+  // the above SwitchFields are also recorded here; this is the vector
+  // that "owns" these pointers.
+  Fields _nested_fields;
+
+  // These are the SwitchFields that are currently being filled up
+  // during this stage of the parser.  There might be more than one at
+  // a time, if we have multiple cases being introduced in the middle
+  // of a series of fields (without a break statement intervening).
+  CaseFields _current_fields;
+  bool _fields_added;
+
+  // This map indexes into the _cases vector, above.
   typedef pmap<string, int> CasesByValue;
   CasesByValue _cases_by_value;
 };

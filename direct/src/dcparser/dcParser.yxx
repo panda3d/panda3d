@@ -91,6 +91,8 @@ dc_cleanup_parser() {
 %token KW_TYPEDEF 
 %token KW_SWITCH
 %token KW_CASE
+%token KW_DEFAULT
+%token KW_BREAK
 
 %token KW_INT8
 %token KW_INT16
@@ -1226,9 +1228,11 @@ switch_fields:
         empty
         | switch_fields ';'
         | switch_fields switch_case
+        | switch_fields switch_default
+        | switch_fields switch_break
         | switch_fields switch_field
 {
-  if (current_switch->get_num_cases() == 0) {
+  if (!current_switch->is_field_valid()) {
     yyerror("case declaration required before first element");
   } else if ($2 != (DCField *)NULL) {
     if (!current_switch->add_field($2)) {
@@ -1250,8 +1254,27 @@ switch_case:
   if (!current_packer->end_pack()) {
     yyerror("Invalid value for switch parameter");
   } else {
-    current_switch->add_case(current_packer->get_string());
+    int case_index = current_switch->add_case(current_packer->get_string());
+    if (case_index == -1) {
+      yyerror("Duplicate case value");
+    }
   }
+}
+	;
+
+switch_default:
+	KW_DEFAULT ':'
+{
+  if (!current_switch->add_default()) {
+    yyerror("Default case already defined");
+  }
+}
+	;
+
+switch_break:
+	KW_BREAK ';'
+{
+  current_switch->add_break();
 }
 	;
 

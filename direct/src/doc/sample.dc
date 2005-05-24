@@ -105,6 +105,7 @@ struct AvatarDNA {
     DNAColor shirtColor;
     uint8(0-25) skirtIndex;
     DNAColor skirtColor;
+    break;
 
   case 0:
     // Boy clothes
@@ -112,6 +113,7 @@ struct AvatarDNA {
     DNAColor shirtColor;
     uint8(0-15) shortsIndex;
     DNAColor shortsColor;
+    break;
   };
 
   // Nested structure references.

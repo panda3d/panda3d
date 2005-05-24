@@ -54,16 +54,18 @@ DCSwitchParameter(const DCSwitch *dswitch) :
     _fixed_byte_size = _dswitch->get_case(0)->get_fixed_byte_size();
     
     for (int i = 0; i < num_cases; i++) {
-      const DCSwitch::SwitchCase *dcase = (const DCSwitch::SwitchCase *)_dswitch->get_case(i);
-      if (!dcase->has_fixed_byte_size() || 
-          dcase->get_fixed_byte_size() != _fixed_byte_size) {
+      const DCSwitch::SwitchFields *fields = 
+        (const DCSwitch::SwitchFields *)_dswitch->get_case(i);
+                                     
+      if (!fields->has_fixed_byte_size() || 
+          fields->get_fixed_byte_size() != _fixed_byte_size) {
         
         // Nope, we have a variable byte size.
         _has_fixed_byte_size = false;
       }
 
-      _has_range_limits = _has_range_limits || dcase->has_range_limits();
-      _has_default_value = _has_default_value || dcase->_has_default_value;
+      _has_range_limits = _has_range_limits || fields->has_range_limits();
+      _has_default_value = _has_default_value || fields->_has_default_value;
     }
   }
 
