@@ -433,7 +433,7 @@ DTOOL_C_LINKAGE inline  PyObject * DTool_CreatePyInstance(void * local_this, Dto
 /////////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class_Forward(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 IMPORT_THIS    Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
-DTOOL_C_LINKAGE         PyMethodDef Dtool_Methods_##CLASS_NAME[];\
+extern         PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 DTOOL_C_LINKAGE int      Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 DTOOL_C_LINKAGE PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 DTOOL_C_LINKAGE void  * Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
@@ -444,7 +444,7 @@ DTOOL_C_LINKAGEvoid    Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 extern "C" Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
-DTOOL_C_LINKAGE         PyMethodDef Dtool_Methods_##CLASS_NAME[];\
+extern          PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 DTOOL_C_LINKAGE int      Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 DTOOL_C_LINKAGE PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 DTOOL_C_LINKAGE void  * Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
