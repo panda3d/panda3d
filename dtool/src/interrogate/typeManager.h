@@ -70,6 +70,7 @@ public:
   static bool is_const_ref_to_basic_string_char(CPPType *type);
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
+  static bool is_unsigned_integer(CPPType *type);
   static bool is_unsigned_longlong(CPPType *type);
   static bool is_longlong(CPPType *type);
   static bool is_float(CPPType *type);

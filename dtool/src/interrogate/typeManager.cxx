@@ -537,6 +537,38 @@ is_integer(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_unsigned_integer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is one of the
+//               basic integer types, but only the unsigned varieties.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_unsigned_integer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_unsigned_integer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return
+          ((simple_type->_type == CPPSimpleType::T_bool ||
+            simple_type->_type == CPPSimpleType::T_char ||
+            simple_type->_type == CPPSimpleType::T_int) &&
+           (simple_type->_flags & CPPSimpleType::F_unsigned) != 0);
+      }
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_unsigned_longlong
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is an unsigned
