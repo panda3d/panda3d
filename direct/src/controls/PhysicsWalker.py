@@ -221,7 +221,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         physicsActor=NodePath(self.actorNode)
         avatarNodePath.reparentTo(physicsActor)
         avatarNodePath.assign(physicsActor)
-        self.phys=PhysicsManager.PhysicsManager()
+        self.phys=PhysicsManager()
 
         fn=ForceNode("gravity")
         fnp=NodePath(fn)

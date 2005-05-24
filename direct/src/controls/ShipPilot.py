@@ -233,7 +233,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         self.takedownPhysics()
         self.nodes = []
-        self.phys=PhysicsManager.PhysicsManager()
+        self.phys=PhysicsManager()
 
         if 0:
             # Connect to Physics Manager:
