@@ -13,6 +13,7 @@
 ########################################################################
 
 import sys,os,time,stat,string,re,getopt,cPickle
+from glob import glob
 
 ########################################################################
 ##
@@ -30,7 +31,7 @@ FileDateCache = {}
 
 def filedate(path):
     global FileDateCache
-    if (FileDateCache.has_key(path)):
+    if FileDateCache.has_key(path):
         return FileDateCache[path]
     try: date = os.path.getmtime(path)
     except: date = 0
@@ -44,7 +45,7 @@ def updatefiledate(path):
     FileDateCache[path] = date
 
 def youngest(files):
-    if (type(files) == str):
+    if type(files) == str:
         source = filedate(files)
         if (source==0):
             sys.exit("Error: source file not readable: "+files)
@@ -56,17 +57,17 @@ def youngest(files):
     return result
 
 def older(file,others):
-    return (filedate(file)<youngest(others))
+    return filedate(file)<youngest(others)
 
 def xpaths(prefix,base,suffix):
-    if (type(base) == str):
+    if type(base) == str:
         return prefix + base + suffix
     result = []
     for x in base:
         result.append(xpaths(prefix,x,suffix))
     return result
 
-if (sys.platform == "win32"):
+if sys.platform == "win32":
     import _winreg
     def GetRegistryKey(path, subkey):
         k1=0
@@ -79,27 +80,37 @@ if (sys.platform == "win32"):
         return k1
 
 def oslocalcmd(cd, cmd):
-    if (cd != "."):
-        print "cd "+cd+" ; "+cmd
+    if VERBOSE:
+        if cd != ".":
+            print "( cd "+cd+"; "+cmd+" )"
+        else:
+            print cmd
+    if cd != ".":
         base=os.getcwd()
         os.chdir(cd)
-    else:
-        print cmd
     sys.stdout.flush()
-    if (sys.platform == "win32"):
+    if sys.platform == "win32":
         exe = cmd.split()[0]
-        if (os.path.isfile(exe)==0):
+        if os.path.isfile(exe)==0:
             for i in os.environ["PATH"].split(";"):
                 if os.path.isfile(os.path.join(i, exe)):
                     exe = os.path.join(i, exe)
                     break
-            if (os.path.isfile(exe)==0):
+            if os.path.isfile(exe)==0:
                 sys.exit("Cannot find "+exe+" on search path")
         res = os.spawnl(os.P_WAIT, exe, cmd)
-    else: res = os.system(cmd)
-    if (res != 0):
-        sys.exit(1)
-    if (cd != "."):
+    else:
+        res = os.system(cmd)
+    if res != 0:
+        if not VERBOSE:
+            print "\n------------- Command Failed ---------------"
+            if cd != ".":
+                print "( cd "+cd+"; "+cmd+" )"
+            else:
+                print cmd
+            print "--------------------------------------------"
+        sys.exit(res)
+    if cd != ".":
         os.chdir(base)
 
 def oscmd(cmd):
@@ -196,6 +207,14 @@ DIRECTXSDK = None
 MAYASDK = {}
 MAXSDK = {}
 MAXSDKCS = {}
+
+try:
+    # If there is a makepandaPreferences.py, import it:
+    from makepandaPreferences import *
+except ImportError:
+    # If it's not there, no problem:
+    pass
+
 STARTTIME=time.time()
 
 ##########################################################################################
@@ -1045,9 +1064,11 @@ def ConditionalWriteFile(dest,desiredcontents):
         rfile = open(dest, 'rb')
         contents = rfile.read(-1)
         rfile.close()
-    except: contents=0
-    if (contents != desiredcontents):
-        print "Regenerating file: "+dest
+    except:
+        contents=0
+    if contents != desiredcontents:
+        if VERBOSE:
+            print "Regenerating file: "+dest
         sys.stdout.flush()
         WriteFile(dest,desiredcontents)
 
@@ -1069,7 +1090,7 @@ def CopyFile(dstfile,srcfile):
     if (older(dstfile,srcfile)):
         global VERBOSE
         if VERBOSE >= 1:
-            print "Copying "+srcfile+" -> "+dstfile+"..."
+            print "Copying \"%s\" --> \"%s\""%(srcfile, dstfile)
         WriteFile(dstfile,ReadFile(srcfile))
         updatefiledate(dstfile)
     ALLTARGETS.append(dstfile)
@@ -1082,7 +1103,7 @@ def CopyFile(dstfile,srcfile):
 ##
 ########################################################################
 
-def CopyAllFiles(dstdir,srcdir,suffix=""):
+def CopyAllFiles(dstdir, srcdir, suffix=""):
     suflen = len(suffix)
     files = os.listdir(srcdir)
     for x in files:
@@ -4272,7 +4293,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
           'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj', 'gsgbase_composite1.obj',
           'libgsgbase_igate.obj', 'gsgmisc_geomIssuer.obj', 'linmath_composite1.obj',
           'linmath_composite2.obj', 'liblinmath_igate.obj',
-          'mathutil_composite1.obj', 'mathutil_composite2.obj', 'libmathutil_igate.obj', 
+          'mathutil_composite1.obj', 'mathutil_composite2.obj', 'libmathutil_igate.obj',
           'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
           'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj', 'pnmimagetypes_composite1.obj',
           'pnmimagetypes_composite2.obj', 'pnmimage_composite1.obj', 'pnmimage_composite2.obj', 'libpnmimage_igate.obj',
