@@ -53,7 +53,8 @@ class DirectSliderBar(DirectFrame):
         if kw.has_key('text'):
             textoptiondefs = (
                 ('text_pos',    (0,-0.025),          None),
-                ('text_scale',  0.1,                 None)
+                ('text_scale',  0.1,                 None),
+                ('text_align',  TextNode.ALeft,      None)
                 )
         else:
             textoptiondefs = ()
