@@ -32,9 +32,13 @@
 #include <map>
 #include <string>
 
+#ifndef NO_RUNTIME_TYPES
+
 #include "pandabase.h"
 #include "typedObject.h"
 #include "typeRegistry.h"
+
+#endif
 
 #ifdef HAVE_LONG_LONG
 #undef HAVE_LONG_LONG
@@ -51,14 +55,15 @@ using namespace std;
 // this is tempory .. untill this is glued better into the panda build system
 ///////////////////////////////////////////////////////////////////////////////////
 #ifdef __cplusplus
-#define DTOOL_C_LINKAGE 
+#define DTOOL_C_LINKAGE  extern 
+#define DTOOL_FORWARD_STATIC extern 
 #else
-#define DTOOL_C_LINKAGE 
+#define DTOOL_C_LINKAGE  extern 
 #endif
 
 #ifdef _WIN32
-#define EXPORT_THIS DTOOL_C_LINKAGE __declspec(dllexport) 
-#define IMPORT_THIS DTOOL_C_LINKAGE __declspec(dllimport) 
+#define EXPORT_THIS  __declspec(dllexport) 
+#define IMPORT_THIS  __declspec(dllimport) 
 #define IMPORT_FROM_SHARED_LIB __declspec(dllimport) 
 #else
 #define EXPORT_THIS DTOOL_C_LINKAGE        
@@ -79,14 +84,13 @@ DTOOL_C_LINKAGE   RunTimeTypeList & GetRunTimeTypeList();
 // used to stamp dtool instance.. 
 #define PY_PANDA_SIGNITURE 0xdeadbeaf
 
-DTOOL_C_LINKAGE struct Dtool_PyTypedObject;
-DTOOL_C_LINKAGE typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
-DTOOL_C_LINKAGE typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
-DTOOL_C_LINKAGE typedef  void   ( *FreeFunction  )(PyObject *);
-DTOOL_C_LINKAGE typedef  void   ( *PyModuleClassInit)(PyObject *module);
+typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
+typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
+typedef  void   ( *FreeFunction  )(PyObject *);
+typedef  void   ( *PyModuleClassInit)(PyObject *module);
 //DTOOL_C_LINKAGE inline long     DTool_HashKey(PyObject * inst);
-DTOOL_C_LINKAGE inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
-DTOOL_C_LINKAGE inline void     Dtool_Deallocate_General(PyObject * self);
+inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
+inline void     Dtool_Deallocate_General(PyObject * self);
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -129,8 +133,6 @@ struct Dtool_PyTypedObject
     // some convience functions..
     inline PyTypeObject    & As_PyTypeObject(void) { return _PyType; };
     inline PyObject        & As_PyObject(void) { return (PyObject &)_PyType; };
-
-
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -197,7 +199,7 @@ static  PyMappingMethods    Dtool_PyMappingMethods_##CLASS_NAME ={\
 	0,/*binaryfunc mp_subscript */\
 	0,/*objobjargproc mp_ass_subscript */\
 };\
-struct Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
+EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 {\
     PyObject_HEAD_INIT(NULL)\
     0,\
@@ -274,13 +276,13 @@ DTOOL_C_LINKAGE PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *a
 /// Delete functions..
 ////////////////////////////////////////////////////////////////////////
 #define Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
-DTOOL_C_LINKAGE void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 {\
 }\
 
 
 #define Define_Dtool_FreeInstance(CLASS_NAME,CNAME)\
-DTOOL_C_LINKAGE void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 {\
     if(((Dtool_PyInstDef *)self)->_ptr_to_object != NULL)\
         if(((Dtool_PyInstDef *)self)->_memory_rules)\
@@ -290,7 +292,7 @@ DTOOL_C_LINKAGE void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 }\
 
 #define Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
-DTOOL_C_LINKAGE void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 {\
     if(((Dtool_PyInstDef *)self)->_ptr_to_object != NULL)\
         if(((Dtool_PyInstDef *)self)->_memory_rules)\
@@ -433,8 +435,9 @@ DTOOL_C_LINKAGE inline  PyObject * DTool_CreatePyInstance(void * local_this, Dto
 /////////////////////////////////////////////////////////////////////////////////
 //struct         PyMethodDef Dtool_Methods_##CLASS_NAME[];
 
+/*
 #define Define_Module_Class_Forward(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
-IMPORT_THIS    Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
+EXPORT_THIS    Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
 struct         PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 DTOOL_C_LINKAGE int      Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 DTOOL_C_LINKAGE PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
@@ -442,45 +445,46 @@ DTOOL_C_LINKAGE void  * Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool
 DTOOL_C_LINKAGE void  * Dtool_DowncastInterface_##CLASS_NAME(void *self,Dtool_PyTypedObject *requested_type);\
 DTOOL_C_LINKAGE void    Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
 DTOOL_C_LINKAGEvoid    Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
-extern "C" Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
-struct          PyMethodDef Dtool_Methods_##CLASS_NAME[];\
-DTOOL_C_LINKAGE int      Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
-DTOOL_C_LINKAGE PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
-DTOOL_C_LINKAGE void  * Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
-DTOOL_C_LINKAGE void  * Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);\
-DTOOL_C_LINKAGE void    Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
-DTOOL_C_LINKAGE void    Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
+extern EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
+extern struct      PyMethodDef Dtool_Methods_##CLASS_NAME[];\
+extern int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
+extern PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
+extern void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
+extern void  *     Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);\
+extern void        Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
+extern void        Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)\
-Define_Dtool_FreeInstance(CLASS_NAME,CNAME)
+Define_Dtool_FreeInstance(CLASS_NAME,CNAME)\
+Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class_Private(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)\
-Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)
+Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
+Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_ClassRef_Private(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)\
-Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)
+Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
+Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_ClassRef(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)\
-Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)
+Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
+Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -535,6 +539,7 @@ DTOOL_C_LINKAGE inline void RegisterRuntimeClass(Dtool_PyTypedObject * otype, in
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+#ifndef NO_RUNTIME_TYPES
 DTOOL_C_LINKAGE inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type)
 {
     RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
@@ -552,13 +557,15 @@ DTOOL_C_LINKAGE inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int typ
 
     return NULL;    
 };
+#endif 
 ///////////////////////////////////////////////////////////////////////////////
 //// We need a way to runtime merge compile units into a python "Module" .. this is done with the 
 /// fallowing structors and code.. along with the support of interigate_module 
 ///////////////////////////////////////////////////////////////////////////////
-DTOOL_C_LINKAGE typedef  void   ( *ConstantFunction  )(PyObject *);
 struct LibrayDef
 {
+    typedef  void   ( *ConstantFunction  )(PyObject *);
+
     PyMethodDef *           _methods;
     ConstantFunction        _constants;
 };

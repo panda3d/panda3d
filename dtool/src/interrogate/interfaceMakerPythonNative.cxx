@@ -469,8 +469,8 @@ void InterfaceMakerPythonNative::write_prototypes(ostream &out_code,ostream *out
   {
 
       Function *func = (*fi);
-      if(!func->_itype.is_global() && isFunctionLegal(func))
-          write_prototype_for(out_code, func);
+//      if(!func->_itype.is_global() && isFunctionLegal(func))
+  //        write_prototype_for(out_code, func);
   }
 
   Objects::iterator oi;
@@ -538,14 +538,14 @@ void InterfaceMakerPythonNative::write_prototypes_class(ostream &out_code,ostrea
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) 
     {
         Function *func = (*fi);
-        write_prototype_for(out_code, func);
+       // write_prototype_for(out_code, func);
     }
 
     for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
     {
         Function *func = (*fi);
         std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
-        write_prototype_for_name(out_code, func,fname);
+        //write_prototype_for_name(out_code, func,fname);
 
     }
     write_ClasseDeclarations(out_code,out_h,obj);
@@ -858,7 +858,7 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
 
     bool force_base_functions = true;
 
-    out << "static  PyMethodDef python_simple_funcs[] = {\n";
+    out << "PyMethodDef python_simple_funcs[] = {\n";
     Functions::iterator fi;
     for (fi = _functions.begin(); fi != _functions.end(); ++fi) 
     {
@@ -1105,7 +1105,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
     out << "//********************************************************************\n";
     out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
     out << "//********************************************************************\n";
-        out << "static PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
+        out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
 
 
 
@@ -1562,7 +1562,7 @@ void InterfaceMakerPythonNative::write_function_for_name(
 
 
     Function::Remaps::const_iterator ri;
-    out1 << "/************************************\n" << " * Python type method wrapper for\n";
+    out1 << "/******************************************************************\n" << " * Python type method wrapper for\n";
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) 
     {
         FunctionRemap *remap = (*ri);
@@ -1585,7 +1585,7 @@ void InterfaceMakerPythonNative::write_function_for_name(
         }
 
     }
-    out1 << " *************************************/\n";
+    out1 << " *******************************************************************/\n";
     out << function_name << " {\n";
     if(isFunctionWithThis(func))
         out << PreProcess;
