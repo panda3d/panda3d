@@ -446,6 +446,8 @@ DTOOL_C_LINKAGE void  * Dtool_DowncastInterface_##CLASS_NAME(void *self,Dtool_Py
 DTOOL_C_LINKAGE void    Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
 DTOOL_C_LINKAGEvoid    Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
 */
+//extern void        Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
@@ -455,8 +457,7 @@ extern int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObj
 extern PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 extern void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
 extern void  *     Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);\
-extern void        Dtool_FreeInstance_##CLASS_NAME(PyObject *self);\
-extern void        Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);\
+extern void        Dtool_PyModuleClassInit_##CLASS_NAME(PyObject *module);
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\

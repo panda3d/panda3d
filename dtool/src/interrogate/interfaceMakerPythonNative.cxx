@@ -1228,7 +1228,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "//  A LocalHash(GetKey) Function for this type";
                 out << "//     " <<ClassName << "\n";
                 out << "//////////////////\n";
-                out << "extern \"C\" static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
+                out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
                 out << "{\n";
                 out << "    "<<cClassName  << " * local_this = NULL;\n";
                 out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
@@ -1248,7 +1248,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                     out << "//  A LocalHash(This Pointer) Function for this type";
                     out << "//     " <<ClassName << "\n";
                     out << "//////////////////\n";
-                    out << "extern \"C\" static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
+                    out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
                     out << "{\n";
                     out << "    "<<cClassName  << " * local_this = NULL;\n";
                     out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
@@ -1268,7 +1268,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "//  A __repr__ Function\n";
                 out << "//     " <<ClassName << "\n";
                 out << "//////////////////\n";
-                out << "extern \"C\" static PyObject *  Dtool_Repr_"<<ClassName << "(PyObject * self)\n";
+                out << "static PyObject *  Dtool_Repr_"<<ClassName << "(PyObject * self)\n";
                 out << "{\n";
                 out << "    "<<cClassName  << " * local_this = NULL;\n";
                 out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
@@ -1289,7 +1289,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "//  A __str__ Function\n";
                 out << "//     " <<ClassName << "\n";
                 out << "//////////////////\n";
-                out << "extern \"C\" static PyObject *  Dtool_Str_"<<ClassName << "(PyObject * self)\n";
+                out << "static PyObject *  Dtool_Str_"<<ClassName << "(PyObject * self)\n";
                 out << "{\n";
                 out << "    "<<cClassName  << " * local_this = NULL;\n";
                 out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
