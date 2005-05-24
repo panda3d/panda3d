@@ -64,11 +64,9 @@ using namespace std;
 #ifdef _WIN32
 #define EXPORT_THIS  __declspec(dllexport) 
 #define IMPORT_THIS  __declspec(dllimport) 
-#define IMPORT_FROM_SHARED_LIB __declspec(dllimport) 
 #else
 #define EXPORT_THIS 
-#define IMPORT_THIS 
-#define IMPORT_FROM_SHARED_LIB 
+#define IMPORT_THIS     extern
 #endif
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -76,8 +74,8 @@ struct          Dtool_PyTypedObject;
 typedef std::map< int , Dtool_PyTypedObject *>   RunTimeTypeDictionary;
 typedef std::set<int >                           RunTimeTypeList;
 
-DTOOL_C_LINKAGE   RunTimeTypeDictionary & GetRunTimeDictionary();
-DTOOL_C_LINKAGE   RunTimeTypeList & GetRunTimeTypeList();
+EXPCL_DTOOLCONFIG   RunTimeTypeDictionary & GetRunTimeDictionary();
+EXPCL_DTOOLCONFIG   RunTimeTypeList & GetRunTimeTypeList();
 
 
 //////////////////////////////////////////////////////////
@@ -540,7 +538,6 @@ DTOOL_C_LINKAGE inline void RegisterRuntimeClass(Dtool_PyTypedObject * otype, in
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef NO_RUNTIME_TYPES
 DTOOL_C_LINKAGE inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type)
 {
     RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
@@ -558,7 +555,6 @@ DTOOL_C_LINKAGE inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int typ
 
     return NULL;    
 };
-#endif 
 ///////////////////////////////////////////////////////////////////////////////
 //// We need a way to runtime merge compile units into a python "Module" .. this is done with the 
 /// fallowing structors and code.. along with the support of interigate_module 

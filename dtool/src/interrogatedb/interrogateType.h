@@ -229,8 +229,8 @@ struct Dtool_PyTypedObject;
 typedef std::map< int , Dtool_PyTypedObject *>   RunTimeTypeDictionary;
 typedef std::set<int >                           RunTimeTypeList;
 
-extern "C" EXPCL_DTOOL  RunTimeTypeDictionary & GetRunTimeDictionary();
-extern "C" EXPCL_DTOOL  RunTimeTypeList & GetRunTimeTypeList();
+EXPCL_DTOOLCONFIG  RunTimeTypeDictionary & GetRunTimeDictionary();
+EXPCL_DTOOLCONFIG  RunTimeTypeList & GetRunTimeTypeList();
 
 
 #endif

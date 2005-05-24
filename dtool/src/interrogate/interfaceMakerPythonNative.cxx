@@ -858,7 +858,7 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
 
     bool force_base_functions = true;
 
-    out << "PyMethodDef python_simple_funcs[] = {\n";
+    out << "static PyMethodDef python_simple_funcs[] = {\n";
     Functions::iterator fi;
     for (fi = _functions.begin(); fi != _functions.end(); ++fi) 
     {
