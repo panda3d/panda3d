@@ -173,14 +173,6 @@ def prettyTime(t):
     if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
     return str(seconds)+" sec"
 
-########################################################################
-##
-## MakeDirectory
-##
-## Make a directory in the build tree
-##
-########################################################################
-
 def MakeDirectory(path):
     if os.path.isdir(path): return 0
     os.mkdir(path)
@@ -201,6 +193,7 @@ PREFIX="built"
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
+GENMAN=0
 PPGAME=0
 COMPLETE=0
 THIRDPARTY="thirdparty"
@@ -208,7 +201,7 @@ VERSION="0.0.0"
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
+          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -508,8 +501,8 @@ def usage(problem):
     sys.exit(1)
 
 def parseopts(args):
-    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,PPGAME
-    global COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
+    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,GENMAN
+    global PPGAME,COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
@@ -530,6 +523,7 @@ def parseopts(args):
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--genman"): GENMAN=1
             elif (option=="--ppgame"): PPGAME=value
             elif (option=="--complete"): COMPLETE=1
             elif (option=="--everything"): OMIT=[]
@@ -613,6 +607,7 @@ if (os.path.isdir("sdks")):
     MAXSDK["MAX7"]   = "sdks/maxsdk7"
     MAYASDK["MAYA5"] = "sdks/maya5"
     MAYASDK["MAYA6"] = "sdks/maya6"
+    MAYASDK["MAYA65"] = "sdks/maya65"
 
 ########################################################################
 ##
@@ -643,10 +638,15 @@ if sys.platform == "win32" and DIRECTXSDK is None:
 ##
 ########################################################################
 
-for ver in ["MAYA5","MAYA6"]:
+MAYAVERSIONS=[("MAYA5",  "SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath"),
+              ("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
+              ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath")
+];
+
+for (ver,key) in MAYAVERSIONS:
     if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
         if (sys.platform == "win32"):
-            MAYASDK[ver]=GetRegistryKey("SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath","MAYA_INSTALL_LOCATION")
+            MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
             if (MAYASDK[ver] == 0):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
                 WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
@@ -769,6 +769,11 @@ if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
 #
 ##########################################################################################
 
+for x in PACKAGES:
+    if (OMIT.count(x)==0):
+        if (DTOOLCONFIG.has_key("HAVE_"+x)):
+            DTOOLCONFIG["HAVE_"+x] = '1'
+
 DTOOLCONFIG["HAVE_NET"] = DTOOLCONFIG["HAVE_NSPR"]
 
 if (OMIT.count("NVIDIACG")==0):
@@ -793,17 +798,6 @@ if (OPTIMIZE <= 3):
 
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
-
-##########################################################################################
-#
-# Add the package selections to DTOOLCONFIG
-#
-##########################################################################################
-
-for x in PACKAGES:
-    if (OMIT.count(x)==0):
-        if (DTOOLCONFIG.has_key("HAVE_"+x)):
-            DTOOLCONFIG["HAVE_"+x] = '1'
 
 ##########################################################################################
 #
@@ -857,6 +851,8 @@ def printStatus(header,warnings):
         print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
         print "Makepanda: PythonSDK:", PythonSDK
+        if (GENMAN): print "Makepanda: Generate API reference manual"
+        else       : print "Makepanda: Don't generate API reference manual"
         if (sys.platform == "win32"):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
@@ -881,6 +877,7 @@ MakeDirectory(PREFIX)
 MakeDirectory(PREFIX+"/bin")
 MakeDirectory(PREFIX+"/lib")
 MakeDirectory(PREFIX+"/etc")
+MakeDirectory(PREFIX+"/plugins")
 MakeDirectory(PREFIX+"/pandac")
 MakeDirectory(PREFIX+"/pandac/input")
 MakeDirectory(PREFIX+"/include")
@@ -1208,13 +1205,13 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             cmd = "cl.exe /Fo" + wobj + " /nologo /c"
             cmd = cmd + " /I" + PREFIX + "/python/include"
             if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
-            if (opts.count("MAYA5")): cmd = cmd + ' /I"' + MAYASDK["MAYA5"] + '/include"'
-            if (opts.count("MAYA6")): cmd = cmd + ' /I"' + MAYASDK["MAYA6"] + '/include"'
+            for ver in ["MAYA5","MAYA6","MAYA65"]:
+              if (opts.count(ver)): cmd = cmd + ' /I"' + MAYASDK[ver] + '/include"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if (PkgSelected(opts,max)):
                     cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
             for pkg in PACKAGES:
-                if (pkg != "MAYA5") and (pkg != "MAYA6") and PkgSelected(opts,pkg):
+                if (pkg[:4] != "MAYA") and PkgSelected(opts,pkg):
                     cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
@@ -1338,8 +1335,8 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + MAYASDK["MAYA5"] + '/include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + MAYASDK["MAYA6"] + '/include"'
+        for ver in ["MAYA5","MAYA6","MAYA65"]:
+          if ((COMPILER=="MSVC7") and opts.count(ver)): cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oslocalcmd(src, cmd)
         updatefiledate(outd)
@@ -1417,9 +1414,12 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
     if (dll==0): sys.exit("Syntax error in CompileLink directive")
 
     if (COMPILER=="MSVC7"):
-        ALLTARGETS.append(PREFIX+"/bin/"+dll)
         lib = PREFIX+"/lib/"+dll[:-4]+".lib"
-        dll = PREFIX+"/bin/"+dll
+        if ((dll[-4:] != ".exe") and (dll[-4:] != ".dll")):
+            dll = PREFIX+"/plugins/"+dll
+        else:
+            dll = PREFIX+"/bin/"+dll
+        ALLTARGETS.append(dll)
         wobj = []
         for x in obj:
             suffix = x[-4:]
@@ -1454,6 +1454,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
             if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
             if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
+            if (opts.count("WINCOMDLG")):   cmd = cmd + ' comdlg32.lib'
             if (opts.count("WINUSER")):     cmd = cmd + " user32.lib"
             if (opts.count("WINMM")):       cmd = cmd + " winmm.lib"
             if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
@@ -1494,7 +1495,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (PkgSelected(opts,"FFTW")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
-            for maya in ["MAYA5","MAYA6"]:
+            for maya in ["MAYA5","MAYA6","MAYA65"]:
                 if (PkgSelected(opts,maya)):
                     cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
                     cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMaya.lib"'
@@ -1502,6 +1503,9 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             for max in ["MAX5","MAX6","MAX7"]:
                 if PkgSelected(opts,max):
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/core.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/edmodel.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/gfx.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/geom.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/mesh.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/maxutil.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
@@ -1748,8 +1752,8 @@ CONFAUTOPRC="""
 # is found that works, unless the user specifically requests a
 # particular display type with the load-display directive.
 
-aux-display pandadx9
 aux-display pandagl
+aux-display pandadx9
 aux-display pandadx8
 aux-display pandadx7
 
@@ -1836,8 +1840,7 @@ CONFIGPRC="""
 # Uncomment one of the following lines to choose whether you should
 # run using OpenGL or DirectX rendering.
 
-#load-display pandagl
-#load-display pandadx8
+load-display pandagl
 
 # These control the placement and size of the default rendering window.
 
@@ -1871,10 +1874,13 @@ default-directnotify-level warning
 
 model-path    .
 model-path    $THIS_PRC_DIR/..
+model-path    $THIS_PRC_DIR/../models
 sound-path    .
 sound-path    $THIS_PRC_DIR/..
+sound-path    $THIS_PRC_DIR/../models
 texture-path  .
 texture-path  $THIS_PRC_DIR/..
+texture-path  $THIS_PRC_DIR/../models
 
 # This enable the automatic creation of a TK window when running
 # Direct.
@@ -4026,7 +4032,7 @@ CompileLink(dll='lwo2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/maya/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -4037,7 +4043,7 @@ for VER in ["5","6"]:
 # DIRECTORY: pandatool/src/mayaegg/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -4051,10 +4057,10 @@ for VER in ["5","6"]:
 for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
-    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINUSER", "MAXEGGDEF"]
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
     CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc', obj='maxegg'+VER+'_MaxEgg.res')
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
-    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dle', obj=[
+    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
                 'maxegg'+VER+'_composite1.obj',
                 'maxegg'+VER+'_MaxEgg.res',
                 'libeggbase.lib',
@@ -4171,7 +4177,7 @@ CompileLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-for VER in ["5","6"]:
+for VER in ["5","6","65"]:
   if (OMIT.count('MAYA'+VER)==0):
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
@@ -4203,7 +4209,7 @@ for VER in ["5","6"]:
                  'libdtool.dll',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
-    CompileLink(dll='libmayapview'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayapview'+VER+'_mayaPview.obj',
                  'libmayaegg'+VER+'.lib',
                  'libmaya'+VER+'.lib',
@@ -4221,7 +4227,7 @@ for VER in ["5","6"]:
            'pandatool/src/cvscopy']
     OPTS=['MAYA'+VER, 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-    CompileLink(dll='libmayasavepview.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayasavepview'+VER+'_mayaSavePview.obj',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
@@ -4241,7 +4247,7 @@ for VER in ["5","6"]:
                  'libpystub.dll',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
-    CompileLink(dll='mayacopy'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayacopy'+VER+'_mayaCopy.obj',
                  'libcvscopy.lib',
                  'libmaya'+VER+'.lib',
@@ -4575,29 +4581,29 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-MakeDirectory(PREFIX+"/audio")
-MakeDirectory(PREFIX+"/audio/sfx")
-MakeDirectory(PREFIX+"/icons")
-MakeDirectory(PREFIX+"/maps")
 MakeDirectory(PREFIX+"/models")
+MakeDirectory(PREFIX+"/models/audio")
+MakeDirectory(PREFIX+"/models/audio/sfx")
+MakeDirectory(PREFIX+"/models/icons")
+MakeDirectory(PREFIX+"/models/maps")
 MakeDirectory(PREFIX+"/models/misc")
 MakeDirectory(PREFIX+"/models/gui")
 
-CopyAllFiles(PREFIX+"/audio/sfx/",   "dmodels/src/audio/sfx/", ".wav")
-CopyAllFiles(PREFIX+"/icons/",       "dmodels/src/icons/",     ".gif")
+CopyAllFiles(PREFIX+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+CopyAllFiles(PREFIX+"/models/icons/",      "dmodels/src/icons/",     ".gif")
 
-CopyAllFiles(PREFIX+"/models/",     "models/",                ".egg")
-CopyAllFiles(PREFIX+"/models/",     "models/",                ".bam")
+CopyAllFiles(PREFIX+"/models/",            "models/",                ".egg")
+CopyAllFiles(PREFIX+"/models/",            "models/",                ".bam")
 
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".jpg")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".png")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgb")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgba")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".jpg")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".png")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgb")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgba")
 
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".jpg")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".png")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgb")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgba")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".png")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
 CompileBAM("../=", PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
 
@@ -4625,9 +4631,11 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
     ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
     if (sys.platform=="win32"):
-        oscmd(PREFIX+"/bin/genpycode.exe")
+        if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
+        else       : oscmd(PREFIX+"/bin/genpycode.exe")
     else:
-        oscmd(PREFIX+"/bin/genpycode")
+        if (GENMAN): oscmd(PREFIX+"/bin/genpycode -m")
+        else       : oscmd(PREFIX+"/bin/genpycode")
     updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################
@@ -4698,7 +4706,7 @@ if (sys.platform == "win32"):
             sys.exit("No such directory "+PPGAME)
         if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
             sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
-        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME+" "+VERSION, PPGAME+" "+VERSION,
+        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME+" "+VERSION,
                       PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
 
 
