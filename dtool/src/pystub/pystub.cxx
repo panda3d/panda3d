@@ -62,6 +62,24 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyUnicode_Type(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
+  EXPCL_DTOOLCONFIG int PyCFunction_New(...);
+  EXPCL_DTOOLCONFIG int PyDict_SetItemString(...);
+  EXPCL_DTOOLCONFIG int PyDict_SetItem(...);
+  EXPCL_DTOOLCONFIG int PyObject_GenericSetAttr(...);
+  EXPCL_DTOOLCONFIG int PyType_GenericAlloc(...);
+  EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
+  EXPCL_DTOOLCONFIG int _PyObject_Del(...);
+  EXPCL_DTOOLCONFIG int PyDict_New(...);
+  EXPCL_DTOOLCONFIG int PyErr_Clear(...);
+  EXPCL_DTOOLCONFIG int PyType_Ready(...);
+  EXPCL_DTOOLCONFIG int PyTuple_Type(...);
+  EXPCL_DTOOLCONFIG int PyErr_Format(...);
+  EXPCL_DTOOLCONFIG int PyTuple_Size(...);
+  EXPCL_DTOOLCONFIG int PyModule_AddIntConstant(...);
+  EXPCL_DTOOLCONFIG int PyObject_GenericGetAttr(...);
+  EXPCL_DTOOLCONFIG int PyArg_Parse(...);
+  EXPCL_DTOOLCONFIG int PyDict_Type(...);
+
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
   EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
@@ -110,6 +128,25 @@ int PyType_IsSubtype(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
+int PyCFunction_New(...) { return 0; };
+int PyDict_SetItemString(...) { return 0; };
+int PyDict_SetItem(...) { return 0; };
+int PyObject_GenericSetAttr(...) { return 0; };
+int PyType_GenericAlloc(...) { return 0; };
+int PyModule_AddObject(...) { return 0; };
+int _PyObject_Del(...) { return 0; };
+int PyDict_New(...) { return 0; };
+int PyErr_Clear(...) { return 0; };
+int PyType_Ready(...) { return 0; };
+int PyTuple_Type(...) { return 0; };
+int PyErr_Format(...) { return 0; };
+int PyTuple_Size(...) { return 0; };
+int PyModule_AddIntConstant(...) { return 0; };
+int PyObject_GenericGetAttr(...) { return 0; };
+int PyArg_Parse(...) { return 0; };
+int PyDict_Type(...) { return 0; };
+
+
 
 void *PyExc_AssertionError = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
