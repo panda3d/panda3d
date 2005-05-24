@@ -44,7 +44,7 @@ DCSwitchParameter(const DCSwitch *dswitch) :
 
   _pack_type = PT_switch;
 
-  DCParameter *key_parameter = dswitch->get_key_parameter();
+  DCField *key_parameter = dswitch->get_key_parameter();
   _has_fixed_byte_size = _has_fixed_byte_size && key_parameter->has_fixed_byte_size();
   _has_range_limits = _has_range_limits || key_parameter->has_range_limits();
   _has_default_value = _has_default_value || key_parameter->has_default_value();

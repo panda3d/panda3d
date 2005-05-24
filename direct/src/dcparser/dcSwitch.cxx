@@ -31,7 +31,7 @@
 //               destructs.
 ////////////////////////////////////////////////////////////////////
 DCSwitch::
-DCSwitch(const string &name, DCParameter *key_parameter) :
+DCSwitch(const string &name, DCField *key_parameter) :
   _name(name),
   _key_parameter(key_parameter)
 {
@@ -46,7 +46,7 @@ DCSwitch(const string &name, DCParameter *key_parameter) :
 ////////////////////////////////////////////////////////////////////
 DCSwitch::
 ~DCSwitch() {
-  nassertv(_key_parameter != (DCParameter *)NULL);
+  nassertv(_key_parameter != (DCField *)NULL);
   delete _key_parameter;
 
   Cases::iterator ci;
@@ -106,7 +106,7 @@ get_name() const {
 //               determines which one of the several cases within the
 //               switch will be used.
 ////////////////////////////////////////////////////////////////////
-DCParameter *DCSwitch::
+DCField *DCSwitch::
 get_key_parameter() const {
   return _key_parameter;
 }
@@ -231,6 +231,7 @@ int DCSwitch::
 add_case(const string &value) {
   int case_index = (int)_cases.size();
   if (!_cases_by_value.insert(CasesByValue::value_type(value, case_index)).second) {
+    add_invalid_case();
     return -1;
   }
 
@@ -238,6 +239,20 @@ add_case(const string &value) {
   SwitchCase *dcase = new SwitchCase(value, fields);
   _cases.push_back(dcase);
   return case_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::add_invalid_case
+//       Access: Public
+//  Description: Adds a new case to the switch that will never be
+//               matched.  This is only used by the parser, to handle
+//               an error condition more gracefully without bitching
+//               the parsing (which behaves differently according to
+//               whether a case has been encountered or not).
+////////////////////////////////////////////////////////////////////
+void DCSwitch::
+add_invalid_case() {
+  start_new_case();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -251,10 +266,12 @@ add_case(const string &value) {
 bool DCSwitch::
 add_default() {
   if (_default_case != (SwitchFields *)NULL) {
+    add_invalid_case();
     return false;
   }
 
-  _default_case = start_new_case();
+  SwitchFields *fields = start_new_case();
+  _default_case = fields;
   return true;
 }
 

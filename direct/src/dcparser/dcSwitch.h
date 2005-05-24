@@ -36,7 +36,7 @@ class DCField;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCSwitch : public DCDeclaration {
 public:
-  DCSwitch(const string &name, DCParameter *key_parameter);
+  DCSwitch(const string &name, DCField *key_parameter);
   virtual ~DCSwitch();
 
 PUBLISHED:
@@ -44,7 +44,7 @@ PUBLISHED:
   virtual const DCSwitch *as_switch() const;
 
   const string &get_name() const;
-  DCParameter *get_key_parameter() const;
+  DCField *get_key_parameter() const;
 
   int get_num_cases() const;
   int get_case_by_value(const string &case_value) const;
@@ -58,6 +58,7 @@ PUBLISHED:
 public:
   bool is_field_valid() const;
   int add_case(const string &value);
+  void add_invalid_case();
   bool add_default();
   bool add_field(DCField *field);
   void add_break();
@@ -118,7 +119,7 @@ private:
 
 private:
   string _name;
-  DCParameter *_key_parameter;
+  DCField *_key_parameter;
 
   typedef pvector<SwitchCase *> Cases;
   Cases _cases;

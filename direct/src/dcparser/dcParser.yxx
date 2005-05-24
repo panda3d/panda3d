@@ -158,6 +158,7 @@ dc_cleanup_parser() {
 %type <u.parameter> parameter
 %type <u.parameter> parameter_with_default
 %type <u.parameter> parameter_definition
+%type <u.field> parameter_or_atomic
 %type <str> import_identifier
 %type <str> slash_identifier
 %type <str> optional_name
@@ -471,7 +472,13 @@ atomic_field:
         optional_name '('
 {
   $$ = current_atomic;
-  current_atomic = new DCAtomicField($1, current_class);
+  if (current_class == (DCClass *)NULL) {
+    yyerror("Cannot define a method outside of a struct or class.");
+    DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
+    current_atomic = new DCAtomicField($1, temp_class);
+  } else {
+    current_atomic = new DCAtomicField($1, current_class);
+  }
 }
         parameter_list ')'
 {
@@ -583,6 +590,17 @@ parameter_with_default:
         named_parameter_with_default
         | unnamed_parameter_with_default
         ;
+
+parameter_or_atomic:
+        parameter
+{
+  $$ = $1;
+}
+        | atomic_field
+{
+  $$ = $1;
+}
+	;
 
 parameter_description:
 	atomic_field no_server_flags
@@ -1211,7 +1229,7 @@ optional_name:
 	;
 
 switch:
-	KW_SWITCH optional_name '(' parameter ')' '{'
+	KW_SWITCH optional_name '(' parameter_or_atomic ')' '{'
 {
   $$ = current_switch;
   current_switch = new DCSwitch($2, $4);
@@ -1253,6 +1271,7 @@ switch_case:
 {
   if (!current_packer->end_pack()) {
     yyerror("Invalid value for switch parameter");
+    current_switch->add_invalid_case();
   } else {
     int case_index = current_switch->add_case(current_packer->get_string());
     if (case_index == -1) {
