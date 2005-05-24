@@ -1,0 +1,2 @@
+forcetype PointerToArray< unsigned short int>
+forcetype PointerToBase<RefCountObj<pvector<unsigned short int>>>

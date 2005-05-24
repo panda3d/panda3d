@@ -1,0 +1,3 @@
+forcetype ConstPointerToArray< float >
+forcetype PointerToArray< float >
+forcetype PointerToBase< RefCountObj< pvector < float >>>
