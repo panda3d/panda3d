@@ -352,7 +352,8 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
 
   declaration_bodies << "#include <sstream>\n";
 
-  declaration_bodies << "#include \"py_panda.h\"  \n";
+  if (build_python_native  )
+    declaration_bodies << "#include \"py_panda.h\"  \n";
   declaration_bodies << "\n";
   
   IncludeFiles::const_iterator ifi;
