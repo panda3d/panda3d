@@ -3995,7 +3995,15 @@ CompileC(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1
 CompileC(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libgobj.in', outc='libgobj_igate.cxx',
             src='panda/src/gobj',  module='panda', library='libgobj', files=[
-            'boundedObject.h', 'config_gobj.h', 'drawable.h', 'geom.h', 'geomContext.h', 'geomLine.h', 'geomLinestrip.h', 'geomPoint.h', 'geomPolygon.h', 'geomQuad.h', 'geomSphere.h', 'geomSprite.h', 'geomTri.h', 'geomTrifan.h', 'geomTristrip.h', 'imageBuffer.h', 'material.h', 'materialPool.h', 'matrixLens.h', 'orthographicLens.h', 'perspectiveLens.h', 'pixelBuffer.h', 'preparedGraphicsObjects.h', 'lens.h', 'savedContext.h', 'texture.h', 'textureContext.h', 'texturePool.h', 'texCoordName.h', 'textureStage.h', 'gobj_composite1.cxx', 'gobj_composite2.cxx'])
+            'boundedObject.h', 'config_gobj.h', 'drawable.h', 'geom.h',
+            'geomContext.h', 'geomLine.h', 'geomLinestrip.h', 'geomPoint.h',
+            'geomPolygon.h', 'geomQuad.h', 'geomSphere.h', 'geomSprite.h',
+            'geomTri.h', 'geomTrifan.h', 'geomTristrip.h', 'imageBuffer.h',
+            'material.h', 'materialPool.h', 'matrixLens.h', 'orthographicLens.h',
+            'perspectiveLens.h', 'pixelBuffer.h', 'preparedGraphicsObjects.h',
+            'lens.h', 'savedContext.h', 'texture.h', 'textureContext.h',
+            'texturePool.h', 'texCoordName.h', 'textureStage.h',
+            'gobj_composite1.cxx', 'gobj_composite2.cxx'])
 CompileC(ipath=IPATH, opts=OPTS, src='libgobj_igate.cxx', obj='libgobj_igate.obj')
 
 #
