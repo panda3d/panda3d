@@ -13,7 +13,6 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-
 #include "interfaceMakerPythonNative.h"
 #include "interrogateBuilder.h"
 #include "interrogate.h"
