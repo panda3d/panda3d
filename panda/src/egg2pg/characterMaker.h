@@ -66,7 +66,7 @@ public:
 
 private:
   CharacterJointBundle *make_bundle();
-  void build_joint_hierarchy(EggNode *egg_node, PartGroup *part);
+  void build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index);
   void parent_joint_nodes(PartGroup *part);
 
   void make_geometry(EggNode *egg_node);

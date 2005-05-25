@@ -146,7 +146,7 @@ private:
                           bool &any_hidden);
   PT(qpGeomVertexData) make_vertex_data
   (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
-   const LMatrix4d &transform, bool is_dynamic, 
+   EggNode *primitive_home, const LMatrix4d &transform, bool is_dynamic, 
    CharacterMaker *character_maker);
   void record_morph
   (qpGeomVertexArrayFormat *array_format,

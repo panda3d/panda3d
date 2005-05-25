@@ -235,7 +235,7 @@ egg_to_slider(const string &name) {
 ////////////////////////////////////////////////////////////////////
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
-  build_joint_hierarchy(_egg_root, _skeleton_root);
+  build_joint_hierarchy(_egg_root, _skeleton_root, -1);
 
   if (use_qpgeom) {
     // The new, experimental Geom system.
@@ -260,9 +260,7 @@ make_bundle() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
-build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
-  int index = -1;
-
+build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_node);
 
@@ -298,7 +296,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
 
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
-      build_joint_hierarchy((*ci), part);
+      build_joint_hierarchy((*ci), part, index);
     }
   }
 

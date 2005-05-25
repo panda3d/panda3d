@@ -635,7 +635,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     // Now convert the vertex pool to a GeomVertexData.
     nassertv(vertex_pool != (EggVertexPool *)NULL);
     PT(qpGeomVertexData) vertex_data = 
-      make_vertex_data(render_state, vertex_pool, mat,
+      make_vertex_data(render_state, vertex_pool, egg_bin, mat,
                        is_dynamic, character_maker);
     nassertv(vertex_data != (qpGeomVertexData *)NULL);
 
@@ -1989,7 +1989,8 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) EggLoader::
 make_vertex_data(const EggRenderState *render_state, 
-                 EggVertexPool *vertex_pool, const LMatrix4d &transform,
+                 EggVertexPool *vertex_pool, EggNode *primitive_home,
+                 const LMatrix4d &transform,
                  bool is_dynamic, CharacterMaker *character_maker) {
   VertexPoolTransform vpt;
   vpt._vertex_pool = vertex_pool;
@@ -2234,14 +2235,25 @@ make_vertex_data(const EggRenderState *render_state,
     if (is_dynamic) {
       // Figure out the transforms affecting this particular vertex.
       TransformBlend blend;
-      EggVertex::GroupRef::const_iterator gri;
-      for (gri = vertex->gref_begin(); gri != vertex->gref_end(); ++gri) {
-        EggGroup *egg_joint = (*gri);
-        double membership = egg_joint->get_vertex_membership(vertex);
-
-        PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
+      if (vertex->gref_size() == 0) {
+        // If the vertex has no explicit membership, it belongs right
+        // where it is.
+        PT(VertexTransform) vt = character_maker->egg_to_transform(primitive_home);
         nassertr(vt != (VertexTransform *)NULL, vertex_data);
-        blend.add_transform(vt, membership);
+        blend.add_transform(vt, 1.0f);
+
+      } else {
+        // If the vertex does have an explicit membership, ignore its
+        // parentage and assign it where it wants to be.
+        EggVertex::GroupRef::const_iterator gri;
+        for (gri = vertex->gref_begin(); gri != vertex->gref_end(); ++gri) {
+          EggGroup *egg_joint = (*gri);
+          double membership = egg_joint->get_vertex_membership(vertex);
+          
+          PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
+          nassertr(vt != (VertexTransform *)NULL, vertex_data);
+          blend.add_transform(vt, membership);
+        }
       }
       blend.normalize_weights();
 

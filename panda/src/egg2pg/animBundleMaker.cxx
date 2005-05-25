@@ -71,7 +71,7 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 ////////////////////////////////////////////////////////////////////
 AnimBundleNode *AnimBundleMaker::
 make_node() {
-  return new AnimBundleNode("", make_bundle());
+  return new AnimBundleNode(_root->get_name(), make_bundle());
 }
 
 ////////////////////////////////////////////////////////////////////
