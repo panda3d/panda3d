@@ -6401,8 +6401,19 @@ do_point_size() {
     LVector3f height(0.0f, _point_size, 1.0f);
     height = height * _projection_mat;
     float s = height[1] * _viewport_height / _point_size;
-    LVecBase3f square(0.0f, 0.0f, 1.0f / (s * s));
-    _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, square.get_data());
+    
+    if (_current_lens->is_orthographic()) {
+      // If we have an orthographic lens in effect, we don't actually
+      // apply a perspective transform: we just scale the points once,
+      // regardless of the distance from the camera.
+      LVecBase3f constant(1.0f / (s * s), 0.0f, 0.0f);
+      _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant.get_data());
+
+    } else {
+      // Otherwise, we give it a true perspective adjustment.
+      LVecBase3f square(0.0f, 0.0f, 1.0f / (s * s));
+      _glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, square.get_data());
+    }
   }
 
   report_my_gl_errors();

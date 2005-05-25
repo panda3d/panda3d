@@ -39,6 +39,7 @@ public:
 public:
   virtual PT(Lens) make_copy() const;
   virtual bool is_linear() const;
+  virtual bool is_perspective() const;
 
 protected:
   virtual void compute_projection_mat();

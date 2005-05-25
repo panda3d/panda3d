@@ -52,7 +52,7 @@ INLINE int TexMatrixAttrib::
 get_geom_rendering(int geom_rendering) const {
   if ((geom_rendering & qpGeom::GR_point_sprite) != 0) {
     if (!is_empty()) {
-      return geom_rendering |= qpGeom::GR_point_sprite_tex_matrix;
+      geom_rendering |= qpGeom::GR_point_sprite_tex_matrix;
     }
   }
 

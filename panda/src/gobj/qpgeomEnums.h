@@ -103,34 +103,37 @@ PUBLISHED:
     // If the points have a non-square aspect ratio.
     GR_point_aspect_ratio   = 0x0020,
 
+    // If the points are under a scale transform, uniform or non-uniform.
+    GR_point_scale          = 0x0040,
+
     // If the points are rotated off the orthonormal axis.
-    GR_point_rotate         = 0x0040,
+    GR_point_rotate         = 0x0080,
 
     // If the points require texture coordinates interpolated across
     // their face, to render textures as sprites.
-    GR_point_sprite         = 0x0080,
+    GR_point_sprite         = 0x0100,
 
     // If there is a texture matrix applied to the sprite's generated
     // texture coordinates.
-    GR_point_sprite_tex_matrix = 0x0100,
+    GR_point_sprite_tex_matrix = 0x0200,
 
     // The union of all the above point attributes, except GR_indexed_point.
-    GR_point_bits           = 0x01f3,
+    GR_point_bits           = 0x03f3,
 
     // If there are any of these composite types.
-    GR_triangle_strip       = 0x0200,
-    GR_triangle_fan         = 0x0400,
-    GR_line_strip           = 0x0800,
+    GR_triangle_strip       = 0x0400,
+    GR_triangle_fan         = 0x0800,
+    GR_line_strip           = 0x1000,
 
     // The union of all of the above composite types.
-    GR_composite_bits       = 0x0e00,
+    GR_composite_bits       = 0x1c00,
 
     // If the shade model requires a particular vertex for flat shading.
-    GR_flat_first_vertex    = 0x1000,
-    GR_flat_last_vertex     = 0x2000,
+    GR_flat_first_vertex    = 0x2000,
+    GR_flat_last_vertex     = 0x4000,
 
     // The union of the above shade model types.
-    GR_shade_model_bits     = 0x3000,
+    GR_shade_model_bits     = 0x6000,
   };
 
   // The shade model specifies whether the per-vertex colors and

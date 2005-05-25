@@ -46,6 +46,7 @@ public:
 public:
   virtual PT(Lens) make_copy() const;
   virtual bool is_linear() const;
+  virtual bool is_orthographic() const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

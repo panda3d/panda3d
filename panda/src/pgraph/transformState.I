@@ -289,6 +289,18 @@ has_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_identity_scale
+//       Access: Published
+//  Description: Returns true if the scale is uniform 1.0, or false if
+//               the scale has some real value.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_identity_scale() const {
+  check_components();
+  return (_flags & F_identity_scale) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::has_uniform_scale
 //       Access: Published
 //  Description: Returns true if the scale is uniform across all three
@@ -363,7 +375,6 @@ INLINE const LVecBase3f &TransformState::
 get_hpr() const {
   check_hpr();
   nassertr(!is_invalid(), _hpr);
-  //  nassertr(has_hpr(), _hpr);
   return _hpr;
 }
 
@@ -378,7 +389,6 @@ INLINE const LQuaternionf &TransformState::
 get_quat() const {
   check_quat();
   nassertr(!is_invalid(), _quat);
-  //  nassertr(has_quat(), _quat);
   return _quat;
 }
 
@@ -393,7 +403,6 @@ INLINE const LVecBase3f &TransformState::
 get_scale() const {
   check_components();
   nassertr(!is_invalid(), _scale);
-  //  nassertr(has_scale(), _scale);
   return _scale;
 }
 
@@ -435,6 +444,27 @@ get_mat() const {
   nassertr(has_mat(), LMatrix4f::ident_mat());
   check_mat();
   return _mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_geom_rendering
+//       Access: Published
+//  Description: Returns the union of the Geom::GeomRendering bits
+//               that will be required once this TransformState is
+//               applied to a geom which includes the indicated
+//               geom_rendering bits.  The RenderState's
+//               get_geom_rendering() should already have been
+//               applied.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+get_geom_rendering(int geom_rendering) const {
+  if ((geom_rendering & qpGeomEnums::GR_point_perspective) != 0) {
+    if (!has_identity_scale()) {
+      geom_rendering |= qpGeomEnums::GR_point_scale;
+    }
+  }
+
+  return geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -582,16 +612,20 @@ check_mat() const {
 //     Function: TransformState::check_uniform_scale
 //       Access: Private
 //  Description: Should be called immediately after _scale (and
-//               F_has_components) is set, this checks for a uniform
-//               scale (as well as a non-zero shear) and sets the bit
-//               appropriately.
+//               F_has_components) is set, this checks for a
+//               identity and/or uniform scale (as well as a non-zero
+//               shear) and sets the bit appropriately.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 check_uniform_scale() {
   if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) && 
       IS_NEARLY_EQUAL(_scale[0], _scale[2])) {
     _flags |= F_uniform_scale;
+    if (IS_NEARLY_EQUAL(_scale[0], 1.0f)) {
+      _flags |= F_identity_scale;
+    }
   }
+
   if (!_shear.almost_equal(LVecBase3f::zero())) {
     _flags |= F_has_nonzero_shear;
   }

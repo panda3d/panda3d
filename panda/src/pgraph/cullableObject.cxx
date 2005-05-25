@@ -52,7 +52,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       _munged_data = qpgeom->get_vertex_data();
 
-      int geom_rendering = _state->get_geom_rendering(qpgeom->get_geom_rendering());
+      int geom_rendering = qpgeom->get_geom_rendering();
+      geom_rendering = _state->get_geom_rendering(geom_rendering);
+      geom_rendering = _transform->get_geom_rendering(geom_rendering);
 
       GraphicsStateGuardianBase *gsg = traverser->get_gsg();
       int gsg_bits = gsg->get_supported_geom_rendering();
@@ -331,17 +333,20 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
       float scale_y = point_size;
       if (perspective) {
-        // Perspective-sized points.  Here point_size is a width in 3-d
-        // units.  To arrange that, we need to figure out the appropriate
-        // scaling factor based on the current viewport and projection
-        // matrix.
-        LVector3f height(0.0f, point_size, 1.0f);
+        // Perspective-sized points.  Here point_size is the point's
+        // height in 3-d units.  To arrange that, we need to figure
+        // out the appropriate scaling factor based on the current
+        // viewport and projection matrix.
+        float scale = _transform->get_scale()[1];
+        LVector3f height(0.0f, point_size * scale, scale);
         height = height * projection;
         scale_y = height[1] * viewport_height;
 
         // We should then divide the radius by the distance from the
         // camera plane, to emulate the glPointParameters() behavior.
-        scale_y /= gsg->compute_distance_to(eye);
+        if (!lens->is_orthographic()) {
+          scale_y /= gsg->compute_distance_to(eye);
+        }
       }
       
       // Also factor in the homogeneous scale for being in clip

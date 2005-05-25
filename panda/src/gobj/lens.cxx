@@ -863,6 +863,30 @@ is_linear() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::is_perspective
+//       Access: Published, Virtual
+//  Description: Returns true if the lens represents a perspective
+//               projection (i.e. it is a PerspectiveLens), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool Lens::
+is_perspective() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::is_orthographic
+//       Access: Published, Virtual
+//  Description: Returns true if the lens represents a orthographic
+//               projection (i.e. it is a OrthographicLens), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool Lens::
+is_orthographic() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::make_geometry
 //       Access: Published, Virtual
 //  Description: Allocates and returns a new Geom that can be rendered
@@ -1274,7 +1298,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 //               set_view_vector().
 //
 //               For all linear lenses, including perspective and
-//               ortographic lenses, all points on the film compute
+//               orthographic lenses, all points on the film compute
 //               this same vector (the far plane is a flat plane, so
 //               the normal is the same everywhere).  For curved
 //               lenses like fisheye and cylindrical lenses, different

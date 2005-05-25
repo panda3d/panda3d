@@ -46,6 +46,18 @@ is_linear() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OrthographicLens::is_orthographic
+//       Access: Published, Virtual
+//  Description: Returns true if the lens represents a orthographic
+//               projection (i.e. it is a OrthographicLens), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool OrthographicLens::
+is_orthographic() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OrthographicLens::write
 //       Access: Public, Virtual
 //  Description: 
@@ -103,7 +115,7 @@ compute_projection_mat() {
 
   default:
     gobj_cat.error()
-      << "Invalid coordinate system " << (int)cs << " in PerspectiveLens!\n";
+      << "Invalid coordinate system " << (int)cs << " in OrthographicLens!\n";
     canonical = LMatrix4f::ident_mat();
   }
 

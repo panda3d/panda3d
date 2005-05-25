@@ -45,6 +45,18 @@ is_linear() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PerspectiveLens::is_perspective
+//       Access: Published, Virtual
+//  Description: Returns true if the lens represents a perspective
+//               projection (i.e. it is a PerspectiveLens), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PerspectiveLens::
+is_perspective() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PerspectiveLens::compute_projection_mat
 //       Access: Protected, Virtual
 //  Description: Computes the complete transformation matrix from 3-d

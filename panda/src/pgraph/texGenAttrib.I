@@ -55,7 +55,7 @@ INLINE int TexGenAttrib::
 get_geom_rendering(int geom_rendering) const {
   if ((geom_rendering & qpGeom::GR_point) != 0) {
     if (_num_point_sprites > 0) {
-      return geom_rendering |= qpGeom::GR_point_sprite;
+      geom_rendering |= qpGeom::GR_point_sprite;
     }
   }
 

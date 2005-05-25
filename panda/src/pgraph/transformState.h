@@ -28,6 +28,7 @@
 #include "event.h"
 #include "updateSeq.h"
 #include "pStatCollector.h"
+#include "qpgeomEnums.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -106,6 +107,7 @@ PUBLISHED:
   INLINE bool has_hpr() const;
   INLINE bool has_quat() const;
   INLINE bool has_scale() const;
+  INLINE bool has_identity_scale() const;
   INLINE bool has_uniform_scale() const;
   INLINE bool has_shear() const;
   INLINE bool has_nonzero_shear() const;
@@ -126,6 +128,8 @@ PUBLISHED:
 
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
+
+  INLINE int get_geom_rendering(int geom_rendering) const;
 
   int unref() const;
 
@@ -246,7 +250,8 @@ private:
     F_hpr_given          = 0x0400,
     F_hpr_known          = 0x0800,  // set if _hpr is defined
     F_uniform_scale      = 0x1000,
-    F_has_nonzero_shear  = 0x2000,
+    F_identity_scale     = 0x2000,
+    F_has_nonzero_shear  = 0x4000,
     F_is_destructing     = 0x8000,
   };
   LVecBase3f _pos, _hpr, _scale, _shear;
