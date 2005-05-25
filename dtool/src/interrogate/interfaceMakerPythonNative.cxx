@@ -441,6 +441,7 @@ void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_le
 {
     if(inplace == true)
     {
+        indent(out, indent_level)<<"Py_INCREF(self);\n";
         indent(out, indent_level)<<"return self;\n";
     }
     else
