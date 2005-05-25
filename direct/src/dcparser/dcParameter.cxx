@@ -232,6 +232,7 @@ write_instance(ostream &out, bool brief, int indent_level,
                const string &postname) const {
   indent(out, indent_level);
   output_instance(out, brief, prename, name, postname);
+  output_flags(out);
   out << ";";
   if (!brief && _number >= 0) {
     out << "  // field " << _number;
