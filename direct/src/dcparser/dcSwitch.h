@@ -49,6 +49,7 @@ PUBLISHED:
   int get_num_cases() const;
   int get_case_by_value(const string &case_value) const;
   DCPackerInterface *get_case(int n) const;
+  DCPackerInterface *get_default_case() const;
 
   string get_value(int case_index) const;
   int get_num_fields(int case_index) const;

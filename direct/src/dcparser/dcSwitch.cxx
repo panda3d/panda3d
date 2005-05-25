@@ -153,6 +153,17 @@ get_case(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::get_default_case
+//       Access: Published
+//  Description: Returns the DCPackerInterface that packs the default
+//               case, or NULL if there is no default case.
+////////////////////////////////////////////////////////////////////
+DCPackerInterface *DCSwitch::
+get_default_case() const {
+  return _default_case;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::get_value
 //       Access: Published
 //  Description: Returns the packed value associated with the

@@ -52,7 +52,8 @@ DCSwitchParameter(const DCSwitch *dswitch) :
   int num_cases = _dswitch->get_num_cases();
   if (num_cases > 0) {
     _fixed_byte_size = _dswitch->get_case(0)->get_fixed_byte_size();
-    
+
+    // Consider each case for fixed size, etc.
     for (int i = 0; i < num_cases; i++) {
       const DCSwitch::SwitchFields *fields = 
         (const DCSwitch::SwitchFields *)_dswitch->get_case(i);
@@ -69,7 +70,18 @@ DCSwitchParameter(const DCSwitch *dswitch) :
     }
   }
 
-  _fixed_byte_size += key_parameter->get_fixed_byte_size();
+  // Also consider the default case, if there is one.
+  const DCSwitch::SwitchFields *fields = 
+    (DCSwitch::SwitchFields *)_dswitch->get_default_case();
+  if (fields != (DCSwitch::SwitchFields *)NULL) {
+    if (!fields->has_fixed_byte_size() || 
+        fields->get_fixed_byte_size() != _fixed_byte_size) {
+      _has_fixed_byte_size = false;
+    }
+    
+    _has_range_limits = _has_range_limits || fields->has_range_limits();
+    _has_default_value = _has_default_value || fields->_has_default_value;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
