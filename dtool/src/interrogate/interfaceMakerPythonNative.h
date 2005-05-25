@@ -68,13 +68,13 @@ private:
     void write_function_for_name(ostream &out, Function *func, const std::string &name, const std::string &PreProcess, const std::string &ClassName);
     void write_function_for_top(ostream &out, Function *func, const std::string &PreProcess);
     void write_function_instance(ostream &out, Function *func,
-        FunctionRemap *remap , string &expected_params, int indent_level, bool errors_fatal, ostream &forwarddecl, const std::string &functionnamestr ) ;
+        FunctionRemap *remap , string &expected_params, int indent_level, bool errors_fatal, ostream &forwarddecl, const std::string &functionnamestr, bool inplace ) ;
 
     void write_function_forset(ostream &out, InterfaceMaker::Function *func,
-        std::set< FunctionRemap *> &remaps, string &expected_params, int indent_level , ostream &forwarddecl,const std::string &functionname) ;
+        std::set< FunctionRemap *> &remaps, string &expected_params, int indent_level , ostream &forwarddecl,const std::string &functionname, bool inplace) ;
 
     void pack_return_value(ostream &out, int indent_level,
-        FunctionRemap *remap, std::string return_expr ,  ostream &forwarddecl);
+        FunctionRemap *remap, std::string return_expr ,  ostream &forwarddecl, bool in_place);
 
     void pack_return_value_tnit(ostream &out, int indent_level,
         FunctionRemap *remap, string return_expr) ;
@@ -106,7 +106,7 @@ public:
     void   InterfaceMakerPythonNative::GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed = "", bool downcastposible = true);
     bool   DoesInheritFromIsClass( const CPPStructType * inclass, const std::string &name);
     bool   IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
-    void WriteCreateInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype);
+    void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace);
     bool HasAGetKeyFunction(const InterrogateType &itype_class);
     bool NeedsAStrFunction(const InterrogateType &itype_class);
     bool NeedsAReprFunction(const InterrogateType &itype_class);

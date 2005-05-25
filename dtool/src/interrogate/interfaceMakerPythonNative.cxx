@@ -56,6 +56,12 @@ struct RenameSet
     char    * _to;
     int      function_type;
 };
+struct FlagSet
+{
+    char    * _to;
+    int      function_type;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet methodRenameDictionary[] = {
     "operator=="  , "eq",                   0,
@@ -83,22 +89,38 @@ RenameSet methodRenameDictionary[] = {
     "operator-"   , "__sub__",              0,
     "operator*"   , "__mul__",              0,
     "operator/"   , "__div__",              0,
-    "operator+="  , "__iadd__",             0,
-    "operator-="  , "__isub__",             0,
-    "operator*="  , "__imul__",             0,
-    "operator/="  , "__idiv__",             0,
+    "operator+="  , "__iadd__",             1,
+    "operator-="  , "__isub__",             1,
+    "operator*="  , "__imul__",             1,
+    "operator/="  , "__idiv__",             1,
     "operator,"   , "concatenate",          0,
-    "operator|="  , "__ior__",              0,
-    "operator&="  , "__iand__",             0,
-    "operator^="  , "__ixor__",             0,
+    "operator|="  , "__ior__",              1,
+    "operator&="  , "__iand__",             1,
+    "operator^="  , "__ixor__",             1,
     "operator~="  , "bitwiseNotEqual",      0,
     "operator->"  , "dereference",          0,
-    "operator<<=" , "__ilshift__",          0,
-    "operator>>=" , "__irshift__",          0,
+    "operator<<=" , "__ilshift__",          1,
+    "operator>>=" , "__irshift__",          1,
     "print"       , "Cprint",               0,
     "CInterval.setT" , "_priv__cSetT",      0,
     NULL,NULL,-1
     };
+
+char *  InPlaceSet[] = {
+     "__iadd__",            
+     "__isub__",            
+     "__imul__",            
+     "__idiv__",            
+     "__ior__",             
+     "__iand__",            
+     "__ixor__",            
+     "__ilshift__",         
+     "__irshift__",         
+    NULL,
+    };
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet classRenameDictionary[] = {
     "Loader"                    , "PandaLoader",0,
@@ -227,6 +249,7 @@ std::string  classNameFromCppName(const std::string &cppName)
     //# Note we do not have to check for keywords because class name are capitalized
     return className;
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 std::string nonClassNameFromCppName(const std::string &cppName_in)
@@ -355,6 +378,18 @@ std::string make_safe_name(const std::string & name)
 	return result;
 }
 
+bool isInplaceFunction(const std::string &cppName)
+{
+    std::string wname = methodNameFromCppName(cppName,"");
+    printf("  %s\n",wname.c_str());
+
+    for(int x = 0; InPlaceSet[x] != NULL; x++)
+        if(InPlaceSet[x] == wname)
+            return true;
+
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void   InterfaceMakerPythonNative::GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed, bool downcastposible)
@@ -400,29 +435,37 @@ void   InterfaceMakerPythonNative::GetValideChildClasses( std::map< std::string 
     }  
 }
 ///////////////////////////////////////////////////////////////////////////////
-//  Function : WriteCreateInstance
+//  Function : WriteReturnInstance
 //
 ///////////////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::WriteCreateInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag, const std::string &class_name, CPPType *ctype)
+void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag, const std::string &class_name, CPPType *ctype, bool inplace)
 {
-    indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
-    indent(out, indent_level)<<"{\n";
-    indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
-    indent(out, indent_level)<<"    return Py_None;\n";
-    indent(out, indent_level)<<"}\n";
-
-    if(IsPandaTypedObject(ctype->as_struct_type()))
+    if(inplace == true)
     {
-        std::string typestr = "((TypedObject *)" + return_expr + ")->get_type_index()";
-
-        indent(out, indent_level)<<"return DTool_CreatePyInstanceTyped((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<< ows_memory_flag<<","<<typestr<<");\n";
-
+        indent(out, indent_level)<<"return self;\n";
     }
     else
     {
-        //    indent(out, indent_level)<< "if(" << return_expr <<"!= NULL)\n";
-        indent(out, indent_level)
-            <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<<ows_memory_flag<<");\n";
+
+        indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+        indent(out, indent_level)<<"{\n";
+        indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+        indent(out, indent_level)<<"    return Py_None;\n";
+        indent(out, indent_level)<<"}\n";
+
+        if(IsPandaTypedObject(ctype->as_struct_type()))
+        {
+            std::string typestr = "((TypedObject *)" + return_expr + ")->get_type_index()";
+
+            indent(out, indent_level)<<"return DTool_CreatePyInstanceTyped((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<< ows_memory_flag<<","<<typestr<<");\n";
+
+        }
+        else
+        {
+            //    indent(out, indent_level)<< "if(" << return_expr <<"!= NULL)\n";
+            indent(out, indent_level)
+                <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<<ows_memory_flag<<");\n";
+        }
     }
 }
 ////////////////////////////////////////////////////////////////////
@@ -1538,7 +1581,6 @@ void InterfaceMakerPythonNative::write_function_for_top(ostream &out, InterfaceM
 {
     std::string fname =     "PyObject *"+func->_name+"(PyObject *self, PyObject *args)";
 
-
     write_function_for_name(out,func,fname,PreProcess,"");
 }
 ////////////////////////////////////////////////////////////////////
@@ -1591,6 +1633,8 @@ void InterfaceMakerPythonNative::write_function_for_name(
         out << PreProcess;
 
 
+    bool is_inplace = isInplaceFunction(func->_ifunc.get_name());
+
     if(MapSets.empty())
         return;
 
@@ -1626,7 +1670,7 @@ void InterfaceMakerPythonNative::write_function_for_name(
             indent(out,4) << "case(" << mii->first << "):\n";
             indent(out,8) << "{\n";
 
-            write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name);
+            write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
             if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
                 constructor = true;
 
@@ -1663,7 +1707,7 @@ void InterfaceMakerPythonNative::write_function_for_name(
         bool constructor = false;
         for(mii = MapSets.begin(); mii != MapSets.end(); mii ++)
         {
-            write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name);
+            write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
             if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
                 constructor = true;
        }
@@ -1786,7 +1830,7 @@ std::vector< FunctionRemap * >  SortFunctionSet(std::set< FunctionRemap *> &rema
 //  A set is defined as all  rempas that have the same number of paramaters..
 ///////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMaker::Function *func,
-                                                       std::set< FunctionRemap *> &remapsin, string &expected_params, int indent_level,ostream &forward_decl, const std::string &functionname)
+                                                       std::set< FunctionRemap *> &remapsin, string &expected_params, int indent_level,ostream &forward_decl, const std::string &functionname, bool is_inplace)
 {
 
     if(remapsin.size() > 1)
@@ -1804,7 +1848,7 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
                  indent(out,indent_level)<< "{ // -2 " ;
                  remap->write_orig_prototype(out, 0); out << "\n" ;
 
-                 write_function_instance(out, func, remap,expected_params,indent_level,false,forward_decl,functionname);
+                 write_function_instance(out, func, remap,expected_params,indent_level,false,forward_decl,functionname, is_inplace);
 
                  indent(out,indent_level+4)<< "PyErr_Clear(); \n";
                  indent(out,indent_level)<< "}\n\n";            
@@ -1822,7 +1866,7 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
 
              indent(out,indent_level)<< "// 1-" ;remap->write_orig_prototype(out, 0); out << "\n" ;
 //             indent(out,indent_level)<< "do{\n";
-             write_function_instance(out, func, remap,expected_params,indent_level,true,forward_decl,functionname);
+             write_function_instance(out, func, remap,expected_params,indent_level,true,forward_decl,functionname, is_inplace);
   //           indent(out,indent_level)<< "}while(false);\n";
              }
         }
@@ -1837,7 +1881,7 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
 //               single instance of an overloaded function.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_function_instance(ostream &out, InterfaceMaker::Function *func1,
-                                                         FunctionRemap *remap, string &expected_params, int indent_level, bool errors_fatal, ostream &ForwardDeclrs, const std::string &functionnamestr) 
+                                                         FunctionRemap *remap, string &expected_params, int indent_level, bool errors_fatal, ostream &ForwardDeclrs, const std::string &functionnamestr, bool is_inplace) 
 {
   string format_specifiers;
   string parameter_list;
@@ -2071,7 +2115,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 
       return_expr = manage_return_value(out, 4, remap, "return_value");
       do_assert_init(out, extra_indent_level,isconstructor);
-      pack_return_value(out, extra_indent_level, remap, return_expr,ForwardDeclrs);
+      pack_return_value(out, extra_indent_level, remap, return_expr,ForwardDeclrs,is_inplace);
     
   }
   else 
@@ -2104,7 +2148,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 
           return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
           do_assert_init(out, extra_indent_level,isconstructor);
-          pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs);
+          pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
       }
   }
 
@@ -2125,7 +2169,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 ////////////////////////////////////////////////////////////////////
 
 void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_level,
-                                                   FunctionRemap *remap, string return_expr, ostream &ForwardDeclrs) 
+                                                   FunctionRemap *remap, string return_expr, ostream &ForwardDeclrs, bool is_inplace) 
 {
   CPPType *orig_type = remap->_return_type->get_orig_type();
   CPPType *type = remap->_return_type->get_new_type();
@@ -2190,7 +2234,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                //ForwardDeclrs << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
            }
 
-           WriteCreateInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype);
+           WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
            // indent(out, indent_level)
              //   <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
 
@@ -2231,7 +2275,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                     }
 
                     //                    ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
-                    WriteCreateInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype);
+                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
                     //indent(out, indent_level)
                     //  <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
                 }
@@ -2250,7 +2294,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                     //                    ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
                     //indent(out, indent_level)
                     //  <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
-                    WriteCreateInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype);
+                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
 
                 }
             }
@@ -2275,7 +2319,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
           }
 
           //        ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
-          WriteCreateInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype);
+          WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
 
           //indent(out, indent_level)
           //  << "return  DTool_CreatePyInstance((void *)" << return_expr  <<","<<CLASS_PREFEX <<  make_safe_name(itype.get_scoped_name()) <<","<< ows_memory_flag<< ");\n";
