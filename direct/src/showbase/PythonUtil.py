@@ -982,6 +982,7 @@ class ParamObj:
     # END PARAMSET SUBCLASS
     
     def __init__(self, *args, **kwArgs):
+        assert(issubclass(self.ParamSet, ParamObj.ParamSet))
         # If you pass in a ParamSet obj, its values will be applied to this
         # object in the constructor.
         params = None
@@ -1107,7 +1108,138 @@ class ParamObj:
     def __repr__(self):
         argStr = ''
         for param in self.ParamSet.getParams():
-            argStr += '%s=%s,' % (param, getSetter(self, param, 'get')())
+            argStr += '%s=%s,' % (param,
+                                  repr(getSetter(self, param, 'get')()))
+        return '%s(%s)' % (self.__class__.__name__, argStr)
+
+"""
+POD (Plain Ol' Data)
+
+Like ParamObj/ParamSet, but without lock/unlock/getPriorValue and without
+appliers. Similar to a C++ struct, but with auto-generated setters and
+getters.
+
+Use POD when you want the generated getters and setters of ParamObj, but
+efficiency is a concern and you don't need the bells and whistles provided
+by ParamObj.
+
+POD.__init__ *MUST* be called. You should NOT define your own data getters
+and setters. Data values may be read, set, and modified directly. You will
+see no errors if you define your own getters/setters, but there is no
+guarantee that they will be called--and they will certainly be bypassed by
+POD internally.
+
+EXAMPLE CLASSES
+===============
+Here is an example of a class heirarchy that uses POD to manage its data:
+
+class Enemy(POD):
+  DataSet = {
+    'faction': 'navy',
+    }
+
+class Sailor(Enemy):
+  DataSet = {
+    'build': HUSKY,
+    'weapon': Cutlass(scale=.9),
+    }
+
+EXAMPLE USAGE
+=============
+s = Sailor(faction='undead', build=SKINNY)
+
+# make two copies of s
+s2 = s.makeCopy()
+s3 = Sailor(s)
+
+# example sets
+s2.setWeapon(Musket())
+s3.build = TALL
+
+# example gets
+faction2 = s2.getFaction()
+faction3 = s3.faction
+"""
+class POD:
+    DataSet = {
+        # base class does not define any data items, but they would
+        # appear here as 'name': value,
+        }
+    def __init__(self, *args, **kwArgs):
+        self.__class__._compileDefaultDataSet()
+        if len(args) == 1 and len(kwArgs) == 0:
+            # extract our dataset from an existing POD instance
+            obj = args[0]
+            for name in self.getDataNames():
+                setattr(self, name, getattr(obj, name))
+        else:
+            assert len(args) == 0
+            if __debug__:
+                for arg in kwArgs.keys():
+                    assert arg in self.getDataNames()
+            for name in self.getDataNames():
+                if name in kwArgs:
+                    setattr(self, name, kwArgs[name])
+                else:
+                    setattr(self, name, self.getDefaultValue(name))
+
+    def setDefaultValues(self):
+        # set all the default data values on ourself
+        for name in self.getDataNames():
+            setattr(self, name, self.getDefaultValue(name))
+    def makeCopy(self):
+        # returns a duplicate of this object
+        return self.__class__(self)
+    def applyTo(self, obj):
+        # Apply our entire set of data to another POD
+        for name in self.getDataNames():
+            setattr(obj, name, getattr(self, name))
+    def getValue(self, name):
+        return getattr(self, name)
+
+    # CLASS METHODS
+    def getDataNames(cls):
+        # returns safely-mutable list of datum names
+        cls._compileDefaultDataSet()
+        return cls._DataSet.keys()
+    getDataNames = classmethod(getDataNames)
+    def getDefaultValue(cls, name):
+        cls._compileDefaultDataSet()
+        return cls._DataSet[name]
+    getDefaultValue = classmethod(getDefaultValue)
+    def _compileDefaultDataSet(cls):
+        if cls.__dict__.has_key('_DataSet'):
+            # we've already compiled the defaults for this class
+            return
+        # create setters & getters for this class
+        if cls.__dict__.has_key('DataSet'):
+            for name in cls.DataSet:
+                def defaultSetter(self, value, name=name):
+                    setattr(self, name, value)
+                cls.__dict__[getSetterName(name)] = defaultSetter
+                def defaultGetter(self, name=name,
+                                  default=cls.DataSet[name]):
+                    return getattr(self, name, default)
+                cls.__dict__[getSetterName(name, 'get')] = defaultGetter
+        # this dict will hold all of the aggregated default data values for
+        # this particular class, including values from its base classes
+        cls._DataSet = {}
+        bases = list(cls.__bases__)
+        # bring less-derived classes to the front
+        mostDerivedLast(bases)
+        for c in (bases + [cls]):
+            # make sure this base has its dict of data defaults
+            c._compileDefaultDataSet()
+            if c.__dict__.has_key('DataSet'):
+                # apply this class' default data values to our dict
+                cls._DataSet.update(c.DataSet)
+    _compileDefaultDataSet = classmethod(_compileDefaultDataSet)
+    # END CLASS METHODS
+
+    def __repr__(self):
+        argStr = ''
+        for name in self.getDataNames():
+            argStr += '%s=%s,' % (name, repr(getattr(self, name)))
         return '%s(%s)' % (self.__class__.__name__, argStr)
 
 def bound(value, bound1, bound2):
