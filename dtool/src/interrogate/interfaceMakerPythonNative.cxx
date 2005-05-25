@@ -381,7 +381,6 @@ std::string make_safe_name(const std::string & name)
 bool isInplaceFunction(const std::string &cppName)
 {
     std::string wname = methodNameFromCppName(cppName,"");
-    printf("  %s\n",wname.c_str());
 
     for(int x = 0; InPlaceSet[x] != NULL; x++)
         if(InPlaceSet[x] == wname)
@@ -2136,9 +2135,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       else 
       {
           CPPType *type = remap->_return_type->get_temporary_type();
-          indent(out,extra_indent_level);
-          type->output_instance(out, "return_value", &parser);
-          out << " = " << return_expr << ";\n";
+          if(!is_inplace)
+          {
+              indent(out,extra_indent_level);
+              type->output_instance(out, "return_value", &parser);
+              out << " = " << return_expr << ";\n";
+          }
           if (track_interpreter) {
               indent(out,extra_indent_level) << "in_interpreter = 1;\n";
           }
