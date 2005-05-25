@@ -331,7 +331,7 @@ output_element(ostream &out, bool brief, DCParameter *element) const {
     DCPacker packer;
     packer.set_unpack_data(element->get_default_value());
     packer.begin_unpack(element);
-    packer.unpack_and_format(out);
+    packer.unpack_and_format(out, false);
     packer.end_unpack();
   }
 }

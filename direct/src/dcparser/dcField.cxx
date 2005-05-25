@@ -199,7 +199,7 @@ format_data(const string &packed_data) {
   DCPacker packer;
   packer.set_unpack_data(packed_data);
   packer.begin_unpack(this);
-  string result = packer.unpack_and_format();
+  string result = packer.unpack_and_format(true);
   if (!packer.end_unpack()) {
     return string();
   }

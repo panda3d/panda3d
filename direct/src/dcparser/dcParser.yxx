@@ -952,6 +952,26 @@ char_or_number:
 
 
 parameter_value:
+        parameter_actual_value
+{
+  $$ = $1;
+}
+	| IDENTIFIER '='
+{
+  if ($1 != current_packer->get_current_field_name()) {
+    ostringstream strm;
+    strm << "Got '" << $1 << "', expected '" 
+         << current_packer->get_current_field_name() << "'";
+    yyerror(strm.str());
+  }
+}
+	parameter_actual_value
+{
+  $$ = $4;
+}
+	;
+
+parameter_actual_value:
 	signed_integer
 {
   current_packer->pack_int64($1);

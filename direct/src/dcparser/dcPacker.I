@@ -155,6 +155,22 @@ get_pack_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_current_field_name
+//       Access: Published
+//  Description: Returns the name of the current field, if it has a
+//               name, or the empty string if the field does not have
+//               a name or there is no current field.
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+get_current_field_name() const {
+  if (_current_field == NULL) {
+    return string();
+  } else {
+    return _current_field->get_name();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::pack_double
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
@@ -551,6 +567,18 @@ unpack_literal_value(string &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::had_parse_error
+//       Access: Published
+//  Description: Returns true if there has been an parse error
+//               since the most recent call to begin(); this can only
+//               happen if you call parse_and_pack().
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPacker::
+had_parse_error() const {
+  return _parse_error;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::had_pack_error
 //       Access: Published
 //  Description: Returns true if there has been an packing error
@@ -599,7 +627,7 @@ had_range_error() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DCPacker::
 had_error() const {
-  return _range_error || _pack_error;
+  return _range_error || _pack_error || _parse_error;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ DCPacker() {
   _owns_unpack_data = false;
   _unpack_p = 0;
   _live_catalog = NULL;
+  _parse_error = false;
   _pack_error = false;
   _range_error = false;
   _stack = NULL;
@@ -76,6 +77,7 @@ begin_pack(const DCPackerInterface *root) {
   nassertv(_mode == M_idle);
   
   _mode = M_pack;
+  _parse_error = false;
   _pack_error = false;
   _range_error = false;
 
@@ -168,6 +170,7 @@ begin_unpack(const DCPackerInterface *root) {
   nassertv(_unpack_data != NULL);
   
   _mode = M_unpack;
+  _parse_error = false;
   _pack_error = false;
   _range_error = false;
 
@@ -238,6 +241,7 @@ begin_repack(const DCPackerInterface *root) {
   nassertv(_unpack_p == 0);
   
   _mode = M_repack;
+  _parse_error = false;
   _pack_error = false;
   _range_error = false;
   _pack_data.clear();
@@ -914,7 +918,12 @@ parse_and_pack(istream &in) {
   dcyyparse();
   dc_cleanup_parser();
 
-  return (dc_error_count() == 0);
+  bool parse_error = (dc_error_count() != 0);
+  if (parse_error) {
+    _parse_error = true;
+  }
+
+  return !parse_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -925,9 +934,9 @@ parse_and_pack(istream &in) {
 //               default value), or as an input to parse_object.
 ////////////////////////////////////////////////////////////////////
 string DCPacker::
-unpack_and_format() {
+unpack_and_format(bool show_field_names) {
   ostringstream strm;
-  unpack_and_format(strm);
+  unpack_and_format(strm, show_field_names);
   return strm.str();
 }
 
@@ -939,8 +948,17 @@ unpack_and_format() {
 //               default value), or as an input to parse_object.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-unpack_and_format(ostream &out) {
+unpack_and_format(ostream &out, bool show_field_names) {
   DCPackType pack_type = get_pack_type();
+
+  if (show_field_names && !get_current_field_name().empty()) {
+    nassertv(_current_field != (DCPackerInterface *)NULL);
+    const DCField *field = _current_field->as_field();
+    if (field != (DCField *)NULL && 
+        field->as_parameter() != (DCParameter *)NULL) {
+      out << field->get_name() << " = ";
+    }
+  }
 
   switch (pack_type) {
   case PT_invalid:
@@ -995,7 +1013,7 @@ unpack_and_format(ostream &out) {
 
       push();
       while (more_nested_fields() && !had_pack_error()) {
-        unpack_and_format(out);
+        unpack_and_format(out, show_field_names);
 
         if (more_nested_fields()) {
           out << ", ";

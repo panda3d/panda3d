@@ -72,6 +72,7 @@ PUBLISHED:
   INLINE const DCPackerInterface *get_current_field() const;
   INLINE const DCSwitchParameter *get_last_switch() const;
   INLINE DCPackType get_pack_type() const;
+  INLINE string get_current_field_name() const;
 
   void push();
   void pop();
@@ -115,9 +116,10 @@ PUBLISHED:
 
   bool parse_and_pack(const string &formatted_object);
   bool parse_and_pack(istream &in);
-  string unpack_and_format();
-  void unpack_and_format(ostream &out);
+  string unpack_and_format(bool show_field_names = false);
+  void unpack_and_format(ostream &out, bool show_field_names = false);
 
+  INLINE bool had_parse_error() const;
   INLINE bool had_pack_error() const;
   INLINE bool had_range_error() const;
   INLINE bool had_error() const;
@@ -252,6 +254,7 @@ private:
   int _num_nested_fields;
   const DCSwitchParameter *_last_switch;
 
+  bool _parse_error;
   bool _pack_error;
   bool _range_error;
 };

@@ -1035,7 +1035,7 @@ write(ostream &out, bool brief, int indent_level) const {
       DCPacker packer;
       packer.set_unpack_data((*fi)->get_default_value());
       packer.begin_unpack(*fi);
-      packer.unpack_and_format(out);
+      packer.unpack_and_format(out, false);
       if (!packer.end_unpack()) {
         out << "<error>";
       }
