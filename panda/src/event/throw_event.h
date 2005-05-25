@@ -23,6 +23,7 @@
 
 #include "eventQueue.h"
 #include "pt_Event.h"
+#include "eventParameter.h"
 
 // A handful of convenience functions to throw events.
 INLINE void throw_event(const CPT_Event &event);
