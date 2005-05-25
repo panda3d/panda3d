@@ -163,7 +163,7 @@ class DoInterestManager(DirectObject.DirectObject):
         if isinstance(zoneIdList, types.ListType):
             vzl = list(zoneIdList)
             vzl.sort()
-            PythonUtil.uniqueElements(vzl)
+            uniqueElements(vzl)
             for zone in vzl:
                 datagram.addUint32(zone)
         else:
