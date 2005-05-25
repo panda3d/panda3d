@@ -116,8 +116,8 @@ PUBLISHED:
 
   bool parse_and_pack(const string &formatted_object);
   bool parse_and_pack(istream &in);
-  string unpack_and_format(bool show_field_names = false);
-  void unpack_and_format(ostream &out, bool show_field_names = false);
+  string unpack_and_format(bool show_field_names = true);
+  void unpack_and_format(ostream &out, bool show_field_names = true);
 
   INLINE bool had_parse_error() const;
   INLINE bool had_pack_error() const;
