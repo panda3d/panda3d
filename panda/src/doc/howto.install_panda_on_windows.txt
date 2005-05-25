@@ -70,26 +70,27 @@ of the world, see INSTALL.txt in this directory.
   Step 3: Install Visual C++
 *********************************************************************
 
-  - Choose whether to use Visual C++ v7.0 or v6.0
-    As of 5/19/03, it's better to use Visual C++ v7.0 
-    (which is a synonym for Visual C++ .NET)
-  
-  *** TO INSTALL VC++ 7.0 ***
+  - MS Visual C++ requires MS Internet Information Server so this must
+    be installed prior to installing MSVC.
+  - Click on Start->Settings->Control Panel
+  - Click on Add/Remove Programs
+  - On the left side of the window, select Add/Remove Windows Components
+  - Check the box next to Internet Information Services (IIS)
+  - Click the Details button
+  - Check FrontPage 2000 Server Extensions
+  - Click OK
+  - Click Next
+  - Click Finish when done
 
-  - Run P:\msvc7\vc7_setup\SETUP.EXE, or install from the MSDN 
+  - Run P:\msvs7_1\VS\SETUP.EXE, or install from the MSDN 
     'Visual Studio.NET' CD. Click on 'Windows Component Update' 
     (if it is highlighted, else click '2').  Click 'Continue' 
     (Selecting 'Do not use this machine to host web projects').  
-    You will install IE6, which will requires a reboot.  Give your 
-    cvspassword if you want it to happen automatically.   
-  
-  - After rebooting, setup should start again.  If it does not, go 
-    back and rerun it, it should remember where it left off. After 
-    installing components, you are ready to install VC7 in .NET 
-    setup Step 2. Enter this step and enter the product-key, 
-    which is stored in P:\msvc7\vc7_prodkey.txt. On the 'Select 
-    items to install page', you need uncheck things to avoid 
-    wasting gigs of extra space and install time.  
+
+  - After installing components, you are ready to install VC7 in .NET 
+    setup Step 2. Enter this step and enter "VR Studio" for the username.
+    On the 'Select items to install page', you need uncheck things to
+    avoid wasting gigs of extra space and install time.  
 
   - Uncheck everything except for:
     - Language Tools->Visual C++
@@ -100,42 +101,6 @@ of the world, see INSTALL.txt in this directory.
       update if you already have MSDN installed locally.  
       You will want to uninstall any separately-installed 
       MSDN docs if you get this.)
-
-  - Unlike VC 6.0, there is no option to add the required compiler 
-    bin\ directories to the environment path automatically. If you 
-    are building using tcsh.exe under cygwin, wait until step 7 
-    to setup the environment after your shell environment is running 
-    properly.  If you are running from the NT command line, run 
-     > C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin\vcvars32.bat
-        
----------------------------------------------------------------------
-  NOTE: 
-   There is (currently) no need to install the MS Platform SDK, 
-   since VC7 comes with an updated version of it.
----------------------------------------------------------------------
-
-  *** TO INSTALL VISUAL C++ (V6.0) ***
-
-  - Run P:\msvc-6.0\setup.exe, or install from CD. For a faster 
-    install, select custom install and uncheck everything but 
-    Visual C++, Data Access, ActiveX, and Tools
-  - On WinNT/XP/2000, you will be prompted to register environment 
-    variables for running the compiler from the command line - do it.
-  - Install MSVC Service Pack 5 by running P:\msvc-sp5\setupsp5.exe, 
-    or from CD. You may need to run P:\msvc-sp5\mdac_typ.exe first 
-    (setup will tell you if so)
-  - Install the MSDN Library documentation if this is a primary dev 
-    machine. Install from the MSDN CD.
-    To save time and disk space, choose custom install and uncheck 
-    everything but Text-Search, Index, VC++, Platform SDK, Knowledge 
-    Base, and All Other Files.
-  - Install MS Platform SDK to get updated VC libs and headers
-  - Run P:\platform-sdk\setup.exe to install the Feb 2001 Platform SDK 
-    and choose 'Install MS Platform SDK in default location.' 
-    (there may be problems with other newer versions of the Platform 
-    SDK). This should prepend the Platform SDK paths to your 
-    PATH,INCLUDE, and LIB dirs.  
-    Building libpandadx requires this step (needs DX7 headers/libs)
     
 *********************************************************************
   Step 4: Install Cygwin (v1.3.5 or above should work)
@@ -144,15 +109,15 @@ of the world, see INSTALL.txt in this directory.
   - Latest version currently is 1.5.7-1 (Jan 31 2004)
   - As of 1.3.11, cygwin seems stable enough to install from the 
     internet, go to http://cygwin.com and click on "install cygwin now"
-    - The most reliable download server is http://mirrors.rcn.net. 
-      Another server is http://sigunix.cwrv.edu. 
+  - The most reliable download server is http://mirrors.rcn.net. 
+    Another server is http://sigunix.cwrv.edu. 
   - Make sure that the following packages are selected for installation:
-      - Under Devel packages such as :  CVS, make, flex
-      - Under Interpreters : gawk, perl (see note below)
-      - Under Shells : ash, bash, sh-utils, tcsh
-      - Under Text : more (or less)
       - Under Archive : zip, unzip
-      - Under Network : openssh
+      - Under Devel packages :  bison, CVS, make, flex
+      - Under Interpreters : gawk, perl (see note below)
+      - Under Network : openssh, openssl
+      - Under Shells : ash, bash, tcsh
+      - Under Text : more (or less)
   - You can also install other programs (like vi) if you want.  
     To rotate through the possible installation options, left-click on 
     the programs of your choice.
@@ -160,10 +125,6 @@ of the world, see INSTALL.txt in this directory.
     "SKIP"):
       - emacs/xemacs, we have our own emacs (see Step 10) 
       - The Interpreter->python package 
-      - The Devel->bison package if the version is 1.30-1.34, they are
-        known to be buggy.  Version 1.28 is safe, as is version 1.35+. 
-        If 1.35+ is not available, you can install 1.28 manually, 
-        after you have a shell running (see step 9) 
       - Remove X-windows packages to make download smaller.
   - There are many subpackages that are obviously not needed 
     (e.g. Mail, Doc, Text, Games) that you can skip if you like.
@@ -224,15 +185,25 @@ of the world, see INSTALL.txt in this directory.
 
   - Add C:\Cygwin\bin to the $path environment variable in the registry 
     to avoid errors (sed: Command not found) when executing the file 
-    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup 
+    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup
+    - Note: You must be logged into an account with Administrator access
+	- Select "Start Menu->Control Panel"
+	- Select "System" icon.
+	- Select "Advanced->Environment" button.
+	- Scroll down to the Path environment variable in the System
+	  variables section, select it and click the Edit button
+	- Add "C:\cygwin\bin" to the end of the semicolon delimited list
+	- Click OK - OK - OK to exit
+    
+  - Launch the Cygwin command prompt/shell (tcsh) using the icon set up
+    in Step 4
     
   - Create a HOME directory:
       > mkdir /<home root>/<login>
-
     where <home root> can be either "usr" or "home", and <login> is
     the name you use to login to your Windows machine.
    
-    In Windows this directory will be the equivalent of:    
+    Note: In Windows this directory will be the equivalent of:    
       C:\cygwin\<home root>\<login>
 
   - Set the $HOME environment variable in the Registry:
@@ -242,7 +213,7 @@ of the world, see INSTALL.txt in this directory.
     - Select "Advanced->Environment" button.
     - Create the variable "HOME" with the value:
          "c:\cygwin\<home root>\<login>".
-    - click ok - ok - ok to exit (you must exit for the change to take 
+    - Click OK - OK - OK to exit (you must exit for the change to take 
       effect)
     - Now open a new shell so the registry is read by the shell to get 
       the changes.
@@ -344,9 +315,13 @@ of the world, see INSTALL.txt in this directory.
       > mount -s -b j:/ /j
       > mount -s -b p:/ /p
 
+    If VC7.1 is installed:
+      > mkdir /msvc71
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio .NET\ 2003 /msvc71
+
     If VC7 is installed:
       > mkdir /msvc7
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio .NET/Vc7 /msvc7
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio .NET /msvc7
 
     If VC6 is installed:
       > mkdir /msvc98 /mscommon /mspsdk
@@ -360,18 +335,8 @@ of the world, see INSTALL.txt in this directory.
       > mount -s C:/Program\ Files/Intel/Compiler60/IA32 /ia32
 
 *********************************************************************
-  Step 7:  Setup VC7 environment in shell (skip if you have VC6)
+  Step 7:  Testing VC7 environment in shell
 *********************************************************************
-
-  - Use your favorite text editor to open:
-      /p/win/install/wintools/bin/setup_msvc7.csh.  
-
-    Copy the top portion of setup_msvc7.csh (it sets PATH and other 
-    environment variables) to your .cshrc, and put 'set_msvc7' cmd 
-    from the script at the end of your .cshrc to set up the PATH 
-    properly as well as do the important 'setenv USE_COMPILER MSVC7' 
-    to tell ppremake to use VC7.  The USE_COMPILER variable can 
-    alternatively be added to your local Config.pp.
 
   - After finishing this process, make sure you are using VC7 in your
     shell by typing 'cl' at the prompt.  If you have VC7 you will see: 
@@ -379,34 +344,23 @@ of the world, see INSTALL.txt in this directory.
     Microsoft (R)32-bit C/C++ Optimizing Compiler Version 13.00.9466 for 80x86 
     Copyright (C) Microsoft Corporation 1984-2001.
 
-  - If you still have VC6, you will see something like
-
-    Microsoft (R)32-bit C/C++ Optimizing Compiler Version 12.00.8804 for 80x86
-    Copyright (C) Microsoft Corp 1984-1998. 
-
-  - If you try to build with this broken setup, the build process will 
-    get confused and compile with VC6 but try to link with the VC7 
-    libraries and you will get link errors.
-
-  - To correct this problem, check your tcsh path to make sure it has 
+  - If this does not work, check your tcsh path to make sure it has 
     the .NET dirs in it, and make sure the cygwin softlink mount 
-    point /msvc7 exists, and is not empty but points to the proper VC7 
-    directory. Doing 'ls /msvc7' should give you something like
+    point /msvc71 exists, and is not empty but points to the proper VC7 
+    directory. Doing 'ls /msvc71' should give you something like
 
-    Common7/               Visual Studio .NET Enterprise Architect - English/
-    Crystal Reports/       Visual Studio SDKs/
-    EnterpriseFrameworks/  contents.htm
-    FrameworkSDK/          readme.htm
-    Msdn/                  redist.txt
-    Setup/                 sqlserver/
-    Vb7/                   toc.htm
-    Vc7/                   vdt70vcs.dll*
+	Common7/                                                 Visual Studio SDKs/
+	EnterpriseFrameworks/                                    contents.htm
+	SDK/                                                     readme.htm
+	Setup/                                                   sqlserver/
+	Vc7/                                                     toc.htm
+	Visual Studio .NET Enterprise Developer 2003 - English/
 
 
   - If it does not, try running 
       > source ~/player/wintools/etc/setup_env.csh
     again to get it to do the cmd (ignore file-exists errors)
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET /msvc7
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET\ 2003 /msvc7
     This should create the softlink mount, or you can just run the 
     cmd manually yourself.
 
@@ -454,10 +408,9 @@ of the world, see INSTALL.txt in this directory.
     > cd /c
     > gzip -d emacs-21.3-fullbin-i386.tar.gz
     > tar xvf emacs-21.3-fullbin-i386.tar
-  - Set up the $DIRECT variable and copy lisp/script files
-    > cta direct install
-    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.3/lisp/progmodes
-    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
+    > cp P:/win/install/direct/src/directscripts/python-mode.el /c/emacs-21.3/lisp/progmodes
+    > cp P:/win/install/direct/src/directscripts/flashparen.el /c/emacs-21.3/lisp/progmodes
+    > cp P:/win/install/direct/src/directscripts/runPythonEmacs /usr/local/bin
   - Update environment variables (win2000/XP).  Note: You should only 
     need to do this if you intend to invoke Emacs from a non-Cygwin 
     prompt.  If you will always be using Cygwin, simply edit your 
@@ -495,15 +448,12 @@ of the world, see INSTALL.txt in this directory.
     Make sure your CVSROOT is set to the local repository, echo $CVSROOT
     in your shell, it should return 
 
-      :pserver:<username>@mover:/cvs 
+      :ext:<username>@mover:/cvs 
 
     where <username> is your Unix login name (not necessarily your
     Windows login name), check your .cshrc for the environment
     variable setting
 
-    # Just hit return or type your unix password when prompted for a 
-      password
-    > cvs login
     > cvs co otp (only if local toontown will be built)
     > cvs co toontown (only if local toontown will be built)
 
@@ -526,7 +476,7 @@ of the world, see INSTALL.txt in this directory.
 
         - make a directory ~/.ssh and copy the file from
           /p/win/install/wintools/etc/ssh_config to a file named
-          ~/.ssh/config .
+          ~/.ssh/config 
 
         - Alternatively, you can copy the config file to
           /etc/ssh_config instead of to your ~/.ssh directory, but you
@@ -568,7 +518,7 @@ of the world, see INSTALL.txt in this directory.
     ---------------------------------------------------------------------
 
       1. Set handy environment variable to use in anonymous checkout
-          > setenv SFROOT :pserver:anonymous@nit:/cvsroot/panda3d
+          > setenv SFROOT :ext:anonymous@nit:/cvsroot/panda3d
 
   
   NOW FOR BOTH SOURCEFORGE DEVELOPERS AND ANONYMOUS USERS:
@@ -577,6 +527,11 @@ of the world, see INSTALL.txt in this directory.
      > cvs -d $SFROOT co dtool (only if local dtool will be built)
      > cvs -d $SFROOT co panda (only if local panda will be built)
      > cvs -d $SFROOT co direct (only if local direct will be built)
+     
+  - NOTE: If you are having trouble connecting to SourceForge, check
+    /etc/passwd to make sure your home directly is listed correctly.
+    If it is not, ssh won't be able to find your $HOME/.ssh/config
+    file and therefore won't correctly use the proxy tunnel.
       
   - Choose which optimize level you want. This is set in Config.pp in
     your $HOME directory.  Look for #define OPTIMIZE and follow
@@ -588,7 +543,7 @@ of the world, see INSTALL.txt in this directory.
     A good choice is OPTIMIZE 3.
 
   - Your normal, non-SourceForge CVSROOT should be set to the default:
-    > setenv CVSROOT :pserver:<your-unix-username>@mover:/cvs
+    > setenv CVSROOT :ext:<your-unix-username>@mover:/cvs
 
 *********************************************************************
   Step 12: (Optional) Build $DTOOL
@@ -677,17 +632,11 @@ of the world, see INSTALL.txt in this directory.
   Step 18: (Optional) Set up a local server
 *********************************************************************
 
-  - mkdir /c/toonsrv
-  - unzip /p/toontown_server/dev_NOTAG_*.zip to /c/toonsrv
-  NOTE: You may also need to get one of the older zip files from
-  "/p/toontown_server/Toontown Database Server_files" in order
-  to get all the batch files.
-  - copy zlib1.dll and other newer .dlls if not there from 
-    /p/toontown_server
-    > cp /p/toontown_server/*.dll /c/toonsrv/.
-  - cd /c/toonsrv
-  - Be sure to set the execute bit for all .dll, .exe, *.BAT and .bat files
-    chmod +x *.dll *.exe *.bat *.BAT
+    > mkdir /c/otp_server
+    > cp /p/toontown_server/otp_server/* /c/toonsrv
+    > cd /c/toonsrv
+  - Be sure to set the execute bit for all .dll and .exe files
+    > chmod +x *.dll *.exe
   - Make sure your Windows account on your machine is an administrator
     type, or else you would not be able to start/stop services.  
     To check:
@@ -696,71 +645,28 @@ of the world, see INSTALL.txt in this directory.
          "Group" column, Pick your account from the list, then hit 
          "Properties" button, then in "Other" pick "Administrator" 
          from the drop down list, then click Ok, Ok
-
-  - Copy the appropriate NameMaster text file into your local server, 
-    depending on Language of the server being installed:
-
-    > cp $TOONTOWN/src/configfiles/NameMaster<language>.txt /c/toonsrv/.
-
-    There are currently three different files, NameMasterEnglish.txt,
-    NameMasterCastillian.txt, and NameMasterJapanese.txt
-
-  - Check out dna files for server
-    Make sure $CVSROOT is pointed to local repository on mover
-    
-    > cd ~/player
-    > cvs co -l ttmodels
-    > cvs co -l ttmodels/src
-    > cvs co -l ttmodels/src/dna
-    > cp ~/player/ttmodels/src/dna/*.dna /c/toonsrv
-
-    The dna files have names with language associated with them, but 
-    the server expects file names without it.  Depending on the language 
-    of the server you are running, rename the appropriate files so that 
-    the file names are without the language designation.  For example, 
-    if you are running an English server, you'd rename all .dna files 
-    with "_english" in them into filenames without this, such as
-
-    toontown_central_2100_english.dna -> toontown_central_2100.dna
-    
-    You need to do this for every .dna file of the language you wish 
-    to use, files for other languages can be ignored.
-
-    ** note **  Only remove the "_<language>" portion of the file name, 
-    all other strings in the file name need to stay intacted, even those 
-    that come after the language word in the file name 
-
-  - Copy clientagent.pem into local server
-
-    cp $TOONTOWN/src/secure/clientagent.pem /c/toonsrv/.
-
-  - Copy .dc files into local server
-
-    cp $TOONTOWN/src/configfiles/toon.dc /c/toonsrv/.
-    cp $OTP/src/configfiles/otp.dc /c/toonsrv/.
-
-  - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local 
-    NT-type services
-  - run 
-    > /c/toonsrv/STARTALL.BAT 
-    to start the servers and 
-    > /c/toonsrv/STOPALL.BAT 
-    to stop them
+  - Copy the local_example.par and toontown_example.par to local.par
+    and toontown.par
+    > cp local_example.par local.par
+    > cp toontown_example.par toontown.par
+  - Edit local.par and modify the file locations listed to the correct paths
+  - Edit toontown.par and uncomment the following lines:
+	  #DC_FILE=gateway.dc
+	  #DC_FILE=pirates.dc
+  
+  - To run the server, simply execute otp_server.exe. It may be best to run this
+    in its own window.
 
 *********************************************************************
   Step 19: (Optional) Launch a local Toontown Client and Server
 *********************************************************************
 
-  - Before the Toontown client and server will happily interact with
-    one another, a local.par file needs to be created in the
-    /c/toonsrv directory with some options in it and a couple of lines
-    need to be added to the Config.prc file in $HOME. A basic local.par
-    file can be copied from /p/toontown_server
-    > cp /p/toontown_server/local.par /c/toonsrv
   - Add the following lines to your Config.prc file in $HOME
     
       account-old-auth 1
       verify-ssl 0
+      dc-multiple-inheritance 1
+      want-otp-server 1
       
   - To start the Toontown AI server, first start up Python Emacs
     > runPythonEmacs
