@@ -1104,6 +1104,12 @@ class ParamObj:
         # of the param was
         return self._priorValuesStack.top()[self._curParamStack.top()]
 
+    def __repr__(self):
+        argStr = ''
+        for param in self.ParamSet.getParams():
+            argStr += '%s=%s,' % (param, getSetter(self, param, 'get')())
+        return '%s(%s)' % (self.__class__.__name__, argStr)
+
 def bound(value, bound1, bound2):
     """
     returns value if value is between bound1 and bound2
