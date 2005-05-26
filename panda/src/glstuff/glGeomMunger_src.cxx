@@ -64,30 +64,10 @@ munge_format_impl(const qpGeomVertexFormat *orig,
        C_color, color_type->get_start());
   }
 
-  if (animation.get_animation_type() == AT_hardware &&
-      animation.get_num_transforms() > 0) {
+  if (animation.get_animation_type() == AT_hardware) {
     // If we want hardware animation, we need to reserve space for the
     // blend weights.
-
-    PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
-    new_array_format->add_column
-      (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-       NT_float32, C_other);
-
-    if (animation.get_indexed_transforms()) {
-      // Also, if we'll be indexing into the transform table, reserve
-      // space for the index.
-
-      // TODO: We should examine the maximum palette index so we can
-      // decide whether we need 16-bit indices.  That implies saving
-      // the maximum palette index, presumably in the AnimationSpec.
-      // At the moment, I don't think any existing hardware supports
-      // more than 255 indices anyway.
-      new_array_format->add_column
-        (InternalName::get_transform_index(), animation.get_num_transforms(),
-         NT_uint8, C_index);
-    }                                    
-
+      
     // Make sure the old weights and indices are removed, just in
     // case.
     new_format->remove_column(InternalName::get_transform_weight());
@@ -96,7 +76,28 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     // And we don't need the transform_blend table any more.
     new_format->remove_column(InternalName::get_transform_blend());
 
-    new_format->add_array(new_array_format);
+    if (animation.get_num_transforms() > 1) {
+      PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
+      new_array_format->add_column
+        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+         NT_float32, C_other);
+      
+      if (animation.get_indexed_transforms()) {
+        // Also, if we'll be indexing into the transform table, reserve
+        // space for the index.
+        
+        // TODO: We should examine the maximum palette index so we can
+        // decide whether we need 16-bit indices.  That implies saving
+        // the maximum palette index, presumably in the AnimationSpec.
+        // At the moment, I don't think any existing hardware supports
+        // more than 255 indices anyway.
+        new_array_format->add_column
+          (InternalName::get_transform_index(), animation.get_num_transforms(),
+           NT_uint8, C_index);
+      }                                    
+
+      new_format->add_array(new_array_format);
+    }
   }
 
   /*
