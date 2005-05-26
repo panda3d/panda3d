@@ -21,9 +21,13 @@ if [ -z "${INSTALL_DIR}" ]; then
     fi
 fi
 
+if [ ! -e ${INSTALL_DIR}/lib/pandac ]; then
+  mkdir ${INSTALL_DIR}/lib/pandac || exit
+fi
+
 if [ -d ${INSTALL_DIR}/lib/pandac ]; then
 
-    find ${INSTALL_DIR}/lib/pandac/. -maxdepth 1 -type f -print0 | xargs -0 rm
+    rm `find ${INSTALL_DIR}/lib/pandac/. -maxdepth 1 -type f -print`
     
     cp ${DIRECT}/src/extensions_native/PandaModules.py            ${INSTALL_DIR}/lib/pandac/.
     cp ${DIRECT}/src/extensions_native/libpandaModules.py         ${INSTALL_DIR}/lib/pandac/.
