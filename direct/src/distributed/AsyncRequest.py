@@ -31,20 +31,18 @@ class AsyncRequest(DirectObject):
     will be called again when the new self.neededObjects is complete.  You
     may repeat this as necessary.
     """
-
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 
-    def __init__(self, distObj, air, replyToChannelId=None, timeout=4.0):
+    def __init__(self, air, replyToChannelId=None, timeout=4.0):
         """
-        distObj is any distributed object.
         air is the AI Respository.
         replyToChannelId may be an avatarId, an accountId, or a channelId.
         timeout is how many seconds to wait before aborting the request.
         """
         assert self.notify.debugCall()
+        assert isinstance(air, ConnectionRepository) # The api to AsyncRequest has changed.
         #DirectObject.DirectObject.__init__(self)
-        self.distObj=distObj
         self.air=air
         self.replyToChannelId=replyToChannelId
         self.neededObjects={}
@@ -67,7 +65,6 @@ class AsyncRequest(DirectObject):
                     self.air.removeDOFromTables(i)
                     i.delete()
         del self.neededObjects
-        del self.distObj
         del self.air
         del self.replyToChannelId
         #DirectObject.DirectObject.delete(self)
