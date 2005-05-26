@@ -1868,6 +1868,16 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     node->set_tag((*ti).first, (*ti).second);
   }
 
+  if (egg_group->get_blend_mode() != EggGroup::BM_unspecified &&
+      egg_group->get_blend_mode() != EggGroup::BM_none) {
+    // Apply a ColorBlendAttrib to the group.
+    ColorBlendAttrib::Mode mode = get_color_blend_mode(egg_group->get_blend_mode());
+    ColorBlendAttrib::Operand a = get_color_blend_operand(egg_group->get_blend_operand_a());
+    ColorBlendAttrib::Operand b = get_color_blend_operand(egg_group->get_blend_operand_b());
+    Colorf color = egg_group->get_blend_color();
+    node->set_attrib(ColorBlendAttrib::make(mode, a, b, color));
+  }
+
   // If the group specified some property that should propagate down
   // to the leaves, we have to remember this node and apply the
   // property later, after we've created the actual geometry.
@@ -3469,6 +3479,86 @@ get_combine_operand(const EggTexture *egg_tex,
   };
 
   return TextureStage::CO_undefined;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::get_color_blend_mode
+//       Access: Private, Static
+//  Description: Converts the EggGroup's BlendMode to the
+//               corresponding ColorBlendAttrib::Mode value.
+////////////////////////////////////////////////////////////////////
+ColorBlendAttrib::Mode EggLoader::
+get_color_blend_mode(EggGroup::BlendMode mode) {
+  switch (mode) {
+  case EggGroup::BM_unspecified:
+  case EggGroup::BM_none:
+    return ColorBlendAttrib::M_none;
+  case EggGroup::BM_add:
+    return ColorBlendAttrib::M_add;
+  case EggGroup::BM_subtract:
+    return ColorBlendAttrib::M_subtract;
+  case EggGroup::BM_inv_subtract:
+    return ColorBlendAttrib::M_inv_subtract;
+  case EggGroup::BM_min:
+    return ColorBlendAttrib::M_min;
+  case EggGroup::BM_max:
+    return ColorBlendAttrib::M_max;
+  }
+
+  return ColorBlendAttrib::M_none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::get_color_blend_operand
+//       Access: Private, Static
+//  Description: Converts the EggGroup's BlendOperand to the
+//               corresponding ColorBlendAttrib::Operand value.
+////////////////////////////////////////////////////////////////////
+ColorBlendAttrib::Operand EggLoader::
+get_color_blend_operand(EggGroup::BlendOperand operand) {
+  switch (operand) {
+  case EggGroup::BO_zero:
+    return ColorBlendAttrib::O_zero;
+  case EggGroup::BO_unspecified:
+  case EggGroup::BO_one:
+    return ColorBlendAttrib::O_one;
+  case EggGroup::BO_incoming_color:
+    return ColorBlendAttrib::O_incoming_color;
+  case EggGroup::BO_one_minus_incoming_color:
+    return ColorBlendAttrib::O_one_minus_incoming_color;
+  case EggGroup::BO_fbuffer_color:
+    return ColorBlendAttrib::O_fbuffer_color;
+  case EggGroup::BO_one_minus_fbuffer_color:
+    return ColorBlendAttrib::O_one_minus_fbuffer_color;
+  case EggGroup::BO_incoming_alpha:
+    return ColorBlendAttrib::O_incoming_alpha;
+  case EggGroup::BO_one_minus_incoming_alpha:
+    return ColorBlendAttrib::O_one_minus_incoming_alpha;
+  case EggGroup::BO_fbuffer_alpha:
+    return ColorBlendAttrib::O_fbuffer_alpha;
+  case EggGroup::BO_one_minus_fbuffer_alpha:
+    return ColorBlendAttrib::O_one_minus_fbuffer_alpha;
+  case EggGroup::BO_constant_color:
+    return ColorBlendAttrib::O_constant_color;
+  case EggGroup::BO_one_minus_constant_color:
+    return ColorBlendAttrib::O_one_minus_constant_color;
+  case EggGroup::BO_constant_alpha:
+    return ColorBlendAttrib::O_constant_alpha;
+  case EggGroup::BO_one_minus_constant_alpha:
+    return ColorBlendAttrib::O_one_minus_constant_alpha;
+  case EggGroup::BO_incoming_color_saturate:
+    return ColorBlendAttrib::O_incoming_color_saturate;
+  case EggGroup::BO_color_scale:
+    return ColorBlendAttrib::O_color_scale;
+  case EggGroup::BO_one_minus_color_scale:
+    return ColorBlendAttrib::O_one_minus_color_scale;
+  case EggGroup::BO_alpha_scale:
+    return ColorBlendAttrib::O_alpha_scale;
+  case EggGroup::BO_one_minus_alpha_scale:
+    return ColorBlendAttrib::O_one_minus_alpha_scale;
+  }
+
+  return ColorBlendAttrib::O_zero;
 }
 
 ////////////////////////////////////////////////////////////////////

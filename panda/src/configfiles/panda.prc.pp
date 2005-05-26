@@ -91,5 +91,8 @@ egg-object-type-bubble          <Collide> { Sphere keep descend }
 # collisions--it is ghostlike.
 egg-object-type-ghost           <Scalar> collide-mask { 0 }
 
+# "glow" is useful for halo effects and things of that ilk.  It
+# renders the object in add mode instead of the normal opaque mode.
+egg-object-type-glow            <Scalar> blend { add }
 
 #end 20_panda.prc

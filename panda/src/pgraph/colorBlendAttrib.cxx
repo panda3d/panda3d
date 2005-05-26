@@ -256,61 +256,61 @@ ostream &
 operator << (ostream &out, ColorBlendAttrib::Operand operand) {
   switch (operand) {
   case ColorBlendAttrib::O_zero:
-    return out << "0";
+    return out << "zero";
 
   case ColorBlendAttrib::O_one:
-    return out << "1";
+    return out << "one";
 
   case ColorBlendAttrib::O_incoming_color:
-    return out << "ic";
+    return out << "incomfing_color";
 
   case ColorBlendAttrib::O_one_minus_incoming_color:
-    return out << "1-ic";
+    return out << "one_minus_incoming_color";
 
   case ColorBlendAttrib::O_fbuffer_color:
-    return out << "fc";
+    return out << "fbuffer_color";
 
   case ColorBlendAttrib::O_one_minus_fbuffer_color:
-    return out << "1-fc";
+    return out << "one_minus_fbuffer_color";
 
   case ColorBlendAttrib::O_incoming_alpha:
-    return out << "ia";
+    return out << "incoming_alpha";
 
   case ColorBlendAttrib::O_one_minus_incoming_alpha:
-    return out << "1-ia";
+    return out << "one_minus_incoming_alpha";
 
   case ColorBlendAttrib::O_fbuffer_alpha:
-    return out << "fa";
+    return out << "fbuffer_alpha";
 
   case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
-    return out << "1-fa";
+    return out << "one_minus_fbuffer_alpha";
 
   case ColorBlendAttrib::O_constant_color:
-    return out << "cc";
+    return out << "constant_color";
 
   case ColorBlendAttrib::O_one_minus_constant_color:
-    return out << "1-cc";
+    return out << "one_minus_constant_color";
 
   case ColorBlendAttrib::O_constant_alpha:
-    return out << "ca";
+    return out << "constant_alpha";
 
   case ColorBlendAttrib::O_one_minus_constant_alpha:
-    return out << "1-ca";
+    return out << "one_minus_constant_alpha";
 
   case ColorBlendAttrib::O_incoming_color_saturate:
-    return out << "ics";
+    return out << "incoming_color_saturate";
 
   case ColorBlendAttrib::O_color_scale:
-    return out << "cs";
+    return out << "color_scale";
 
   case ColorBlendAttrib::O_one_minus_color_scale:
-    return out << "1-cs";
+    return out << "one_minus_color_scale";
 
   case ColorBlendAttrib::O_alpha_scale:
-    return out << "as";
+    return out << "alpha_scale";
 
   case ColorBlendAttrib::O_one_minus_alpha_scale:
-    return out << "1-as";
+    return out << "one_minus_alpha_scale";
   }
 
   return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";

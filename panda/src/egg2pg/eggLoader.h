@@ -37,6 +37,7 @@
 #include "textureAttrib.h"
 #include "textureStage.h"
 #include "texGenAttrib.h"
+#include "colorBlendAttrib.h"
 #include "eggTransform3d.h"
 #include "computedVerticesMaker.h"
 #include "qpgeomVertexData.h"
@@ -207,6 +208,12 @@ private:
   static TextureStage::CombineOperand
   get_combine_operand(const EggTexture *egg_tex, 
                       EggTexture::CombineChannel channel, int n);
+
+  static ColorBlendAttrib::Mode
+  get_color_blend_mode(EggGroup::BlendMode mode);
+
+  static ColorBlendAttrib::Operand
+  get_color_blend_operand(EggGroup::BlendOperand operand);
 
   Builder _builder;
 

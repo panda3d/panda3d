@@ -1137,6 +1137,29 @@ GROUPING ENTRIES
       The value may be an ordinary decimal integer, or a hex number in
       the form 0x000, or a binary number in the form 0b000.
 
+  <Scalar> blend { mode }
+
+    Specifies that a special blend mode should be applied geometry at
+    this level and below.  The available options are none, add,
+    subtract, inv-subtract, min, and max.  See ColorBlendAttrib.
+
+  <Scalar> blendop-a { mode }
+  <Scalar> blendop-b { mode }
+
+    If blend mode, above, is not none, this specifies the A and B
+    operands to the blend equation.  Common options are zero, one,
+    incoming-color, one-minus-incoming-color.  See ColorBlendAttrib
+    for the complete list of available options.  The default is "one".
+
+  <Scalar> blendr { red-value }
+  <Scalar> blendg { green-value }
+  <Scalar> blendb { blue-value }
+  <Scalar> blenda { alpha-value }
+
+    If blend mode, above, is not none, and one of the blend operands
+    is constant-color or a related option, this defines the constant
+    color that will be used.
+
 
   OTHER GROUP ATTRIBUTES
 

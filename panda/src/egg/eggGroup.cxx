@@ -32,7 +32,7 @@ TypeHandle EggGroup::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
@@ -40,11 +40,15 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _flags = 0;
   _flags2 = 0;
   _fps = 0.0;
+  _blend_mode = BM_unspecified;
+  _blend_operand_a = BO_unspecified;
+  _blend_operand_b = BO_unspecified;
+  _blend_color = Colorf::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
@@ -54,7 +58,7 @@ EggGroup(const EggGroup &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup &EggGroup::
@@ -62,14 +66,18 @@ operator = (const EggGroup &copy) {
   EggTransform3d::operator = (copy);
   _flags = copy._flags;
   _flags2 = copy._flags2;
-  //  _collide_mask = copy._collide_mask;
-  //  _from_collide_mask = copy._from_collide_mask;
-  //  _into_collide_mask = copy._into_collide_mask;
-  //  _billboard_center = copy._billboard_center;
+  _collide_mask = copy._collide_mask;
+  _from_collide_mask = copy._from_collide_mask;
+  _into_collide_mask = copy._into_collide_mask;
+  _billboard_center = copy._billboard_center;
   _object_types = copy._object_types;
   _collision_name = copy._collision_name;
   _fps = copy._fps;
-  //  _lod = copy._lod;
+  _lod = copy._lod;
+  _blend_mode = copy._blend_mode;
+  _blend_operand_a = copy._blend_operand_a;
+  _blend_operand_b = copy._blend_operand_b;
+  _blend_color = copy._blend_color;
 
   _tag_data = copy._tag_data;
 
@@ -101,7 +109,7 @@ operator = (const EggGroup &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
@@ -111,7 +119,7 @@ EggGroup::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_group_type
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
@@ -129,7 +137,7 @@ set_group_type(GroupType type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::has_object_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated object type has been
 //               added to the group, or false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +154,7 @@ has_object_type(const string &object_type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::remove_object_type
-//       Access: Public
+//       Access: Published
 //  Description: Removes the first instance of the indicated object
 //               type from the group if it is present.  Returns true
 //               if the object type was found and removed, false
@@ -166,7 +174,7 @@ remove_object_type(const string &object_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes the group and all of its children to the
 //               indicated output stream in Egg format.
 ////////////////////////////////////////////////////////////////////
@@ -228,6 +236,33 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> indexed { " << get_indexed_flag() << " }\n";
   }
 
+  if (get_blend_mode() != BM_unspecified) {
+    indent(out, indent_level)
+      << "<Scalar> blend { " << get_blend_mode() << " }\n";
+  }
+
+  if (get_blend_operand_a() != BO_unspecified) {
+    indent(out, indent_level)
+      << "<Scalar> blendop-a { " << get_blend_operand_a() << " }\n";
+  }
+
+  if (get_blend_operand_b() != BO_unspecified) {
+    indent(out, indent_level)
+      << "<Scalar> blendop-b { " << get_blend_operand_b() << " }\n";
+  }
+
+  if (has_blend_color()) {
+    const Colorf &c = get_blend_color();
+    indent(out, indent_level)
+      << "<Scalar> blendr { " << c[0] << " }\n";
+    indent(out, indent_level)
+      << "<Scalar> blendg { " << c[1] << " }\n";
+    indent(out, indent_level)
+      << "<Scalar> blendb { " << c[2] << " }\n";
+    indent(out, indent_level)
+      << "<Scalar> blenda { " << c[3] << " }\n";
+  }
+
   // We have to write the children nodes before we write the vertex
   // references, since we might be referencing a vertex that's defined
   // in one of those children nodes!
@@ -239,7 +274,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_billboard_flags
-//       Access: Public
+//       Access: Published
 //  Description: Writes just the <Billboard> entry and related fields to
 //               the indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -258,7 +293,7 @@ write_billboard_flags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_collide_flags
-//       Access: Public
+//       Access: Published
 //  Description: Writes just the <Collide> entry and related fields to
 //               the indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -300,7 +335,7 @@ write_collide_flags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_model_flags
-//       Access: Public
+//       Access: Published
 //  Description: Writes the <Model> flag and related flags to the
 //               indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -331,7 +366,7 @@ write_model_flags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_switch_flags
-//       Access: Public
+//       Access: Published
 //  Description: Writes the <Switch> flag and related flags to the
 //               indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -348,7 +383,7 @@ write_switch_flags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_object_types
-//       Access: Public
+//       Access: Published
 //  Description: Writes just the <ObjectTypes> entries, if any, to the
 //               indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -364,7 +399,7 @@ write_object_types(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_decal_flags
-//       Access: Public
+//       Access: Published
 //  Description: Writes the flags related to decaling, if any.
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
@@ -376,7 +411,7 @@ write_decal_flags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_tags
-//       Access: Public
+//       Access: Published
 //  Description: Writes just the <Tag> entries, if any, to the
 //               indicated ostream.
 ////////////////////////////////////////////////////////////////////
@@ -396,7 +431,7 @@ write_tags(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::write_render_mode
-//       Access: Public
+//       Access: Published
 //  Description: Writes the flags inherited from EggRenderMode and
 //               similar flags that control obscure render effects.
 ////////////////////////////////////////////////////////////////////
@@ -411,7 +446,7 @@ write_render_mode(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::is_joint
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if this particular node represents a
 //               <Joint> entry or not.  This is a handy thing to know
 //               since Joints are sorted to the end of their sibling
@@ -425,7 +460,7 @@ is_joint() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_alpha_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has an alpha_mode other than
@@ -442,7 +477,7 @@ determine_alpha_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_depth_write_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a depth_write_mode other
@@ -459,7 +494,7 @@ determine_depth_write_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_depth_test_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a depth_test_mode other
@@ -476,7 +511,7 @@ determine_depth_test_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_visibility_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a visibility_mode other
@@ -493,7 +528,7 @@ determine_visibility_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_draw_order
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a draw_order specified.
@@ -510,7 +545,7 @@ determine_draw_order() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_bin
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a bin specified.  Returns a
@@ -527,7 +562,7 @@ determine_bin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_indexed
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               at this level or above that has the "indexed" scalar
 //               set.  Returns the value of the indexed scalar if it
@@ -546,7 +581,7 @@ determine_indexed() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_decal
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               at this level or above that has the "decal" flag
 //               set.  Returns the value of the decal flag if it
@@ -565,7 +600,7 @@ determine_decal() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::ref_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vertex to the set of those referenced by the
 //               group, at the indicated membership level.  If the
 //               vertex is already being referenced, increases the
@@ -602,7 +637,7 @@ ref_vertex(EggVertex *vert, double membership) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::unref_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Removes the vertex from the set of those referenced
 //               by the group.  Does nothing if the vertex is not
 //               already reffed.
@@ -622,7 +657,7 @@ unref_vertex(EggVertex *vert) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::unref_all_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Removes all vertices from the reference list.
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
@@ -644,7 +679,7 @@ unref_all_vertices() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::get_vertex_membership
-//       Access: Public
+//       Access: Published
 //  Description: Returns the amount of membership of the indicated
 //               vertex in this group.  If the vertex is not reffed by
 //               the group, returns 0.
@@ -662,7 +697,7 @@ get_vertex_membership(const EggVertex *vert) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_vertex_membership
-//       Access: Public
+//       Access: Published
 //  Description: Explicitly sets the net membership of the indicated
 //               vertex in this group to the given value.
 ////////////////////////////////////////////////////////////////////
@@ -694,7 +729,7 @@ set_vertex_membership(EggVertex *vert, double membership) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::steal_vrefs
-//       Access: Public
+//       Access: Published
 //  Description: Moves all of the vertex references from the indicated
 //               other group into this one.  If a given vertex was
 //               previously shared by both groups, the relative
@@ -717,7 +752,7 @@ steal_vrefs(EggGroup *other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::test_vref_integrity
-//       Access: Public
+//       Access: Published
 //  Description: Verifies that each vertex in the group exists and
 //               that it knows it is referenced by the group.
 ////////////////////////////////////////////////////////////////////
@@ -741,18 +776,18 @@ test_vref_integrity() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_group_type
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the GroupType value associated with the given
 //               string representation, or GT_invalid if the string
 //               does not match any known GroupType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::GroupType EggGroup::
-string_group_type(const string &string) {
-  if (cmp_nocase_uh(string, "group") == 0) {
+string_group_type(const string &strval) {
+  if (cmp_nocase_uh(strval, "group") == 0) {
     return GT_group;
-  } else if (cmp_nocase_uh(string, "instance") == 0) {
+  } else if (cmp_nocase_uh(strval, "instance") == 0) {
     return GT_instance;
-  } else if (cmp_nocase_uh(string, "joint") == 0) {
+  } else if (cmp_nocase_uh(strval, "joint") == 0) {
     return GT_joint;
   } else {
     return GT_invalid;
@@ -761,18 +796,18 @@ string_group_type(const string &string) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_dart_type
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the DartType value associated with the given
 //               string representation, or DT_none if the string
 //               does not match any known DartType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::DartType EggGroup::
-string_dart_type(const string &string) {
-  if (cmp_nocase_uh(string, "sync") == 0) {
+string_dart_type(const string &strval) {
+  if (cmp_nocase_uh(strval, "sync") == 0) {
     return DT_sync;
-  } else if (cmp_nocase_uh(string, "nosync") == 0) {
+  } else if (cmp_nocase_uh(strval, "nosync") == 0) {
     return DT_nosync;
-  } else if (cmp_nocase_uh(string, "default") == 0) {
+  } else if (cmp_nocase_uh(strval, "default") == 0) {
     return DT_default;
   } else {
     return DT_none;
@@ -781,20 +816,20 @@ string_dart_type(const string &string) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_dcs_type
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the DCSType value associated with the given
 //               string representation, or DC_unspecified if the
 //               string does not match any known DCSType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::DCSType EggGroup::
-string_dcs_type(const string &string) {
-  if (cmp_nocase_uh(string, "none") == 0) {
+string_dcs_type(const string &strval) {
+  if (cmp_nocase_uh(strval, "none") == 0) {
     return DC_none;
-  } else if (cmp_nocase_uh(string, "local") == 0) {
+  } else if (cmp_nocase_uh(strval, "local") == 0) {
     return DC_local;
-  } else if (cmp_nocase_uh(string, "net") == 0) {
+  } else if (cmp_nocase_uh(strval, "net") == 0) {
     return DC_net;
-  } else if (cmp_nocase_uh(string, "default") == 0) {
+  } else if (cmp_nocase_uh(strval, "default") == 0) {
     return DC_default;
   } else {
     return DC_unspecified;
@@ -803,20 +838,20 @@ string_dcs_type(const string &string) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_billboard_type
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the BillboardType value associated with the
 //               given string representation, or BT_none if the string
 //               does not match any known BillboardType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::BillboardType EggGroup::
-string_billboard_type(const string &string) {
-  if (cmp_nocase_uh(string, "axis") == 0) {
+string_billboard_type(const string &strval) {
+  if (cmp_nocase_uh(strval, "axis") == 0) {
     return BT_axis;
-  } else if (cmp_nocase_uh(string, "point_eye") == 0) {
+  } else if (cmp_nocase_uh(strval, "point_eye") == 0) {
     return BT_point_camera_relative;
-  } else if (cmp_nocase_uh(string, "point_world") == 0) {
+  } else if (cmp_nocase_uh(strval, "point_world") == 0) {
     return BT_point_world_relative;
-  } else if (cmp_nocase_uh(string, "point") == 0) {
+  } else if (cmp_nocase_uh(strval, "point") == 0) {
     return BT_point_world_relative;
   } else {
     return BT_none;
@@ -825,25 +860,25 @@ string_billboard_type(const string &string) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_cs_type
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the CollisionSolidType value associated with the
 //               given string representation, or CST_none if the string
 //               does not match any known CollisionSolidType value.
 ////////////////////////////////////////////////////////////////////
 EggGroup::CollisionSolidType EggGroup::
-string_cs_type(const string &string) {
-  if (cmp_nocase_uh(string, "plane") == 0) {
+string_cs_type(const string &strval) {
+  if (cmp_nocase_uh(strval, "plane") == 0) {
     return CST_plane;
-  } else if (cmp_nocase_uh(string, "polygon") == 0) {
+  } else if (cmp_nocase_uh(strval, "polygon") == 0) {
     return CST_polygon;
-  } else if (cmp_nocase_uh(string, "polyset") == 0) {
+  } else if (cmp_nocase_uh(strval, "polyset") == 0) {
     return CST_polyset;
-  } else if (cmp_nocase_uh(string, "sphere") == 0) {
+  } else if (cmp_nocase_uh(strval, "sphere") == 0) {
     return CST_sphere;
-  } else if (cmp_nocase_uh(string, "inv-sphere") == 0 ||
-             cmp_nocase_uh(string, "invsphere") == 0) {
+  } else if (cmp_nocase_uh(strval, "inv-sphere") == 0 ||
+             cmp_nocase_uh(strval, "invsphere") == 0) {
     return CST_inv_sphere;
-  } else if (cmp_nocase_uh(string, "tube") == 0) {
+  } else if (cmp_nocase_uh(strval, "tube") == 0) {
     return CST_tube;
   } else {
     return CST_none;
@@ -852,7 +887,7 @@ string_cs_type(const string &string) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::string_collide_flags
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the CollideFlags value associated with the
 //               given string representation, or CF_none if the string
 //               does not match any known CollideFlags value.  This
@@ -860,25 +895,103 @@ string_cs_type(const string &string) {
 //               to parse a string of keywords.
 ////////////////////////////////////////////////////////////////////
 EggGroup::CollideFlags EggGroup::
-string_collide_flags(const string &string) {
-  if (cmp_nocase_uh(string, "intangible") == 0) {
+string_collide_flags(const string &strval) {
+  if (cmp_nocase_uh(strval, "intangible") == 0) {
     return CF_intangible;
-  } else if (cmp_nocase_uh(string, "event") == 0) {
+  } else if (cmp_nocase_uh(strval, "event") == 0) {
     return CF_event;
-  } else if (cmp_nocase_uh(string, "descend") == 0) {
+  } else if (cmp_nocase_uh(strval, "descend") == 0) {
     return CF_descend;
-  } else if (cmp_nocase_uh(string, "keep") == 0) {
+  } else if (cmp_nocase_uh(strval, "keep") == 0) {
     return CF_keep;
-  } else if (cmp_nocase_uh(string, "solid") == 0) {
+  } else if (cmp_nocase_uh(strval, "solid") == 0) {
     return CF_solid;
-  } else if (cmp_nocase_uh(string, "center") == 0) {
+  } else if (cmp_nocase_uh(strval, "center") == 0) {
     return CF_center;
-  } else if (cmp_nocase_uh(string, "turnstile") == 0) {
+  } else if (cmp_nocase_uh(strval, "turnstile") == 0) {
     return CF_turnstile;
-  } else if (cmp_nocase_uh(string, "level") == 0) {
+  } else if (cmp_nocase_uh(strval, "level") == 0) {
     return CF_level;
   } else {
     return CF_none;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::string_blend_mode
+//       Access: Published, Static
+//  Description: Returns the BlendMode value associated with the
+//               given string representation, or BM_none if the string
+//               does not match any known BlendMode.
+////////////////////////////////////////////////////////////////////
+EggGroup::BlendMode EggGroup::
+string_blend_mode(const string &strval) {
+  if (cmp_nocase_uh(strval, "none") == 0) {
+    return BM_none;
+  } else if (cmp_nocase_uh(strval, "add") == 0) {
+    return BM_add;
+  } else if (cmp_nocase_uh(strval, "subtract") == 0) {
+    return BM_subtract;
+  } else if (cmp_nocase_uh(strval, "inv_subtract") == 0) {
+    return BM_inv_subtract;
+  } else if (cmp_nocase_uh(strval, "min") == 0) {
+    return BM_min;
+  } else if (cmp_nocase_uh(strval, "max") == 0) {
+    return BM_max;
+  } else {
+    return BM_unspecified;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::string_blend_operand
+//       Access: Published, Static
+//  Description: Returns the BlendOperand value associated with the
+//               given string representation, or BO_none if the string
+//               does not match any known BlendOperand.
+////////////////////////////////////////////////////////////////////
+EggGroup::BlendOperand EggGroup::
+string_blend_operand(const string &strval) {
+  if (cmp_nocase_uh(strval, "zero") == 0) {
+    return BO_zero;
+  } else if (cmp_nocase_uh(strval, "one") == 0) {
+    return BO_one;
+  } else if (cmp_nocase_uh(strval, "incoming_color") == 0) {
+    return BO_incoming_color;
+  } else if (cmp_nocase_uh(strval, "one_minus_incoming_color") == 0) {
+    return BO_one_minus_incoming_color;
+  } else if (cmp_nocase_uh(strval, "fbuffer_color") == 0) {
+    return BO_fbuffer_color;
+  } else if (cmp_nocase_uh(strval, "one_minus_fbuffer_color") == 0) {
+    return BO_one_minus_fbuffer_color;
+  } else if (cmp_nocase_uh(strval, "incoming_alpha") == 0) {
+    return BO_incoming_alpha;
+  } else if (cmp_nocase_uh(strval, "one_minus_incoming_alpha") == 0) {
+    return BO_one_minus_incoming_alpha;
+  } else if (cmp_nocase_uh(strval, "fbuffer_alpha") == 0) {
+    return BO_fbuffer_alpha;
+  } else if (cmp_nocase_uh(strval, "one_minus_fbuffer_alpha") == 0) {
+    return BO_one_minus_fbuffer_alpha;
+  } else if (cmp_nocase_uh(strval, "constant_color") == 0) {
+    return BO_constant_color;
+  } else if (cmp_nocase_uh(strval, "one_minus_constant_color") == 0) {
+    return BO_one_minus_constant_color;
+  } else if (cmp_nocase_uh(strval, "constant_alpha") == 0) {
+    return BO_constant_alpha;
+  } else if (cmp_nocase_uh(strval, "one_minus_constant_alpha") == 0) {
+    return BO_one_minus_constant_alpha;
+  } else if (cmp_nocase_uh(strval, "incoming_color_saturate") == 0) {
+    return BO_incoming_color_saturate;
+  } else if (cmp_nocase_uh(strval, "color_scale") == 0) {
+    return BO_color_scale;
+  } else if (cmp_nocase_uh(strval, "one_minus_color_scale") == 0) {
+    return BO_one_minus_color_scale;
+  } else if (cmp_nocase_uh(strval, "alpha_scale") == 0) {
+    return BO_alpha_scale;
+  } else if (cmp_nocase_uh(strval, "one_minus_alpha_scale") == 0) {
+    return BO_one_minus_alpha_scale;
+  } else {
+    return BO_unspecified;
   }
 }
 
@@ -1271,4 +1384,107 @@ ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
     space = " ";
   }
   return out;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ostream << EggGroup::BlendMode
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, EggGroup::BlendMode t) {
+  switch (t) {
+  case EggGroup::BM_unspecified:
+    return out << "unspecified";
+
+  case EggGroup::BM_none:
+    return out << "none";
+
+  case EggGroup::BM_add:
+    return out << "add";
+
+  case EggGroup::BM_subtract:
+    return out << "subtract";
+
+  case EggGroup::BM_inv_subtract:
+    return out << "inv_subtract";
+
+  case EggGroup::BM_min:
+    return out << "min";
+
+  case EggGroup::BM_max:
+    return out << "max";
+  }
+
+  return out << "**invalid EggGroup::BlendMode(" << (int)t << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ostream << EggGroup::BlendOperand
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, EggGroup::BlendOperand t) {
+  switch (t) {
+  case EggGroup::BO_unspecified:
+    return out << "unspecified";
+
+  case EggGroup::BO_zero:
+    return out << "zero";
+
+  case EggGroup::BO_one:
+    return out << "one";
+
+  case EggGroup::BO_incoming_color:
+    return out << "incomfing_color";
+
+  case EggGroup::BO_one_minus_incoming_color:
+    return out << "one_minus_incoming_color";
+
+  case EggGroup::BO_fbuffer_color:
+    return out << "fbuffer_color";
+
+  case EggGroup::BO_one_minus_fbuffer_color:
+    return out << "one_minus_fbuffer_color";
+
+  case EggGroup::BO_incoming_alpha:
+    return out << "incoming_alpha";
+
+  case EggGroup::BO_one_minus_incoming_alpha:
+    return out << "one_minus_incoming_alpha";
+
+  case EggGroup::BO_fbuffer_alpha:
+    return out << "fbuffer_alpha";
+
+  case EggGroup::BO_one_minus_fbuffer_alpha:
+    return out << "one_minus_fbuffer_alpha";
+
+  case EggGroup::BO_constant_color:
+    return out << "constant_color";
+
+  case EggGroup::BO_one_minus_constant_color:
+    return out << "one_minus_constant_color";
+
+  case EggGroup::BO_constant_alpha:
+    return out << "constant_alpha";
+
+  case EggGroup::BO_one_minus_constant_alpha:
+    return out << "one_minus_constant_alpha";
+
+  case EggGroup::BO_incoming_color_saturate:
+    return out << "incoming_color_saturate";
+
+  case EggGroup::BO_color_scale:
+    return out << "color_scale";
+
+  case EggGroup::BO_one_minus_color_scale:
+    return out << "one_minus_color_scale";
+
+  case EggGroup::BO_alpha_scale:
+    return out << "alpha_scale";
+
+  case EggGroup::BO_one_minus_alpha_scale:
+    return out << "one_minus_alpha_scale";
+  }
+
+  return out << "**invalid EggGroup::BlendOperand(" << (int)t << ")**";
 }

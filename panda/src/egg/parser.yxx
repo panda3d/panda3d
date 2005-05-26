@@ -1112,12 +1112,16 @@ group_body:
 
   if (cmp_nocase_uh(name, "fps") == 0) {
     group->set_switch_fps(value);
+
   } else if (cmp_nocase_uh(name, "no_fog") == 0) {
     group->set_nofog_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "decal") == 0) {
     group->set_decal_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "direct") == 0) {
     group->set_direct_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {
@@ -1125,6 +1129,7 @@ group_body:
     } else {
       group->set_alpha_mode(a);
     }
+
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
     EggRenderMode::DepthWriteMode m = 
       EggRenderMode::string_depth_write_mode(strval);
@@ -1154,20 +1159,75 @@ group_body:
 
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order(ulong_value);
+
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     group->set_bin(strval);
+
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
     group->set_collide_mask(group->get_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
     group->set_from_collide_mask(group->get_from_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "into_collide_mask") == 0) {
     group->set_into_collide_mask(group->get_into_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "portal") == 0) {
     group->set_portal_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "polylight") == 0) {
     group->set_polylight_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "indexed") == 0) {
     group->set_indexed_flag(value != 0);
+
+  } else if (cmp_nocase_uh(name, "blend") == 0) {
+    EggGroup::BlendMode blend_mode =
+      EggGroup::string_blend_mode(strval);
+    if (blend_mode == EggGroup::BM_unspecified) {
+      eggyywarning("Unknown blend mode " + strval);
+    } else {
+      group->set_blend_mode(blend_mode);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendop_a") == 0) {
+    EggGroup::BlendOperand blend_operand =
+      EggGroup::string_blend_operand(strval);
+    if (blend_operand == EggGroup::BO_unspecified) {
+      eggyywarning("Unknown blend operand " + strval);
+    } else {
+      group->set_blend_operand_a(blend_operand);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendop_b") == 0) {
+    EggGroup::BlendOperand blend_operand =
+      EggGroup::string_blend_operand(strval);
+    if (blend_operand == EggGroup::BO_unspecified) {
+      eggyywarning("Unknown blend operand " + strval);
+    } else {
+      group->set_blend_operand_b(blend_operand);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendr") == 0) {
+    Colorf color = group->get_blend_color();
+    color[0] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blendg") == 0) {
+    Colorf color = group->get_blend_color();
+    color[1] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blendb") == 0) {
+    Colorf color = group->get_blend_color();
+    color[2] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blenda") == 0) {
+    Colorf color = group->get_blend_color();
+    color[3] = value;
+    group->set_blend_color(color);
+
   } else {
     eggyywarning("Unknown group scalar " + name);
   }

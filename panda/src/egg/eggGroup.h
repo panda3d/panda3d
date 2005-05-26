@@ -97,6 +97,41 @@ PUBLISHED:
     CF_intangible            = 0x08000000,
   };
 
+  // These correspond to ColorBlendAttrib::Mode (but not numerically).
+  enum BlendMode {
+    BM_unspecified,
+    BM_none,
+    BM_add,
+    BM_subtract,
+    BM_inv_subtract,
+    BM_min,
+    BM_max
+  };
+
+  // These correspond to ColorBlendAttrib::Operand (but not numerically).
+  enum BlendOperand {
+    BO_unspecified,
+    BO_zero,
+    BO_one,
+    BO_incoming_color,
+    BO_one_minus_incoming_color,
+    BO_fbuffer_color,
+    BO_one_minus_fbuffer_color,
+    BO_incoming_alpha,
+    BO_one_minus_incoming_alpha,
+    BO_fbuffer_alpha,
+    BO_one_minus_fbuffer_alpha,
+    BO_constant_color,
+    BO_one_minus_constant_color,
+    BO_constant_alpha,
+    BO_one_minus_constant_alpha,
+    BO_incoming_color_saturate,
+    BO_color_scale,
+    BO_one_minus_color_scale,
+    BO_alpha_scale,
+    BO_one_minus_alpha_scale,
+  };
+
   EggGroup(const string &name = "");
   EggGroup(const EggGroup &copy);
   EggGroup &operator = (const EggGroup &copy);
@@ -207,6 +242,17 @@ PUBLISHED:
   INLINE bool has_into_collide_mask() const;
   INLINE CollideMask get_into_collide_mask() const;
 
+  INLINE void set_blend_mode(BlendMode blend_mode);
+  INLINE BlendMode get_blend_mode() const;
+  INLINE void set_blend_operand_a(BlendOperand blend_operand_a);
+  INLINE BlendOperand get_blend_operand_a() const;
+  INLINE void set_blend_operand_b(BlendOperand blend_operand_b);
+  INLINE BlendOperand get_blend_operand_b() const;
+  INLINE void set_blend_color(const Colorf &blend_color);
+  INLINE void clear_blend_color();
+  INLINE bool has_blend_color() const;
+  INLINE const Colorf &get_blend_color() const;
+
   INLINE void set_lod(const EggSwitchCondition &lod);
   INLINE void clear_lod();
   INLINE bool has_lod() const;
@@ -242,12 +288,14 @@ PUBLISHED:
   void test_vref_integrity() const { }
 #endif  // NDEBUG
 
-  static GroupType string_group_type(const string &string);
-  static DartType string_dart_type(const string &string);
-  static DCSType string_dcs_type(const string &string);
-  static BillboardType string_billboard_type(const string &string);
-  static CollisionSolidType string_cs_type(const string &string);
-  static CollideFlags string_collide_flags(const string &string);
+  static GroupType string_group_type(const string &strval);
+  static DartType string_dart_type(const string &strval);
+  static DCSType string_dcs_type(const string &strval);
+  static BillboardType string_billboard_type(const string &strval);
+  static CollisionSolidType string_cs_type(const string &strval);
+  static CollideFlags string_collide_flags(const string &strval);
+  static BlendMode string_blend_mode(const string &strval);
+  static BlendOperand string_blend_operand(const string &strval);
 
 protected:
   void write_vertex_ref(ostream &out, int indent_level) const;
@@ -286,11 +334,17 @@ private:
     F2_polylight_flag        = 0x00000100,
     F2_indexed_flag          = 0x00000200,
     F2_has_indexed_flag      = 0x00000400,
+
+    F2_has_blend_color       = 0x00000800,
   };
 
   int _flags;
   int _flags2;
   CollideMask _collide_mask, _from_collide_mask, _into_collide_mask;
+  BlendMode _blend_mode;
+  BlendOperand _blend_operand_a;
+  BlendOperand _blend_operand_b;
+  Colorf _blend_color;
   LPoint3d _billboard_center;
   vector_string _object_types;
   string _collision_name;
@@ -327,6 +381,8 @@ ostream &operator << (ostream &out, EggGroup::DCSType t);
 ostream &operator << (ostream &out, EggGroup::BillboardType t);
 ostream &operator << (ostream &out, EggGroup::CollisionSolidType t);
 ostream &operator << (ostream &out, EggGroup::CollideFlags t);
+ostream &operator << (ostream &out, EggGroup::BlendMode t);
+ostream &operator << (ostream &out, EggGroup::BlendOperand t);
 
 
 #include "eggGroup.I"
