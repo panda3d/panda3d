@@ -25,7 +25,7 @@ class RandomNumGen:
 
         self.notify.debug("seed: " + str(seed))
         seed = int(seed)
-        rng = Mersenne.Mersenne(seed)
+        rng = Mersenne(seed)
         self.__rng = rng
 
     def __rand(self, N):
