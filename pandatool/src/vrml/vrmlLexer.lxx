@@ -61,8 +61,6 @@ static istream *inp = NULL;
 // can print it out for error messages.
 static string vrml_filename;
 
-int vrmlyy_flex_debug = 0;
-
 extern void vrmlyyerror(const string &);
 
     /* The YACC parser sets this to a token to direct the lexer */
@@ -84,7 +82,6 @@ static MFArray *mfarray;
 
 void
 vrml_init_lexer(istream &in, const string &filename) {
-  vrmlyy_flex_debug = 0;
   inp = &in;
   vrml_filename = filename;
   line_number = 0;
@@ -226,8 +223,6 @@ idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
     /* just told us that we've read a field name */
     /* and should expect a field value (or IS) */
     if (expectToken != 0) {
-      if (vrmlyy_flex_debug)
-          fprintf(stderr,"LEX--> Start State %d\n", expectToken);
       
       /*
        * Annoying.  This big switch is necessary because
