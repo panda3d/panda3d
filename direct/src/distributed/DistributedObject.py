@@ -353,6 +353,9 @@ class DistributedObject(PandaObject):
             # The store must run first so we know the old location
             #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
+            # init the parentId and zoneId
+            self.parentId = parentId
+            self.zoneId = zoneId
             # Give the parent a chance to run code when a new child
             # sets location to it. For example, the parent may want to
             # scene graph reparent the child to some subnode it owns.
