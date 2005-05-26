@@ -83,13 +83,10 @@ class DepthWriteAttrib;
 class TexGenAttrib;
 class CgShaderAttrib;
 class CullFaceAttrib;
-class StencilAttrib;
 class ClipPlaneAttrib;
 class ShadeModelAttrib;
 class TransparencyAttrib;
 class FogAttrib;
-class LinesmoothAttrib;
-class PointShapeAttrib;
 class DepthOffsetAttrib;
 
 class PointLight;
@@ -175,16 +172,16 @@ public:
   // inconvenient to declare each of those types to be friends of this
   // class.
 
-  virtual void draw_point(GeomPoint *geom, GeomContext *gc)=0;
-  virtual void draw_line(GeomLine *geom, GeomContext *gc)=0;
-  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc)=0;
-  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc)=0;
-  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc)=0;
-  virtual void draw_quad(GeomQuad *geom, GeomContext *gc)=0;
-  virtual void draw_tri(GeomTri *geom, GeomContext *gc)=0;
-  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc)=0;
-  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc)=0;
-  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
+  virtual void draw_point(GeomPoint *geom, GeomContext *gc) { }
+  virtual void draw_line(GeomLine *geom, GeomContext *gc) { }
+  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc) { }
+  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc) { }
+  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc) { }
+  virtual void draw_quad(GeomQuad *geom, GeomContext *gc) { }
+  virtual void draw_tri(GeomTri *geom, GeomContext *gc) { }
+  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc) { }
+  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc) { }
+  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc) { }
 
   virtual bool begin_draw_primitives(const qpGeom *geom, 
                                      const qpGeomMunger *munger,
@@ -228,7 +225,6 @@ public:
   virtual void issue_color_blend(const ColorBlendAttrib *) { }
   virtual void issue_tex_gen(const TexGenAttrib *) { }
   virtual void issue_cg_shader_bind(const CgShaderAttrib *){}
-  virtual void issue_stencil(const StencilAttrib *) { }
   virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
   virtual void issue_shade_model(const ShadeModelAttrib *) { }
 

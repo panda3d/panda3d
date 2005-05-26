@@ -64,7 +64,7 @@ public:
   INLINE const DrawMask &get_camera_mask() const;
 
   INLINE const TransformState *get_camera_transform() const;
-  INLINE const TransformState *get_render_transform() const;
+  INLINE const TransformState *get_world_transform() const;
 
   INLINE void set_initial_state(const RenderState *initial_state);
   INLINE const RenderState *get_initial_state() const;

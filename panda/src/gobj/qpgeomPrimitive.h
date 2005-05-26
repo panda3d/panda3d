@@ -267,6 +267,8 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
+INLINE ostream &operator << (ostream &out, const qpGeomPrimitive &obj);
+
 #include "qpgeomPrimitive.I"
 
 #endif

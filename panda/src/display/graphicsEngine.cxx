@@ -1041,11 +1041,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   CPT(TransformState) camera_transform = camera.get_transform(scene_parent);
   CPT(TransformState) world_transform = scene_parent.get_transform(camera);
 
-  // The render transform is the same as the world transform, except
-  // it is converted into the GSG's internal coordinate system.  This
-  // is the transform that the GSG will apply to all of its vertices.
-  CPT(TransformState) cs_transform = gsg->get_cs_transform();
-
   CPT(RenderState) initial_state = camera_node->get_initial_state();
 
   if (window->get_inverted()) {
@@ -1068,7 +1063,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   scene_setup->set_initial_state(initial_state);
   scene_setup->set_camera_transform(camera_transform);
   scene_setup->set_world_transform(world_transform);
-  scene_setup->set_cs_transform(cs_transform);
 
   return scene_setup;
 }

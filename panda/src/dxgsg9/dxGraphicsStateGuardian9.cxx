@@ -1533,7 +1533,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     }
 
     // save the modelview matrix
-    const LMatrix4f &modelview_mat = _transform->get_mat();
+    const LMatrix4f &modelview_mat = _internal_transform->get_mat();
 
     // We don't need to mess with the aspect ratio, since we are now
     // using the default projection matrix, which has the right aspect
@@ -3089,7 +3089,6 @@ issue_transform(const TransformState *transform) {
   D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
   _pD3DDevice->SetTransform(D3DTS_WORLD,pMat);
 
-  _transform = transform;
   if (_auto_rescale_normal) {
     do_auto_rescale_normal();
   }
@@ -3757,8 +3756,7 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_auto_rescale_normal() {
-  if (_transform->has_uniform_scale() &&
-      IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
+  if (_external_transform->has_identity_scale()) {
     // If there's no scale, don't normalize anything.
     _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, false);
 

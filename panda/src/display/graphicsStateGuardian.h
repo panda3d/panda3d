@@ -74,6 +74,7 @@ public:
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
+  INLINE void release_all();
   INLINE int release_all_textures();
   INLINE int release_all_geoms();
   INLINE int release_all_vertex_buffers();
@@ -127,6 +128,8 @@ public:
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
+
+  virtual float compute_distance_to(const LPoint3f &point) const;
 
   virtual void set_color_clear_value(const Colorf &value);
   virtual void set_depth_clear_value(const float value);
@@ -197,11 +200,13 @@ public:
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
   virtual void issue_color(const ColorAttrib *attrib);
+  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
   virtual void issue_light(const LightAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_blend(const ColorBlendAttrib *attrib);
+  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
@@ -279,7 +284,8 @@ protected:
   PT(SceneSetup) _scene_setup;
 
   CPT(RenderState) _state;
-  CPT(TransformState) _transform;
+  CPT(TransformState) _external_transform;
+  CPT(TransformState) _internal_transform;
   CPT(qpGeomMunger) _munger;
   CPT(qpGeomVertexData) _vertex_data;
 
@@ -333,6 +339,15 @@ protected:
   bool _has_material_force_color;
   Colorf _material_force_color;
   LVecBase4f _light_color_scale;
+
+  CPT(TextureAttrib) _current_texture;
+  CPT(TexMatrixAttrib) _current_tex_mat;
+  bool _needs_tex_mat;
+  CPT(TexGenAttrib) _current_tex_gen;
+  bool _needs_tex_gen;
+  bool _tex_gen_modifies_mat;
+  bool _tex_gen_point_sprite;
+  int _last_max_stage_index;
 
   bool _needs_reset;
   bool _closing_gsg;

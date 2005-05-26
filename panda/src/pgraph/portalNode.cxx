@@ -231,7 +231,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // Get the net trasform of the _cell_out
       CPT(TransformState) cell_transform = _cell_out.get_net_transform();
       
-      CullTraverserData next_data(_cell_out, trav->get_render_transform()->compose(cell_transform),
+      CullTraverserData next_data(_cell_out, 
                                   cell_transform,
                                   trav->get_initial_state(), vf, 
                                   trav->get_guard_band());

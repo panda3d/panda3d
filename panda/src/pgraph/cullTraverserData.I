@@ -23,13 +23,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 CullTraverserData(const NodePath &start,
-                  const TransformState *render_transform,
                   const TransformState *net_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   GeometricBoundingVolume *guard_band) :
   _node_path(start),
-  _render_transform(render_transform),
   _net_transform(net_transform),
   _state(state),
   _view_frustum(view_frustum),
@@ -45,7 +43,6 @@ CullTraverserData(const NodePath &start,
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &copy) :
   _node_path(copy._node_path),
-  _render_transform(copy._render_transform),
   _net_transform(copy._net_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
@@ -61,7 +58,6 @@ CullTraverserData(const CullTraverserData &copy) :
 INLINE void CullTraverserData::
 operator = (const CullTraverserData &copy) {
   _node_path = copy._node_path;
-  _render_transform = copy._render_transform;
   _net_transform = copy._net_transform;
   _state = copy._state;
   _view_frustum = copy._view_frustum;
@@ -77,7 +73,6 @@ operator = (const CullTraverserData &copy) {
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _node_path(parent._node_path, child),
-  _render_transform(parent._render_transform),
   _net_transform(parent._net_transform),
   _state(parent._state),
   _view_frustum(parent._view_frustum),

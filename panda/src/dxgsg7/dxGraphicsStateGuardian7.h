@@ -126,7 +126,6 @@ public:
 
   virtual bool wants_texcoords(void) const;
 
-  INLINE float compute_distance_to(const LPoint3f &point) const;
   virtual void set_color_clear_value(const Colorf& value);
 
 public:

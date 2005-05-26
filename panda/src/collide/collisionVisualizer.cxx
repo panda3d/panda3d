@@ -130,7 +130,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // always renders its objects according to their appropriate net
     // transform.
     xform_data._net_transform = TransformState::make_identity();
-    xform_data._render_transform = trav->get_render_transform();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty());
@@ -189,7 +188,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           }
             
           CullableObject *object = 
-            new CullableObject(sphere, empty_state, xform_data._render_transform);
+            new CullableObject(sphere, empty_state, xform_data._net_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }
@@ -207,7 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           line->set_num_prims(1);
           
           CullableObject *object = 
-            new CullableObject(line, empty_state, xform_data._render_transform);
+            new CullableObject(line, empty_state, xform_data._net_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }

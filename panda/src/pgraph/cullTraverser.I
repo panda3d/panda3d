@@ -81,9 +81,7 @@ get_tag_state_key() const {
 //     Function: CullTraverser::get_camera_transform
 //       Access: Public
 //  Description: Returns the position of the camera relative to the
-//               starting node, without any compensating
-//               coordinate-system transforms that might have been
-//               introduced for the purposes of rendering.
+//               starting node.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *CullTraverser::
 get_camera_transform() const {
@@ -91,21 +89,21 @@ get_camera_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_render_transform
+//     Function: CullTraverser::get_world_transform
 //       Access: Public
 //  Description: Returns the position of the starting node relative
-//               to the camera, pretransformed as appropriate for
-//               rendering.
+//               to the camera.  This is the inverse of the camera
+//               transform.
 //
 //               Note that this value is always the position of the
 //               starting node, not the current node, even if it is
-//               sampled during a traversal.  To get the render
-//               transform of the current node check in the current
-//               CullTraverserData.
+//               sampled during a traversal.  To get the world
+//               transform of the current node use
+//               CullTraverserData::_net_transform.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *CullTraverser::
-get_render_transform() const {
-  return _scene_setup->get_render_transform();
+get_world_transform() const {
+  return _scene_setup->get_world_transform();
 }
 
 ////////////////////////////////////////////////////////////////////

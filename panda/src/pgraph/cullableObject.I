@@ -41,7 +41,7 @@ CullableObject(const CullTraverserData &data,
                CullableObject *next) :
   _geom(geom_node->get_geom(i)),
   _state(data._state->compose(geom_node->get_geom_state(i))),
-  _transform(data._render_transform),
+  _transform(data._net_transform),
   _next(next)
 {
 }

@@ -72,7 +72,6 @@ apply_transform_and_state(CullTraverser *trav,
 
   if (!node_transform->is_identity()) {
     _net_transform = _net_transform->compose(node_transform);
-    _render_transform = _render_transform->compose(node_transform);
 
     if ((_view_frustum != (GeometricBoundingVolume *)NULL) ||
         (_guard_band != (GeometricBoundingVolume *)NULL)) {

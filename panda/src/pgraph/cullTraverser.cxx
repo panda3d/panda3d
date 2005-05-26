@@ -111,8 +111,7 @@ traverse(const NodePath &root, bool python_cull_control) {
     // store this pointer in this
     set_portal_clipper(&portal_viewer);
 
-    CullTraverserData data(root, get_render_transform(),
-                           TransformState::make_identity(),
+    CullTraverserData data(root, get_world_transform(),
                            _initial_state, _view_frustum, 
                            _guard_band);
     
@@ -126,12 +125,11 @@ traverse(const NodePath &root, bool python_cull_control) {
     CPT(TransformState) transform = cull_center.get_transform(root);
     
     CullTraverserData my_data(data, portal_viewer._previous);
-    my_data._render_transform = my_data._render_transform->compose(transform);
+    my_data._net_transform = my_data._net_transform->compose(transform);
     traverse(my_data);
 
   } else {
-    CullTraverserData data(root, get_render_transform(),
-                           TransformState::make_identity(),
+    CullTraverserData data(root, get_world_transform(),
                            _initial_state, _view_frustum, 
                            _guard_band);
     
@@ -275,7 +273,7 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._render_transform);
+                           data._net_transform);
       _cull_handler->record_object(outer_viz, this);
     }
     
@@ -286,12 +284,12 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(2);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._render_transform);
+                           data._net_transform);
       _cull_handler->record_object(outer_viz, this);
       
       CullableObject *inner_viz = 
         new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                           data._render_transform);
+                           data._net_transform);
       _cull_handler->record_object(inner_viz, this);
     }
   }

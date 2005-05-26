@@ -16,3 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_all
+//       Access: Public
+//  Description: Releases all prepared objects of all kinds at once.
+////////////////////////////////////////////////////////////////////
+INLINE void PreparedGraphicsObjects::
+release_all() {
+  release_all_textures();
+  release_all_geoms();
+  release_all_vertex_buffers();
+  release_all_index_buffers();
+}

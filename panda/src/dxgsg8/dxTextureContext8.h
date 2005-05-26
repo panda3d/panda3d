@@ -23,38 +23,33 @@
 #include "texture.h"
 #include "textureContext.h"
 
-//#define DO_CUSTOM_CONVERSIONS
-
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext8
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext8 : public TextureContext {
-  friend class DXGraphicsStateGuardian;
-  friend class wdxGraphicsWindow;
-
 public:
   DXTextureContext8(Texture *tex);
   ~DXTextureContext8();
 
-  IDirect3DTexture8  *_pD3DTexture8;
-  Texture *_tex;            // ptr to parent, primarily for access to namestr
   IDirect3DTexture8 *CreateTexture(DXScreenData &scrn);
+  void DeleteTexture();
 
-  D3DFORMAT _PixBufD3DFmt;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
+  INLINE bool has_mipmaps() const;
+  INLINE IDirect3DTexture8 *get_d3d_texture() const;
 
-  bool _bHasMipMaps;
+private:
+  HRESULT FillDDSurfTexturePixels();
 
-#ifdef DO_CUSTOM_CONVERSIONS
-  DWORD _PixBufConversionType;  // enum ConversionType
-#endif
+private:
+  Texture *_tex;            // ptr to parent, primarily for access to namestr
+  D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
+  IDirect3DTexture8  *_d3d_texture;
 
-  // must be public since called from global callback fns
-  void DeleteTexture(void);
-  HRESULT FillDDSurfTexturePixels(void);
+  bool _has_mipmaps;
 
 protected:
-    unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
+  unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 public:
   static TypeHandle get_class_type() {
@@ -74,7 +69,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-extern HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,Texture *pixbuf);
+HRESULT 
+d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, 
+                       Texture *result);
+
+#include "dxTextureContext8.I"
 
 #endif
 

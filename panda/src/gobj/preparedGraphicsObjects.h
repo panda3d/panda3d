@@ -60,6 +60,8 @@ public:
   PreparedGraphicsObjects();
   ~PreparedGraphicsObjects();
 
+  INLINE void release_all();
+
   void enqueue_texture(Texture *tex);
   bool dequeue_texture(Texture *tex);
   void release_texture(TextureContext *tc);

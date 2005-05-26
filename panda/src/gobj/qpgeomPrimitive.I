@@ -393,3 +393,9 @@ CData(const qpGeomPrimitive::CData &copy) :
   _max_vertex(copy._max_vertex)
 {
 }
+
+INLINE ostream &
+operator << (ostream &out, const qpGeomPrimitive &obj) {
+  obj.output(out);
+  return out;
+}

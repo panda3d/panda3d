@@ -97,6 +97,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _properties(properties)
 {
   _coordinate_system = CS_invalid;
+  _external_transform = TransformState::make_identity();
+  _internal_transform = TransformState::make_identity();
   set_coordinate_system(get_default_coordinate_system());
 
   _current_display_region = (DisplayRegion*)0L;
@@ -203,7 +205,8 @@ reset() {
   _lens_stack_level = 0;
 
   _state = RenderState::make_empty();
-  _transform = TransformState::make_identity();
+  _external_transform = TransformState::make_identity();
+  _internal_transform = _cs_transform;
 
   _buffer_mask = 0;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -242,6 +245,14 @@ reset() {
   _has_material_force_color = false;
   _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+
+  _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
+  _current_tex_mat = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
+  _needs_tex_mat = false;
+  _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
+  _needs_tex_gen = false;
+  _tex_gen_modifies_mat = false;
+  _last_max_stage_index = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,12 +440,49 @@ make_geom_munger(const RenderState *state) {
 //       Access: Public, Virtual
 //  Description: Simultaneously resets the render state and the
 //               transform state.
+//
+//               This transform specified is the "external" net
+//               transform, expressed in the external coordinate
+//               space; internally, it will be pretransformed by
+//               get_cs_transform() to express it in the GSG's
+//               internal coordinate space.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *transform) {
   set_transform(transform);
   set_state(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::compute_distance_to
+//       Access: Public, Virtual
+//  Description: This function may only be called during a render
+//               traversal; it will compute the distance to the
+//               indicated point, assumed to be in eye coordinates,
+//               from the camera plane.
+////////////////////////////////////////////////////////////////////
+float GraphicsStateGuardian::
+compute_distance_to(const LPoint3f &point) const {
+  switch (_coordinate_system) {
+  case CS_zup_right:
+    return point[1];
+
+  case CS_yup_right:
+    return -point[2];
+
+  case CS_zup_left:
+    return -point[1];
+
+  case CS_yup_left:
+    return point[2];
+
+  default:
+    gsg_cat.error()
+      << "Invalid coordinate system in compute_distance_to: "
+      << (int)_coordinate_system << "\n";
+    return 0.0f;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -900,6 +948,7 @@ set_coordinate_system(CoordinateSystem cs) {
       (LMatrix4f::convert_mat(_coordinate_system,
                               _internal_coordinate_system));
   }
+  _internal_transform = _cs_transform->compose(_external_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -925,6 +974,9 @@ get_internal_coordinate_system() const {
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
+//
+//               This transform is the internal_transform, already
+//               converted into the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_transform(const TransformState *) {
@@ -1007,6 +1059,22 @@ issue_color(const ColorAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_tex_matrix
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_tex_matrix(const TexMatrixAttrib *attrib) {
+  // We don't apply the texture matrix right away, since we might yet
+  // get a TextureAttrib that changes the set of TextureStages we have
+  // active.  Instead, we simply set a flag that indicates we need to
+  // re-issue the texture matrix after all of the other attribs are
+  // done being issued.
+  _current_tex_mat = attrib;
+  _needs_tex_mat = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::issue_light
 //       Access: Public, Virtual
 //  Description: 
@@ -1065,6 +1133,22 @@ issue_color_blend(const ColorBlendAttrib *attrib) {
   _color_blend_mode = attrib->get_mode();
   _color_blend_involves_color_scale = attrib->involves_color_scale();
   _blend_mode_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_tex_gen
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_tex_gen(const TexGenAttrib *attrib) {
+  // We don't apply the texture coordinate generation commands right
+  // away, since we might yet get a TextureAttrib that changes the set
+  // of TextureStages we have active.  Instead, we simply set a flag
+  // that indicates we need to re-issue the TexGenAttrib after all of
+  // the other attribs are done being issued.
+  _current_tex_gen = attrib;
+  _needs_tex_gen = true;
 }
 
 ////////////////////////////////////////////////////////////////////

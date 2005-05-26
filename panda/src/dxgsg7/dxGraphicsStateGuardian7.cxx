@@ -1755,7 +1755,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     }
 
     // save the modelview matrix
-    const LMatrix4f &modelview_mat = _transform->get_mat();
+    const LMatrix4f &modelview_mat = _internal_transform->get_mat();
 
     // We don't need to mess with the aspect ratio, since we are now
     // using the default projection matrix, which has the right aspect
@@ -3703,7 +3703,6 @@ issue_transform(const TransformState *transform) {
   _pScrn->pD3DDevice->SetTransform(D3DTRANSFORMSTATE_WORLD,
                                 (LPD3DMATRIX)transform->get_mat().get_data());
  
-  _transform = transform;
   if (_auto_rescale_normal) {
     do_auto_rescale_normal();
   }
@@ -4256,25 +4255,6 @@ wants_texcoords() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
-//               indicated point, assumed to be in modelview
-//               coordinates, from the camera plane.
-////////////////////////////////////////////////////////////////////
-INLINE float DXGraphicsStateGuardian7::
-compute_distance_to(const LPoint3f &point) const {
-    // In the case of a DXGraphicsStateGuardian7, we know that the
-    // modelview matrix already includes the relative transform from the
-    // camera, as well as a to-y-up conversion.  Thus, the distance to
-    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
-    // since d3d uses left-hand coords)
-
-    return point[2];
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::set_draw_buffer
 //       Access: Protected
 //  Description: Sets up the glDrawBuffer to render into the buffer
@@ -4393,8 +4373,7 @@ get_fog_mode_type(Fog::Mode m) const {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
 do_auto_rescale_normal() {
-  if (_transform->has_uniform_scale() &&
-      IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
+  if (_external_transform->has_identity_scale()) {
     // If there's no scale, don't normalize anything.
     _pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, false);
 

@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
+#include "pmap.h"
 
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
@@ -209,7 +210,7 @@ typedef struct {
 
 
 //utility stuff
-extern map<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
+extern pmap<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
 extern void Init_D3DFORMAT_map(void);
 extern const char *D3DFormatStr(D3DFORMAT fmt);
 

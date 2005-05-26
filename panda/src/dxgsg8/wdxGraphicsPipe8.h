@@ -25,20 +25,10 @@
 #include "dxgsg8base.h"
 #include <ddraw.h>
 
-typedef struct {
-   UINT    cardID;
-   char    szDriver[MAX_DEVICE_IDENTIFIER_STRING];
-   char    szDescription[MAX_DEVICE_IDENTIFIER_STRING];
-   GUID    guidDeviceIdentifier;
-   DWORD   VendorID, DeviceID;
-   HMONITOR hMon;
-} DXDeviceInfo;
-typedef pvector<DXDeviceInfo> DXDeviceInfoVec;
-
 ////////////////////////////////////////////////////////////////////
 //       Class : wdxGraphicsPipe8
 // Description : This graphics pipe represents the interface for
-//               creating DirectX graphics windows.
+//               creating DirectX8 graphics windows.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsPipe8 : public WinGraphicsPipe {
 public:
@@ -53,18 +43,18 @@ public:
   virtual PT(GraphicsDevice) make_device(void *scrn);
 
   bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
-                       D3DFORMAT *pBestFmt, bool bWantStencil,
-                       bool bForce16bpp, bool bVerboseMode = false) const;
+                              D3DFORMAT *pBestFmt, bool bWantStencil,
+                              bool bForce16bpp, bool bVerboseMode = false) const;
 
   void search_for_valid_displaymode(DXScreenData &scrn,
-                             UINT RequestedX_Size, UINT RequestedY_Size,
-                             bool bWantZBuffer, bool bWantStencil,
-                             UINT *pSupportedScreenDepthsMask,
-                             bool *pCouldntFindAnyValidZBuf,
-                             D3DFORMAT *pSuggestedPixFmt,
-                             bool bForce16bppZBuffer,
-                             bool bVerboseMode = false);
-
+                                    UINT RequestedX_Size, UINT RequestedY_Size,
+                                    bool bWantZBuffer, bool bWantStencil,
+                                    UINT *pSupportedScreenDepthsMask,
+                                    bool *pCouldntFindAnyValidZBuf,
+                                    D3DFORMAT *pSuggestedPixFmt,
+                                    bool bForce16bppZBuffer,
+                                    bool bVerboseMode = false);
+  
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
 protected:
@@ -99,7 +89,6 @@ private:
     bool  bIsLowVidMemCard;
     GUID  DX7_DeviceGUID;
     DWORD VendorID, DeviceID;
-    //   char  szDriver[MAX_DEVICE_IDENTIFIER_STRING];
   };
   
   typedef pvector<CardID> CardIDs;

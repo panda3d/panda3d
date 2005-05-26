@@ -41,6 +41,16 @@ ClipPlaneInfo() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all
+//       Access: Public
+//  Description: Releases all prepared objects.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+release_all() {
+  return _prepared_objects->release_all();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_all_textures
 //       Access: Public
 //  Description: Frees the resources for all textures associated with
@@ -483,13 +493,20 @@ set_state(const RenderState *state) {
 //               subsequent geometry.  This is normally called only
 //               during the draw process, immediately before issuing
 //               geometry commands.
+//
+//               This transform specified is the "external" net
+//               transform, expressed in the external coordinate
+//               space; internally, it will be pretransformed by
+//               get_cs_transform() to express it in the GSG's
+//               internal coordinate space.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 set_transform(const TransformState *transform) {
-  if (transform != _transform) {
+  if (transform != _external_transform) {
     _state_pcollector.add_level(1);
-    _transform = transform;
-    issue_transform(transform);
+    _external_transform = transform;
+    _internal_transform = _cs_transform->compose(transform);
+    issue_transform(_internal_transform);
   }
 }
 

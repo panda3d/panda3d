@@ -70,6 +70,12 @@ munge_geom(GraphicsStateGuardianBase *gsg,
         // directly; we have to render them in software instead.
         // Munge them into quads.  This will replace the _geom and
         // _munged_data, and might also replace _state.
+        if (pgraph_cat.is_spam()) {
+          pgraph_cat.spam()
+            << "munge_points_to_quads() for geometry with bits: " 
+            << hex << geom_rendering << ", unsupported: "
+            << (unsupported_bits & qpGeom::GR_point_bits) << dec << "\n";
+        }
         munge_points_to_quads(traverser);
         qpgeom = DCAST(qpGeom, _geom);
       }
@@ -233,16 +239,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
   SceneSetup *scene = traverser->get_scene();
   const Lens *lens = scene->get_lens();
-  const LMatrix4f &lens_mat = lens->get_projection_mat();
-  LMatrix4f projection =
-    LMatrix4f::convert_mat(gsg->get_internal_coordinate_system(), 
-                           lens->get_coordinate_system()) *
-    lens_mat;
-
-  LMatrix4f render_transform;
-  if (has_normal) {
-    render_transform = modelview * projection;
-  }
+  const LMatrix4f &projection = lens->get_projection_mat();
 
   int viewport_width = scene->get_viewport_width();
   int viewport_height = scene->get_viewport_height();
@@ -259,6 +256,22 @@ munge_points_to_quads(const CullTraverser *traverser) {
       // rendering polygons, not points any more.
       _state = _state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled));
     }
+  }
+
+  // We need a standard projection matrix, in a known coordinate
+  // system, to compute the perspective height.
+  LMatrix4f height_projection;
+  if (perspective) {
+    height_projection =
+      LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
+      projection;
+  }
+
+  // We will need the composite render transform to compute the
+  // lighting normal.
+  LMatrix4f render_transform;
+  if (has_normal) {
+    render_transform = modelview * projection;
   }
 
   // Replace each primitive in the Geom (it's presumably a GeomPoints
@@ -339,7 +352,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
         // viewport and projection matrix.
         float scale = _transform->get_scale()[1];
         LVector3f height(0.0f, point_size * scale, scale);
-        height = height * projection;
+        height = height * height_projection;
         scale_y = height[1] * viewport_height;
 
         // We should then divide the radius by the distance from the

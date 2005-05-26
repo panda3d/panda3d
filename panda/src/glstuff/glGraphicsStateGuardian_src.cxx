@@ -830,13 +830,6 @@ reset() {
         << "max texture stages = " << _max_texture_stages << "\n";
     }
   }
-  _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
-  _current_tex_mat = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-  _needs_tex_mat = false;
-  _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
-  _needs_tex_gen = false;
-  _tex_gen_modifies_mat = false;
-  _last_max_stage_index = 0;
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
   _auto_antialias_mode = false;
@@ -1444,7 +1437,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   }
 
   // save the modelview matrix
-  const LMatrix4f &modelview_mat = _transform->get_mat();
+  const LMatrix4f &modelview_mat = _internal_transform->get_mat();
 
   // We don't need to mess with the aspect ratio, since we are now
   // using the default projection matrix, which has the right aspect
@@ -2246,7 +2239,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
         for (int i = 0; i < table->get_num_transforms(); ++i) {
           LMatrix4f mat;
-          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           _glCurrentPaletteMatrixARB(i);
           GLP(LoadMatrixf)(mat.get_data());
         }
@@ -2266,21 +2259,21 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
         int i = 0;
         if (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW0_ARB);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
         }
         if (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW1_ARB);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
         }
         while (i < table->get_num_transforms()) {
           LMatrix4f mat;
-          table->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW2_ARB + i - 2);
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
@@ -2305,7 +2298,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
     if (_transform_stale) {
       GLP(MatrixMode)(GL_MODELVIEW);
-      GLP(LoadMatrixf)(_transform->get_mat().get_data());
+      GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
     }
   }
 
@@ -2745,7 +2738,7 @@ end_draw_primitives() {
   
   if (_transform_stale) {
     GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(LoadMatrixf)(_transform->get_mat().get_data());
+    GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
   }
 
   if (_vertex_data->is_vertex_transformed()) {
@@ -3442,6 +3435,9 @@ apply_fog(Fog *fog) {
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
+//
+//               This transform is the internal_transform, already
+//               converted into the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 issue_transform(const TransformState *transform) {
@@ -3454,44 +3450,11 @@ issue_transform(const TransformState *transform) {
   GLP(LoadMatrixf)(transform->get_mat().get_data());
   _transform_stale = false;
 
-  _transform = transform;
   if (_auto_rescale_normal) {
     do_auto_rescale_normal();
   }
 
   report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_tex_matrix
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_tex_matrix(const TexMatrixAttrib *attrib) {
-  // We don't apply the texture matrix right away, since we might yet
-  // get a TextureAttrib that changes the set of TextureStages we have
-  // active.  Instead, we simply set a flag that indicates we need to
-  // re-issue the texture matrix after all of the other attribs are
-  // done being issued.
-  _current_tex_mat = attrib;
-  _needs_tex_mat = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_tex_gen
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_tex_gen(const TexGenAttrib *attrib) {
-  // We don't apply the texture coordinate generation commands right
-  // away, since we might yet get a TextureAttrib that changes the set
-  // of TextureStages we have active.  Instead, we simply set a flag
-  // that indicates we need to re-issue the TexGenAttrib after all of
-  // the other attribs are done being issued.
-  _current_tex_gen = attrib;
-  _needs_tex_gen = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4049,24 +4012,6 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 bool CLP(GraphicsStateGuardian)::
 wants_texcoords() const {
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
-//               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.
-////////////////////////////////////////////////////////////////////
-float CLP(GraphicsStateGuardian)::
-compute_distance_to(const LPoint3f &point) const {
-  // In the case of a CLP(GraphicsStateGuardian), we know that the
-  // modelview matrix already includes the relative transform from the
-  // camera, as well as a to-y-up conversion.  Thus, the distance to
-  // the camera plane is simply the -z distance.
-
-  return -point[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5107,11 +5052,14 @@ begin_bind_lights() {
   // root.  (Alternatively, we could leave the current transform where
   // it is and compute the light position relative to that transform
   // instead of relative to the root, by composing with the matrix
-  // computed by _transform->invert_compose(render_transform).  But I
-  // think loading a completely new matrix is simpler.)
+  // computed by _internal_transform->invert_compose(render_transform).  
+  // But I think loading a completely new matrix is simpler.)
+  CPT(TransformState) render_transform = 
+    _cs_transform->compose(_scene_setup->get_world_transform());
+
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PushMatrix)();
-  GLP(LoadMatrixf)(_scene_setup->get_render_transform()->get_mat().get_data());
+  GLP(LoadMatrixf)(render_transform->get_mat().get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5184,11 +5132,14 @@ begin_bind_clip_planes() {
   // root.  (Alternatively, we could leave the current transform where
   // it is and compute the clip_plane position relative to that transform
   // instead of relative to the root, by composing with the matrix
-  // computed by _transform->invert_compose(render_transform).  But I
-  // think loading a completely new matrix is simpler.)
+  // computed by _internal_transform->invert_compose(render_transform).
+  // But I think loading a completely new matrix is simpler.)
+  CPT(TransformState) render_transform = 
+    _cs_transform->compose(_scene_setup->get_world_transform());
+
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PushMatrix)();
-  GLP(LoadMatrixf)(_scene_setup->get_render_transform()->get_mat().get_data());
+  GLP(LoadMatrixf)(render_transform->get_mat().get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5439,7 +5390,8 @@ finish_modify_state() {
             // tempting to try, we can't safely convert to object
             // space, since this method doesn't get called with each
             // different object.
-            CPT(TransformState) transform = _scene_setup->get_render_transform();
+            CPT(TransformState) transform = 
+              _cs_transform->compose(_scene_setup->get_world_transform());
             transform = transform->invert_compose(TransformState::make_identity());
             LMatrix4f mat = transform->get_mat();
             mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
@@ -5471,7 +5423,8 @@ finish_modify_state() {
             // tempting to try, we can't safely convert to object
             // space, since this method doesn't get called with each
             // different object.
-            CPT(TransformState) transform = _scene_setup->get_render_transform();
+            CPT(TransformState) transform = 
+              _cs_transform->compose(_scene_setup->get_world_transform());
             transform = transform->invert_compose(TransformState::make_identity());
             LMatrix4f mat = transform->get_mat();
             mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
@@ -5515,7 +5468,7 @@ finish_modify_state() {
         // load the coordinate-system transform.
         GLP(MatrixMode)(GL_MODELVIEW);
         GLP(PushMatrix)();
-        GLP(LoadMatrixf)(_scene_setup->get_cs_transform()->get_mat().get_data());
+        GLP(LoadMatrixf)(_cs_transform->get_mat().get_data());
 
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -5543,7 +5496,7 @@ finish_modify_state() {
         {
           GLP(MatrixMode)(GL_MODELVIEW);
           GLP(PushMatrix)();
-          CPT(TransformState) root_transform = _scene_setup->get_render_transform();
+          CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
           GLP(LoadMatrixf)(root_transform->get_mat().get_data());
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
           GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -5661,24 +5614,22 @@ get_flat_state() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_auto_rescale_normal() {
-  if (_transform->has_uniform_scale()) {
-    if (IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
-      // If there's no scale at all, don't do anything.
-      GLP(Disable)(GL_NORMALIZE);
-      if (_supports_rescale_normal && support_rescale_normal) {
-        GLP(Disable)(GL_RESCALE_NORMAL);
-      }
-      
-    } else {
-      // There's a uniform scale; use the rescale feature if available.
-      if (_supports_rescale_normal && support_rescale_normal) {
-        GLP(Enable)(GL_RESCALE_NORMAL);
-        GLP(Disable)(GL_NORMALIZE);
-      } else {
-        GLP(Enable)(GL_NORMALIZE);
-      }
+  if (_external_transform->has_identity_scale()) {
+    // If there's no scale at all, don't do anything.
+    GLP(Disable)(GL_NORMALIZE);
+    if (_supports_rescale_normal && support_rescale_normal) {
+      GLP(Disable)(GL_RESCALE_NORMAL);
     }
-
+    
+  } else if (_external_transform->has_uniform_scale()) {
+    // There's a uniform scale; use the rescale feature if available.
+    if (_supports_rescale_normal && support_rescale_normal) {
+      GLP(Enable)(GL_RESCALE_NORMAL);
+      GLP(Disable)(GL_NORMALIZE);
+    } else {
+      GLP(Enable)(GL_NORMALIZE);
+    }
+  
   } else {
     // If there's a non-uniform scale, normalize everything.
     GLP(Enable)(GL_NORMALIZE);

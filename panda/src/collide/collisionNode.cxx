@@ -250,8 +250,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(data, node);
 
-        next_data._render_transform = 
-          next_data._render_transform->compose(transform);
+        next_data._net_transform = 
+          next_data._net_transform->compose(transform);
         next_data._state = get_last_pos_state();
         trav->traverse(next_data);
       }

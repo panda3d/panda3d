@@ -133,7 +133,6 @@ public:
   void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
-  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_antialias(const AntialiasAttrib *);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
@@ -144,7 +143,6 @@ public:
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   virtual void issue_shade_model(const ShadeModelAttrib *attrib);
 #ifdef HAVE_CGGL
   virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
@@ -160,8 +158,6 @@ public:
                           int light_id);
 
   virtual bool wants_texcoords(void) const;
-
-  virtual float compute_distance_to(const LPoint3f &point) const;
 
   void print_gfx_visual();
 
@@ -310,13 +306,6 @@ protected:
   LMatrix4f _projection_mat;
   int _viewport_width;
   int _viewport_height;
-  CPT(TextureAttrib) _current_texture;
-  CPT(TexMatrixAttrib) _current_tex_mat;
-  bool _needs_tex_mat;
-  CPT(TexGenAttrib) _current_tex_gen;
-  bool _needs_tex_gen;
-  bool _tex_gen_modifies_mat;
-  bool _tex_gen_point_sprite;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
   float _point_size;
@@ -335,7 +324,6 @@ protected:
   int _pass_number;
   bool _auto_rescale_normal;
   GLuint _geom_display_list;
-  int _last_max_stage_index;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
   

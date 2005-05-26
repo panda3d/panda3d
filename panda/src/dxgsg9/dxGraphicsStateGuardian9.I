@@ -471,25 +471,6 @@ wants_texcoords() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
-//               indicated point, assumed to be in modelview
-//               coordinates, from the camera plane.
-////////////////////////////////////////////////////////////////////
-INLINE float DXGraphicsStateGuardian9::
-compute_distance_to(const LPoint3f &point) const {
-    // In the case of a DXGraphicsStateGuardian9, we know that the
-    // modelview matrix already includes the relative transform from the
-    // camera, as well as a to-y-up conversion.  Thus, the distance to
-    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
-    // since d3d uses left-hand coords)
-
-    return point[2];
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::get_texture_wrap_mode
 //       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to

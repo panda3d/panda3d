@@ -48,7 +48,6 @@ class CullTraverser;
 class EXPCL_PANDA CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,
-                           const TransformState *render_transform,
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
@@ -69,7 +68,6 @@ public:
                                  CPT(RenderEffects) node_effects);
 
   WorkingNodePath _node_path;
-  CPT(TransformState) _render_transform;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
