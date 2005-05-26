@@ -1031,6 +1031,8 @@ class ParamObj:
                     applier()
                     self._curParamStack.pop()
                 self._priorValuesStack.pop()
+                if hasattr(self, 'handleParamChange'):
+                    self.handleParamChange((param,))
 
         # insert stub funcs for param setters
         for param in self.ParamSet.getParams():
@@ -1097,6 +1099,8 @@ class ParamObj:
                 applier()
                 self._curParamStack.pop()
         self._priorValuesStack.pop()
+        if hasattr(self, 'handleParamChange'):
+            self.handleParamChange(tuple(self._paramsSet.keys()))
         del self._paramsSet
     def paramsLocked(self):
         return self._paramLockRefCount > 0
@@ -1176,7 +1180,9 @@ class POD:
             assert len(args) == 0
             if __debug__:
                 for arg in kwArgs.keys():
-                    assert arg in self.getDataNames()
+                    assert arg in self.getDataNames(), (
+                        "unknown argument for %s: '%s'" % (
+                        self.__class__, arg))
             for name in self.getDataNames():
                 if name in kwArgs:
                     setattr(self, name, kwArgs[name])
