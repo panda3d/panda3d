@@ -12,8 +12,9 @@ fi
 
 if [ -z "${INSTALL_DIR}" ]; then
     if [ -n "${DIRECT}" -a -d "${DIRECT}" ]; then
-        echo "$0: \$INSTALL_DIR is not defined, using \$DIRECT (${DIRECT}) instead."
-        INSTALL_DIR="direct"
+
+        # echo "$0: \$INSTALL_DIR is not defined, using \$DIRECT (${DIRECT}) instead."
+        INSTALL_DIR="${DIRECT}"
     else
         echo "$0: \$INSTALL_DIR is not defined and \$DIRECT is not a suitable default.  exiting."
         exit 1
