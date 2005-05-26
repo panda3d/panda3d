@@ -1,21 +1,43 @@
 #! /bin/sh
 
+if [ -z "${DIRECT}" ]; then
+    if [ -d "direct" ]; then
+        echo "$0: \$DIRECT is not defined, using ./direct/ instead."
+        DIRECT="direct"
+    else
+        echo "$0: \$DIRECT is not defined and there is no ./direct/ at cwd.  exiting."
+        exit 1
+    fi
+fi
 
+if [ -z "${INSTALL_DIR}" ]; then
+    if [ -n "${DIRECT}" -a -d "${DIRECT}" ]; then
+        echo "$0: \$INSTALL_DIR is not defined, using \$DIRECT (${DIRECT}) instead."
+        INSTALL_DIR="direct"
+    else
+        echo "$0: \$INSTALL_DIR is not defined and \$DIRECT is not a suitable default.  exiting."
+        exit 1
+    fi
+fi
 
-if [ -d ${DIRECT}/lib/pandac ] ; then
+if [ -d ${INSTALL_DIR}/lib/pandac ]; then
 
-    find ${DIRECT}/lib/pandac/. -maxdepth 1 -type f -print0 | xargs -0 rm
+    find ${INSTALL_DIR}/lib/pandac/. -maxdepth 1 -type f -print0 | xargs -0 rm
     
-    cp ${DIRECT}/src/extensions_native/PandaModules.py            ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libpandaModules.py         ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libpandaphysicsModules.py  ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/__init__.py*               ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libpandaeggModules.py      ${DIRECT}/lib/pandac/.      
-    cp ${DIRECT}/src/extensions_native/libpiratesModules.py       ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libdirectModules.py        ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libpandaexpressModules.py  ${DIRECT}/lib/pandac/.     
-    cp ${DIRECT}/src/extensions_native/libtoontownModules.py      ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libotpModules.py           ${DIRECT}/lib/pandac/.
-    cp ${DIRECT}/src/extensions_native/libpandafxModules.py       ${DIRECT}/lib/pandac/.
-    
-fi    
+    cp ${DIRECT}/src/extensions_native/PandaModules.py            ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaModules.py         ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaphysicsModules.py  ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/__init__.py*               ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaeggModules.py      ${INSTALL_DIR}/lib/pandac/.      
+    cp ${DIRECT}/src/extensions_native/libpiratesModules.py       ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libdirectModules.py        ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandaexpressModules.py  ${INSTALL_DIR}/lib/pandac/.     
+    cp ${DIRECT}/src/extensions_native/libtoontownModules.py      ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libotpModules.py           ${INSTALL_DIR}/lib/pandac/.
+    cp ${DIRECT}/src/extensions_native/libpandafxModules.py       ${INSTALL_DIR}/lib/pandac/.
+else
+    echo "$0: \"${INSTALL_DIR}/lib/pandac\" is not a directory"
+    exit 1
+fi
+
+echo "$0: finished."
