@@ -1392,17 +1392,6 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\"DtoolClassDict\",Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict);\n";
         
 
-        // static function into dictionary with bogus self..
-        //
-        std::map<int , Function * >::iterator sfi;
-        for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
-        {
-            out << "        //  Static Method " << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) << "\n";
-            out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
-            out << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) ;
-            out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
-        }
-
 
         // the standard call functions
         std::map<Function *, std::string >::iterator ofi;
@@ -1488,6 +1477,19 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
 
         out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
         out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_calss_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
+
+        // static function into dictionary with bogus self..
+        //
+        std::map<int , Function * >::iterator sfi;
+        for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
+        {
+            out << "        //  Static Method " << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) << "\n";
+            out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
+            out << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) ;
+            out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
+        }
+
+
 
         if(is_runtime_typed)
             out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<","<< cClassName <<"::get_class_type().get_index());\n";
