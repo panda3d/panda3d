@@ -12,8 +12,8 @@ class NotifyPanel:
         from direct.showbase.TkGlobal import Pmw, Toplevel, Frame, Label , Radiobutton
         from direct.showbase.TkGlobal import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT, IntVar
         # To get severity levels
-        from pandac.NotifySeverity import NSFatal, NSError, NSWarning, NSInfo
-        from pandac.NotifySeverity import NSDebug, NSSpam
+        from pandac.PandaModules import NSFatal, NSError, NSWarning, NSInfo
+        from pandac.PandaModules import NSDebug, NSSpam
 
         if tl == None:
             tl = Toplevel()
@@ -29,7 +29,6 @@ class NotifyPanel:
         categoryFrame = framePane.add('categories', size = 200)
         severityFrame = framePane.add('severities', size = 50)
         # Category frame
-        from pandac import NotifyCategory
         # Assemble PANDA categories
         categories = self.getPandaCategoriesAsList()
         self.__categories = {}

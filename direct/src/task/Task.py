@@ -138,8 +138,8 @@ class Task:
 
     def setupPStats(self, name):
         if __debug__ and TaskManager.taskTimerVerbose:
-            from pandac import PStatCollector
-            self.pstats = PStatCollector.PStatCollector("App:Show code:" + name)
+            from pandac.PandaModules import PStatCollector
+            self.pstats = PStatCollector("App:Show code:" + name)
 
     def finishTask(self, verbose):
         if hasattr(self, "uponDeath"):

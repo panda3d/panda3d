@@ -5,14 +5,8 @@ from pandac.PandaModules import *
 from direct.distributed.MsgTypes import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
-#from NetDatagram import NetDatagram
-#from Datagram import Datagram
-#from Datagram import *
-from pandac import Datagram
-from pandac import DatagramIterator
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
-#from PointerToConnection import PointerToConnection
 import time
 import types
 
@@ -213,7 +207,7 @@ class ServerRepository:
 # switching station for messages
 
     def handleDatagram(self, datagram):
-        dgi = DatagramIterator.DatagramIterator(datagram)
+        dgi = DatagramIterator(datagram)
         type = dgi.getUint16()
 
         if type == CLIENT_DISCONNECT:

@@ -2,7 +2,6 @@ from pandac.PandaModules import *
 from direct.showbase.DirectObject import *
 from direct.showbase.PhysicsManagerGlobal import *
 
-#from pandac import ForceNode
 from direct.directnotify import DirectNotifyGlobal
 import sys
 
