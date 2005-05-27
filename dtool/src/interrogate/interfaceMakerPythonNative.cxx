@@ -1479,7 +1479,14 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
           }
         }
 
-        out << "        PyType_Ready(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+        out << "        if(PyType_Ready(&Dtool_"<< ClassName << ".As_PyTypeObject()) < 0)\n";
+        out << "        {\n";
+        out << "             PyErr_SetString(PyExc_TypeError, \"PyType_Ready("<< ClassName << ")\");\n"; 
+        out << "             printf(\" Error In PyType_Ready" << ClassName << "\");\n";
+        out << "             return;\n";
+        out << "        }\n";
+
+        out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
         out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_calss_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
 
         if(is_runtime_typed)
@@ -1487,7 +1494,6 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         else
             out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<",-1);\n";
 
-        out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
         out << "    }\n";
 
         out << "    if(module != NULL)\n";
