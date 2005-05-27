@@ -133,20 +133,6 @@ struct Dtool_PyTypedObject
     inline PyObject        & As_PyObject(void) { return (PyObject &)_PyType; };
 };
 
-////////////////////////////////////////////////////////////////////////
-// Flads for the dtool meta definitions..
-///////////////////////////////////////////////////////////////////////
-#define Py_Dtool_flags  ( \
-                             Py_TPFLAGS_HAVE_GETCHARBUFFER | \
-                             Py_TPFLAGS_HAVE_SEQUENCE_IN | \
-                             Py_TPFLAGS_HAVE_INPLACEOPS | \
-                             Py_TPFLAGS_HAVE_RICHCOMPARE | \
-                             Py_TPFLAGS_HAVE_WEAKREFS | \
-                             Py_TPFLAGS_HAVE_ITER | \
-                             Py_TPFLAGS_HAVE_CLASS | \
-                             Py_TPFLAGS_BASETYPE | \
-                             Py_TPFLAGS_CHECKTYPES | \
-                            0)
 
 ////////////////////////////////////////////////////////////////////////
 // Macro's from Hell..  May want to Just Add this to the Code generator..
@@ -219,7 +205,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 	PyObject_GenericGetAttr,		/* tp_getattro */\
 	PyObject_GenericSetAttr,		/* tp_setattro */\
 	0,					/* tp_as_buffer */\
-	Py_Dtool_flags, /* tp_flags */\
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /* tp_flags */\
 	0,					/* tp_doc */\
 	0,					/* tp_traverse */\
 	0,					/* tp_clear */\
