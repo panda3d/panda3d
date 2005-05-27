@@ -148,7 +148,7 @@ DXGraphicsStateGuardian8::
 TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
   DXTextureContext8 *dtc = new DXTextureContext8(tex);
-  if (dtc->CreateTexture(*_pScrn) == NULL) {
+  if (dtc->create_texture(*_pScrn) == NULL) {
     delete dtc;
     return NULL;
   }
@@ -175,10 +175,6 @@ apply_texture(int i, TextureContext *tc) {
   add_to_texture_record(tc);
 #endif
 
-  // Note: if this code changes, make sure to change initialization
-  // SetTSS code in dx_init as well so DX TSS renderstate matches
-  // dxgsg state
-
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
   int dirty = dtc->get_dirty_flags();
@@ -197,9 +193,7 @@ apply_texture(int i, TextureContext *tc) {
           << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
       }
 
-      dtc->DeleteTexture();
-      if (dtc->CreateTexture(*_pScrn) == NULL) {
-
+      if (dtc->create_texture(*_pScrn) == NULL) {
         // Oops, we can't re-create the texture for some reason.
         dxgsg8_cat.error()
           << "Unable to re-create texture " << *dtc->_texture << endl;
@@ -207,7 +201,6 @@ apply_texture(int i, TextureContext *tc) {
         return;
       }
     }
-    dtc->clear_dirty_flags();
   }
 
   Texture *tex = tc->_texture;
@@ -273,7 +266,6 @@ apply_texture(int i, TextureContext *tc) {
 void DXGraphicsStateGuardian8::
 release_texture(TextureContext *tc) {
   DXTextureContext8 *gtc = DCAST(DXTextureContext8, tc);
-  gtc->DeleteTexture();
   delete gtc;
 }
 

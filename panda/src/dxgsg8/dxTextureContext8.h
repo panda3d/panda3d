@@ -32,14 +32,15 @@ public:
   DXTextureContext8(Texture *tex);
   ~DXTextureContext8();
 
-  IDirect3DTexture8 *CreateTexture(DXScreenData &scrn);
-  void DeleteTexture();
+  IDirect3DTexture8 *create_texture(DXScreenData &scrn);
+  void delete_texture();
 
   INLINE bool has_mipmaps() const;
   INLINE IDirect3DTexture8 *get_d3d_texture() const;
 
 private:
-  HRESULT FillDDSurfTexturePixels();
+  HRESULT fill_d3d_texture_pixels();
+  static int down_to_power_2(int value);
 
 private:
   Texture *_tex;            // ptr to parent, primarily for access to namestr
