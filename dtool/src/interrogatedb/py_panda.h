@@ -89,7 +89,7 @@ typedef  void   ( *PyModuleClassInit)(PyObject *module);
 //DTOOL_C_LINKAGE inline long     DTool_HashKey(PyObject * inst);
 inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 inline void     Dtool_Deallocate_General(PyObject * self);
-
+inline int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 //
 ////////////////////////////////////////////////////////////////////////
 // THIS IS THE INSTANCE CONTAINER FOR ALL panda py objects....
@@ -208,7 +208,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
     0,              /*tp_print*/\
     0,              /*tp_getattr*/\
     0,              /*tp_setattr*/\
-    0,              /*tp_compare*/\
+    &DTOOL_PyObject_Compare,              /*tp_compare*/\
     0,              /*tp_repr*/\
     &Dtool_PyNumberMethods_##CLASS_NAME,              /*tp_as_number*/\
     0,              /*tp_as_sequence*/\
@@ -343,6 +343,21 @@ DTOOL_C_LINKAGE inline void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dto
 
   return NULL;
 };
+
+DTOOL_C_LINKAGE inline void * DTOOL_Call_GetPointerThis(PyObject *self)
+{
+  if(self != NULL)
+  {
+      if(DtoolCanThisBeAPandaInstance(self))
+      {
+        Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
+        return pyself->_ptr_to_object;
+      }
+  }
+
+  return NULL;
+};
+
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
 //
@@ -586,6 +601,13 @@ inline void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename)
 
     PyObject * module = Py_InitModule(modulename,newdef);   
 
+    if(module == NULL)
+    {
+         PyErr_SetString(PyExc_TypeError, "Py_InitModule Returned NULL ???"); 
+         return;
+    }
+
+
     // the constant inits... enums, classes ...
     for(int y = 0; defs[y] != NULL; y++)
         defs[y]->_constants(module);
@@ -683,6 +705,67 @@ inline long  DTool_HashKey(PyObject * inst)
 }
 */
 
+/* Compare v to w.  Return
+   -1 if v <  w or exception (PyErr_Occurred() true in latter case).
+    0 if v == w.
+    1 if v > w.
+   XXX The docs (C API manual) say the return value is undefined in case
+   XXX of error.
+*/
+
+inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
+{
+    // if we are related..
+    if(PyType_IsSubtype(v1->ob_type, v2->ob_type)) 
+    {
+        void * v1_this = DTOOL_Call_GetPointerThis(v1);
+        void * v2_this = DTOOL_Call_GetPointerThis(v2);
+        if(v1_this != NULL && v2_this != NULL) // both are our types...
+        {
+            PyObject * func = PyObject_GetAttrString(v1, "compareTo");
+            if (func == NULL)
+            {
+                PyErr_Clear();
+            }
+            else
+            {
+                PyObject * res = NULL;
+                PyObject * args = Py_BuildValue("(O)", v2);
+                if (args != NULL)
+                {
+                    res = PyObject_Call(func, args, NULL);
+                    Py_DECREF(args);
+                }
+                Py_DECREF(func);
+              	PyErr_Clear(); // just in case the function threw an error
+                // only use if the cuntion  return an INT... hmm
+                if(res != NULL && PyInt_Check(res))
+                {
+                    int answer = PyInt_AsLong(res);
+                    Py_DECREF(res);
+                    return  answer;
+                }
+                if(res != NULL)
+                    Py_DECREF(res);
+
+            };
+            // CompareTo Failed some how :(
+            // do a this compare  .. if Posible...
+            if(v1_this < v2_this)
+                return -1;
+
+            if(v1_this > v2_this)
+                return 1;
+            return 0;
+        }
+        // ok drop to a basic object compare hmmmmmm
+    }
+    if(v1 < v2)
+        return  -1;
+    if(v1 > v2)
+        return  1;
+    return 0;   
+}
 
 #endif // PY_PANDA_H_ 
 

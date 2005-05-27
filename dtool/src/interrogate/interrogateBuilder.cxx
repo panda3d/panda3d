@@ -130,7 +130,18 @@ read_command_file(istream &in) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 do_command(const string &command, const string &params) {
-  if (command == "forcetype") {
+
+  if(command == "forcevisible")
+  {
+      CPPType *type = parser.parse_type(params);
+      if (type == (CPPType *)NULL) {
+          nout << "Unknown type: allowtype " << params << "\n";
+      } else {
+          type = type->resolve_type(&parser, &parser);
+          type->_vis = min_vis;
+      }
+  }
+  else if (command == "forcetype") {
     // forcetype explicitly exports the given type.
     CPPType *type = parser.parse_type(params);
     if (type == (CPPType *)NULL) {

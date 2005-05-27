@@ -1429,8 +1429,13 @@ bool TypeManager::IsExported(CPPType *in_type)
 
             CPPScope::Declarations::const_iterator di;
             for (di = scope->_declarations.begin();di != scope->_declarations.end(); di++)
+            {
                 if ((*di)->_vis <= min_vis) 
                     return true;
+            }
+
+            
+
     }
     else if (base_type->get_subtype() == CPPDeclaration::ST_instance) 
     {
@@ -1477,14 +1482,14 @@ bool TypeManager::IsExported(CPPType *in_type)
         }
     }
 
-
-//    printf("---------------------> Visibility Failed  %s %d Vis=%d, Minvis=%d\n",
-//        base_type->get_fully_scoped_name().c_str(),
-//        base_type->get_subtype(),
-//        base_type->_vis,
-//        min_vis);
-
-    return false;
+/*
+    printf("---------------------> Visibility Failed  %s %d Vis=%d, Minvis=%d\n",
+        base_type->get_fully_scoped_name().c_str(),
+        base_type->get_subtype(),
+        base_type->_vis,
+        min_vis);
+*/
+    return false;       
 };
 
 bool TypeManager::IsLocal(CPPType *in_type)

@@ -660,7 +660,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) 
     {
         Function *func = (*fi);
-        if(isFunctionLegal(func))
+        if( (func))
         {
             ostringstream GetThis;
             GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
@@ -894,6 +894,13 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
                     write_sub_module(out,object);
         }
     }
+    out << "//********************************************************************\n";
+    out << "//*** Module Init Updcall ..  Externally Defined Class\n";
+    out << "//********************************************************************\n";
+
+    for(std::set< std::string >::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ii++)
+                 out << "Dtool_" <<*ii <<"._Dtool_ClassInit(NULL);\n";
+
 
 
     out << "}\n";
@@ -1267,7 +1274,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
             if(HasAGetKeyFunction(obj->_itype)) 
             {
                 out << "//////////////////\n";
-                out << "//  A LocalHash(GetKey) Function for this type";
+                out << "//  A LocalHash(getKey) Function for this type";
                 out << "//     " <<ClassName << "\n";
                 out << "//////////////////\n";
                 out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
@@ -1278,7 +1285,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "    {\n";
                 out << "       return -1;\n";
                 out << "    };\n";
-                out << "    return local_this->GetKey();\n";
+                out << "    return local_this->get_key();\n";
                 out << "}\n\n";
                 has_local_hash = true;
             }
@@ -1480,7 +1487,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         else
             out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<",-1);\n";
 
-
+        out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
         out << "    }\n";
 
         out << "    if(module != NULL)\n";
@@ -1757,7 +1764,7 @@ int     GetParnetDepth(CPPType  *type)
     {
         answer ++;
         int deepest = 0;
-        TypeIndex type_index = builder.get_type(TypeManager::unwrap(type),false);
+        TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
         InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
         const InterrogateType &itype = idb->get_type(type_index);    
 
@@ -2010,7 +2017,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
             parameter_list += ", &" + param_name;
             pname_for_pyobject += param_name;
 
-            TypeIndex p_type_index = builder.get_type(TypeManager::unwrap(type),false);
+            TypeIndex p_type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
             InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
             const InterrogateType &p_itype = idb->get_type(p_type_index);    
 
@@ -2220,7 +2227,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
       {
         if( TypeManager::is_ref_to_anything(orig_type))
         {
-            TypeIndex type_index = builder.get_type(TypeManager::unwrap(type),false);
+            TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
             InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
             const InterrogateType &itype = idb->get_type(type_index);    
             std::string ows_memory_flag("true");
@@ -2249,7 +2256,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                 // this is were we type to returned a class/struct.. ie CPP TYpe            
 
 
-                TypeIndex type_index = builder.get_type(TypeManager::unwrap(orig_type),false);
+                TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
                 InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
                 const InterrogateType &itype = idb->get_type(type_index);    
                 indent(out, indent_level)
@@ -2266,7 +2273,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
 
                 if(remap->_manage_reference_count)
                 {
-                    TypeIndex type_index = builder.get_type(TypeManager::unwrap(type),false);
+                    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
                     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
                     const InterrogateType &itype = idb->get_type(type_index);    
 
@@ -2283,7 +2290,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                 }
                 else
                 {
-                    TypeIndex type_index = builder.get_type(TypeManager::unwrap(orig_type),false);
+                    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
                     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
                     const InterrogateType &itype = idb->get_type(type_index);    
 
@@ -2304,7 +2311,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
       } 
       else if( TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at) )
       {
-          TypeIndex type_index = builder.get_type(TypeManager::unwrap(orig_type),false);
+          TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
           InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
           const InterrogateType &itype = idb->get_type(type_index);    
 
@@ -2544,42 +2551,46 @@ void InterfaceMakerPythonNative::generate_wrappers()
 //
 // is the cpp object  supported by by the dtool_py interface..
 //////////////////////////////////////////////
-bool InterfaceMakerPythonNative::isCppTypeLegal(CPPType *ctype)
+bool InterfaceMakerPythonNative::isCppTypeLegal(CPPType *in_ctype)
 {
-    if(ctype == NULL)
+    if(in_ctype == NULL)
         return false;
 
-    if(builder.in_ignoretype(ctype->get_local_name(&parser)))
+    if(builder.in_ignoretype(in_ctype->get_local_name(&parser)))
+    {
         return false;
+    }
 
-    bool answer = false;
-    CPPType *type = TypeManager::unwrap(ctype);
+    //bool answer = false;
+    CPPType *type = TypeManager::unwrap(TypeManager::resolve_type(in_ctype));
+    type = TypeManager::unwrap(type);
     //CPPType *type =  ctype;
 
     if(TypeManager::is_basic_string_char(type))
     {
         return true;
-        answer = true;
     }
     else if(TypeManager::is_simple(type))
     {
         return true;
-        answer = true;
     }
-    else  if(builder.in_forcetype(ctype->get_local_name(&parser)))
+    else  if(builder.in_forcetype(in_ctype->get_local_name(&parser)))
     {
         return true;
     }
     else if(TypeManager::IsExported(type) == true)
     {
-         answer = true;
+         return  true;
     }
-    else if(TypeManager::is_pointer_to_PyObject(ctype) == true)
+    else if(TypeManager::is_pointer_to_PyObject(in_ctype) == true)
     {
       return true;
     }
 
-    return answer;
+    //if(answer == false)
+//        printf(" -------------------- Bad Type ?? %s \n",type->get_local_name().c_str());
+
+    return false;
 }
 ////////////////////////////////////////////// 
 //   Function :isExportThisRun
@@ -2621,7 +2632,10 @@ bool InterfaceMakerPythonNative::isRemapLegal( FunctionRemap &remap)
 {
     // return must be legal and managable..
     if(!isCppTypeLegal(remap._return_type->get_orig_type()))
+    {
+//        printf("  isRemapLegal Return Is Bad %s\n",remap._return_type->get_orig_type()->get_fully_scoped_name().c_str());
         return false;
+    }
 
     // ouch .. bad things will happen here ..  do not even try..
     if(remap._ForcedVoidReturn)
@@ -2648,9 +2662,14 @@ bool InterfaceMakerPythonNative::isFunctionLegal( Function *func)
     {
         FunctionRemap *remap = (*ri);
         if(isRemapLegal(*remap))
+        {
+//    printf("  Function Is Marked Legal %s\n",func->_name.c_str());
+
             return true;
+        }
     }   
 
+//    printf("  Function Is Marked Illegal %s\n",func->_name.c_str());
     return false;
 }
 ////////////////////////////////////////////////////////////////////////
@@ -2773,7 +2792,7 @@ bool InterfaceMakerPythonNative::HasAGetKeyFunction(const InterrogateType &itype
   {
       FunctionIndex func_index = itype_class.get_method(mi);
       const InterrogateFunction &ifunc = idb->get_function(func_index);
-      if(ifunc.get_name() == "GetKey") 
+      if(ifunc.get_name() == "get_key") 
       {
           if (ifunc._instances != (InterrogateFunction::Instances *)NULL) 
           {
@@ -2917,4 +2936,6 @@ bool InterfaceMakerPythonNative::NeedsAReprFunction(const InterrogateType &itype
     }
     return false;
 };
+
+
 
