@@ -64,7 +64,7 @@ class ParentMgr:
                               (repr(child), parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
-            self.notify.warning(
+            self.notify.debug(
                 "child %s requested reparent to parent '%s' that is not (yet) registered" %
                 (repr(child), parentToken))
             # cancel any pending reparent on behalf of this child
