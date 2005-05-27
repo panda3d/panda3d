@@ -398,13 +398,17 @@ bool CConnectionRepository::
 handle_update_field() {
 #ifdef HAVE_PYTHON
   PStatTimer timer(_update_pcollector);
-  int do_id = _di.get_uint32();
+  unsigned int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) {
     PyObject *doId2do =
       PyObject_GetAttrString(_python_repository, "doId2do");
     nassertr(doId2do != NULL, false);
 
+    #ifdef USE_PYTHON_2_2_OR_EARLIER
     PyObject *doId = PyInt_FromLong(do_id);
+    #else
+    PyObject *doId = PyLong_FromUnsignedLong(do_id);
+    #endif
     PyObject *distobj = PyDict_GetItem(doId2do, doId);
     Py_DECREF(doId);
     Py_DECREF(doId2do);
@@ -482,7 +486,11 @@ describe_message(ostream &out, const string &prefix,
         PyObject_GetAttrString(_python_repository, "doId2do");
       nassertv(doId2do != NULL);
 
+      #ifdef USE_PYTHON_2_2_OR_EARLIER
       PyObject *doId = PyInt_FromLong(do_id);
+      #else
+      PyObject *doId = PyLong_FromUnsignedLong(do_id);
+      #endif
       PyObject *distobj = PyDict_GetItem(doId2do, doId);
       Py_DECREF(doId);
       Py_DECREF(doId2do);

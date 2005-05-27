@@ -687,7 +687,13 @@ void DCPacker::
 pack_object(PyObject *object) {
   nassertv(_mode == M_pack || _mode == M_repack);
 
+  #ifdef USE_PYTHON_2_2_OR_EARLIER
   if (PyInt_Check(object)) {
+  #else
+  if (PyLong_Check(object)) {
+    pack_int(PyLong_AsUnsignedLong(object));
+  } else if (PyInt_Check(object)) {
+  #endif
     pack_int(PyInt_AS_LONG(object));
   } else if (PyFloat_Check(object)) {
     pack_double(PyFloat_AS_DOUBLE(object));

@@ -251,7 +251,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
   // the parameter expression list for call_function().
 
   int pn;
-  for (pn = 0; pn < (int)remap->_parameters.size(); pn++) {
+  for (pn = 0; pn < (int)remap->_parameters.size(); ++pn) {
     indent(out, 2);
     CPPType *orig_type = remap->_parameters[pn]._remap->get_orig_type();
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
@@ -302,6 +302,13 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       extra_param_check += "|| (" + param_name + "_long == NULL)";
       pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
+
+    #ifndef USE_PYTHON_2_2_OR_EARLIER
+    } else if (TypeManager::is_unsigned_integer(type)) {
+      out << "unsigned int " << param_name;
+      format_specifiers += "I";  // This requires Python 2.3 or better
+      parameter_list += ", &" + param_name;
+    #endif
 
     } else if (TypeManager::is_integer(type)) {
       out << "int " << param_name;
@@ -455,6 +462,12 @@ pack_return_value(ostream &out, int indent_level,
   {
     indent(out, indent_level)
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
+
+  #ifndef USE_PYTHON_2_2_OR_EARLIER
+  } else if (TypeManager::is_unsigned_integer(type)) {
+    indent(out, indent_level)
+      << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
+  #endif
 
   } else if (TypeManager::is_integer(type)) {
     indent(out, indent_level)

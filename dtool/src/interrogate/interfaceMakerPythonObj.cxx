@@ -232,13 +232,13 @@ write_class_wrapper(ostream &out, InterfaceMaker::Object *object) {
       << "    PyObject *name = PyString_FromString(\""
       << python_name << "\");\n"
       << "    wrapper = PyClass_New(bases, dict, name);\n"
-      << "    for (i = 0; i < methods_size; i++) {\n"
+      << "    for (i = 0; i < methods_size; ++i) {\n"
       << "      PyObject *function, *method;\n"
       << "      function = PyCFunction_New(&methods[i], (PyObject *)NULL);\n"
       << "      method = PyMethod_New(function, (PyObject *)NULL, wrapper);\n"
       << "      PyDict_SetItemString(dict, methods[i].ml_name, method);\n"
       << "    }\n"
-      << "    for (i = 0; i < class_methods_size; i++) {\n"
+      << "    for (i = 0; i < class_methods_size; ++i) {\n"
       << "      PyObject *function;\n"
       << "      function = PyCFunction_New(&class_methods[i], (PyObject *)NULL);\n"
       << "      PyDict_SetItemString(dict, class_methods[i].ml_name, function);\n"
@@ -393,6 +393,13 @@ write_function_instance(ostream &out, int indent_level,
       pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
       expected_params += "long";
+
+    #ifndef USE_PYTHON_2_2_OR_EARLIER
+    } else if (TypeManager::is_unsigned_integer(type)) {
+      out << "unsigned int " << param_name;
+      format_specifiers += "I";  // This requires Python 2.3 or better
+      parameter_list += ", &" + param_name;
+    #endif
 
     } else if (TypeManager::is_integer(type)) {
       out << "int " << param_name;
@@ -563,6 +570,12 @@ pack_return_value(ostream &out, int indent_level,
   } else if (TypeManager::is_longlong(type)) {
     indent(out, indent_level)
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
+
+  #ifndef USE_PYTHON_2_2_OR_EARLIER
+  } else if (TypeManager::is_unsigned_integer(type)) {
+    indent(out, indent_level)
+      << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
+  #endif
 
   } else if (TypeManager::is_integer(type)) {
     indent(out, indent_level)
