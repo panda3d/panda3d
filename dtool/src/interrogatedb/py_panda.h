@@ -194,7 +194,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
     0,              /*tp_print*/\
     0,              /*tp_getattr*/\
     0,              /*tp_setattr*/\
-    &DTOOL_PyObject_Compare,              /*tp_compare*/\
+    0,              /*tp_compare*/\
     0,              /*tp_repr*/\
     &Dtool_PyNumberMethods_##CLASS_NAME,              /*tp_as_number*/\
     0,              /*tp_as_sequence*/\
@@ -205,7 +205,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 	PyObject_GenericGetAttr,		/* tp_getattro */\
 	PyObject_GenericSetAttr,		/* tp_setattro */\
 	0,					/* tp_as_buffer */\
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /* tp_flags */\
+	(Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */\
 	0,					/* tp_doc */\
 	0,					/* tp_traverse */\
 	0,					/* tp_clear */\
@@ -699,7 +699,7 @@ inline long  DTool_HashKey(PyObject * inst)
    XXX of error.
 */
 
-inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
+inline int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
 {
     // if we are related..
     if(PyType_IsSubtype(v1->ob_type, v2->ob_type)) 
@@ -746,6 +746,59 @@ inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         }
         // ok drop to a basic object compare hmmmmmm
     }
+    if(v1 < v2)
+        return  -1;
+    if(v1 > v2)
+        return  1;
+    return 0;   
+}
+
+
+inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
+{
+    //  First try compare to function..
+    PyObject * func = PyObject_GetAttrString(v1, "compareTo");
+    if (func == NULL)
+    {
+        PyErr_Clear();
+    }
+    else
+    {
+        PyObject * res = NULL;
+        PyObject * args = Py_BuildValue("(O)", v2);
+        if (args != NULL)
+        {
+            res = PyObject_Call(func, args, NULL);
+            Py_DECREF(args);
+        }
+        Py_DECREF(func);
+        PyErr_Clear(); // just in case the function threw an error
+        // only use if the cuntion  return an INT... hmm
+        if(res != NULL && PyInt_Check(res))
+        {
+            int answer = PyInt_AsLong(res);
+            Py_DECREF(res);
+            return  answer;
+        }
+        if(res != NULL)
+            Py_DECREF(res);
+
+    };
+
+    // try this compare
+    void * v1_this = DTOOL_Call_GetPointerThis(v1);
+    void * v2_this = DTOOL_Call_GetPointerThis(v2);
+    if(v1_this != NULL && v2_this != NULL) // both are our types...
+    {
+        if(v1_this < v2_this)
+            return -1;
+
+        if(v1_this > v2_this)
+            return 1;
+        return 0;
+    }
+
+    // ok self compare...
     if(v1 < v2)
         return  -1;
     if(v1 > v2)

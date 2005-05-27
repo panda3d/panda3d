@@ -1414,11 +1414,14 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         }
         }
 
+        // compare and hash work together in PY inherit behavior hmm grrr
         // __hash__
         if(has_local_hash == true)
         {
             out << "        // __hash__\n";
             out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_hash = &DTool_HashKey_"<<ClassName <<";\n";
+            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;\n";
+            
 
         }
 
@@ -1987,7 +1990,19 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       expected_params += "long long";
       pname_for_pyobject += param_name;
 
-    } else if (TypeManager::is_integer(type)) {
+    }else if(TypeManager::is_unsigned_integer(type))
+    {
+      indent(out,indent_level+4) << "PyObject *" << param_name;
+      format_specifiers += "O";
+      parameter_list += ", &" + param_name;
+      extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
+      extra_param_check += "|| (" + param_name + "_uint == NULL)";
+      pexpr_string = "PyLong_AsUnsignedLong(" + param_name + "_uint)";
+      extra_cleanup += " Py_XDECREF(" + param_name + "_uint);";
+      expected_params += "unsigned int";
+      pname_for_pyobject += param_name;
+
+    }else if (TypeManager::is_integer(type)) {
       indent(out,indent_level+4) << "int " << param_name;
       format_specifiers += "i";
       parameter_list += ", &" + param_name;
