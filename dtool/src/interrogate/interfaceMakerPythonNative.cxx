@@ -898,8 +898,8 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
     out << "//*** Module Init Updcall ..  Externally Defined Class\n";
     out << "//********************************************************************\n";
 
-    for(std::set< std::string >::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ii++)
-                 out << "Dtool_" <<*ii <<"._Dtool_ClassInit(NULL);\n";
+//    for(std::set< std::string >::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ii++)
+//                 out << "Dtool_" <<*ii <<"._Dtool_ClassInit(NULL);\n";
 
 
 
@@ -1371,7 +1371,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
 
 
 
-
+        // add bases///
         if(bases.size() > 0)
         {
             out << "        // Dependent Objects   \n";
@@ -1387,7 +1387,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
             out << "        Dtool_"<<ClassName<<".As_PyTypeObject().tp_bases = Py_BuildValue(\"(" << format1 << ")\""<< format2 << ");\n";           
         }
 
-
+        // get dictionary
         out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
         out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\"DtoolClassDict\",Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict);\n";
         
