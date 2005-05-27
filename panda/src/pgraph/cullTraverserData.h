@@ -48,7 +48,7 @@ class CullTraverser;
 class EXPCL_PANDA CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,
-                           const TransformState *net_transform,
+                           const TransformState *modelview_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
                            GeometricBoundingVolume *guard_band);
@@ -60,6 +60,9 @@ public:
 
   INLINE PandaNode *node() const;
 
+  INLINE const TransformState *get_modelview_transform() const;
+  CPT(TransformState) get_net_transform(const CullTraverser *trav) const;
+
   INLINE bool is_in_view(const DrawMask &camera_mask);
   void apply_transform_and_state(CullTraverser *trav);
   void apply_transform_and_state(CullTraverser *trav, 
@@ -68,7 +71,7 @@ public:
                                  CPT(RenderEffects) node_effects);
 
   WorkingNodePath _node_path;
-  CPT(TransformState) _net_transform;
+  CPT(TransformState) _modelview_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;

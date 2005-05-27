@@ -23,12 +23,12 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 CullTraverserData(const NodePath &start,
-                  const TransformState *net_transform,
+                  const TransformState *modelview_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   GeometricBoundingVolume *guard_band) :
   _node_path(start),
-  _net_transform(net_transform),
+  _modelview_transform(modelview_transform),
   _state(state),
   _view_frustum(view_frustum),
   _guard_band(guard_band)
@@ -43,7 +43,7 @@ CullTraverserData(const NodePath &start,
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &copy) :
   _node_path(copy._node_path),
-  _net_transform(copy._net_transform),
+  _modelview_transform(copy._modelview_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
   _guard_band(copy._guard_band)
@@ -58,7 +58,7 @@ CullTraverserData(const CullTraverserData &copy) :
 INLINE void CullTraverserData::
 operator = (const CullTraverserData &copy) {
   _node_path = copy._node_path;
-  _net_transform = copy._net_transform;
+  _modelview_transform = copy._modelview_transform;
   _state = copy._state;
   _view_frustum = copy._view_frustum;
   _guard_band = copy._guard_band;
@@ -73,7 +73,7 @@ operator = (const CullTraverserData &copy) {
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _node_path(parent._node_path, child),
-  _net_transform(parent._net_transform),
+  _modelview_transform(parent._modelview_transform),
   _state(parent._state),
   _view_frustum(parent._view_frustum),
   _guard_band(parent._guard_band)
@@ -97,6 +97,17 @@ INLINE CullTraverserData::
 INLINE PandaNode *CullTraverserData::
 node() const {
   return _node_path.node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::get_modelview_transform
+//       Access: Public
+//  Description: Returns the modelview transform: the relative
+//               transform from the camera to the model.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *CullTraverserData::
+get_modelview_transform() const {
+  return _modelview_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

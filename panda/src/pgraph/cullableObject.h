@@ -49,7 +49,7 @@ public:
                         GeomNode *geom_node, int i,
                         CullableObject *next = NULL);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
-                        const TransformState *transform,
+                        const TransformState *modelview_transform,
                         CullableObject *next = NULL);
     
   INLINE CullableObject(const CullableObject &copy);
@@ -80,7 +80,7 @@ public:
   PT(qpGeomMunger) _munger;
   CPT(qpGeomVertexData) _munged_data;
   CPT(RenderState) _state;
-  CPT(TransformState) _transform;
+  CPT(TransformState) _modelview_transform;
   CullableObject *_next;
 
 private:

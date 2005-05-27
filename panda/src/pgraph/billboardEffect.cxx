@@ -147,18 +147,21 @@ void BillboardEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
-  CPT(TransformState) net_transform = data._net_transform;
+  CPT(TransformState) net_transform = data._modelview_transform;
   if (net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
     return;
   }
 
-  CPT(TransformState) camera_transform = trav->get_camera_transform();
+  // Since the "net" transform from the cull traverser already
+  // includes the inverse camera transform, the camera transform is
+  // identity.
+  CPT(TransformState) camera_transform = TransformState::make_identity();
 
-  // Determine the relative transform to our camera (or other look_at
-  // coordinate space).
+  // But if we're rotating to face something other than the camera, we
+  // have to compute the "camera" transform to compensate for that.
   if (!_look_at.is_empty()) {
-    camera_transform = _look_at.get_net_transform();
+    camera_transform = trav->get_camera_transform()->invert_compose(_look_at.get_net_transform());
   }
 
   compute_billboard(node_transform, net_transform, camera_transform);

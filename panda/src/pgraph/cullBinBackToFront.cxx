@@ -59,8 +59,8 @@ add_object(CullableObject *object) {
     DCAST_INTO_V(gbv, &volume);
     
     LPoint3f center = gbv->get_approx_center();
-    nassertv(object->_transform != (const TransformState *)NULL);
-    center = center * object->_transform->get_mat();
+    nassertv(object->_modelview_transform != (const TransformState *)NULL);
+    center = center * object->_modelview_transform->get_mat();
     
     float distance = _gsg->compute_distance_to(center);
     _objects.push_back(ObjectData(object, distance));

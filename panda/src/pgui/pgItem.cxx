@@ -182,7 +182,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PGCullTraverser *pg_trav;
       DCAST_INTO_R(pg_trav, trav, true);
 
-      const LMatrix4f &transform = data._net_transform->get_mat();
+      CPT(TransformState) net_transform = data.get_net_transform(trav);
+      const LMatrix4f &transform = net_transform->get_mat();
 
       // Consider the cull bin this object is in.  Since the binning
       // affects the render order, we want bins that render later to

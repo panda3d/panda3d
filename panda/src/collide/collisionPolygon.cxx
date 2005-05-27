@@ -278,13 +278,14 @@ get_collision_origin() const {
 //               made visible.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) CollisionPolygon::
-get_viz(const CullTraverserData &data, bool bounds_only) const {
+get_viz(const CullTraverser *trav, const CullTraverserData &data, 
+        bool bounds_only) const {
   const RenderAttrib *cpa_attrib =
     data._state->get_attrib(ClipPlaneAttrib::get_class_type());
   if (cpa_attrib == (const RenderAttrib *)NULL) {
     // Fortunately, the polygon is not clipped.  This is the normal,
     // easy case.
-    return CollisionSolid::get_viz(data, bounds_only);
+    return CollisionSolid::get_viz(trav, data, bounds_only);
   }
 
   if (collide_cat.is_debug()) {
@@ -300,10 +301,10 @@ get_viz(const CullTraverserData &data, bool bounds_only) const {
   // work.
   const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, cpa_attrib);
   Points new_points;
-  if (apply_clip_plane(new_points, cpa, data._net_transform)) {
+  if (apply_clip_plane(new_points, cpa, data.get_net_transform(trav))) {
     // All points are behind the clip plane; just draw the original
     // polygon.
-    return CollisionSolid::get_viz(data, bounds_only);
+    return CollisionSolid::get_viz(trav, data, bounds_only);
   }
 
   if (new_points.empty()) {
@@ -845,11 +846,11 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
     geom2->set_vertex_data(vdata);
     geom2->add_primitive(border);
 
-    _viz_geom->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
-    _viz_geom->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+    viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
+    viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
 
-    _bounds_viz_geom->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
-    _bounds_viz_geom->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
+    bounds_viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
+    bounds_viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
 
   } else {
     PTA_Vertexf verts;

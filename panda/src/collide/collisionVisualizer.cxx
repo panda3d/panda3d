@@ -129,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // whatever transforms were above the CollisionVisualizer node; it
     // always renders its objects according to their appropriate net
     // transform.
-    xform_data._net_transform = TransformState::make_identity();
+    xform_data._modelview_transform = trav->get_world_transform();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty());
@@ -145,7 +145,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       const CollisionSolid *solid = (*si).first;
       const SolidInfo &solid_info = (*si).second;
       bool was_detected = (solid_info._detected_count > 0);
-      PT(PandaNode) node = solid->get_viz(xform_data, !was_detected);
+      PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(xform_data, node);
         
@@ -188,7 +188,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           }
             
           CullableObject *object = 
-            new CullableObject(sphere, empty_state, xform_data._net_transform);
+            new CullableObject(sphere, empty_state, xform_data._modelview_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }
@@ -206,7 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           line->set_num_prims(1);
           
           CullableObject *object = 
-            new CullableObject(line, empty_state, xform_data._net_transform);
+            new CullableObject(line, empty_state, xform_data._modelview_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }

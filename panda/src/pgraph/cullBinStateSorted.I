@@ -52,8 +52,8 @@ operator < (const ObjectData &other) const {
 
   // Then group objects by transform, since these are supposed to be
   // expensive too.
-  if (_object->_transform != other._object->_transform) {
-    return _object->_transform < other._object->_transform;
+  if (_object->_modelview_transform != other._object->_modelview_transform) {
+    return _object->_modelview_transform < other._object->_modelview_transform;
   }
       
   // Then, sort by all the other states, in no particular order,

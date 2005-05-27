@@ -135,7 +135,7 @@ has_cull_callback() const {
 //               level.
 ////////////////////////////////////////////////////////////////////
 void CompassEffect::
-cull_callback(CullTraverser *, CullTraverserData &data,
+cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
   if (_properties == 0) {
@@ -143,8 +143,8 @@ cull_callback(CullTraverser *, CullTraverserData &data,
     return;
   }
 
-  CPT(TransformState) true_net_transform = data._net_transform;
-  CPT(TransformState) want_net_transform = data._net_transform;
+  CPT(TransformState) true_net_transform = data.get_net_transform(trav);
+  CPT(TransformState) want_net_transform = true_net_transform;
   adjust_transform(want_net_transform, node_transform);
 
   // Now compute the transform that will convert true_net_transform to

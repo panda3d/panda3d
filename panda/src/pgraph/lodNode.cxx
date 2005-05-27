@@ -250,7 +250,7 @@ is_lod_node() const {
 ////////////////////////////////////////////////////////////////////
 int LODNode::
 compute_child(CullTraverser *trav, CullTraverserData &data) {
-  if (data._net_transform->is_singular()) {
+  if (data._modelview_transform->is_singular()) {
     // If we're under a singular transform, we can't compute the LOD;
     // select none of them instead.
     return -1;
@@ -266,10 +266,11 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   //  CPT(TransformState) rel_transform =
   //    trav->get_camera_transform()->invert_compose(data._net_transform);
 
-  CPT(TransformState) rel_transform = 
-    trav->get_scene()->get_cull_center().get_net_transform()->
-    invert_compose(data._net_transform);
+  //   CPT(TransformState) rel_transform = 
+  //     trav->get_scene()->get_cull_center().get_net_transform()->
+  //     invert_compose(data._net_transform);
 
+  CPT(TransformState) rel_transform = data._modelview_transform;
   LPoint3f center = cdata->_center * rel_transform->get_mat();
 
   // Determine which child to traverse

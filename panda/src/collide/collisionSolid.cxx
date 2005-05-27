@@ -108,7 +108,7 @@ xform(const LMatrix4f &mat) {
 //               made visible.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) CollisionSolid::
-get_viz(const CullTraverserData &, bool bounds_only) const {
+get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) const {
   if ((_flags & F_viz_geom_stale) != 0) {
     if (_viz_geom == (GeomNode *)NULL) {
       ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");

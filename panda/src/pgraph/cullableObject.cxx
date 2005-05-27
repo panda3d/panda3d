@@ -54,7 +54,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
       int geom_rendering = qpgeom->get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
-      geom_rendering = _transform->get_geom_rendering(geom_rendering);
+      geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
 
       GraphicsStateGuardianBase *gsg = traverser->get_gsg();
       int gsg_bits = gsg->get_supported_geom_rendering();
@@ -235,7 +235,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
   PT(qpGeom) new_geom = new qpGeom();
   new_geom->set_vertex_data(new_data);
 
-  const LMatrix4f &modelview = _transform->get_mat();
+  const LMatrix4f &modelview = _modelview_transform->get_mat();
 
   SceneSetup *scene = traverser->get_scene();
   const Lens *lens = scene->get_lens();
@@ -350,7 +350,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
         // height in 3-d units.  To arrange that, we need to figure
         // out the appropriate scaling factor based on the current
         // viewport and projection matrix.
-        float scale = _transform->get_scale()[1];
+        float scale = _modelview_transform->get_scale()[1];
         LVector3f height(0.0f, point_size * scale, scale);
         height = height * height_projection;
         scale_y = height[1] * viewport_height;

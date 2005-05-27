@@ -361,7 +361,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     CPT(RenderState) state = data._state->add_attrib(thick);
     
     CullableObject *object = new CullableObject(geom, state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
 
   } else {
@@ -406,7 +406,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     CPT(RenderState) state = data._state->add_attrib(thick);
     
     CullableObject *object = new CullableObject(geom, state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }
@@ -451,7 +451,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     geom->add_primitive(strip);
 
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
 
   } else {
@@ -497,7 +497,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     geom->set_lengths(lengths);
     
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }
@@ -515,7 +515,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
 void RopeNode::
 render_billboard(CullTraverser *trav, CullTraverserData &data, 
                  NurbsCurveResult *result) const {
-  const TransformState *net_transform = data._net_transform;
+  const TransformState *net_transform = data._modelview_transform;
   const TransformState *camera_transform = trav->get_camera_transform();
 
   CPT(TransformState) rel_transform =
@@ -549,7 +549,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     geom->add_primitive(strip);
 
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
 
   } else {
@@ -595,7 +595,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     geom->set_lengths(lengths);
     
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }
@@ -654,7 +654,7 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     geom->add_primitive(strip);
 
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
 
   } else {
@@ -713,7 +713,7 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     geom->set_lengths(lengths);
     
     CullableObject *object = new CullableObject(geom, data._state,
-                                                data._net_transform);
+                                                data._modelview_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }

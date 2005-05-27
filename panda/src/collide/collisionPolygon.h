@@ -61,7 +61,8 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
-  virtual PT(PandaNode) get_viz(const CullTraverserData &data,
+  virtual PT(PandaNode) get_viz(const CullTraverser *trav,
+                                const CullTraverserData &data,
                                 bool bounds_only) const;
 
   virtual void output(ostream &out) const;

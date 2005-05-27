@@ -125,7 +125,7 @@ traverse(const NodePath &root, bool python_cull_control) {
     CPT(TransformState) transform = cull_center.get_transform(root);
     
     CullTraverserData my_data(data, portal_viewer._previous);
-    my_data._net_transform = my_data._net_transform->compose(transform);
+    my_data._modelview_transform = my_data._modelview_transform->compose(transform);
     traverse(my_data);
 
   } else {
@@ -273,7 +273,7 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._net_transform);
+                           data._modelview_transform);
       _cull_handler->record_object(outer_viz, this);
     }
     
@@ -284,12 +284,12 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(2);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._net_transform);
+                           data._modelview_transform);
       _cull_handler->record_object(outer_viz, this);
       
       CullableObject *inner_viz = 
         new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                           data._net_transform);
+                           data._modelview_transform);
       _cull_handler->record_object(inner_viz, this);
     }
   }
