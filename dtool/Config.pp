@@ -102,6 +102,10 @@
 
 // #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
 
+// If you  want to use python 2.2 or earlier, you may need this defined:
+// (Later versions of Python handle signed and unsigned integers differently).
+// #define USE_PYTHON_2_2_OR_EARLIER
+
 
 // The character used to separate components of an OS-specific
 // directory name depends on the platform (it is '/' on Unix, '\' on
