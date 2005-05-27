@@ -54,6 +54,8 @@ class DirectSliderBar(DirectFrame):
             textoptiondefs = (
                 ('text_pos',    (0,-0.025),          None),
                 ('text_scale',  0.1,                 None),
+                ('text_fg',     (1,1,1,1),           None),
+                ('text_shadow', (0,0,0,1),           None),
                 ('text_align',  TextNode.ALeft,      None)
                 )
         else:
