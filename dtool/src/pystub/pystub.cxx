@@ -41,6 +41,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyLong_Type(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
+  EXPCL_DTOOLCONFIG int PyObject_Call(...);
   EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_HasAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_IsInstance(...);
@@ -107,6 +108,7 @@ int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
+int PyObject_Call(...) { return 0; }
 int PyObject_GetAttrString(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
