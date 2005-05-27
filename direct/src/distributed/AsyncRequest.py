@@ -41,7 +41,7 @@ class AsyncRequest(DirectObject):
         timeout is how many seconds to wait before aborting the request.
         """
         assert self.notify.debugCall()
-        assert isinstance(air, ConnectionRepository) # The api to AsyncRequest has changed.
+        #assert isinstance(air, ConnectionRepository) # The api to AsyncRequest has changed.
         #DirectObject.DirectObject.__init__(self)
         self.air=air
         self.replyToChannelId=replyToChannelId
