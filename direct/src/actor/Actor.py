@@ -773,10 +773,10 @@ class Actor(PandaObject, NodePath):
         # Store a dictionary of jointName : node to list the controls
         # requested for joints.  The controls will actually be applied
         # later, when we load up the animations in bindAnim().
-        if self.__controlJoints.has_key(bundle):
-            self.__controlJoints[bundle][jointName] = node
+        if self.__controlJoints.has_key(bundle.this):
+            self.__controlJoints[bundle.this][jointName] = node
         else:
-            self.__controlJoints[bundle] = { jointName : node }
+            self.__controlJoints[bundle.this] = { jointName : node }
 
         return node
             
@@ -1361,7 +1361,7 @@ class Actor(PandaObject, NodePath):
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
-        controlDict = self.__controlJoints.get(bundle, None)
+        controlDict = self.__controlJoints.get(bundle.this, None)
         if controlDict:
             for jointName, node in controlDict.items():
                 if node:

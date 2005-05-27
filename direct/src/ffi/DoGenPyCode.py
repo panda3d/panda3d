@@ -6,6 +6,7 @@ import getopt
 import sys
 import os
 import glob
+import types
 from direct.ffi import FFIConstants
 
 # Define a help string for the user
@@ -56,6 +57,7 @@ etcPath = []
 doSqueeze = True
 deleteSourceAfterSqueeze = True
 generateManual = False
+native = False  # This is set by genPyCode.py
 
 def doGetopts():
     global outputDir
@@ -80,7 +82,7 @@ def doGetopts():
 
     # Extract the args the user passed in
     try:
-        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rnsgtpom')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:Ni:e:rnsgtpom')
     except Exception, e:
         # User passed in a bad option, print the error and the help, then exit
         print e
@@ -184,6 +186,55 @@ def doErrorCheck():
         FFIConstants.notify.debug('Generating code for: ' + `codeLibs`)
         FFIConstants.CodeModuleNameList = codeLibs
 
+def generateNativeWrappers():
+    # Empty out the codeDir of unnecessary crud from previous runs
+    # before we begin.
+    for file in os.listdir(outputDir):
+        pathname = os.path.join(outputDir, file)
+        if not os.path.isdir(pathname):
+            os.unlink(pathname)
+
+    # Generate __init__.py
+    initFilename = os.path.join(outputDir, '__init__.py')
+    init = open(initFilename, 'w')
+
+    # Generate PandaModules.py
+    pandaModulesFilename = os.path.join(outputDir, 'PandaModules.py')
+    pandaModules = open(pandaModulesFilename, 'w')
+
+    # Copy in any helper classes from the extensions_native directory
+    extensionHelperFiles = [ 'extension_native_helpers.py' ]
+    for name in extensionHelperFiles:
+        inFilename = os.path.join(extensionsDir, name)
+        outFilename = os.path.join(outputDir, name)
+        if os.path.exists(inFilename):
+            inFile = open(inFilename, 'r')
+            outFile = open(outFilename, 'w')
+            outFile.write(inFile.read())
+
+    # Generate a series of "libpandaModules.py" etc. files, one for
+    # each named module.
+    for moduleName in FFIConstants.CodeModuleNameList:
+        print 'Importing code library: ' + moduleName
+        exec('import %s as module' % moduleName)
+
+        pandaModules.write('from %sModules import *\n' % (moduleName))
+
+        moduleModulesFilename = os.path.join(outputDir, '%sModules.py' % (moduleName))
+        moduleModules = open(moduleModulesFilename, 'w')
+
+        moduleModules.write('from %s import *\n\n' % (moduleName))
+
+        # Now look for extensions
+        for className, classDef in module.__dict__.items():
+            if type(classDef) == types.TypeType:
+                extensionFilename = os.path.join(extensionsDir, '%s_extensions.py' % (className))
+                if os.path.exists(extensionFilename):
+                    print '  Found extensions for class: %s' % (className)
+                    extension = open(extensionFilename, 'r')
+                    moduleModules.write(extension.read())
+                    moduleModules.write('\n')
+        
 
 def run():
     global outputDir
@@ -200,9 +251,16 @@ def run():
     doErrorCheck()
 
     # Ok, now we can start generating code
-    from direct.ffi import FFIInterrogateDatabase
-    db = FFIInterrogateDatabase.FFIInterrogateDatabase(etcPath = etcPath)
-    db.generateCode(outputDir, extensionsDir)
+    if native:
+        generateNativeWrappers()
+
+    else:
+        from direct.ffi import FFIInterrogateDatabase
+        db = FFIInterrogateDatabase.FFIInterrogateDatabase(etcPath = etcPath)
+        db.generateCode(outputDir, extensionsDir)
+
+        if doSqueeze:
+            db.squeezeGeneratedCode(outputDir, deleteSourceAfterSqueeze)
 
     if generateManual:
         import epydoc.cli
@@ -211,6 +269,3 @@ def run():
         cmd = ["epydoc","-n","Panda3D","-o",mandir,"--docformat","panda","--ignore-param-mismatch",outputDir,directDir]
         sys.argv = cmd
         epydoc.cli.cli()
-
-    if doSqueeze:
-        db.squeezeGeneratedCode(outputDir,deleteSourceAfterSqueeze)

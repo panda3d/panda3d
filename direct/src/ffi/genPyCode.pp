@@ -107,12 +107,15 @@ from direct.ffi import FFIConstants
 
 # The following parameters were baked in to this script at the time
 # ppremake was run in Direct.
+#define extensions_name $[if $[PYTHON_NATIVE],extensions_native,extensions]
+
 DoGenPyCode.outputDir = r'$[osfilename $[install_lib_dir]/pandac]'
-DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/extensions]'
+DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/$[extensions_name]]'
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
 DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
 DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
+DoGenPyCode.native = $[if $[PYTHON_NATIVE],1,0]
 
 #if $[>= $[OPTIMIZE], 4]
 FFIConstants.wantComments = 0
@@ -125,7 +128,7 @@ FFIConstants.wantTypeChecking = 0
 # on the baked-in stuff--replace it with the dynamic settings from
 # ctattach.
 DoGenPyCode.outputDir = os.path.join(directDir, 'lib', 'pandac')
-DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', 'extensions')
+DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
 
 # Look for additional packages (other than the basic three)
