@@ -72,6 +72,7 @@ private:
   bool collect_shader_for_node(const MDagPath &dag_path);
 
   bool _keep_ver;
+  string _replace_prefix;
 
   PT(MayaApi) _maya;
   MayaShaders _shaders;

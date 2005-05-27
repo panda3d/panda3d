@@ -24,6 +24,7 @@
 
 #include "pre_maya_include.h"
 #include <maya/MStringArray.h>
+#include <maya/MGlobal.h>
 #include <maya/MFileIO.h>
 #include <maya/MItDag.h>
 #include <maya/MFnDagNode.h>
@@ -41,6 +42,8 @@
 ////////////////////////////////////////////////////////////////////
 MayaCopy::
 MayaCopy() {
+  _replace_prefix = "none";
+
   set_program_description
     ("mayacopy copies one or more Maya .mb files into a "
      "CVS source hierarchy.  "
@@ -60,6 +63,12 @@ MayaCopy() {
      "Don't attempt to strip the Maya version number from the tail of the "
      "source filename before it is copied into the tree.",
      &CVSCopy::dispatch_none, &_keep_ver);
+
+  add_option
+    ("rp", "replace_prefix", 80,
+     "use this prefix when replacing reference with the recently copied file from the  "
+     "source filename before it is copied into the tree.",
+     &CVSCopy::dispatch_string, NULL, &_replace_prefix);
 
   add_path_replace_options();
 }
@@ -185,13 +194,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
     return false;
   }
 
-  // Now write out the Maya file.
-  if (!_maya->write(dest)) {
-    maya_cat.error()
-      << "Cannot write " << dest << "\n";
-    return false;
-  }
-
   // Finally, copy in any referenced Maya files.
   unsigned int num_refs = refs.length();
 
@@ -202,6 +204,40 @@ copy_maya_file(const Filename &source, const Filename &dest,
   }
   */
 
+  if (num_refs != 0) {
+    if (_replace_prefix.find("none") != string::npos) {
+      maya_cat.error()
+        << "External references exist: " 
+        << "please make sure to specify a _replace_prefix with -rp option\n";
+      exit(1);
+    }
+  }
+
+  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+    // one thing we need to do is rename the path to the base file
+    // that it is referencing to. This will guarantee that the
+    // refencing will stay in the copied directory. Only way I could
+    // make it work properly is through following MEL command. the
+    // pear character is used as an example. The maya API calls of
+    // removeReference and reference didn't work for the animations
+    // file -loadReference "mtpRN" -type "mayaBinary" -options "v=0"
+    // "m_t_pear_zero.mb";
+    Filename filename = 
+      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
+
+    string execString = "file -loadReference \"" + _replace_prefix + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + filename.get_basename() + "\";";
+    maya_cat.info() << "executing command: " << execString << "\n";
+    //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
+    MGlobal::executeCommand(MString(execString.c_str()));
+  }
+
+  // Now write out the Maya file.
+  if (!_maya->write(dest)) {
+    maya_cat.error()
+      << "Cannot write " << dest << "\n";
+    return false;
+  }
+  
   for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
     //maya_cat.info() << "refs filename: " << refs[ref_index].asChar() << "\n";
     //maya_cat.info() << "os_specific filename: " << Filename::from_os_specific(refs[ref_index].asChar()) << "\n";
@@ -220,6 +256,21 @@ copy_maya_file(const Filename &source, const Filename &dest,
       exit(1);
     }
   }
+
+  /*
+  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+    Filename filename = 
+      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
+    status = MFileIO::reference(MString(filename.get_basename().c_str()));
+    if (!status) {
+      status.perror("MFileIO reference");
+    }
+    status = MFileIO::removeReference(refs[ref_index].asChar());
+    if (!status) {
+      status.perror("MFileIO removeReference");
+    }
+  }
+  */
 
   return true;
 }
