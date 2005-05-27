@@ -73,3 +73,18 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
         self.setR(r)
     def setComponentT(self, t):
         pass
+
+    def getComponentX(self):
+        return self.getX()
+    def getComponentY(self):
+        return self.getY()
+    def getComponentZ(self):
+        return self.getZ()
+    def getComponentH(self):
+        return self.getH()
+    def getComponentP(self):
+        return self.getP()
+    def getComponentR(self):
+        return self.getR()
+    def getComponentT(self):
+        pass
