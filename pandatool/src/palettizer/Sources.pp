@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     pandatoolbase
   #define OTHER_LIBS \
-    egg:c pgraph:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
+    egg:c display:c pgraph:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
     event:c mathutil:c \
     pandaegg:m panda:m pandaexpress:m \
     dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m

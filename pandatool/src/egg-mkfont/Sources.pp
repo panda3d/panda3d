@@ -5,7 +5,7 @@
 #define LOCAL_LIBS \
   palettizer eggbase progbase
 #define OTHER_LIBS \
-  pnmtext:c pnmimagetypes:c pnmimage:c \
+  display:c pnmtext:c pnmimagetypes:c pnmimage:c \
   egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \
   dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
