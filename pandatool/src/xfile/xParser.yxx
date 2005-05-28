@@ -107,6 +107,7 @@ xfile:
         empty
         | xfile template
         | xfile object
+        | xfile TOKEN_CBRACE   /* the 3dsMax converter writes an extra one. */
         ;
 
 template:

@@ -90,7 +90,7 @@ x_cleanup_parser() {
 
 
 
-#define	YYFINAL		96
+#define	YYFINAL		97
 #define	YYFLAG		-32768
 #define	YYNTBASE	34
 
@@ -131,33 +131,34 @@ static const char yytranslate[] =
 #if YYDEBUG
 static const short yyprhs[] =
 {
-       0,     0,     2,     5,     8,     9,    17,    22,    24,    26,
-      28,    30,    32,    34,    37,    39,    41,    43,    47,    52,
-      56,    58,    60,    62,    64,    66,    68,    70,    72,    74,
-      76,    78,    81,    84,    86,    89,    93,    95,    97,    99,
-     102,   104,   107,   109,   111,   113,   115,   117,   119,   123,
-     124,   132,   134,   137,   141,   143,   145,   147,   150,   152,
-     154,   156,   158,   160,   162,   164,   167
+       0,     0,     2,     5,     8,    11,    12,    20,    25,    27,
+      29,    31,    33,    35,    37,    40,    42,    44,    46,    50,
+      55,    59,    61,    63,    65,    67,    69,    71,    73,    75,
+      77,    79,    81,    84,    87,    89,    92,    96,    98,   100,
+     102,   105,   107,   110,   112,   114,   116,   118,   120,   122,
+     126,   127,   135,   137,   140,   144,   146,   148,   150,   153,
+     155,   157,   159,   161,   163,   165,   167,   170
 };
 static const short yyrhs[] =
 {
-      66,     0,    34,    35,     0,    34,    57,     0,     0,    20,
-      52,     9,    54,    36,    37,    10,     0,    38,    13,    39,
-      14,     0,    40,     0,    66,     0,    40,     0,    56,     0,
-      50,     0,    41,     0,    40,    41,     0,    42,     0,    43,
-       0,    44,     0,    45,    53,    19,     0,    33,    46,    47,
-      19,     0,    52,    53,    19,     0,    21,     0,    22,     0,
-      23,     0,    24,     0,    25,     0,    26,     0,    27,     0,
-      28,     0,    30,     0,    31,     0,    32,     0,    45,    52,
-       0,    52,    52,     0,    48,     0,    47,    48,     0,    13,
-      49,    14,     0,     5,     0,    52,     0,    51,     0,    50,
-      51,     0,    52,     0,    52,    54,     0,     3,     0,    66,
-       0,    52,     0,     6,     0,    66,     0,    54,     0,    17,
-      17,    17,     0,     0,    52,    53,     9,    58,    55,    59,
-      10,     0,    66,     0,    59,    60,     0,     9,    65,    10,
-       0,    57,     0,    61,     0,    62,     0,    63,    64,     0,
-      64,     0,     7,     0,     8,     0,     4,     0,    19,     0,
-      18,     0,    52,     0,    52,    54,     0,     0
+      66,     0,    34,    35,     0,    34,    57,     0,    34,    10,
+       0,     0,    20,    52,     9,    54,    36,    37,    10,     0,
+      38,    13,    39,    14,     0,    40,     0,    66,     0,    40,
+       0,    56,     0,    50,     0,    41,     0,    40,    41,     0,
+      42,     0,    43,     0,    44,     0,    45,    53,    19,     0,
+      33,    46,    47,    19,     0,    52,    53,    19,     0,    21,
+       0,    22,     0,    23,     0,    24,     0,    25,     0,    26,
+       0,    27,     0,    28,     0,    30,     0,    31,     0,    32,
+       0,    45,    52,     0,    52,    52,     0,    48,     0,    47,
+      48,     0,    13,    49,    14,     0,     5,     0,    52,     0,
+      51,     0,    50,    51,     0,    52,     0,    52,    54,     0,
+       3,     0,    66,     0,    52,     0,     6,     0,    66,     0,
+      54,     0,    17,    17,    17,     0,     0,    52,    53,     9,
+      58,    55,    59,    10,     0,    66,     0,    59,    60,     0,
+       9,    65,    10,     0,    57,     0,    61,     0,    62,     0,
+      63,    64,     0,    64,     0,     7,     0,     8,     0,     4,
+       0,    19,     0,    18,     0,    52,     0,    52,    54,     0,
+       0
 };
 
 #endif
@@ -166,13 +167,13 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   106,   108,   109,   112,   112,   127,   129,   132,   134,
-     137,   142,   145,   147,   150,   152,   153,   156,   164,   168,
-     181,   186,   190,   194,   198,   202,   206,   210,   214,   218,
-     222,   228,   234,   246,   248,   251,   255,   260,   271,   275,
-     280,   290,   305,   309,   314,   317,   321,   326,   329,   333,
-     333,   359,   361,   364,   370,   374,   380,   386,   392,   397,
-     401,   405,   409,   411,   414,   424,   440
+       0,   106,   108,   109,   110,   113,   113,   128,   130,   133,
+     135,   138,   143,   146,   148,   151,   153,   154,   157,   165,
+     169,   182,   187,   191,   195,   199,   203,   207,   211,   215,
+     219,   223,   229,   235,   247,   249,   252,   256,   261,   272,
+     276,   281,   291,   306,   310,   315,   318,   322,   327,   330,
+     334,   334,   360,   362,   365,   371,   375,   381,   387,   393,
+     398,   402,   406,   410,   412,   415,   425,   441
 };
 #endif
 
@@ -205,25 +206,25 @@ static const char *const yytname[] =
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives. */
 static const short yyr1[] =
 {
-       0,    34,    34,    34,    36,    35,    37,    37,    38,    38,
-      39,    39,    40,    40,    41,    41,    41,    42,    43,    44,
-      45,    45,    45,    45,    45,    45,    45,    45,    45,    45,
-      45,    46,    46,    47,    47,    48,    49,    49,    50,    50,
-      51,    51,    52,    53,    53,    54,    55,    55,    56,    58,
-      57,    59,    59,    60,    60,    60,    60,    60,    60,    61,
-      62,    63,    64,    64,    65,    65,    66
+       0,    34,    34,    34,    34,    36,    35,    37,    37,    38,
+      38,    39,    39,    40,    40,    41,    41,    41,    42,    43,
+      44,    45,    45,    45,    45,    45,    45,    45,    45,    45,
+      45,    45,    46,    46,    47,    47,    48,    49,    49,    50,
+      50,    51,    51,    52,    53,    53,    54,    55,    55,    56,
+      58,    57,    59,    59,    60,    60,    60,    60,    60,    60,
+      61,    62,    63,    64,    64,    65,    65,    66
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN. */
 static const short yyr2[] =
 {
-       0,     1,     2,     2,     0,     7,     4,     1,     1,     1,
-       1,     1,     1,     2,     1,     1,     1,     3,     4,     3,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     2,     2,     1,     2,     3,     1,     1,     1,     2,
-       1,     2,     1,     1,     1,     1,     1,     1,     3,     0,
-       7,     1,     2,     3,     1,     1,     1,     2,     1,     1,
-       1,     1,     1,     1,     1,     2,     0
+       0,     1,     2,     2,     2,     0,     7,     4,     1,     1,
+       1,     1,     1,     1,     2,     1,     1,     1,     3,     4,
+       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     2,     2,     1,     2,     3,     1,     1,     1,
+       2,     1,     2,     1,     1,     1,     1,     1,     1,     3,
+       0,     7,     1,     2,     3,     1,     1,     1,     2,     1,
+       1,     1,     1,     1,     1,     1,     2,     0
 };
 
 /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -231,84 +232,82 @@ static const short yyr2[] =
    error. */
 static const short yydefact[] =
 {
-      66,     0,     1,    42,     0,     2,    66,     3,     0,    44,
-       0,    43,     0,    49,    45,     4,    66,    66,    47,    66,
-      46,    20,    21,    22,    23,    24,    25,    26,    27,    28,
-      29,    30,     0,     0,     0,     7,    12,    14,    15,    16,
-      66,    66,     8,     0,    51,     0,     0,     0,     5,     0,
-      13,     0,     0,    61,    59,    60,     0,    50,    63,    62,
-      54,    52,    55,    56,     0,    58,    31,     0,     0,    33,
-      32,     0,     0,    11,    38,    40,    10,    17,    19,    64,
-       0,    57,    36,     0,    37,    18,    34,     0,     6,    39,
-      41,    65,    53,    35,    48,     0,     0
+      67,     0,     1,    43,     4,     0,     2,    67,     3,     0,
+      45,     0,    44,     0,    50,    46,     5,    67,    67,    48,
+      67,    47,    21,    22,    23,    24,    25,    26,    27,    28,
+      29,    30,    31,     0,     0,     0,     8,    13,    15,    16,
+      17,    67,    67,     9,     0,    52,     0,     0,     0,     6,
+       0,    14,     0,     0,    62,    60,    61,     0,    51,    64,
+      63,    55,    53,    56,    57,     0,    59,    32,     0,     0,
+      34,    33,     0,     0,    12,    39,    41,    11,    18,    20,
+      65,     0,    58,    37,     0,    38,    19,    35,     0,     7,
+      40,    42,    66,    54,    36,    49,     0,     0
 };
 
 static const short yydefgoto[] =
 {
-       1,     5,    17,    33,    34,    72,    35,    36,    37,    38,
-      39,    40,    46,    68,    69,    83,    73,    74,     9,    10,
-      15,    19,    76,     7,    16,    43,    61,    62,    63,    64,
-      65,    80,    11
+       1,     6,    18,    34,    35,    73,    36,    37,    38,    39,
+      40,    41,    47,    69,    70,    84,    74,    75,    10,    11,
+      16,    20,    77,     8,    17,    44,    62,    63,    64,    65,
+      66,    81,    12
 };
 
 static const short yypact[] =
 {
-  -32768,     2,-32768,-32768,    12,-32768,    12,-32768,     8,-32768,
-       9,-32768,    13,-32768,-32768,-32768,    13,    67,-32768,-32768,
+  -32768,     2,-32768,-32768,-32768,     5,-32768,     5,-32768,     9,
+  -32768,    17,-32768,    30,-32768,-32768,-32768,    30,    68,-32768,
   -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,    80,    15,    14,    54,-32768,-32768,-32768,-32768,
-      12,    12,-32768,   110,-32768,    12,    16,    12,-32768,     7,
-  -32768,    11,    17,-32768,-32768,-32768,    12,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,   -11,-32768,-32768,     6,    -7,-32768,
-  -32768,    18,    19,    12,-32768,    13,-32768,-32768,-32768,    13,
-      22,-32768,-32768,    23,-32768,-32768,-32768,    21,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,    26,-32768
+  -32768,-32768,-32768,    81,     1,    25,    55,-32768,-32768,-32768,
+  -32768,     5,     5,-32768,     6,-32768,     5,    26,     5,-32768,
+      16,-32768,    18,    21,-32768,-32768,-32768,     5,-32768,-32768,
+  -32768,-32768,-32768,-32768,-32768,   -12,-32768,-32768,    24,    15,
+  -32768,-32768,    27,    28,     5,-32768,    30,-32768,-32768,-32768,
+      30,    31,-32768,-32768,    32,-32768,-32768,-32768,    33,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,    48,-32768
 };
 
 static const short yypgoto[] =
 {
-  -32768,-32768,-32768,-32768,-32768,-32768,-32768,     5,-32768,-32768,
-  -32768,    -4,-32768,-32768,   -29,-32768,-32768,   -32,    -1,   -27,
-     -15,-32768,-32768,     0,-32768,-32768,-32768,-32768,-32768,-32768,
-     -19,-32768,     4
+  -32768,-32768,-32768,-32768,-32768,-32768,-32768,    19,-32768,-32768,
+  -32768,    20,-32768,-32768,   -18,-32768,-32768,   -22,    -1,   -11,
+     -16,-32768,-32768,    10,-32768,-32768,-32768,-32768,-32768,-32768,
+      -8,-32768,     3
 };
 
 
-#define	YYLAST		129
+#define	YYLAST		113
 
 
 static const short yytable[] =
 {
-       6,    18,    95,     8,     2,     3,    67,    58,    59,     3,
-       3,    82,    85,    51,    52,     3,    41,    12,    13,    14,
-      20,    42,     4,    44,    71,    48,    96,    49,    45,    67,
-      77,    47,    92,    88,    41,    87,    78,    93,    94,    86,
-      50,    89,     6,    60,    66,    81,    70,     0,    75,     0,
-       0,     0,     0,     0,     0,    79,     0,     3,     0,     0,
-      90,     0,     0,     0,    91,     0,    84,    -9,     0,     0,
-       3,     0,    75,     0,     0,    21,    22,    23,    24,    25,
-      26,    27,    28,     3,    29,    30,    31,    32,    21,    22,
-      23,    24,    25,    26,    27,    28,     0,    29,    30,    31,
-      32,    21,    22,    23,    24,    25,    26,    27,    28,     0,
-      29,    30,    31,     3,    53,     0,     0,    54,    55,    56,
-      57,     0,     0,     0,     0,     0,     0,     0,    58,    59
+       7,    19,    96,     2,     9,     3,    59,    60,     3,     3,
+      54,    49,     4,    55,    56,    57,    58,    42,    13,     3,
+      21,    43,     5,    45,    59,    60,    14,     3,    68,    83,
+      52,    53,    48,    72,    86,    42,    15,    78,    50,    68,
+      79,    93,    89,     7,    88,    67,    94,    71,    97,    76,
+      95,    87,    90,    46,    61,    51,    80,    82,     3,     0,
+      91,     0,     0,     0,    92,     0,     0,    85,   -10,     0,
+       0,     3,     0,    76,     0,     0,    22,    23,    24,    25,
+      26,    27,    28,    29,     3,    30,    31,    32,    33,    22,
+      23,    24,    25,    26,    27,    28,    29,     0,    30,    31,
+      32,    33,    22,    23,    24,    25,    26,    27,    28,    29,
+       0,    30,    31,    32
 };
 
 static const short yycheck[] =
 {
-       1,    16,     0,     4,     0,     3,    13,    18,    19,     3,
-       3,     5,    19,    40,    41,     3,    17,     9,     9,     6,
-      16,    17,    20,    19,    17,    10,     0,    13,    32,    13,
-      19,    32,    10,    14,    35,    17,    19,    14,    17,    68,
-      35,    73,    43,    43,    45,    64,    47,    -1,    49,    -1,
-      -1,    -1,    -1,    -1,    -1,    56,    -1,     3,    -1,    -1,
-      75,    -1,    -1,    -1,    79,    -1,    67,    13,    -1,    -1,
-       3,    -1,    73,    -1,    -1,    21,    22,    23,    24,    25,
-      26,    27,    28,     3,    30,    31,    32,    33,    21,    22,
-      23,    24,    25,    26,    27,    28,    -1,    30,    31,    32,
-      33,    21,    22,    23,    24,    25,    26,    27,    28,    -1,
-      30,    31,    32,     3,     4,    -1,    -1,     7,     8,     9,
-      10,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    18,    19
+       1,    17,     0,     0,     5,     3,    18,    19,     3,     3,
+       4,    10,    10,     7,     8,     9,    10,    18,     9,     3,
+      17,    18,    20,    20,    18,    19,     9,     3,    13,     5,
+      41,    42,    33,    17,    19,    36,     6,    19,    13,    13,
+      19,    10,    14,    44,    17,    46,    14,    48,     0,    50,
+      17,    69,    74,    33,    44,    36,    57,    65,     3,    -1,
+      76,    -1,    -1,    -1,    80,    -1,    -1,    68,    13,    -1,
+      -1,     3,    -1,    74,    -1,    -1,    21,    22,    23,    24,
+      25,    26,    27,    28,     3,    30,    31,    32,    33,    21,
+      22,    23,    24,    25,    26,    27,    28,    -1,    30,    31,
+      32,    33,    21,    22,    23,    24,    25,    26,    27,    28,
+      -1,    30,    31,    32
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/bison/bison.simple"
@@ -1017,8 +1016,8 @@ yyreduce:
 
   switch (yyn) {
 
-case 4:
-#line 114 "xParser.yxx"
+case 5:
+#line 115 "xParser.yxx"
 {
   yyval.u.node = current_node;
   XFileTemplate *templ = new XFileTemplate(x_file, yyvsp[-2].str, yyvsp[0].guid);
@@ -1026,28 +1025,28 @@ case 4:
   current_node = templ;
 }
     break;
-case 5:
-#line 121 "xParser.yxx"
+case 6:
+#line 122 "xParser.yxx"
 {
   yyval.u.node = current_node;
   current_node = yyvsp[-2].u.node;
 }
     break;
-case 10:
-#line 139 "xParser.yxx"
+case 11:
+#line 140 "xParser.yxx"
 {
   DCAST(XFileTemplate, current_node)->set_open(true);
 }
     break;
-case 17:
-#line 158 "xParser.yxx"
+case 18:
+#line 159 "xParser.yxx"
 {
   current_data_def = new XFileDataDef(x_file, yyvsp[-1].str, yyvsp[-2].u.primitive_type);
   current_node->add_child(current_data_def);
 }
     break;
-case 19:
-#line 170 "xParser.yxx"
+case 20:
+#line 171 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-2].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1058,81 +1057,81 @@ case 19:
   }
 }
     break;
-case 20:
-#line 183 "xParser.yxx"
+case 21:
+#line 184 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_word;
 }
     break;
-case 21:
-#line 187 "xParser.yxx"
+case 22:
+#line 188 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_dword;
 }
     break;
-case 22:
-#line 191 "xParser.yxx"
+case 23:
+#line 192 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_float;
 }
     break;
-case 23:
-#line 195 "xParser.yxx"
+case 24:
+#line 196 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_double;
 }
     break;
-case 24:
-#line 199 "xParser.yxx"
+case 25:
+#line 200 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_char;
 }
     break;
-case 25:
-#line 203 "xParser.yxx"
+case 26:
+#line 204 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_uchar;
 }
     break;
-case 26:
-#line 207 "xParser.yxx"
+case 27:
+#line 208 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_sword;
 }
     break;
-case 27:
-#line 211 "xParser.yxx"
+case 28:
+#line 212 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_sdword;
 }
     break;
-case 28:
-#line 215 "xParser.yxx"
+case 29:
+#line 216 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_string;
 }
     break;
-case 29:
-#line 219 "xParser.yxx"
+case 30:
+#line 220 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_unicode;
 }
     break;
-case 30:
-#line 223 "xParser.yxx"
+case 31:
+#line 224 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_cstring;
 }
     break;
-case 31:
-#line 230 "xParser.yxx"
+case 32:
+#line 231 "xParser.yxx"
 {
   current_data_def = new XFileDataDef(x_file, yyvsp[0].str, yyvsp[-1].u.primitive_type);
   current_node->add_child(current_data_def);
 }
     break;
-case 32:
-#line 235 "xParser.yxx"
+case 33:
+#line 236 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-1].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1143,14 +1142,14 @@ case 32:
   }
 }
     break;
-case 36:
-#line 257 "xParser.yxx"
+case 37:
+#line 258 "xParser.yxx"
 {
   current_data_def->add_array_def(XFileArrayDef(yyvsp[0].u.number));
 }
     break;
-case 37:
-#line 261 "xParser.yxx"
+case 38:
+#line 262 "xParser.yxx"
 {
   XFileNode *data_def = current_node->find_child(yyvsp[0].str);
   if (data_def == (XFileNode *)NULL) {
@@ -1160,18 +1159,18 @@ case 37:
   }
 }
     break;
-case 38:
-#line 273 "xParser.yxx"
-{
-}
-    break;
 case 39:
-#line 276 "xParser.yxx"
+#line 274 "xParser.yxx"
 {
 }
     break;
 case 40:
-#line 282 "xParser.yxx"
+#line 277 "xParser.yxx"
+{
+}
+    break;
+case 41:
+#line 283 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[0].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1181,8 +1180,8 @@ case 40:
   }
 }
     break;
-case 41:
-#line 291 "xParser.yxx"
+case 42:
+#line 292 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[0].guid);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1196,20 +1195,20 @@ case 41:
   }
 }
     break;
-case 43:
-#line 311 "xParser.yxx"
+case 44:
+#line 312 "xParser.yxx"
 {
   yyval.str = string();
 }
     break;
-case 46:
-#line 323 "xParser.yxx"
+case 47:
+#line 324 "xParser.yxx"
 {
   yyval.guid = WindowsGuid();
 }
     break;
-case 49:
-#line 335 "xParser.yxx"
+case 50:
+#line 336 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-2].str);
   yyval.u.node = current_node;
@@ -1224,8 +1223,8 @@ case 49:
   }
 }
     break;
-case 50:
-#line 349 "xParser.yxx"
+case 51:
+#line 350 "xParser.yxx"
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
@@ -1235,50 +1234,50 @@ case 50:
   current_node = yyvsp[-3].u.node;
 }
     break;
-case 53:
-#line 366 "xParser.yxx"
+case 54:
+#line 367 "xParser.yxx"
 {
   // nested references should be added as children too.
   current_node->add_child(yyvsp[-1].u.node);
 }
     break;
-case 54:
-#line 371 "xParser.yxx"
+case 55:
+#line 372 "xParser.yxx"
 {
   // nested objects are just quietly added as children.
 }
     break;
-case 55:
-#line 375 "xParser.yxx"
+case 56:
+#line 376 "xParser.yxx"
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_int(yyvsp[0].int_list);
 }
     break;
-case 56:
-#line 381 "xParser.yxx"
+case 57:
+#line 382 "xParser.yxx"
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_double(yyvsp[0].double_list);
 }
     break;
-case 57:
-#line 387 "xParser.yxx"
+case 58:
+#line 388 "xParser.yxx"
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_string(yyvsp[-1].str);
 }
     break;
-case 58:
-#line 393 "xParser.yxx"
+case 59:
+#line 394 "xParser.yxx"
 {
 }
     break;
-case 64:
-#line 416 "xParser.yxx"
+case 65:
+#line 417 "xParser.yxx"
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object(yyvsp[0].str);
   if (data_object == (XFileDataObject *)NULL) {
@@ -1288,8 +1287,8 @@ case 64:
   yyval.u.node = new XFileDataNodeReference(data_object);
 }
     break;
-case 65:
-#line 425 "xParser.yxx"
+case 66:
+#line 426 "xParser.yxx"
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object(yyvsp[0].guid);
   if (data_object == (XFileDataObject *)NULL) {
@@ -1537,4 +1536,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 442 "xParser.yxx"
+#line 443 "xParser.yxx"

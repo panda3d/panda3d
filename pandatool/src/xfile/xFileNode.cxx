@@ -24,6 +24,7 @@
 #include "xFile.h"
 #include "xFileDataNodeTemplate.h"
 #include "filename.h"
+#include "string_utils.h"
 
 TypeHandle XFileNode::_type_handle;
 
@@ -58,7 +59,7 @@ XFileNode::
 XFileNode *XFileNode::
 find_child(const string &name) const {
   ChildrenByName::const_iterator ni;
-  ni = _children_by_name.find(name);
+  ni = _children_by_name.find(downcase(name));
   if (ni != _children_by_name.end()) {
     return get_child((*ni).second);
   }
@@ -75,7 +76,7 @@ find_child(const string &name) const {
 int XFileNode::
 find_child_index(const string &name) const {
   ChildrenByName::const_iterator ni;
-  ni = _children_by_name.find(name);
+  ni = _children_by_name.find(downcase(name));
   if (ni != _children_by_name.end()) {
     return (*ni).second;
   }
@@ -227,7 +228,7 @@ is_standard_object(const string &template_name) const {
 void XFileNode::
 add_child(XFileNode *node) {
   if (node->has_name()) {
-    _children_by_name[node->get_name()] = (int)_children.size();
+    _children_by_name[downcase(node->get_name())] = (int)_children.size();
   }
   if (node->has_guid()) {
     _x_file->_nodes_by_guid[node->get_guid()] = node;
