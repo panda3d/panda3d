@@ -445,25 +445,25 @@ static const short yyrline[] =
      824,   834,   834,   846,   846,   891,   896,   900,   904,   908,
      908,   923,   924,   925,   933,   951,   956,   964,   981,   986,
      994,  1011,  1016,  1024,  1041,  1041,  1061,  1061,  1082,  1082,
-    1103,  1105,  1175,  1187,  1192,  1199,  1205,  1218,  1225,  1238,
-    1244,  1250,  1256,  1261,  1267,  1268,  1269,  1270,  1283,  1313,
-    1315,  1336,  1336,  1352,  1354,  1355,  1356,  1357,  1358,  1359,
-    1360,  1363,  1369,  1375,  1381,  1387,  1393,  1397,  1403,  1407,
-    1409,  1430,  1430,  1449,  1451,  1452,  1453,  1454,  1457,  1463,
-    1469,  1475,  1478,  1480,  1498,  1531,  1536,  1560,  1572,  1578,
-    1594,  1594,  1613,  1613,  1632,  1632,  1651,  1651,  1670,  1670,
-    1689,  1689,  1708,  1708,  1728,  1730,  1731,  1741,  1743,  1743,
-    1764,  1765,  1766,  1767,  1768,  1769,  1770,  1771,  1843,  1845,
-    1846,  1847,  1848,  1849,  1850,  1851,  1852,  1853,  1854,  1855,
-    1861,  1862,  1925,  1927,  1928,  1929,  1930,  1931,  1932,  1933,
-    1934,  1935,  1936,  2004,  2021,  2061,  2078,  2083,  2091,  2108,
-    2113,  2121,  2138,  2154,  2185,  2203,  2223,  2243,  2249,  2259,
-    2266,  2284,  2300,  2321,  2321,  2343,  2343,  2365,  2367,  2371,
-    2375,  2379,  2383,  2397,  2397,  2418,  2420,  2432,  2445,  2445,
-    2466,  2468,  2485,  2498,  2498,  2519,  2521,  2536,  2550,  2555,
-    2568,  2573,  2586,  2607,  2628,  2654,  2660,  2671,  2683,  2689,
-    2699,  2704,  2717,  2722,  2726,  2738,  2743,  2758,  2763,  2776,
-    2778,  2792,  2799,  2805,  2821,  2830,  2836
+    1103,  1105,  1235,  1247,  1252,  1259,  1265,  1278,  1285,  1298,
+    1304,  1310,  1316,  1321,  1327,  1328,  1329,  1330,  1343,  1373,
+    1375,  1396,  1396,  1412,  1414,  1415,  1416,  1417,  1418,  1419,
+    1420,  1423,  1429,  1435,  1441,  1447,  1453,  1457,  1463,  1467,
+    1469,  1490,  1490,  1509,  1511,  1512,  1513,  1514,  1517,  1523,
+    1529,  1535,  1538,  1540,  1558,  1591,  1596,  1620,  1632,  1638,
+    1654,  1654,  1673,  1673,  1692,  1692,  1711,  1711,  1730,  1730,
+    1749,  1749,  1768,  1768,  1788,  1790,  1791,  1801,  1803,  1803,
+    1824,  1825,  1826,  1827,  1828,  1829,  1830,  1831,  1903,  1905,
+    1906,  1907,  1908,  1909,  1910,  1911,  1912,  1913,  1914,  1915,
+    1921,  1922,  1985,  1987,  1988,  1989,  1990,  1991,  1992,  1993,
+    1994,  1995,  1996,  2064,  2081,  2121,  2138,  2143,  2151,  2168,
+    2173,  2181,  2198,  2214,  2245,  2263,  2283,  2303,  2309,  2319,
+    2326,  2344,  2360,  2381,  2381,  2403,  2403,  2425,  2427,  2431,
+    2435,  2439,  2443,  2457,  2457,  2478,  2480,  2492,  2505,  2505,
+    2526,  2528,  2545,  2558,  2558,  2579,  2581,  2596,  2610,  2615,
+    2628,  2633,  2646,  2667,  2688,  2714,  2720,  2731,  2743,  2749,
+    2759,  2764,  2777,  2782,  2786,  2798,  2803,  2818,  2823,  2836,
+    2838,  2852,  2859,  2865,  2881,  2890,  2896
 };
 #endif
 
@@ -2494,12 +2494,16 @@ case 71:
 
   if (cmp_nocase_uh(name, "fps") == 0) {
     group->set_switch_fps(value);
+
   } else if (cmp_nocase_uh(name, "no_fog") == 0) {
     group->set_nofog_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "decal") == 0) {
     group->set_decal_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "direct") == 0) {
     group->set_direct_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {
@@ -2507,6 +2511,7 @@ case 71:
     } else {
       group->set_alpha_mode(a);
     }
+
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
     EggRenderMode::DepthWriteMode m = 
       EggRenderMode::string_depth_write_mode(strval);
@@ -2536,27 +2541,82 @@ case 71:
 
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order(ulong_value);
+
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     group->set_bin(strval);
+
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
     group->set_collide_mask(group->get_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
     group->set_from_collide_mask(group->get_from_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "into_collide_mask") == 0) {
     group->set_into_collide_mask(group->get_into_collide_mask() | ulong_value);
+
   } else if (cmp_nocase_uh(name, "portal") == 0) {
     group->set_portal_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "polylight") == 0) {
     group->set_polylight_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "indexed") == 0) {
     group->set_indexed_flag(value != 0);
+
+  } else if (cmp_nocase_uh(name, "blend") == 0) {
+    EggGroup::BlendMode blend_mode =
+      EggGroup::string_blend_mode(strval);
+    if (blend_mode == EggGroup::BM_unspecified) {
+      eggyywarning("Unknown blend mode " + strval);
+    } else {
+      group->set_blend_mode(blend_mode);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendop_a") == 0) {
+    EggGroup::BlendOperand blend_operand =
+      EggGroup::string_blend_operand(strval);
+    if (blend_operand == EggGroup::BO_unspecified) {
+      eggyywarning("Unknown blend operand " + strval);
+    } else {
+      group->set_blend_operand_a(blend_operand);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendop_b") == 0) {
+    EggGroup::BlendOperand blend_operand =
+      EggGroup::string_blend_operand(strval);
+    if (blend_operand == EggGroup::BO_unspecified) {
+      eggyywarning("Unknown blend operand " + strval);
+    } else {
+      group->set_blend_operand_b(blend_operand);
+    }
+
+  } else if (cmp_nocase_uh(name, "blendr") == 0) {
+    Colorf color = group->get_blend_color();
+    color[0] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blendg") == 0) {
+    Colorf color = group->get_blend_color();
+    color[1] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blendb") == 0) {
+    Colorf color = group->get_blend_color();
+    color[2] = value;
+    group->set_blend_color(color);
+
+  } else if (cmp_nocase_uh(name, "blenda") == 0) {
+    Colorf color = group->get_blend_color();
+    color[3] = value;
+    group->set_blend_color(color);
+
   } else {
     eggyywarning("Unknown group scalar " + name);
   }
 }
     break;
 case 72:
-#line 1176 "parser.yxx"
+#line 1236 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = yyvsp[-1]._string;
@@ -2570,14 +2630,14 @@ case 72:
 }
     break;
 case 73:
-#line 1188 "parser.yxx"
+#line 1248 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_billboard_center(LPoint3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number));
 }
     break;
 case 74:
-#line 1193 "parser.yxx"
+#line 1253 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = yyvsp[-4]._string;
@@ -2586,7 +2646,7 @@ case 74:
 }
     break;
 case 75:
-#line 1200 "parser.yxx"
+#line 1260 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)yyvsp[-1]._number;
@@ -2594,7 +2654,7 @@ case 75:
 }
     break;
 case 76:
-#line 1206 "parser.yxx"
+#line 1266 "parser.yxx"
 {
   // The special flavor of DCS, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -2609,7 +2669,7 @@ case 76:
 }
     break;
 case 77:
-#line 1219 "parser.yxx"
+#line 1279 "parser.yxx"
 {
   // The traditional flavor of DART, with { 0 } or { 1 }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -2618,7 +2678,7 @@ case 77:
 }
     break;
 case 78:
-#line 1226 "parser.yxx"
+#line 1286 "parser.yxx"
 {
   // The special flavor of DART, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -2633,7 +2693,7 @@ case 78:
 }
     break;
 case 79:
-#line 1239 "parser.yxx"
+#line 1299 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)yyvsp[-1]._number;
@@ -2641,7 +2701,7 @@ case 79:
 }
     break;
 case 80:
-#line 1245 "parser.yxx"
+#line 1305 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string type = yyvsp[-1]._string;
@@ -2649,7 +2709,7 @@ case 80:
 }
     break;
 case 81:
-#line 1251 "parser.yxx"
+#line 1311 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)yyvsp[-1]._number;
@@ -2657,14 +2717,14 @@ case 81:
 }
     break;
 case 82:
-#line 1257 "parser.yxx"
+#line 1317 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_tag(yyvsp[-3]._string, yyvsp[-1]._string);
 }
     break;
 case 83:
-#line 1262 "parser.yxx"
+#line 1322 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)yyvsp[-1]._number;
@@ -2672,13 +2732,13 @@ case 83:
 }
     break;
 case 87:
-#line 1271 "parser.yxx"
+#line 1331 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 88:
-#line 1285 "parser.yxx"
+#line 1345 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = yyvsp[0]._string;
@@ -2700,7 +2760,7 @@ case 88:
 }
     break;
 case 90:
-#line 1316 "parser.yxx"
+#line 1376 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = yyvsp[0]._string;
@@ -2714,55 +2774,55 @@ case 90:
 }
     break;
 case 91:
-#line 1338 "parser.yxx"
+#line 1398 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->clear_transform();
 }
     break;
 case 101:
-#line 1364 "parser.yxx"
+#line 1424 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_translate(LVector3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number));
 }
     break;
 case 102:
-#line 1370 "parser.yxx"
+#line 1430 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_rotx(yyvsp[-1]._number);
 }
     break;
 case 103:
-#line 1376 "parser.yxx"
+#line 1436 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_roty(yyvsp[-1]._number);
 }
     break;
 case 104:
-#line 1382 "parser.yxx"
+#line 1442 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_rotz(yyvsp[-1]._number);
 }
     break;
 case 105:
-#line 1388 "parser.yxx"
+#line 1448 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_rotate(yyvsp[-4]._number, LVector3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number));
 }
     break;
 case 106:
-#line 1394 "parser.yxx"
+#line 1454 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_scale(LVecBase3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number));
 }
     break;
 case 107:
-#line 1398 "parser.yxx"
+#line 1458 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_uniform_scale(yyvsp[-1]._number);
 }
     break;
 case 110:
-#line 1413 "parser.yxx"
+#line 1473 "parser.yxx"
 {
   DCAST(EggGroup, egg_stack.back())->add_matrix
     (LMatrix4d(yyvsp[-15]._number, yyvsp[-14]._number, yyvsp[-13]._number, yyvsp[-12]._number,
@@ -2772,37 +2832,37 @@ case 110:
 }
     break;
 case 111:
-#line 1432 "parser.yxx"
+#line 1492 "parser.yxx"
 {
   matrix_2d = LMatrix3d::ident_mat();
 }
     break;
 case 112:
-#line 1436 "parser.yxx"
+#line 1496 "parser.yxx"
 {
   DCAST(EggTexture, egg_stack.back())->set_transform(matrix_2d);
 }
     break;
 case 118:
-#line 1458 "parser.yxx"
+#line 1518 "parser.yxx"
 {
   matrix_2d *= LMatrix3d::translate_mat(yyvsp[-2]._number, yyvsp[-1]._number);
 }
     break;
 case 119:
-#line 1464 "parser.yxx"
+#line 1524 "parser.yxx"
 {
   matrix_2d *= LMatrix3d::rotate_mat(yyvsp[-1]._number);
 }
     break;
 case 120:
-#line 1470 "parser.yxx"
+#line 1530 "parser.yxx"
 {
   matrix_2d *= LMatrix3d::scale_mat(yyvsp[-2]._number, yyvsp[-1]._number);
 }
     break;
 case 123:
-#line 1483 "parser.yxx"
+#line 1543 "parser.yxx"
 {
   matrix_2d *= LMatrix3d(yyvsp[-8]._number, yyvsp[-7]._number, yyvsp[-6]._number,
                          yyvsp[-5]._number, yyvsp[-4]._number, yyvsp[-3]._number,
@@ -2810,7 +2870,7 @@ case 123:
 }
     break;
 case 124:
-#line 1500 "parser.yxx"
+#line 1560 "parser.yxx"
 {
   if (yyvsp[-2]._egg != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, yyvsp[-2]._egg);
@@ -2834,13 +2894,13 @@ case 124:
 }
     break;
 case 125:
-#line 1533 "parser.yxx"
+#line 1593 "parser.yxx"
 {
   yyval._number = 1.0;
 }
     break;
 case 126:
-#line 1537 "parser.yxx"
+#line 1597 "parser.yxx"
 {
   string name = yyvsp[-3]._string;
   double value = yyvsp[-1]._number;
@@ -2856,112 +2916,112 @@ case 126:
 }
     break;
 case 128:
-#line 1574 "parser.yxx"
+#line 1634 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance(yyvsp[-8]._number, yyvsp[-7]._number, LPoint3d(yyvsp[-4]._number, yyvsp[-3]._number, yyvsp[-2]._number)));
 }
     break;
 case 129:
-#line 1579 "parser.yxx"
+#line 1639 "parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance(yyvsp[-9]._number, yyvsp[-8]._number, LPoint3d(yyvsp[-4]._number, yyvsp[-3]._number, yyvsp[-2]._number), yyvsp[-7]._number));
 }
     break;
 case 130:
-#line 1596 "parser.yxx"
+#line 1656 "parser.yxx"
 {
   egg_stack.push_back(new EggPolygon(yyvsp[0]._string));
 }
     break;
 case 131:
-#line 1600 "parser.yxx"
+#line 1660 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 132:
-#line 1615 "parser.yxx"
+#line 1675 "parser.yxx"
 {
   egg_stack.push_back(new EggTriangleFan(yyvsp[0]._string));
 }
     break;
 case 133:
-#line 1619 "parser.yxx"
+#line 1679 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 134:
-#line 1634 "parser.yxx"
+#line 1694 "parser.yxx"
 {
   egg_stack.push_back(new EggTriangleStrip(yyvsp[0]._string));
 }
     break;
 case 135:
-#line 1638 "parser.yxx"
+#line 1698 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 136:
-#line 1653 "parser.yxx"
+#line 1713 "parser.yxx"
 {
   egg_stack.push_back(new EggPoint(yyvsp[0]._string));
 }
     break;
 case 137:
-#line 1657 "parser.yxx"
+#line 1717 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 138:
-#line 1672 "parser.yxx"
+#line 1732 "parser.yxx"
 {
   egg_stack.push_back(new EggLine(yyvsp[0]._string));
 }
     break;
 case 139:
-#line 1676 "parser.yxx"
+#line 1736 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 140:
-#line 1691 "parser.yxx"
+#line 1751 "parser.yxx"
 {
   egg_stack.push_back(new EggNurbsSurface(yyvsp[0]._string));
 }
     break;
 case 141:
-#line 1695 "parser.yxx"
+#line 1755 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 142:
-#line 1710 "parser.yxx"
+#line 1770 "parser.yxx"
 {
   egg_stack.push_back(new EggNurbsCurve(yyvsp[0]._string));
 }
     break;
 case 143:
-#line 1714 "parser.yxx"
+#line 1774 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 148:
-#line 1744 "parser.yxx"
+#line 1804 "parser.yxx"
 {
   if (!egg_stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
     eggyyerror("Not a composite primitive; components are not allowed here.");
@@ -2977,7 +3037,7 @@ case 148:
 }
     break;
 case 149:
-#line 1758 "parser.yxx"
+#line 1818 "parser.yxx"
 {
   PT(EggPrimitive) prim = DCAST(EggPrimitive, egg_stack.back());
   egg_stack.pop_back();
@@ -2986,7 +3046,7 @@ case 149:
 }
     break;
 case 157:
-#line 1772 "parser.yxx"
+#line 1832 "parser.yxx"
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3051,7 +3111,7 @@ case 157:
 }
     break;
 case 169:
-#line 1856 "parser.yxx"
+#line 1916 "parser.yxx"
 {
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, yyvsp[0]._egg);
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
@@ -3059,7 +3119,7 @@ case 169:
 }
     break;
 case 171:
-#line 1863 "parser.yxx"
+#line 1923 "parser.yxx"
 {
   EggNurbsSurface *primitive = DCAST(EggNurbsSurface, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3114,7 +3174,7 @@ case 171:
 }
     break;
 case 182:
-#line 1937 "parser.yxx"
+#line 1997 "parser.yxx"
 {
   EggNurbsCurve *primitive = DCAST(EggNurbsCurve, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3175,7 +3235,7 @@ case 182:
 }
     break;
 case 183:
-#line 2006 "parser.yxx"
+#line 2066 "parser.yxx"
 {
   if (yyvsp[0]._egg != (EggTexture *)NULL) {
     EggTexture *texture = DCAST(EggTexture, yyvsp[0]._egg);
@@ -3184,7 +3244,7 @@ case 183:
 }
     break;
 case 184:
-#line 2023 "parser.yxx"
+#line 2083 "parser.yxx"
 {
   EggTexture *texture = NULL;
 
@@ -3216,7 +3276,7 @@ case 184:
 }
     break;
 case 185:
-#line 2063 "parser.yxx"
+#line 2123 "parser.yxx"
 {
   if (yyvsp[0]._egg != (EggMaterial *)NULL) {
     EggMaterial *material = DCAST(EggMaterial, yyvsp[0]._egg);
@@ -3225,13 +3285,13 @@ case 185:
 }
     break;
 case 186:
-#line 2080 "parser.yxx"
+#line 2140 "parser.yxx"
 {
   DCAST(EggPrimitive, egg_stack.back())->set_normal(Normald(yyvsp[-2]._number, yyvsp[-1]._number, yyvsp[0]._number));
 }
     break;
 case 187:
-#line 2084 "parser.yxx"
+#line 2144 "parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal(yyvsp[-5]._string, LVector3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number))).second;
@@ -3241,7 +3301,7 @@ case 187:
 }
     break;
 case 188:
-#line 2092 "parser.yxx"
+#line 2152 "parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal(yyvsp[-4]._string, LVector3d(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number))).second;
@@ -3251,13 +3311,13 @@ case 188:
 }
     break;
 case 189:
-#line 2110 "parser.yxx"
+#line 2170 "parser.yxx"
 {
   DCAST(EggPrimitive, egg_stack.back())->set_color(Colorf(yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number, yyvsp[0]._number));
 }
     break;
 case 190:
-#line 2114 "parser.yxx"
+#line 2174 "parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor(yyvsp[-6]._string, LVector4f(yyvsp[-4]._number, yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number))).second;
@@ -3267,7 +3327,7 @@ case 190:
 }
     break;
 case 191:
-#line 2122 "parser.yxx"
+#line 2182 "parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor(yyvsp[-5]._string, LVector4f(yyvsp[-4]._number, yyvsp[-3]._number, yyvsp[-2]._number, yyvsp[-1]._number))).second;
@@ -3277,7 +3337,7 @@ case 191:
 }
     break;
 case 192:
-#line 2140 "parser.yxx"
+#line 2200 "parser.yxx"
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   int value = (int)yyvsp[0]._number;
@@ -3285,7 +3345,7 @@ case 192:
 }
     break;
 case 193:
-#line 2156 "parser.yxx"
+#line 2216 "parser.yxx"
 {
   if (yyvsp[-2]._egg != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, yyvsp[-2]._egg);
@@ -3308,7 +3368,7 @@ case 193:
 }
     break;
 case 194:
-#line 2187 "parser.yxx"
+#line 2247 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   int u_order = (int)yyvsp[-1]._number;
@@ -3318,7 +3378,7 @@ case 194:
 }
     break;
 case 195:
-#line 2205 "parser.yxx"
+#line 2265 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = yyvsp[0]._number_list;
@@ -3330,7 +3390,7 @@ case 195:
 }
     break;
 case 196:
-#line 2225 "parser.yxx"
+#line 2285 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = yyvsp[0]._number_list;
@@ -3342,14 +3402,14 @@ case 196:
 }
     break;
 case 197:
-#line 2245 "parser.yxx"
+#line 2305 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nurbs->_trims.push_back(EggNurbsSurface::Trim());
 }
     break;
 case 199:
-#line 2261 "parser.yxx"
+#line 2321 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -3357,7 +3417,7 @@ case 199:
 }
     break;
 case 200:
-#line 2267 "parser.yxx"
+#line 2327 "parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -3367,7 +3427,7 @@ case 200:
 }
     break;
 case 201:
-#line 2286 "parser.yxx"
+#line 2346 "parser.yxx"
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   int order = (int)yyvsp[0]._number;
@@ -3375,7 +3435,7 @@ case 201:
 }
     break;
 case 202:
-#line 2302 "parser.yxx"
+#line 2362 "parser.yxx"
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   PTA_double nums = yyvsp[0]._number_list;
@@ -3387,7 +3447,7 @@ case 202:
 }
     break;
 case 203:
-#line 2323 "parser.yxx"
+#line 2383 "parser.yxx"
 {
   EggTable *table = new EggTable(yyvsp[0]._string);
   table->set_table_type(EggTable::TT_table);
@@ -3395,14 +3455,14 @@ case 203:
 }
     break;
 case 204:
-#line 2329 "parser.yxx"
+#line 2389 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 205:
-#line 2345 "parser.yxx"
+#line 2405 "parser.yxx"
 {
   EggTable *table = new EggTable(yyvsp[0]._string);
   table->set_table_type(EggTable::TT_bundle);
@@ -3410,58 +3470,58 @@ case 205:
 }
     break;
 case 206:
-#line 2351 "parser.yxx"
+#line 2411 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 208:
-#line 2368 "parser.yxx"
+#line 2428 "parser.yxx"
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 209:
-#line 2372 "parser.yxx"
+#line 2432 "parser.yxx"
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 210:
-#line 2376 "parser.yxx"
+#line 2436 "parser.yxx"
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 211:
-#line 2380 "parser.yxx"
+#line 2440 "parser.yxx"
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 212:
-#line 2384 "parser.yxx"
+#line 2444 "parser.yxx"
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 213:
-#line 2399 "parser.yxx"
+#line 2459 "parser.yxx"
 {
   EggSAnimData *anim_data = new EggSAnimData(yyvsp[0]._string);
   egg_stack.push_back(anim_data);
 }
     break;
 case 214:
-#line 2404 "parser.yxx"
+#line 2464 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 216:
-#line 2421 "parser.yxx"
+#line 2481 "parser.yxx"
 {
   EggSAnimData *anim_data = DCAST(EggSAnimData, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3475,27 +3535,27 @@ case 216:
 }
     break;
 case 217:
-#line 2433 "parser.yxx"
+#line 2493 "parser.yxx"
 {
   DCAST(EggSAnimData, egg_stack.back())->set_data(yyvsp[-1]._number_list);
 }
     break;
 case 218:
-#line 2447 "parser.yxx"
+#line 2507 "parser.yxx"
 {
   EggXfmAnimData *anim_data = new EggXfmAnimData(yyvsp[0]._string);
   egg_stack.push_back(anim_data);
 }
     break;
 case 219:
-#line 2452 "parser.yxx"
+#line 2512 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 221:
-#line 2469 "parser.yxx"
+#line 2529 "parser.yxx"
 {
   EggXfmAnimData *anim_data = DCAST(EggXfmAnimData, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3514,27 +3574,27 @@ case 221:
 }
     break;
 case 222:
-#line 2486 "parser.yxx"
+#line 2546 "parser.yxx"
 {
   DCAST(EggXfmAnimData, egg_stack.back())->set_data(yyvsp[-1]._number_list);
 }
     break;
 case 223:
-#line 2500 "parser.yxx"
+#line 2560 "parser.yxx"
 {
   EggXfmSAnim *anim_group = new EggXfmSAnim(yyvsp[0]._string);
   egg_stack.push_back(anim_group);
 }
     break;
 case 224:
-#line 2505 "parser.yxx"
+#line 2565 "parser.yxx"
 {
   yyval._egg = egg_stack.back();
   egg_stack.pop_back();
 }
     break;
 case 226:
-#line 2522 "parser.yxx"
+#line 2582 "parser.yxx"
 {
   EggXfmSAnim *anim_group = DCAST(EggXfmSAnim, egg_stack.back());
   string name = yyvsp[-3]._string;
@@ -3551,37 +3611,37 @@ case 226:
 }
     break;
 case 227:
-#line 2537 "parser.yxx"
+#line 2597 "parser.yxx"
 {
   DCAST(EggXfmSAnim, egg_stack.back())->add_child(DCAST(EggNode, yyvsp[0]._egg));
 }
     break;
 case 228:
-#line 2552 "parser.yxx"
+#line 2612 "parser.yxx"
 {
   yyval._number_list = PTA_double::empty_array(0);
 }
     break;
 case 229:
-#line 2556 "parser.yxx"
+#line 2616 "parser.yxx"
 {
   yyval._number_list.push_back((double)yyvsp[0]._number);
 }
     break;
 case 230:
-#line 2570 "parser.yxx"
+#line 2630 "parser.yxx"
 {
   yyval._number_list = PTA_double::empty_array(0);
 }
     break;
 case 231:
-#line 2574 "parser.yxx"
+#line 2634 "parser.yxx"
 {
   yyval._number_list.push_back(yyvsp[0]._number);
 }
     break;
 case 232:
-#line 2588 "parser.yxx"
+#line 2648 "parser.yxx"
 {
   string name = yyvsp[0]._string;
   Textures::iterator vpi = textures.find(name);
@@ -3594,7 +3654,7 @@ case 232:
 }
     break;
 case 233:
-#line 2609 "parser.yxx"
+#line 2669 "parser.yxx"
 {
   string name = yyvsp[0]._string;
   Materials::iterator vpi = materials.find(name);
@@ -3607,7 +3667,7 @@ case 233:
 }
     break;
 case 234:
-#line 2630 "parser.yxx"
+#line 2690 "parser.yxx"
 {
   string name = yyvsp[0]._string;
   VertexPools::iterator vpi = vertex_pools.find(name);
@@ -3624,69 +3684,69 @@ case 234:
 }
     break;
 case 235:
-#line 2656 "parser.yxx"
+#line 2716 "parser.yxx"
 {
   eggyyerror("Name required.");
   yyval._string = "";
 }
     break;
 case 238:
-#line 2685 "parser.yxx"
+#line 2745 "parser.yxx"
 {
   eggyyerror("String required.");
   yyval._string = "";
 }
     break;
 case 240:
-#line 2701 "parser.yxx"
+#line 2761 "parser.yxx"
 {
   yyval._string = "";
 }
     break;
 case 242:
-#line 2719 "parser.yxx"
+#line 2779 "parser.yxx"
 {
   yyval._string = yyvsp[0]._string;
 }
     break;
 case 243:
-#line 2723 "parser.yxx"
+#line 2783 "parser.yxx"
 {
   yyval._string = yyvsp[0]._string;
 }
     break;
 case 245:
-#line 2740 "parser.yxx"
+#line 2800 "parser.yxx"
 {
   yyval._string = "";
 }
     break;
 case 246:
-#line 2744 "parser.yxx"
+#line 2804 "parser.yxx"
 {
   yyval._string = yyvsp[0]._string;
 }
     break;
 case 247:
-#line 2760 "parser.yxx"
+#line 2820 "parser.yxx"
 {
   yyval._string = yyvsp[0]._string;
 }
     break;
 case 248:
-#line 2764 "parser.yxx"
+#line 2824 "parser.yxx"
 {
   yyval._string = yyvsp[-1]._string + "\n" + yyvsp[0]._string;
 }
     break;
 case 250:
-#line 2779 "parser.yxx"
+#line 2839 "parser.yxx"
 {
   yyval._number = yyvsp[0]._ulong;
 }
     break;
 case 251:
-#line 2794 "parser.yxx"
+#line 2854 "parser.yxx"
 {
   yyval._number = yyvsp[0]._number;
   yyval._ulong = (unsigned long)yyvsp[0]._number;
@@ -3694,7 +3754,7 @@ case 251:
 }
     break;
 case 252:
-#line 2800 "parser.yxx"
+#line 2860 "parser.yxx"
 {
   yyval._number = yyvsp[0]._ulong;
   yyval._ulong = yyvsp[0]._ulong;
@@ -3702,7 +3762,7 @@ case 252:
 }
     break;
 case 253:
-#line 2806 "parser.yxx"
+#line 2866 "parser.yxx"
 {
   yyval._number = 0.0;
   yyval._ulong = 0;
@@ -3710,7 +3770,7 @@ case 253:
 }
     break;
 case 254:
-#line 2823 "parser.yxx"
+#line 2883 "parser.yxx"
 {
   int i = (int)yyvsp[0]._number;
   if ((double)i != yyvsp[0]._number) {
@@ -3720,7 +3780,7 @@ case 254:
 }
     break;
 case 255:
-#line 2831 "parser.yxx"
+#line 2891 "parser.yxx"
 {
   yyval._number = yyvsp[0]._ulong;
 }
@@ -3958,4 +4018,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 2838 "parser.yxx"
+#line 2898 "parser.yxx"
