@@ -109,6 +109,9 @@ extern DSearchPath cm_search;
 // True to omit links to the full-size source images.
 extern bool omit_full_links;
 
+// True to omit complete.htm
+extern bool omit_complete;
+
 // True to caption photos with just a frame number instead of the
 // whole image basename.  This only works if the photo image filenames
 // consist of the roll directory name concatenated with a frame number.

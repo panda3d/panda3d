@@ -22,8 +22,8 @@
 int max_index_width = 700;
 int max_index_height = 700;
 
-int thumb_width = 100;
-int thumb_height = 100;
+int thumb_width = 150;
+int thumb_height = 150;
 
 int thumb_caption_height = 12;
 int caption_font_size = 12;
@@ -76,6 +76,7 @@ bool draw_frames = false;
 bool omit_roll_headers = false;
 DSearchPath cm_search;
 bool omit_full_links = false;
+bool omit_complete = false;
 bool caption_frame_numbers = false;
 
 

@@ -170,6 +170,11 @@ Indexify() {
      &Indexify::dispatch_none, &omit_full_links);
 
   add_option
+    ("omit-complete", "", 0,
+     "Omits the complete.htm index file that lists all thumbnails at once.",
+     &Indexify::dispatch_none, &omit_complete);
+
+  add_option
     ("caption", "size[,spacing]", 0,
      "Specifies the font size in pixels of the thumbnail captions.  If the "
      "optional spacing parameter is included, it is the number of pixels "
@@ -562,50 +567,52 @@ run() {
     }
   }
 
-  // Generate the complete index that browses all the roll directories
-  // at once.
-  Filename complete_filename(archive_dir, "html/complete.htm");
-  nout << "Generating " << complete_filename << "\n";
-  complete_filename.set_text();
-  ofstream complete_html;
-  if (!complete_filename.open_write(complete_html)) {
-    nout << "Unable to write to " << complete_filename << "\n";
-    exit(1);
-  }
+  if (!omit_complete) {
+    // Generate the complete index that browses all the roll directories
+    // at once.
+    Filename complete_filename(archive_dir, "html/complete.htm");
+    nout << "Generating " << complete_filename << "\n";
+    complete_filename.set_text();
+    ofstream complete_html;
+    if (!complete_filename.open_write(complete_html)) {
+      nout << "Unable to write to " << complete_filename << "\n";
+      exit(1);
+    }
 
-  complete_html
-    << "<html>\n"
-    << "<head>\n"
-    << "<title>" << _front_title << "</title>\n"
-    << "</head>\n"
-    << "<body>\n"
-    << "<h1>" << _front_title << "</h1>\n";
-
-  for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
-    RollDirectory *roll_dir = (*di);
     complete_html
-      << roll_dir->get_comment_html()
-      << roll_dir->get_index_html();
-  }
-
-  complete_html << "<p>\n";
-  if (!up_icon.empty()) {
-    // Use an icon to go up.
-    Filename up_icon_href = compose_href("..", up_icon);
-    complete_html 
-      << "<a href=\"../index.htm\"><img src=\"" << up_icon_href
-      << "\" alt=\"return to index\"></a>\n";
-  } else {
-    // No up icon; use text to go up.
+      << "<html>\n"
+      << "<head>\n"
+      << "<title>" << _front_title << "</title>\n"
+      << "</head>\n"
+      << "<body>\n"
+      << "<h1>" << _front_title << "</h1>\n";
+    
+    for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
+      RollDirectory *roll_dir = (*di);
+      complete_html
+        << roll_dir->get_comment_html()
+        << roll_dir->get_index_html();
+    }
+    
+    complete_html << "<p>\n";
+    if (!up_icon.empty()) {
+      // Use an icon to go up.
+      Filename up_icon_href = compose_href("..", up_icon);
+      complete_html 
+        << "<a href=\"../index.htm\"><img src=\"" << up_icon_href
+        << "\" alt=\"return to index\"></a>\n";
+    } else {
+      // No up icon; use text to go up.
+      complete_html
+        << "<br><a href=\"../index.htm\">Return to index</a>\n";
+    }
+    complete_html << "</p>\n";
+    
     complete_html
-      << "<br><a href=\"../index.htm\">Return to index</a>\n";
+      << "</body>\n"
+      << "</html>\n";
   }
-  complete_html << "</p>\n";
-
-  complete_html
-    << "</body>\n"
-    << "</html>\n";
-
+    
   // And finally, generate the index HTML file that sits on the top of
   // all of this.
   Filename index_filename(archive_dir, "index.htm");
@@ -638,8 +645,14 @@ run() {
   }
 
   index_html
-    << "</ul>\n"
-    << "<a href=\"html/complete.htm\">(complete archive)</a>\n"
+    << "</ul>\n";
+
+  if (!omit_complete) {
+    index_html
+      << "<a href=\"html/complete.htm\">(complete archive)</a>\n";
+  }
+
+  index_html
     << "</body>\n"
     << "</html>\n";
 }
