@@ -41,6 +41,31 @@ induce_labor() {
   _tics_since_birth = _birth_rate;
 }
 
+////////////////////////////////////////////////////////////////////
+//    Function : clear_to_initial
+//      Access : Public
+// Description : Resets the system to its start state by resizing to 0,
+//               then resizing back to current size.
+////////////////////////////////////////////////////////////////////
+
+INLINE void ParticleSystem::
+clear_to_initial() {
+  BaseParticle *bp;
+  int index;
+  int i;
+
+  //int particle_pool_size = _particle_pool_size;
+  //resize_pool(0);
+  //resize_pool(particle_pool_size);
+
+  for(i = 0; i < _physics_objects.size(); i++)
+    {
+      bp = (BaseParticle *)_physics_objects[i].p();
+      if(bp->get_alive())
+        kill_particle(i);
+    }
+}
+
 ////             ///////////////////////////////////////////////////////
 //// SET METHODS ///////////////////////////////////////////////////////
 ////             ///////////////////////////////////////////////////////

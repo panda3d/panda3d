@@ -101,6 +101,7 @@ PUBLISHED:
 
   INLINE void render();
   INLINE void induce_labor();
+  INLINE void clear_to_initial();
   void update(float dt);
 
   virtual void output(ostream &out) const;
