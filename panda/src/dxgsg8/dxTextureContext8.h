@@ -24,13 +24,13 @@
 #include "textureContext.h"
 
 ////////////////////////////////////////////////////////////////////
-//   Class : DXTextureContext8
+//       Class : DXTextureContext8
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext8 : public TextureContext {
 public:
   DXTextureContext8(Texture *tex);
-  ~DXTextureContext8();
+  virtual ~DXTextureContext8();
 
   IDirect3DTexture8 *create_texture(DXScreenData &scrn);
   void delete_texture();
@@ -38,9 +38,12 @@ public:
   INLINE bool has_mipmaps() const;
   INLINE IDirect3DTexture8 *get_d3d_texture() const;
 
+  static HRESULT d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result);
+
 private:
   HRESULT fill_d3d_texture_pixels();
   static int down_to_power_2(int value);
+  unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 private:
   Texture *_tex;            // ptr to parent, primarily for access to namestr
@@ -48,9 +51,6 @@ private:
   IDirect3DTexture8  *_d3d_texture;
 
   bool _has_mipmaps;
-
-protected:
-  unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 public:
   static TypeHandle get_class_type() {
@@ -69,10 +69,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-HRESULT 
-d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, 
-                       Texture *result);
 
 #include "dxTextureContext8.I"
 

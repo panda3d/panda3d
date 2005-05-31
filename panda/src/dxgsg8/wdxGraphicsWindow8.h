@@ -37,16 +37,19 @@ public:
   wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                      const string &name);
   virtual ~wdxGraphicsWindow8();
-  virtual bool open_window();
-  virtual void close_window();
-  virtual void reset_window(bool swapchain);
 
-  virtual int verify_window_sizes(int numsizes, int *dimen);
+  virtual void make_current();
 
   virtual bool begin_frame();
   virtual void end_flip();
 
+  virtual int verify_window_sizes(int numsizes, int *dimen);
+
 protected:
+  virtual void close_window();
+  virtual bool open_window();
+  virtual void reset_window(bool swapchain);
+
   virtual void fullscreen_restored(WindowProperties &properties);
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
@@ -72,7 +75,6 @@ private:
   void init_resized_window();
   static int D3DFMT_to_DepthBits(D3DFORMAT fmt);
   static bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID);
-  virtual void make_current();
 
   DXGraphicsStateGuardian8 *_dxgsg;
   DXScreenData _wcontext;

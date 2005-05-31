@@ -116,6 +116,7 @@ public:
                           int light_id);
 
   static D3DFORMAT get_index_type(qpGeom::NumericType numeric_type);
+  INLINE static DWORD Colorf_to_D3DCOLOR(const Colorf &cColorf);
 
 protected:
   virtual void do_issue_material();
@@ -156,9 +157,7 @@ protected:
   INLINE static D3DTRANSFORMSTATETYPE get_tex_mat_sym(int stage_index);
 
   INLINE void enable_alpha_test(bool val);
-  INLINE void enable_line_smooth(bool val);
   INLINE void enable_blend(bool val);
-  INLINE void enable_point_smooth(bool val);
   INLINE void call_dxLightModelAmbient(const Colorf &color);
   INLINE void call_dxAlphaFunc(D3DCMPFUNC func, float refval);
   INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
@@ -230,7 +229,6 @@ protected:
   unsigned int _max_lights;
   unsigned int _max_clip_planes;
 
-  bool _line_smooth_enabled;
   bool _color_material_enabled;
   bool _texturing_enabled;
   bool _dither_enabled;

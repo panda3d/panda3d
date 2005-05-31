@@ -17,7 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 
-INLINE DWORD
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::Colorf_to_D3DCOLOR
+//       Access: Public, Static
+//  Description: Converts Panda's floating-point Colorf structure to
+//               DirectX's D3DCOLOR packed structure.
+////////////////////////////////////////////////////////////////////
+INLINE DWORD DXGraphicsStateGuardian8::
 Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
 #if defined(_M_IX86) || defined(_X86_)
@@ -71,36 +77,8 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_line_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_line_smooth(bool val) {
-  if(_line_smooth_enabled != val) {
-    _line_smooth_enabled = val;
-
-    _pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_dither
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_dither(bool val) {
-  if (_dither_enabled != val) {
-    _dither_enabled = val;
-
-    _pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::enable_color_material
-//       Access:
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
@@ -110,23 +88,35 @@ enable_color_material(bool val) {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_blend
-//       Access:
+//     Function: DXGraphicsStateGuardian8::enable_fog
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
-enable_blend(bool val) {
-  if (_blend_enabled != val) {
-    _blend_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
+enable_fog(bool val) {
+  if ((_fog_enabled != val) && (_doFogType!=None)) {
+    _fog_enabled = val;
+    _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_zwritemask
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_zwritemask(bool val) {
+  if (_depth_write_enabled != val) {
+    _depth_write_enabled = val;
+    _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_color_writemask
-//       Access:
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
@@ -145,21 +135,8 @@ set_color_writemask(UINT color_writemask) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_fog
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_fog(bool val) {
-  if ((_fog_enabled != val) && (_doFogType!=None)) {
-    _fog_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_vertex_format
-//       Access:
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
@@ -174,73 +151,6 @@ set_vertex_format(DWORD NewFvfType) {
       exit(1);
     }
 #endif
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_alpha_test
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_alpha_test(bool val) {
-  if (_alpha_test_enabled != val) {
-    _alpha_test_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::call_dxLightModelAmbient
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-call_dxLightModelAmbient(const Colorf &color) {
-  if (_lmodel_ambient != color) {
-    _lmodel_ambient = color;
-    _pD3DDevice->SetRenderState(D3DRS_AMBIENT, 
-                                 D3DCOLOR_COLORVALUE(color[0], color[1], color[2], color[3]));
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::call_dxAlphaFunc
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
-  if (_alpha_func != func) {
-    _alpha_func = func;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, func);
-  }
-
-  if(_alpha_func_refval != reference_alpha) {
-    _alpha_func_refval = reference_alpha;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
-  }
-}
-
-
-INLINE void DXGraphicsStateGuardian8::
-call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc) {
-  if (_blend_source_func != sfunc) {
-    _blend_source_func = sfunc;
-    _pD3DDevice->SetRenderState(D3DRS_SRCBLEND, sfunc);
-  }
-  if (_blend_dest_func != dfunc) {
-    _blend_dest_func = dfunc;
-    _pD3DDevice->SetRenderState(D3DRS_DESTBLEND, dfunc);
-  }
-}
-
-INLINE void DXGraphicsStateGuardian8::
-enable_zwritemask(bool val) {
-  if (_depth_write_enabled != val) {
-    _depth_write_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
   }
 }
 
@@ -296,3 +206,93 @@ INLINE D3DTRANSFORMSTATETYPE DXGraphicsStateGuardian8::
 get_tex_mat_sym(int stage_index) {
   return (D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + stage_index);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_alpha_test
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_alpha_test(bool val) {
+  if (_alpha_test_enabled != val) {
+    _alpha_test_enabled = val;
+    _pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_blend
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_blend(bool val) {
+  if (_blend_enabled != val) {
+    _blend_enabled = val;
+    _pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::call_dxLightModelAmbient
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+call_dxLightModelAmbient(const Colorf &color) {
+  if (_lmodel_ambient != color) {
+    _lmodel_ambient = color;
+    _pD3DDevice->SetRenderState(D3DRS_AMBIENT, 
+                                 D3DCOLOR_COLORVALUE(color[0], color[1], color[2], color[3]));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::call_dxAlphaFunc
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
+  if (_alpha_func != func) {
+    _alpha_func = func;
+    _pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, func);
+  }
+
+  if(_alpha_func_refval != reference_alpha) {
+    _alpha_func_refval = reference_alpha;
+    _pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::call_dxBlendFunc
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc) {
+  if (_blend_source_func != sfunc) {
+    _blend_source_func = sfunc;
+    _pD3DDevice->SetRenderState(D3DRS_SRCBLEND, sfunc);
+  }
+  if (_blend_dest_func != dfunc) {
+    _blend_dest_func = dfunc;
+    _pD3DDevice->SetRenderState(D3DRS_DESTBLEND, dfunc);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_dither
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_dither(bool val) {
+  if (_dither_enabled != val) {
+    _dither_enabled = val;
+
+    _pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
+  }
+}
+

@@ -33,9 +33,6 @@
 
 TypeHandle wdxGraphicsWindow8::_type_handle;
 
-#define JOYSTICK_POLL_TIMER_ID 8
-#define DX_IS_READY ((_dxgsg != NULL)&&(_dxgsg->GetDXReady()))
-
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::Constructor
 //       Access: Public
@@ -66,6 +63,11 @@ wdxGraphicsWindow8::
 ~wdxGraphicsWindow8() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::make_current
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 make_current() {
   PStatTimer timer(_make_current_pcollector);
@@ -85,6 +87,52 @@ make_current() {
     // other windows with a different buffer mask.
     dxgsg->_buffer_mask |= _buffer_mask;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow8::
+begin_frame() {
+  if (_awaiting_restore) {
+    // The fullscreen window was recently restored; we can't continue
+    // until the GSG says we can.
+    if (!_dxgsg->check_cooperative_level()) {
+      // Keep waiting.
+      return false;
+    }
+    _awaiting_restore = false;
+
+    init_resized_window();
+  }
+
+  bool return_val = WinGraphicsWindow::begin_frame();
+  _dxgsg->set_render_target();
+  return return_val;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::end_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
+//
+//               This should cause the window to wait for the flip, if
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow8::
+end_flip() {
+  if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL && is_active()) {
+    _dxgsg->show_frame();
+  }
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,50 +207,123 @@ verify_window_sizes(int numsizes, int *dimen) {
   return num_valid_modes;
 }
 
+//////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow::close_window
+//       Access: Public
+//  Description: Some cleanup is necessary for directx closeup of window.
+//               Handle close window events for this particular
+//               window.
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow8::
-begin_frame() {
-  if (_awaiting_restore) {
-    // The fullscreen window was recently restored; we can't continue
-    // until the GSG says we can.
-    if (!_dxgsg->check_cooperative_level()) {
-      // Keep waiting.
-      return false;
-    }
-    _awaiting_restore = false;
-
-    init_resized_window();
-  }
-
-  bool return_val = WinGraphicsWindow::begin_frame();
-  _dxgsg->set_render_target();
-  return return_val;
+void wdxGraphicsWindow8::
+close_window() {
+  wdxdisplay8_cat.debug() << "wdx closed window\n";
+  _dxgsg->release_swap_chain(&_wcontext);
+  WinGraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::end_flip
+//     Function: wdxGraphicsWindow8::open_window
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow8::
+open_window() {
+  PT(DXGraphicsDevice8) dxdev;
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_R(dxgsg, _gsg, false);
+  WindowProperties props;
+  bool discard_device = false;
+
+  if (!choose_device()) {
+    return false;
+  }
+
+  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
+  if (!WinGraphicsWindow::open_window()) {
+    return false;
+  }
+  _wcontext.hWnd = _hWnd;
+
+  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
+
+  // Here check if a device already exists. If so, then this open_window
+  // call may be an extension to create multiple windows on same device
+  // In that case just create an additional swapchain for this window
+
+  while (true) {
+    if (dxgsg->get_pipe()->get_device() == NULL || discard_device) {
+      wdxdisplay8_cat.debug() << "device is null or fullscreen\n";
+
+      // If device exists, free it
+      if (dxgsg->get_pipe()->get_device()) {
+        dxgsg->dx_cleanup();
+      }
+
+      wdxdisplay8_cat.debug() << "device width " << _wcontext.DisplayMode.Width << "\n";
+      if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
+        // just crash here
+        wdxdisplay8_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
+        return false;
+      }
+      dxgsg->get_pipe()->make_device((void*)(&_wcontext));
+      dxgsg->copy_pres_reset(&_wcontext);
+      dxgsg->create_swap_chain(&_wcontext);
+      break;
+
+    } else {
+      // fill in the DXScreenData from dxdevice here and change the
+      // reference to hWnd.
+      wdxdisplay8_cat.debug() << "device is not null\n";
+
+      dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
+      props = get_properties();
+      memcpy(&_wcontext, &dxdev->_Scrn, sizeof(DXScreenData));
+
+      _wcontext.PresParams.Windowed = !is_fullscreen();
+      _wcontext.PresParams.hDeviceWindow = _wcontext.hWnd = _hWnd;
+      _wcontext.PresParams.BackBufferWidth = _wcontext.DisplayMode.Width = props.get_x_size();
+      _wcontext.PresParams.BackBufferHeight = _wcontext.DisplayMode.Height = props.get_y_size();
+
+      wdxdisplay8_cat.debug() << "device width " << _wcontext.PresParams.BackBufferWidth << "\n";
+      if (!dxgsg->create_swap_chain(&_wcontext)) {
+        discard_device = true;
+        continue; // try again
+      }
+      init_resized_window();
+      break;
+    }
+  }
+  wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::reset_window
 //       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
+//  Description: Resets the window framebuffer right now.  Called
+//               from graphicsEngine. It releases the current swap
+//               chain / creates a new one. If this is the initial
+//               window and swapchain is false, then it calls reset_
+//               main_device to Reset the device.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
-end_flip() {
-  if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL && is_active()) {
-    _dxgsg->show_frame();
+reset_window(bool swapchain) {
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_V(dxgsg, _gsg);
+  if (swapchain) {
+    if (_wcontext.pSwapChain) {
+      dxgsg->create_swap_chain(&_wcontext);
+      wdxdisplay8_cat.debug() << "created swapchain " << _wcontext.pSwapChain << "\n";
+    }
   }
-  GraphicsWindow::end_flip();
+  else {
+    if (_wcontext.pSwapChain) {
+      dxgsg->release_swap_chain(&_wcontext);
+      wdxdisplay8_cat.debug() << "released swapchain " << _wcontext.pSwapChain << "\n";
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,20 +454,6 @@ do_fullscreen_resize(int x_size, int y_size) {
   }
 
   return bResizeSucceeded;
-}
-
-//////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow::close_window
-//       Access: Public
-//  Description: Some cleanup is necessary for directx closeup of window.
-//               Handle close window events for this particular
-//               window.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow8::
-close_window() {
-  wdxdisplay8_cat.debug() << "wdx closed window\n";
-  _dxgsg->release_swap_chain(&_wcontext);
-  WinGraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1052,6 +1159,7 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   init_resized_window();
   return bRetval;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::init_resized_window
 //       Access: Private
@@ -1153,109 +1261,3 @@ is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
 
   return false;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::reset_window
-//       Access: Public, Virtual
-//  Description: Resets the window framebuffer right now.  Called
-//               from graphicsEngine. It releases the current swap
-//               chain / creates a new one. If this is the initial
-//               window and swapchain is false, then it calls reset_
-//               main_device to Reset the device.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow8::
-reset_window(bool swapchain) {
-  DXGraphicsStateGuardian8 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
-  if (swapchain) {
-    if (_wcontext.pSwapChain) {
-      dxgsg->create_swap_chain(&_wcontext);
-      wdxdisplay8_cat.debug() << "created swapchain " << _wcontext.pSwapChain << "\n";
-    }
-  }
-  else {
-    if (_wcontext.pSwapChain) {
-      dxgsg->release_swap_chain(&_wcontext);
-      wdxdisplay8_cat.debug() << "released swapchain " << _wcontext.pSwapChain << "\n";
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow8::
-open_window() {
-  PT(DXGraphicsDevice8) dxdev;
-  DXGraphicsStateGuardian8 *dxgsg;
-  DCAST_INTO_R(dxgsg, _gsg, false);
-  WindowProperties props;
-  bool discard_device = false;
-
-  if (!choose_device()) {
-    return false;
-  }
-
-  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
-  if (!WinGraphicsWindow::open_window()) {
-    return false;
-  }
-  _wcontext.hWnd = _hWnd;
-
-  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
-
-  // Here check if a device already exists. If so, then this open_window
-  // call may be an extension to create multiple windows on same device
-  // In that case just create an additional swapchain for this window
-
-  while (true) {
-    if (dxgsg->get_pipe()->get_device() == NULL || discard_device) {
-      wdxdisplay8_cat.debug() << "device is null or fullscreen\n";
-
-      // If device exists, free it
-      if (dxgsg->get_pipe()->get_device()) {
-        dxgsg->dx_cleanup();
-      }
-
-      wdxdisplay8_cat.debug() << "device width " << _wcontext.DisplayMode.Width << "\n";
-      if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
-        // just crash here
-        wdxdisplay8_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
-        return false;
-      }
-      dxgsg->get_pipe()->make_device((void*)(&_wcontext));
-      dxgsg->copy_pres_reset(&_wcontext);
-      dxgsg->create_swap_chain(&_wcontext);
-      break;
-
-    } else {
-      // fill in the DXScreenData from dxdevice here and change the
-      // reference to hWnd.
-      wdxdisplay8_cat.debug() << "device is not null\n";
-
-      dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
-      props = get_properties();
-      memcpy(&_wcontext, &dxdev->_Scrn, sizeof(DXScreenData));
-
-      _wcontext.PresParams.Windowed = !is_fullscreen();
-      _wcontext.PresParams.hDeviceWindow = _wcontext.hWnd = _hWnd;
-      _wcontext.PresParams.BackBufferWidth = _wcontext.DisplayMode.Width = props.get_x_size();
-      _wcontext.PresParams.BackBufferHeight = _wcontext.DisplayMode.Height = props.get_y_size();
-
-      wdxdisplay8_cat.debug() << "device width " << _wcontext.PresParams.BackBufferWidth << "\n";
-      if (!dxgsg->create_swap_chain(&_wcontext)) {
-        discard_device = true;
-        continue; // try again
-      }
-      init_resized_window();
-      break;
-    }
-  }
-  wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
-  return true;
-}
-

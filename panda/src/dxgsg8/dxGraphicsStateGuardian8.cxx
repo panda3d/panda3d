@@ -1443,7 +1443,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
 
-  d3d_surface_to_texture(SrcCopyRect, pD3DSurf, tex);
+  DXTextureContext8::d3d_surface_to_texture(SrcCopyRect, pD3DSurf, tex);
 
   RELEASE(pD3DSurf, dxgsg8, "pD3DSurf", RELEASE_ONCE);
 
@@ -1528,7 +1528,6 @@ reset() {
   _depth_test_enabled = true;
   _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, _depth_test_enabled);
 
-  _line_smooth_enabled = false;
   _pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, false);
 
   _color_material_enabled = false;
@@ -1610,13 +1609,14 @@ reset() {
   _pD3DDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 
   // Antialiasing.
-  enable_line_smooth(false);
+  _pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, FALSE);
 
   _current_fill_mode = RenderModeAttrib::M_filled;
   _pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
-  // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
-  // initial conditions must be correct
+  // must do SetTSS here because redundant states are filtered out by
+  // our code based on current values above, so initial conditions
+  // must be correct
   _texturing_enabled = false;
   _pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);  // disables texturing
 

@@ -29,288 +29,49 @@ TypeHandle DXTextureContext8::_type_handle;
 static const DWORD g_LowByteMask = 0x000000FF;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext8::get_bits_per_pixel
-//       Access: Protected
-//  Description: Maps from the Texture's Format symbols
-//               to bpp.  returns # of alpha bits
-//               Note: Texture's format indicates REQUESTED final format,
-//                     not the stored format, which is indicated by pixelbuffer type
+//     Function: DXTextureContext8::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-unsigned int DXTextureContext8::
-get_bits_per_pixel(Texture::Format format, int *alphbits) {
-  *alphbits = 0;      // assume no alpha bits
-  switch(format) {
-  case Texture::F_alpha:
-    *alphbits = 8;
-  case Texture::F_color_index:
-  case Texture::F_red:
-  case Texture::F_green:
-  case Texture::F_blue:
-  case Texture::F_rgb332:
-    return 8;
-  case Texture::F_luminance_alphamask:
-    *alphbits = 1;
-    return 16;
-  case Texture::F_luminance_alpha:
-    *alphbits = 8;
-    return 16;
-  case Texture::F_luminance:
-    return 8;
-  case Texture::F_rgba4:
-    *alphbits = 4;
-    return 16;
-  case Texture::F_rgba5:
-    *alphbits = 1;
-    return 16;
-  case Texture::F_depth_component:
-  case Texture::F_rgb5:
-    return 16;
-  case Texture::F_rgb8:
-  case Texture::F_rgb:
-    return 24;
-  case Texture::F_rgba8:
-  case Texture::F_rgba:
-  case Texture::F_rgbm:
-    if (format == Texture::F_rgbm)   // does this make any sense?
-      *alphbits = 1;
-    else *alphbits = 8;
-    return 32;
-  case Texture::F_rgb12:
-    return 36;
-  case Texture::F_rgba12:
-    *alphbits = 12;
-    return 48;
+DXTextureContext8::
+DXTextureContext8(Texture *tex) :
+  TextureContext(tex) {
+
+  if (dxgsg8_cat.is_spam()) {
+    dxgsg8_cat.spam() 
+      << "Creating DX texture [" << tex->get_name() << "], minfilter(" << tex->get_minfilter() << "), magfilter(" << tex->get_magfilter() << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
   }
-  return 8;
+
+  _d3d_texture = NULL;
+  _has_mipmaps = false;
+  _tex = tex;
 }
 
-// still need custom conversion since d3d/d3dx has no way to convert arbitrary fmt to ARGB in-memory user buffer
-HRESULT
-d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result) {
-  // copies source_rect in pD3DSurf to upper left of texture
-  HRESULT hr;
-  DWORD dwNumComponents = result->get_num_components();
-
-  nassertr(result->get_component_width() == sizeof(BYTE), E_FAIL);   // cant handle anything else now
-  nassertr(result->get_component_type() == Texture::T_unsigned_byte, E_FAIL);   // cant handle anything else now
-  nassertr((dwNumComponents == 3) || (dwNumComponents == 4), E_FAIL);  // cant handle anything else now
-  nassertr(IS_VALID_PTR(d3d_surface), E_FAIL);
-
-  BYTE *pbuf = result->modify_ram_image().p();
-
-  if (IsBadWritePtr(d3d_surface, sizeof(DWORD))) {
-    dxgsg8_cat.error() << "d3d_surface_to_texture failed: bad pD3DSurf ptr value (" << ((void*)d3d_surface) << ")\n";
-    exit(1);
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DXTextureContext8::
+~DXTextureContext8() {
+  if (dxgsg8_cat.is_spam()) {
+    dxgsg8_cat.spam()
+      << "Deleting texture context for " << _tex->get_name() << "\n";
   }
-
-  DWORD dwXWindowOffset, dwYWindowOffset;
-  DWORD dwCopyWidth, dwCopyHeight;
-
-  D3DLOCKED_RECT LockedRect;
-  D3DSURFACE_DESC SurfDesc;
-
-  hr = d3d_surface->GetDesc(&SurfDesc);
-
-  dwXWindowOffset = source_rect.left, dwYWindowOffset = source_rect.top;
-  dwCopyWidth = RECT_XSIZE(source_rect);
-  dwCopyHeight = RECT_YSIZE(source_rect);
-
-  //make sure there's enough space in the texture, its size must match (especially xsize)
-  // or scanlines will be too long
-
-  if (!((dwCopyWidth == result->get_x_size()) && (dwCopyHeight <= (DWORD)result->get_y_size()))) {
-    dxgsg8_cat.error() << "d3d_surface_to_texture, Texture size too small to hold display surface!\n";
-    nassertr(false, E_FAIL);
-    return E_FAIL;
-  }
-
-  hr = d3d_surface->LockRect(&LockedRect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
-  if (FAILED(hr)) {
-    dxgsg8_cat.error() << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
-    return hr;
-  }
-
-  // ones not listed not handled yet
-  nassertr((SurfDesc.Format == D3DFMT_A8R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_X8R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_R5G6B5) ||
-           (SurfDesc.Format == D3DFMT_X1R5G5B5) ||
-           (SurfDesc.Format == D3DFMT_A1R5G5B5) ||
-           (SurfDesc.Format == D3DFMT_A4R4G4B4), E_FAIL);
-
-  //pbuf contains raw ARGB in Texture byteorder
-
-  DWORD BytePitch = LockedRect.Pitch;
-  BYTE* pSurfBytes = (BYTE*)LockedRect.pBits;
-
-  // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
-
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "d3d_surface_to_texture converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
-      <<  dwNumComponents << "-channel panda Texture\n";
-  }
-
-  DWORD *pDstWord = (DWORD *) pbuf;
-  BYTE *pDstByte = (BYTE *) pbuf;
-
-  switch(SurfDesc.Format) {
-  case D3DFMT_A8R8G8B8:
-  case D3DFMT_X8R8G8B8: {
-    if (dwNumComponents == 4) {
-      DWORD *pSrcWord;
-      BYTE *pDstLine = (BYTE*)pDstWord;
-
-      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
-        memcpy(pDstLine, pSrcWord, BytePitch);
-        pDstLine += BytePitch;
-      }
-    } else {
-      // 24bpp texture case (numComponents == 3)
-      DWORD *pSrcWord;
-      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
-
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
-          BYTE r, g, b;
-          DWORD dwPixel = *pSrcWord;
-
-          r = (BYTE)((dwPixel>>16) & g_LowByteMask);
-          g = (BYTE)((dwPixel>> 8) & g_LowByteMask);
-          b = (BYTE)((dwPixel    ) & g_LowByteMask);
-
-          *pDstByte += b;
-          *pDstByte += g;
-          *pDstByte += r;
-        }
-      }
-    }
-    break;
-  }
-
-  case D3DFMT_R8G8B8: {
-    BYTE *pSrcByte;
-    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-
-    if (dwNumComponents == 4) {
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-        for(DWORD x = 0; x<dwCopyWidth; x++, pDstWord++) {
-          DWORD r, g, b;
-
-          b = *pSrcByte++;
-          g = *pSrcByte++;
-          r = *pSrcByte++;
-
-          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-      }
-    } else {
-      // 24bpp texture case (numComponents == 3)
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-        memcpy(pDstByte, pSrcByte, BytePitch);
-        pDstByte += BytePitch;
-      }
-    }
-    break;
-  }
-
-  case D3DFMT_R5G6B5:
-  case D3DFMT_X1R5G5B5:
-  case D3DFMT_A1R5G5B5:
-  case D3DFMT_A4R4G4B4: {
-    WORD  *pSrcWord;
-    // handle 0555, 1555, 0565, 4444 in same loop
-
-    BYTE redshift, greenshift, blueshift;
-    DWORD redmask, greenmask, bluemask;
-
-    if (SurfDesc.Format == D3DFMT_R5G6B5) {
-      redshift = (11-3);
-      redmask = 0xF800;
-      greenmask = 0x07E0;
-      greenshift = (5-2);
-      bluemask = 0x001F;
-      blueshift = 3;
-    } else if (SurfDesc.Format == D3DFMT_A4R4G4B4) {
-      redmask = 0x0F00;
-      redshift = 4;
-      greenmask = 0x00F0;
-      greenshift = 0;
-      bluemask = 0x000F;
-      blueshift = 4;
-    } else {  // 1555 or x555
-      redmask = 0x7C00;
-      redshift = (10-3);
-      greenmask = 0x03E0;
-      greenshift = (5-3);
-      bluemask = 0x001F;
-      blueshift = 3;
-    }
-
-    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-    if (dwNumComponents == 4) {
-      // Note: these 16bpp loops ignore input alpha completely (alpha
-      // is set to fully opaque in texture!)
-
-      // if we need to capture alpha, probably need to make separate
-      // loops for diff 16bpp fmts for best speed
-
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++, pDstWord++) {
-          WORD dwPixel = *pSrcWord;
-          BYTE r, g, b;
-
-          b = (dwPixel & bluemask) << blueshift;
-          g = (dwPixel & greenmask) >> greenshift;
-          r = (dwPixel & redmask) >> redshift;
-
-          // alpha is just set to 0xFF
-
-          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-      }
-    } else {
-      // 24bpp texture case (numComponents == 3)
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
-          WORD dwPixel = *pSrcWord;
-          BYTE r, g, b;
-
-          b = (dwPixel & bluemask) << blueshift;
-          g = (dwPixel & greenmask) >> greenshift;
-          r = (dwPixel & redmask) >> redshift;
-
-          *pDstByte += b;
-          *pDstByte += g;
-          *pDstByte += r;
-        }
-      }
-    }
-    break;
-  }
-
-  default:
-    dxgsg8_cat.error() << "d3d_surface_to_texture: unsupported D3DFORMAT!\n";
-  }
-
-  d3d_surface->UnlockRect();
-  return S_OK;
+  delete_texture();
+  TextureContext::~TextureContext();
+  _tex = NULL;
 }
 
-//-----------------------------------------------------------------------------
-// Name: create_texture()
-// Desc: Use panda texture's pixelbuffer to create a texture for the specified device.
-//       This code gets the attributes of the texture from the bitmap, creates the
-//       texture, and then copies the bitmap into the texture.
-//-----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::create_texture
+//       Access: Public
+//  Description: Use panda texture's pixelbuffer to create a texture
+//               for the specified device.  This code gets the
+//               attributes of the texture from the bitmap, creates
+//               the texture, and then copies the bitmap into the
+//               texture.
+////////////////////////////////////////////////////////////////////
 IDirect3DTexture8 *DXTextureContext8::
 create_texture(DXScreenData &scrn) {
   HRESULT hr;
@@ -811,6 +572,258 @@ create_texture(DXScreenData &scrn) {
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::delete_texture
+//       Access: Public
+//  Description: Release the surface used to store the texture
+////////////////////////////////////////////////////////////////////
+void DXTextureContext8::
+delete_texture() {
+  if (_d3d_texture == NULL) {
+    // dont bother printing the msg below, since we already released it.
+    return;
+  }
+
+  if (dxgsg8_cat.is_spam()) {
+    dxgsg8_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
+  }
+
+  RELEASE(_d3d_texture, dxgsg8, "texture", RELEASE_ONCE);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::d3d_surface_to_texture
+//       Access: Public, Static
+//  Description: copies source_rect in pD3DSurf to upper left of
+//               texture
+////////////////////////////////////////////////////////////////////
+HRESULT DXTextureContext8::
+d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result) {
+  // still need custom conversion since d3d/d3dx has no way to convert
+  // arbitrary fmt to ARGB in-memory user buffer
+
+  HRESULT hr;
+  DWORD dwNumComponents = result->get_num_components();
+
+  nassertr(result->get_component_width() == sizeof(BYTE), E_FAIL);   // cant handle anything else now
+  nassertr(result->get_component_type() == Texture::T_unsigned_byte, E_FAIL);   // cant handle anything else now
+  nassertr((dwNumComponents == 3) || (dwNumComponents == 4), E_FAIL);  // cant handle anything else now
+  nassertr(IS_VALID_PTR(d3d_surface), E_FAIL);
+
+  BYTE *pbuf = result->modify_ram_image().p();
+
+  if (IsBadWritePtr(d3d_surface, sizeof(DWORD))) {
+    dxgsg8_cat.error() << "d3d_surface_to_texture failed: bad pD3DSurf ptr value (" << ((void*)d3d_surface) << ")\n";
+    exit(1);
+  }
+
+  DWORD dwXWindowOffset, dwYWindowOffset;
+  DWORD dwCopyWidth, dwCopyHeight;
+
+  D3DLOCKED_RECT LockedRect;
+  D3DSURFACE_DESC SurfDesc;
+
+  hr = d3d_surface->GetDesc(&SurfDesc);
+
+  dwXWindowOffset = source_rect.left, dwYWindowOffset = source_rect.top;
+  dwCopyWidth = RECT_XSIZE(source_rect);
+  dwCopyHeight = RECT_YSIZE(source_rect);
+
+  //make sure there's enough space in the texture, its size must match (especially xsize)
+  // or scanlines will be too long
+
+  if (!((dwCopyWidth == result->get_x_size()) && (dwCopyHeight <= (DWORD)result->get_y_size()))) {
+    dxgsg8_cat.error() << "d3d_surface_to_texture, Texture size too small to hold display surface!\n";
+    nassertr(false, E_FAIL);
+    return E_FAIL;
+  }
+
+  hr = d3d_surface->LockRect(&LockedRect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
+  if (FAILED(hr)) {
+    dxgsg8_cat.error() << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
+    return hr;
+  }
+
+  // ones not listed not handled yet
+  nassertr((SurfDesc.Format == D3DFMT_A8R8G8B8) ||
+           (SurfDesc.Format == D3DFMT_X8R8G8B8) ||
+           (SurfDesc.Format == D3DFMT_R8G8B8) ||
+           (SurfDesc.Format == D3DFMT_R5G6B5) ||
+           (SurfDesc.Format == D3DFMT_X1R5G5B5) ||
+           (SurfDesc.Format == D3DFMT_A1R5G5B5) ||
+           (SurfDesc.Format == D3DFMT_A4R4G4B4), E_FAIL);
+
+  //pbuf contains raw ARGB in Texture byteorder
+
+  DWORD BytePitch = LockedRect.Pitch;
+  BYTE* pSurfBytes = (BYTE*)LockedRect.pBits;
+
+  // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
+
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "d3d_surface_to_texture converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
+      <<  dwNumComponents << "-channel panda Texture\n";
+  }
+
+  DWORD *pDstWord = (DWORD *) pbuf;
+  BYTE *pDstByte = (BYTE *) pbuf;
+
+  switch(SurfDesc.Format) {
+  case D3DFMT_A8R8G8B8:
+  case D3DFMT_X8R8G8B8: {
+    if (dwNumComponents == 4) {
+      DWORD *pSrcWord;
+      BYTE *pDstLine = (BYTE*)pDstWord;
+
+      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
+        memcpy(pDstLine, pSrcWord, BytePitch);
+        pDstLine += BytePitch;
+      }
+    } else {
+      // 24bpp texture case (numComponents == 3)
+      DWORD *pSrcWord;
+      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
+
+        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
+          BYTE r, g, b;
+          DWORD dwPixel = *pSrcWord;
+
+          r = (BYTE)((dwPixel>>16) & g_LowByteMask);
+          g = (BYTE)((dwPixel>> 8) & g_LowByteMask);
+          b = (BYTE)((dwPixel    ) & g_LowByteMask);
+
+          *pDstByte += b;
+          *pDstByte += g;
+          *pDstByte += r;
+        }
+      }
+    }
+    break;
+  }
+
+  case D3DFMT_R8G8B8: {
+    BYTE *pSrcByte;
+    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+
+    if (dwNumComponents == 4) {
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
+        for(DWORD x = 0; x<dwCopyWidth; x++, pDstWord++) {
+          DWORD r, g, b;
+
+          b = *pSrcByte++;
+          g = *pSrcByte++;
+          r = *pSrcByte++;
+
+          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+        }
+      }
+    } else {
+      // 24bpp texture case (numComponents == 3)
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
+        memcpy(pDstByte, pSrcByte, BytePitch);
+        pDstByte += BytePitch;
+      }
+    }
+    break;
+  }
+
+  case D3DFMT_R5G6B5:
+  case D3DFMT_X1R5G5B5:
+  case D3DFMT_A1R5G5B5:
+  case D3DFMT_A4R4G4B4: {
+    WORD  *pSrcWord;
+    // handle 0555, 1555, 0565, 4444 in same loop
+
+    BYTE redshift, greenshift, blueshift;
+    DWORD redmask, greenmask, bluemask;
+
+    if (SurfDesc.Format == D3DFMT_R5G6B5) {
+      redshift = (11-3);
+      redmask = 0xF800;
+      greenmask = 0x07E0;
+      greenshift = (5-2);
+      bluemask = 0x001F;
+      blueshift = 3;
+    } else if (SurfDesc.Format == D3DFMT_A4R4G4B4) {
+      redmask = 0x0F00;
+      redshift = 4;
+      greenmask = 0x00F0;
+      greenshift = 0;
+      bluemask = 0x000F;
+      blueshift = 4;
+    } else {  // 1555 or x555
+      redmask = 0x7C00;
+      redshift = (10-3);
+      greenmask = 0x03E0;
+      greenshift = (5-3);
+      bluemask = 0x001F;
+      blueshift = 3;
+    }
+
+    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+    if (dwNumComponents == 4) {
+      // Note: these 16bpp loops ignore input alpha completely (alpha
+      // is set to fully opaque in texture!)
+
+      // if we need to capture alpha, probably need to make separate
+      // loops for diff 16bpp fmts for best speed
+
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
+        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++, pDstWord++) {
+          WORD dwPixel = *pSrcWord;
+          BYTE r, g, b;
+
+          b = (dwPixel & bluemask) << blueshift;
+          g = (dwPixel & greenmask) >> greenshift;
+          r = (dwPixel & redmask) >> redshift;
+
+          // alpha is just set to 0xFF
+
+          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+        }
+      }
+    } else {
+      // 24bpp texture case (numComponents == 3)
+      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
+        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
+        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
+          WORD dwPixel = *pSrcWord;
+          BYTE r, g, b;
+
+          b = (dwPixel & bluemask) << blueshift;
+          g = (dwPixel & greenmask) >> greenshift;
+          r = (dwPixel & redmask) >> redshift;
+
+          *pDstByte += b;
+          *pDstByte += g;
+          *pDstByte += r;
+        }
+      }
+    }
+    break;
+  }
+
+  default:
+    dxgsg8_cat.error() << "d3d_surface_to_texture: unsupported D3DFORMAT!\n";
+  }
+
+  d3d_surface->UnlockRect();
+  return S_OK;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::fill_d3d_texture_pixels
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext8::
 fill_d3d_texture_pixels() {
   HRESULT hr = E_FAIL;
@@ -945,55 +958,6 @@ fill_d3d_texture_pixels() {
   return hr;
 }
 
-//-----------------------------------------------------------------------------
-// Name: delete_texture()
-// Desc: Release the surface used to store the texture
-//-----------------------------------------------------------------------------
-void DXTextureContext8::
-delete_texture( ) {
-  if (_d3d_texture == NULL) {
-    // dont bother printing the msg below, since we already released it.
-    return;
-  }
-
-  if (dxgsg8_cat.is_spam()) {
-    dxgsg8_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
-  }
-
-  RELEASE(_d3d_texture, dxgsg8, "texture", RELEASE_ONCE);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext8::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DXTextureContext8::
-DXTextureContext8(Texture *tex) :
-  TextureContext(tex) {
-
-  if (dxgsg8_cat.is_spam()) {
-    dxgsg8_cat.spam() 
-      << "Creating DX texture [" << tex->get_name() << "], minfilter(" << tex->get_minfilter() << "), magfilter(" << tex->get_magfilter() << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
-  }
-
-  _d3d_texture = NULL;
-  _has_mipmaps = false;
-  _tex = tex;
-}
-
-DXTextureContext8::
-~DXTextureContext8() {
-  if (dxgsg8_cat.is_spam()) {
-    dxgsg8_cat.spam()
-      << "Deleting DX8 TexContext for " << _tex->get_name() << "\n";
-  }
-  delete_texture();
-  TextureContext::~TextureContext();
-  _tex = NULL;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext8::down_to_power_2
@@ -1008,4 +972,60 @@ down_to_power_2(int value) {
     x = (x << 1);
   }
   return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::get_bits_per_pixel
+//       Access: Private
+//  Description: Maps from the Texture's Format symbols to bpp.
+//               Returns # of alpha bits.  Note: Texture's format
+//               indicates REQUESTED final format, not the stored
+//               format, which is indicated by pixelbuffer type
+////////////////////////////////////////////////////////////////////
+unsigned int DXTextureContext8::
+get_bits_per_pixel(Texture::Format format, int *alphbits) {
+  *alphbits = 0;      // assume no alpha bits
+  switch(format) {
+  case Texture::F_alpha:
+    *alphbits = 8;
+  case Texture::F_color_index:
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+  case Texture::F_rgb332:
+    return 8;
+  case Texture::F_luminance_alphamask:
+    *alphbits = 1;
+    return 16;
+  case Texture::F_luminance_alpha:
+    *alphbits = 8;
+    return 16;
+  case Texture::F_luminance:
+    return 8;
+  case Texture::F_rgba4:
+    *alphbits = 4;
+    return 16;
+  case Texture::F_rgba5:
+    *alphbits = 1;
+    return 16;
+  case Texture::F_depth_component:
+  case Texture::F_rgb5:
+    return 16;
+  case Texture::F_rgb8:
+  case Texture::F_rgb:
+    return 24;
+  case Texture::F_rgba8:
+  case Texture::F_rgba:
+  case Texture::F_rgbm:
+    if (format == Texture::F_rgbm)   // does this make any sense?
+      *alphbits = 1;
+    else *alphbits = 8;
+    return 32;
+  case Texture::F_rgb12:
+    return 36;
+  case Texture::F_rgba12:
+    *alphbits = 12;
+    return 48;
+  }
+  return 8;
 }
