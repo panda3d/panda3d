@@ -621,8 +621,41 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
       Filename movie_icon_href = compose_href("../..", movie_icon);
       html << "<img src=\"" << movie_icon_href << "\" alt=\"\">";
     }
-    html
-      << "<a href=\"" << movie << "\">Play movie</a></p>\n";
+
+    // Determine the size of the file.
+    streampos size = 0;
+    ifstream stream;
+    Filename movie_filename(_dir->get_dir(), photo->get_movie());
+    movie_filename.set_binary();
+    if (movie_filename.open_read(stream)) {
+      // Seek to the end and get the stream position there.
+      stream.seekg(0, ios::end);
+      size = stream.tellg();
+    }
+
+    static const streampos MB = 1024 * 1024;
+    static const streampos GB = 1024 * 1024 * 1024;
+    string size_units;
+    double size_float;
+
+    if (size > GB) {
+      size_units = "GB";
+      size_float = (double)size / (double)GB;
+    } else if (size > MB) {
+      size_units = "MB";
+      size_float = (double)size / (double)MB;
+    }
+
+    if (size_units.empty()) {
+      html
+        << "<a href=\"" << movie << "\">Play movie</a></p>\n";
+    } else {
+      char buffer[128];
+      sprintf(buffer, "%.1f", size_float);
+      html
+        << "<a href=\"" << movie << "\">Play movie ("
+        << buffer << " " << size_units << ")</a></p>\n";
+    }
   }
 
   generate_nav_buttons(html, prev_photo_filename, next_photo_filename,
