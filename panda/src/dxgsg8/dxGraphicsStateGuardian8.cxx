@@ -2242,10 +2242,11 @@ do_issue_texture() {
         // This texture matrix, applied on top of the texcoord
         // computed by D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR,
         // approximates the effect produced by OpenGL's GL_SPHERE_MAP.
-        LMatrix4f sphere_map(0.33f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 0.33f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 1.0f, 0.0f,
-                             0.5f, 0.5f, 0.0f, 1.0f);
+        static const LMatrix4f sphere_map
+          (0.33f, 0.0f, 0.0f, 0.0f,
+           0.0f, 0.33f, 0.0f, 0.0f,
+           0.0f, 0.0f, 1.0f, 0.0f,
+           0.5f, 0.5f, 0.0f, 1.0f);
 
         if (has_tex_mat) {
           tex_mat = sphere_map * tex_mat;
