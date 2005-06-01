@@ -830,15 +830,17 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
         // to the default name.
         const qpGeomVertexColumn *column = 
           vdata->get_format()->get_column(texcoord_name);
-        vdata = vdata->replace_column
-          (InternalName::get_texcoord(), column->get_num_components(),
-           column->get_numeric_type(), column->get_contents());
-        geom->set_vertex_data(vdata);
+        if (column != (const qpGeomVertexColumn *)NULL) {
+          vdata = vdata->replace_column
+            (InternalName::get_texcoord(), column->get_num_components(),
+             column->get_numeric_type(), column->get_contents());
+          geom->set_vertex_data(vdata);
 
-        qpGeomVertexReader from(vdata, texcoord_name);
-        qpGeomVertexWriter to(vdata, InternalName::get_texcoord());
-        while (!from.is_at_end()) {
-          to.add_data2f(from.get_data2f());
+          qpGeomVertexReader from(vdata, texcoord_name);
+          qpGeomVertexWriter to(vdata, InternalName::get_texcoord());
+          while (!from.is_at_end()) {
+            to.add_data2f(from.get_data2f());
+          }
         }
       }
 
