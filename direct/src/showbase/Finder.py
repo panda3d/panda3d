@@ -1,6 +1,7 @@
 
 import types
 import os
+import new
 
 def findClassInModule(module, className, visited):
     # Make sure you have not already visited this module
@@ -13,7 +14,8 @@ def findClassInModule(module, className, visited):
 
     # First see if we are in the dict at this level
     classObj = module.__dict__.get(className)
-    if classObj and (type(classObj) == types.ClassType):
+    if classObj and ((type(classObj) == types.ClassType) or
+                     (type(classObj) == types.TypeType)):
         return [classObj, module.__dict__]
 
     # Now filter out all the modules and iterate through them
@@ -33,14 +35,17 @@ def findClass(namespace, className):
 
     # First see if we are in the namespace
     classObj = namespace.get(className)
-    if classObj and (type(classObj) == types.ClassType):
+    # print classObj, type(classObj)
+    if classObj and ((type(classObj) == types.ClassType) or
+                     (type(classObj) == types.TypeType)):
         return [classObj, namespace]
     
     for key in namespace.keys():
         value = namespace[key]
         # If we found a class, see if it matches classname
         # Make sure we do not match "_"
-        if ((key != "_") and (type(value) == types.ClassType)):
+        if ((key != "_") and ((type(value) == types.ClassType) or
+                              (type(value) == types.TypeType))):
             if value.__name__ == className:
                 # It does, that was easy!
                 return [value, namespace]
@@ -125,7 +130,10 @@ def copyFuncs(fromClass, toClass):
                 replaceTaskMgrFunc(oldFunc, newFunc)
                 replaceStateFunc(oldFunc, newFunc)
                 replaceTcrFunc(oldFunc, newFunc)
-            toClass.__dict__[key] = newFunc
+            # You cannot assign directly to the dict with new style classes
+            # toClass.__dict__[key] = newFunc
+            # Instead we will use setattr
+            setattr(toClass, key, newFunc)
 
 def replaceMessengerFunc(oldFunc, newFunc):
     try:
