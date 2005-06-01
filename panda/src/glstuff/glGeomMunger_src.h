@@ -46,7 +46,6 @@ public:
   INLINE void *operator new(size_t size);
 
 private:
-  PT(GraphicsStateGuardian) _gsg;
   CPT(TextureAttrib) _texture;
   CPT(TexGenAttrib) _tex_gen;
 
