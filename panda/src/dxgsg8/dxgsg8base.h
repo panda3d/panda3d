@@ -185,28 +185,28 @@ typedef enum {
 #define RECT_XSIZE(REC) (REC.right-REC.left)
 #define RECT_YSIZE(REC) (REC.bottom-REC.top)
 
-typedef struct {
-      LPDIRECT3DDEVICE8 pD3DDevice;
-      IDirect3DSwapChain8 *pSwapChain;
-      LPDIRECT3D8       pD3D8;  // copied from DXGraphicsPipe8 for convenience
-      HWND              hWnd;
-      HMONITOR          hMon;
-      DWORD             MaxAvailVidMem;
-      ushort            CardIDNum;  // adapter ID
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      bool              bCanDirectDisableColorWrites;  // if true, dont need blending for this
-      bool              bIsLowVidMemCard;
-      bool              bIsTNLDevice;
-      bool              bCanUseHWVertexShaders;
-      bool              bCanUsePixelShaders;
-      bool              bIsDX81;
-      UINT              SupportedScreenDepthsMask;
-      UINT              SupportedTexFmtsMask;
-      D3DCAPS8          d3dcaps;
-      D3DDISPLAYMODE    DisplayMode;
-      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
-      D3DADAPTER_IDENTIFIER8 DXDeviceID;
-} DXScreenData;
+struct DXScreenData {
+  LPDIRECT3DDEVICE8 pD3DDevice;
+  IDirect3DSwapChain8 *pSwapChain;
+  LPDIRECT3D8 pD3D8;  // copied from DXGraphicsPipe8 for convenience
+  HWND hWnd;
+  HMONITOR hMon;
+  DWORD MaxAvailVidMem;
+  ushort CardIDNum;  // adapter ID
+  ushort depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+  bool bCanDirectDisableColorWrites;  // if true, dont need blending for this
+  bool bIsLowVidMemCard;
+  bool bIsTNLDevice;
+  bool bCanUseHWVertexShaders;
+  bool bCanUsePixelShaders;
+  bool bIsDX81;
+  UINT SupportedScreenDepthsMask;
+  UINT SupportedTexFmtsMask;
+  D3DCAPS8 d3dcaps;
+  D3DDISPLAYMODE DisplayMode;
+  D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
+  D3DADAPTER_IDENTIFIER8 DXDeviceID;
+};
 
 
 //utility stuff

@@ -133,14 +133,11 @@ protected:
 
   virtual void set_blend_mode();
 
-  void free_nondx_resources();            // free local internal buffers
+  void free_nondx_resources();
   void free_d3d_device(void);
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
-
-  static CPT(RenderState) get_smooth_state();
-  static CPT(RenderState) get_flat_state();
 
   void do_auto_rescale_normal();
 
@@ -171,7 +168,8 @@ protected:
   void set_texture_blend_mode(int i, const TextureStage *stage);
 
   void dx_cleanup();
-  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn=NULL);
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, 
+                           DXScreenData **pScrn = NULL);
 
   bool check_cooperative_level();
 
@@ -247,6 +245,9 @@ protected:
   const DXIndexBufferContext8 *_active_ibuffer;
 
   bool _overlay_windows_supported;
+  bool _tex_stats_retrieval_impossible;
+
+  static D3DMATRIX _d3d_ident_mat;
 
 public:
   virtual TypeHandle get_type() const {

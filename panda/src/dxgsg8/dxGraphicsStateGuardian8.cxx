@@ -68,13 +68,12 @@
 
 TypeHandle DXGraphicsStateGuardian8::_type_handle;
 
-static D3DMATRIX matIdentity;
+D3DMATRIX DXGraphicsStateGuardian8::_d3d_ident_mat;
+
 
 #define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx8 hdrs
 
 #define MY_D3DRGBA(r, g, b, a) ((D3DCOLOR) D3DCOLOR_COLORVALUE(r, g, b, a))
-
-static bool tex_stats_retrieval_impossible = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::Constructor
@@ -92,16 +91,16 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   _transform_stale = false;
   _vertex_blending_enabled = false;
   _overlay_windows_supported = false;
+  _tex_stats_retrieval_impossible = false;
 
   _active_vbuffer = NULL;
   _active_ibuffer = NULL;
 
-  // non-dx obj values inited here should not change if resize is
-  // called and dx objects need to be recreated (otherwise they
-  // belong in dx_init, with other renderstate
-
-  ZeroMemory(&matIdentity, sizeof(D3DMATRIX));
-  matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
+  // This is a static member, but we initialize it here in the
+  // constructor anyway.  It won't hurt if it gets repeatedly
+  // initalized.
+  ZeroMemory(&_d3d_ident_mat, sizeof(D3DMATRIX));
+  _d3d_ident_mat._11 = _d3d_ident_mat._22 = _d3d_ident_mat._33 = _d3d_ident_mat._44 = 1.0f;
 
   _cur_read_pixel_buffer = RenderBuffer::T_front;
   set_color_clear_value(_color_clear_value);
@@ -204,55 +203,55 @@ apply_texture(int i, TextureContext *tc) {
   }
 
   Texture *tex = tc->_texture;
-  Texture::WrapMode wrapU, wrapV;
-  wrapU = tex->get_wrap_u();
-  wrapV = tex->get_wrap_v();
+  Texture::WrapMode wrap_u, wrap_v;
+  wrap_u = tex->get_wrap_u();
+  wrap_v = tex->get_wrap_v();
 
-  _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrapU));
-  _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrapV));
+  _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrap_u));
+  _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
 
   _pD3DDevice->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
 
-  D3DTEXTUREFILTERTYPE newMagFilter;
+  D3DTEXTUREFILTERTYPE new_mag_filter;
   if (aniso_degree <= 1) {
-    newMagFilter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+    new_mag_filter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
   } else {
-    newMagFilter = D3DTEXF_ANISOTROPIC;
+    new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  _pD3DDevice->SetTextureStageState(i, D3DTSS_MAGFILTER, newMagFilter);
+  _pD3DDevice->SetTextureStageState(i, D3DTSS_MAGFILTER, new_mag_filter);
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
-  D3DTEXTUREFILTERTYPE newMinFilter = get_d3d_min_type(tex->get_minfilter());
-  D3DTEXTUREFILTERTYPE newMipFilter = get_d3d_mip_type(tex->get_minfilter());
+  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter());
+  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_minfilter());
 
   if (!tex->might_have_ram_image()) {
     // If the texture is completely dynamic, don't try to issue
     // mipmaps--pandadx doesn't support auto-generated mipmaps at this
     // point.
-    newMipFilter = D3DTEXF_NONE;
+    new_mip_filter = D3DTEXF_NONE;
   }
 
 #ifndef NDEBUG
   // sanity check
-  if ((!dtc->has_mipmaps()) && (newMipFilter != D3DTEXF_NONE)) {
+  if ((!dtc->has_mipmaps()) && (new_mip_filter != D3DTEXF_NONE)) {
     dxgsg8_cat.error()
       << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname["
       << tex->get_name() << "], filter("
       << tex->get_minfilter() << ")\n";
-    newMipFilter = D3DTEXF_NONE;
+    new_mip_filter = D3DTEXF_NONE;
   }
 #endif
 
   if (aniso_degree >= 2) {
-    newMinFilter = D3DTEXF_ANISOTROPIC;
+    new_min_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  _pD3DDevice->SetTextureStageState(i, D3DTSS_MINFILTER, newMinFilter);
-  _pD3DDevice->SetTextureStageState(i, D3DTSS_MIPFILTER, newMipFilter);
+  _pD3DDevice->SetTextureStageState(i, D3DTSS_MINFILTER, new_min_filter);
+  _pD3DDevice->SetTextureStageState(i, D3DTSS_MIPFILTER, new_mip_filter);
 
   _pD3DDevice->SetTexture(i, dtc->get_d3d_texture());
 }
@@ -265,8 +264,8 @@ apply_texture(int i, TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 release_texture(TextureContext *tc) {
-  DXTextureContext8 *gtc = DCAST(DXTextureContext8, tc);
-  delete gtc;
+  DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
+  delete dtc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -715,7 +714,6 @@ end_scene() {
   HRESULT hr = _pD3DDevice->EndScene();
 
   if (FAILED(hr)) {
-
     if (hr == D3DERR_DEVICELOST) {
       if (dxgsg8_cat.is_debug()) {
         dxgsg8_cat.debug()
@@ -745,11 +743,11 @@ end_frame() {
 #if defined(DO_PSTATS)
   if (_texmgrmem_total_pcollector.is_active()) {
 #define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
-    static DWORD LastTickCount = 0;
-    DWORD CurTickCount = GetTickCount();
+    static DWORD last_tick_count = 0;
+    DWORD cur_tick_count = GetTickCount();
 
-    if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
-      LastTickCount = CurTickCount;
+    if (cur_tick_count - last_tick_count > TICKS_PER_GETTEXINFO) {
+      last_tick_count = cur_tick_count;
       report_texmgr_stats();
     }
   }
@@ -851,7 +849,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     // these vertices, but that turns out to be a bigger hammer than
     // we want: that also prevents lighting calculations and user clip
     // planes.
-    _pD3DDevice->SetTransform(D3DTS_WORLD, &matIdentity);
+    _pD3DDevice->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
     static const LMatrix4f rescale_mat
       (1, 0, 0, 0,
        0, 1, 0, 0,
@@ -1323,17 +1321,17 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
   }
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
-  IDirect3DSurface8 *pTexSurfaceLev0, *pCurRenderTarget;
-  hr = dtc->get_d3d_texture()->GetSurfaceLevel(0, &pTexSurfaceLev0);
+  IDirect3DSurface8 *tex_level_0, *render_target;
+  hr = dtc->get_d3d_texture()->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     return;
   }
 
-  hr = _pD3DDevice->GetRenderTarget(&pCurRenderTarget);
+  hr = _pD3DDevice->GetRenderTarget(&render_target);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
-    SAFE_RELEASE(pTexSurfaceLev0);
+    SAFE_RELEASE(tex_level_0);
     return;
   }
 
@@ -1345,14 +1343,14 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
   SrcRect.bottom = yo+h;
 
   // now copy from fb to tex
-  hr = _pD3DDevice->CopyRects(pCurRenderTarget, &SrcRect, 1, pTexSurfaceLev0, 0);
+  hr = _pD3DDevice->CopyRects(render_target, &SrcRect, 1, tex_level_0, 0);
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
   }
 
-  SAFE_RELEASE(pCurRenderTarget);
-  SAFE_RELEASE(pTexSurfaceLev0);
+  SAFE_RELEASE(render_target);
+  SAFE_RELEASE(tex_level_0);
 }
 
 
@@ -1370,7 +1368,7 @@ bool DXGraphicsStateGuardian8::
 framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
 
-  RECT SrcCopyRect;
+  RECT rect;
   nassertr(tex != NULL && dr != NULL, false);
 
   int xo, yo, w, h;
@@ -1378,29 +1376,32 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgb);
 
-  SrcCopyRect.top = yo;
-  SrcCopyRect.left = xo;
-  SrcCopyRect.right = xo + w;
-  SrcCopyRect.bottom = yo + h;
+  rect.top = yo;
+  rect.left = xo;
+  rect.right = xo + w;
+  rect.bottom = yo + h;
 
-  IDirect3DSurface8 *pD3DSurf;
+  IDirect3DSurface8 *framebuffer;
   HRESULT hr;
 
   if (_cur_read_pixel_buffer & RenderBuffer::T_back) {
-    hr = _pD3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pD3DSurf);
+    hr = _pD3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &framebuffer);
 
     if (FAILED(hr)) {
       dxgsg8_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
       return false;
     }
 
-    // note if you try to grab the backbuffer and full-screen anti-aliasing is on,
-    // the backbuffer might be larger than the window size.  for screenshots its safer to get the front buffer.
+    // note if you try to grab the backbuffer and full-screen
+    // anti-aliasing is on, the backbuffer might be larger than the
+    // window size.  for screenshots its safer to get the front
+    // buffer.
 
   } else if (_cur_read_pixel_buffer & RenderBuffer::T_front) {
-    // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to copy to
+    // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to
+    // copy to
 
-    DWORD TmpSurfXsize, TmpSurfYsize;
+    DWORD temp_x_size, temp_y_size;
 
     if (_pScrn->PresParams.Windowed) {
       // GetFrontBuffer retrieves the entire desktop for a monitor, so
@@ -1410,30 +1411,30 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       minfo.cbSize = sizeof(MONITORINFO);
       GetMonitorInfo(_pScrn->hMon, &minfo);   // have to use GetMonitorInfo, since this gsg may not be for primary monitor
 
-      TmpSurfXsize = RECT_XSIZE(minfo.rcMonitor);
-      TmpSurfYsize = RECT_YSIZE(minfo.rcMonitor);
+      temp_x_size = RECT_XSIZE(minfo.rcMonitor);
+      temp_y_size = RECT_YSIZE(minfo.rcMonitor);
 
-      // set SrcCopyRect to client area of window in scrn coords
-      ClientToScreen(_pScrn->hWnd, (POINT*)&SrcCopyRect.left);
-      ClientToScreen(_pScrn->hWnd, (POINT*)&SrcCopyRect.right);
+      // set rect to client area of window in scrn coords
+      ClientToScreen(_pScrn->hWnd, (POINT*)&rect.left);
+      ClientToScreen(_pScrn->hWnd, (POINT*)&rect.right);
 
     } else {
-      RECT WindRect;
-      GetWindowRect(_pScrn->hWnd, &WindRect);
-      TmpSurfXsize = RECT_XSIZE(WindRect);
-      TmpSurfYsize = RECT_YSIZE(WindRect);
+      RECT wind_rect;
+      GetWindowRect(_pScrn->hWnd, &wind_rect);
+      temp_x_size = RECT_XSIZE(wind_rect);
+      temp_y_size = RECT_YSIZE(wind_rect);
     }
 
-    hr = _pD3DDevice->CreateImageSurface(TmpSurfXsize, TmpSurfYsize, D3DFMT_A8R8G8B8, &pD3DSurf);
+    hr = _pD3DDevice->CreateImageSurface(temp_x_size, temp_y_size, D3DFMT_A8R8G8B8, &framebuffer);
     if (FAILED(hr)) {
       dxgsg8_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
       return false;
     }
 
-    hr = _pD3DDevice->GetFrontBuffer(pD3DSurf);
+    hr = _pD3DDevice->GetFrontBuffer(framebuffer);
 
     if (hr == D3DERR_DEVICELOST) {
-      pD3DSurf->Release();
+      framebuffer->Release();
       dxgsg8_cat.error() << "copy_pixel_buffer failed: device lost\n";
       return false;
     }
@@ -1443,9 +1444,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
 
-  DXTextureContext8::d3d_surface_to_texture(SrcCopyRect, pD3DSurf, tex);
+  DXTextureContext8::d3d_surface_to_texture(rect, framebuffer, tex);
 
-  RELEASE(pD3DSurf, dxgsg8, "pD3DSurf", RELEASE_ONCE);
+  RELEASE(framebuffer, dxgsg8, "framebuffer", RELEASE_ONCE);
 
   nassertr(tex->has_ram_image(), false);
   return true;
@@ -1481,36 +1482,36 @@ reset() {
   assert(_pScrn->pD3D8 != NULL);
   assert(_pD3DDevice != NULL);
 
-  D3DCAPS8 d3dCaps;
-  _pD3DDevice->GetDeviceCaps(&d3dCaps);
+  D3DCAPS8 d3d_caps;
+  _pD3DDevice->GetDeviceCaps(&d3d_caps);
 
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "\nHwTransformAndLight = " << ((d3dCaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
-      << "\nMaxTextureWidth = " << d3dCaps.MaxTextureWidth
-      << "\nMaxTextureHeight = " << d3dCaps.MaxTextureHeight
-      << "\nMaxVolumeExtent = " << d3dCaps.MaxVolumeExtent
-      << "\nMaxTextureAspectRatio = " << d3dCaps.MaxTextureAspectRatio
-      << "\nTexCoordCount = " << (d3dCaps.FVFCaps & D3DFVFCAPS_TEXCOORDCOUNTMASK)
-      << "\nMaxTextureBlendStages = " << d3dCaps.MaxTextureBlendStages
-      << "\nMaxSimultaneousTextures = " << d3dCaps.MaxSimultaneousTextures
-      << "\nMaxActiveLights = " << d3dCaps.MaxActiveLights
-      << "\nMaxUserClipPlanes = " << d3dCaps.MaxUserClipPlanes
-      << "\nMaxVertexBlendMatrices = " << d3dCaps.MaxVertexBlendMatrices
-      << "\nMaxVertexBlendMatrixIndex = " << d3dCaps.MaxVertexBlendMatrixIndex
-      << "\nMaxPointSize = " << d3dCaps.MaxPointSize
-      << "\nMaxPrimitiveCount = " << d3dCaps.MaxPrimitiveCount
-      << "\nMaxVertexIndex = " << d3dCaps.MaxVertexIndex
-      << "\nMaxStreams = " << d3dCaps.MaxStreams
-      << "\nMaxStreamStride = " << d3dCaps.MaxStreamStride
+      << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
+      << "\nMaxTextureWidth = " << d3d_caps.MaxTextureWidth
+      << "\nMaxTextureHeight = " << d3d_caps.MaxTextureHeight
+      << "\nMaxVolumeExtent = " << d3d_caps.MaxVolumeExtent
+      << "\nMaxTextureAspectRatio = " << d3d_caps.MaxTextureAspectRatio
+      << "\nTexCoordCount = " << (d3d_caps.FVFCaps & D3DFVFCAPS_TEXCOORDCOUNTMASK)
+      << "\nMaxTextureBlendStages = " << d3d_caps.MaxTextureBlendStages
+      << "\nMaxSimultaneousTextures = " << d3d_caps.MaxSimultaneousTextures
+      << "\nMaxActiveLights = " << d3d_caps.MaxActiveLights
+      << "\nMaxUserClipPlanes = " << d3d_caps.MaxUserClipPlanes
+      << "\nMaxVertexBlendMatrices = " << d3d_caps.MaxVertexBlendMatrices
+      << "\nMaxVertexBlendMatrixIndex = " << d3d_caps.MaxVertexBlendMatrixIndex
+      << "\nMaxPointSize = " << d3d_caps.MaxPointSize
+      << "\nMaxPrimitiveCount = " << d3d_caps.MaxPrimitiveCount
+      << "\nMaxVertexIndex = " << d3d_caps.MaxVertexIndex
+      << "\nMaxStreams = " << d3d_caps.MaxStreams
+      << "\nMaxStreamStride = " << d3d_caps.MaxStreamStride
       << "\n";
   }
 
-  _max_texture_stages = d3dCaps.MaxSimultaneousTextures;
-  _max_lights = d3dCaps.MaxActiveLights;
-  _max_clip_planes = d3dCaps.MaxUserClipPlanes;
-  _max_vertex_transforms = d3dCaps.MaxVertexBlendMatrices;
-  _max_vertex_transform_indices = d3dCaps.MaxVertexBlendMatrixIndex;
+  _max_texture_stages = d3d_caps.MaxSimultaneousTextures;
+  _max_lights = d3d_caps.MaxActiveLights;
+  _max_clip_planes = d3d_caps.MaxUserClipPlanes;
+  _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
+  _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
   ZeroMemory(&_lmodel_ambient, sizeof(Colorf));
   _pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x0);
@@ -1522,7 +1523,7 @@ reset() {
 
   // these both reflect d3d defaults
   _color_writemask = 0xFFFFFFFF;
-  _CurFVFType = 0x0;  // guards SetVertexShader fmt
+  _CurFVFType = 0x0;
 
   _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
@@ -1573,15 +1574,18 @@ reset() {
     _pScrn->d3dcaps.MaxTextureHeight = 256;
 
   if (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGTABLE) {
-    // watch out for drivers that emulate per-pixel fog with per-vertex fog (Riva128, Matrox Millen G200)
-    // some of these require gouraud-shading to be set to work, as if you were using vertex fog
+    // Watch out for drivers that emulate per-pixel fog with
+    // per-vertex fog (Riva128, Matrox Millen G200).  Some of these
+    // require gouraud-shading to be set to work, as if you were using
+    // vertex fog
     _doFogType = PerPixelFog;
   } else {
-    // every card is going to have vertex fog, since it's implemented in d3d runtime
+    // every card is going to have vertex fog, since it's implemented
+    // in d3d runtime.
     assert((_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
 
-    // vtx fog may look crappy if you have large polygons in the foreground and they get clipped,
-    // so you may want to disable it
+    // vertex fog may look crappy if you have large polygons in the
+    // foreground and they get clipped, so you may want to disable it
 
     if (dx_no_vertex_fog) {
       _doFogType = None;
@@ -1589,14 +1593,15 @@ reset() {
       _doFogType = PerVertexFog;
 
       // range-based fog only works with vertex fog in dx7/8
-      if (dx_use_rangebased_fog && (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGRANGE))
+      if (dx_use_rangebased_fog && (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGRANGE)) {
         _pD3DDevice->SetRenderState(D3DRS_RANGEFOGENABLE, true);
+      }
     }
   }
 
   _pScrn->bCanDirectDisableColorWrites = ((_pScrn->d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) != 0);
 
-  // Lighting, let's turn it off by default
+  // Lighting, let's turn it off initially.
   _pD3DDevice->SetRenderState(D3DRS_LIGHTING, false);
 
   // turn on dithering if the rendertarget is < 8bits/color channel
@@ -1656,7 +1661,6 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 apply_fog(Fog *fog) {
-
   if (_doFogType == None)
     return;
 
@@ -1728,8 +1732,9 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
     enable_alpha_test(false);
+
   } else {
-    //  AlphaTestAttrib::PandaCompareFunc == = D3DCMPFUNC
+    //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
     call_dxAlphaFunc((D3DCMPFUNC)mode, attrib->get_reference_alpha());
     enable_alpha_test(true);
   }
@@ -2275,7 +2280,7 @@ do_issue_texture() {
       // For some reason, "disabling" texture coordinate transforms
       // doesn't seem to be sufficient.  We'll load an identity matrix
       // to underscore the point.
-      _pD3DDevice->SetTransform(get_tex_mat_sym(i), &matIdentity);
+      _pD3DDevice->SetTransform(get_tex_mat_sym(i), &_d3d_ident_mat);
     }
   }
 
@@ -2568,36 +2573,6 @@ set_read_buffer(const RenderBuffer &rb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::get_smooth_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState object that represents
-//               smooth, per-vertex shading.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) DXGraphicsStateGuardian8::
-get_smooth_state() {
-  static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
-    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
-  }
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::get_flat_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState object that represents
-//               flat, per-primitive shading.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) DXGraphicsStateGuardian8::
-get_flat_state() {
-  static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
-    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-  }
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::do_auto_rescale_normal
 //       Access: Protected
 //  Description: Issues the appropriate GL commands to either rescale
@@ -2736,7 +2711,7 @@ report_texmgr_stats() {
   D3DDEVINFO_RESOURCEMANAGER all_resource_stats;
   ZeroMemory(&all_resource_stats, sizeof(D3DDEVINFO_RESOURCEMANAGER));
 
-  if (!tex_stats_retrieval_impossible) {
+  if (!_tex_stats_retrieval_impossible) {
     hr = _pD3DDevice->GetInfo(D3DDEVINFOID_RESOURCEMANAGER, &all_resource_stats, sizeof(D3DDEVINFO_RESOURCEMANAGER));
     if (hr != D3D_OK) {
       if (hr == S_FALSE) {
@@ -2747,7 +2722,7 @@ report_texmgr_stats() {
               << "texstats GetInfo() requires debug DX DLLs to be installed!!\n";
           }
           ZeroMemory(&all_resource_stats, sizeof(D3DDEVINFO_RESOURCEMANAGER));
-          tex_stats_retrieval_impossible = true;
+          _tex_stats_retrieval_impossible = true;
         }
       } else {
         dxgsg8_cat.error() << "GetInfo(RESOURCEMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
