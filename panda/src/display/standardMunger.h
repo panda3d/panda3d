@@ -38,10 +38,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StandardMunger : public StateMunger {
 public:
-  StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
+  StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                  int num_components, NumericType numeric_type,
                  Contents contents);
   virtual ~StandardMunger();
+
+  INLINE GraphicsStateGuardian *get_gsg() const;
 
 protected:
   virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
@@ -54,7 +56,7 @@ private:
   int _num_components;
   NumericType _numeric_type;
   Contents _contents;
-  CPT(GraphicsStateGuardian) _gsg;
+  PT(GraphicsStateGuardian) _gsg;
   CPT(RenderModeAttrib) _render_mode;
 
   bool _munge_color;

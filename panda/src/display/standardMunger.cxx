@@ -33,7 +33,7 @@ TypeHandle StandardMunger::_type_handle;
 //               we might as well convert it as we munge).
 ////////////////////////////////////////////////////////////////////
 StandardMunger::
-StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
+StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
                StandardMunger::NumericType numeric_type,
                StandardMunger::Contents contents) :

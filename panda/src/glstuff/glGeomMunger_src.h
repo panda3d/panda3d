@@ -36,8 +36,6 @@ public:
   INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
 
-  INLINE GraphicsStateGuardian *get_gsg() const;
-
 protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
                                                     const qpGeomVertexAnimationSpec &animation);

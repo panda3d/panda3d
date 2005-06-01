@@ -25,21 +25,9 @@
 INLINE CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _gsg(gsg),
   _texture(state->get_texture()),
   _tex_gen(state->get_tex_gen())
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::get_gsg
-//       Access: Public
-//  Description: Returns a pointer to the GSG that created this
-//               munger.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsStateGuardian *CLP(GeomMunger)::
-get_gsg() const {
-  return _gsg;
 }
 
 ////////////////////////////////////////////////////////////////////
