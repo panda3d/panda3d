@@ -252,6 +252,14 @@ Indexify() {
      "there are one or more movie files found in the directory.",
      &Indexify::dispatch_filename, NULL, &movie_icon);
 
+  add_option
+    ("copyreduced", "", 0,
+     "Instead of generating index files, copy key files (such as "
+     "*.cm, *.ds) from the full image directory into the reduced "
+     "image directory, so that the full image directory may be removed "
+     "for generating a reduced-size archive.",
+     &Indexify::dispatch_none, &_copy_reduced);
+
   _photo_extension = "jpg";
   _movie_extension = "mov";
   _text_maker = (PNMTextMaker *)NULL;
@@ -549,7 +557,23 @@ run() {
     exit(1);
   }
 
+  if (_copy_reduced) {
+    do_copy_reduced();
+  } else {
+    do_generate_images();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Indexify::do_generate_images
+//       Access: Public
+//  Description: The main work function.  Generates all of the reduced
+//               images and the html code.
+////////////////////////////////////////////////////////////////////
+void Indexify::
+do_generate_images() {
   // First, generate all the images.
+  RollDirs::iterator di;
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
     if (!roll_dir->generate_images(archive_dir, _text_maker)) {
@@ -655,6 +679,25 @@ run() {
   index_html
     << "</body>\n"
     << "</html>\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Indexify::do_copy_reduced
+//       Access: Public
+//  Description: The main work function in -copyreduced mode.  Simply
+//               copies key files from the full directory to the
+//               reduced directory.
+////////////////////////////////////////////////////////////////////
+void Indexify::
+do_copy_reduced() {
+  RollDirs::iterator di;
+  for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
+    RollDirectory *roll_dir = (*di);
+    if (!roll_dir->copy_reduced(archive_dir)) {
+      nout << "Failure.\n";
+      exit(1);
+    }
+  }
 }
 
 

@@ -62,6 +62,8 @@ public:
   const string &get_comment_html() const;
   const string &get_index_html() const;
 
+  bool copy_reduced(const Filename &archive_dir);
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -89,6 +91,11 @@ private:
   string _desc;
   typedef pvector<Photo *> Photos;
   Photos _photos;
+
+  bool _got_ds_file;
+  Filename _ds_filename;
+  bool _got_ls_file;
+  Filename _ls_filename;
   
   Filename _newest_contributing_filename;
 

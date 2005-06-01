@@ -32,10 +32,11 @@ class RollDirectory;
 class Photo {
 public:
   Photo(RollDirectory *dir, const Filename &basename, 
-        const Filename &movie = Filename());
+        const string &movie_extension);
 
   const Filename &get_basename() const;
   const Filename &get_movie() const;
+  const Filename &get_cm() const;
   const string &get_name() const;
   const string &get_frame_number() const;
 
@@ -48,11 +49,13 @@ public:
   int _reduced_y_size;
   bool _has_reduced;
   bool _has_movie;
+  bool _has_cm;
 
 private:
   RollDirectory *_dir;
   Filename _basename;
   Filename _movie;
+  Filename _cm;
   string _name;
   string _frame_number;
 };

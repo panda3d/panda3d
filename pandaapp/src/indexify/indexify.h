@@ -48,6 +48,8 @@ protected:
 
 public:
   void run();
+  void do_generate_images();
+  void do_copy_reduced();
 
   string _front_title;
   Filename _roll_dir_root;
@@ -56,6 +58,7 @@ public:
   Filename _font_filename;
   bool _generate_icons;
   double _font_aa_factor;
+  bool _copy_reduced;
 
   typedef pvector<RollDirectory *> RollDirs;
   RollDirs _roll_dirs;

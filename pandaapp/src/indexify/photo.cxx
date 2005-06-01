@@ -27,10 +27,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Photo::
-Photo(RollDirectory *dir, const Filename &basename, const Filename &movie) :
+Photo(RollDirectory *dir, const Filename &basename, const string &movie_extension) :
   _dir(dir),
-  _basename(basename),
-  _movie(movie)
+  _basename(basename)
 {
   _name = _basename.get_basename_wo_extension();
   _frame_number = _name;
@@ -52,7 +51,22 @@ Photo(RollDirectory *dir, const Filename &basename, const Filename &movie) :
   _reduced_x_size = 0;
   _reduced_y_size = 0;
   _has_reduced = false;
-  _has_movie = !_movie.empty();
+
+  _has_movie = false;
+  Filename movie_filename(_dir->get_dir(), _basename);
+  movie_filename.set_extension(movie_extension);
+  if (movie_filename.exists()) {
+    _movie = movie_filename.get_basename();
+    _has_movie = true;
+  }
+
+  _has_cm = false;
+  Filename cm_filename(_dir->get_dir(), _basename);
+  cm_filename.set_extension("cm");
+  if (cm_filename.exists()) {
+    _cm = cm_filename.get_basename();
+    _has_cm = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +89,17 @@ get_basename() const {
 const Filename &Photo::
 get_movie() const {
   return _movie;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Photo::get_cm
+//       Access: Public
+//  Description: Returns the filename of the comment file associated
+//               with the photo, if any.
+////////////////////////////////////////////////////////////////////
+const Filename &Photo::
+get_cm() const {
+  return _cm;
 }
 
 ////////////////////////////////////////////////////////////////////

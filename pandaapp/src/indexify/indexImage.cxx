@@ -96,7 +96,6 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 
   PNMImage index_image;
 
-  Filename reduced_dir(archive_dir, "reduced/" + _dir->get_basename());
   Filename thumbnail_dir(archive_dir, "thumbs");
   Filename output_filename(thumbnail_dir, _name);
   output_filename.set_extension("jpg");
@@ -160,130 +159,17 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   for (pi = _photos.begin(); pi != _photos.end(); ++pi) {
     const PhotoInfo &pinfo = (*pi);
     Photo *photo = _dir->get_photo(pinfo._photo_index);
-    Filename photo_filename(_dir->get_dir(), photo->get_basename());
-    Filename reduced_filename(reduced_dir, photo->get_basename());
-    photo_filename.standardize();
-    reduced_filename.standardize();
     PNMImage reduced_image;
-
-    if (!dummy_mode && photo_filename != reduced_filename &&
-        (force_regenerate || 
-         reduced_filename.compare_timestamps(photo_filename) < 0)) {
-      // If the reduced filename does not exist or is older than the
-      // source filename, we must read the complete source filename to
-      // generate the reduced image.
-      PNMImage photo_image;
-      PNMReader *reader = photo_image.make_reader(photo_filename);
-      if (reader == (PNMReader *)NULL) {        
-        nout << "Unable to read " << photo_filename << ".\n";
-        return false;
-      }
-      photo_image.copy_header_from(*reader);
-      
-      photo->_full_x_size = photo_image.get_x_size();
-      photo->_full_y_size = photo_image.get_y_size();
-      
-      // Generate a reduced image for the photo.
-      compute_reduction(photo_image, reduced_image, 
-                        reduced_width, reduced_height);
-
-      photo->_reduced_x_size = reduced_image.get_x_size();
-      photo->_reduced_y_size = reduced_image.get_y_size();
-
-      // Only bother making a reduced version if it would actually be
-      // smaller than the original.
-      if (photo->_reduced_x_size < photo->_full_x_size ||
-          photo->_reduced_y_size < photo->_full_y_size) {
-	nout << "Reading " << photo_filename << "\n";
-        if (!photo_image.read(reader)) {
-          nout << "Unable to read.\n";
-          return false;
-        }
-	reader = NULL;
-
-        reduced_image.quick_filter_from(photo_image);
-        reduced_filename.make_dir();
-        nout << "Writing " << reduced_filename << "\n";
-        if (!reduced_image.write(reduced_filename)) {
-          nout << "Unable to write.\n";
-          delete reader;
-          return false;
-        }
-	photo->_has_reduced = true;
-
-      } else {
-	// We're not making a reduced version.  But maybe we still
-	// need to read the original so we can make a thumbnail.
-	reduced_filename = photo_filename;
-	reduced_image.copy_header_from(photo_image);
-
-	if (!dummy_mode && generate_index_image) {
-	  nout << "Reading " << photo_filename << "\n";
-	  if (!reduced_image.read(reader)) {
-	    nout << "Unable to read image.\n";
-	    return false;
-	  }
-	  reader = NULL;
-	}  
-      }
-      if (reader != (PNMReader *)NULL) {
-	delete reader;
-      }
-
-    } else {
-      // If the reduced image already exists and is newer than the
-      // source image, use it.
-
-      // We still read the image header to determine its size.
-      PNMImageHeader photo_image;
-      if (!photo_image.read_header(photo_filename)) {
-        nout << "Unable to read " << photo_filename << "\n";
-        return false;
-      }
-      
-      photo->_full_x_size = photo_image.get_x_size();
-      photo->_full_y_size = photo_image.get_y_size();
-      photo->_has_reduced = true;
-
-      if (dummy_mode) {
-        // In dummy mode, we may or may not actually have a reduced
-        // image.  In either case, ignore the file and compute its
-        // appropriate size from the source image.
-        compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
-        photo->_reduced_x_size = reduced_image.get_x_size();
-        photo->_reduced_y_size = reduced_image.get_y_size();
-
-      } else if (generate_index_image) {
-        // Now read the reduced image from disk, so we can put it on
-        // the index image.
-        nout << "Reading " << reduced_filename << "\n";
-        
-        if (!reduced_image.read(reduced_filename)) {
-          nout << "Unable to read.\n";
-          return false;
-        }
-
-        photo->_reduced_x_size = reduced_image.get_x_size();
-        photo->_reduced_y_size = reduced_image.get_y_size();
-
-      } else {
-        // If we're not generating an index image, we don't even need
-        // the reduced image--just scan its header to get its size.
-        if (!reduced_image.read_header(reduced_filename)) {
-          nout << "Unable to read " << reduced_filename << "\n";
-          return false;
-        }
-        photo->_reduced_x_size = reduced_image.get_x_size();
-        photo->_reduced_y_size = reduced_image.get_y_size();
-      }
+    if (!make_reduced_image(photo, reduced_image, generate_index_image, false)) {
+      return false;
     }
-
+  
     if (generate_index_image) {
       // Generate a thumbnail image for the photo.
       PNMImage thumbnail_image;
       compute_reduction(reduced_image, thumbnail_image, 
                         thumb_interior_width, thumb_interior_height);
-
+      
       if (dummy_mode) {
         draw_box(thumbnail_image);
       } else {
@@ -292,7 +178,7 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       // Center the thumbnail image within its box.
       int x_center = (thumb_width - thumbnail_image.get_x_size()) / 2;
       int y_center = (thumb_height - thumbnail_image.get_y_size()) / 2;
-
+      
       if (draw_frames) {
         draw_frame(index_image, 
                    pinfo._x_place, pinfo._y_place,
@@ -300,16 +186,16 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
                    pinfo._x_place + x_center, pinfo._y_place + y_center,
                    thumbnail_image.get_x_size(), thumbnail_image.get_y_size());
       }
-
+      
       thumbnail_image.set_color_type(index_image.get_color_type());
       index_image.copy_sub_image(thumbnail_image, 
                                  pinfo._x_place + x_center, 
                                  pinfo._y_place + y_center);
-
+      
       if (text_maker != (PNMTextMaker *)NULL) {
         int label_x = pinfo._x_place + thumb_width / 2;
         int label_y = pinfo._y_place + thumb_height + thumb_caption_height;
-
+        
         int width = 
           text_maker->generate_into(photo->get_frame_number(), index_image, 
                                     label_x, label_y);
@@ -336,6 +222,159 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   _index_x_size = index_image.get_x_size();
   _index_y_size = index_image.get_y_size();
   _index_basename = output_filename.get_basename();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IndexImage::make_reduced_image
+//       Access: Public
+//  Description: Copies the full-sized image to the reduced image
+//               folder, if necessary.
+////////////////////////////////////////////////////////////////////
+bool IndexImage::
+make_reduced_image(Photo *photo, PNMImage &reduced_image, 
+                   bool generate_index_image, bool force_reduced) {
+  Filename reduced_dir(archive_dir, "reduced/" + _dir->get_basename());
+
+  Filename photo_filename(_dir->get_dir(), photo->get_basename());
+  Filename reduced_filename(reduced_dir, photo->get_basename());
+  photo_filename.standardize();
+  reduced_filename.standardize();
+  
+  if (!dummy_mode && photo_filename != reduced_filename &&
+      (force_regenerate || 
+       reduced_filename.compare_timestamps(photo_filename) < 0)) {
+    // If the reduced filename does not exist or is older than the
+    // source filename, we must read the complete source filename to
+    // generate the reduced image.
+    PNMImage photo_image;
+    PNMReader *reader = photo_image.make_reader(photo_filename);
+    if (reader == (PNMReader *)NULL) {        
+      nout << "Unable to read " << photo_filename << ".\n";
+      return false;
+    }
+    photo_image.copy_header_from(*reader);
+    
+    photo->_full_x_size = photo_image.get_x_size();
+    photo->_full_y_size = photo_image.get_y_size();
+    
+    // Generate a reduced image for the photo.
+    compute_reduction(photo_image, reduced_image, 
+                      reduced_width, reduced_height);
+    
+    photo->_reduced_x_size = reduced_image.get_x_size();
+    photo->_reduced_y_size = reduced_image.get_y_size();
+    
+    // Only bother making a reduced version if it would actually be
+    // smaller than the original.
+    if (photo->_reduced_x_size < photo->_full_x_size ||
+        photo->_reduced_y_size < photo->_full_y_size) {
+      nout << "Reading " << photo_filename << "\n";
+      if (!photo_image.read(reader)) {
+        nout << "Unable to read.\n";
+        return false;
+      }
+      reader = NULL;
+      
+      reduced_image.quick_filter_from(photo_image);
+      reduced_filename.make_dir();
+      nout << "Writing " << reduced_filename << "\n";
+      if (!reduced_image.write(reduced_filename)) {
+        nout << "Unable to write.\n";
+        delete reader;
+        return false;
+      }
+      photo->_has_reduced = true;
+
+    } else if (force_reduced) {
+      // Even though the reduced image would not be smaller, copy it
+      // anyway when force_reduced is true.
+      nout << "Reading " << photo_filename << "\n";
+      if (!reduced_image.read(reader)) {
+        nout << "Unable to read.\n";
+        return false;
+      }
+      reader = NULL;
+      
+      reduced_filename.make_dir();
+      nout << "Writing " << reduced_filename << "\n";
+      if (!reduced_image.write(reduced_filename)) {
+        nout << "Unable to write.\n";
+        delete reader;
+        return false;
+      }
+      photo->_has_reduced = true;
+
+      photo->_reduced_x_size = reduced_image.get_x_size();
+      photo->_reduced_y_size = reduced_image.get_y_size();
+      
+    } else {
+      // We're not making a reduced version.  But maybe we still
+      // need to read the original so we can make a thumbnail.
+      reduced_filename = photo_filename;
+      reduced_image.copy_header_from(photo_image);
+      
+      if (!dummy_mode && generate_index_image) {
+        nout << "Reading " << photo_filename << "\n";
+        if (!reduced_image.read(reader)) {
+          nout << "Unable to read image.\n";
+          return false;
+        }
+        reader = NULL;
+      }  
+    }
+    if (reader != (PNMReader *)NULL) {
+      delete reader;
+    }
+    
+  } else {
+    // If the reduced image already exists and is newer than the
+    // source image, use it.
+    
+    // We still read the image header to determine its size.
+    PNMImageHeader photo_image;
+    if (!photo_image.read_header(photo_filename)) {
+      nout << "Unable to read " << photo_filename << "\n";
+      return false;
+    }
+    
+    photo->_full_x_size = photo_image.get_x_size();
+    photo->_full_y_size = photo_image.get_y_size();
+    photo->_has_reduced = true;
+    
+    if (dummy_mode) {
+      // In dummy mode, we may or may not actually have a reduced
+      // image.  In either case, ignore the file and compute its
+      // appropriate size from the source image.
+      compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+      photo->_reduced_x_size = reduced_image.get_x_size();
+      photo->_reduced_y_size = reduced_image.get_y_size();
+      
+    } else if (generate_index_image) {
+      // Now read the reduced image from disk, so we can put it on
+      // the index image.
+      nout << "Reading " << reduced_filename << "\n";
+      
+      if (!reduced_image.read(reduced_filename)) {
+        nout << "Unable to read.\n";
+        return false;
+      }
+      
+      photo->_reduced_x_size = reduced_image.get_x_size();
+      photo->_reduced_y_size = reduced_image.get_y_size();
+      
+    } else {
+      // If we're not generating an index image, we don't even need
+      // the reduced image--just scan its header to get its size.
+      if (!reduced_image.read_header(reduced_filename)) {
+        nout << "Unable to read " << reduced_filename << "\n";
+        return false;
+      }
+      photo->_reduced_x_size = reduced_image.get_x_size();
+      photo->_reduced_y_size = reduced_image.get_y_size();
+    }
+  }
 
   return true;
 }
@@ -393,6 +432,44 @@ generate_html(ostream &root_html, const Filename &archive_dir,
 
   root_html
     << "</map>\n";
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IndexImage::copy_reduced
+//       Access: Public
+//  Description: Copies key files from the full directory into the
+//               reduced directory.
+////////////////////////////////////////////////////////////////////
+bool IndexImage::
+copy_reduced(const Filename &archive_dir) {
+  Photos::const_iterator pi;
+  for (pi = _photos.begin(); pi != _photos.end(); ++pi) {
+    const PhotoInfo &pinfo = (*pi);
+    int photo_index = pinfo._photo_index;
+    Photo *photo = _dir->get_photo(pinfo._photo_index);
+
+    // Make sure we have a "reduced" image.
+    PNMImage reduced_image;
+    if (!make_reduced_image(photo, reduced_image, false, true)) {
+      return false;
+    }
+
+    if (photo->_has_movie) {
+      // Also copy the movie file to the reduced directory, even
+      // though it's not reduced in any way--but there's no way
+      // (presently) to reduce a movie file.
+      Filename movie_filename(_dir->get_dir(), photo->get_movie());
+      if (movie_filename.exists()) {
+        movie_filename.set_binary();
+        Filename reduced_dir(archive_dir, "reduced/" + _dir->get_basename());
+        if (!copy_file(movie_filename, reduced_dir)) {
+          return false;
+        }
+      }
+    }
+  }
 
   return true;
 }
@@ -528,11 +605,10 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
   generate_nav_buttons(html, prev_photo_filename, next_photo_filename,
                        up_href);
 
-  Filename cm_filename(_dir->get_dir(), photo->get_basename());
-  cm_filename.set_extension("cm");
-  if (cm_filename.exists()) {
+  if (photo->_has_cm) {
     // If a comment file for the photo exists, insert its contents
     // here, right above the photo.
+    Filename cm_filename(_dir->get_dir(), photo->get_cm());
     if (!RollDirectory::insert_html_comment(html, cm_filename)) {
       return false;
     }

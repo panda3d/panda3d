@@ -228,3 +228,44 @@ escape_html(const string &input) {
 
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: copy_file
+//  Description: Copies a file into the named directory, if it does
+//               not already exist there.  Returns true if
+//               successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool
+copy_file(const Filename &source_file, const Filename &dest_dir) {
+  Filename dest_file = source_file;
+  dest_file.set_dirname(dest_dir);
+
+  if (dest_file.exists()) {
+    return true;
+  }
+
+  if (!source_file.exists()) {
+    return false;
+  }
+
+  ifstream in;
+  if (!source_file.open_read(in)) {
+    cerr << "Unable to read " << source_file << "\n";
+    return false;
+  }
+  ofstream out;
+  if (!dest_file.open_write(out)) {
+    cerr << "Unable to write " << dest_file << "\n";
+    return false;
+  }
+
+  cerr << "Copying " << source_file << " to " << dest_file << "\n";
+
+  int c = in.get();
+  while (in && !in.eof()) {
+    out.put(c);
+    c = in.get();
+  }
+
+  return in.eof();
+}

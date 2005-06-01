@@ -36,14 +36,18 @@ RollDirectory::
 RollDirectory(const Filename &dir) :
   _dir(dir)
 {
+  _prev = (RollDirectory *)NULL;
+  _next = (RollDirectory *)NULL;
+
   _basename = _dir.get_basename();
   if (format_rose) {
     _name = format_basename(_basename);
   } else {
     _name = _basename;
   }
-  _prev = (RollDirectory *)NULL;
-  _next = (RollDirectory *)NULL;
+
+  _got_ds_file = false;
+  _got_ls_file = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,19 +127,20 @@ scan(const string &photo_extension, const string &movie_extension) {
 
   // Check for a .ds file, which contains a one-line description of
   // the contents of the directory.
-  Filename ds_filename(_basename);
-  ds_filename.set_extension("ds");
-  if (cm_search.is_empty() || !ds_filename.resolve_filename(cm_search)) {
+  _ds_filename = Filename(_basename);
+  _ds_filename.set_extension("ds");
+  if (cm_search.is_empty() || !_ds_filename.resolve_filename(cm_search)) {
     // If the ds file isn't found along the search path specified
     // via -cmdir on the command line, then look for it in the
     // appropriate source directory.
-    ds_filename = Filename(_dir, ds_filename);
+    _ds_filename = Filename(_dir, _ds_filename);
   }
-  if (ds_filename.exists()) {
-    ds_filename.set_text();
+  if (_ds_filename.exists()) {
+    _got_ds_file = true;
+    _ds_filename.set_text();
     ifstream ds;
-    if (!ds_filename.open_read(ds)) {
-      nout << "Could not read " << ds_filename << "\n";
+    if (!_ds_filename.open_read(ds)) {
+      nout << "Could not read " << _ds_filename << "\n";
     } else {
       // Get the words out one at a time and put just one space
       // between them.
@@ -160,14 +165,15 @@ scan(const string &photo_extension, const string &movie_extension) {
 
   // Check for an .ls file in the roll directory, which may give an
   // explicit ordering, or if empty, it specifies reverse ordering.
-  Filename ls_filename(_dir, _basename);
-  ls_filename.set_extension("ls");
-  if (ls_filename.exists()) {
-    add_contributing_filename(ls_filename);
-    ls_filename.set_text();
+  _ls_filename = Filename(_dir, _basename);
+  _ls_filename.set_extension("ls");
+  if (_ls_filename.exists()) {
+    _got_ls_file = true;
+    add_contributing_filename(_ls_filename);
+    _ls_filename.set_text();
     ifstream ls;
-    if (!ls_filename.open_read(ls)) {
-      nout << "Could not read " << ls_filename << "\n";
+    if (!_ls_filename.open_read(ls)) {
+      nout << "Could not read " << _ls_filename << "\n";
     } else {
       bool any_words = false;
       string word;
@@ -511,8 +517,13 @@ generate_html(const Filename &archive_dir, const Filename &roll_dir_root) {
   generate_nav_buttons(index_html, prev_roll_filename, next_roll_filename,
                        up_href);
 
+  if (!omit_complete) {
+    index_html
+      << "<a href=\"complete.htm#" << _basename
+      << "\">(complete archive)</a>\n";
+  }
+
   index_html
-    << "<a href=\"complete.htm#" << _basename << "\">(complete archive)</a>\n"
     << "</body>\n"
     << "</html>\n";
 
@@ -550,6 +561,44 @@ get_comment_html() const {
 const string &RollDirectory::
 get_index_html() const {
   return _index_html;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::copy_reduced
+//       Access: Public
+//  Description: Copies key files from the full directory into the
+//               reduced directory.
+////////////////////////////////////////////////////////////////////
+bool RollDirectory::
+copy_reduced(const Filename &archive_dir) {
+  if (is_empty()) {
+    return true;
+  }
+  nassertr(!_index_images.empty(), false);
+
+  Filename reduced_dir(archive_dir, "reduced/" + _dir.get_basename());
+
+  if (_got_ds_file) {
+    if (!copy_file(_ds_filename, reduced_dir)) {
+      return false;
+    }
+  }
+
+  if (_got_ls_file) {
+    if (!copy_file(_ls_filename, reduced_dir)) {
+      return false;
+    }
+  }
+
+  IndexImages::iterator ii;
+  for (ii = _index_images.begin(); ii != _index_images.end(); ++ii) {
+    IndexImage *index_image = (*ii);
+    if (!index_image->copy_reduced(archive_dir)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -639,14 +688,7 @@ insert_html_comment(ostream &html, Filename cm_filename) {
 ////////////////////////////////////////////////////////////////////
 void RollDirectory::
 add_photo(const Filename &basename, const string &movie_extension) {
-  Photo *photo = NULL;
-  Filename movie_filename(_dir, basename);
-  movie_filename.set_extension(movie_extension);
-  if (movie_filename.exists()) {
-    photo = new Photo(this, basename, movie_filename.get_basename());
-  } else {
-    photo = new Photo(this, basename);
-  }
+  Photo *photo = new Photo(this, basename, movie_extension);
   _photos.push_back(photo);
 }
 

@@ -43,8 +43,13 @@ public:
 
   bool add_photo(int index);
   bool generate_images(const Filename &archive_dir, PNMTextMaker *text_maker);
+  bool make_reduced_image(Photo *photo, PNMImage &reduced_image, 
+                          bool generate_index_image, bool force_reduced);
+
   bool generate_html(ostream &root_html, const Filename &archive_dir,
                      const Filename &roll_dir_root);
+
+  bool copy_reduced(const Filename &archive_dir);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
