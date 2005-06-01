@@ -2152,10 +2152,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
       if (return_expr.empty())
       {
-          if (track_interpreter) {
+          if (track_interpreter) 
+          {
               indent(out,extra_indent_level) << "in_interpreter = 1;\n";
           }
-          if (!extra_cleanup.empty()) {
+          if (!extra_cleanup.empty()) 
+          {
               indent(out,extra_indent_level) << extra_cleanup << "\n";
           }
           do_assert_init(out, extra_indent_level,isconstructor);
@@ -2222,19 +2224,22 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
       << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_longlong(type)) {
-    indent(out, indent_level)
-      << "return PyLong_FromLongLong(" << return_expr << ");\n";
+      indent(out, indent_level)
+          << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
-  } else if (TypeManager::is_integer(type)) {
-    indent(out, indent_level)
-      << "return PyInt_FromLong(" << return_expr << ");\n";
+  }  else if(TypeManager::is_unsigned_integer(type)){
+      indent(out, indent_level)
+          << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
 
+  }else if (TypeManager::is_integer(type)) {
+      indent(out, indent_level)
+          << "return PyInt_FromLong(" << return_expr << ");\n";
   } else if (TypeManager::is_float(type)) {
-    indent(out, indent_level)
-      << "return PyFloat_FromDouble(" << return_expr << ");\n";
+      indent(out, indent_level)
+          << "return PyFloat_FromDouble(" << return_expr << ");\n";
 
   } else if (TypeManager::is_char_pointer(type)) {
-    indent(out, indent_level)
+      indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
 
   }
