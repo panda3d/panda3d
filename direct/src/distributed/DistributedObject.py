@@ -37,7 +37,7 @@ class DistributedObject(PandaObject):
             self.cr = cr
             if wantOtpServer:
                 # Location stores the parentId, zoneId of this object
-                self.location = (None, None)
+                self.__location = (None, None)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take
@@ -156,8 +156,8 @@ class DistributedObject(PandaObject):
             self.activeState = ESDisabled
             self.__callbacks = {}
             if wantOtpServer:
-                #self.cr.deleteObjectLocation(self.doId, self.location[0], self.location[1])
-                self.location = (None, None)
+                #self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
+                self.__location = (None, None)
                 # TODO: disable my children
 
     def isDisabled(self):
@@ -352,7 +352,7 @@ class DistributedObject(PandaObject):
             #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
             # The store must run first so we know the old location
             #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
-            self.location = (parentId, zoneId)
+            self.__location = (parentId, zoneId)
             self.parentId = parentId
             self.zoneId = zoneId
 
@@ -364,7 +364,7 @@ class DistributedObject(PandaObject):
                 parentObj.handleChildSetLocation(self, zoneId)
             
         def getLocation(self):
-            return self.location
+            return self.__location
 
         def handleChildSetLocation(self, childObj, zoneId):
             self.notify.info("handleChildSetLocation: %s childId: %s zoneId: %s" %

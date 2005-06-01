@@ -21,7 +21,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             # Record the repository
             self.air = air
             # Record our parentId and zoneId
-            self.location = None
+            self.__location = None
 
             # Record our distributed class
             className = self.__class__.__name__
@@ -167,10 +167,14 @@ class DistributedObjectAI(DirectObject.DirectObject):
                     self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                     self.lastNonQuietZone = zoneId
                 #self.air.storeObjectLocation(self.doId, parentId, zoneId)
-                self.location = (parentId, zoneId)
+                self.__location = (parentId, zoneId)
 
+        # Set the initial values of parentId,zoneId
+        def setInitLocation(self, parentId, zoneId):
+            self.__location = (parentId, zoneId)
+            
         def getLocation(self):
-            return self.location
+            return self.__location
 
     else:
         # NON OTP
@@ -342,7 +346,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             assert not hasattr(self, 'parentId')
             self.parentId = parentId
             self.zoneId = zoneId
-            self.location = (parentId, zoneId)
+            self.__location = (parentId, zoneId)
             self.generate()
 
     def generate(self):
