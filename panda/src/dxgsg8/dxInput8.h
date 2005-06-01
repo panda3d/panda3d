@@ -29,7 +29,7 @@ public:
  DInput8Info(void);
  ~DInput8Info(void);
  bool InitDirectInput(void);
- bool CreateJoystickOrPad(HWND hWnd);
+ bool CreateJoystickOrPad(HWND _window);
  bool ReadJoystick(int devnum, DIJOYSTATE2 &js);
 
  HINSTANCE _hDInputDLL;

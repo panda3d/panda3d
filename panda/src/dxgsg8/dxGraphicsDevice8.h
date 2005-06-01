@@ -39,8 +39,8 @@ public:
   ~DXGraphicsDevice8();
 
   DXScreenData _Scrn;
-  LPDIRECT3DDEVICE8 _pD3DDevice;  // same as Scrn._pD3DDevice, cached for spd
-  IDirect3DSwapChain8 *_pSwapChain;
+  LPDIRECT3DDEVICE8 _d3d_device;  // same as Scrn._d3d_device, cached for spd
+  IDirect3DSwapChain8 *_swap_chain;
 
 #if 0
 protected:

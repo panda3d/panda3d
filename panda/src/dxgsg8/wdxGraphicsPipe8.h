@@ -42,14 +42,14 @@ public:
                                              GraphicsStateGuardian *share_with);
   virtual PT(GraphicsDevice) make_device(void *scrn);
 
-  bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
+  bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                               D3DFORMAT *pBestFmt, bool bWantStencil,
                               bool bForce16bpp, bool bVerboseMode = false) const;
 
   void search_for_valid_displaymode(DXScreenData &scrn,
                                     UINT RequestedX_Size, UINT RequestedY_Size,
                                     bool bWantZBuffer, bool bWantStencil,
-                                    UINT *pSupportedScreenDepthsMask,
+                                    UINT *p_supported_screen_depths_mask,
                                     bool *pCouldntFindAnyValidZBuf,
                                     D3DFORMAT *pSuggestedPixFmt,
                                     bool bForce16bppZBuffer,
@@ -71,7 +71,7 @@ private:
 private:
   HINSTANCE _hDDrawDLL;
   HINSTANCE _hD3D8_DLL;
-  LPDIRECT3D8 _pD3D8;
+  LPDIRECT3D8 __d3d8;
 
 
   typedef LPDIRECT3D8 (WINAPI *Direct3DCreate8_ProcPtr)(UINT SDKVersion);
@@ -84,16 +84,16 @@ private:
   // CardID is used in DX7 lowmem card-classification pass so DX8 can
   // establish correspondence b/w DX7 mem info & DX8 device
   struct CardID {
-    HMONITOR hMon;
-    DWORD MaxAvailVidMem;
-    bool  bIsLowVidMemCard;
+    HMONITOR _monitor;
+    DWORD _max_available_video_memory;
+    bool  _is_low_memory_card;
     GUID  DX7_DeviceGUID;
     DWORD VendorID, DeviceID;
   };
   
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
-  bool _bIsDX81;
+  bool __is_dx8_1;
 
 public:
   static TypeHandle get_class_type() {

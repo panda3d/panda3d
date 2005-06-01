@@ -71,7 +71,7 @@ create_ibuffer(DXScreenData &scrn) {
   D3DFORMAT index_type = 
     DXGraphicsStateGuardian8::get_index_type(get_data()->get_index_type());
 
-  HRESULT hr = scrn.pD3DDevice->CreateIndexBuffer
+  HRESULT hr = scrn._d3d_device->CreateIndexBuffer
     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
      index_type, D3DPOOL_MANAGED, &_ibuffer);
   if (FAILED(hr)) {

@@ -186,26 +186,26 @@ typedef enum {
 #define RECT_YSIZE(REC) (REC.bottom-REC.top)
 
 struct DXScreenData {
-  LPDIRECT3DDEVICE8 pD3DDevice;
-  IDirect3DSwapChain8 *pSwapChain;
-  LPDIRECT3D8 pD3D8;  // copied from DXGraphicsPipe8 for convenience
-  HWND hWnd;
-  HMONITOR hMon;
-  DWORD MaxAvailVidMem;
-  ushort CardIDNum;  // adapter ID
-  ushort depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-  bool bCanDirectDisableColorWrites;  // if true, dont need blending for this
-  bool bIsLowVidMemCard;
-  bool bIsTNLDevice;
-  bool bCanUseHWVertexShaders;
-  bool bCanUsePixelShaders;
-  bool bIsDX81;
-  UINT SupportedScreenDepthsMask;
-  UINT SupportedTexFmtsMask;
-  D3DCAPS8 d3dcaps;
-  D3DDISPLAYMODE DisplayMode;
-  D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
-  D3DADAPTER_IDENTIFIER8 DXDeviceID;
+  LPDIRECT3DDEVICE8 _d3d_device;
+  IDirect3DSwapChain8 *_swap_chain;
+  LPDIRECT3D8 _d3d8;  // copied from DXGraphicsPipe8 for convenience
+  HWND _window;
+  HMONITOR _monitor;
+  DWORD _max_available_video_memory;
+  ushort _card_id;  // adapter ID
+  ushort _depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+  bool _can_direct_disable_color_writes;  // if true, dont need blending for this
+  bool _is_low_memory_card;
+  bool _is_tnl_device;
+  bool _can_use_hw_vertex_shaders;
+  bool _can_use_pixel_shaders;
+  bool _is_dx8_1;
+  UINT _supported_screen_depths_mask;
+  UINT _supported_tex_formats_mask;
+  D3DCAPS8 _d3dcaps;
+  D3DDISPLAYMODE _display_mode;
+  D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
+  D3DADAPTER_IDENTIFIER8 _dx_device_id;
 };
 
 

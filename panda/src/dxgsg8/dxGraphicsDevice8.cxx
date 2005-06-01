@@ -30,8 +30,8 @@ DXGraphicsDevice8(wdxGraphicsPipe8 *pipe) :
   GraphicsDevice(pipe) {
 
   ZeroMemory(&_Scrn,sizeof(_Scrn));
-  _pD3DDevice = NULL;
-  _pSwapChain = NULL;
+  _d3d_device = NULL;
+  _swap_chain = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

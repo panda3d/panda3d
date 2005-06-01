@@ -36,7 +36,7 @@ wdxGraphicsPipe8::
 wdxGraphicsPipe8() {
   _hDDrawDLL = NULL;
   _hD3D8_DLL = NULL;
-  _pD3D8 = NULL;
+  __d3d8 = NULL;
   _is_valid = init();
 }
 
@@ -47,7 +47,7 @@ wdxGraphicsPipe8() {
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsPipe8::
 ~wdxGraphicsPipe8() {
-  RELEASE(_pD3D8, wdxdisplay8, "ID3D8", RELEASE_DOWN_TO_ZERO);
+  RELEASE(__d3d8, wdxdisplay8, "ID3D8", RELEASE_DOWN_TO_ZERO);
   SAFE_FREELIB(_hD3D8_DLL);
   SAFE_FREELIB(_hDDrawDLL);
 }
@@ -143,15 +143,15 @@ init() {
   hFind = FindFirstFile (tmppath, &TempFindData);
   if (hFind != INVALID_HANDLE_VALUE) {
     FindClose(hFind);
-    _bIsDX81 = true;
-    _pD3D8 = (*_Direct3DCreate8)(D3D_SDK_VERSION_8_1);
+    __is_dx8_1 = true;
+    __d3d8 = (*_Direct3DCreate8)(D3D_SDK_VERSION_8_1);
   } else {
-    _bIsDX81 = false;
-    _pD3D8 = (*_Direct3DCreate8)(D3D_SDK_VERSION_8_0);
+    __is_dx8_1 = false;
+    __d3d8 = (*_Direct3DCreate8)(D3D_SDK_VERSION_8_0);
   }
 
-  if (_pD3D8 == NULL) {
-    wdxdisplay8_cat.error() << "Direct3DCreate8(8." << (_bIsDX81 ? "1" : "0") << ") failed!, error = " << GetLastError() << endl;
+  if (__d3d8 == NULL) {
+    wdxdisplay8_cat.error() << "Direct3DCreate8(8." << (__is_dx8_1 ? "1" : "0") << ") failed!, error = " << GetLastError() << endl;
     //release_gsg();
     goto error;
   }
@@ -284,8 +284,8 @@ find_all_card_memavails() {
 
     if (!dx_do_vidmemsize_check) {
       // still calling the DD stuff to get deviceID, etc.  is this necessary?
-      _card_ids[i].MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
-      _card_ids[i].bIsLowVidMemCard = false;
+      _card_ids[i]._max_available_video_memory = UNKNOWN_VIDMEM_SIZE;
+      _card_ids[i]._is_low_memory_card = false;
       continue;
     }
 
@@ -303,11 +303,11 @@ find_all_card_memavails() {
       }
     }
 
-    // after SetDisplayMode, GetAvailVidMem totalmem seems to go down
+    // after Set_display_mode, GetAvailVidMem totalmem seems to go down
     // by 1.2 meg (contradicting above comment and what I think would
     // be correct behavior (shouldnt FS mode release the desktop
     // vidmem?), so this is the true value
-    _card_ids[i].MaxAvailVidMem = dwVidMemTotal;
+    _card_ids[i]._max_available_video_memory = dwVidMemTotal;
 
     // I can never get this stuff to work reliably, so I'm just
     // rounding up to nearest pow2.  Could try to get
@@ -321,7 +321,7 @@ find_all_card_memavails() {
       ((dwVidMemTotal > CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) &&
        (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
 
-    _card_ids[i].bIsLowVidMemCard = bLowVidMemFlag;
+    _card_ids[i]._is_low_memory_card = bLowVidMemFlag;
     wdxdisplay8_cat.info()
       << "SetLowVidMem flag to " << bLowVidMemFlag
       << " based on adjusted VidMemTotal: " << dwVidMemTotal << endl;
@@ -343,17 +343,17 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   ZeroMemory(&card_id, sizeof(CardID));
 
   if (hm == NULL) {
-    card_id.hMon = MonitorFromWindow(GetDesktopWindow(),
+    card_id._monitor = MonitorFromWindow(GetDesktopWindow(),
                                      MONITOR_DEFAULTTOPRIMARY);
   } else {
-    card_id.hMon = hm;
+    card_id._monitor = hm;
   }
 
   if (pGUID != NULL) {
     memcpy(&card_id.DX7_DeviceGUID, pGUID, sizeof(GUID));
   }
 
-  card_id.MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
+  card_id._max_available_video_memory = UNKNOWN_VIDMEM_SIZE;
 
   self->_card_ids.push_back(card_id);
 
@@ -366,7 +366,7 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsPipe8::
-find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
+find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
                        bool bForce16bpp, bool bVerboseMode) const {
   // list fmts in order of preference
@@ -374,14 +374,14 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
   static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16};
   static D3DFORMAT StencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1};
 
-  // do not use Display.DisplayMode since that is probably not set yet, use TestDisplayMode instead
+  // do not use Display._display_mode since that is probably not set yet, use Test_display_mode instead
 
   *pBestFmt = D3DFMT_UNKNOWN;
   HRESULT hr;
 
   // nvidia likes zbuf depth to match rendertarget depth
   bool bOnlySelect16bpp = (bForce16bpp ||
-                           (IS_NVIDIA(Display.DXDeviceID) && IS_16BPP_DISPLAY_FORMAT(TestDisplayMode.Format)));
+                           (IS_NVIDIA(Display._dx_device_id) && IS_16BPP_DISPLAY_FORMAT(Test_display_mode.Format)));
 
   if (bVerboseMode) {
     wdxdisplay8_cat.info()
@@ -396,9 +396,9 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
       continue;
     }
 
-    hr = Display.pD3D8->CheckDeviceFormat(Display.CardIDNum,
+    hr = Display._d3d8->CheckDeviceFormat(Display._card_id,
                                           D3DDEVTYPE_HAL,
-                                          TestDisplayMode.Format,
+                                          Test_display_mode.Format,
                                           D3DUSAGE_DEPTHSTENCIL,
                                           D3DRTYPE_SURFACE, TestDepthFmt);
 
@@ -417,10 +417,10 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
       exit(1);
     }
 
-    hr = Display.pD3D8->CheckDepthStencilMatch(Display.CardIDNum,
+    hr = Display._d3d8->CheckDepthStencilMatch(Display._card_id,
                                                D3DDEVTYPE_HAL,
-                                               TestDisplayMode.Format,   // adapter format
-                                               TestDisplayMode.Format,   // backbuffer fmt  (should be the same in my apps)
+                                               Test_display_mode.Format,   // adapter format
+                                               Test_display_mode.Format,   // backbuffer fmt  (should be the same in my apps)
                                                TestDepthFmt);
     if (SUCCEEDED(hr)) {
       *pBestFmt = TestDepthFmt;
@@ -430,13 +430,13 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
         if (bVerboseMode) {
           wdxdisplay8_cat.info()
             << "FindBestDepthFmt: ChkDepMatch returns NotAvail for "
-            << D3DFormatStr(TestDisplayMode.Format) << ", "
+            << D3DFormatStr(Test_display_mode.Format) << ", "
             << D3DFormatStr(TestDepthFmt) << endl;
         }
       } else {
         wdxdisplay8_cat.error()
           << "unexpected CheckDepthStencilMatch failure for "
-          << D3DFormatStr(TestDisplayMode.Format) << ", "
+          << D3DFormatStr(Test_display_mode.Format) << ", "
           << D3DFormatStr(TestDepthFmt) << endl;
         exit(1);
       }
@@ -460,8 +460,8 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsPipe8::
 special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size, UINT y_size) {
-  DWORD VendorId = scrn.DXDeviceID.VendorId;
-  DWORD DeviceId = scrn.DXDeviceID.DeviceId;
+  DWORD VendorId = scrn._dx_device_id.VendorId;
+  DWORD DeviceId = scrn._dx_device_id.DeviceId;
 
   switch (VendorId) {
   case 0x8086:  // Intel
@@ -490,20 +490,20 @@ void wdxGraphicsPipe8::
 search_for_valid_displaymode(DXScreenData &scrn,
                              UINT RequestedX_Size, UINT RequestedY_Size,
                              bool bWantZBuffer, bool bWantStencil,
-                             UINT *pSupportedScreenDepthsMask,
+                             UINT *p_supported_screen_depths_mask,
                              bool *pCouldntFindAnyValidZBuf,
                              D3DFORMAT *pSuggestedPixFmt,
                              bool bForce16bppZBuffer,
                              bool bVerboseMode) {
 
-  assert(IS_VALID_PTR(scrn.pD3D8));
+  assert(IS_VALID_PTR(scrn._d3d8));
   HRESULT hr;
 
   *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-  *pSupportedScreenDepthsMask = 0x0;
+  *p_supported_screen_depths_mask = 0x0;
   *pCouldntFindAnyValidZBuf = false;
 
-  int cNumModes = scrn.pD3D8->GetAdapterModeCount(scrn.CardIDNum);
+  int cNumModes = scrn._d3d8->GetAdapterModeCount(scrn._card_id);
   D3DDISPLAYMODE BestDispMode;
   ZeroMemory(&BestDispMode, sizeof(BestDispMode));
 
@@ -519,7 +519,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
   // 640x480 32bpp?)
   bool bDoMemBasedChecks =
     ((!((RequestedX_Size == 640)&&(RequestedY_Size == 480))) &&
-     (scrn.MaxAvailVidMem != UNKNOWN_VIDMEM_SIZE) &&
+     (scrn._max_available_video_memory != UNKNOWN_VIDMEM_SIZE) &&
      (!special_check_fullscreen_resolution(scrn, RequestedX_Size, RequestedY_Size)));
 
   if (bVerboseMode || wdxdisplay8_cat.is_spam()) {
@@ -529,11 +529,11 @@ search_for_valid_displaymode(DXScreenData &scrn,
 
   for (int i = 0; i < cNumModes; i++) {
     D3DDISPLAYMODE dispmode;
-    hr = scrn.pD3D8->EnumAdapterModes(scrn.CardIDNum, i, &dispmode);
+    hr = scrn._d3d8->EnumAdapterModes(scrn._card_id, i, &dispmode);
     if (FAILED(hr)) {
       wdxdisplay8_cat.error()
-        << "EnumAdapterDisplayMode failed for device #"
-        << scrn.CardIDNum << D3DERRORSTRING(hr);
+        << "EnumAdapter_display_mode failed for device #"
+        << scrn._card_id << D3DERRORSTRING(hr);
       continue;
     }
 
@@ -563,7 +563,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
     // requested size, so even if this call succeeds, could still get
     // an out-of-video-mem error
 
-    hr = scrn.pD3D8->CheckDeviceFormat(scrn.CardIDNum, D3DDEVTYPE_HAL, dispmode.Format,
+    hr = scrn._d3d8->CheckDeviceFormat(scrn._card_id, D3DDEVTYPE_HAL, dispmode.Format,
                                        D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE,
                                        dispmode.Format);
     if (FAILED(hr)) {
@@ -578,7 +578,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
       } else {
         wdxdisplay8_cat.error()
           << "CheckDeviceFormat failed for device #"
-          << scrn.CardIDNum << D3DERRORSTRING(hr);
+          << scrn._card_id << D3DERRORSTRING(hr);
         continue;
       }
     }
@@ -611,15 +611,15 @@ search_for_valid_displaymode(DXScreenData &scrn,
           << "Testing Mode (" <<RequestedX_Size<<"x" << RequestedY_Size
           << ", " << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "
           << (int)RendTgtMinMemReqmt << " AvailVidMem: "
-          << scrn.MaxAvailVidMem << endl;
+          << scrn._max_available_video_memory << endl;
 
-      if (RendTgtMinMemReqmt > scrn.MaxAvailVidMem) {
+      if (RendTgtMinMemReqmt > scrn._max_available_video_memory) {
         if (bVerboseMode || wdxdisplay8_cat.is_debug())
           wdxdisplay8_cat.info()
             << "not enough VidMem for render tgt, skipping display fmt "
             << D3DFormatStr(dispmode.Format) << " ("
             << (int)RendTgtMinMemReqmt << " > "
-            << scrn.MaxAvailVidMem << ")\n";
+            << scrn._max_available_video_memory << ")\n";
         continue;
       }
     }
@@ -644,19 +644,19 @@ search_for_valid_displaymode(DXScreenData &scrn,
             << "Testing Mode w/Z (" << RequestedX_Size << "x"
             << RequestedY_Size << ", " << D3DFormatStr(dispmode.Format)
             << ")\nReqdVidMem: " << (int)MinMemReqmt << " AvailVidMem: "
-            << scrn.MaxAvailVidMem << endl;
+            << scrn._max_available_video_memory << endl;
 
-        if (MinMemReqmt > scrn.MaxAvailVidMem) {
+        if (MinMemReqmt > scrn._max_available_video_memory) {
           if (bVerboseMode || wdxdisplay8_cat.is_debug())
             wdxdisplay8_cat.info()
               << "not enough VidMem for RendTgt+zbuf, skipping display fmt "
               << D3DFormatStr(dispmode.Format) << " (" << (int)MinMemReqmt
-              << " > " << scrn.MaxAvailVidMem << ")\n";
+              << " > " << scrn._max_available_video_memory << ")\n";
           continue;
         }
       }
 
-      if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn.MaxAvailVidMem)) {
+      if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
         if (!IS_16BPP_ZBUFFER(zformat)) {
           // see if things fit with a 16bpp zbuffer
 
@@ -673,7 +673,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
 
           // right now I'm not going to use these flags, just let the
           // create fail out-of-mem and retry at 16bpp
-          *pSupportedScreenDepthsMask |=
+          *p_supported_screen_depths_mask |=
             (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
         }
       }
@@ -691,35 +691,35 @@ search_for_valid_displaymode(DXScreenData &scrn,
 
     switch (dispmode.Format) {
     case D3DFMT_X1R5G5B5:
-      *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
+      *p_supported_screen_depths_mask |= X1R5G5B5_FLAG;
       break;
     case D3DFMT_X8R8G8B8:
-      *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
+      *p_supported_screen_depths_mask |= X8R8G8B8_FLAG;
       break;
     case D3DFMT_A8R8G8B8:
-      *pSupportedScreenDepthsMask |= A8R8G8B8_FLAG;
+      *p_supported_screen_depths_mask |= A8R8G8B8_FLAG;
       break;
     case D3DFMT_R5G6B5:
-      *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
+      *p_supported_screen_depths_mask |= R5G6B5_FLAG;
       break;
     default:
       // Render target formats should be only D3DFMT_X1R5G5B5,
       // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 and D3DFMT_A8R8G8B8
       wdxdisplay8_cat.error()
         << "unrecognized supported fmt " << D3DFormatStr(dispmode.Format)
-        << " returned by EnumAdapterDisplayModes!\n";
+        << " returned by EnumAdapter_display_modes!\n";
     }
   }
 
   // note: this chooses 32bpp, which may not be preferred over 16 for
   // memory & speed reasons on some older cards in particular
-  if (*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) {
+  if (*p_supported_screen_depths_mask & X8R8G8B8_FLAG) {
     *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & A8R8G8B8_FLAG) {
+  } else if (*p_supported_screen_depths_mask & A8R8G8B8_FLAG) {
     *pSuggestedPixFmt = D3DFMT_A8R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R5G6B5_FLAG) {
+  } else if (*p_supported_screen_depths_mask & R5G6B5_FLAG) {
     *pSuggestedPixFmt = D3DFMT_R5G6B5;
-  } else if (*pSupportedScreenDepthsMask & X1R5G5B5_FLAG) {
+  } else if (*p_supported_screen_depths_mask & X1R5G5B5_FLAG) {
     *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
   }
 
@@ -740,7 +740,7 @@ PT(GraphicsDevice) wdxGraphicsPipe8::
 make_device(void *scrn) {
   PT(DXGraphicsDevice8) device = new DXGraphicsDevice8(this);
   memcpy(&device->_Scrn, scrn, sizeof(device->_Scrn));
-  device->_pD3DDevice = device->_Scrn.pD3DDevice;
+  device->_d3d_device = device->_Scrn._d3d_device;
 
   _device = device;
   wdxdisplay8_cat.info() << "walla: device" << device << "\n";

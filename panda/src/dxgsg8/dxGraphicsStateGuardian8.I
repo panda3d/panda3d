@@ -95,9 +95,9 @@ enable_color_material(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
 enable_fog(bool val) {
-  if ((_fog_enabled != val) && (_doFogType!=None)) {
+  if ((_fog_enabled != val) && (_do_fog_type!=None)) {
     _fog_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
+    _d3d_device->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
   }
 }
 
@@ -110,7 +110,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_zwritemask(bool val) {
   if (_depth_write_enabled != val) {
     _depth_write_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
+    _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, val);
   }
 }
 
@@ -123,9 +123,9 @@ INLINE void DXGraphicsStateGuardian8::
 set_color_writemask(UINT color_writemask) {
   if (_color_writemask != color_writemask) {
     _color_writemask = color_writemask;
-    if(_pScrn->bCanDirectDisableColorWrites) {
+    if(_screen->_can_direct_disable_color_writes) {
       // only newer HW supports this rstate
-      _pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
+      _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
     } else {
       // blending can only handle on/off
       assert((color_writemask==0x0)||(color_writemask==0xFFFFFFFF));
@@ -141,10 +141,10 @@ set_color_writemask(UINT color_writemask) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
 set_vertex_format(DWORD NewFvfType) {
-  if (_CurFVFType != NewFvfType) {
-    _CurFVFType = NewFvfType;
+  if (_cur_fvf_type != NewFvfType) {
+    _cur_fvf_type = NewFvfType;
 
-    HRESULT hr = _pD3DDevice->SetVertexShader(NewFvfType);
+    HRESULT hr = _d3d_device->SetVertexShader(NewFvfType);
 #ifndef NDEBUG
     if(FAILED(hr)) {
       dxgsg8_cat.error() << "SetVertexShader(0x" << (void*)NewFvfType<<") failed" << D3DERRORSTRING(hr);
@@ -216,7 +216,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_alpha_test(bool val) {
   if (_alpha_test_enabled != val) {
     _alpha_test_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
+    _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
   }
 }
 
@@ -229,7 +229,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_blend(bool val) {
   if (_blend_enabled != val) {
     _blend_enabled = val;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
+    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
   }
 }
 
@@ -242,7 +242,7 @@ INLINE void DXGraphicsStateGuardian8::
 call_dxLightModelAmbient(const Colorf &color) {
   if (_lmodel_ambient != color) {
     _lmodel_ambient = color;
-    _pD3DDevice->SetRenderState(D3DRS_AMBIENT, 
+    _d3d_device->SetRenderState(D3DRS_AMBIENT, 
                                  D3DCOLOR_COLORVALUE(color[0], color[1], color[2], color[3]));
   }
 }
@@ -256,12 +256,12 @@ INLINE void DXGraphicsStateGuardian8::
 call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
   if (_alpha_func != func) {
     _alpha_func = func;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, func);
+    _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, func);
   }
 
   if(_alpha_func_refval != reference_alpha) {
     _alpha_func_refval = reference_alpha;
-    _pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
+    _d3d_device->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
   }
 }
 
@@ -274,11 +274,11 @@ INLINE void DXGraphicsStateGuardian8::
 call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc) {
   if (_blend_source_func != sfunc) {
     _blend_source_func = sfunc;
-    _pD3DDevice->SetRenderState(D3DRS_SRCBLEND, sfunc);
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND, sfunc);
   }
   if (_blend_dest_func != dfunc) {
     _blend_dest_func = dfunc;
-    _pD3DDevice->SetRenderState(D3DRS_DESTBLEND, dfunc);
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND, dfunc);
   }
 }
 
@@ -292,7 +292,7 @@ enable_dither(bool val) {
   if (_dither_enabled != val) {
     _dither_enabled = val;
 
-    _pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
+    _d3d_device->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
   }
 }
 

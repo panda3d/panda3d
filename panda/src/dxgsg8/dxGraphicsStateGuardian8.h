@@ -168,7 +168,7 @@ protected:
   void set_texture_blend_mode(int i, const TextureStage *stage);
 
   void dx_cleanup();
-  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, 
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params, 
                            DXScreenData **pScrn = NULL);
 
   bool check_cooperative_level();
@@ -184,12 +184,12 @@ protected:
   static D3DTEXTUREOP get_tex_color_op1(TextureStage::Mode mode);
 
 protected:
-  DXScreenData *_pScrn;
-  LPDIRECT3DDEVICE8 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
-  IDirect3DSwapChain8 *_pSwapChain;
-  D3DPRESENT_PARAMETERS _PresReset;  // This is built during reset device
+  DXScreenData *_screen;
+  LPDIRECT3DDEVICE8 _d3d_device;  // same as pScrn->_d3d_device, cached for spd
+  IDirect3DSwapChain8 *_swap_chain;
+  D3DPRESENT_PARAMETERS _presentation_reset;  // This is built during reset device
 
-  bool _bDXisReady;
+  bool _dx_is_ready;
   HRESULT _last_testcooplevel_result;
 
   bool _transform_stale;
@@ -198,7 +198,7 @@ protected:
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
 
-  DWORD _CurFVFType;
+  DWORD _cur_fvf_type;
 
   D3DCOLOR _d3dcolor_clear_value;
   UINT _color_writemask;
@@ -215,7 +215,7 @@ protected:
     PerVertexFog=D3DRS_FOGVERTEXMODE,
     PerPixelFog=D3DRS_FOGTABLEMODE
   };
-  DxgsgFogType _doFogType;
+  DxgsgFogType _do_fog_type;
   bool _fog_enabled;
 
   float _alpha_func_refval;  // d3d stores UINT, panda stores this as float.  we store float

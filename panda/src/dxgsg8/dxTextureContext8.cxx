@@ -75,9 +75,9 @@ DXTextureContext8::
 IDirect3DTexture8 *DXTextureContext8::
 create_texture(DXScreenData &scrn) {
   HRESULT hr;
-  int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
-  D3DFORMAT TargetPixFmt = D3DFMT_UNKNOWN;
-  bool bNeedLuminance = false;
+  int num_alpha_bits;     //  number of alpha bits in texture pixfmt
+  D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
+  bool needs_luminance = false;
 
   nassertr(IS_VALID_PTR(_texture), NULL);
 
@@ -86,22 +86,22 @@ create_texture(DXScreenData &scrn) {
   clear_dirty_flags(Texture::DF_image | Texture::DF_mipmap);
 
   // bpp indicates requested fmt, not texture fmt
-  DWORD target_bpp = get_bits_per_pixel(_texture->get_format(), &cNumAlphaBits);
-  DWORD cNumColorChannels = _texture->get_num_components();
+  DWORD target_bpp = get_bits_per_pixel(_texture->get_format(), &num_alpha_bits);
+  DWORD num_color_channels = _texture->get_num_components();
 
-  //PRINT_REFCNT(dxgsg8, scrn.pD3D8);
+  //PRINT_REFCNT(dxgsg8, scrn._d3d8);
 
-  DWORD dwOrigWidth = (DWORD)_texture->get_x_size();
-  DWORD dwOrigHeight = (DWORD)_texture->get_y_size();
+  DWORD orig_width = (DWORD)_texture->get_x_size();
+  DWORD orig_height = (DWORD)_texture->get_y_size();
 
   if ((_texture->get_format() == Texture::F_luminance_alpha)||
-     (_texture->get_format() == Texture::F_luminance_alphamask) ||
-     (_texture->get_format() == Texture::F_luminance)) {
-    bNeedLuminance = true;
+      (_texture->get_format() == Texture::F_luminance_alphamask) ||
+      (_texture->get_format() == Texture::F_luminance)) {
+    needs_luminance = true;
   }
 
-  if (cNumAlphaBits > 0) {
-    if (cNumColorChannels == 3) {
+  if (num_alpha_bits > 0) {
+    if (num_color_channels == 3) {
       dxgsg8_cat.error()
         << "texture " << _tex->get_name() 
         << " has no inherent alpha channel, but alpha format is requested!\n";
@@ -112,16 +112,16 @@ create_texture(DXScreenData &scrn) {
 
   // figure out what 'D3DFMT' the Texture is in, so D3DXLoadSurfFromMem knows how to perform copy
 
-  switch (cNumColorChannels) {
+  switch (num_color_channels) {
   case 1:
-    if (cNumAlphaBits > 0) {
+    if (num_alpha_bits > 0) {
       _d3d_format = D3DFMT_A8;
-    } else if (bNeedLuminance) {
+    } else if (needs_luminance) {
       _d3d_format = D3DFMT_L8;
     }
     break;
   case 2:
-    assert(bNeedLuminance && (cNumAlphaBits > 0));
+    assert(needs_luminance && (num_alpha_bits > 0));
     _d3d_format = D3DFMT_A8L8;
     break;
   case 3:
@@ -135,89 +135,90 @@ create_texture(DXScreenData &scrn) {
   // make sure we handled all the possible cases
   assert(_d3d_format != D3DFMT_UNKNOWN);
 
-  DWORD TargetWidth = dwOrigWidth;
-  DWORD TargetHeight = dwOrigHeight;
+  DWORD target_width = orig_width;
+  DWORD target_height = orig_height;
 
-  if (scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_POW2) {
-    if (!ISPOW2(TargetWidth)) {
-      TargetWidth = down_to_power_2(TargetWidth);
+  if (scrn._d3dcaps.TextureCaps & D3DPTEXTURECAPS_POW2) {
+    if (!ISPOW2(target_width)) {
+      target_width = down_to_power_2(target_width);
     }
-    if (!ISPOW2(TargetHeight)) {
-      TargetHeight = down_to_power_2(TargetHeight);
+    if (!ISPOW2(target_height)) {
+      target_height = down_to_power_2(target_height);
     }
   }
 
-  if (TargetWidth > scrn.d3dcaps.MaxTextureWidth) {
-    TargetWidth = scrn.d3dcaps.MaxTextureWidth;
+  if (target_width > scrn._d3dcaps.MaxTextureWidth) {
+    target_width = scrn._d3dcaps.MaxTextureWidth;
   }
-  if (TargetHeight > scrn.d3dcaps.MaxTextureHeight) {
-    TargetHeight = scrn.d3dcaps.MaxTextureHeight;
+  if (target_height > scrn._d3dcaps.MaxTextureHeight) {
+    target_height = scrn._d3dcaps.MaxTextureHeight;
   }
 
   // checks for SQUARE reqmt (nvidia riva128 needs this)
-  if ((TargetWidth != TargetHeight) && (scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY)) {
+  if ((target_width != target_height) && (scrn._d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY)) {
     // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
     int i, width_exp, height_exp;
-    for (i = TargetWidth, width_exp = 0; i > 1; width_exp++, i >>= 1);
-    for (i = TargetHeight, height_exp = 0; i > 1; height_exp++, i >>= 1);
-    TargetHeight = TargetWidth = 1<<((width_exp+height_exp)>>1);
+    for (i = target_width, width_exp = 0; i > 1; width_exp++, i >>= 1);
+    for (i = target_height, height_exp = 0; i > 1; height_exp++, i >>= 1);
+    target_height = target_width = 1<<((width_exp+height_exp)>>1);
   }
 
-  bool bShrinkOriginal = false;
+  bool shrink_original = false;
 
-  if (dwOrigWidth != TargetWidth || dwOrigHeight != TargetHeight) {
+  if (orig_width != target_width || orig_height != target_height) {
     dxgsg8_cat.info()
       << "Reducing size of " << _tex->get_name()
-      << " from " << dwOrigWidth << "x" << dwOrigHeight
-      << " to " << TargetWidth << "x" << TargetHeight << "\n";
+      << " from " << orig_width << "x" << orig_height
+      << " to " << target_width << "x" << target_height << "\n";
 
-    bShrinkOriginal = true;
+    shrink_original = true;
   }
 
-  char *szErrorMsg;
+  const char *error_message;
 
-  szErrorMsg = "create_texture failed: couldn't find compatible device Texture Pixel Format for input texture";
+  error_message = "create_texture failed: couldn't find compatible device Texture Pixel Format for input texture";
 
-  if (dxgsg8_cat.is_spam())
+  if (dxgsg8_cat.is_spam()) {
     dxgsg8_cat.spam()
       << "create_texture handling target bitdepth: " << target_bpp
-      << " alphabits: " << cNumAlphaBits << endl;
+      << " alphabits: " << num_alpha_bits << endl;
+  }
 
   // I could possibly replace some of this logic with
-  // D3DXCheckTextureRequirements(), but it wouldnt handle all my
+  // D3DXCheckTextureRequirements(), but it wouldn't handle all my
   // specialized low-memory cases perfectly
 
 #define CONVTYPE_STMT
 
 #define CHECK_FOR_FMT(FMT, CONV)  \
-                    if (scrn.SupportedTexFmtsMask & FMT##_FLAG) {   \
+                    if (scrn._supported_tex_formats_mask & FMT##_FLAG) {   \
                         CONVTYPE_STMT;                             \
-                        TargetPixFmt = D3DFMT_##FMT;                 \
+                        target_pixel_format = D3DFMT_##FMT;                 \
                         goto found_matching_format; }
 
   // handle each target bitdepth separately.  might be less confusing
-  // to reorg by cNumColorChannels (input type, rather than desired
+  // to reorg by num_color_channels (input type, rather than desired
   // 1st target)
   switch (target_bpp) {
 
     // IMPORTANT NOTE:
     // target_bpp is REQUESTED bpp, not what exists in the texture
-    // array (the texture array contains cNumColorChannels*8bits)
+    // array (the texture array contains num_color_channels*8bits)
 
   case 32:
-    if (!((cNumColorChannels == 3) || (cNumColorChannels == 4)))
+    if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
 
     if (!dx_force_16bpptextures) {
-      if (cNumColorChannels == 4) {
+      if (num_color_channels == 4) {
         CHECK_FOR_FMT(A8R8G8B8, Conv32to32);
       } else {
         CHECK_FOR_FMT(A8R8G8B8, Conv24to32);
       }
     }
 
-    if (cNumAlphaBits>0) {
-      assert(cNumColorChannels == 4);
+    if (num_alpha_bits>0) {
+      assert(num_color_channels == 4);
 
       // no 32-bit fmt, look for 16 bit w/alpha  (1-15)
 
@@ -234,7 +235,7 @@ create_texture(DXScreenData &scrn) {
       // 32->16 conversion.  This should be true on most cards.
 
 #ifndef FORCE_16bpp_1555
-      if (cNumAlphaBits == 1)
+      if (num_alpha_bits == 1)
 #endif
         {
           CHECK_FOR_FMT(A1R5G5B5, Conv32to16_1555);
@@ -246,11 +247,11 @@ create_texture(DXScreenData &scrn) {
 
       // At this point, bail.  Don't worry about converting to
       // non-alpha formats yet, I think this will be a very rare case.
-      szErrorMsg = "create_texture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!";
+      error_message = "create_texture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!";
     } else {
       // convert 3 or 4 channel to closest 16bpp color fmt
 
-      if (cNumColorChannels == 3) {
+      if (num_color_channels == 3) {
         CHECK_FOR_FMT(R5G6B5, Conv24to16_4444);
         CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
       } else {
@@ -261,7 +262,7 @@ create_texture(DXScreenData &scrn) {
     break;
 
   case 24:
-    assert(cNumColorChannels == 3);
+    assert(num_color_channels == 3);
 
     if (!dx_force_16bpptextures) {
       CHECK_FOR_FMT(R8G8B8, Conv24to24);
@@ -279,9 +280,9 @@ create_texture(DXScreenData &scrn) {
     break;
 
   case 16:
-    if (bNeedLuminance) {
-      assert(cNumAlphaBits>0);
-      assert(cNumColorChannels == 2);
+    if (needs_luminance) {
+      assert(num_alpha_bits>0);
+      assert(num_color_channels == 2);
 
       CHECK_FOR_FMT(A8L8, ConvLum16to16);
 
@@ -290,7 +291,7 @@ create_texture(DXScreenData &scrn) {
       }
 
 #ifndef FORCE_16bpp_1555
-      if (cNumAlphaBits == 1)
+      if (num_alpha_bits == 1)
 #endif
         {
           CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
@@ -300,16 +301,16 @@ create_texture(DXScreenData &scrn) {
       CHECK_FOR_FMT(A4R4G4B4, ConvLum16to16_4444);
       CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
     } else {
-      assert((cNumColorChannels == 3)||(cNumColorChannels == 4));
+      assert((num_color_channels == 3)||(num_color_channels == 4));
       // look for compatible 16bit fmts, if none then give up
       // (dont worry about other bitdepths for 16 bit)
-      switch(cNumAlphaBits) {
+      switch(num_alpha_bits) {
       case 0:
-        if (cNumColorChannels == 3) {
+        if (num_color_channels == 3) {
           CHECK_FOR_FMT(R5G6B5, Conv24to16_0565);
           CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
         } else {
-          assert(cNumColorChannels == 4);
+          assert(num_color_channels == 4);
           // it could be 4 if user asks us to throw away the alpha channel
           CHECK_FOR_FMT(R5G6B5, Conv32to16_0565);
           CHECK_FOR_FMT(X1R5G5B5, Conv32to16_X555);
@@ -320,23 +321,23 @@ create_texture(DXScreenData &scrn) {
         // explicitly want 1-5-5-5 fmt, as opposed to F_rgbm, which
         // could use 32bpp ARGB.  fail if this particular fmt not
         // avail.
-        assert(cNumColorChannels == 4);
+        assert(num_color_channels == 4);
         CHECK_FOR_FMT(X1R5G5B5, Conv32to16_X555);
         break;
       case 4:
         // app specifically requests 4-4-4-4 F_rgba4 case, as opposed
         // to F_rgba, which could use 32bpp ARGB
-        assert(cNumColorChannels == 4);
+        assert(num_color_channels == 4);
         CHECK_FOR_FMT(A4R4G4B4, Conv32to16_4444);
         break;
       default: assert(0);  // problem in get_bits_per_pixel()?
       }
     }
   case 8:
-    if (bNeedLuminance) {
+    if (needs_luminance) {
       // dont bother handling those other 8bit lum fmts like 4-4,
       // since 16 8-8 is usually supported too
-      assert(cNumColorChannels == 1);
+      assert(num_color_channels == 1);
 
       // look for native lum fmt first
       CHECK_FOR_FMT(L8, ConvLum8to8);
@@ -350,7 +351,7 @@ create_texture(DXScreenData &scrn) {
       CHECK_FOR_FMT(R5G6B5, ConvLum8to16_0565);
       CHECK_FOR_FMT(X1R5G5B5, ConvLum8to16_X555);
 
-    } else if (cNumAlphaBits == 8) {
+    } else if (num_alpha_bits == 8) {
       // look for 16bpp A8L8, else 32-bit ARGB, else 16-4444.
 
       // skip 8bit alpha only (D3DFMT_A8), because I think only voodoo
@@ -369,15 +370,15 @@ create_texture(DXScreenData &scrn) {
     break;
 
   default:
-    szErrorMsg = "create_texture failed: unhandled pixel bitdepth in DX loader";
+    error_message = "create_texture failed: unhandled pixel bitdepth in DX loader";
   }
 
   // if we've gotten here, haven't found a match
   dxgsg8_cat.error()
-    << szErrorMsg << ": " << _tex->get_name() << endl
-    << "NumColorChannels: " <<cNumColorChannels << "; NumAlphaBits: " << cNumAlphaBits
-    << "; targetbpp: " <<target_bpp << "; SupportedTexFmtsMask: 0x" << (void*)scrn.SupportedTexFmtsMask
-    << "; NeedLuminance: " << bNeedLuminance << endl;
+    << error_message << ": " << _tex->get_name() << endl
+    << "NumColorChannels: " <<num_color_channels << "; NumAlphaBits: " << num_alpha_bits
+    << "; targetbpp: " <<target_bpp << "; _supported_tex_formats_mask: 0x" << (void*)scrn._supported_tex_formats_mask
+    << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
   ///////////////////////////////////////////////////////////
@@ -389,29 +390,29 @@ create_texture(DXScreenData &scrn) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
     // format.  Look up what that format is.
-    IDirect3DSurface8 *pCurRenderTarget;
-    hr = scrn.pD3DDevice->GetRenderTarget(&pCurRenderTarget);
+    IDirect3DSurface8 *render_target;
+    hr = scrn._d3d_device->GetRenderTarget(&render_target);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
         << "GetRenderTgt failed in create_texture: " << D3DERRORSTRING(hr);
     } else {
-      D3DSURFACE_DESC SurfDesc;
-      hr = pCurRenderTarget->GetDesc(&SurfDesc);
+      D3DSURFACE_DESC surface_desc;
+      hr = render_target->GetDesc(&surface_desc);
       if (FAILED(hr)) {
         dxgsg8_cat.error()
           << "GetDesc failed in create_texture: " << D3DERRORSTRING(hr);
       } else {
-        if (TargetPixFmt != SurfDesc.Format) {
+        if (target_pixel_format != surface_desc.Format) {
           if (dxgsg8_cat.is_debug()) {
             dxgsg8_cat.debug()
-              << "Chose format " << D3DFormatStr(SurfDesc.Format)
-              << " instead of " << D3DFormatStr(TargetPixFmt)
+              << "Chose format " << D3DFormatStr(surface_desc.Format)
+              << " instead of " << D3DFormatStr(target_pixel_format)
               << " for texture to match framebuffer.\n";
           }
-          TargetPixFmt = SurfDesc.Format;
+          target_pixel_format = surface_desc.Format;
         }
       }
-      SAFE_RELEASE(pCurRenderTarget);
+      SAFE_RELEASE(render_target);
     }
   }
 
@@ -423,12 +424,14 @@ create_texture(DXScreenData &scrn) {
   ft = _tex->get_magfilter();
   if ((ft != Texture::FT_linear) && ft != Texture::FT_nearest) {
     // mipmap settings make no sense for magfilter
-    if (ft == Texture::FT_nearest_mipmap_nearest)
+    if (ft == Texture::FT_nearest_mipmap_nearest) {
       ft = Texture::FT_nearest;
-    else ft = Texture::FT_linear;
+    } else {
+      ft = Texture::FT_linear;
+    }
   }
 
-  if ((ft == Texture::FT_linear) && !(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR)) {
+  if ((ft == Texture::FT_linear) && !(scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR)) {
     ft = Texture::FT_nearest;
   }
   _tex->set_magfilter(ft);
@@ -466,15 +469,15 @@ create_texture(DXScreenData &scrn) {
     ft = Texture::FT_linear;
   }
 
-  assert((scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFPOINT) != 0);
+  assert((scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFPOINT) != 0);
 
 #define TRILINEAR_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_MINFLINEAR)
 
   // do any other filter type degradations necessary
   switch(ft) {
   case Texture::FT_linear_mipmap_linear:
-    if ((scrn.d3dcaps.TextureFilterCaps & TRILINEAR_MIPMAP_TEXFILTERCAPS) != TRILINEAR_MIPMAP_TEXFILTERCAPS) {
-      if (scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR) {
+    if ((scrn._d3dcaps.TextureFilterCaps & TRILINEAR_MIPMAP_TEXFILTERCAPS) != TRILINEAR_MIPMAP_TEXFILTERCAPS) {
+      if (scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR) {
         ft = Texture::FT_linear_mipmap_nearest;
       } else {
         // if you cant do linear in a level, you probably cant do
@@ -486,21 +489,21 @@ create_texture(DXScreenData &scrn) {
 
   case Texture::FT_nearest_mipmap_linear:
     // if we dont have bilinear, do nearest_nearest
-    if (!((scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFPOINT) &&
-          (scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))) {
+    if (!((scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFPOINT) &&
+          (scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))) {
       ft = Texture::FT_nearest_mipmap_nearest;
     }
     break;
 
   case Texture::FT_linear_mipmap_nearest:
     // if we dont have mip linear, do nearest_nearest
-    if (!(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR)) {
+    if (!(scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR)) {
       ft = Texture::FT_nearest_mipmap_nearest;
     }
     break;
 
   case Texture::FT_linear:
-    if (!(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR)) {
+    if (!(scrn._d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR)) {
       ft = Texture::FT_nearest;
     }
     break;
@@ -511,11 +514,11 @@ create_texture(DXScreenData &scrn) {
   uint aniso_degree;
 
   aniso_degree = 1;
-  if (scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
+  if (scrn._d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
     aniso_degree = _tex->get_anisotropic_degree();
-    if ((aniso_degree>scrn.d3dcaps.MaxAnisotropy) || 
+    if ((aniso_degree>scrn._d3dcaps.MaxAnisotropy) || 
         dx_force_anisotropic_filtering) {
-      aniso_degree = scrn.d3dcaps.MaxAnisotropy;
+      aniso_degree = scrn._d3dcaps.MaxAnisotropy;
     }
   }
   _tex->set_anisotropic_degree(aniso_degree);
@@ -526,11 +529,11 @@ create_texture(DXScreenData &scrn) {
     << " to: " << aniso_degree << endl;
 #endif
 
-  UINT cMipLevelCount;
+  UINT mip_level_count;
 
   if (_has_mipmaps) {
     // tell CreateTex to alloc space for all mip levels down to 1x1
-    cMipLevelCount = 0;
+    mip_level_count = 0;
 
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
@@ -538,11 +541,11 @@ create_texture(DXScreenData &scrn) {
         << endl;
     }
   } else {
-    cMipLevelCount = 1;
+    mip_level_count = 1;
   }
 
-  hr = scrn.pD3DDevice->CreateTexture(TargetWidth, TargetHeight, cMipLevelCount, 0x0,
-                                      TargetPixFmt, D3DPOOL_MANAGED, &_d3d_texture);
+  hr = scrn._d3d_device->CreateTexture(target_width, target_height, mip_level_count, 0x0,
+                                       target_pixel_format, D3DPOOL_MANAGED, &_d3d_texture);
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "D3D create_texture failed!" << D3DERRORSTRING(hr);
@@ -553,7 +556,7 @@ create_texture(DXScreenData &scrn) {
     dxgsg8_cat.debug()
       << "create_texture: " << _tex->get_name()
       << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
-      << " => " << D3DFormatStr(TargetPixFmt) << endl;
+      << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
 
   hr = fill_d3d_texture_pixels();
@@ -561,7 +564,7 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  // PRINT_REFCNT(dxgsg8, scrn.pD3D8);
+  // PRINT_REFCNT(dxgsg8, scrn._d3d8);
 
   // Return the newly created texture
   return _d3d_texture;
@@ -603,103 +606,104 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
   // arbitrary fmt to ARGB in-memory user buffer
 
   HRESULT hr;
-  DWORD dwNumComponents = result->get_num_components();
+  DWORD num_components = result->get_num_components();
 
   nassertr(result->get_component_width() == sizeof(BYTE), E_FAIL);   // cant handle anything else now
   nassertr(result->get_component_type() == Texture::T_unsigned_byte, E_FAIL);   // cant handle anything else now
-  nassertr((dwNumComponents == 3) || (dwNumComponents == 4), E_FAIL);  // cant handle anything else now
+  nassertr((num_components == 3) || (num_components == 4), E_FAIL);  // cant handle anything else now
   nassertr(IS_VALID_PTR(d3d_surface), E_FAIL);
 
-  BYTE *pbuf = result->modify_ram_image().p();
+  BYTE *buf = result->modify_ram_image().p();
 
   if (IsBadWritePtr(d3d_surface, sizeof(DWORD))) {
     dxgsg8_cat.error() << "d3d_surface_to_texture failed: bad pD3DSurf ptr value (" << ((void*)d3d_surface) << ")\n";
     exit(1);
   }
 
-  DWORD dwXWindowOffset, dwYWindowOffset;
-  DWORD dwCopyWidth, dwCopyHeight;
+  DWORD x_window_offset, y_window_offset;
+  DWORD copy_width, copy_height;
 
-  D3DLOCKED_RECT LockedRect;
-  D3DSURFACE_DESC SurfDesc;
+  D3DLOCKED_RECT locked_rect;
+  D3DSURFACE_DESC surface_desc;
 
-  hr = d3d_surface->GetDesc(&SurfDesc);
+  hr = d3d_surface->GetDesc(&surface_desc);
 
-  dwXWindowOffset = source_rect.left, dwYWindowOffset = source_rect.top;
-  dwCopyWidth = RECT_XSIZE(source_rect);
-  dwCopyHeight = RECT_YSIZE(source_rect);
+  x_window_offset = source_rect.left, y_window_offset = source_rect.top;
+  copy_width = RECT_XSIZE(source_rect);
+  copy_height = RECT_YSIZE(source_rect);
 
-  //make sure there's enough space in the texture, its size must match (especially xsize)
-  // or scanlines will be too long
+  //make sure there's enough space in the texture, its size must match
+  //(especially xsize) or scanlines will be too long
 
-  if (!((dwCopyWidth == result->get_x_size()) && (dwCopyHeight <= (DWORD)result->get_y_size()))) {
+  if (!((copy_width == result->get_x_size()) && (copy_height <= (DWORD)result->get_y_size()))) {
     dxgsg8_cat.error() << "d3d_surface_to_texture, Texture size too small to hold display surface!\n";
     nassertr(false, E_FAIL);
     return E_FAIL;
   }
 
-  hr = d3d_surface->LockRect(&LockedRect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
+  hr = d3d_surface->LockRect(&locked_rect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
     return hr;
   }
 
   // ones not listed not handled yet
-  nassertr((SurfDesc.Format == D3DFMT_A8R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_X8R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_R8G8B8) ||
-           (SurfDesc.Format == D3DFMT_R5G6B5) ||
-           (SurfDesc.Format == D3DFMT_X1R5G5B5) ||
-           (SurfDesc.Format == D3DFMT_A1R5G5B5) ||
-           (SurfDesc.Format == D3DFMT_A4R4G4B4), E_FAIL);
+  nassertr((surface_desc.Format == D3DFMT_A8R8G8B8) ||
+           (surface_desc.Format == D3DFMT_X8R8G8B8) ||
+           (surface_desc.Format == D3DFMT_R8G8B8) ||
+           (surface_desc.Format == D3DFMT_R5G6B5) ||
+           (surface_desc.Format == D3DFMT_X1R5G5B5) ||
+           (surface_desc.Format == D3DFMT_A1R5G5B5) ||
+           (surface_desc.Format == D3DFMT_A4R4G4B4), E_FAIL);
 
-  //pbuf contains raw ARGB in Texture byteorder
+  //buf contains raw ARGB in Texture byteorder
 
-  DWORD BytePitch = LockedRect.Pitch;
-  BYTE* pSurfBytes = (BYTE*)LockedRect.pBits;
+  DWORD byte_pitch = locked_rect.Pitch;
+  BYTE *surface_bytes = (BYTE *)locked_rect.pBits;
 
-  // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
+  // writes out last line in DDSurf first in PixelBuf, so Y line order
+  // precedes inversely
 
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "d3d_surface_to_texture converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
-      <<  dwNumComponents << "-channel panda Texture\n";
+      << "d3d_surface_to_texture converting " << D3DFormatStr(surface_desc.Format) 
+      << "bpp DDSurf to " <<  num_components << "-channel panda Texture\n";
   }
 
-  DWORD *pDstWord = (DWORD *) pbuf;
-  BYTE *pDstByte = (BYTE *) pbuf;
+  DWORD *dest_word = (DWORD *)buf;
+  BYTE *dest_byte = (BYTE *)buf;
 
-  switch(SurfDesc.Format) {
+  switch(surface_desc.Format) {
   case D3DFMT_A8R8G8B8:
   case D3DFMT_X8R8G8B8: {
-    if (dwNumComponents == 4) {
-      DWORD *pSrcWord;
-      BYTE *pDstLine = (BYTE*)pDstWord;
+    if (num_components == 4) {
+      DWORD *source_word;
+      BYTE *dest_line = (BYTE*)dest_word;
 
-      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
-        memcpy(pDstLine, pSrcWord, BytePitch);
-        pDstLine += BytePitch;
+      surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_word = ((DWORD*)surface_bytes)+x_window_offset;
+        memcpy(dest_line, source_word, byte_pitch);
+        dest_line += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
-      DWORD *pSrcWord;
-      pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
+      DWORD *source_word;
+      surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_word = ((DWORD*)surface_bytes)+x_window_offset;
 
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
+        for (DWORD x = 0; x<copy_width; x++, source_word++) {
           BYTE r, g, b;
-          DWORD dwPixel = *pSrcWord;
+          DWORD pixel = *source_word;
 
-          r = (BYTE)((dwPixel>>16) & g_LowByteMask);
-          g = (BYTE)((dwPixel>> 8) & g_LowByteMask);
-          b = (BYTE)((dwPixel    ) & g_LowByteMask);
+          r = (BYTE)((pixel>>16) & g_LowByteMask);
+          g = (BYTE)((pixel>> 8) & g_LowByteMask);
+          b = (BYTE)((pixel    ) & g_LowByteMask);
 
-          *pDstByte += b;
-          *pDstByte += g;
-          *pDstByte += r;
+          *dest_byte += b;
+          *dest_byte += g;
+          *dest_byte += r;
         }
       }
     }
@@ -707,28 +711,28 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
   }
 
   case D3DFMT_R8G8B8: {
-    BYTE *pSrcByte;
-    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+    BYTE *source_byte;
+    surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
 
-    if (dwNumComponents == 4) {
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-        for(DWORD x = 0; x<dwCopyWidth; x++, pDstWord++) {
+    if (num_components == 4) {
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_byte = surface_bytes+x_window_offset*3*sizeof(BYTE);
+        for (DWORD x = 0; x<copy_width; x++, dest_word++) {
           DWORD r, g, b;
 
-          b = *pSrcByte++;
-          g = *pSrcByte++;
-          r = *pSrcByte++;
+          b = *source_byte++;
+          g = *source_byte++;
+          r = *source_byte++;
 
-          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+          *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
         }
       }
     } else {
       // 24bpp texture case (numComponents == 3)
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-        memcpy(pDstByte, pSrcByte, BytePitch);
-        pDstByte += BytePitch;
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_byte = surface_bytes+x_window_offset*3*sizeof(BYTE);
+        memcpy(dest_byte, source_byte, byte_pitch);
+        dest_byte += byte_pitch;
       }
     }
     break;
@@ -738,20 +742,20 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
   case D3DFMT_X1R5G5B5:
   case D3DFMT_A1R5G5B5:
   case D3DFMT_A4R4G4B4: {
-    WORD  *pSrcWord;
+    WORD  *source_word;
     // handle 0555, 1555, 0565, 4444 in same loop
 
     BYTE redshift, greenshift, blueshift;
     DWORD redmask, greenmask, bluemask;
 
-    if (SurfDesc.Format == D3DFMT_R5G6B5) {
+    if (surface_desc.Format == D3DFMT_R5G6B5) {
       redshift = (11-3);
       redmask = 0xF800;
       greenmask = 0x07E0;
       greenshift = (5-2);
       bluemask = 0x001F;
       blueshift = 3;
-    } else if (SurfDesc.Format == D3DFMT_A4R4G4B4) {
+    } else if (surface_desc.Format == D3DFMT_A4R4G4B4) {
       redmask = 0x0F00;
       redshift = 4;
       greenmask = 0x00F0;
@@ -767,44 +771,44 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
       blueshift = 3;
     }
 
-    pSurfBytes += BytePitch*(dwYWindowOffset+dwCopyHeight-1);
-    if (dwNumComponents == 4) {
+    surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
+    if (num_components == 4) {
       // Note: these 16bpp loops ignore input alpha completely (alpha
       // is set to fully opaque in texture!)
 
       // if we need to capture alpha, probably need to make separate
       // loops for diff 16bpp fmts for best speed
 
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++, pDstWord++) {
-          WORD dwPixel = *pSrcWord;
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_word = ((WORD*)surface_bytes)+x_window_offset;
+        for (DWORD x = 0; x<copy_width; x++, source_word++, dest_word++) {
+          WORD pixel = *source_word;
           BYTE r, g, b;
 
-          b = (dwPixel & bluemask) << blueshift;
-          g = (dwPixel & greenmask) >> greenshift;
-          r = (dwPixel & redmask) >> redshift;
+          b = (pixel & bluemask) << blueshift;
+          g = (pixel & greenmask) >> greenshift;
+          r = (pixel & redmask) >> redshift;
 
           // alpha is just set to 0xFF
 
-          *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+          *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
         }
       }
     } else {
       // 24bpp texture case (numComponents == 3)
-      for(DWORD y = 0; y<dwCopyHeight; y++, pSurfBytes -= BytePitch) {
-        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
-        for(DWORD x = 0; x<dwCopyWidth; x++, pSrcWord++) {
-          WORD dwPixel = *pSrcWord;
+      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
+        source_word = ((WORD*)surface_bytes)+x_window_offset;
+        for (DWORD x = 0; x<copy_width; x++, source_word++) {
+          WORD pixel = *source_word;
           BYTE r, g, b;
 
-          b = (dwPixel & bluemask) << blueshift;
-          g = (dwPixel & greenmask) >> greenshift;
-          r = (dwPixel & redmask) >> redshift;
+          b = (pixel & bluemask) << blueshift;
+          g = (pixel & greenmask) >> greenshift;
+          r = (pixel & redmask) >> redshift;
 
-          *pDstByte += b;
-          *pDstByte += g;
-          *pDstByte += r;
+          *dest_byte += b;
+          *dest_byte += g;
+          *dest_byte += r;
         }
       }
     }
@@ -841,62 +845,62 @@ fill_d3d_texture_pixels() {
 
   assert(IS_VALID_PTR(_d3d_texture));
 
-  DWORD OrigWidth  = (DWORD) _texture->get_x_size();
-  DWORD OrigHeight = (DWORD) _texture->get_y_size();
-  DWORD cNumColorChannels = _texture->get_num_components();
-  D3DFORMAT SrcFormat = _d3d_format;
-  BYTE *pPixels = (BYTE*)image.p();
+  DWORD orig_width  = (DWORD) _texture->get_x_size();
+  DWORD orig_height = (DWORD) _texture->get_y_size();
+  DWORD num_color_channels = _texture->get_num_components();
+  D3DFORMAT source_format = _d3d_format;
+  BYTE *pixels = (BYTE*)image.p();
   int component_width = _texture->get_component_width();
 
-  assert(IS_VALID_PTR(pPixels));
+  assert(IS_VALID_PTR(pixels));
 
-  IDirect3DSurface8 *pMipLevel0;
-  hr = _d3d_texture->GetSurfaceLevel(0, &pMipLevel0);
+  IDirect3DSurface8 *mip_level_0;
+  hr = _d3d_texture->GetSurfaceLevel(0, &mip_level_0);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for " << _tex->get_name() << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
     return E_FAIL;
   }
 
-  RECT SrcSize;
-  SrcSize.left = SrcSize.top = 0;
-  SrcSize.right = OrigWidth;
-  SrcSize.bottom = OrigHeight;
+  RECT source_size;
+  source_size.left = source_size.top = 0;
+  source_size.right = orig_width;
+  source_size.bottom = orig_height;
 
-  UINT SrcPixBufRowByteLength = OrigWidth*cNumColorChannels;
+  UINT source_row_byte_length = orig_width * num_color_channels;
 
-  DWORD Lev0Filter, MipFilterFlags;
-  bool bUsingTempPixBuf = false;
+  DWORD level_0_filter, mip_filter_flags;
+  bool using_temp_buffer = false;
 
   // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
-  Lev0Filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
+  level_0_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
 
   // D3DXLoadSurfaceFromMemory will load black luminance and we want full white,
   // so convert to explicit luminance-alpha format
   if (_d3d_format == D3DFMT_A8) {
     // alloc buffer for explicit D3DFMT_A8L8
-    USHORT *pTempPixBuf = new USHORT[OrigWidth*OrigHeight];
-    if (!IS_VALID_PTR(pTempPixBuf)) {
+    USHORT *temp_buffer = new USHORT[orig_width*orig_height];
+    if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
       goto exit_FillDDSurf;
     }
-    bUsingTempPixBuf = true;
+    using_temp_buffer = true;
 
-    USHORT *pOutPix = pTempPixBuf;
-    BYTE *pSrcPix = pPixels + component_width - 1;
-    for (UINT y = 0; y < OrigHeight; y++) {
+    USHORT *out_pixels = temp_buffer;
+    BYTE *source_pixels = pixels + component_width - 1;
+    for (UINT y = 0; y < orig_height; y++) {
       for (UINT x = 0;
-           x < OrigWidth;
-           x++, pSrcPix += component_width, pOutPix++) {
+           x < orig_width;
+           x++, source_pixels += component_width, out_pixels++) {
         // add full white, which is our interpretation of alpha-only
         // (similar to default adding full opaque alpha 0xFF to
         // RGB-only textures)
-        *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;
+        *out_pixels = ((*source_pixels) << 8 ) | 0xFF;
       }
     }
 
-    SrcFormat = D3DFMT_A8L8;
-    SrcPixBufRowByteLength = OrigWidth*sizeof(USHORT);
-    pPixels = (BYTE*)pTempPixBuf;
+    source_format = D3DFMT_A8L8;
+    source_row_byte_length = orig_width*sizeof(USHORT);
+    pixels = (BYTE*)temp_buffer;
 
   } else if (component_width != 1) {
     // Convert from 16-bit per channel (or larger) format down to
@@ -905,29 +909,29 @@ fill_d3d_texture_pixels() {
     // anyway.
 
     int num_components = _texture->get_num_components();
-    int num_pixels = OrigWidth * OrigHeight * num_components;
-    BYTE *pTempPixBuf = new BYTE[num_pixels];
-    if (!IS_VALID_PTR(pTempPixBuf)) {
+    int num_pixels = orig_width * orig_height * num_components;
+    BYTE *temp_buffer = new BYTE[num_pixels];
+    if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
       goto exit_FillDDSurf;
     }
-    bUsingTempPixBuf = true;
+    using_temp_buffer = true;
 
-    BYTE *pSrcPix = pPixels + component_width - 1;
+    BYTE *source_pixels = pixels + component_width - 1;
     for (int i = 0; i < num_pixels; i++) {
-      pTempPixBuf[i] = *pSrcPix;
-      pSrcPix += component_width;
+      temp_buffer[i] = *source_pixels;
+      source_pixels += component_width;
     }
-    pPixels = (BYTE*)pTempPixBuf;
+    pixels = (BYTE*)temp_buffer;
   }
 
 
   // filtering may be done here if texture if targetsize != origsize
 #ifdef DO_PSTATS
-  GraphicsStateGuardian::_data_transferred_pcollector.add_level(SrcPixBufRowByteLength * OrigHeight);
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * orig_height);
 #endif
-  hr = D3DXLoadSurfaceFromMemory(pMipLevel0, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pPixels, SrcFormat,
-                                 SrcPixBufRowByteLength, (PALETTEENTRY*)NULL, &SrcSize, Lev0Filter, (D3DCOLOR)0x0);
+  hr = D3DXLoadSurfaceFromMemory(mip_level_0, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels, source_format,
+                                 source_row_byte_length, (PALETTEENTRY*)NULL, &source_size, level_0_filter, (D3DCOLOR)0x0);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for " << _tex->get_name() << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
     goto exit_FillDDSurf;
@@ -935,14 +939,14 @@ fill_d3d_texture_pixels() {
 
   if (_has_mipmaps) {
     if (!dx_use_triangle_mipgen_filter) {
-      MipFilterFlags = D3DX_FILTER_BOX;
+      mip_filter_flags = D3DX_FILTER_BOX;
     } else {
-      MipFilterFlags = D3DX_FILTER_TRIANGLE;
+      mip_filter_flags = D3DX_FILTER_TRIANGLE;
     }
 
-    //    MipFilterFlags| = D3DX_FILTER_DITHER;
+    //    mip_filter_flags| = D3DX_FILTER_DITHER;
 
-    hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0, MipFilterFlags);
+    hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0, mip_filter_flags);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
         << "FillDDSurfaceTexturePixels failed for " << _tex->get_name() << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
@@ -951,10 +955,10 @@ fill_d3d_texture_pixels() {
   }
 
  exit_FillDDSurf:
-  if (bUsingTempPixBuf) {
-    SAFE_DELETE_ARRAY(pPixels);
+  if (using_temp_buffer) {
+    SAFE_DELETE_ARRAY(pixels);
   }
-  RELEASE(pMipLevel0, dxgsg8, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
+  RELEASE(mip_level_0, dxgsg8, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
   return hr;
 }
 

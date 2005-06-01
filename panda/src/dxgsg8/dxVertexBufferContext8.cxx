@@ -194,7 +194,7 @@ create_vbuffer(DXScreenData &scrn) {
     _vbuffer = NULL;
   }
 
-  HRESULT hr = scrn.pD3DDevice->CreateVertexBuffer
+  HRESULT hr = scrn._d3d_device->CreateVertexBuffer
     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
      _fvf, D3DPOOL_MANAGED, &_vbuffer);
   if (FAILED(hr)) {

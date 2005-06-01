@@ -102,7 +102,7 @@ bool DInput8Info::InitDirectInput(void) {
     return true;
 }
 
-bool DInput8Info::CreateJoystickOrPad(HWND hWnd) {
+bool DInput8Info::CreateJoystickOrPad(HWND _window) {
     bool bFoundDev = false;
     UINT devnum=0;
     char *errstr=NULL;
@@ -156,7 +156,7 @@ bool DInput8Info::CreateJoystickOrPad(HWND hWnd) {
 
     // Set the cooperative level to let DInput know how this device should
     // interact with the system and with other DInput applications.
-    hr = pJoyDevice->SetCooperativeLevel( hWnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+    hr = pJoyDevice->SetCooperativeLevel( _window, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
     if(FAILED(hr)) {
         errstr="SetCooperativeLevel";
         goto handle_error;
