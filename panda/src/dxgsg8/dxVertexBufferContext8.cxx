@@ -106,29 +106,60 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
     ++n;
   }
 
-  // For multitexture support, we will need to look for all of the
-  // texcoord names and enable them in order.
-  if (n < num_columns && 
-      array_format->get_column(n)->get_name() == InternalName::get_texcoord()) {
+  // Now look for all of the texcoord names and enable them in the
+  // same order they appear in the array.
+  int texcoord_index = 0;
+  while (n < num_columns && 
+         array_format->get_column(n)->get_contents() == qpGeom::C_texcoord) {
     const qpGeomVertexColumn *column = array_format->get_column(n);
     switch (column->get_num_values()) {
     case 1:
-      _fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE1(0);
+      _fvf |= D3DFVF_TEXCOORDSIZE1(texcoord_index);
       ++n;
       break;
     case 2:
-      _fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
+      _fvf |= D3DFVF_TEXCOORDSIZE2(texcoord_index);
       ++n;
       break;
     case 3:
-      _fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE3(0);
+      _fvf |= D3DFVF_TEXCOORDSIZE3(texcoord_index);
       ++n;
       break;
     case 4:
-      _fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE4(0);
+      _fvf |= D3DFVF_TEXCOORDSIZE4(texcoord_index);
       ++n;
       break;
     }
+    ++texcoord_index;
+  }
+
+  switch (texcoord_index) {
+  case 0:
+    break;
+  case 1:
+    _fvf |= D3DFVF_TEX1;
+    break;
+  case 2:
+    _fvf |= D3DFVF_TEX2;
+    break;
+  case 3:
+    _fvf |= D3DFVF_TEX3;
+    break;
+  case 4:
+    _fvf |= D3DFVF_TEX4;
+    break;
+  case 5:
+    _fvf |= D3DFVF_TEX5;
+    break;
+  case 6:
+    _fvf |= D3DFVF_TEX6;
+    break;
+  case 7:
+    _fvf |= D3DFVF_TEX7;
+    break;
+  case 8:
+    _fvf |= D3DFVF_TEX8;
+    break;
   }
 }
 

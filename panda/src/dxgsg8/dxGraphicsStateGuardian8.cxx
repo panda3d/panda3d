@@ -103,7 +103,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   ZeroMemory(&matIdentity, sizeof(D3DMATRIX));
   matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
 
-  _cur_read_pixel_buffer=RenderBuffer::T_front;
+  _cur_read_pixel_buffer = RenderBuffer::T_front;
   set_color_clear_value(_color_clear_value);
 
   // DirectX drivers seem to consistently invert the texture when
@@ -113,7 +113,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
   // texture coordinates via a texture matrix, so we don't advertise
   // GR_point_sprite_tex_matrix.
-  _supported_geom_rendering =
+  _supported_geom_rendering = 
     qpGeom::GR_point | qpGeom::GR_point_uniform_size |
     qpGeom::GR_point_perspective | qpGeom::GR_point_sprite |
     qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
@@ -205,22 +205,22 @@ apply_texture(int i, TextureContext *tc) {
 
   Texture *tex = tc->_texture;
   Texture::WrapMode wrapU, wrapV;
-  wrapU=tex->get_wrap_u();
-  wrapV=tex->get_wrap_v();
+  wrapU = tex->get_wrap_u();
+  wrapV = tex->get_wrap_v();
 
   _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrapU));
   _pD3DDevice->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrapV));
 
-  uint aniso_degree=tex->get_anisotropic_degree();
-  Texture::FilterType ft=tex->get_magfilter();
+  uint aniso_degree = tex->get_anisotropic_degree();
+  Texture::FilterType ft = tex->get_magfilter();
 
   _pD3DDevice->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
 
   D3DTEXTUREFILTERTYPE newMagFilter;
-  if (aniso_degree<=1) {
-    newMagFilter=((ft!=Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+  if (aniso_degree <= 1) {
+    newMagFilter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
   } else {
-    newMagFilter=D3DTEXF_ANISOTROPIC;
+    newMagFilter = D3DTEXF_ANISOTROPIC;
   }
 
   _pD3DDevice->SetTextureStageState(i, D3DTSS_MAGFILTER, newMagFilter);
@@ -243,12 +243,12 @@ apply_texture(int i, TextureContext *tc) {
       << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname["
       << tex->get_name() << "], filter("
       << tex->get_minfilter() << ")\n";
-    newMipFilter=D3DTEXF_NONE;
+    newMipFilter = D3DTEXF_NONE;
   }
 #endif
 
-  if (aniso_degree>=2) {
-    newMinFilter=D3DTEXF_ANISOTROPIC;
+  if (aniso_degree >= 2) {
+    newMinFilter = D3DTEXF_ANISOTROPIC;
   }
 
   _pD3DDevice->SetTextureStageState(i, D3DTSS_MINFILTER, newMinFilter);
@@ -612,7 +612,7 @@ prepare_lens() {
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of
   // choice is otherwise.
-  const LMatrix4f &convert_mat =
+  const LMatrix4f &convert_mat = 
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system());
 
   // DirectX also uses a Z range of 0 to 1, whereas the Panda
@@ -633,7 +633,7 @@ prepare_lens() {
     _projection_mat *= invert_mat;
   }
 
-  HRESULT hr =
+  HRESULT hr = 
     _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                               (D3DMATRIX*)_projection_mat.get_data());
   return SUCCEEDED(hr);
@@ -745,11 +745,11 @@ end_frame() {
 #if defined(DO_PSTATS)
   if (_texmgrmem_total_pcollector.is_active()) {
 #define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
-    static DWORD LastTickCount=0;
-    DWORD CurTickCount=GetTickCount();
+    static DWORD LastTickCount = 0;
+    DWORD CurTickCount = GetTickCount();
 
     if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
-      LastTickCount=CurTickCount;
+      LastTickCount = CurTickCount;
       report_texmgr_stats();
     }
   }
@@ -786,7 +786,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   apply_vertex_buffer(vbc);
 
-  const qpGeomVertexAnimationSpec &animation =
+  const qpGeomVertexAnimationSpec &animation = 
     vertex_data->get_format()->get_animation();
   if (animation.get_animation_type() == qpGeom::AT_hardware) {
     // Set up vertex blending.
@@ -1387,7 +1387,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   HRESULT hr;
 
   if (_cur_read_pixel_buffer & RenderBuffer::T_back) {
-    hr=_pD3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pD3DSurf);
+    hr = _pD3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pD3DSurf);
 
     if (FAILED(hr)) {
       dxgsg8_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
@@ -1424,15 +1424,15 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       TmpSurfYsize = RECT_YSIZE(WindRect);
     }
 
-    hr=_pD3DDevice->CreateImageSurface(TmpSurfXsize, TmpSurfYsize, D3DFMT_A8R8G8B8, &pD3DSurf);
+    hr = _pD3DDevice->CreateImageSurface(TmpSurfXsize, TmpSurfYsize, D3DFMT_A8R8G8B8, &pD3DSurf);
     if (FAILED(hr)) {
       dxgsg8_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
       return false;
     }
 
-    hr=_pD3DDevice->GetFrontBuffer(pD3DSurf);
+    hr = _pD3DDevice->GetFrontBuffer(pD3DSurf);
 
-    if (hr==D3DERR_DEVICELOST) {
+    if (hr == D3DERR_DEVICELOST) {
       pD3DSurf->Release();
       dxgsg8_cat.error() << "copy_pixel_buffer failed: device lost\n";
       return false;
@@ -1478,8 +1478,8 @@ reset() {
   set_state(RenderState::make_empty());
   // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
-  assert(_pScrn->pD3D8!=NULL);
-  assert(_pD3DDevice!=NULL);
+  assert(_pScrn->pD3D8 != NULL);
+  assert(_pD3DDevice != NULL);
 
   D3DCAPS8 d3dCaps;
   _pD3DDevice->GetDeviceCaps(&d3dCaps);
@@ -1506,6 +1506,7 @@ reset() {
       << "\n";
   }
 
+  _max_texture_stages = d3dCaps.MaxSimultaneousTextures;
   _max_lights = d3dCaps.MaxActiveLights;
   _max_clip_planes = d3dCaps.MaxUserClipPlanes;
   _max_vertex_transforms = d3dCaps.MaxVertexBlendMatrices;
@@ -1554,30 +1555,30 @@ reset() {
 
   _last_testcooplevel_result = D3D_OK;
 
-  for(int i=0;i<MAX_POSSIBLE_TEXFMTS;i++) {
+  for(int i = 0;i<MAX_POSSIBLE_TEXFMTS;i++) {
     // look for all possible DX8 texture fmts
-    D3DFORMAT_FLAG fmtflag=D3DFORMAT_FLAG(1<<i);
+    D3DFORMAT_FLAG fmtflag = D3DFORMAT_FLAG(1<<i);
     hr = _pScrn->pD3D8->CheckDeviceFormat(_pScrn->CardIDNum, D3DDEVTYPE_HAL, _pScrn->DisplayMode.Format,
                                           0x0, D3DRTYPE_TEXTURE, g_D3DFORMATmap[fmtflag]);
     if (SUCCEEDED(hr)){
-      _pScrn->SupportedTexFmtsMask|=fmtflag;
+      _pScrn->SupportedTexFmtsMask |= fmtflag;
     }
   }
 
   // s3 virge drivers sometimes give crap values for these
-  if (_pScrn->d3dcaps.MaxTextureWidth==0)
-    _pScrn->d3dcaps.MaxTextureWidth=256;
+  if (_pScrn->d3dcaps.MaxTextureWidth == 0)
+    _pScrn->d3dcaps.MaxTextureWidth = 256;
 
-  if (_pScrn->d3dcaps.MaxTextureHeight==0)
-    _pScrn->d3dcaps.MaxTextureHeight=256;
+  if (_pScrn->d3dcaps.MaxTextureHeight == 0)
+    _pScrn->d3dcaps.MaxTextureHeight = 256;
 
   if (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGTABLE) {
     // watch out for drivers that emulate per-pixel fog with per-vertex fog (Riva128, Matrox Millen G200)
     // some of these require gouraud-shading to be set to work, as if you were using vertex fog
-    _doFogType=PerPixelFog;
+    _doFogType = PerPixelFog;
   } else {
     // every card is going to have vertex fog, since it's implemented in d3d runtime
-    assert((_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX)!=0);
+    assert((_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
 
     // vtx fog may look crappy if you have large polygons in the foreground and they get clipped,
     // so you may want to disable it
@@ -1593,7 +1594,7 @@ reset() {
     }
   }
 
-  _pScrn->bCanDirectDisableColorWrites=((_pScrn->d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE)!=0);
+  _pScrn->bCanDirectDisableColorWrites = ((_pScrn->d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) != 0);
 
   // Lighting, let's turn it off by default
   _pD3DDevice->SetRenderState(D3DRS_LIGHTING, false);
@@ -1656,7 +1657,7 @@ reset() {
 void DXGraphicsStateGuardian8::
 apply_fog(Fog *fog) {
 
-  if (_doFogType==None)
+  if (_doFogType == None)
     return;
 
   Fog::Mode panda_fogmode = fog->get_mode();
@@ -1728,7 +1729,7 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
   if (mode == AlphaTestAttrib::M_none) {
     enable_alpha_test(false);
   } else {
-    //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
+    //  AlphaTestAttrib::PandaCompareFunc == = D3DCMPFUNC
     call_dxAlphaFunc((D3DCMPFUNC)mode, attrib->get_reference_alpha());
     enable_alpha_test(true);
   }
@@ -1826,7 +1827,7 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
 void DXGraphicsStateGuardian8::
 issue_color_write(const ColorWriteAttrib *attrib) {
   _color_write_mode = attrib->get_mode();
-  set_color_writemask((_color_write_mode ==ColorWriteAttrib::M_on) ? 0xFFFFFFFF : 0x0);
+  set_color_writemask((_color_write_mode == ColorWriteAttrib::M_on) ? 0xFFFFFFFF : 0x0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1918,24 +1919,8 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_tex_gen(const TexGenAttrib *attrib) {
-  TexGenAttrib::Mode mode = attrib->get_mode(TextureStage::get_default());
-  switch (mode) {
-  case TexGenAttrib::M_off:
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
-    break;
-
-  case TexGenAttrib::M_eye_sphere_map:
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX,
-                                      D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
-    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
-    break;
-
-  case TexGenAttrib::M_point_sprite:
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE);
-    break;
-  }
+  _current_tex_gen = attrib;
+  _texture_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2200,40 +2185,96 @@ do_issue_texture() {
 
   _texture_involves_color_scale = false;
 
+  // We have to match up the texcoord stage index to the order written
+  // out by the DXGeomMunger.  This means the texcoord names are
+  // written in the order they are referenced by the TextureAttrib,
+  // except that if a name is repeated its index number is reused from
+  // the first time.
+  typedef pmap<const InternalName *, int> UsedTexcoordIndex;
+  UsedTexcoordIndex used_texcoord_index;
+
   int i;
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = new_texture->get_on_stage(i);
     Texture *texture = new_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
-    if (i >= num_old_stages ||
-        stage != _current_texture->get_on_stage(i) ||
-        texture != _current_texture->get_on_texture(stage) ||
-        stage->involves_color_scale()) {
-      // Stage i has changed.  Issue the texture on this stage.
-      TextureContext *tc = texture->prepare_now(_prepared_objects, this);
-      apply_texture(i, tc);
+    const InternalName *name = stage->get_texcoord_name();
 
-      set_texture_blend_mode(i, stage);
+    // This pair of lines will get the next consecutive texcoord index
+    // number if this is the first time we have referenced this
+    // particular texcoord name; otherwise, it will return the same
+    // index number it returned before.
+    UsedTexcoordIndex::iterator ti = used_texcoord_index.insert(UsedTexcoordIndex::value_type(name, (int)used_texcoord_index.size())).first;
+    int texcoord_index = (*ti).second;
 
-      if (_current_tex_mat->has_stage(stage)) {
-        // We have to reorder the elements of the matrix for some reason.
-        const LMatrix4f &m = _current_tex_mat->get_mat(stage);
-        LMatrix4f dm(m(0, 0), m(0, 1), m(0, 3), 0.0f,
-                     m(1, 0), m(1, 1), m(1, 3), 0.0f,
-                     m(3, 0), m(3, 1), m(3, 3), 0.0f,
-                     0.0f, 0.0f, 0.0f, 1.0f);
-        _pD3DDevice->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)dm.get_data());
-        _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
-                                          D3DTTFF_COUNT2);
-      } else {
-        _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
-                                          D3DTTFF_DISABLE);
-        // For some reason, "disabling" texture coordinate transforms
-        // doesn't seem to be sufficient.  We'll load an identity matrix
-        // to underscore the point.
-        _pD3DDevice->SetTransform(get_tex_mat_sym(i), &matIdentity);
+    // We always reissue every stage in DX, just in case the texcoord
+    // index or texgen mode or some other property has changed.
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    apply_texture(i, tc);
+    set_texture_blend_mode(i, stage);
+
+    bool has_tex_mat = false;
+    LMatrix4f tex_mat;
+    
+    if (_current_tex_mat->has_stage(stage)) {
+      // We have to reorder the elements of the matrix for some reason.
+      const LMatrix4f &m = _current_tex_mat->get_mat(stage);
+      tex_mat.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
+                  m(1, 0), m(1, 1), m(1, 3), 0.0f,
+                  m(3, 0), m(3, 1), m(3, 3), 0.0f,
+                  0.0f, 0.0f, 0.0f, 1.0f);
+      has_tex_mat = true;
+    }
+    
+    // Issue the texgen mode.
+    TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
+    bool any_point_sprite = false;
+    switch (mode) {
+    case TexGenAttrib::M_off:
+      _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      break;
+      
+    case TexGenAttrib::M_eye_sphere_map:
+      {
+        _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+                                          texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+        // This texture matrix, applied on top of the texcoord
+        // computed by D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR,
+        // approximates the effect produced by OpenGL's GL_SPHERE_MAP.
+        LMatrix4f sphere_map(0.33f, 0.0f, 0.0f, 0.0f,
+                             0.0f, 0.33f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 1.0f, 0.0f,
+                             0.5f, 0.5f, 0.0f, 1.0f);
+
+        if (has_tex_mat) {
+          tex_mat = sphere_map * tex_mat;
+        } else {
+          tex_mat = sphere_map;
+          has_tex_mat = true;
+        }
       }
+      break;
+      
+    case TexGenAttrib::M_point_sprite:
+      _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      any_point_sprite = true;
+      break;
+    }
+    
+    _pD3DDevice->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
+
+    if (has_tex_mat) {
+      _pD3DDevice->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)tex_mat.get_data());
+      _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+                                        D3DTTFF_COUNT2);
+    } else {
+      _pD3DDevice->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+                                        D3DTTFF_DISABLE);
+      // For some reason, "disabling" texture coordinate transforms
+      // doesn't seem to be sufficient.  We'll load an identity matrix
+      // to underscore the point.
+      _pD3DDevice->SetTransform(get_tex_mat_sym(i), &matIdentity);
     }
   }
 
@@ -2243,11 +2284,6 @@ do_issue_texture() {
   }
 
   _current_texture = new_texture;
-
-  // Changing the set of texture stages will require us to reissue the
-  // texgen and texmat attribs.
-  _needs_tex_gen = true;
-  _needs_tex_mat = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2484,13 +2520,13 @@ free_d3d_device() {
 
   _bDXisReady = false;
 
-  if (_pD3DDevice!=NULL)
-    for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
+  if (_pD3DDevice != NULL)
+    for(int i = 0;i<D3D_MAXTEXTURESTAGES;i++)
       _pD3DDevice->SetTexture(i, NULL);  // d3d should release this stuff internally anyway, but whatever
 
   release_all();
 
-  if (_pD3DDevice!=NULL)
+  if (_pD3DDevice != NULL)
     RELEASE(_pD3DDevice, dxgsg8, "d3dDevice", RELEASE_DOWN_TO_ZERO);
 
   free_nondx_resources();
@@ -2521,9 +2557,9 @@ void DXGraphicsStateGuardian8::
 set_read_buffer(const RenderBuffer &rb) {
 
   if (rb._buffer_type & RenderBuffer::T_front) {
-    _cur_read_pixel_buffer=RenderBuffer::T_front;
+    _cur_read_pixel_buffer = RenderBuffer::T_front;
   } else  if (rb._buffer_type & RenderBuffer::T_back) {
-    _cur_read_pixel_buffer=RenderBuffer::T_back;
+    _cur_read_pixel_buffer = RenderBuffer::T_back;
   } else {
     dxgsg8_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
   }
@@ -2701,9 +2737,9 @@ report_texmgr_stats() {
 
   if (!tex_stats_retrieval_impossible) {
     hr = _pD3DDevice->GetInfo(D3DDEVINFOID_RESOURCEMANAGER, &all_resource_stats, sizeof(D3DDEVINFO_RESOURCEMANAGER));
-    if (hr!=D3D_OK) {
-      if (hr==S_FALSE) {
-        static int PrintedMsg=2;
+    if (hr != D3D_OK) {
+      if (hr == S_FALSE) {
+        static int PrintedMsg = 2;
         if (PrintedMsg>0) {
           if (dxgsg8_cat.is_debug()) {
             dxgsg8_cat.debug()
@@ -2756,7 +2792,7 @@ set_context(DXScreenData *new_context) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_render_target() {
-  LPDIRECT3DSURFACE8 pBack=NULL, pStencil=NULL;
+  LPDIRECT3DSURFACE8 pBack = NULL, pStencil = NULL;
 
   if (!_pSwapChain)  //maybe fullscreen mode or main/single window
     _pD3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBack);
@@ -2789,20 +2825,20 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_decal:
     // emulates GL_DECAL glTexEnv mode
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_BLENDTEXTUREALPHA);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
     _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_replace:
@@ -2816,13 +2852,13 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   case TextureStage::M_add:
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_ADD);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
     // since I'm making up 'add' mode, use modulate.  "adding" alpha
     // never makes sense right?
     _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
     _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+    _pD3DDevice->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_blend:
@@ -2908,7 +2944,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
       _PresReset.BackBufferHeight = pPresParams->BackBufferHeight;
     }
 
-    hr=_pD3DDevice->Reset(&_PresReset);
+    hr = _pD3DDevice->Reset(&_PresReset);
     if (FAILED(hr)) {
       return hr;
     }
@@ -2917,7 +2953,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
 
     if (pScrn)
       *pScrn = NULL;
-    if (pPresParams!=&_pScrn->PresParams)
+    if (pPresParams != &_pScrn->PresParams)
       memcpy(&_pScrn->PresParams, pPresParams, sizeof(D3DPRESENT_PARAMETERS));
     return hr;
   }
@@ -2927,10 +2963,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
     _pScrn->pSwapChain->Release();
     wdxdisplay8_cat.debug() << "SwapChain " << _pScrn->pSwapChain << " is released\n";
     _pScrn->pSwapChain = NULL;
-    hr=_pD3DDevice->CreateAdditionalSwapChain(pPresParams, &_pScrn->pSwapChain);
+    hr = _pD3DDevice->CreateAdditionalSwapChain(pPresParams, &_pScrn->pSwapChain);
   }
   if (SUCCEEDED(hr)) {
-    if (pPresParams!=&_pScrn->PresParams)
+    if (pPresParams != &_pScrn->PresParams)
       memcpy(&_pScrn->PresParams, pPresParams, sizeof(D3DPRESENT_PARAMETERS));
     if (pScrn)
       *pScrn = _pScrn;
@@ -2956,7 +2992,7 @@ check_cooperative_level() {
   switch(hr) {
   case D3DERR_DEVICENOTRESET:
     _bDXisReady = false;
-    hr=reset_d3d_device(&_pScrn->PresParams);
+    hr = reset_d3d_device(&_pScrn->PresParams);
     if (FAILED(hr)) {
       // I think this shouldnt fail unless I've screwed up the PresParams from the original working ones somehow
       dxgsg8_cat.error()

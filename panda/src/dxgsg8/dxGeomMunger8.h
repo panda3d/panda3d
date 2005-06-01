@@ -39,10 +39,16 @@ protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
                                                     const qpGeomVertexAnimationSpec &animation);
 
+  virtual int compare_to_impl(const qpGeomMunger *other) const;
+  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
+
 public:
   INLINE void *operator new(size_t size);
 
 private:
+  CPT(TextureAttrib) _texture;
+  CPT(TexGenAttrib) _tex_gen;
+
   static qpGeomMunger *_deleted_chain;
 
 public:

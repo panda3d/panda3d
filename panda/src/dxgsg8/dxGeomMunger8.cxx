@@ -49,8 +49,6 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   const qpGeomVertexColumn *vertex_type = orig->get_vertex_column();
   const qpGeomVertexColumn *normal_type = orig->get_normal_column(); 
   const qpGeomVertexColumn *color_type = orig->get_color_column();
-  const qpGeomVertexColumn *texcoord_type = 
-    orig->get_column(InternalName::get_texcoord());
 
   if (vertex_type != (const qpGeomVertexColumn *)NULL) {
     new_array_format->add_column
@@ -103,13 +101,36 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   }
 
   // To support multitexture, we will need to add all of the relevant
-  // texcoord types, and in the correct order (or at least in a known
-  // order).  For now, we just add the default texcoords only.
-  if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
-    new_array_format->add_column
-      (InternalName::get_texcoord(), texcoord_type->get_num_values(),
-       NT_float32, C_texcoord);
-    new_format->remove_column(texcoord_type->get_name());
+  // texcoord types, and in the correct order.
+
+  // Now set up each of the active texture coordinate stages--or at
+  // least those for which we're not generating texture coordinates
+  // automatically.
+
+  // Now copy all of the texture coordinates in, in order by stage
+  // index.  But we have to reuse previous columns.
+  typedef pset<const InternalName *> UsedStages;
+  UsedStages used_stages;
+
+  int num_stages = _texture->get_num_on_stages();
+  for (int i = 0; i < num_stages; ++i) {
+    TextureStage *stage = _texture->get_on_stage(i);
+
+    const InternalName *name = stage->get_texcoord_name();
+    if (used_stages.insert(name).second) {
+      // This is the first time we've encountered this texcoord name.
+      const qpGeomVertexColumn *texcoord_type = orig->get_column(name);
+
+      if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
+        new_array_format->add_column
+          (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+      } else {
+        // We have to add something as a placeholder, even if the
+        // texture coordinates aren't defined.
+        new_array_format->add_column(name, 2, NT_float32, C_texcoord);
+      }
+      new_format->remove_column(name);
+    }
   }
 
   if (new_array_format->is_data_subset_of(*orig->get_array(0))) {
@@ -122,4 +143,49 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   // up is first in the list.
   new_format->insert_array(0, new_array_format);
   return qpGeomVertexFormat::register_format(new_format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger8::compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int DXGeomMunger8::
+compare_to_impl(const qpGeomMunger *other) const {
+  const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
+  if (_texture != om->_texture) {
+    return _texture < om->_texture ? -1 : 1;
+  }
+  if (_tex_gen != om->_tex_gen) {
+    return _tex_gen < om->_tex_gen ? -1 : 1;
+  }
+
+  return StandardMunger::compare_to_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger8::geom_compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int DXGeomMunger8::
+geom_compare_to_impl(const qpGeomMunger *other) const {
+  // Unlike GLGeomMunger, we do consider _texture and _tex_gen
+  // important for this purpose, since they control the number and
+  // order of texture coordinates we might put into the FVF.
+  const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
+  if (_texture != om->_texture) {
+    return _texture < om->_texture ? -1 : 1;
+  }
+  if (_tex_gen != om->_tex_gen) {
+    return _tex_gen < om->_tex_gen ? -1 : 1;
+  }
+
+  return StandardMunger::geom_compare_to_impl(other);
 }
