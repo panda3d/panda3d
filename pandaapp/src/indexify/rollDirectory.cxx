@@ -578,6 +578,11 @@ copy_reduced(const Filename &archive_dir) {
 
   Filename reduced_dir(archive_dir, "reduced/" + _dir.get_basename());
 
+  if (!reduced_dir.exists()) {
+    cerr << "Ignoring " << reduced_dir << "; does not exist.\n";
+    return true;
+  }
+
   if (_got_ds_file) {
     if (!copy_file(_ds_filename, reduced_dir)) {
       return false;
