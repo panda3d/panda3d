@@ -1504,6 +1504,9 @@ reset() {
       << "\nMaxVertexIndex = " << d3d_caps.MaxVertexIndex
       << "\nMaxStreams = " << d3d_caps.MaxStreams
       << "\nMaxStreamStride = " << d3d_caps.MaxStreamStride
+      << "\nD3DTEXOPCAPS_MULTIPLYADD = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0)
+      << "\nD3DTEXOPCAPS_LERP = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0)
+      << "\nD3DPMISCCAPS_TSSARGTEMP = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0)
       << "\n";
   }
 
@@ -1556,9 +1559,9 @@ reset() {
 
   _last_testcooplevel_result = D3D_OK;
 
-  for(int i = 0;i<MAX_POSSIBLE_TEXFMTS;i++) {
+  for(int i = 0; i < MAX_POSSIBLE_TEXFMTS; i++) {
     // look for all possible DX8 texture fmts
-    D3DFORMAT_FLAG fmtflag = D3DFORMAT_FLAG(1<<i);
+    D3DFORMAT_FLAG fmtflag = D3DFORMAT_FLAG(1 << i);
     hr = _screen->_d3d8->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format,
                                           0x0, D3DRTYPE_TEXTURE, g_D3DFORMATmap[fmtflag]);
     if (SUCCEEDED(hr)){
@@ -2829,16 +2832,28 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
-    // since I'm making up 'add' mode, use modulate.  "adding" alpha
-    // never makes sense right?
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_blend:
-    dxgsg8_cat.error()
-      << "Impossible to emulate GL_BLEND in DX exactly.\n";
+  case TextureStage::M_blend_color_scale:
+    {
+      // DX only supports one TEXTUREFACTOR color for the whole
+      // pipeline, so you can't reliably have two different blends in
+      // effect with different colors on the same object.  Oh well.
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_LERP);
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+      D3DCOLOR texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
+      _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, texture_factor);
+      
+      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
+      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+    }
     break;
 
   default:
