@@ -315,17 +315,17 @@ flush() {
     return false;
   }
 
-#ifdef HAVE_NSPR
+  #ifdef HAVE_NSPR
   if (_nspr_conn) {
     return _nspr_conn->flush();
   }
-#endif  // HAVE_NSPR
+  #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+  #ifdef HAVE_SSL
   if (_http_conn) {
     return _http_conn->flush();
   }
-#endif  // HAVE_SSL
+  #endif  // HAVE_SSL
 
   return false;
 }
@@ -337,20 +337,20 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 disconnect() {
-#ifdef HAVE_NSPR
+  #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _qcm.close_connection(_nspr_conn);
     _nspr_conn = NULL;
   }
-#endif  // HAVE_NSPR
+  #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+  #ifdef HAVE_SSL
   if (_http_conn) {
     _http_conn->close();
     delete _http_conn;
     _http_conn = NULL;
   }
-#endif  // HAVE_SSL
+  #endif  // HAVE_SSL
 
   _simulated_disconnect = false;
 }
@@ -363,7 +363,7 @@ disconnect() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 do_check_datagram() {
-#ifdef HAVE_NSPR
+  #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _nspr_conn->consider_flush();
     if (_qcr.get_overflow_flag()) {
@@ -372,14 +372,14 @@ do_check_datagram() {
     }
     return (_qcr.data_available() && _qcr.get_data(_dg));
   }
-#endif  // HAVE_NSPR
+  #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+  #ifdef HAVE_SSL
   if (_http_conn) {
     _http_conn->consider_flush();
     return _http_conn->receive_datagram(_dg);
   }
-#endif  // HAVE_SSL
+  #endif  // HAVE_SSL
 
   return false;
 }
@@ -396,7 +396,7 @@ do_check_datagram() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 handle_update_field() {
-#ifdef HAVE_PYTHON
+  #ifdef HAVE_PYTHON
   PStatTimer timer(_update_pcollector);
   unsigned int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) {
@@ -437,7 +437,7 @@ handle_update_field() {
       }
     }
   }
-#endif  // HAVE_PYTHON  
+  #endif  // HAVE_PYTHON  
 
   return true;
 }
@@ -480,7 +480,7 @@ describe_message(ostream &out, const string &prefix,
     do_id = packer.raw_unpack_uint32();
     DCClass *dclass = NULL;
 
-#ifdef HAVE_PYTHON
+    #ifdef HAVE_PYTHON
     if (_python_repository != (PyObject *)NULL) {
       PyObject *doId2do =
         PyObject_GetAttrString(_python_repository, "doId2do");
@@ -507,7 +507,7 @@ describe_message(ostream &out, const string &prefix,
         Py_DECREF(dclass_this);
       }
     }
-#endif  // HAVE_PYTHON  
+    #endif  // HAVE_PYTHON  
 
     int field_id = packer.raw_unpack_uint16();
 
