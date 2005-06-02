@@ -25,9 +25,12 @@
 INLINE DXGeomMunger8::
 DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
-  _texture(state->get_texture()->filter_to_max(gsg->get_max_texture_stages())),
+  _texture(state->get_texture()),
   _tex_gen(state->get_tex_gen())
 {
+  if (_texture != (TextureAttrib *)NULL) {
+    _texture = _texture->filter_to_max(gsg->get_max_texture_stages());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
