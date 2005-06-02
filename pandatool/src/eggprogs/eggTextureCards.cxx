@@ -134,6 +134,14 @@ EggTextureCards() : EggWriter(true, true) {
      "frame rate of that texture flip.",
      &EggTextureCards::dispatch_double, NULL, &_frame_rate);
 
+  add_option
+    ("noexist", "", 0,
+     "Don't treat it as an error if the input file references pathnames "
+     "(e.g. textures) that don't exist.  Normally, this will be flagged as "
+     "an error and the command aborted; with this option, an egg file will "
+     "be generated anyway, referencing pathnames that do not exist.",
+     &EggTextureCards::dispatch_none, &_noexist);
+
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
@@ -294,6 +302,7 @@ void EggTextureCards::
 run() {
   // First, create an enclosing group and a vertex pool with four
   // vertices.  We can use the same four vertices on all polygons.
+  bool all_ok = true;
 
   EggGroup *group = new EggGroup();
   _data->add_child(group);
@@ -339,15 +348,22 @@ run() {
     LVecBase4d geometry;
     int num_channels;
     bool texture_ok = scan_texture(filename, geometry, num_channels);
+    if (!texture_ok) {
+      all_ok = false;
+    }
+
+    if (_got_pixel_scale) {
+      if (texture_ok) {
+        make_vertices(geometry, vpool, v1, v2, v3, v4);
+      } else {
+        make_vertices(_polygon_geometry, vpool, v1, v2, v3, v4);
+      }
+    }
+
+    EggTexture *tref = new EggTexture(name, filename);
+    tref->set_wrap_mode(_wrap_mode);
 
     if (texture_ok) {
-      if (_got_pixel_scale) {
-        make_vertices(geometry, vpool, v1, v2, v3, v4);
-      }
-
-      EggTexture *tref = new EggTexture(name, filename);
-      tref->set_wrap_mode(_wrap_mode);
-
       switch (num_channels) {
       case 1:
         tref->set_format(_format_1);
@@ -365,33 +381,39 @@ run() {
         tref->set_format(_format_4);
         break;
       }
-
-      if (tref->get_format() == EggTexture::F_unspecified) {
-        tref->set_format(_format);
-      }
-      group->add_child(tref);
-
-      // Each polygon gets placed in its own sub-group.  This will make
-      // pulling them out by name at runtime possible.
-      EggGroup *sub_group = new EggGroup(name);
-      group->add_child(sub_group);
-      EggPolygon *poly = new EggPolygon();
-      sub_group->add_child(poly);
-      poly->set_texture(tref);
-      poly->set_color(_polygon_color);
-      if (_apply_bface){
-        poly->set_bface_flag(1);
-      }
-
-      poly->add_vertex(v1);
-      poly->add_vertex(v2);
-      poly->add_vertex(v3);
-      poly->add_vertex(v4);
     }
+
+    if (tref->get_format() == EggTexture::F_unspecified) {
+      tref->set_format(_format);
+    }
+
+    group->add_child(tref);
+
+    // Each polygon gets placed in its own sub-group.  This will make
+    // pulling them out by name at runtime possible.
+    EggGroup *sub_group = new EggGroup(name);
+    group->add_child(sub_group);
+    EggPolygon *poly = new EggPolygon();
+    sub_group->add_child(poly);
+    poly->set_texture(tref);
+    poly->set_color(_polygon_color);
+    if (_apply_bface){
+      poly->set_bface_flag(1);
+    }
+
+    poly->add_vertex(v1);
+    poly->add_vertex(v2);
+    poly->add_vertex(v3);
+    poly->add_vertex(v4);
   }
 
   // Done!
-  write_egg_file();
+  if (all_ok || _noexist) {
+    write_egg_file();
+  } else {
+    nout << "Some textures not found; not generating egg file.\n";
+    exit(1);
+  }
 }
 
 
