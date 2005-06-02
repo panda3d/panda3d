@@ -109,27 +109,29 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   // Now copy all of the texture coordinates in, in order by stage
   // index.  But we have to reuse previous columns.
-  typedef pset<const InternalName *> UsedStages;
-  UsedStages used_stages;
+  if (_texture != (TextureAttrib *)NULL) {
+    typedef pset<const InternalName *> UsedStages;
+    UsedStages used_stages;
 
-  int num_stages = _texture->get_num_on_stages();
-  for (int i = 0; i < num_stages; ++i) {
-    TextureStage *stage = _texture->get_on_stage(i);
-
-    const InternalName *name = stage->get_texcoord_name();
-    if (used_stages.insert(name).second) {
-      // This is the first time we've encountered this texcoord name.
-      const qpGeomVertexColumn *texcoord_type = orig->get_column(name);
-
-      if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
-        new_array_format->add_column
-          (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
-      } else {
-        // We have to add something as a placeholder, even if the
-        // texture coordinates aren't defined.
-        new_array_format->add_column(name, 2, NT_float32, C_texcoord);
+    int num_stages = _texture->get_num_on_stages();
+    for (int i = 0; i < num_stages; ++i) {
+      TextureStage *stage = _texture->get_on_stage(i);
+      
+      const InternalName *name = stage->get_texcoord_name();
+      if (used_stages.insert(name).second) {
+        // This is the first time we've encountered this texcoord name.
+        const qpGeomVertexColumn *texcoord_type = orig->get_column(name);
+        
+        if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
+          new_array_format->add_column
+            (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+        } else {
+          // We have to add something as a placeholder, even if the
+          // texture coordinates aren't defined.
+          new_array_format->add_column(name, 2, NT_float32, C_texcoord);
+        }
+        new_format->remove_column(name);
       }
-      new_format->remove_column(name);
     }
   }
 
