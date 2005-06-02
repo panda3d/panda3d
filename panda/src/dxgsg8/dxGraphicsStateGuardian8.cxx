@@ -2847,7 +2847,19 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-      D3DCOLOR texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
+
+      D3DCOLOR texture_factor;
+      if (stage->involves_color_scale() && _color_scale_enabled) {
+        Colorf color = stage->get_color();
+        color.set(color[0] * _current_color_scale[0],
+                  color[1] * _current_color_scale[1],
+                  color[2] * _current_color_scale[2],
+                  color[3] * _current_color_scale[3]);
+        _texture_involves_color_scale = true;
+        texture_factor = Colorf_to_D3DCOLOR(color);
+      } else {
+        texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
+      }
       _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, texture_factor);
       
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
