@@ -166,7 +166,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
                         lastLogicalZone = self.lastNonQuietZone
                     self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                     self.lastNonQuietZone = zoneId
-                #self.air.storeObjectLocation(self.doId, parentId, zoneId)
+                self.air.storeObjectLocation(self.doId, parentId, zoneId)
                 self.__location = (parentId, zoneId)
 
         # Set the initial values of parentId,zoneId
