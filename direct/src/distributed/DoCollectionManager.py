@@ -161,18 +161,39 @@ class DoCollectionManager:
                     distObj.dclass.getName(),
                     distObj.__dict__.get("name"))
 
-    def getDoList(self, parentId, zoneId=2):
+    def getDoList(self, parentId, zoneId=None, classType=None):
+        """
+        parentId is any distributed object id.
+        zoneId is a uint32, defaults to 2.
+        dclassName is a distributed class type, defaults to None.
+        
+        If dclassName is None then all objects in the zone are returned;
+        otherwise the list is filtered to only include objects of that type.
+        """
         parent=self.__doHierarchy.get(parentId)
         if parent is None:
             return []
-        return parent.get(zoneId, [])
+        if zoneId is None:
+            r = []
+            for zone in parent.values():
+                for obj in zone:
+                    r.append(obj)
+        else:
+            r = parent.get(zoneId, [])
+        if dclassName is not None:
+            a = []
+            for obj in r:
+                if isinstance(obj, classType):
+                    a.append(obj)
+            r = a
+        return r
 
     def countObjects(self, classType):
         # Counts the number of objects of the given type in the
         # repository (for testing purposes)
         count = 0;
         for dobj in self.doId2do.values():
-            if (isinstance(dobj, classType)):
+            if isinstance(dobj, classType):
                 count += 1
         return count
 
