@@ -11,6 +11,102 @@ class DoCollectionManager:
             #     { zoneIds : [child DistributedObject ids] }}
             self.__doHierarchy = {}
 
+    def doFind(self, str):
+        """
+        Returns list of distributed objects with matching str in value.
+        """
+        for value in self.doId2do.values():
+            if `value`.find(str) >= 0:
+                return value
+
+    def doFindAll(self, str):
+        """
+        Returns list of distributed objects with matching str in value.
+        """
+        matches = []
+        for value in self.doId2do.values():
+            if `value`.find(str) >= 0:
+                matches.append(value)
+        return matches
+
+    def getDoHierarchy(self):
+        return self.__doHierarchy
+
+    if __debug__:
+        def printObjects(self):
+            format="%10s %10s %10s %30s %20s"
+            title=format%("parentId", "zoneId", "doId", "dclass", "name")
+            print title
+            print '-'*len(title)
+            for distObj in self.doId2do.values():
+                print format%(
+                    distObj.__dict__.get("parentId"),
+                    distObj.__dict__.get("zoneId"),
+                    distObj.__dict__.get("doId"),
+                    distObj.dclass.getName(),
+                    distObj.__dict__.get("name"))
+
+    def getDoList(self, parentId, zoneId=None, classType=None):
+        """
+        parentId is any distributed object id.
+        zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
+            you're not sure which zone to use (0 is a bad/null zone and 
+            1 has had reserved use in the past as a no messages zone, while
+            2 has traditionally been a global, uber, misc stuff zone).
+        dclassType is a distributed class type filter, defaults 
+            to None (no filter).
+        
+        If dclassName is None then all objects in the zone are returned;
+        otherwise the list is filtered to only include objects of that type.
+        """
+        parent=self.__doHierarchy.get(parentId)
+        if parent is None:
+            return []
+        if zoneId is None:
+            r = []
+            for zone in parent.values():
+                for obj in zone:
+                    r.append(obj)
+        else:
+            r = parent.get(zoneId, [])
+        if classType is not None:
+            a = []
+            for obj in r:
+                if isinstance(obj, classType):
+                    a.append(obj)
+            r = a
+        return r
+
+    def countObjects(self, classType):
+        """
+        Counts the number of objects of the given type in the
+        repository (for testing purposes)
+        """
+        count = 0;
+        for dobj in self.doId2do.values():
+            if isinstance(dobj, classType):
+                count += 1
+        return count
+
+
+    def getAllOfType(self, type):
+        # Returns a list of all DistributedObjects in the repository
+        # of a particular type.
+        result = []
+        for obj in self.doId2do.values():
+            if isinstance(obj, type):
+                result.append(obj)
+        return result
+
+    def findAnyOfType(self, type):
+        # Searches the repository for any object of the given type.
+        for obj in self.doId2do.values():
+            if isinstance(obj, type):
+                return obj
+        return None
+
+    #----------------------------------
+
     def deleteDistributedObjects(self):
         # Get rid of all the distributed objects
         for doId in self.doId2do.keys():
@@ -27,14 +123,6 @@ class DoCollectionManager:
                 'zoneId2doIds table not empty: %s' % self.zoneId2doIds)
             self.zoneId2doIds = {}
 
-    def doFind(self, str):
-        """
-        Returns list of distributed objects with matching str in value.
-        """
-        for value in self.doId2do.values():
-            if `value`.find(str) >= 0:
-                return value
-
     if wantOtpServer:
         def handleObjectLocation(self, di):
             # CLIENT_OBJECT_LOCATION
@@ -43,8 +131,9 @@ class DoCollectionManager:
             zoneId = di.getUint32()
             obj = self.doId2do.get(doId)
             if obj is not None:
-                self.notify.info("handleObjectLocation: doId: %s parentId: %s zoneId: %s" %
-                                 (doId, parentId, zoneId))
+                self.notify.info(
+                    "handleObjectLocation: doId: %s parentId: %s zoneId: %s"%
+                    (doId, parentId, zoneId))
                 # Let the object finish the job
                 obj.setLocation(parentId, zoneId)
                 self.storeObjectLocation(doId, parentId, zoneId)
@@ -133,70 +222,7 @@ class DoCollectionManager:
             else:
                 # Just remove the object
                 objList.remove(objId)
-
-    def doFindAll(self, str):
-        """
-        Returns list of distributed objects with matching str in value.
-        """
-        matches = []
-        for value in self.doId2do.values():
-            if `value`.find(str) >= 0:
-                matches.append(value)
-        return matches
-
-    def getDoHierarchy(self):
-        return self.__doHierarchy
-
-    if __debug__:
-        def printObjects(self):
-            format="%10s %10s %10s %30s %20s"
-            title=format%("parentId", "zoneId", "doId", "dclass", "name")
-            print title
-            print '-'*len(title)
-            for distObj in self.doId2do.values():
-                print format%(
-                    distObj.__dict__.get("parentId"),
-                    distObj.__dict__.get("zoneId"),
-                    distObj.__dict__.get("doId"),
-                    distObj.dclass.getName(),
-                    distObj.__dict__.get("name"))
-
-    def getDoList(self, parentId, zoneId=None, classType=None):
-        """
-        parentId is any distributed object id.
-        zoneId is a uint32, defaults to 2.
-        dclassName is a distributed class type, defaults to None.
-        
-        If dclassName is None then all objects in the zone are returned;
-        otherwise the list is filtered to only include objects of that type.
-        """
-        parent=self.__doHierarchy.get(parentId)
-        if parent is None:
-            return []
-        if zoneId is None:
-            r = []
-            for zone in parent.values():
-                for obj in zone:
-                    r.append(obj)
-        else:
-            r = parent.get(zoneId, [])
-        if dclassName is not None:
-            a = []
-            for obj in r:
-                if isinstance(obj, classType):
-                    a.append(obj)
-            r = a
-        return r
-
-    def countObjects(self, classType):
-        # Counts the number of objects of the given type in the
-        # repository (for testing purposes)
-        count = 0;
-        for dobj in self.doId2do.values():
-            if isinstance(dobj, classType):
-                count += 1
-        return count
-
+    
     if wantOtpServer:
         def addDOToTables(self, do, location=None):
             assert self.notify.debugStateCall(self)
@@ -224,7 +250,6 @@ class DoCollectionManager:
                 assert do.doId not in self.zoneId2doIds.get(zoneId,{})
                 self.zoneId2doIds.setdefault(zoneId, {})
                 self.zoneId2doIds[zoneId][do.doId]=do
-
 
     if wantOtpServer:
         def removeDOFromTables(self, do):
@@ -330,19 +355,3 @@ class DoCollectionManager:
                 if isinstance(do, objClass):
                     doDict[doId] = do
             return doDict
-
-    def getAllOfType(self, type):
-        # Returns a list of all DistributedObjects in the repository
-        # of a particular type.
-        result = []
-        for obj in self.doId2do.values():
-            if isinstance(obj, type):
-                result.append(obj)
-        return result
-
-    def findAnyOfType(self, type):
-        # Searches the repository for any object of the given type.
-        for obj in self.doId2do.values():
-            if isinstance(obj, type):
-                return obj
-        return None
