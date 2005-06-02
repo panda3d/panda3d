@@ -351,10 +351,10 @@ class DistributedObject(PandaObject):
         def setLocation(self, parentId, zoneId):
             #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
             # The store must run first so we know the old location
-            #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
             self.parentId = parentId
             self.zoneId = zoneId
+            self.cr.storeObjectLocation(self.doId, parentId, zoneId)
 
             # Give the parent a chance to run code when a new child
             # sets location to it. For example, the parent may want to
