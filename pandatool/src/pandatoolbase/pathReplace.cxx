@@ -20,6 +20,7 @@
 #include "config_util.h"
 #include "config_pandatoolbase.h"
 #include "indent.h"
+#include "virtualFileSystem.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PathReplace::Constructor
@@ -58,6 +59,8 @@ match_path(const Filename &orig_filename,
   Filename match;
   bool got_match = false;
 
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     const Entry &entry = (*ei);
@@ -71,16 +74,16 @@ match_path(const Filename &orig_filename,
       if (new_filename.is_fully_qualified()) {
         // If the resulting filename is fully qualified, it's a match
         // if and only if it exists.
-        if (new_filename.exists()) {
+        if (vfs->exists(new_filename)) {
           return new_filename;
         }
         
       } else {
         // Otherwise, if it's a relative filename, attempt to look it
         // up on the search path.
-        if (new_filename.resolve_filename(_path) ||
-            new_filename.resolve_filename(additional_path) ||
-            new_filename.resolve_filename(get_model_path())) {
+        if (vfs->resolve_filename(new_filename, _path) ||
+            vfs->resolve_filename(new_filename, additional_path) ||
+            vfs->resolve_filename(new_filename, get_model_path())) {
           // Found it!
           if (_path_store == PS_keep) {
             // If we asked to "keep" the pathname, we return the
@@ -129,9 +132,9 @@ match_path(const Filename &orig_filename,
   // is.
   if (_path_store != PS_keep) {
     Filename new_filename = orig_filename;
-    if (new_filename.resolve_filename(_path) ||
-        new_filename.resolve_filename(additional_path) ||
-        new_filename.resolve_filename(get_model_path())) {
+    if (vfs->resolve_filename(new_filename, _path) ||
+        vfs->resolve_filename(new_filename, additional_path) ||
+        vfs->resolve_filename(new_filename, get_model_path())) {
       // Found it!
       return new_filename;
     }
