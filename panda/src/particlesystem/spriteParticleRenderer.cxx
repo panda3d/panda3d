@@ -41,11 +41,15 @@ SpriteParticleRenderer(Texture *tex) :
   _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _ll_uv(0.0f, 0.0f),
   _ur_uv(1.0f, 1.0f),
+  _height(1.0f),
+  _width(1.0f),
   _initial_x_scale(0.02f),
   _final_x_scale(0.02f),
   _initial_y_scale(0.02f),
   _final_y_scale(0.02f),
   _theta(0.0f),
+  _base_y_scale(1.0f),
+  _aspect_ratio(1.0f),
   _animate_x_ratio(false),
   _animate_y_ratio(false),
   _animate_theta(false),
@@ -144,36 +148,57 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
   nassertv(gnode->get_num_geoms() > 0);
   const Geom *geom = gnode->get_geom(0);
 
-  TexCoordf min_uv, max_uv;
-  Vertexf min_xyz, max_xyz;
+  bool got_texcoord = false;
+  TexCoordf min_uv(0.0f, 0.0f);
+  TexCoordf max_uv(0.0f, 0.0f);
+
+  bool got_vertex = false;
+  Vertexf min_xyz(0.0f, 0.0f, 0.0f);
+  Vertexf max_xyz(0.0f, 0.0f, 0.0f);
 
   if (geom->is_qpgeom()) {
     const qpGeom *qpgeom = DCAST(qpGeom, geom);
-    qpGeomVertexReader texcoord(qpgeom->get_vertex_data());
-    qpGeomVertexReader vertex(qpgeom->get_vertex_data());
-
-    if (texcoord.has_column() && vertex.has_column()) {
-      bool found_any = false;
+    qpGeomVertexReader texcoord(qpgeom->get_vertex_data(),
+                                InternalName::get_texcoord());
+    if (texcoord.has_column()) {
       for (int pi = 0; pi < qpgeom->get_num_primitives(); ++pi) {
         const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
         for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
           int vert = primitive->get_vertex(vi);
           texcoord.set_row(vert);
-          vertex.set_row(vert);
           
-          if (!found_any) {
+          if (!got_texcoord) {
             min_uv = max_uv = texcoord.get_data2f();
-            min_xyz = max_xyz = vertex.get_data3f();
+            got_texcoord = true;
             
           } else {
             const LVecBase2f &uv = texcoord.get_data2f();
-            const LVecBase3f &xyz = vertex.get_data3f();
             
             min_uv[0] = min(min_uv[0], uv[0]);
             max_uv[0] = max(max_uv[0], uv[0]);
             min_uv[1] = min(min_uv[1], uv[1]);
             max_uv[1] = max(max_uv[1], uv[1]);
+          }
+        }
+      }
+    }
+
+    qpGeomVertexReader vertex(qpgeom->get_vertex_data(),
+                              InternalName::get_vertex());
+    if (vertex.has_column()) {
+      for (int pi = 0; pi < qpgeom->get_num_primitives(); ++pi) {
+        const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
+        for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
+          int vert = primitive->get_vertex(vi);
+          vertex.set_row(vert);
+          
+          if (!got_vertex) {
+            min_xyz = max_xyz = vertex.get_data3f();
+            got_vertex = true;
             
+          } else {
+            const LVecBase3f &xyz = vertex.get_data3f();
+
             min_xyz[0] = min(min_xyz[0], xyz[0]);
             max_xyz[0] = max(max_xyz[0], xyz[0]);
             min_xyz[1] = min(min_xyz[1], xyz[1]);
@@ -202,6 +227,9 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
         << geom_node_path << " has no vertices in its first Geom.\n";
       return;
     }
+
+    got_texcoord = true;
+    got_vertex = true;
     
     Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
     Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -238,20 +266,26 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
   set_ll_uv(min_uv);
   set_ur_uv(max_uv);
 
-  float width = max_xyz[0] - min_xyz[0];
-  float height = max(max_xyz[1] - min_xyz[1],
-                     max_xyz[2] - min_xyz[2]);
-
-  if (size_from_texels) {
-    // If size_from_texels is true, we get the particle size from the
-    // number of texels in the source image.
-    float y_texels = _texture->get_y_size() * fabs(_ur_uv[1] - _ll_uv[1]);
-    set_size(y_texels * width / height, y_texels);
+  if (got_vertex) {
+    float width = max_xyz[0] - min_xyz[0];
+    float height = max(max_xyz[1] - min_xyz[1],
+                       max_xyz[2] - min_xyz[2]);
+    
+    if (size_from_texels && got_texcoord) {
+      // If size_from_texels is true, we get the particle size from the
+      // number of texels in the source image.
+      float y_texels = _texture->get_y_size() * fabs(_ur_uv[1] - _ll_uv[1]);
+      set_size(y_texels * width / height, y_texels);
+      
+    } else {
+      // If size_from_texels is false, we get the particle size from
+      // the size of the polygon.
+      set_size(width, height);
+    }
 
   } else {
-    // If size_from_texels is false, we get the particle size from
-    // the size of the polygon.
-    set_size(width, height);
+    // With no vertices, just punt.
+    set_size(1.0f, 1.0f);
   }
 
   _source_type = ST_from_node;

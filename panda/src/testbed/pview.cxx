@@ -138,12 +138,13 @@ void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
 
+  /*
   SceneGraphReducer gr;
   gr.collect_vertex_data(framework.get_models().node());
   gr.unify(framework.get_models().node());
   gr.make_nonindexed(framework.get_models().node());
+  */
 
-  /*
   static int count = 0;
 
   static PT(TextureStage) ts;
@@ -189,7 +190,6 @@ event_0(CPT_Event event, void *) {
     }
   }
   count++;
-  */
 }
 
 void 

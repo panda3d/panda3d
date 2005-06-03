@@ -2194,6 +2194,12 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
                       const qpGeomVertexData *vertex_data) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "begin_draw_primitives: " << *vertex_data << "\n";
+  }
+#endif  // NDEBUG
+
   if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
@@ -2514,6 +2520,12 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_triangles: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
 
@@ -2542,6 +2554,12 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_tristrips: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
   if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
@@ -2607,6 +2625,12 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_trifans(const qpGeomTrifans *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_trifans: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
   // Send the individual triangle fans.  There's no connecting fans
   // with degenerate vertices, so no worries about that.
   CPTA_int ends = primitive->get_ends();
@@ -2650,6 +2674,12 @@ draw_trifans(const qpGeomTrifans *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_lines(const qpGeomLines *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_lines: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -2677,6 +2707,12 @@ draw_lines(const qpGeomLines *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_linestrips(const qpGeomLinestrips *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_linestrips: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2686,6 +2722,12 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_points(const qpGeomPoints *primitive) {
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_points: " << *primitive << "\n";
+  }
+#endif  // NDEBUG
+
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -2976,16 +3018,18 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
         << "copying " << num_bytes
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
-    if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
-      _glBufferData(GL_ARRAY_BUFFER, num_bytes,
-                    gvbc->get_data()->get_data(), 
-                    get_usage(gvbc->get_data()->get_usage_hint()));
-
-    } else {
-      _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
-                       gvbc->get_data()->get_data());
+    if (num_bytes != 0) {
+      if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
+        _glBufferData(GL_ARRAY_BUFFER, num_bytes,
+                      gvbc->get_data()->get_data(), 
+                      get_usage(gvbc->get_data()->get_usage_hint()));
+        
+      } else {
+        _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
+                         gvbc->get_data()->get_data());
+      }
+      _data_transferred_pcollector.add_level(num_bytes);
     }
-    _data_transferred_pcollector.add_level(num_bytes);
     add_to_total_buffer_record(gvbc);
     gvbc->mark_loaded();
   }
@@ -3119,16 +3163,18 @@ apply_index_buffer(IndexBufferContext *ibc) {
         << "copying " << num_bytes
         << " bytes into index buffer " << gibc->_index << "\n";
     }
-    if (gibc->changed_size() || gibc->changed_usage_hint()) {
-      _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
-                    gibc->get_data()->get_data(), 
-                    get_usage(gibc->get_data()->get_usage_hint()));
-
-    } else {
-      _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
-                       gibc->get_data()->get_data());
+    if (num_bytes != 0) {
+      if (gibc->changed_size() || gibc->changed_usage_hint()) {
+        _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
+                      gibc->get_data()->get_data(), 
+                      get_usage(gibc->get_data()->get_usage_hint()));
+        
+      } else {
+        _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
+                         gibc->get_data()->get_data());
+      }
+      _data_transferred_pcollector.add_level(num_bytes);
     }
-    _data_transferred_pcollector.add_level(num_bytes);
     add_to_total_buffer_record(gibc);
     gibc->mark_loaded();
   }

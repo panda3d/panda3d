@@ -51,19 +51,18 @@ induce_labor() {
 INLINE void ParticleSystem::
 clear_to_initial() {
   BaseParticle *bp;
-  int index;
   int i;
 
   //int particle_pool_size = _particle_pool_size;
   //resize_pool(0);
   //resize_pool(particle_pool_size);
 
-  for(i = 0; i < _physics_objects.size(); i++)
-    {
-      bp = (BaseParticle *)_physics_objects[i].p();
-      if(bp->get_alive())
-        kill_particle(i);
+  for(i = 0; i < (int)_physics_objects.size(); i++) {
+    bp = (BaseParticle *)_physics_objects[i].p();
+    if(bp->get_alive()) {
+      kill_particle(i);
     }
+  }
 }
 
 ////             ///////////////////////////////////////////////////////
