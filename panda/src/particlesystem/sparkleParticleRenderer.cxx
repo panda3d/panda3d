@@ -162,21 +162,25 @@ init_geoms() {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
-
-  if (!ttl_particles)
+  if (!ttl_particles) {
     return;
+  }
 
   BaseParticle *cur_particle;
 
   int remaining_particles = ttl_particles;
   int i;
 
-  Vertexf *cur_vert = &_vertex_array[0];
-  Colorf *cur_color = &_color_array[0];
+  Vertexf *cur_vert = NULL;
+  Colorf *cur_color = NULL;
   qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
   qpGeomVertexWriter color(_vdata, InternalName::get_color());
   if (use_qpgeom) {
     _lines->clear_vertices();
+
+  } else {
+    cur_vert = &_vertex_array[0];
+    cur_color = &_color_array[0];
   }
 
   // init the aabb
@@ -189,8 +193,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
-    if (cur_particle->get_alive() == false)
+    if (cur_particle->get_alive() == false) {
       continue;
+    }
 
     LPoint3f position = cur_particle->get_position();
 
