@@ -28,9 +28,9 @@ class DirectEntry(DirectFrame):
             ('state',           NORMAL,           None),
             ('entryFont',       None,             INITOPT),
             ('width',           10,               self.setup),
-            ('numLines',        5,                self.setup),
+            ('numLines',        1,                self.setup),
             ('focus',           0,                self.setFocus),
-            ('cursorKeys',      0,                self.setCursorKeysActive),
+            ('cursorKeys',      1,                self.setCursorKeysActive),
             ('obscured',        0,                self.setObscureMode),
             # Setting backgroundFocus allows the entry box to get keyboard
             # events that are not handled by other things (i.e. events that
@@ -162,3 +162,22 @@ class DirectEntry(DirectFrame):
         """ sets the entry's text, and moves the cursor to the end """
         self.set(text)
         self.setCursorPosition(len(self.get()))
+
+    def getBounds(self, state = 0):
+        # Compute the width and height for the entry itself, ignoring
+        # geometry etc.
+        lineHeight = self.onscreenText.textNode.getLineHeight()
+        numLines = self['numLines']
+        width = self['width']
+        self.ll.set(0.0, 0.0, -0.3 * lineHeight - (lineHeight * (numLines - 1)));
+        self.ur.set(width, 0.0, lineHeight * 1.3);
+
+        # Scale bounds to give a pad around graphics.  We also want to
+        # scale around the border width.
+        pad = self['pad']
+        borderWidth = self['borderWidth']
+        self.bounds = [self.ll[0] - pad[0] - borderWidth[0],
+                       self.ur[0] + pad[0] + borderWidth[0],
+                       self.ll[2] - pad[1] - borderWidth[1],
+                       self.ur[2] + pad[1] + borderWidth[1]]
+        return self.bounds
