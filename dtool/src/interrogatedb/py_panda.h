@@ -754,6 +754,8 @@ inline int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
 }
 
 
+
+
 inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
 {
     //  First try compare to function..
@@ -805,6 +807,96 @@ inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         return  1;
     return 0;   
 }
+
+
+#ifdef  PANDA_LIBRARY_NAME_libexpress
+#define DTOOL_CREATE_SUPPER_BASE    
+#endif
+
+#ifdef DTOOL_CREATE_SUPPER_BASE
+  
+class DTOOL_SUPPER_BASE
+{
+};
+Define_Module_Class_Private(pandaexpress,DTOOL_SUPPER_BASE,DTOOL_SUPPER_BASE,DTOOL_SUPPER_BASE);
+
+static PyObject * GetSupperBase(PyObject * self)
+{
+    Py_INCREF(&(Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject())); // order is important .. this is used for static functions
+    return  (PyObject *)&Dtool_DTOOL_SUPPER_BASE;
+};
+
+
+static PyMethodDef Dtool_Methods_DTOOL_SUPPER_BASE[]= {
+  { "DtoolGetSupperBase",(PyCFunction ) &GetSupperBase, METH_NOARGS,"Will Return SUPPERbase Class"},
+  { NULL, NULL }
+};
+
+static long  DTool_HashKey_Methods_DTOOL_SUPPER_BASE(PyObject * self)
+{
+    void * local_this =DTOOL_Call_GetPointerThis(self);
+    if(local_this == NULL)
+    {
+       return -1;
+    };
+    return (long)local_this;
+};
+
+
+inline void __cdecl Dtool_PyModuleClassInit_DTOOL_SUPPER_BASE(PyObject *module)
+{
+    static bool initdone = false;
+    if(!initdone)
+    {
+
+        initdone = true;
+        Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_dict = PyDict_New();
+        PyDict_SetItemString(Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_dict,"DtoolClassDict",Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_dict);
+
+        // __hash__
+        Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_hash = &DTool_HashKey_Methods_DTOOL_SUPPER_BASE;
+        Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;
+
+        if(PyType_Ready(&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject()) < 0)
+        {
+             PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPPER_BASE)");
+             printf(" Error In Dtool_DTOOL_SUPPER_BASE");
+             return;
+        }
+        Py_INCREF(&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject());
+
+        PyDict_SetItemString(Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject().tp_dict,"DtoolGetSupperBase",PyCFunction_New(&Dtool_Methods_DTOOL_SUPPER_BASE[0],&Dtool_DTOOL_SUPPER_BASE.As_PyObject()));
+
+    }
+
+    if(module != NULL)
+    {
+        Py_INCREF(&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject());
+        PyModule_AddObject(module, "DTOOL_SUPPER_BASE",(PyObject *)&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject());
+    }
+}
+
+inline void  * Dtool_DowncastInterface_DTOOL_SUPPER_BASE(void *from_this, Dtool_PyTypedObject *from_type)
+{
+    return (void *) NULL;
+}
+
+inline void  * Dtool_UpcastInterface_DTOOL_SUPPER_BASE(PyObject *self, Dtool_PyTypedObject *requested_type)
+{
+    return NULL;
+}
+
+int  Dtool_Init_DTOOL_SUPPER_BASE(PyObject *self, PyObject *args, PyObject *kwds)
+{
+       PyErr_SetString(PyExc_TypeError, "Error Can Not Init SUPPER BASE");
+       return -1;
+}
+
+
+#else
+IMPORT_THIS struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
+#endif // DTOOL_CREATE_SUPPER_BASE
+
 
 #endif // PY_PANDA_H_ 
 

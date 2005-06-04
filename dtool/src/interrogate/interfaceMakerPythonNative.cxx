@@ -702,7 +702,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
         {
             Function *func = (*fi);
-            std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
+            std::string fname =     "static int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
 
             write_function_for_name(out, func,fname,"",ClassName);
         }
@@ -915,8 +915,8 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
         if(!func->_itype.is_global() && isFunctionLegal(func))
         {
             {
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),"") << "\", &" 
-                    << func->_name << ", METH_VARARGS ," << func->_name << "_comment},\n";
+                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),"") << "\", (PyCFunction) &" 
+                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
             }
         }
     }  
@@ -973,42 +973,49 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__add__")
         {
             answer_location = "tp_as_number->nb_add";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__sub__")
         {
             answer_location = "tp_as_number->nb_subtract";
+            wraper_type = 3;
             return true;        
         }
 
         if(thimputstring == "__mul__")
         {
             answer_location = "tp_as_number->nb_multiply";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__div__")
         {
             answer_location = "tp_as_number->nb_divide";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__mod__")
         {
             answer_location = "tp_as_number->nb_remainder";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__lshift__")
         {
             answer_location = "tp_as_number->nb_lshift";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__rshift__")
         {
             answer_location = "tp_as_number->nb_rshift";
+            wraper_type = 3;
             return true;
         }
 
@@ -1016,6 +1023,7 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__xor__")
         {
             answer_location = "tp_as_number->nb_xor";
+            wraper_type = 3;
             return true;
         }
 
@@ -1023,12 +1031,14 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__and__")
         {
             answer_location = "tp_as_number->nb_and";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__or__")
         {
             answer_location = "tp_as_number->nb_or";
+            wraper_type = 3;
             return true;
         }
 
@@ -1036,30 +1046,35 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__iadd__")
         {
             answer_location = "tp_as_number->nb_inplace_add";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__isub__")
         {
             answer_location = "tp_as_number->nb_inplace_subtract";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__imul__")
         {
             answer_location = "tp_as_number->nb_inplace_multiply";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__idiv__")
         {
             answer_location = "tp_as_number->nb_inplace_divide";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__imod__")
         {
             answer_location = ".tp_as_number->nb_inplace_remainder";
+            wraper_type = 3;
             return true;
         }
 
@@ -1067,24 +1082,28 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__ilshift__")
         {
             answer_location = "tp_as_number->nb_inplace_lshift";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__irshift__")
         {
             answer_location = "tp_as_number->nb_inplace_rshift";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__iand__")
         {
             answer_location = "tp_as_number->nb_inplace_and";
+            wraper_type = 3;
             return true;
         }
 
         if(thimputstring == "__ixor__")
         {
             answer_location = "tp_as_number->nb_inplace_xor";
+            wraper_type = 3;
             return true;
         }
 
@@ -1105,6 +1124,7 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__getitem__")
         {
             answer_location = "tp_as_mapping->mp_subscript";
+            wraper_type = 3;
             return true;
         }
 
@@ -1112,7 +1132,7 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         if(thimputstring == "__call__")
         {
             answer_location = "tp_call";
-            wraper_type = 1;
+            //wraper_type = 1;
             return true;
         }
     }
@@ -1154,7 +1174,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
     out << "//********************************************************************\n";
     out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
     out << "//********************************************************************\n";
-        out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
+        out << "static PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
 
 
 
@@ -1171,8 +1191,8 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
             if(!GetSlotedFunctinDef( methodNameFromCppName( func->_ifunc.get_name(),export_calss_name),temp0,temp1))
             {
 
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\", &" 
-                    << func->_name << ", METH_VARARGS ," << func->_name << "_comment},\n";
+                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
                 if(!isFunctionWithThis(func))
                     static_functions[x] = func;
             }
@@ -1181,8 +1201,9 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 if(temp1 > 0)
                 {
                     wraped_Operator_functions[func] = std::pair< std::string, int>(temp0,temp1);
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\", &" 
-                    << func->_name << ", METH_VARARGS ," << func->_name << "_comment},\n";
+
+                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
                 if(!isFunctionWithThis(func))
                     static_functions[x] = func;
 
@@ -1191,8 +1212,8 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 {
                     normal_Operator_functions[func] = temp0;
 
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\", &" 
-                    << func->_name << ", METH_VARARGS ," << func->_name << "_comment},\n";
+                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
                 if(!isFunctionWithThis(func))
                     static_functions[x] = func;
                 }
@@ -1238,7 +1259,8 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
              }
         }
 
-
+        if(bases.empty())
+            bases.push_back("DTOOL_SUPPER_BASE");
 
 
         {
@@ -1252,7 +1274,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                     out << "//  Required TO Convert the calling Conventions.. \n";
                     out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
                     out << "//////////////////\n";
-                    out << "PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
+                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
                     out << "{\n";
                     out << "    return "<< func->_name <<"(self,args);\n";
                     out << "}\n\n";
@@ -1264,11 +1286,25 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                     out << "//  Required TO Convert the calling Conventions.. \n";
                     out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
                     out << "//////////////////\n";
-                    out << "PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self)\n";
+                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self)\n";
                     out << "{\n";
-                    out << "    return "<< func->_name <<"(self,Py_None);\n";
+                    out << "    return "<< func->_name <<"(self,Py_None,Py_None);\n";
                     out << "}\n\n";
                 }
+
+                if(rfi->second.second == 3)
+                {
+                    Function *func = rfi->first;
+                    out << "//////////////////\n";
+                    out << "//  Required TO Convert the calling Conventions.. \n";
+                    out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+                    out << "//////////////////\n";
+                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args)\n";
+                    out << "{\n";
+                    out << "    return "<< func->_name <<"(self,args,Py_None);\n";
+                    out << "}\n\n";
+                }
+
             }
 
             if(HasAGetKeyFunction(obj->_itype)) 
@@ -1596,7 +1632,7 @@ void InterfaceMakerPythonNative::write_prototype_for_name(ostream &out, Interfac
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_function_for_top(ostream &out, InterfaceMaker::Function *func, const std::string &PreProcess)
 {
-    std::string fname =     "PyObject *"+func->_name+"(PyObject *self, PyObject *args)";
+    std::string fname =     "static PyObject *"+func->_name+"(PyObject *self, PyObject *args,PyObject *kwds)";
 
     write_function_for_name(out,func,fname,PreProcess,"");
 }
@@ -1678,7 +1714,12 @@ void InterfaceMakerPythonNative::write_function_for_name(
 
         indent(out,4) << "int parameter_count = 1;\n";
         indent(out,4) << "if(PyTuple_Check(args))\n";
+        indent(out,4) << "{\n";
         indent(out,4) << "    parameter_count = PyTuple_Size(args);\n" ;
+        indent(out,4) << "    if(kwds != NULL && PyDict_Check(kwds))\n";
+        indent(out,4) << "          parameter_count += PyDict_Size(kwds);\n" ;
+        indent(out,4) << "}\n";
+
         indent(out,4) << "switch(parameter_count)\n";
         indent(out,4) << "{\n";
         bool constructor = false;
@@ -1901,6 +1942,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
                                                          FunctionRemap *remap, string &expected_params, int indent_level, bool errors_fatal, ostream &ForwardDeclrs, const std::string &functionnamestr, bool is_inplace) 
 {
   string format_specifiers;
+  std::string keyword_list;
   string parameter_list;
   string container;
   vector_string pexprs;
@@ -1937,7 +1979,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     // appropriate C++ type.  Normally this is just a cast.
     string pexpr_string =
       "(" + type->get_local_name(&parser) + ")" + param_name;
-    
+
+    if (!remap->_has_this ||pn != 0)
+        keyword_list += "\""+remap->_parameters[pn]._name + "\",";
+
     if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) 
     {
       if (TypeManager::is_char_pointer(orig_type)) {
@@ -2093,18 +2138,19 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   if(!format_specifiers.empty())
   {
       std::string format_specifiers1 = format_specifiers + ":" + functionnamestr;
+      indent(out,indent_level+4) <<  "char * key_word_list[] = {"<< keyword_list << "NULL};\n";
 
       if(remap->_parameters.size() == 1 || (remap->_has_this && remap->_parameters.size() == 2))
       {
         indent(out,indent_level+4) << "// Special Case to Make operator work \n";
-        indent(out,indent_level+4) << "if(PyTuple_Check(args))\n";
-        indent(out,indent_level+4) << "    (PyArg_ParseTuple(args, \"" << format_specifiers1<< "\"" << parameter_list << "));\n";
+        indent(out,indent_level+4) << "if(PyTuple_Check(args) || (kwds != NULL && PyDict_Check(kwds)))\n";
+        indent(out,indent_level+4) << "    (PyArg_ParseTupleAndKeywords(args,kwds, \"" << format_specifiers1<< "\",key_word_list" << parameter_list << "));\n";
         indent(out,indent_level+4) << "else\n";
         indent(out,indent_level+4) << "    (PyArg_Parse(args, \"" << format_specifiers1<< "\"" << parameter_list << "));\n";
         indent(out,indent_level+4) << "if(!PyErr_Occurred())\n";
       }
       else
-          indent(out,indent_level+4) << "if (PyArg_ParseTuple(args, \"" << format_specifiers1 << "\"" << parameter_list << "))\n";
+          indent(out,indent_level+4) << "if (PyArg_ParseTupleAndKeywords(args,kwds, \"" << format_specifiers1 << "\",key_word_list" << parameter_list << "))\n";
   }
   indent(out,indent_level+4) << "{\n";
 
@@ -2191,6 +2237,9 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       extra_indent_level-=4;
       indent(out,extra_indent_level)<< "}\n";
   }
+
+//    printf(" %s \n",keyword_list.c_str());
+
 
   indent(out,indent_level+4) << "}\n";
 }
@@ -2890,7 +2939,7 @@ bool InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_
                                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
                                 if(TypeManager::is_pointer_to_ostream(inst1->_type))
                                 {
-                                    inst1 = cppfunc->_parameters->_parameters[0];
+                                    inst1 = cppfunc->_parameters->_parameters[1];
                                     if(inst1->_initializer  != NULL)
                                         return true;
                                 }
@@ -2949,7 +2998,7 @@ bool InterfaceMakerPythonNative::NeedsAReprFunction(const InterrogateType &itype
                                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
                                 if(TypeManager::is_pointer_to_ostream(inst1->_type))
                                 {
-                                    inst1 = cppfunc->_parameters->_parameters[0];
+                                    inst1 = cppfunc->_parameters->_parameters[1];
                                     if(inst1->_initializer  != NULL)
                                         return true;
                                 }

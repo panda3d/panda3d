@@ -364,7 +364,11 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
   declaration_bodies << "#include <sstream>\n";
 
   if (build_python_native  )
+  {
+    if(library_name.size() > 1)
+        declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
     declaration_bodies << "#include \"py_panda.h\"  \n";
+  }
   declaration_bodies << "\n";
   
   IncludeFiles::const_iterator ifi;
