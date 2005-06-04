@@ -1618,6 +1618,11 @@ def randInt32(rng=random.random):
         i *= -1
     return i
 
+def randUint32(rng=random.random):
+    """returns a random integer in [0..2^32).
+    rng must return float in [0..1]"""
+    return long(rng() * 0xFFFFFFFFL)
+
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
     Items are accessible as instance.item, and are assigned unique,
