@@ -491,7 +491,7 @@ class GravityWalker(DirectObject.DirectObject):
             assert(self.isAirborne == 0)
             self.priorParent = Vec3.zero()
             if jump and self.mayJump:
-                # ...the jump button is down and we're close
+                # The jump button is down and we're close
                 # enough to the ground to jump.
                 self.lifter.addVelocity(self.avatarControlJumpForce)
                 messenger.send("jumpStart")

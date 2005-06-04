@@ -177,7 +177,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             height = 0.0
             #*#self.cRayTrav.traverse(render)
             if self.cRayQueue.getNumEntries() != 0:
-                # ...we have a floor.
+                # We have a floor.
                 # Choose the highest of the possibly several floors we're over:
                 self.cRayQueue.sortEntries()
                 floorPoint = self.cRayQueue.getEntry(0).getFromIntersectionPoint()
