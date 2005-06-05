@@ -32,12 +32,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
-  EggGroupUniquifier();
+  EggGroupUniquifier(bool filter_names = true);
 
   virtual string get_category(EggNode *node);
   virtual string filter_name(EggNode *node);
   virtual string generate_name(EggNode *node,
                                const string &category, int index);
+
+private:
+  bool _filter_names;
 
 public:
   static TypeHandle get_class_type() {

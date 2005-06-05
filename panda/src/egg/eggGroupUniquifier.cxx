@@ -29,10 +29,16 @@ TypeHandle EggGroupUniquifier::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupUniquifier::Constructor
 //       Access: Public
-//  Description:
+//  Description: If filter_names is true, then the group names will be
+//               coerced into a fairly safe, standard convention that
+//               uses no characters other than a-z, A-Z, 0-9, and
+//               underscore.  If filter_names is false, the group
+//               names will be left unchanged.
 ////////////////////////////////////////////////////////////////////
 EggGroupUniquifier::
-EggGroupUniquifier() {
+EggGroupUniquifier(bool filter_names)
+  : _filter_names(filter_names)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +68,9 @@ get_category(EggNode *node) {
 string EggGroupUniquifier::
 filter_name(EggNode *node) {
   string name = node->get_name();
+  if (!_filter_names) {
+    return name;
+  }
   nassertr(!name.empty(), string());
 
   string result;

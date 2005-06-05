@@ -141,7 +141,7 @@ convert_file(const Filename &filename) {
 
   if (_make_char) {
     // Now make sure that each joint has a unique name.
-    EggGroupUniquifier uniquifier;
+    EggGroupUniquifier uniquifier(false);
     uniquifier.uniquify(_dart_node);
   }
 
