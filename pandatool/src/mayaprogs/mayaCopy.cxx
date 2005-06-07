@@ -170,22 +170,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
     return false;
   }
 
-  // Get all the shaders so we can determine the set of textures.
-  _shaders.clear();
-  collect_shaders();
-  int num_shaders = _shaders.get_num_shaders();
-  for (int i = 0; i < num_shaders; i++) {
-    MayaShader *shader = _shaders.get_shader(i);
-    for (size_t j = 0; j < shader->_color.size(); j++) {
-      if (!extract_texture(*shader->get_color_def(j), dir)) {
-        return false;
-      }
-    }
-    if (!extract_texture(shader->_transparency, dir)) {
-      return false;
-    }
-  }
-
   // Get the set of externally referenced Maya files.
   MStringArray refs;
   MStatus status = MFileIO::getReferences(refs);
@@ -229,6 +213,22 @@ copy_maya_file(const Filename &source, const Filename &dest,
     maya_cat.info() << "executing command: " << execString << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
     MGlobal::executeCommand(MString(execString.c_str()));
+  }
+
+  // Get all the shaders so we can determine the set of textures.
+  _shaders.clear();
+  collect_shaders();
+  int num_shaders = _shaders.get_num_shaders();
+  for (int i = 0; i < num_shaders; i++) {
+    MayaShader *shader = _shaders.get_shader(i);
+    for (size_t j = 0; j < shader->_color.size(); j++) {
+      if (!extract_texture(*shader->get_color_def(j), dir)) {
+        return false;
+      }
+    }
+    if (!extract_texture(shader->_transparency, dir)) {
+      return false;
+    }
   }
 
   // Now write out the Maya file.
