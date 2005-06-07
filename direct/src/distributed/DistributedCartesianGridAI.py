@@ -39,7 +39,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         return [self.style, rule]
 
     # Reparent and setLocation on av to DistributedOceanGrid
-    def addObjectToGrid(self, av):
+    def addObjectToGrid(self, av, useZoneId=-1):
         print "setting parent to grid %s" % self
         avId = av.doId
         
@@ -49,7 +49,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         self.gridObjects[avId] = av
 
         # Put the avatar on the grid
-        self.handleAvatarZoneChange(av)
+        self.handleAvatarZoneChange(av, useZoneId)
 
         if not self.updateTaskStarted:
             self.startUpdateGridTask()
@@ -100,11 +100,17 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         task.delayTime = 1.0
         return Task.again
 
-    def handleAvatarZoneChange(self, av):
+    def handleAvatarZoneChange(self, av, useZoneId=-1):
         # Calculate zone id
         # Get position of av relative to this grid
-        pos = av.getPos(self)
-        zoneId = self.getZoneFromXYZ(pos)
+        if (useZoneId == -1):
+            pos = av.getPos(self)
+            zoneId = self.getZoneFromXYZ(pos)
+        else:
+            # zone already calcualte, position of object might not
+            # give the correct zone
+            pos = None
+            zoneId = useZoneId
 
         if not self.isValidZone(zoneId):
             self.notify.warning("%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %
