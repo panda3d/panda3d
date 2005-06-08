@@ -34,9 +34,7 @@ def enumerate(L):
     return zip(xrange(len(L)), L)
 
 import __builtin__
-if hasattr(__builtin__, 'enumerate'):
-    print 'enumerate is already present in __builtin__'
-else:
+if not hasattr(__builtin__, 'enumerate'):
     __builtin__.enumerate = enumerate
 
 def unique(L1, L2):
