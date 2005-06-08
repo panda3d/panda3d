@@ -154,6 +154,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             oldZoneId = self.zoneId
             if ((oldParentId != parentId) or
                 (oldZoneId != zoneId)):
+                #print "%s location is now %s, %s (%s)"%(self.doId, parentId, zoneId, self)
                 self.zoneId = zoneId
                 self.parentId = parentId
                 self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
@@ -355,8 +356,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        # we don't always have a parentId, e.g. DistributedAvatarManagerAI
-        #self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
+        self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
 
     if wantOtpServer:
         def generateInit(self, repository=None):
