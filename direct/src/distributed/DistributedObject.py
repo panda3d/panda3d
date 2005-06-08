@@ -193,6 +193,8 @@ class DistributedObject(PandaObject):
         """
         assert self.notify.debugStateCall(self)
         self.activeState = ESGenerating
+        # this has already been set at this point
+        #self.cr.storeObjectLocation(self.doId, self.parentId, self.zoneId)
 
     def generateInit(self):
         """
