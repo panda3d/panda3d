@@ -355,7 +355,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
+        # we don't always have a parentId, e.g. DistributedAvatarManagerAI
+        #self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
 
     if wantOtpServer:
         def generateInit(self, repository=None):
