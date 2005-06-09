@@ -6,8 +6,7 @@ from direct.showbase.PandaObject import *
 from direct.showbase.TkGlobal import *
 from Valuator import *
 from direct.task import Task
-import math
-import string
+import math,sys,string
 
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
@@ -46,13 +45,15 @@ class FloaterWidget(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
+        SystemButtonFace = 'Grey'
+        if (sys.platform == "win32"): SystemButtonFace='SystemButtonFace'
         optiondefs = (
             # Appearance
             ('width',           FLOATER_WIDTH,      INITOPT),
             ('height',          FLOATER_HEIGHT,     INITOPT),
             ('relief',          RAISED,             self.setRelief),
             ('borderwidth',     2,                  self.setBorderwidth),
-            ('background',      'SystemButtonFace', self.setBackground),
+            ('background',      SystemButtonFace,   self.setBackground),
             # Behavior
             # Initial value of floater, use self.set to change value
             ('value',           0.0,            INITOPT),

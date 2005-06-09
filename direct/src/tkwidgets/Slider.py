@@ -5,8 +5,7 @@ Slider Class: Velocity style controller for floating point values with
 from direct.showbase.TkGlobal import *
 from Valuator import *
 from direct.task import Task
-import math
-import string
+import math,sys,string
 import operator
 from pandac.PandaModules import ClockObject
 
@@ -84,12 +83,14 @@ class SliderWidget(Pmw.MegaWidget):
 
 	# Define the megawidget options.
 	INITOPT = Pmw.INITOPT
+        SystemButtonFace = 'Grey'
+        if (sys.platform == "win32"): SystemButtonFace='SystemButtonFace'
 	optiondefs = (
             # Appearance
 	    ('style',           VALUATOR_MINI,      INITOPT),
             ('relief',          RAISED,             self.setRelief),
             ('borderwidth',     2,                  self.setBorderwidth),
-            ('background',      'SystemButtonFace', self.setBackground),
+            ('background',      SystemButtonFace,   self.setBackground),
 	    ('fliparrow',       0,                  INITOPT),
             # Behavior
             # Bounds
