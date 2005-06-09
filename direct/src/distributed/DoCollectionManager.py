@@ -140,6 +140,16 @@ class DoCollectionManager:
             else:
                 self.notify.warning(
                     "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
+            
+        def handleSetLocation(self, di):
+            # This was initially added because creating a distributed quest
+            # object would cause a message like this to be generated.
+            assert self.notify.debugStateCall(self)
+            parentId = di.getUint32()
+            zoneId = di.getUint32()
+            distObj = self.doId2do.get(self.getMsgChannel())
+            if distObj is not None:
+                distObj.setLocation(parentId, zoneId)
 
         def storeObjectLocation(self, doId, parentId, zoneId):
             if (parentId is None) or (zoneId is None):
@@ -147,22 +157,23 @@ class DoCollectionManager:
                 return
             # TODO: check current location
             obj = self.doId2do.get(doId)
-            oldParentId = obj.parentId
-            oldZoneId = obj.zoneId
+            if obj is not None:
+                oldParentId = obj.parentId
+                oldZoneId = obj.zoneId
 
-            if oldParentId != parentId:
-                # Remove old location
-                parentZoneDict = self.__doHierarchy.get(oldParentId)
-                if parentZoneDict is not None:
-                    zoneDoSet = parentZoneDict.get(oldZoneId)
-                    if zoneDoSet is not None and doId in zoneDoSet:
-                        zoneDoSet.remove(doId)
-                        if len(zoneDoSet) == 0:
-                            del parentZoneDict[oldZoneId]
-            # Add to new location
-            parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
-            zoneDoSet = parentZoneDict.setdefault(zoneId, set())
-            zoneDoSet.add(doId)
+                if oldParentId != parentId:
+                    # Remove old location
+                    parentZoneDict = self.__doHierarchy.get(oldParentId)
+                    if parentZoneDict is not None:
+                        zoneDoSet = parentZoneDict.get(oldZoneId)
+                        if zoneDoSet is not None and doId in zoneDoSet:
+                            zoneDoSet.remove(doId)
+                            if len(zoneDoSet) == 0:
+                                del parentZoneDict[oldZoneId]
+                # Add to new location
+                parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
+                zoneDoSet = parentZoneDict.setdefault(zoneId, set())
+                zoneDoSet.add(doId)
 
             ## if oldParentId == parentId:
                 ## # Case 1: Same parent, new zone
