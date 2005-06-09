@@ -18,8 +18,8 @@ from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
-from SeGeometry import *
-from SeSelection import *
+from seGeometry import *
+from seSelection import *
 from tkFileDialog import *
 import os
 import string
