@@ -131,10 +131,7 @@ class AsyncRequest(DirectObject):
             context=self.air.allocateContext()
         self.accept(
             "doRequestResponse-%s"%(context,), self._checkCompletion, [name])
-        if values is None:
-            self.air.requestDatabaseGenerate(className, context)
-        else:
-            self.air.requestDatabaseGenerate2(className, context, values=values)
+        self.air.requestDatabaseGenerate(className, context, values=values)
 
     def finish(self):
         """
