@@ -160,6 +160,7 @@ def WriteFile(wfile,data):
         dsthandle = open(wfile, "wb")
         dsthandle.write(data)
         dsthandle.close()
+        updatefiledate(wfile)
     except: sys.exit("Cannot write "+wfile)
 
 def prettyTime(t):
@@ -183,7 +184,8 @@ def MakeDirectory(path):
 ##
 ## You might be tempted to change the defaults by editing them
 ## here.  Don't do it.  Instead, create a script that compiles
-## panda with your preferred options.
+## panda with your preferred options.  Or, create
+## a 'makepandaPreferences' file and put it into your python path.
 ##
 ########################################################################
 
@@ -199,7 +201,7 @@ THIRDPARTY="thirdparty"
 VERSION="0.0.0"
 VERBOSE=1
 COMPRESSOR="zlib"
-PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
+PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
@@ -207,6 +209,8 @@ DIRECTXSDK = None
 MAYASDK = {}
 MAXSDK = {}
 MAXSDKCS = {}
+PYTHONSDK=0
+STARTTIME=time.time()
 
 try:
     # If there is a makepandaPreferences.py, import it:
@@ -214,8 +218,6 @@ try:
 except ImportError:
     # If it's not there, no problem:
     pass
-
-STARTTIME=time.time()
 
 ##########################################################################################
 #
@@ -503,7 +505,7 @@ def parseopts(args):
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
-        "version=","lzma"]
+        "version=","lzma","no-python"]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
     for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
@@ -569,6 +571,8 @@ if (PREFIX.count(" ")  or THIRDPARTY.count(" ")):
   sys.exit("The --prefix and --thirdparty may not contain spaces")
 if (PREFIX.count('"')  or THIRDPARTY.count('"')):
   sys.exit("The --prefix and --thirdparty may not contain quotation marks")
+if (INSTALLER) and (OMIT.count("PYTHON")):
+  sys.exit("Cannot build installer without python")
 
 ########################################################################
 #
@@ -691,21 +695,12 @@ for version,key1,key2,subdir in MAXVERSIONS:
 ##
 ########################################################################
 
-if sys.platform == "win32":
-    PythonSDK="python2.2"
-    if 0: # Needs testing:
-        if   (os.path.isdir("C:/Python22")): PythonSDK = "C:/Python22"
-        elif (os.path.isdir("C:/Python23")): PythonSDK = "C:/Python23"
-        elif (os.path.isdir("C:/Python24")): PythonSDK = "C:/Python24"
-        elif (os.path.isdir("C:/Python25")): PythonSDK = "C:/Python25"
-        else: sys.exit("Cannot find the python SDK")
-else:
-    if   (os.path.isdir("/usr/include/python2.5")): PythonSDK = "/usr/include/python2.5"
-    elif (os.path.isdir("/usr/include/python2.4")): PythonSDK = "/usr/include/python2.4"
-    elif (os.path.isdir("/usr/include/python2.3")): PythonSDK = "/usr/include/python2.3"
-    elif (os.path.isdir("/usr/include/python2.2")): PythonSDK = "/usr/include/python2.2"
+if (OMIT.count("PYTHON")==0):
+    if   (os.path.isdir("/usr/include/python2.5")): PYTHONSDK = "/usr/include/python2.5"
+    elif (os.path.isdir("/usr/include/python2.4")): PYTHONSDK = "/usr/include/python2.4"
+    elif (os.path.isdir("/usr/include/python2.3")): PYTHONSDK = "/usr/include/python2.3"
+    elif (os.path.isdir("/usr/include/python2.2")): PYTHONSDK = "/usr/include/python2.2"
     else: sys.exit("Cannot find the python SDK")
-    # this is so that the user can find out which version of python was used.
 
 ########################################################################
 ##
@@ -872,15 +867,17 @@ MakeDirectory(PREFIX+"/bin")
 MakeDirectory(PREFIX+"/lib")
 MakeDirectory(PREFIX+"/etc")
 MakeDirectory(PREFIX+"/plugins")
-MakeDirectory(PREFIX+"/pandac")
-MakeDirectory(PREFIX+"/pandac/input")
 MakeDirectory(PREFIX+"/include")
 MakeDirectory(PREFIX+"/include/parser-inc")
 MakeDirectory(PREFIX+"/include/parser-inc/openssl")
 MakeDirectory(PREFIX+"/include/parser-inc/Cg")
 MakeDirectory(PREFIX+"/include/openssl")
-MakeDirectory(PREFIX+"/direct")
 MakeDirectory(PREFIX+"/tmp")
+
+if (OMIT.count("PYTHON")==0):
+    MakeDirectory(PREFIX+"/direct")
+    MakeDirectory(PREFIX+"/pandac")
+    MakeDirectory(PREFIX+"/pandac/input")
 
 ########################################################################
 ##
@@ -1092,7 +1089,6 @@ def CopyFile(dstfile,srcfile):
         if VERBOSE >= 1:
             print "Copying \"%s\" --> \"%s\""%(srcfile, dstfile)
         WriteFile(dstfile,ReadFile(srcfile))
-        updatefiledate(dstfile)
     ALLTARGETS.append(dstfile)
 
 ########################################################################
@@ -1183,13 +1179,13 @@ def checkIfNewDir(path):
         print "\nStarting compile in \"%s\" (%s):\n"%(path,prettyTime(time.time()-STARTTIME),)
     priorIPath=path
 
-def CompileC(obj=0,src=0,ipath=[],opts=[]):
+def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
     global VERBOSE
     if ((obj==0)|(src==0)): sys.exit("syntax error in CompileC directive")
     ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0): sys.exit("Cannot find source file "+src)
-    dep = CxxCalcDependencies(fullsrc, ipath, [])
+    dep = CxxCalcDependencies(fullsrc, ipath, []) + xdep
 
     if (COMPILER=="MSVC7"):
         wobj = PREFIX+"/tmp/"+obj
@@ -1197,7 +1193,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             if VERBOSE >= 0:
                 checkIfNewDir(ipath[1])
             cmd = "cl.exe /Fo" + wobj + " /nologo /c"
-            cmd = cmd + " /I" + PREFIX + "/python/include"
+            if (OMIT.count("PYTHON")==0): cmd = cmd + " /I" + PREFIX + "/python/include"
             if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
             for ver in ["MAYA5","MAYA6","MAYA65"]:
               if (opts.count(ver)): cmd = cmd + ' /I"' + MAYASDK[ver] + '/include"'
@@ -1228,7 +1224,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
                 checkIfNewDir(ipath[1])
             if (src[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
             else:                cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
-            cmd = cmd + ' -I"' + PythonSDK + '"'
+            if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
             if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/vrpn/include'
             if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fftw/include'
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fmod/include'
@@ -1286,11 +1282,15 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
     if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(files==0)):
         sys.exit("syntax error in Interrogate directive")
     ALLIN.append(outd)
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
     outd = PREFIX+"/pandac/input/"+outd
     outc = PREFIX+"/tmp/"+outc
+    if (OMIT.count("PYTHON")):
+        ConditionalWriteFile(outc,"")
+        return
+    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
     paths = xpaths(src+"/",files,"")
     dep = CxxCalcDependenciesAll(paths, ipath)
+    dep.append(PREFIX+"/tmp/dtool_have_python.dat")
     dotdots = ""
     for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
     building = 0
@@ -1348,8 +1348,12 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
     if ((outc==0)|(module==0)|(library==0)|(files==0)):
         sys.exit("syntax error in InterrogateModule directive")
     outc = PREFIX+"/tmp/"+outc
+    if (OMIT.count("PYTHON")):
+        ConditionalWriteFile(outc,"")
+        return
     files = xpaths(PREFIX+"/pandac/input/",files,"")
-    if (older(outc, files)):
+    dep = files + [PREFIX+"/tmp/dtool_have_python.dat"]
+    if (older(outc, dep)):
         global VERBOSE
         if VERBOSE >= 1:
             print "Generating Python-stub cxx file for %s"%(library,)
@@ -1434,7 +1438,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("NOLIBCI")): cmd = cmd + " /NODEFAULTLIB:LIBCI.LIB "
             if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/MaxEgg.def'
             cmd = cmd + ' /OUT:' + dll + ' /IMPLIB:' + lib + ' /MAP:NUL'
-            cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
+            if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
             for x in wobj: cmd = cmd + ' ' + x
             if (dll[-4:]==".exe"): cmd = cmd + ' ' + PREFIX + '/tmp/pandaIcon.res'
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
@@ -1616,7 +1620,7 @@ CxxIgnoreHeader["afxres.h"] = 1
 
 ##########################################################################################
 #
-# Generate pandaVersion.h
+# Generate pandaVersion.h, pythonversion, null.cxx
 #
 ##########################################################################################
 
@@ -1673,7 +1677,10 @@ conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
 
-ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PythonSDK))
+if (OMIT.count("PYTHON")==0):
+    ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PYTHONSDK))
+
+ConditionalWriteFile(PREFIX+"/tmp/null.cxx","")
 
 ##########################################################################################
 #
@@ -1700,7 +1707,8 @@ if    (os.path.isdir(srcdir1)): __path__[0] = srcdir1
 elif  (os.path.isdir(srcdir2)): __path__[0] = srcdir2
 else: sys.exit("Cannot find the 'direct' tree")
 """
-ConditionalWriteFile(PREFIX+'/direct/__init__.py', DIRECTINIT)
+if (OMIT.count("PYTHON")==0):
+    ConditionalWriteFile(PREFIX+'/direct/__init__.py', DIRECTINIT)
 
 ##########################################################################################
 #
@@ -1915,8 +1923,9 @@ for pkg in (PACKAGES + ["extras"]):
                 CopyAllFiles(PREFIX+"/lib/",THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib/")
 
 if (sys.platform == "win32"):
-    CopyTree(PREFIX+'/python',         'thirdparty/win-python')
-    CopyFile(PREFIX+'/bin/',           'thirdparty/win-python/python22.dll')
+    CopyFile(PREFIX+'/bin/', 'thirdparty/win-python/python22.dll')
+    if (OMIT.count("PYTHON")==0):
+        CopyTree(PREFIX+'/python', 'thirdparty/win-python')
 
 ########################################################################
 ##
@@ -1926,11 +1935,12 @@ if (sys.platform == "win32"):
 
 CopyFile(PREFIX+"/", "doc/LICENSE")
 CopyFile(PREFIX+"/", "doc/ReleaseNotes")
-CopyTree(PREFIX+'/Pmw', 'thirdparty/Pmw')
-CopyTree(PREFIX+'/epydoc', 'thirdparty/epydoc')
-CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".mel")
 CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".ms")
+if (OMIT.count("PYTHON")==0):
+    CopyTree(PREFIX+'/Pmw',         'thirdparty/Pmw')
+    CopyTree(PREFIX+'/epydoc',      'thirdparty/epydoc')
+    CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
 ########################################################################
 ##
@@ -1938,13 +1948,13 @@ CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".ms")
 ##
 ########################################################################
 
-IPATH=['direct/src/directbase']
-CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
-CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
-
-IPATH=['direct/src/directbase']
-CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
-CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/directbase']
+    CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
+    CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
+    IPATH=['direct/src/directbase']
+    CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
+    CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
 
 ########################################################################
 #
@@ -3698,10 +3708,12 @@ CompileC(ipath=IPATH, opts=OPTS, src='interrogatedb_composite2.cxx', obj='interr
 # DIRECTORY: dtool/metalibs/dtoolconfig/
 #
 
-IPATH=['dtool/metalibs/dtoolconfig']
+IPATH=['dtool/metalibs/dtoolconfig', PREFIX+"/tmp"]
 OPTS=['BUILDING_DTOOLCONFIG', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pydtool.cxx', obj='dtoolconfig_pydtool.obj')
+SRCFILE="pydtool.cxx"
+if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
+CompileC(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=[PREFIX+"/tmp/dtool_have_python.dat"])
 CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='libdtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
@@ -4874,165 +4886,164 @@ CompileLink(dll='pview.exe', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: direct/src/directbase/
 #
 
-IPATH=['direct/src/directbase']
-OPTS=['BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='directbase.cxx', obj='directbase_directbase.obj')
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/directbase']
+    OPTS=['BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='directbase.cxx', obj='directbase_directbase.obj')
 
 #
 # DIRECTORY: direct/src/dcparser/
 #
 
-CompileBison(pre='dcyy', dstc='dcParser.cxx', dsth='dcParser.h', src='direct/src/dcparser/dcParser.yxx')
-CompileFlex(pre='dcyy', dst='dcLexer.cxx', src='direct/src/dcparser/dcLexer.lxx', dashi=0)
-IPATH=['direct/src/dcparser']
-OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='dcparser_composite1.cxx', obj='dcparser_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dcparser_composite2.cxx', obj='dcparser_composite2.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dcParser.cxx', obj='dcparser_dcParser.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dcLexer.cxx', obj='dcparser_dcLexer.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', outc='libdcparser_igate.cxx',
-            src='direct/src/dcparser',  module='direct', library='libdcparser',
-            files=['dcAtomicField.h', 'dcClass.h', 'dcDeclaration.h', 'dcField.h', 'dcFile.h',
-            'dcLexerDefs.h', 'dcMolecularField.h', 'dcParserDefs.h', 'dcSubatomicType.h',
-            'dcPackData.h', 'dcPacker.h', 'dcPackerCatalog.h', 'dcPackerInterface.h',
-            'dcParameter.h', 'dcClassParameter.h', 'dcArrayParameter.h', 'dcSimpleParameter.h',
-            'dcSwitchParameter.h', 'dcNumericRange.h', 'dcSwitch.h', 'dcTypedef.h', 'dcPython.h',
-            'dcbase.h', 'dcindent.h', 'hashGenerator.h', 'primeNumberGenerator.h',
-            'dcparser_composite1.cxx', 'dcparser_composite2.cxx'])
-CompileC(ipath=IPATH, opts=OPTS, src='libdcparser_igate.cxx', obj='libdcparser_igate.obj')
+if (OMIT.count("PYTHON")==0):
+    CompileBison(pre='dcyy', dstc='dcParser.cxx', dsth='dcParser.h', src='direct/src/dcparser/dcParser.yxx')
+    CompileFlex(pre='dcyy', dst='dcLexer.cxx', src='direct/src/dcparser/dcLexer.lxx', dashi=0)
+    IPATH=['direct/src/dcparser']
+    OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='dcparser_composite1.cxx', obj='dcparser_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dcparser_composite2.cxx', obj='dcparser_composite2.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dcParser.cxx', obj='dcparser_dcParser.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dcLexer.cxx', obj='dcparser_dcLexer.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', outc='libdcparser_igate.cxx',
+                src='direct/src/dcparser',  module='direct', library='libdcparser',
+                files=['dcAtomicField.h', 'dcClass.h', 'dcDeclaration.h', 'dcField.h', 'dcFile.h',
+                'dcLexerDefs.h', 'dcMolecularField.h', 'dcParserDefs.h', 'dcSubatomicType.h',
+                'dcPackData.h', 'dcPacker.h', 'dcPackerCatalog.h', 'dcPackerInterface.h',
+                'dcParameter.h', 'dcClassParameter.h', 'dcArrayParameter.h', 'dcSimpleParameter.h',
+                'dcSwitchParameter.h', 'dcNumericRange.h', 'dcSwitch.h', 'dcTypedef.h', 'dcPython.h',
+                'dcbase.h', 'dcindent.h', 'hashGenerator.h', 'primeNumberGenerator.h',
+                'dcparser_composite1.cxx', 'dcparser_composite2.cxx'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libdcparser_igate.cxx', obj='libdcparser_igate.obj')
 
 #
 # DIRECTORY: direct/src/deadrec/
 #
 
-IPATH=['direct/src/deadrec']
-OPTS=['BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='deadrec_composite1.cxx', obj='deadrec_composite1.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libdeadrec.in', outc='libdeadrec_igate.cxx',
-            src='direct/src/deadrec',  module='direct', library='libdeadrec',
-            files=['smoothMover.h', 'deadrec_composite1.cxx'])
-CompileC(ipath=IPATH, opts=OPTS, src='libdeadrec_igate.cxx', obj='libdeadrec_igate.obj')
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/deadrec']
+    OPTS=['BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='deadrec_composite1.cxx', obj='deadrec_composite1.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libdeadrec.in', outc='libdeadrec_igate.cxx',
+                src='direct/src/deadrec',  module='direct', library='libdeadrec',
+                files=['smoothMover.h', 'deadrec_composite1.cxx'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libdeadrec_igate.cxx', obj='libdeadrec_igate.obj')
 
 #
 # DIRECTORY: direct/src/distributed/
 #
 
-IPATH=['direct/src/distributed', 'direct/src/dcparser']
-OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'SSL', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='config_distributed.cxx', obj='distributed_config_distributed.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distributed_cConnectionRepository.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cDistributedSmoothNodeBase.cxx', obj='distributed_cDistributedSmoothNodeBase.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libdistributed.in', outc='libdistributed_igate.cxx',
-            src='direct/src/distributed',  module='direct', library='libdistributed',
-            files=['config_distributed.cxx', 'config_distributed.h', 'cConnectionRepository.cxx',
-            'cConnectionRepository.h', 'cDistributedSmoothNodeBase.cxx', 'cDistributedSmoothNodeBase.h'])
-CompileC(ipath=IPATH, opts=OPTS, src='libdistributed_igate.cxx', obj='libdistributed_igate.obj')
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/distributed', 'direct/src/dcparser']
+    OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'SSL', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='config_distributed.cxx', obj='distributed_config_distributed.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distributed_cConnectionRepository.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='cDistributedSmoothNodeBase.cxx', obj='distributed_cDistributedSmoothNodeBase.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libdistributed.in', outc='libdistributed_igate.cxx',
+                src='direct/src/distributed',  module='direct', library='libdistributed',
+                files=['config_distributed.cxx', 'config_distributed.h', 'cConnectionRepository.cxx',
+                'cConnectionRepository.h', 'cDistributedSmoothNodeBase.cxx', 'cDistributedSmoothNodeBase.h'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libdistributed_igate.cxx', obj='libdistributed_igate.obj')
 
 #
 # DIRECTORY: direct/src/interval/
 #
 
-IPATH=['direct/src/interval']
-OPTS=['BUILDING_DIRECT', 'NSPR']
-#CompileC(ipath=IPATH, opts=OPTS, src='config_interval.cxx', obj='interval_config_interval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cInterval.cxx', obj='interval_cInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cIntervalManager.cxx', obj='interval_cIntervalManager.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cLerpInterval.cxx', obj='interval_cLerpInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cLerpNodePathInterval.cxx', obj='interval_cLerpNodePathInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cLerpAnimEffectInterval.cxx', obj='interval_cLerpAnimEffectInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='cMetaInterval.cxx', obj='interval_cMetaInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='hideInterval.cxx', obj='interval_hideInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='showInterval.cxx', obj='interval_showInterval.obj')
-#CompileC(ipath=IPATH, opts=OPTS, src='waitInterval.cxx', obj='interval_waitInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='interval_composite1.cxx', obj='interval_composite1.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libinterval.in', outc='libinterval_igate.cxx',
-            src='direct/src/interval',  module='direct', library='libinterval',
-            files=['config_interval.cxx', 'config_interval.h', 'cInterval.cxx', 'cInterval.h',
-            'cIntervalManager.cxx', 'cIntervalManager.h', 'cLerpInterval.cxx', 'cLerpInterval.h',
-            'cLerpNodePathInterval.cxx', 'cLerpNodePathInterval.h', 'cLerpAnimEffectInterval.cxx',
-            'cLerpAnimEffectInterval.h', 'cMetaInterval.cxx', 'cMetaInterval.h', 'hideInterval.cxx',
-            'hideInterval.h', 'showInterval.cxx', 'showInterval.h', 'waitInterval.cxx', 'waitInterval.h',
-            'lerp_helpers.h'])
-CompileC(ipath=IPATH, opts=OPTS, src='libinterval_igate.cxx', obj='libinterval_igate.obj')
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/interval']
+    OPTS=['BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='interval_composite1.cxx', obj='interval_composite1.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libinterval.in', outc='libinterval_igate.cxx',
+                src='direct/src/interval',  module='direct', library='libinterval',
+                files=['config_interval.cxx', 'config_interval.h', 'cInterval.cxx', 'cInterval.h',
+                'cIntervalManager.cxx', 'cIntervalManager.h', 'cLerpInterval.cxx', 'cLerpInterval.h',
+                'cLerpNodePathInterval.cxx', 'cLerpNodePathInterval.h', 'cLerpAnimEffectInterval.cxx',
+                'cLerpAnimEffectInterval.h', 'cMetaInterval.cxx', 'cMetaInterval.h', 'hideInterval.cxx',
+                'hideInterval.h', 'showInterval.cxx', 'showInterval.h', 'waitInterval.cxx', 'waitInterval.h',
+                'lerp_helpers.h'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libinterval_igate.cxx', obj='libinterval_igate.obj')
 
 #
 # DIRECTORY: direct/src/showbase/
 #
 
-IPATH=['direct/src/showbase']
-OPTS=['BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='showBase.cxx', obj='showbase_showBase.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='mersenne.cxx', obj='showbase_mersenne.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libshowbase.in', outc='libshowbase_igate.cxx',
-            src='direct/src/showbase', module='direct', library='libshowbase',
-            files=['showBase.cxx', 'showBase.h', 'mersenne.cxx', 'mersenne.h'])
-CompileC(ipath=IPATH, opts=OPTS, src='libshowbase_igate.cxx', obj='libshowbase_igate.obj')
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/showbase']
+    OPTS=['BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='showBase.cxx', obj='showbase_showBase.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='mersenne.cxx', obj='showbase_mersenne.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libshowbase.in', outc='libshowbase_igate.cxx',
+                src='direct/src/showbase', module='direct', library='libshowbase',
+                files=['showBase.cxx', 'showBase.h', 'mersenne.cxx', 'mersenne.h'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libshowbase_igate.cxx', obj='libshowbase_igate.obj')
 
 #
 # DIRECTORY: direct/metalibs/direct/
 #
 
-IPATH=['direct/metalibs/direct']
-OPTS=['BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='direct.cxx', obj='direct_direct.obj')
-InterrogateModule(outc='libdirect_module.cxx', module='direct', library='libdirect',
-                  files=['libdcparser.in', 'libshowbase.in', 'libdeadrec.in', 'libinterval.in', 'libdistributed.in'])
-CompileC(ipath=IPATH, opts=OPTS, src='libdirect_module.cxx', obj='libdirect_module.obj')
-CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
-             'direct_direct.obj',
-             'libdirect_module.obj',
-             'directbase_directbase.obj',
-             'dcparser_composite1.obj',
-             'dcparser_composite2.obj',
-             'dcparser_dcParser.obj',
-             'dcparser_dcLexer.obj',
-             'libdcparser_igate.obj',
-             'showbase_showBase.obj',
-             'showbase_mersenne.obj',
-             'libshowbase_igate.obj',
-             'deadrec_composite1.obj',
-             'libdeadrec_igate.obj',
-             'interval_composite1.obj',
-             'libinterval_igate.obj',
-             'distributed_config_distributed.obj',
-             'distributed_cConnectionRepository.obj',
-             'distributed_cDistributedSmoothNodeBase.obj',
-             'libdistributed_igate.obj',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-])
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/metalibs/direct']
+    OPTS=['BUILDING_DIRECT', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='direct.cxx', obj='direct_direct.obj')
+    InterrogateModule(outc='libdirect_module.cxx', module='direct', library='libdirect',
+                      files=['libdcparser.in', 'libshowbase.in', 'libdeadrec.in', 'libinterval.in', 'libdistributed.in'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libdirect_module.cxx', obj='libdirect_module.obj')
+    CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
+                 'direct_direct.obj',
+                 'libdirect_module.obj',
+                 'directbase_directbase.obj',
+                 'dcparser_composite1.obj',
+                 'dcparser_composite2.obj',
+                 'dcparser_dcParser.obj',
+                 'dcparser_dcLexer.obj',
+                 'libdcparser_igate.obj',
+                 'showbase_showBase.obj',
+                 'showbase_mersenne.obj',
+                 'libshowbase_igate.obj',
+                 'deadrec_composite1.obj',
+                 'libdeadrec_igate.obj',
+                 'interval_composite1.obj',
+                 'libinterval_igate.obj',
+                 'distributed_config_distributed.obj',
+                 'distributed_cConnectionRepository.obj',
+                 'distributed_cDistributedSmoothNodeBase.obj',
+                 'libdistributed_igate.obj',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+    ])
 
 #
 # DIRECTORY: direct/src/dcparse/
 #
 
-IPATH=['direct/src/dcparse', 'direct/src/dcparser']
-OPTS=['WITHINPANDA', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='dcparse.cxx', obj='dcparse_dcparse.obj')
-CompileLink(dll='dcparse.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'dcparse_dcparse.obj',
-             'libdirect.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/dcparse', 'direct/src/dcparser']
+    OPTS=['WITHINPANDA', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='dcparse.cxx', obj='dcparse_dcparse.obj')
+    CompileLink(dll='dcparse.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'dcparse_dcparse.obj',
+                 'libdirect.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: direct/src/heapq/
 #
 
-IPATH=['direct/src/heapq']
-OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='heapq.cxx', obj='heapq_heapq.obj')
-CompileLink(dll='libheapq.dll', opts=['ADVAPI', 'NSPR'], obj=[
-             'heapq_heapq.obj',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-])
+if (OMIT.count("PYTHON")==0):
+    IPATH=['direct/src/heapq']
+    OPTS=['NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='heapq.cxx', obj='heapq_heapq.obj')
+    CompileLink(dll='libheapq.dll', opts=['ADVAPI', 'NSPR'], obj=[
+                 'heapq_heapq.obj',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
@@ -6221,15 +6232,16 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 #
 ##########################################################################################
 
-if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
-    ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
-    if (sys.platform=="win32"):
-        if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
-        else       : oscmd(PREFIX+"/bin/genpycode.exe")
-    else:
-        if (GENMAN): oscmd(PREFIX+"/bin/genpycode -m")
-        else       : oscmd(PREFIX+"/bin/genpycode")
-    updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
+if (OMIT.count("PYTHON")==0):
+    if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
+        ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
+        if (sys.platform=="win32"):
+            if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
+            else       : oscmd(PREFIX+"/bin/genpycode.exe")
+        else:
+            if (GENMAN): oscmd(PREFIX+"/bin/genpycode -m")
+            else       : oscmd(PREFIX+"/bin/genpycode")
+        updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################
 ##
@@ -6247,44 +6259,111 @@ if (icache!=0):
 #
 # The Installers
 #
-# Under windows, the installer is built using NSIS
-# Under linux, the installer is a Debian DEB archive
+# Under windows, we can build an 'exe' package using NSIS
+# Under linux, we can build an 'deb' package using dpkg-deb
 # Makepanda does not build RPMs. To do that, use 'rpm -tb' on the source tarball.
 #
 ##########################################################################################
 
-if (sys.platform == "win32"):
+def MakeInstallerNSIS(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
+    if (older(file, ALLTARGETS)):
+        print "Building "+fullname+" installer. This can take up to an hour."
+        if (COMPRESSOR != "lzma"):
+            print("Note: you are using zlib, which is faster, but lzma gives better compression.")
+        if (os.path.exists(file)):
+            os.remove(file)
+        if (os.path.exists("nsis-output.exe")):
+            os.remove("nsis-output.exe")
+        def0 = '/DCOMPRESSOR="'   + COMPRESSOR   + '" '
+        def1 = '/DFULLNAME="'     + fullname     + '" '
+        def2 = '/DSMDIRECTORY="'  + smdirectory  + '" '
+        def3 = '/DUNINSTALLKEY="' + uninstallkey + '" '
+        def4 = '/DINSTALLDIR="'   + installdir   + '" '
+        def5 = ''
+        if (ppgame): def5 = '/DPPGAME="' + ppgame + '" '
+        oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" makepanda/panda.nsi")
+        os.rename("nsis-output.exe", file)
 
-    def MakeInstaller(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
-        if (older(file, ALLTARGETS)):
-            print "Building "+fullname+" installer. This can take up to an hour."
-            if (COMPRESSOR != "lzma"):
-                print("Note: you are using zlib, which is faster, but lzma gives better compression.")
-            if (os.path.exists(file)):
-                os.remove(file)
-            if (os.path.exists("nsis-output.exe")):
-                os.remove("nsis-output.exe")
-            def0 = '/DCOMPRESSOR="'   + COMPRESSOR   + '" '
-            def1 = '/DFULLNAME="'     + fullname     + '" '
-            def2 = '/DSMDIRECTORY="'  + smdirectory  + '" '
-            def3 = '/DUNINSTALLKEY="' + uninstallkey + '" '
-            def4 = '/DINSTALLDIR="'   + installdir   + '" '
-            def5 = ''
-            if (ppgame): def5 = '/DPPGAME="' + ppgame + '" '
-            oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" makepanda/panda.nsi")
-            os.rename("nsis-output.exe", file)
+def MakeInstallerDPKG(file):
+    if (older(file,ALLTARGETS)):
+        DEB="""
+Package: panda3d
+Version: VERSION
+Section: libdevel
+Priority: optional
+Architecture: i386
+Essential: no
+Depends: PYTHONV
+Provides: panda3d
+Maintainer: etc-panda3d@lists.andrew.cmu.edu
+Description: The panda3D free 3D engine
+"""
+        import compileall
+        PYTHONV=os.path.basename(PYTHONSDK)
+        if (os.path.isdir("debtmp")): oscmd("chmod -R 755 debtmp")
+        oscmd("rm -rf debtmp data.tar.gz control.tar.gz ")
+        oscmd("mkdir -p debtmp/usr/bin")
+        oscmd("mkdir -p debtmp/usr/include")
+        oscmd("mkdir -p debtmp/usr/share/panda3d")
+        oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/lib-dynload")
+        oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/site-packages")
+        oscmd("mkdir -p debtmp/etc")
+        oscmd("mkdir -p debtmp/DEBIAN")
+        oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > debtmp/etc/Config.prc")
+        oscmd("cp built/etc/Confauto.prc  debtmp/etc/Confauto.prc")
+        oscmd("cp --recursive built/include debtmp/usr/include/panda3d")
+        oscmd("cp --recursive direct        debtmp/usr/share/panda3d/direct")
+        oscmd("cp --recursive built/pandac  debtmp/usr/share/panda3d/pandac")
+        oscmd("cp --recursive built/Pmw     debtmp/usr/share/panda3d/Pmw")
+        oscmd("cp --recursive built/epydoc  debtmp/usr/share/panda3d/epydoc")
+        oscmd("cp built/direct/__init__.py  debtmp/usr/share/panda3d/direct/__init__.py")
+        oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
+        oscmd("cp --recursive built/models  debtmp/usr/share/panda3d/models")
+        oscmd("cp --recursive samples       debtmp/usr/share/panda3d/samples")
+        oscmd("cp doc/LICENSE               debtmp/usr/share/panda3d/LICENSE")
+        oscmd("cp doc/LICENSE               debtmp/usr/include/panda3d/LICENSE")
+        oscmd("cp doc/ReleaseNotes          debtmp/usr/share/panda3d/ReleaseNotes")
+        oscmd("echo '/usr/share/panda3d' >  debtmp/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
+        oscmd("cp built/bin/*               debtmp/usr/bin/")
+        for base in os.listdir("built/lib"):
+            oscmd("ln -sf /usr/lib/"+base+" debtmp/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
+            oscmd("cp built/lib/"+base+" debtmp/usr/lib/"+base)
+        for base in os.listdir("debtmp/usr/share/panda3d/direct/src"):
+            if (base != "extensions"):
+                compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
+        compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
+        compileall.compile_dir("debtmp/usr/share/panda3d/epydoc")
+        compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
+        oscmd("chmod -R 555 debtmp/usr/share/panda3d")
+        oslocalcmd("debtmp","(find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
+        oslocalcmd("debtmp","(find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+        WriteFile("debtmp/DEBIAN/conffiles","/etc/Config.prc\n")
+        WriteFile("debtmp/DEBIAN/control",DEB[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV))
+        oscmd("dpkg-deb -b debtmp "+file)
+        oscmd("chmod -R 755 debtmp/usr/share/panda3d")
+        oscmd("rm -rf debtmp")
 
-    if (INSTALLER!=0):
-        MakeInstaller("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION,
-                      "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION, 0)
 
-    if (PPGAME!=0):
-        if (os.path.isdir(PPGAME)==0):
-            sys.exit("No such directory "+PPGAME)
-        if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
-            sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
-        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME+" "+VERSION,
-                      PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
+if (INSTALLER != 0):
+    if (sys.platform == "win32"):
+        MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION,
+                          "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION, 0)
+    elif (sys.platform == "linux2") and (os.path.isfile("/usr/bin/dpkg-deb")):
+        MakeInstallerDPKG("panda3d_"+VERSION+"_i386.deb")
+    else:
+        sys.exit("Do not know how to make an installer for this platform")
+
+
+if (PPGAME!=0):
+    if (os.path.isdir(PPGAME)==0):
+        sys.exit("No such directory "+PPGAME)
+    if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
+        sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
+    if (sys.platform == "win32"):
+        MakeInstallerNSIS(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME+" "+VERSION,
+                          PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
+    else:
+        sys.exit("Do not know how to make a prepackaged game for this platform")
 
 
 DEB="""
