@@ -695,12 +695,15 @@ for version,key1,key2,subdir in MAXVERSIONS:
 ##
 ########################################################################
 
-if (OMIT.count("PYTHON")==0) and (sys.platform != "win32"):
-    if   (os.path.isdir("/usr/include/python2.5")): PYTHONSDK = "/usr/include/python2.5"
-    elif (os.path.isdir("/usr/include/python2.4")): PYTHONSDK = "/usr/include/python2.4"
-    elif (os.path.isdir("/usr/include/python2.3")): PYTHONSDK = "/usr/include/python2.3"
-    elif (os.path.isdir("/usr/include/python2.2")): PYTHONSDK = "/usr/include/python2.2"
-    else: sys.exit("Cannot find the python SDK")
+if (OMIT.count("PYTHON")==0):
+    if (sys.platform != "win32"):
+        PYTHONSDK="thirdparty/win-python"
+    else:
+        if   (os.path.isdir("/usr/include/python2.5")): PYTHONSDK = "/usr/include/python2.5"
+        elif (os.path.isdir("/usr/include/python2.4")): PYTHONSDK = "/usr/include/python2.4"
+        elif (os.path.isdir("/usr/include/python2.3")): PYTHONSDK = "/usr/include/python2.3"
+        elif (os.path.isdir("/usr/include/python2.2")): PYTHONSDK = "/usr/include/python2.2"
+        else: sys.exit("Cannot find the python SDK")
 
 ########################################################################
 ##
