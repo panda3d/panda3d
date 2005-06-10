@@ -349,6 +349,16 @@ $[TAB]$[SOFT2EGG] $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOF
   #end anim
 #end soft_char_egg
 
+// Copying egg files from A to B.
+#forscopes copy_egg
+  #for i 1,$[words $[SOURCES]]
+    #define source $[word $[i],$[SOURCES]]
+    #define target $[word $[i],$[TARGETS]]
+$[target] : $[source]
+$[TAB]cp $[source] $[target]
+  #end i
+#end copy_egg
+
 
 // Generic egg filters.
 #forscopes filter_egg
