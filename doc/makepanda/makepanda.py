@@ -6383,7 +6383,7 @@ if (sys.platform == "linux2"):
         file = "panda3d_"+VERSION+"_i386.deb"
         if (older(file,ALLTARGETS)):
             import compileall
-            PYTHONV=os.path.basename(PythonSDK)
+            PYTHONV=os.path.basename(PYTHONSDK)
             if (os.path.isdir("debtmp")): oscmd("chmod -R 755 debtmp")
             oscmd("rm -rf debtmp data.tar.gz control.tar.gz ")
             oscmd("mkdir -p debtmp/usr/bin")
