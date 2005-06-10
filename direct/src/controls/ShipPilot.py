@@ -262,16 +262,17 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         fn.addForce(gravity)
         self.phys.addLinearForce(gravity)
         self.gravity = gravity
-        
-        fn=ForceNode("ship buoyancy")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-        fn.addForce(buoyancy)
-        self.phys.addLinearForce(buoyancy)
-        self.buoyancy = buoyancy
+
+        if 0:
+            fn=ForceNode("ship buoyancy")
+            fnp=NodePath(fn)
+            #fnp.reparentTo(physicsActor)
+            fnp.reparentTo(render)
+            self.nodes.append(fnp)
+            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
+            fn.addForce(buoyancy)
+            self.phys.addLinearForce(buoyancy)
+            self.buoyancy = buoyancy
         
         fn=ForceNode("ship keel")
         fnp=NodePath(fn)
@@ -299,23 +300,26 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             fnp.reparentTo(render)
             self.nodes.append(fnp)
             self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
-            #self.avatarViscosity.setCoef(0.9)
+            self.avatarViscosity.setCoef(0.5)
+            self.avatarViscosity.setAmplitude(4)
             fn.addForce(self.avatarViscosity)
             self.phys.addLinearForce(self.avatarViscosity)
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
         self.phys.attachAngularIntegrator(AngularEulerIntegrator())
         self.phys.attachPhysicalnode(physicsActor.node())
-        
-        self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
-        fn=ForceNode("ship momentum")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        fn.addForce(self.momentumForce)
-        self.phys.addLinearForce(self.momentumForce)
+
+        if 0:
+            self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
+            fn=ForceNode("ship momentum")
+            fnp=NodePath(fn)
+            fnp.reparentTo(render)
+            self.nodes.append(fnp)
+            fn.addForce(self.momentumForce)
+            self.phys.addLinearForce(self.momentumForce)
             
         self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
+        self.acForce.setAmplitude(5)
         fn=ForceNode("ship avatarControls")
         fnp=NodePath(fn)
         fnp.reparentTo(render)
@@ -542,12 +546,14 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 self.actorNode.getPhysicsObject().getOrientation().pPrintValues())
             #print "ship orientation:", self.actorNode.getPhysicsObject().getOrientation().pPrintValues()
 
+        if 0:
             momentumForce = self.momentumForce.getLocalVector()
             onScreenDebug.add("w momentumForce vec",
                 momentumForce.pPrintValues())
             onScreenDebug.add("w momentumForce len",
                 "% 10.4f"%momentumForce.length())
 
+        if 1:
             keel = self.keel.getLocalVector()
             onScreenDebug.add("w keel vec",
                 keel.pPrintValues())
@@ -586,9 +592,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         
         depth=physObject.getPosition().getZ()
         if depth < 0.0:
-            self.buoyancy.setVector(Vec3.zero())
+            # self.buoyancy.setVector(Vec3.zero())
+            pass
         else:
-            self.buoyancy.setVector(Vec3.zero())
+            # self.buoyancy.setVector(Vec3.zero())
             physObject.setPosition(Point3(physObject.getPosition().getX(), physObject.getPosition().getY(), 0.0))
             self.actorNode.updateTransform()
             #self.buoyancy.setVector(Vec3(0, 0, -depth))
@@ -839,8 +846,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         if speedLen > maxSpeed:
             speed.normalize()
             speed *= maxSpeed
-
-        self.avatarViscosity.setCoef(0.5)
 
         #speed *= 1.0 - dt * 0.05
         physObject.setVelocity(speed)
