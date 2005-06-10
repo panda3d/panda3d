@@ -2,7 +2,7 @@
 from direct.showbase.ShowBaseGlobal import *
 import GravityWalker
 
-BattleStrafe = 1
+BattleStrafe = 0
 
 def ToggleStrafe():
     global BattleStrafe
