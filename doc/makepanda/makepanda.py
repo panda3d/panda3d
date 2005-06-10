@@ -6343,7 +6343,7 @@ Description: The panda3D free 3D engine
         WriteFile("debtmp/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("debtmp/DEBIAN/control",DEB[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV))
         oscmd("dpkg-deb -b debtmp "+file)
-        oscmd("chmod -R 755 debtmp/usr/share/panda3d")
+        oscmd("chmod -R 755 debtmp")
         oscmd("rm -rf debtmp")
 
 
@@ -6367,71 +6367,6 @@ if (PPGAME!=0):
                           PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
     else:
         sys.exit("Do not know how to make a prepackaged game for this platform")
-
-
-DEB="""
-Package: panda3d
-Version: VERSION
-Section: web
-Priority: optional
-Architecture: i386
-Essential: no
-Depends: PYTHONV
-Provides: panda3d
-Description: The panda3D free 3D engine
-"""
-
-if (sys.platform == "linux2"):
-    if (INSTALLER != 0):
-        file = "panda3d_"+VERSION+"_i386.deb"
-        if (older(file,ALLTARGETS)):
-            import compileall
-            PYTHONV=os.path.basename(PYTHONSDK)
-            if (os.path.isdir("debtmp")): oscmd("chmod -R 755 debtmp")
-            oscmd("rm -rf debtmp data.tar.gz control.tar.gz ")
-            oscmd("mkdir -p debtmp/usr/bin")
-            oscmd("mkdir -p debtmp/usr/include")
-            oscmd("mkdir -p debtmp/usr/lib")
-            oscmd("mkdir -p debtmp/usr/share/panda3d")
-            oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/lib-dynload")
-            oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/site-packages")
-            oscmd("mkdir -p debtmp/etc")
-            oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > debtmp/etc/Config.prc")
-            oscmd("cp built/etc/Confauto.prc  debtmp/etc/Confauto.prc")
-            oscmd("cp --recursive built/include debtmp/usr/include/panda3d")
-            oscmd("cp --recursive direct        debtmp/usr/share/panda3d/direct")
-            oscmd("cp --recursive built/pandac  debtmp/usr/share/panda3d/pandac")
-            oscmd("cp --recursive built/Pmw     debtmp/usr/share/panda3d/Pmw")
-            oscmd("cp --recursive built/epydoc  debtmp/usr/share/panda3d/epydoc")
-            oscmd("cp built/direct/__init__.py  debtmp/usr/share/panda3d/direct/__init__.py")
-            oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
-            oscmd("cp --recursive built/models  debtmp/usr/share/panda3d/models")
-            oscmd("cp --recursive samples       debtmp/usr/share/panda3d/samples")
-            oscmd("cp doc/LICENSE               debtmp/usr/share/panda3d/LICENSE")
-            oscmd("cp doc/LICENSE               debtmp/usr/include/panda3d/LICENSE")
-            oscmd("cp doc/ReleaseNotes          debtmp/usr/share/panda3d/ReleaseNotes")
-            oscmd("echo '/usr/share/panda3d' >  debtmp/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
-            oscmd("cp built/bin/*               debtmp/usr/bin/")
-            for base in os.listdir("built/lib"):
-                oscmd("ln -sf /usr/lib/panda3d/"+base+" debtmp/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
-                oscmd("cp built/lib/"+base+" debtmp/usr/lib/"+base)
-            for base in os.listdir("debtmp/usr/share/panda3d/direct/src"):
-                if (base != "extensions"):
-                    compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
-            compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
-            compileall.compile_dir("debtmp/usr/share/panda3d/epydoc")
-            compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
-            oscmd("chmod -R 555 debtmp/usr/share/panda3d")
-            oslocalcmd("debtmp","(find usr -type f -exec md5sum {} \;) >  md5sums")
-            oslocalcmd("debtmp","(find etc -type f -exec md5sum {} \;) >> md5sums")
-            WriteFile("debtmp/debian-binary","2.0")
-            WriteFile("debtmp/postinst","#!/bin/sh\n")
-            WriteFile("debtmp/prerm","#!/bin/sh\n")
-            WriteFile("debtmp/conffiles","/etc/Config.prc\n/etc/Confauto.prc\n")
-            WriteFile("debtmp/control",DEB[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV))
-            oslocalcmd("debtmp","tar --owner=root --group=root --gzip -cf data.tar.gz etc usr")
-            oslocalcmd("debtmp","tar --owner=root --group=root --gzip -cf control.tar.gz control conffiles postinst prerm md5sums")
-            oslocalcmd("debtmp","ar cq ../"+file+" debian-binary control.tar.gz data.tar.gz")
 
 
 ##########################################################################################
