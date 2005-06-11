@@ -1248,33 +1248,6 @@ def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 
 ########################################################################
 ##
-## CompileRES
-##
-## Generate an RES file from a source RC file.
-##
-########################################################################
-
-def CompileRES(obj=0,src=0,ipath=[],opts=[]):
-    if ((obj==0)|(src==0)): sys.exit("syntax error in CompileRES directive")
-    fullsrc = CxxFindSource(src, ipath)
-    if (fullsrc == 0): sys.exit("Cannot find source file "+src)
-    obj = PREFIX+"/tmp/"+obj
-    wdep = CxxCalcDependencies(fullsrc, ipath, [])
-
-    if (COMPILER=="MSVC7"):
-        if (older(obj, wdep)):
-            cmd = 'rc.exe /d "NDEBUG" /l 0x409'
-            for x in ipath: cmd = cmd + " /I" + x
-            cmd = cmd + ' /fo' + obj
-            cmd = cmd + ' ' + fullsrc
-            oscmd(cmd)
-            updatefiledate(obj)
-
-    if (COMPILER=="LINUXA"):
-        sys.exit("Can only compile RES files on Windows.")
-
-########################################################################
-##
 ## Interrogate
 ##
 ## Generate an IN file and a CXX-stub file from CXX source files
@@ -1443,7 +1416,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             cmd = cmd + ' /OUT:' + dll + ' /IMPLIB:' + lib + ' /MAP:NUL'
             if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
             for x in wobj: cmd = cmd + ' ' + x
-            if (dll[-4:]==".exe"): cmd = cmd + ' ' + PREFIX + '/tmp/pandaIcon.res'
+            if (dll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.res'
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib/x86"'
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib"'
@@ -1684,17 +1657,6 @@ if (OMIT.count("PYTHON")==0):
     ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PYTHONSDK))
 
 ConditionalWriteFile(PREFIX+"/tmp/null.cxx","")
-
-##########################################################################################
-#
-# If running under windows, compile up the icon.
-#
-##########################################################################################
-
-if (sys.platform == "win32"):
-  IPATH=["panda/src/configfiles"]
-  OPTS=[]
-  CompileRES(ipath=IPATH, opts=OPTS, src='pandaIcon.rc', obj='pandaIcon.res')
 
 ##########################################################################################
 #
@@ -5665,11 +5627,11 @@ for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
-    CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc', obj='maxegg'+VER+'_MaxEgg.res')
+    CopyFile(PREFIX+"/tmp/MaxEgg.res", "pandatool/src/maxegg/MaxEgg.res")
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
                 'maxegg'+VER+'_composite1.obj',
-                'maxegg'+VER+'_MaxEgg.res',
+                'MaxEgg.res',
                 'libeggbase.lib',
                 'libprogbase.lib',
                 'libpandatoolbase.lib',
