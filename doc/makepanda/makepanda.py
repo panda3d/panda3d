@@ -707,30 +707,67 @@ if (OMIT.count("PYTHON")==0):
 
 ########################################################################
 ##
-## Locate Visual Studio 7.0 or 7.1
+## Locate Visual Studio 7.0 or 7.1 or the Visual Toolkit 2003
 ##
 ## The visual studio compiler doesn't work unless you set up a
 ## couple of environment variables to point at the compiler.
 ##
 ########################################################################
 
-if (COMPILER == "MSVC7"):
+
+def AddToVisualStudioPath(path,add):
+    if (os.environ.has_key(path)):
+        os.environ[path] = add + ";" + os.environ[path]
+    else:
+        os.environ[path] = add
+
+def LocateVisualStudio():
+
+    # Try to use the Visual Toolkit 2003
+    vcdir = os.environ["VCTOOLKITINSTALLDIR"]
+    if (vcdir != 0):
+        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
+                               "Install Dir")
+        if (platsdk == 0): sys.exit("Found VC Toolkit, but cannot locate MS Platform SDK")
+        WARNINGS.append("Using visual toolkit: "+vcdir)
+        WARNINGS.append("Using MS Platform SDK: "+platsdk)
+        AddToVisualStudioPath("PATH", vcdir + "\\bin")
+        AddToVisualStudioPath("INCLUDE", platsdk + "\\include")
+        AddToVisualStudioPath("INCLUDE", vcdir + "\\include")
+        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
+        AddToVisualStudioPath("LIB",     platsdk + "\\lib")
+        AddToVisualStudioPath("LIB",     vcdir + "\\lib")
+        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
+        return
+
+    # Try to use Visual Studio
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
-    if ((vcdir == 0) or (vcdir[-13:] != "\\Common7\\IDE\\")):
+    if (vcdir == 0):
         vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir")
-        if ((vcdir == 0) or (vcdir[-13:] != "\\Common7\\IDE\\")):
-            sys.exit("The registry does not appear to contain a pointer to the Visual Studio 7 install directory")
-    vcdir = vcdir[:-12]
-    old_env_path    = ""
-    old_env_include = ""
-    old_env_lib     = ""
-    if (os.environ.has_key("PATH")):    old_env_path    = os.environ["PATH"]
-    if (os.environ.has_key("INCLUDE")): old_env_include = os.environ["INCLUDE"]
-    if (os.environ.has_key("LIB")):     old_env_lib     = os.environ["LIB"]
-    os.environ["PATH"] = vcdir + "vc7\\bin;" + vcdir + "Common7\\IDE;" + vcdir + "Common7\\Tools;" + vcdir + "Common7\\Tools\\bin\\prerelease;" + vcdir + "Common7\\Tools\\bin;" + old_env_path
-    os.environ["INCLUDE"] = vcdir + "vc7\\ATLMFC\\INCLUDE;" + vcdir + "vc7\\include;" + vcdir + "vc7\\PlatformSDK\\include\\prerelease;" + vcdir + "vc7\\PlatformSDK\\include;" + old_env_include
-    os.environ["LIB"] = vcdir + "vc7\\ATLMFC\\LIB;" + vcdir + "vc7\\LIB;" + vcdir + "vc7\\PlatformSDK\\lib\\prerelease;" + vcdir + "vc7\\PlatformSDK\\lib;" + old_env_lib
-    sys.stdout.flush()
+    if (vcdir != 0) and (vcdir[-13:] == "\\Common7\\IDE\\"):
+        vcdir = vcdir[:-12]
+        WARNINGS.append("Using visual studio: "+vcdir)
+        AddToVisualStudioPath("PATH",    vcdir + "vc7\\bin")
+        AddToVisualStudioPath("PATH",    vcdir + "Common7\\IDE")
+        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools")
+        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools\\bin\\prerelease")
+        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools\\bin")
+        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\ATLMFC\\INCLUDE")
+        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\include")
+        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\PlatformSDK\\include\\prerelease")
+        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\PlatformSDK\\include")
+        AddToVisualStudioPath("LIB",     vcdir + "vc7\\ATLMFC\\LIB")
+        AddToVisualStudioPath("LIB",     vcdir + "vc7\\LIB")
+        AddToVisualStudioPath("LIB",     vcdir + "vc7\\PlatformSDK\\lib\\prerelease")
+        AddToVisualStudioPath("LIB",     vcdir + "vc7\\PlatformSDK\\lib")
+        return
+
+    # Give up
+    sys.exit("Cannot locate Microsoft Visual Studio 7.0, 7.1, or the Visual Toolkit 2003")
+
+
+if (COMPILER == "MSVC7"):
+    LocateVisualStudio()
 
 ##########################################################################################
 #
@@ -1359,7 +1396,7 @@ def CompileLIB(lib=0, obj=[], opts=[]):
         wobj = xpaths(PREFIX+"/tmp/",obj,"")
         ALLTARGETS.append(wlib)
         if (older(wlib, wobj)):
-            cmd = 'lib.exe /nologo /OUT:' + wlib
+            cmd = 'link.exe /lib /nologo /OUT:' + wlib
             if (OPTIMIZE==4): cmd = cmd + " /LTCG "
             for x in wobj: cmd = cmd + ' ' + x
             oscmd(cmd)
