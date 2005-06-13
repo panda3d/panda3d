@@ -12,9 +12,10 @@ def setT(self, t):
     # Overridden from the C++ function to call privPostEvent
     # afterward.  We do this by renaming the C++ function in
     # FFIRename.
-    self._priv__cSetT(t)
+    self.setT_Old(t)
     self.privPostEvent()
 
+Dtool_ObjectToDict(CInterval, "setT_Old", CInterval.setT)
 Dtool_funcToMethod(setT, CInterval)        
 del setT
 #####################################################################
