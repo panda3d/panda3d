@@ -630,13 +630,7 @@ class ShowBase(DirectObject.DirectObject):
         # it's simplest (and seems to be easier on graphics drivers)
         # if the 2-d scene has been cleared first.
 
-        dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
-        dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
-        #lt = LightTransition.allOff()
-        self.render2d.node().setAttrib(dt)
-        self.render2d.node().setAttrib(dw)
-        #self.render2d.node().setAttrib(lt, 1)
-
+        self.render2d.setDepthWrite(0)
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
@@ -748,7 +742,7 @@ class ShowBase(DirectObject.DirectObject):
         # window will be cleared, which is normally sufficient).
 
         if aspectRatio == None:
-            aspectRatio = self.getAspectRatio()
+            aspectRatio = self.getAspectRatio(win)
 
         # Now make a new Camera node.
         camNode = Camera(camName)
