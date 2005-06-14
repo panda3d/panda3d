@@ -737,6 +737,7 @@ def LocateVisualStudio():
         AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
         AddToVisualStudioPath("LIB",     platsdk + "\\lib")
         AddToVisualStudioPath("LIB",     vcdir + "\\lib")
+        AddToVisualStudioPath("LIB",     THIRDPARTY + "\\win-libs-vc7\\extras\\lib")
         AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
         return
 
@@ -1438,7 +1439,6 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".lib")
             elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x)
             elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".lib")
-            elif (suffix==".res"): wobj.append(PREFIX+"/tmp/"+x)
             else: sys.exit("unknown suffix in object list.")
         if (older(dll, wobj+xdep)):
             cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
@@ -1453,7 +1453,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             cmd = cmd + ' /OUT:' + dll + ' /IMPLIB:' + lib + ' /MAP:NUL'
             if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
             for x in wobj: cmd = cmd + ' ' + x
-            if (dll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.res'
+            if (dll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib/x86"'
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib"'
@@ -5664,11 +5664,11 @@ for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
-    CopyFile(PREFIX+"/tmp/MaxEgg.res", "pandatool/src/maxegg/MaxEgg.res")
+    CopyFile(PREFIX+"/tmp/MaxEgg.obj", "pandatool/src/maxegg/MaxEgg.obj")
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
                 'maxegg'+VER+'_composite1.obj',
-                'MaxEgg.res',
+                'MaxEgg.obj',
                 'libeggbase.lib',
                 'libprogbase.lib',
                 'libpandatoolbase.lib',
