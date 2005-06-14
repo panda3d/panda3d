@@ -25,7 +25,7 @@
 #include <time.h>  // for strftime().
 #include <assert.h>
 
-time_t NotifyCategory::_server_delta = 0;
+long NotifyCategory::_server_delta = 0;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::Constructor
@@ -144,7 +144,7 @@ get_child(int i) const {
 //               the client with that of a known server.
 ////////////////////////////////////////////////////////////////////
 void NotifyCategory::
-set_server_delta(time_t delta) {
+set_server_delta(long delta) {
   _server_delta = delta;
 }
 

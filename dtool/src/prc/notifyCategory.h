@@ -76,7 +76,7 @@ PUBLISHED:
   int get_num_children() const;
   NotifyCategory *get_child(int i) const;
 
-  static void set_server_delta(time_t delta);
+  static void set_server_delta(long delta);
 
 private:
   string get_config_name() const;
@@ -89,7 +89,7 @@ private:
   typedef pvector<NotifyCategory *> Children;
   Children _children;
 
-  static time_t _server_delta;
+  static long _server_delta; // not a time_t because server delta may be signed.
 
   friend class Notify;
 };
