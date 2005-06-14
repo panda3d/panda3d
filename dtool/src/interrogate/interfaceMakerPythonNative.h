@@ -108,7 +108,7 @@ public:
     bool   IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
     void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace);
     bool HasAGetKeyFunction(const InterrogateType &itype_class);
-    bool NeedsAStrFunction(const InterrogateType &itype_class);
+    int NeedsAStrFunction(const InterrogateType &itype_class);
     bool NeedsAReprFunction(const InterrogateType &itype_class);
 
     // stash the forwad declarations for this compile pass..

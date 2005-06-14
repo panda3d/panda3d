@@ -1361,14 +1361,17 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "    {\n";
                 out << "       ostringstream os;\n";
                 out << "       local_this->output(os);\n";
-                out << "       return PyString_FromString(os.str().c_str());\n";
+//                out << "       return PyString_FromString(os.str().c_str());\n";
+                out << "       std::string ss = os.str();\n";
+                out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
                 out << "    };\n";
                 out << "    return Py_BuildValue(\"\");\n";
                 out << "}\n";   
                 has_local_repr = true;
             }
 
-            if(NeedsAStrFunction(obj->_itype))
+            int need_str = NeedsAStrFunction(obj->_itype);
+            if(need_str > 0)
             {
                 out << "//////////////////\n";
                 out << "//  A __str__ Function\n";
@@ -1381,8 +1384,13 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
                 out << "    if(local_this != NULL)\n";
                 out << "    {\n";
                 out << "       ostringstream os;\n";
-                out << "       local_this->write(os);\n";
-                out << "       return PyString_FromString(os.str().c_str());\n";
+                if(need_str == 2)
+                    out << "       local_this->write(os,0);\n";
+                else
+                    out << "       local_this->write(os);\n";
+//                out << "       return PyString_FromString(os.str().c_str());\n";
+                out << "       std::string ss = os.str();\n";
+                out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
                 out << "    };\n";
                 out << "    return Py_BuildValue(\"\");\n";
                 out << "}\n";   
@@ -1476,7 +1484,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         else if(has_local_repr == true)
         {
             out << "        // __str__ Repr Proxy\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_repr = & Dtool_Repr_"<<ClassName <<";\n";
+            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_str = & Dtool_Repr_"<<ClassName <<";\n";
         }
 
 
@@ -2901,7 +2909,7 @@ bool InterfaceMakerPythonNative::HasAGetKeyFunction(const InterrogateType &itype
 //
 // Can we generate a __str__ function for this class
 //////////////////////////////////////////////////////////////////////////////////////////
-bool InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_class)
+int InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_class)
 {
     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
@@ -2930,7 +2938,7 @@ bool InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_
 
                                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
                                 if(TypeManager::is_pointer_to_ostream(inst1->_type))
-                                    return true;
+                                    return 1;
                             }
 
                             if(cppfunc->_parameters->_parameters.size() == 2)
@@ -2941,7 +2949,10 @@ bool InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_
                                 {
                                     inst1 = cppfunc->_parameters->_parameters[1];
                                     if(inst1->_initializer  != NULL)
-                                        return true;
+                                        return 1;
+
+                                    if(TypeManager::is_integer(inst1->_type))
+                                        return 2;
                                 }
                             }
 
@@ -2952,7 +2963,7 @@ bool InterfaceMakerPythonNative::NeedsAStrFunction(const InterrogateType &itype_
             }
         }
     }
-    return false;
+    return -1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
