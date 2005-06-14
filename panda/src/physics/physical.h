@@ -73,11 +73,11 @@ PUBLISHED:
   INLINE void set_viscosity(float viscosity);
   INLINE float get_viscosity() const;
   
-  virtual void output(ostream &out) const;
-  virtual void write_physics_objects(ostream &out, unsigned int indent=0) const;
-  virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out = cout) const;
+  virtual void write_physics_objects(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write_linear_forces(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write_angular_forces(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(ostream &out = cout, unsigned int indent=0) const;
 
 public:
   INLINE const PhysicsObject::Vector &get_object_vector() const;
