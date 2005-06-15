@@ -720,12 +720,12 @@ global proc string exportScene( string $selection )
 
 	if ( $selection == "all")
 	{
-		file -op "v=1" -typ "mayaBinary" -pr -ea $tempScenePath;  //export the whole scene
+		file -op "v=1" -typ "mayaBinary" -ea $tempScenePath;  //export the whole scene
 		print ("Saved entire scene as temporary file: " + $fileName + "_temp.mb\n");
 	}
 	else
 	{
-		file -op "v=1" -typ "mayaBinary" -pr -es $tempScenePath;  //export only selected objects
+		file -op "v=1" -typ "mayaBinary" -es $tempScenePath;  //export only selected objects
 		print ("Saved selected objects as temporary file: " + $fileName + "_temp.mb\n");
 	}
 
@@ -864,6 +864,8 @@ global proc string argsBuilder()
 ///////////////////////////////////////////////////////////
 global proc string export2Egg ( string $mbfile, string $destPath, string $destFilename, string $ARGS)
 {
+        string $pandaEnvSetup = "set PATH=%MAYA_LOCATION%\\bin;%PATH% & ";
+
 	//Check if there is a valid maya binary file to operate on
 	if ( $mbfile == "" )
 	{
@@ -889,7 +891,7 @@ global proc string export2Egg ( string $mbfile, string $destPath, string $destFi
 			string $result =
 				system
 				(
-					$ARGS
+                                        $pandaEnvSetup + $ARGS
 					+ " -o "
 					+ "\"" + $eggFile + "\""
 					+ " "
@@ -904,7 +906,7 @@ global proc string export2Egg ( string $mbfile, string $destPath, string $destFi
 			string $result =
 				system
 				(
-					$ARGS
+                                        $pandaEnvSetup + $ARGS
 					+ "\"" + $mbfile + "\""
 					+ " "
 					+ "\"" + $eggFile + "\""
@@ -978,7 +980,7 @@ global proc send2Pview( string $file )
 	string $result =
 				system
 				(
-					"shell pview -l -c "
+                                        "shell pview -l -c "
 					+ "\"" + $file + "\""
 				);
 
@@ -1154,7 +1156,7 @@ global proc export2Bam ( string $eggFile )
 			string $result =
 				system
 				(
-					"egg2bam -o "
+                                        "egg2bam -o "
 					+ "\"" + $bamFile + "\""
 					+ " "
 					+ "\"" + $eggFile + "\""
@@ -1168,7 +1170,7 @@ global proc export2Bam ( string $eggFile )
 			string $result =
 				system
 				(
-					"egg2bam "
+                                        "egg2bam "
 					+ "\"" + $eggFile + "\""
 					+ " "
 					+ "\"" + $bamFile + "\""
