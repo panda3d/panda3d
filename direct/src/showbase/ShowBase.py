@@ -1217,7 +1217,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.add(self.collisionLoop, 'collisionLoop', priority = 30)
         # do the shadowCollisionLoop after the collisionLoop and
         # befor the igLoop:
-        self.taskMgr.add(self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 34)
+        self.taskMgr.add(self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.igLoop, 'igLoop', priority = 50)
