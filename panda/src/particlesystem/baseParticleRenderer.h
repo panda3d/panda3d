@@ -24,6 +24,7 @@
 #include "physicsObject.h"
 #include "renderState.h"
 #include "geomNode.h"
+#include "colorBlendAttrib.h"
 
 #include "particleCommonFuncs.h"
 #include "baseParticle.h"
@@ -60,6 +61,8 @@ PUBLISHED:
 
   INLINE void set_user_alpha(float ua);
   INLINE float get_user_alpha() const;
+
+  INLINE void set_color_blend_mode(ColorBlendAttrib::Mode bm, ColorBlendAttrib::Operand oa = ColorBlendAttrib::O_zero, ColorBlendAttrib::Operand ob = ColorBlendAttrib::O_zero);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;

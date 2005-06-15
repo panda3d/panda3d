@@ -362,3 +362,12 @@ INLINE bool SpriteParticleRenderer::
 get_alpha_disable() const {
   return _alpha_disable;
 }
+
+////////////////////////////////////////////////////////////////////
+// Function : SpriteParticleRenderer::get_color_interpolation_manager
+//   Access : public
+////////////////////////////////////////////////////////////////////
+INLINE ColorInterpolationManager* SpriteParticleRenderer::
+get_color_interpolation_manager() const {
+  return _color_interpolation_manager;
+}

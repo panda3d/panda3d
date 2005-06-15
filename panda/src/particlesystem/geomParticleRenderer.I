@@ -42,3 +42,13 @@ INLINE PandaNode *GeomParticleRenderer::
 get_geom_node() {
   return _geom_node;
 }
+
+////////////////////////////////////////////////////////////////////
+//  Function : get_color_interpolation_manager
+//    Access : public
+////////////////////////////////////////////////////////////////////
+
+INLINE ColorInterpolationManager* GeomParticleRenderer::
+get_color_interpolation_manager() const {
+  return _color_interpolation_manager;
+}

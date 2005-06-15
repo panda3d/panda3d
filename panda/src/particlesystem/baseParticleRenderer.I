@@ -66,6 +66,24 @@ get_user_alpha() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_color_blend_mode
+//      Access : public
+// Description : sets the ColorBlendAttrib on the _render_node
+////////////////////////////////////////////////////////////////////
+INLINE void BaseParticleRenderer::
+set_color_blend_mode(ColorBlendAttrib::Mode bm, ColorBlendAttrib::Operand oa, ColorBlendAttrib::Operand ob) {
+  CPT(RenderAttrib) ra;
+  if(bm == ColorBlendAttrib::M_add || bm == ColorBlendAttrib::M_subtract || bm == ColorBlendAttrib::M_inv_subtract) {
+    ra = ColorBlendAttrib::make(bm,oa,ob);
+  } else {
+    ra = ColorBlendAttrib::make(bm);
+  }
+
+  _render_node->set_attrib(ra);
+  return;
+};
+
+////////////////////////////////////////////////////////////////////
 //    Function : get_cur_alpha
 //      Access : public
 // Description : gets current alpha for a particle

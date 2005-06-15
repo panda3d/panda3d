@@ -21,6 +21,7 @@
 
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
+#include "colorInterpolationManager.h"
 
 #include "pandaNode.h"
 #include "pointerTo.h"
@@ -37,6 +38,7 @@ PUBLISHED:
 
   INLINE void set_geom_node(PandaNode *node);
   INLINE PandaNode *get_geom_node();
+  INLINE ColorInterpolationManager* get_color_interpolation_manager() const;  
 
   virtual BaseParticleRenderer *make_copy();
 
@@ -46,6 +48,7 @@ PUBLISHED:
 
 private:
   PT(PandaNode) _geom_node;
+  PT(ColorInterpolationManager) _color_interpolation_manager;
 
   pvector< PT(PandaNode) > _node_vector;
 

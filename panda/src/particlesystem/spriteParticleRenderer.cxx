@@ -56,9 +56,15 @@ SpriteParticleRenderer(Texture *tex) :
   _alpha_disable(false),
   _blend_method(PP_BLEND_LINEAR),
   _pool_size(0),
-  _source_type(ST_texture)
+  _source_type(ST_texture),
+  _color_interpolation_manager(new ColorInterpolationManager(_color))
 {
   init_geoms();
+
+  if(use_qpgeom)
+    cout<<"using qpgeoms"<<endl;
+  else
+    cout<<"not using qpgeoms"<<endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -515,26 +521,30 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     else if (position[2] < _aabb_min[2])
       _aabb_min[2] = position[2];
 
+
+    float t = cur_particle->get_parameterized_age();
+
     // Calculate the color
-    Colorf c = _color;
+    // This is where we'll want to give the renderer the new color
+    //Colorf c = _color;
+    Colorf c = _color_interpolation_manager->generateColor(t);
+    
 
     int alphamode=get_alpha_mode();
     if (alphamode != PR_ALPHA_NONE) {
-      float t = cur_particle->get_parameterized_age();
-
       if (alphamode == PR_ALPHA_OUT)
-        c[3] = (1.0f - t) * get_user_alpha();
+        c[3] *= (1.0f - t) * get_user_alpha();
       else if (alphamode == PR_ALPHA_IN)
-        c[3] = t * get_user_alpha();
+        c[3] *= t * get_user_alpha();
       else if (alphamode == PR_ALPHA_IN_OUT) {
-        c[3] = 2.0f * min(t, 1.0f - t) * get_user_alpha();
+        c[3] *= 2.0f * min(t, 1.0f - t) * get_user_alpha();
       }
       else {
         assert(alphamode == PR_ALPHA_USER);
-        c[3] = get_user_alpha();
+        c[3] *= get_user_alpha();
       }
     }
-
+    
     if (use_qpgeom) {
       vertex.add_data3f(position);
       color.add_data4f(c);

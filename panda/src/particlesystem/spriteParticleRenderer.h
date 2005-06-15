@@ -30,6 +30,7 @@
 #include "geomSprite.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomPoints.h"
+#include "colorInterpolationManager.h"
 
 class NodePath;
 
@@ -75,6 +76,7 @@ PUBLISHED:
   INLINE void set_alpha_disable(bool ad);
 
   INLINE Texture *get_texture() const;
+  INLINE ColorInterpolationManager* get_color_interpolation_manager() const;
   INLINE const TexCoordf &get_ll_uv() const;
   INLINE const TexCoordf &get_ur_uv() const;
   INLINE float get_width() const;
@@ -89,7 +91,7 @@ PUBLISHED:
   INLINE float get_final_y_scale() const;
   INLINE float get_nonanimated_theta() const;
   INLINE ParticleRendererBlendMethod get_alpha_blend_method() const;
-  INLINE bool get_alpha_disable() const;
+  INLINE bool get_alpha_disable() const;  
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
@@ -126,6 +128,7 @@ private:
   bool _alpha_disable;
 
   ParticleRendererBlendMethod _blend_method;
+  PT(ColorInterpolationManager) _color_interpolation_manager;
 
   Vertexf _aabb_min;
   Vertexf _aabb_max;

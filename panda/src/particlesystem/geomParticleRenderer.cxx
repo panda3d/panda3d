@@ -21,6 +21,7 @@
 
 #include "transformState.h"
 #include "colorScaleAttrib.h"
+#include "colorAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : GeomParticleRenderer
@@ -30,8 +31,11 @@
 
 GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
-  BaseParticleRenderer(am),  _geom_node(geom_node), _pool_size(0) {
-
+  BaseParticleRenderer(am),
+  _geom_node(geom_node),
+  _pool_size(0),
+  _color_interpolation_manager(new ColorInterpolationManager(Colorf(1.0f,1.0f,1.0f,1.0f)))
+{
   if (_geom_node.is_null())
     _geom_node = new PandaNode("empty");
 }
@@ -182,13 +186,16 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
       cur_node->set_state(_render_state);
 
+      float t = cur_particle->get_parameterized_age();
+      Colorf c = _color_interpolation_manager->generateColor(t);
+
       if ((_alpha_mode != PR_ALPHA_NONE)) {
         float alpha_scalar;
 
         if(_alpha_mode == PR_ALPHA_USER) {
           alpha_scalar = get_user_alpha();
         } else {
-          alpha_scalar = cur_particle->get_parameterized_age();
+          alpha_scalar = t;
           if (_alpha_mode == PR_ALPHA_OUT)
             alpha_scalar = 1.0f - alpha_scalar;
           else if (_alpha_mode == PR_ALPHA_IN_OUT)
@@ -196,9 +203,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
           alpha_scalar *= get_user_alpha();
         }
         
+        c[3] *= alpha_scalar;
         cur_node->set_attrib(ColorScaleAttrib::make
-                             (Colorf(1.0f, 1.0f, 1.0f, alpha_scalar)));
+                             (Colorf(1.0f, 1.0f, 1.0f, c[3])));
       }
+
+      cur_node->set_attrib(ColorAttrib::make_flat(c), 0);
 
       cur_node->set_transform(TransformState::make_pos_quat_scale
                               (cur_particle->get_position(),

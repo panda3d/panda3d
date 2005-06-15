@@ -28,7 +28,8 @@
      spriteParticleRenderer.h tangentRingEmitter.I  \
      tangentRingEmitter.h zSpinParticle.I zSpinParticle.h  \
      zSpinParticleFactory.I zSpinParticleFactory.h  \
-     particleCommonFuncs.h  
+     particleCommonFuncs.h colorInterpolationManager.I \
+     colorInterpolationManager.h 
 
 // oriented particles currently unimplemented
 //     orientedParticle.I orientedParticle.h  \
@@ -46,7 +47,7 @@
      sparkleParticleRenderer.cxx sphereSurfaceEmitter.cxx \
      sphereVolumeEmitter.cxx spriteParticleRenderer.cxx \
      tangentRingEmitter.cxx zSpinParticle.cxx \
-     zSpinParticleFactory.cxx 
+     zSpinParticleFactory.cxx colorInterpolationManager.cxx
 
 // orientedParticle.cxx orientedParticleFactory.cxx 
 
@@ -69,7 +70,8 @@
     spriteParticleRenderer.I spriteParticleRenderer.h \
     tangentRingEmitter.I tangentRingEmitter.h zSpinParticle.I \
     zSpinParticle.h zSpinParticleFactory.I zSpinParticleFactory.h \
-    particleCommonFuncs.h
+    particleCommonFuncs.h colorInterpolationManager.I \
+    colorInterpolationManager.h
 
 // orientedParticle.I orientedParticle.h \
 // orientedParticleFactory.I orientedParticleFactory.h \
