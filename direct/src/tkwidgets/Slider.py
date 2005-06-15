@@ -321,10 +321,12 @@ class SliderWidget(Pmw.MegaWidget):
         # Arrow button
         # Find screen space position of bottom/center of arrow button
         x = (self._arrowBtn.winfo_rootx() + self._arrowBtn.winfo_width()/2.0 -
-             string.atoi(self.interior()['bd']))
+             self.interior()['bd'])
+#             string.atoi(self.interior()['bd']))
         y = self._arrowBtn.winfo_rooty() + self._arrowBtn.winfo_height()
         # Popup border width
-        bd = string.atoi(self._popup['bd'])
+        bd = self._popup['bd']
+#        bd = string.atoi(self._popup['bd'])        
         # Get width of label
         minW = self._minLabel.winfo_width()
         # Width of canvas to adjust for

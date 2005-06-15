@@ -6,7 +6,7 @@ from pandac.PandaModules import ParticleSystem
 from pandac.PandaModules import BaseParticleFactory
 from pandac.PandaModules import PointParticleFactory
 from pandac.PandaModules import ZSpinParticleFactory
-#import OrientedParticleFactory
+#from pandac.PandaModules import OrientedParticleFactory
 from pandac.PandaModules import BaseParticleRenderer
 from pandac.PandaModules import PointParticleRenderer
 from pandac.PandaModules import LineParticleRenderer
@@ -281,16 +281,16 @@ class Particles(ParticleSystem):
         file.write('# Renderer parameters\n')
         alphaMode = self.renderer.getAlphaMode()
         aMode = "PRALPHANONE"
-        if (alphaMode == BaseParticleRenderer.BaseParticleRenderer.PRALPHANONE):
+        if (alphaMode == BaseParticleRenderer.PRALPHANONE):
             aMode = "PRALPHANONE"
         elif (alphaMode ==
-                BaseParticleRenderer.BaseParticleRenderer.PRALPHAOUT):
+                BaseParticleRenderer.PRALPHAOUT):
             aMode = "PRALPHAOUT"
         elif (alphaMode ==
-                BaseParticleRenderer.BaseParticleRenderer.PRALPHAIN):
+                BaseParticleRenderer.PRALPHAIN):
             aMode = "PRALPHAIN"
         elif (alphaMode ==
-                BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER):
+                BaseParticleRenderer.PRALPHAUSER):
             aMode = "PRALPHAUSER"
         file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
         file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % \
@@ -305,20 +305,20 @@ class Particles(ParticleSystem):
             file.write((targ + '.renderer.setEndColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
             blendType = self.renderer.getBlendType()
             bType = "PPONECOLOR"
-            if (blendType == PointParticleRenderer.PointParticleRenderer.PPONECOLOR):
+            if (blendType == PointParticleRenderer.PPONECOLOR):
                 bType = "PPONECOLOR"
-            elif (blendType == PointParticleRenderer.PointParticleRenderer.PPBLENDLIFE):
+            elif (blendType == PointParticleRenderer.PPBLENDLIFE):
                 bType = "PPBLENDLIFE"
-            elif (blendType == PointParticleRenderer.PointParticleRenderer.PPBLENDVEL):
+            elif (blendType == PointParticleRenderer.PPBLENDVEL):
                 bType = "PPBLENDVEL"
             file.write(targ + '.renderer.setBlendType(PointParticleRenderer.' + bType + ')\n')
             blendMethod = self.renderer.getBlendMethod()
             bMethod = "PPNOBLEND"
-            if (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPNOBLEND):
+            if (blendMethod == BaseParticleRenderer.PPNOBLEND):
                 bMethod = "PPNOBLEND"
-            elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDLINEAR):
+            elif (blendMethod == BaseParticleRenderer.PPBLENDLINEAR):
                 bMethod = "PPBLENDLINEAR"
-            elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDCUBIC):
+            elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
                 bMethod = "PPBLENDCUBIC"
             file.write(targ + '.renderer.setBlendMethod(BaseParticleRenderer.' + bMethod + ')\n')
         elif (self.rendererType == "LineParticleRenderer"):
@@ -331,6 +331,54 @@ class Particles(ParticleSystem):
             file.write('# Geom parameters\n')
             node = self.renderer.getGeomNode()
             file.write(targ + '.renderer.setGeomNode(' + node.getName() + ')\n')
+            cbmLut = ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax')
+            cboLut = ('OZero','OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                      'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                      'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                      'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                      'OIncomingColorSaturate')
+            cbAttrib = self.renderer.getRenderNode().getAttrib(ColorBlendAttrib.getClassType())
+            if(cbAttrib):
+                cbMode = cbAttrib.getMode()
+                if(cbMode > 0):
+                    if(cbMode in (ColorBlendAttrib.MAdd,ColorBlendAttrib.MSubtract,ColorBlendAttrib.MInvSubtract)):
+                        cboa = cbAttrib.getOperandA()
+                        cbob = cbAttrib.getOperandB()
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s,ColorBlendAttrib.%s,ColorBlendAttrib.%s)\n' %
+                                (cbmLut[cbMode],cboLut[cboa],cboLut[cbob]))
+                    else:
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
+            cim = self.renderer.getColorInterpolationManager()
+            segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
+            for sid in segIdList:
+                seg = cim.getSegment(sid)
+                t_b = seg.getTimeBegin()
+                t_e = seg.getTimeEnd()
+                fun = seg.getFunction()
+                type = fun.getType()
+                if type == 'ColorInterpolationFunctionConstant':
+                    fun = cim.downcastFunctionToConstant(fun)
+                    c_a = fun.getColorA()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                elif type == 'ColorInterpolationFunctionLinear':
+                    fun = cim.downcastFunctionToLinear(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                elif type == 'ColorInterpolationFunctionStepwave':
+                    fun = cim.downcastFunctionToStepwave(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    w_a = fun.getWidthA()
+                    w_b = fun.getWidthB()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                elif type == 'ColorInterpolationFunctionSinusoid':
+                    fun = cim.downcastFunctionToSinusoid(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    per = fun.getPeriod()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
+
         elif (self.rendererType == "SparkleParticleRenderer"):
             file.write('# Sparkle parameters\n')
             sColor = self.renderer.getCenterColor()
@@ -341,13 +389,13 @@ class Particles(ParticleSystem):
             file.write(targ + '.renderer.setDeathRadius(%.4f)\n' % self.renderer.getDeathRadius())
             lifeScale = self.renderer.getLifeScale()
             lScale = "SPNOSCALE"
-            if (lifeScale == SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE):
+            if (lifeScale == SparkleParticleRenderer.SPSCALE):
                 lScale = "SPSCALE"
             file.write(targ + '.renderer.setLifeScale(SparkleParticleRenderer.' + lScale + ')\n')
         elif (self.rendererType == "SpriteParticleRenderer"):
             file.write('# Sprite parameters\n')
-            if (self.renderer.getSourceType() ==
-                SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
+#            if (self.renderer.getSourceType() == 0):
+            if (self.renderer.getSourceType() == SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
                 tex = self.renderer.getTexture()
                 file.write(targ + '.renderer.setTexture(loader.loadTexture(\'' + tex.getName() + '\'))\n')
             else:
@@ -366,23 +414,71 @@ class Particles(ParticleSystem):
             file.write(targ + '.renderer.setNonanimatedTheta(%.4f)\n' % self.renderer.getNonanimatedTheta())
             blendMethod = self.renderer.getAlphaBlendMethod()
             bMethod = "PPNOBLEND"
-            if (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPNOBLEND):
+            if (blendMethod == BaseParticleRenderer.PPNOBLEND):
                 bMethod = "PPNOBLEND"
-            elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDLINEAR):
+            elif (blendMethod == BaseParticleRenderer.PPBLENDLINEAR):
                 bMethod = "PPBLENDLINEAR"
-            elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDCUBIC):
+            elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
                 bMethod = "PPBLENDCUBIC"
             file.write(targ + '.renderer.setAlphaBlendMethod(BaseParticleRenderer.' + bMethod + ')\n')
             file.write(targ + '.renderer.setAlphaDisable(%d)\n' % self.renderer.getAlphaDisable())
+            # Save the color blending to file
+            cbmLut = ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax')
+            cboLut = ('OZero','OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                      'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                      'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                      'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                      'OIncomingColorSaturate')
+            cbAttrib = self.renderer.getRenderNode().getAttrib(ColorBlendAttrib.getClassType())
+            if(cbAttrib):
+                cbMode = cbAttrib.getMode()
+                if(cbMode > 0):
+                    if(cbMode in (ColorBlendAttrib.MAdd,ColorBlendAttrib.MSubtract,ColorBlendAttrib.MInvSubtract)):
+                        cboa = cbAttrib.getOperandA()
+                        cbob = cbAttrib.getOperandB()
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s,ColorBlendAttrib.%s,ColorBlendAttrib.%s)\n' %
+                                (cbmLut[cbMode],cboLut[cboa],cboLut[cbob]))
+                    else:
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
+            cim = self.renderer.getColorInterpolationManager()
+            segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
+            for sid in segIdList:
+                seg = cim.getSegment(sid)
+                t_b = seg.getTimeBegin()
+                t_e = seg.getTimeEnd()
+                fun = seg.getFunction()
+                type = fun.getType()
+                if type == 'ColorInterpolationFunctionConstant':
+                    fun = cim.downcastFunctionToConstant(fun)
+                    c_a = fun.getColorA()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                elif type == 'ColorInterpolationFunctionLinear':
+                    fun = cim.downcastFunctionToLinear(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                elif type == 'ColorInterpolationFunctionStepwave':
+                    fun = cim.downcastFunctionToStepwave(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    w_a = fun.getWidthA()
+                    w_b = fun.getWidthB()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                elif type == 'ColorInterpolationFunctionSinusoid':
+                    fun = cim.downcastFunctionToSinusoid(fun)
+                    c_a = fun.getColorA()
+                    c_b = fun.getColorB()
+                    per = fun.getPeriod()
+                    file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
 
         file.write('# Emitter parameters\n')
         emissionType = self.emitter.getEmissionType()
         eType = "ETEXPLICIT"
-        if (emissionType == BaseParticleEmitter.BaseParticleEmitter.ETEXPLICIT):
+        if (emissionType == BaseParticleEmitter.ETEXPLICIT):
             eType = "ETEXPLICIT"
-        elif (emissionType == BaseParticleEmitter.BaseParticleEmitter.ETRADIATE):
+        elif (emissionType == BaseParticleEmitter.ETRADIATE):
             eType = "ETRADIATE"
-        elif (emissionType == BaseParticleEmitter.BaseParticleEmitter.ETCUSTOM):
+        elif (emissionType == BaseParticleEmitter.ETCUSTOM):
             eType = "ETCUSTOM"
         file.write(targ + '.emitter.setEmissionType(BaseParticleEmitter.' + eType + ')\n')
         file.write(targ + '.emitter.setAmplitude(%.4f)\n' % self.emitter.getAmplitude())

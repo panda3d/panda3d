@@ -15,11 +15,13 @@ from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
 
+from pandac.PandaModules import ColorBlendAttrib
+
 class ParticlePanel(AppShell):
     # Override class variables
     appname = 'Particle Panel'
     frameWidth  = 375
-    frameHeight = 575
+    frameHeight = 675
     usecommandarea = 0
     usestatusarea  = 0
     balloonState = 'both'
@@ -511,6 +513,8 @@ class ParticlePanel(AppShell):
             command = self.setRendererUserAlpha)
 
         self.rendererNotebook = Pmw.NoteBook(rendererPage, tabpos = None)
+        self.rendererNotebook.pack(fill = BOTH, expand = 1)
+               
         # Line page #
         linePage = self.rendererNotebook.add('LineParticleRenderer')
         self.createColorEntry(linePage, 'Line Renderer', 'Head Color',
@@ -526,13 +530,77 @@ class ParticlePanel(AppShell):
         geomPage = self.rendererNotebook.add('GeomParticleRenderer')
         f = Frame(geomPage)
         f.pack(fill = X)
-        Label(f, width = 12, text = 'Geom Node').pack(side = LEFT)
+        Label(f, width = 12, text = 'Geom Node', pady = 3).pack(side = LEFT)
         self.rendererGeomNode = StringVar()
         self.rendererGeomNodeEntry = Entry(
             f, width = 12,
             textvariable = self.rendererGeomNode)
         self.rendererGeomNodeEntry.bind('<Return>', self.setRendererGeomNode)
         self.rendererGeomNodeEntry.pack(side = LEFT, expand = 1, fill = X)
+
+        f = Frame(geomPage)
+        f.pack(fill = BOTH, expand = 1)
+        rendererGeomNotebook = Pmw.NoteBook(f)
+        rendererGeomNotebook.pack(fill = BOTH, expand = 1)
+
+        rendererGeomBlendPage = rendererGeomNotebook.add('Blend')
+        rendererGeomInterpolationPage = rendererGeomNotebook.add('Interpolate')
+
+        p = Frame(rendererGeomBlendPage)
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Color Blend',
+                              'How to render semi-transparent colors',
+                              ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax'),
+                              self.setRendererGeomColorBlendMethod)
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Incoming Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OIncomingColorSaturate','OZero'),
+                              self.setRendererGeomColorBlendIncomingOperand)
+        self.createOptionMenu(p, 'Geom Renderer',
+                              'Fbuffer Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OZero'),
+                              self.setRendererGeomColorBlendFbufferOperand)
+        p.pack(fill = X)
+        p = Frame(rendererGeomInterpolationPage)
+        p.pack(fill = X)
+        addSegmentButton = Menubutton(p, text = 'Add Segment',
+                                      relief = RAISED,
+                                      borderwidth = 2,
+                                      font=('MSSansSerif', 14, 'bold'),
+                                      activebackground = '#909090')
+        segmentMenu = Menu(addSegmentButton)
+        addSegmentButton['menu'] = segmentMenu
+        segmentMenu.add_command(label = 'Add Constant segment',
+                                command = self.addConstantInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Linear segment',
+                                command = self.addLinearInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Stepwave segment',
+                                command = self.addStepwaveInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Sinusoid segment',
+                                command = self.addSinusoidInterpolationSegment)
+        addSegmentButton.pack(expand = 0)
+        
+        sf = Pmw.ScrolledFrame(p, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+        
+        self.rendererGeomSegmentFrame = sf.interior()
+        self.rendererGeomSegmentFrame.pack(fill = BOTH, expand = 1)
+        self.rendererGeomSegmentWidgetList = []
+
+
+        
+        rendererGeomNotebook.setnaturalsize()
+
         # Point #
         rendererPointPage = self.rendererNotebook.add('PointParticleRenderer')
         self.createFloater(rendererPointPage, 'Point Renderer', 'Point Size',
@@ -584,101 +652,168 @@ class ParticlePanel(AppShell):
         # Sprite #
         spritePage = self.rendererNotebook.add('SpriteParticleRenderer')
         f = Frame(spritePage)
-        Label(f, width = 12, text = 'Texture Type:').pack(side = LEFT)
+        f.pack(fill = BOTH, expand = 1)
+
+        rendererSpriteNotebook = Pmw.NoteBook(f)
+        rendererSpriteNotebook.pack(fill = BOTH, expand = 1)
+        
+        rendererSpriteTexturePage = rendererSpriteNotebook.add('Texture')
+        rendererSpriteScalePage = rendererSpriteNotebook.add('Scale')
+        rendererSpriteBlendPage = rendererSpriteNotebook.add('Blend')
+        rendererSpriteInterpolationPage = rendererSpriteNotebook.add('Interpolate')
+
+        p = Frame(rendererSpriteTexturePage)        
+        p.pack(fill = X)
+        Label(p, width = 12, text = 'Texture Type:').pack(side = LEFT)
         self.rendererSpriteSourceType = IntVar()
         self.rendererSpriteSourceType.set(SpriteParticleRenderer.STTexture)
         self.rendererSpriteSTTexture = self.createRadiobutton(
-            f, 'left',
+            p, 'left',
             'Sprite Renderer', 'Texture Type',
             'Sprite particle renderer created from texture file',
             self.rendererSpriteSourceType, SpriteParticleRenderer.STTexture,
             self.setSpriteSourceType)
         self.rendererSpriteSTTexture = self.createRadiobutton(
-            f, 'left',
+            p, 'left',
             'Sprite Renderer', 'NodePath Type',
             'Sprite particle renderer created from node path',
             self.rendererSpriteSourceType, SpriteParticleRenderer.STFromNode,
             self.setSpriteSourceType)
-        f.pack(fill = X)
-        f = Frame(spritePage)
-        Label(f, width = 6, text = 'Texture:').pack(side = LEFT)
+        self.rendererSpriteSTTexture.pack(side = LEFT, expand = 1, fill = X)
+        p = Frame(rendererSpriteTexturePage)
+        Label(p, width = 6, text = 'Texture:').pack(side = LEFT)
+        p.pack(fill = X)
         self.rendererSpriteTexture = StringVar()
-        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourceTextureName)
+#        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourcetexturename)
         self.rendererSpriteTextureEntry = Entry(
-            f, width = 12,
+            p, width = 12,
             textvariable = self.rendererSpriteTexture)
         self.rendererSpriteTextureEntry.pack(side = LEFT, expand = 1, fill = X)
-        f.pack(fill = X)
-        f = Frame(spritePage)
-        Label(f, width = 6, text = 'File:').pack(side = LEFT)
+        p = Frame(rendererSpriteTexturePage)
+        p.pack(fill = X)
+        Label(p, width = 6, text = 'file:').pack(side = LEFT)
         self.rendererSpriteFile = StringVar()
-        self.rendererSpriteFile.set(SpriteParticleRenderer.sourceFileName)
+#        self.rendererspritefile.set(spriteparticlerenderer.sourcefilename)
         self.rendererSpriteFileEntry = Entry(
-            f, width = 12,
+            p, width = 12,
             textvariable = self.rendererSpriteFile)
         self.rendererSpriteFileEntry.pack(side = LEFT, expand = 1, fill = X)
-        Label(f, width = 6, text = 'Node:').pack(side = LEFT)
+        Label(p, width = 6, text = 'Node:').pack(side = LEFT)
         self.rendererSpriteNode = StringVar()
-        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
+#        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
         self.rendererSpriteNodeEntry = Entry(
-            f, width = 6,
+            p, width = 6,
             textvariable = self.rendererSpriteNode)
         self.rendererSpriteNodeEntry.pack(side = LEFT, expand = 1, fill = X)
-        f.pack(fill = X)
         # Init entries
         self.setSpriteSourceType()
-        self.setTextureButton = Button(spritePage, text = 'Set Texture',
+        self.setTextureButton = Button(rendererSpriteTexturePage, text = 'Set Texture',
                                        command = self.setRendererSpriteTexture)
-        self.setTextureButton.pack(fill = X)
-        f = Frame(spritePage)
+        self.setTextureButton.pack(fill = X, pady = 3)
+        p = Frame(rendererSpriteScalePage)
+        p.pack(fill = X)
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'X Scale',
+            p, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
              "Off: stays as start_X_Scale"),
             self.toggleRendererSpriteXScale, 0, side = LEFT)
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'Y Scale',
+            p, 'Sprite Renderer', 'Y Scale',
             ("On: y scale is interpolated over particle's life; " +
              "Off: stays as start_Y_Scale"),
             self.toggleRendererSpriteYScale, 0, side = LEFT)
         self.createCheckbutton(
-            f, 'Sprite Renderer', 'Anim Angle',
+            p, 'Sprite Renderer', 'Anim Angle',
             ("On: particles that are set to spin on the Z axis will " +
              "spin appropriately"),
             self.toggleRendererSpriteAnimAngle, 0, side = LEFT)
-        f.pack(fill = X)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        p = Frame(rendererSpriteScalePage)
+        p.pack(fill = X)
+        self.createFloater(p, 'Sprite Renderer',
                            'Initial X Scale',
                            'Initial X scaling factor',
                            command = self.setRendererSpriteInitialXScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Final X Scale',
                            'Final X scaling factor, if xScale enabled',
                            command = self.setRendererSpriteFinalXScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Initial Y Scale',
                            'Initial Y scaling factor',
                            command = self.setRendererSpriteInitialYScale)
-        self.createFloater(spritePage, 'Sprite Renderer',
+        self.createFloater(p, 'Sprite Renderer',
                            'Final Y Scale',
                            'Final Y scaling factor, if yScale enabled',
                            command = self.setRendererSpriteFinalYScale)
-        self.createAngleDial(spritePage, 'Sprite Renderer',
+        self.createAngleDial(p, 'Sprite Renderer',
                              'Non Animated Theta',
                              ('If animAngle is false: counter clockwise ' +
                               'Z rotation of all sprites'),
                              command = self.setRendererSpriteNonAnimatedTheta)
-        self.createOptionMenu(spritePage, 'Sprite Renderer',
+        p = Frame(rendererSpriteBlendPage)
+        p.pack(fill = X)
+        self.createOptionMenu(p, 'Sprite Renderer',
                               'Blend Type',
                               'Interpolation blend type for X and Y scaling',
                               ('PP_NO_BLEND', 'PP_LINEAR', 'PP_CUBIC'),
                               self.setRendererSpriteBlendMethod)
         self.createCheckbutton(
-            spritePage, 'Sprite Renderer', 'Alpha Disable',
+            p, 'Sprite Renderer', 'Alpha Disable',
             'On: alpha blending is disabled',
             self.toggleRendererSpriteAlphaDisable, 0)
-        self.rendererNotebook.pack(fill = X)
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Color Blend',
+                              'How to render semi-transparent colors',
+                              ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax'),
+                              self.setRendererSpriteColorBlendMethod)
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Incoming Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OIncomingColorSaturate','OZero'),
+                              self.setRendererSpriteColorBlendIncomingOperand)
+        self.createOptionMenu(p, 'Sprite Renderer',
+                              'Fbuffer Op.',
+                              'See ColorBlendAttrib.h for explanation',
+                              ('OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
+                               'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
+                               'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
+                               'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
+                               'OZero'),
+                              self.setRendererSpriteColorBlendFbufferOperand)
+        p = Frame(rendererSpriteInterpolationPage)
+        p.pack(fill = BOTH, expand = 1)
+        addSegmentButton = Menubutton(p, text = 'Add Segment',
+                                      relief = RAISED,
+                                      borderwidth = 2,
+                                      font=('MSSansSerif', 14, 'bold'),
+                                      activebackground = '#909090')
+        segmentMenu = Menu(addSegmentButton)
+        addSegmentButton['menu'] = segmentMenu
+        segmentMenu.add_command(label = 'Add Constant segment',
+                                command = self.addConstantInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Linear segment',
+                                command = self.addLinearInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Stepwave segment',
+                                command = self.addStepwaveInterpolationSegment)
+        segmentMenu.add_command(label = 'Add Sinusoid segment',
+                                command = self.addSinusoidInterpolationSegment)
+        addSegmentButton.pack(expand = 0)
 
+        pp = Frame(p)
+        pp.pack(fill = BOTH, expand = 1, pady = 3)
+        sf = Pmw.ScrolledFrame(pp, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+        
+        self.rendererSpriteSegmentFrame = sf.interior()
+        self.rendererSpriteSegmentFrame.pack(fill = BOTH, expand = 1)
+        self.rendererSpriteSegmentWidgetList = []
+
+        rendererSpriteNotebook.setnaturalsize()
+        ##########################################################
         ## FORCE PAGE WIDGETS ##
         self.addForceButton = Menubutton(forcePage, text = 'Add Force',
                                           relief = RAISED,
@@ -725,6 +860,7 @@ class ParticlePanel(AppShell):
         self.forceGroupNotebook = Pmw.NoteBook(self.forceFrame, tabpos = None)
         self.forceGroupNotebook.pack(fill = X)
 
+        ########################################################################
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
         self.rendererNotebook.setnaturalsize()
@@ -1323,6 +1459,7 @@ class ParticlePanel(AppShell):
                 'Emitter', 'Radiate Origin')['state'] = 'normal'
             self.getWidget(
                 'Emitter', 'Explicit Velocity')['state'] = 'disabled'
+
             # Hide custom widgets
             if isinstance(self.particles.emitter, DiscEmitter):
                 self.discCustomFrame.pack_forget()
@@ -1422,6 +1559,21 @@ class ParticlePanel(AppShell):
         self.particles.setRenderer(type)
         self.updateRendererWidgets()
 
+#        if(type is 'SpriteParticleRenderer'):
+#            if(self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+#                self.getWidget('Sprite Renderer','Incoming Op.').pack(fill = X)
+#                self.getWidget('Sprite Renderer','Fbuffer Op.').pack(fill = X)
+#            else:
+#                self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
+#                self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
+#        elif(type is 'GeomParticleRenderer'):
+#            if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+#                self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
+#                self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
+#            else:
+#                self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
+#                self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
+
     def updateRendererWidgets(self):
         renderer = self.particles.renderer
         alphaMode = renderer.getAlphaMode()
@@ -1448,7 +1600,16 @@ class ParticlePanel(AppShell):
             self.getWidget('Line Renderer', 'Line Scale Factor').set(
                 renderer.getLineScaleFactor())
         elif isinstance(renderer, GeomParticleRenderer):
-            pass
+            if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+                self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
+                self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
+            else:
+                self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
+                self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
+            for x in self.rendererGeomSegmentWidgetList:
+                x.pack_forget()
+                x.destroy()
+            self.rendererGeomSegmentWidgetList = []
         elif isinstance(renderer, PointParticleRenderer):
             pointSize = renderer.getPointSize()
             self.getWidget('Point Renderer', 'Point Size').set(pointSize)
@@ -1538,9 +1699,21 @@ class ParticlePanel(AppShell):
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Sprite Renderer', 'Alpha Disable').set(
                 renderer.getAlphaDisable())
+            if(self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+                self.getWidget('Sprite Renderer','Incoming Op.').pack(fill = X)
+                self.getWidget('Sprite Renderer','Fbuffer Op.').pack(fill = X)
+            else:
+                self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
+                self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
+            for x in self.rendererSpriteSegmentWidgetList:
+                x.pack_forget()
+                x.destroy()
+            self.rendererSpriteSegmentWidgetList = []
 
     def selectRendererPage(self):
         type = self.particles.renderer.__class__.__name__
+        if(type == 'SpriteParticleRendererExt'):
+           type = 'SpriteParticleRenderer'
         self.rendererNotebook.selectpage(type)
         self.getVariable('Renderer', 'Renderer Type').set(type)
 
@@ -1682,11 +1855,301 @@ class ParticlePanel(AppShell):
             bMethod = BaseParticleRenderer.PPBLENDCUBIC
         else:
             bMethod = BaseParticleRenderer.PPNOBLEND
-        self.particles.renderer.setAlphaBlendMethod(bMethod)
     def toggleRendererSpriteAlphaDisable(self):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
+    def setRendererColorBlendAttrib(self,rendererName,blendMethodStr,incomingOperandStr,fbufferOperandStr):
+        self.particles.getRenderer().setColorBlendMode(eval('ColorBlendAttrib.'+blendMethodStr),
+                                                       eval('ColorBlendAttrib.'+incomingOperandStr),
+                                                       eval('ColorBlendAttrib.'+fbufferOperandStr))
 
+        if(blendMethodStr in ['MAdd','MSubtract','MInvSubtract']):
+            self.getWidget(rendererName,'Incoming Op.').pack(fill = X)
+            self.getWidget(rendererName,'Fbuffer Op.').pack(fill = X)
+        else:
+            self.getWidget(rendererName,'Incoming Op.').pack_forget()
+            self.getWidget(rendererName,'Fbuffer Op.').pack_forget()
+
+        self.updateRendererWidgets()
+    def setRendererSpriteColorBlendMethod(self, blendMethod):
+        print blendMethod
+        
+        blendMethodStr = blendMethod
+        incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
+        fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+    def setRendererSpriteColorBlendIncomingOperand(self, operand):
+        print 'incoming operand->'+operand
+        blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
+        incomingOperandStr = operand
+        fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+    def setRendererSpriteColorBlendFbufferOperand(self, operand):
+        print 'fbuffer operand->'+operand
+        blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
+        incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
+        fbufferOperandStr = operand
+
+        self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+    def setRendererGeomColorBlendMethod(self, blendMethod):
+        print blendMethod
+        blendMethodStr = blendMethod
+        incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
+        fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+    def setRendererGeomColorBlendIncomingOperand(self, operand):
+        print 'incoming operand->'+operand
+        blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
+        incomingOperandStr = operand
+        fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
+
+        self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+    def setRendererGeomColorBlendFbufferOperand(self, operand):
+        print 'fbuffer operand->'+operand
+        blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
+        incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
+        fbufferOperandStr = operand
+        self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
+
+    def addConstantInterpolationSegment(self):
+        print 'adding constant'
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(cim.addConstant())
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Constant'
+            self.rendererSpriteSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent,segName,cim,seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = `len(self.rendererGeomSegmentWidgetList)`+':Constant'
+            self.rendererGeomSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent,segName,cim,seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addLinearInterpolationSegment(self):
+        print 'adding linear'
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(cim.addLinear())
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Linear'
+            self.rendererSpriteSegmentWidgetList.append(
+                self.createLinearInterpolationSegmentWidget(parent,segName,cim,seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = `len(self.rendererGeomSegmentWidgetList)`+':Linear'
+            self.rendererGeomSegmentWidgetList.append(
+                self.createLinearInterpolationSegmentWidget(parent,segName,cim,seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addStepwaveInterpolationSegment(self):
+        print 'adding stepwave'
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(cim.addStepwave())
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Stepwave'
+            self.rendererSpriteSegmentWidgetList.append(
+                self.createStepwaveInterpolationSegmentWidget(parent,segName,cim,seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = `len(self.rendererGeomSegmentWidgetList)`+':Stepwave'
+            self.rendererGeomSegmentWidgetList.append(
+                self.createStepwaveInterpolationSegmentWidget(parent,segName,cim,seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def addSinusoidInterpolationSegment(self):
+        print 'adding sinusoid'
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(cim.addSinusoid())
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Sinusoid'
+            self.rendererSpriteSegmentWidgetList.append(
+                self.createSinusoidInterpolationSegmentWidget(parent,segName,cim,seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = `len(self.rendererGeomSegmentWidgetList)`+':Sinusoid'
+            self.rendererGeomSegmentWidgetList.append(
+                self.createSinusoidInterpolationSegmentWidget(parent,segName,cim,seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def createInterpolationSegmentFrame(self, parent, segName, seg):
+        frame = Frame(parent, relief = RAISED, borderwidth = 2)
+        lFrame = Frame(frame, relief = FLAT)
+        def removeInterpolationSegmentFrame(s = self, seg = seg, fr = frame):
+            s.particles.getRenderer().getColorInterpolationManager().clearSegment(seg.getId())
+            fr.pack_forget()
+        def setSegBegin(time):
+            seg.setTimeBegin(time)
+        def setSegEnd(time):
+            seg.setTimeEnd(time)
+        Button(lFrame, text = 'X',
+               command = removeInterpolationSegmentFrame).pack(side = RIGHT, expand = 0)
+        Label(lFrame, text = segName,
+              foreground = 'Blue',
+              font = ('MSSansSerif', 12, 'bold'),
+              ).pack(fill = X, expand = 1)
+        lFrame.pack(fill = X, expand = 1)
+        f = Frame(frame)
+        self.createSlider(f,
+                          'Sprite Renderer',segName + ' Begin',
+                          '',
+                          command = setSegBegin,
+                          value = seg.getTimeBegin())
+        self.createSlider(f,'Sprite Renderer',segName + ' End',
+                          '',
+                          command = setSegEnd,
+                          value = seg.getTimeEnd())
+        f.pack(fill = X, expand = 0)
+        frame.pack(pady = 3, fill = X, expand = 0)
+        return frame
+    
+    def createConstantInterpolationSegmentWidget(self, parent, segName, cim, segment):
+        fun = cim.downcastFunctionToConstant(segment.getFunction())        
+        def setSegColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+            
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color A',
+                              '',
+                              command = setSegColorA,
+                              value = c)
+        f.pack(fill = X)
+        return frame
+
+    def createLinearInterpolationSegmentWidget(self, parent, segName, cim, segment):
+        fun = cim.downcastFunctionToLinear(segment.getFunction())        
+        def setSegColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+        def setSegColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color A',
+                              '',
+                              command = setSegColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color B',
+                              '',
+                              command = setSegColorB,
+                              value = c)
+        f.pack(fill = X)
+        return frame
+
+    def createStepwaveInterpolationSegmentWidget(self, parent, segName, cim, segment):
+        fun = cim.downcastFunctionToStepwave(segment.getFunction())        
+        def setColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+        def setColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+        def setWidthA(width):
+            fun.setWidthA(width)
+        def setWidthB(width):
+            fun.setWidthB(width)
+            
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color A',
+                              '',
+                              command = setColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color B',
+                              '',
+                              command = setColorB,
+                              value = c)
+        w = fun.getWidthA()
+        self.createSlider(f,'Sprite Renderer', segName + ' Width A',
+                          '',
+                          command = setWidthA,
+                          value = w)
+        w = fun.getWidthB()
+        self.createSlider(f,'Sprite Renderer', segName + ' Width B',
+                          '',
+                          command = setWidthB,
+                          value = w)
+        f.pack(fill = X)
+        return frame
+    
+    def createSinusoidInterpolationSegmentWidget(self, parent, segName, cim, segment):
+        fun = cim.downcastFunctionToSinusoid(segment.getFunction())        
+        def setColorA(color):
+            fun.setColorA(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+        def setColorB(color):
+            fun.setColorB(
+                Vec4(color[0]/255.0,color[1]/255.0,
+                     color[2]/255.0,color[3]/255.0))
+        def setPeriod(period):
+            fun.setPeriod(period)
+            
+        frame = self.createInterpolationSegmentFrame(parent, segName, segment)
+        f = Frame(frame)
+
+        c = fun.getColorA()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color A',
+                              '',
+                              command = setColorA,
+                              value = c)
+        c = fun.getColorB()
+        c = [c[0]*255.0,c[1]*255.0,c[2]*255.0,c[3]*255.0]
+        self.createColorEntry(f,'Sprite Renderer',segName + ' Color B',
+                              '',
+                              command = setColorB,
+                              value = c)
+        p = fun.getPeriod()
+        self.createFloater(f,'Sprite Renderer', segName + ' Period',
+                          '',
+                          command = setPeriod,
+                          value = p)
+        f.pack(fill = X)
+        return frame
+
+#    def updateRendererSpriteSegments(self):
+#        ren = self.particles.getRenderer()
+#        cim = ren.getColorInterpolationManager()
+#        seg = cim.getSegment(cim.addConstant())
+
+        
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page
