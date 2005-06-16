@@ -60,7 +60,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         # Set instance copy of class variable
         self.sourceNodeName = name
 
-    def setTextureFromNode(self, modelName = None, nodeName = None):
+    def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
         if modelName == None:
             modelName = self.getSourceFileName()
         else:
@@ -80,6 +80,6 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
             m.removeNode()
             return None
-        self.setFromNode(np)
+        self.setFromNode(np, sizeFromTexels)
         m.removeNode()
         
