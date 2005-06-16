@@ -1559,21 +1559,6 @@ class ParticlePanel(AppShell):
         self.particles.setRenderer(type)
         self.updateRendererWidgets()
 
-#        if(type is 'SpriteParticleRenderer'):
-#            if(self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
-#                self.getWidget('Sprite Renderer','Incoming Op.').pack(fill = X)
-#                self.getWidget('Sprite Renderer','Fbuffer Op.').pack(fill = X)
-#            else:
-#                self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
-#                self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
-#        elif(type is 'GeomParticleRenderer'):
-#            if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
-#                self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
-#                self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
-#            else:
-#                self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
-#                self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
-
     def updateRendererWidgets(self):
         renderer = self.particles.renderer
         alphaMode = renderer.getAlphaMode()
@@ -1606,7 +1591,7 @@ class ParticlePanel(AppShell):
             else:
                 self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
                 self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
-            for x in self.rendererGeomSegmentWidgetList:
+            for x in self.rendererSpriteSegmentWidgetList:
                 x.pack_forget()
                 x.destroy()
             self.rendererGeomSegmentWidgetList = []
@@ -1705,7 +1690,7 @@ class ParticlePanel(AppShell):
             else:
                 self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
                 self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
-            for x in self.rendererSpriteSegmentWidgetList:
+            for x in self.rendererGeomSegmentWidgetList:
                 x.pack_forget()
                 x.destroy()
             self.rendererSpriteSegmentWidgetList = []
@@ -1924,12 +1909,12 @@ class ParticlePanel(AppShell):
             parent = self.rendererSpriteSegmentFrame
             segName = `len(self.rendererSpriteSegmentWidgetList)`+':Constant'
             self.rendererSpriteSegmentWidgetList.append(
-                self.createConstantInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createConstantInterpolationSegmentWidget(parent,segName,seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
             segName = `len(self.rendererGeomSegmentWidgetList)`+':Constant'
             self.rendererGeomSegmentWidgetList.append(
-                self.createConstantInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createConstantInterpolationSegmentWidget(parent,segName,seg))
         parent.pack(fill=BOTH, expand=1)
 
     def addLinearInterpolationSegment(self):
@@ -1942,12 +1927,12 @@ class ParticlePanel(AppShell):
             parent = self.rendererSpriteSegmentFrame
             segName = `len(self.rendererSpriteSegmentWidgetList)`+':Linear'
             self.rendererSpriteSegmentWidgetList.append(
-                self.createLinearInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createLinearInterpolationSegmentWidget(parent,segName,seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
             segName = `len(self.rendererGeomSegmentWidgetList)`+':Linear'
             self.rendererGeomSegmentWidgetList.append(
-                self.createLinearInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createLinearInterpolationSegmentWidget(parent,segName,seg))
         parent.pack(fill=BOTH, expand=1)
 
     def addStepwaveInterpolationSegment(self):
@@ -1960,12 +1945,12 @@ class ParticlePanel(AppShell):
             parent = self.rendererSpriteSegmentFrame
             segName = `len(self.rendererSpriteSegmentWidgetList)`+':Stepwave'
             self.rendererSpriteSegmentWidgetList.append(
-                self.createStepwaveInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createStepwaveInterpolationSegmentWidget(parent,segName,seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
             segName = `len(self.rendererGeomSegmentWidgetList)`+':Stepwave'
             self.rendererGeomSegmentWidgetList.append(
-                self.createStepwaveInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createStepwaveInterpolationSegmentWidget(parent,segName,seg))
         parent.pack(fill=BOTH, expand=1)
 
     def addSinusoidInterpolationSegment(self):
@@ -1978,12 +1963,12 @@ class ParticlePanel(AppShell):
             parent = self.rendererSpriteSegmentFrame
             segName = `len(self.rendererSpriteSegmentWidgetList)`+':Sinusoid'
             self.rendererSpriteSegmentWidgetList.append(
-                self.createSinusoidInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createSinusoidInterpolationSegmentWidget(parent,segName,seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
             segName = `len(self.rendererGeomSegmentWidgetList)`+':Sinusoid'
             self.rendererGeomSegmentWidgetList.append(
-                self.createSinusoidInterpolationSegmentWidget(parent,segName,cim,seg))
+                self.createSinusoidInterpolationSegmentWidget(parent,segName,seg))
         parent.pack(fill=BOTH, expand=1)
 
     def createInterpolationSegmentFrame(self, parent, segName, seg):
@@ -1992,6 +1977,9 @@ class ParticlePanel(AppShell):
         def removeInterpolationSegmentFrame(s = self, seg = seg, fr = frame):
             s.particles.getRenderer().getColorInterpolationManager().clearSegment(seg.getId())
             fr.pack_forget()
+        def setSegEnabled(s=self,n=segName):
+            enabled = s.getVariable('Sprite Renderer', n+' Enabled')
+            seg.setEnabled(enabled.get())
         def setSegBegin(time):
             seg.setTimeBegin(time)
         def setSegEnd(time):
@@ -2003,6 +1991,15 @@ class ParticlePanel(AppShell):
               font = ('MSSansSerif', 12, 'bold'),
               ).pack(fill = X, expand = 1)
         lFrame.pack(fill = X, expand = 1)
+        lFrame = Frame(frame, relief = FLAT)
+        self.createCheckbutton(
+            lFrame, 'Sprite Renderer', segName + ' Enabled',
+            ('On: Enabled\n' +
+             'Off: Disabled'),
+
+            command = setSegEnabled, initialState = 1)
+        lFrame.pack(fill = X, expand = 1)
+
         f = Frame(frame)
         self.createSlider(f,
                           'Sprite Renderer',segName + ' Begin',
@@ -2017,8 +2014,8 @@ class ParticlePanel(AppShell):
         frame.pack(pady = 3, fill = X, expand = 0)
         return frame
     
-    def createConstantInterpolationSegmentWidget(self, parent, segName, cim, segment):
-        fun = cim.downcastFunctionToConstant(segment.getFunction())        
+    def createConstantInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
         def setSegColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0,color[1]/255.0,
@@ -2036,8 +2033,8 @@ class ParticlePanel(AppShell):
         f.pack(fill = X)
         return frame
 
-    def createLinearInterpolationSegmentWidget(self, parent, segName, cim, segment):
-        fun = cim.downcastFunctionToLinear(segment.getFunction())        
+    def createLinearInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()
         def setSegColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0,color[1]/255.0,
@@ -2065,8 +2062,8 @@ class ParticlePanel(AppShell):
         f.pack(fill = X)
         return frame
 
-    def createStepwaveInterpolationSegmentWidget(self, parent, segName, cim, segment):
-        fun = cim.downcastFunctionToStepwave(segment.getFunction())        
+    def createStepwaveInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()     
         def setColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0,color[1]/255.0,
@@ -2108,8 +2105,8 @@ class ParticlePanel(AppShell):
         f.pack(fill = X)
         return frame
     
-    def createSinusoidInterpolationSegmentWidget(self, parent, segName, cim, segment):
-        fun = cim.downcastFunctionToSinusoid(segment.getFunction())        
+    def createSinusoidInterpolationSegmentWidget(self, parent, segName, segment):
+        fun = segment.getFunction()   
         def setColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0,color[1]/255.0,
