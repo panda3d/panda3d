@@ -611,7 +611,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         
-        if 0:
+        if 1:
             if not hasattr(self, "sailsDeployed"):
                 self.sailsDeployed = 0.0
             if forward and reverse:
@@ -884,7 +884,13 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 self.ship.worldVelocity.pPrintValues())
             onScreenDebug.add("w worldVelocity len",
                 "% 10.4f"%self.ship.worldVelocity.length())
+            
+        # if hasattr(self.ship, 'sailBillow'):
+        #     self.ship.sailBillow = self.sailsDeployed
 
+        if hasattr(self.ship, 'currentTurning'):
+            self.ship.currentTurning = self.currentTurning
+        
         return Task.cont
     
     def doDeltaPos(self):
