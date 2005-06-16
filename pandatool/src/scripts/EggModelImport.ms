@@ -1,5 +1,10 @@
 --------------------------------------------------------------------
 -- Egg Model Importer
+--
+-- Drop this script into your 3DSMax scripts/startup folder.
+--
+-- You will find 'Egg Model Importer' in your MaxScript Utility panel.
+--
 --------------------------------------------------------------------
 
 utility EggModelImporter "Egg Model Importer" silentErrors:false
@@ -16,6 +21,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
   local threshold
   local file
   local token
+  local plaintoken
   local suppress
   local vertexPos
   local vertexUV
@@ -41,7 +47,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     local index = findItem textureId id
     if (index == 0) then (
       append textureId id
-      append textureFile id
+      append textureFile (id+".png")
       index = textureId.count
     )
     return index
@@ -58,6 +64,18 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     return (vertexPoolOffs[index])
   )
 
+  fn errorContext =
+  (
+    if (file == undefined) then return ""
+    local pos = filePos file
+    local target = pos - 100
+    if (target < 0) then target=0
+    seek file target
+    local data = readChars file (50+(pos - target))
+    seek file pos
+    return "---------------\nFile Position = "+(pos as string)+"\n---------------\n"+data+"\n---------------"
+  )
+
   fn abortParse msg =
   (
     if (suppress == false) then (
@@ -66,11 +84,13 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
         pos = filePos file
         pos = pos as string
       )
-      local fmsg = msg + " (filepos=" + pos + ")"
+      local ectxt = errorContext()
+      local fmsg = msg + "\n" + ectxt
       messageBox fmsg
       suppress = true
       if (file != undefined) then close file
       token = undefined
+      plaintoken = false
       file = undefined
     )
   )
@@ -79,6 +99,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
   (
     if (suppress) then (
       token = undefined
+      plaintoken = false
       return undefined
     )
     local res = token
@@ -88,8 +109,10 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
         c = readChar file
       if (findString whiteSpace c != undefined) then (
         token = undefined
-      ) else if (eof(file)) then (
+        plaintoken = false
+      ) else if (eof(file)) or (c=="{") or (c=="}") then (
         token = c
+        plaintoken = false
       ) else if (c=="/") then (
         c = readChar file
         if (c=="/") then (
@@ -100,14 +123,18 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
           token = "/" + c
           if (eof(file) == false) then
             token += readDelimitedString file whiteSpace
+          plaintoken = true
         )
       ) else if (c=="<") then (
         token = readDelimitedString file ">"
         token = "<" + token + ">"
+        plaintoken = false
       ) else if (c == "\"") then (
-        token = readDelimitedString file c
+        token = readDelimitedString file "\"\n"
+        plaintoken = true
       ) else (
         token = c + readDelimitedString file whiteSpace
+        plaintoken = true
       )
       local pos = filePos file
       if (pos > threshold) or (eof(file)) then (
@@ -119,34 +146,33 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     )
   )
 
-  fn plainToken =
-  (
-    return (token != undefined) and (token[1] != "<") and (token != "{") and (token != "}")
-  )
-
   fn tagToken =
   (
-    return (token != undefined) and (token[1] == "<")
+    return (plaintoken == false) and (token != undefined) and (token[1] == "<")
   )
-
+  
   fn readSpecificToken id =
   (
-    local res = readToken()
-    if (res != id) then (
+    if plaintoken or (token != id) then (
       local expect = "Expected '" + id + "'"
       abortParse expect
     )
+    return readToken()
   )
-
+  
   fn readPlainToken =
   (
-    if (plainToken() == false) then
+    if (plaintoken == false) then
       abortParse "expected a plain token"
     return readToken()
   )
  
   fn readFloatToken =
   (
+    if (plaintoken == false) then (
+      abortParse "expected a floating point number"
+      return 0.0
+    )
     local res = readToken()
     try (
       return (res as float)
@@ -158,11 +184,15 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
 
   fn readIntegerToken =
   (
+    if (plaintoken == false) then (
+      abortParse "expected an integer"
+      return 0.0
+    )
     local res = readToken()
     try (
       return (res as integer)
     ) catch (
-      abortParse "expected an integer number"
+      abortParse "expected an integer"
       return 0
     )
   )
@@ -171,9 +201,9 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
   (
     if (tagToken() == false) then abortParse "Expected a tag-token"
     local tok = readToken()
-    while plainToken() do readToken()
+    while plaintoken do readToken()
     readSpecificToken "{"
-    while plainToken() do readToken()
+    while plaintoken do readToken()
     while tagToken() do readSectionIgnore()
     readSpecificToken "}"
   )
@@ -233,7 +263,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
   (
     readSpecificToken "<Polygon>"
     readSpecificToken "{"
-    local tref = undefined
+    local tref = "texture"
     local vpool = undefined
     local vlist = #()
     while tagToken() do case token of (
@@ -246,7 +276,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
       "<VertexRef>" : (
         readToken()
         readSpecificToken "{"
-        while (plainToken()) do (
+        while (plaintoken) do (
           local vid = readIntegerToken()
           append vlist vid
         )
@@ -354,12 +384,13 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     local indices = #()
     readSpecificToken "<VertexRef>"
     readSpecificToken "{"
-    while (plainToken()) do (
+    while (plaintoken) do (
       local index = readIntegerToken()
       append indices index
     )
     readSpecificToken "<Scalar>"
-    readSpecificToken "membership"
+    local tok = readPlainToken()
+    if (tok != "membership") then abortParse "expected 'membership'"
     readSpecificToken "{"
     local strength = readFloatToken()
     readSpecificToken "}"
@@ -380,7 +411,8 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
   fn readSectionGroup =
   (
     local kind = readToken()
-    local id = readPlainToken()
+    local id = "UNKNOWN"
+    if plaintoken then id = readToken()
     if (kind == "<Joint>") then (
       local parent = jointStack[1]
       local index = joints.count + 1
@@ -521,7 +553,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
       setTVFace theMesh f polygonVerts[f]
   )
 
-  fn buildSkeleton =
+  fn getSkeletonThickness =
   (
     if (joints.count == 0) then return 0
     local zlo = joints[1].pos.z
@@ -532,17 +564,50 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
       if (z > zhi) then zhi = z
     )
     local thickness = (zhi - zlo) * 0.025
+    return thickness
+  )
+
+  fn buildSkeletonPreserve =
+  (
+    local thickness = getSkeletonThickness()
     for i = 1 to joints.count do (
       local joint = joints[i]
       chooseEndPos joint thickness
-      local bone = BoneSys.createBone joint.pos joint.endpos joint.zaxis
+      local len = length (joint.endpos - joint.pos)
+      local xv = joint.xv
+      local yv = joint.yv
+      local zv = joint.zv
+      local txv = normalize (joint.endpos - joint.pos)
+      local tzv = joint.zaxis
+      local tyv = cross tzv txv
+      local row1 = [dot txv xv, dot txv yv, dot txv zv]
+      local row2 = [dot tyv xv, dot tyv yv, dot tyv zv]
+      local row3 = [dot tzv xv, dot tzv yv, dot tzv zv]
+      local epx = joint.xv * len + joint.pos
+      local bone = BoneSys.createBone joint.pos epx joint.zv
       joint.node = bone
+      bone.objectOffsetRot = (matrix3 row1 row2 row3 [0,0,0]) as quat
       bone.width = joint.thick
       bone.height = joint.thick
       bone.name = joint.id
       bone.parent = joint.parent.node
     )
   )
+
+--  fn buildSkeletonStandard =
+--  (
+--    local thickness = getSkeletonThickness()
+--    for i = 1 to joints.count do (
+--      local joint = joints[i]
+--      chooseEndPos joint thickness
+--      local bone = BoneSys.createBone joint.pos joint.endpos joint.zaxis
+--      joint.node = bone
+--      bone.width = joint.thick
+--      bone.height = joint.thick
+--      bone.name = joint.id
+--      bone.parent = joint.parent.node
+--    )
+--  )
 
   fn buildSkin =
   (
@@ -562,7 +627,6 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
       local weights = vertexWeights[i]
       local bones = vertexBones[i]
       skinOps.replaceVertexWeights theSkin i bones weights
-      format "weights for vertex % are % %\n" i bones weights
     )
     for i = joints.count to 1 by -1 do (
       if (joints[i].anyvertex == false) then (
@@ -603,6 +667,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     y_up = false
     threshold = 0
     token = undefined
+    plaintoken = false
     file = undefined
     suppress = false
     textureId = #()
@@ -651,7 +716,7 @@ utility EggModelImporter "Egg Model Importer" silentErrors:false
     rotateFromYUp()
     adjustScale()
     buildMesh()
-    buildSkeleton()
+    buildSkeletonPreserve()
     buildSkin()
     buildMaterial()
   )
