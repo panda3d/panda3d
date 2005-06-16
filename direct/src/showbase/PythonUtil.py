@@ -1173,7 +1173,12 @@ class POD:
             # extract our dataset from an existing POD instance
             obj = args[0]
             for name in self.getDataNames():
-                setattr(self, name, getattr(obj, name))
+                # if the other obj doesn't have this data item, stick to the
+                # default
+                if hasattr(obj, name):
+                    setattr(self, name, getattr(obj, name))
+                else:
+                    setattr(self, name, self.getDefaultValue(name))
         else:
             assert len(args) == 0
             if __debug__:
