@@ -16,7 +16,7 @@
             return npList
 
     def getTightBounds(self):
-        from pandac.PandaModules import Point3
+        from pandac import Point3
         
         if self.getNumPaths() == 0:
             return (Point3.Point3(0), Point3.Point3(0))
