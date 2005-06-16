@@ -24,6 +24,11 @@ ConfigureDef(config_particlesystem);
 NotifyCategoryDef(particlesystem, "");
 
 ConfigureFn(config_particlesystem) {
+  ColorInterpolationFunction::init_type();
+  ColorInterpolationFunctionConstant::init_type();
+  ColorInterpolationFunctionLinear::init_type();
+  ColorInterpolationFunctionStepwave::init_type();
+  ColorInterpolationFunctionSinusoid::init_type();
   init_libparticlesystem();
 }
 

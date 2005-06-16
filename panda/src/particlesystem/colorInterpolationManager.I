@@ -135,12 +135,10 @@ set_period(const float p) {
 //    Function : ColorInterpolationSegment::get_function
 //      Access : public
 // Description : Returns a reference to the function object 
-//               corresponding to this segment.  It should be downcast
-//               using the function's get_type() and the manager's
-//               downcastFunctionTo*****() functions.
+//               corresponding to this segment.
 ////////////////////////////////////////////////////////////////////
 
-INLINE ColorInterpolationFunction* ColorInterpolationSegment::
+INLINE TypedReferenceCount* ColorInterpolationSegment::
 get_function(void) const {
   return _color_inter_func;
 }
@@ -169,6 +167,17 @@ get_time_begin(void) const {
 INLINE float ColorInterpolationSegment::
 get_time_end(void) const {
   return _t_end;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ColorInterpolationSegment::is_enabled()
+//      Access : public
+// Description : Returns whether the segments effects are being applied.
+////////////////////////////////////////////////////////////////////
+
+INLINE bool ColorInterpolationSegment::
+is_enabled(void) const {
+  return _enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +230,17 @@ INLINE void ColorInterpolationSegment::
 set_time_end(const float time) {
   _t_end = time;
   _t_total = _t_end-_t_begin;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ColorInterpolationSegment::set_enabled()
+//      Access : public
+// Description : Sets whether the segments effects should be applied.
+////////////////////////////////////////////////////////////////////
+
+INLINE void ColorInterpolationSegment::
+set_enabled(const bool enabled) {
+  _enabled = enabled;
 }
 
 ////////////////////////////////////////////////////////////////////

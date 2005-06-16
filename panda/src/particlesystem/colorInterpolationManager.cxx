@@ -18,6 +18,12 @@
 #include "colorInterpolationManager.h"
 #include "mathNumbers.h"
 
+TypeHandle ColorInterpolationFunction::_type_handle;
+TypeHandle ColorInterpolationFunctionConstant::_type_handle;
+TypeHandle ColorInterpolationFunctionLinear::_type_handle;
+TypeHandle ColorInterpolationFunctionStepwave::_type_handle;
+TypeHandle ColorInterpolationFunctionSinusoid::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationFunction::ColorInterpolationFunction
 //      Access : public
@@ -36,19 +42,6 @@ ColorInterpolationFunction(void) {
 
 ColorInterpolationFunction::
 ~ColorInterpolationFunction(void) {
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunction::get_type
-//      Access : public
-// Description : Returns a string of type of the current object. 
-//               Since it is virtual, derived classes should define
-//               their own version.
-////////////////////////////////////////////////////////////////////
-
-string ColorInterpolationFunction::
-get_type(void) {
-  return "ColorInterpolationFunction";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,17 +78,6 @@ interpolate(const float t) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionConstant::get_type
-//      Access : protected
-// Description : Returns a string representing this class type.
-////////////////////////////////////////////////////////////////////
-
-string ColorInterpolationFunctionConstant::
-get_type(void) {
-  return "ColorInterpolationFunctionConstant";
-}
-
-////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationFunctionLinear::ColorInterpolationFunctionLinear
 //      Access : public
 // Description : default constructor
@@ -128,17 +110,6 @@ ColorInterpolationFunctionLinear(const Colorf color_a,
 Colorf ColorInterpolationFunctionLinear::
 interpolate(const float t) const {
   return (1.0f-t)*_c_a + t*_c_b;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionLinear::get_type
-//      Access : protected
-// Description : Returns a string representing this class type.
-////////////////////////////////////////////////////////////////////
-
-string ColorInterpolationFunctionLinear::
-get_type(void) {
-  return "ColorInterpolationFunctionLinear";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,17 +155,6 @@ interpolate(const float t) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionStepwave::get_type
-//      Access : protected
-// Description : Returns a string representing this class type.
-////////////////////////////////////////////////////////////////////
-
-string ColorInterpolationFunctionStepwave::
-get_type(void) {
-  return "ColorInterpolationFunctionStepwave";
-}
-
-////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationFunctionSinusoid::ColorInterpolationFunctionSinusoid
 //      Access : public
 // Description : default constructor
@@ -234,17 +194,6 @@ interpolate(const float t) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionSinusoid::get_type
-//      Access : protected
-// Description : Returns a string representing this class type.
-////////////////////////////////////////////////////////////////////
-
-string ColorInterpolationFunctionSinusoid::
-get_type(void) {
-  return "ColorInterpolationFunctionSinusoid";
-}
-
-////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationSegment::ColorInterpolationSegment
 //      Access : public
 // Description : constructor
@@ -259,6 +208,7 @@ ColorInterpolationSegment(ColorInterpolationFunction* function,
   _t_begin(time_begin),
   _t_end(time_end),
   _t_total(time_end-time_begin),
+  _enabled(true),
   _id(id) {
 }
 
@@ -274,6 +224,7 @@ ColorInterpolationSegment(const ColorInterpolationSegment &copy) :
   _t_begin(copy._t_begin),
   _t_end(copy._t_end),
   _t_total(copy._t_total),
+  _enabled(copy._enabled),
   _id(copy._id) {
 }
 
@@ -419,58 +370,6 @@ add_sinusoid(const float time_begin, const float time_end, const Colorf color_a,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::downcast_function_to_constant
-//      Access : public
-// Description : Downcasts a ptr to abstract type 
-//               ColorInterpolationFunction to concrete
-//               type ColorInterpolationFunctionConstant
-////////////////////////////////////////////////////////////////////
-
-ColorInterpolationFunctionConstant* ColorInterpolationManager::
-downcast_function_to_constant(ColorInterpolationFunction* f) {
-  return (ColorInterpolationFunctionConstant*) f;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::downcast_function_to_linear
-//      Access : public
-// Description : Downcasts a ptr to abstract type 
-//               ColorInterpolationFunction to concrete
-//               type ColorInterpolationFunctionLinear
-////////////////////////////////////////////////////////////////////
-
-ColorInterpolationFunctionLinear* ColorInterpolationManager::
-downcast_function_to_linear(ColorInterpolationFunction* f) {
-  return (ColorInterpolationFunctionLinear*) f;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::downcast_function_to_stepwave
-//      Access : public
-// Description : Downcasts a ptr to abstract type 
-//               ColorInterpolationFunction to concrete
-//               type ColorInterpolationFunctionStepwave
-////////////////////////////////////////////////////////////////////
-
-ColorInterpolationFunctionStepwave* ColorInterpolationManager::
-downcast_function_to_stepwave(ColorInterpolationFunction* f) {
-  return (ColorInterpolationFunctionStepwave*) f;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::downcast_function_to_sinusoid
-//      Access : public
-// Description : Downcasts a ptr to abstract type 
-//               ColorInterpolationFunction to concrete
-//               type ColorInterpolationFunctionSinusoid
-////////////////////////////////////////////////////////////////////
-
-ColorInterpolationFunctionSinusoid* ColorInterpolationManager::
-downcast_function_to_sinusoid(ColorInterpolationFunction* f) {
-  return (ColorInterpolationFunctionSinusoid*) f;
-}
-
-////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationManager::clear_segment
 //      Access : public
 // Description : Removes the segment of 'id' from the manager.
@@ -518,7 +417,9 @@ generateColor(const float interpolated_time) {
 
   for(iter = _i_segs.begin();iter != _i_segs.end();++iter) {
       cur_seg = (*iter);
-      if( interpolated_time >= cur_seg->get_time_begin() && interpolated_time <= cur_seg->get_time_end() ) {
+      if( cur_seg->is_enabled() && 
+          interpolated_time >= cur_seg->get_time_begin() 
+          && interpolated_time <= cur_seg->get_time_end() ) {
           segment_found = true;
           out += cur_seg->interpolateColor(interpolated_time);
           out[0] = max(0,min(out[0],1.0f));

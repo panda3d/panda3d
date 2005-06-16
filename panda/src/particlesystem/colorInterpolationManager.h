@@ -21,6 +21,7 @@
 
 #include "luse.h"
 #include "pvector.h"
+#include "typedObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorInterpolationFunction
@@ -29,15 +30,33 @@
 //               function.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunction : public ReferenceCount {
+class ColorInterpolationFunction : public TypedReferenceCount {
 PUBLISHED:
-  virtual string get_type(void);
+//  virtual string get_type(void);
   
 public:
   ColorInterpolationFunction(void);
   virtual ~ColorInterpolationFunction(void);
 
   virtual Colorf interpolate(const float t = 0) const = 0;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "ColorInterpolationFunction",
+                  TypedReferenceCount::get_class_type());
+  }
+  
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -58,9 +77,27 @@ public:
 
 protected:
   virtual Colorf interpolate(const float t = 0) const;
-  virtual string get_type(void);
+  //  virtual string get_type(void);
 
   Colorf _c_a;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  
+  static void init_type() {
+    ColorInterpolationFunction::init_type();
+    register_type(_type_handle, "ColorInterpolationFunctionConstant",
+                  ColorInterpolationFunction::get_class_type());
+  }
+  
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -81,9 +118,27 @@ public:
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  virtual string get_type(void);
+  //  virtual string get_type(void);
 
   Colorf _c_b;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  
+  static void init_type() {
+    ColorInterpolationFunctionConstant::init_type();
+    register_type(_type_handle, "ColorInterpolationFunctionLinear",
+                  ColorInterpolationFunctionConstant::get_class_type());
+  }
+  
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -109,10 +164,28 @@ public:
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  virtual string get_type(void);
+  //  virtual string get_type(void);
 
   float _w_a;
   float _w_b;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  
+  static void init_type() {
+    ColorInterpolationFunctionLinear::init_type();
+    register_type(_type_handle, "ColorInterpolationFunctionStepwave",
+                  ColorInterpolationFunctionLinear::get_class_type());
+  }
+  
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -137,9 +210,27 @@ public:
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  virtual string get_type(void);
+  //  virtual string get_type(void);
 
   float _period;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  
+  static void init_type() {
+    ColorInterpolationFunctionLinear::init_type();
+    register_type(_type_handle, "ColorInterpolationFunctionSinusoid",
+                  ColorInterpolationFunctionLinear::get_class_type());
+  }
+  
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -156,14 +247,17 @@ PUBLISHED:
   ColorInterpolationSegment(const ColorInterpolationSegment &s);
   virtual ~ColorInterpolationSegment(void);
 
-  INLINE ColorInterpolationFunction* get_function(void) const;
+  //  INLINE ColorInterpolationFunction* get_function(void) const;
+  INLINE TypedReferenceCount* get_function(void) const;
   INLINE float get_time_begin(void) const;
   INLINE float get_time_end(void) const;
   INLINE int get_id(void) const;
+  INLINE bool is_enabled(void) const;
 
   INLINE void set_function(ColorInterpolationFunction* function);
   INLINE void set_time_begin(const float time);
   INLINE void set_time_end(const float time);
+  INLINE void set_enabled(const bool enabled);
 
 public:
   Colorf interpolateColor(const float t) const;
@@ -173,6 +267,7 @@ protected:
   float _t_begin;
   float _t_end;
   float _t_total;
+  bool _enabled;
   const int _id;
 };
 
@@ -196,12 +291,12 @@ ColorInterpolationManager(void);
   int add_linear(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f));
   int add_stepwave(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float width_a = 0.5f, const float width_b = 0.5f);
   int add_sinusoid(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float period = 1.0f);
-
+  /*
   static ColorInterpolationFunctionConstant* downcast_function_to_constant(ColorInterpolationFunction* f);
   static ColorInterpolationFunctionLinear*   downcast_function_to_linear(ColorInterpolationFunction* f);
   static ColorInterpolationFunctionStepwave* downcast_function_to_stepwave(ColorInterpolationFunction* f);
   static ColorInterpolationFunctionSinusoid* downcast_function_to_sinusoid(ColorInterpolationFunction* f);
-
+  */
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);
   INLINE string get_segment_id_list(void);
   void clear_segment(const int seg_id);
