@@ -352,32 +352,29 @@ class Particles(ParticleSystem):
             segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
             for sid in segIdList:
                 seg = cim.getSegment(sid)
-                t_b = seg.getTimeBegin()
-                t_e = seg.getTimeEnd()
-                fun = seg.getFunction()
-                type = fun.getType()
-                if type == 'ColorInterpolationFunctionConstant':
-                    fun = cim.downcastFunctionToConstant(fun)
-                    c_a = fun.getColorA()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
-                elif type == 'ColorInterpolationFunctionLinear':
-                    fun = cim.downcastFunctionToLinear(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
-                elif type == 'ColorInterpolationFunctionStepwave':
-                    fun = cim.downcastFunctionToStepwave(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    w_a = fun.getWidthA()
-                    w_b = fun.getWidthB()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
-                elif type == 'ColorInterpolationFunctionSinusoid':
-                    fun = cim.downcastFunctionToSinusoid(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    per = fun.getPeriod()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
+                if( seg.isEnabled() ):
+                    t_b = seg.getTimeBegin()
+                    t_e = seg.getTimeEnd()
+                    fun = seg.getFunction()
+                    typ = type(fun).__name__
+                    if typ == 'ColorInterpolationFunctionConstant':
+                        c_a = fun.getColorA()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                    elif typ == 'ColorInterpolationFunctionLinear':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                    elif typ == 'ColorInterpolationFunctionStepwave':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        w_a = fun.getWidthA()
+                        w_b = fun.getWidthB()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                    elif typ == 'ColorInterpolationFunctionSinusoid':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        per = fun.getPeriod()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
 
         elif (self.rendererType == "SparkleParticleRenderer"):
             file.write('# Sparkle parameters\n')
@@ -444,32 +441,29 @@ class Particles(ParticleSystem):
             segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
             for sid in segIdList:
                 seg = cim.getSegment(sid)
-                t_b = seg.getTimeBegin()
-                t_e = seg.getTimeEnd()
-                fun = seg.getFunction()
-                type = fun.getType()
-                if type == 'ColorInterpolationFunctionConstant':
-                    fun = cim.downcastFunctionToConstant(fun)
-                    c_a = fun.getColorA()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
-                elif type == 'ColorInterpolationFunctionLinear':
-                    fun = cim.downcastFunctionToLinear(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
-                elif type == 'ColorInterpolationFunctionStepwave':
-                    fun = cim.downcastFunctionToStepwave(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    w_a = fun.getWidthA()
-                    w_b = fun.getWidthB()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
-                elif type == 'ColorInterpolationFunctionSinusoid':
-                    fun = cim.downcastFunctionToSinusoid(fun)
-                    c_a = fun.getColorA()
-                    c_b = fun.getColorB()
-                    per = fun.getPeriod()
-                    file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
+                if( seg.isEnabled() ):
+                    t_b = seg.getTimeBegin()
+                    t_e = seg.getTimeEnd()
+                    fun = seg.getFunction()
+                    typ = type(fun).__name__
+                    if typ == 'ColorInterpolationFunctionConstant':
+                        c_a = fun.getColorA()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                    elif typ == 'ColorInterpolationFunctionLinear':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                    elif typ == 'ColorInterpolationFunctionStepwave':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        w_a = fun.getWidthA()
+                        w_b = fun.getWidthB()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                    elif typ == 'ColorInterpolationFunctionSinusoid':
+                        c_a = fun.getColorA()
+                        c_b = fun.getColorB()
+                        per = fun.getPeriod()
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
 
         file.write('# Emitter parameters\n')
         emissionType = self.emitter.getEmissionType()
