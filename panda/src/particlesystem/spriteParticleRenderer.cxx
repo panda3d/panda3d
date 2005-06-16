@@ -60,11 +60,6 @@ SpriteParticleRenderer(Texture *tex) :
   _color_interpolation_manager(new ColorInterpolationManager(_color))
 {
   init_geoms();  
-
-  if(use_qpgeom)
-    cout<<"using qpgeoms"<<endl;
-  else
-    cout<<"not using qpgeoms"<<endl;
 }
 
 ////////////////////////////////////////////////////////////////////
