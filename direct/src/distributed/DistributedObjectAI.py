@@ -40,6 +40,8 @@ class DistributedObjectAI(DirectObject):
             self.__nextBarrierContext = 0
             self.__barriers = {}
 
+            self.__generated = False
+
     # Uncomment if you want to debug DO leaks
     #def __del__(self):
     #    """
@@ -113,6 +115,7 @@ class DistributedObjectAI(DirectObject):
             if hasattr(self, 'parentId'):
                 del self.parentId
             del self.zoneId
+            self.__generated = False
 
     def isDeleted(self):
         """
@@ -125,7 +128,7 @@ class DistributedObjectAI(DirectObject):
         """
         Returns true if the object has been generated
         """
-        return hasattr(self, 'zoneId')
+        return self.__generated
 
     def getDoId(self):
         """
@@ -147,7 +150,7 @@ class DistributedObjectAI(DirectObject):
         Called after the object has been generated and all
         of its required fields filled in. Overwrite when needed.
         """
-        pass
+        self.__generated = True
 
     if wantOtpServer:
         def addInterest(self, zoneId, note="", event=None):
