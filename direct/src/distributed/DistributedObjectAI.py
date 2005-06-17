@@ -335,6 +335,18 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.generate()
 
     if wantOtpServer:
+        def generateGlobalObject(self, parentId, zoneId, doId):
+            assert self.notify.debugStateCall(self)
+            self.doId = doId
+            # Put the new DO in the dictionaries
+            self.air.addDOToTables(self, location=(parentId,zoneId))
+
+            assert not hasattr(self, 'parentId')
+            self.parentId = parentId
+            self.zoneId = zoneId
+            self.__location = (parentId, zoneId)
+            self.generate()
+
         def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
             assert self.notify.debugStateCall(self)
             # have we already allocated a doId?
@@ -342,8 +354,17 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 assert doId is None or doId == self.__preallocDoId
                 doId=self.__preallocDoId
                 self.__preallocDoId = 0
-            self.air.sendGenerateOtpObject(
-                    self, parentId, zoneId, optionalFields, doId=doId)
+
+            # Assign it an id
+            if doId is None:
+                self.doId = self.air.allocateChannel()
+            else:
+                self.doId = doId
+            # Put the new DO in the dictionaries
+            self.air.addDOToTables(self, location=(parentId,zoneId))
+            # Send a generate message
+            self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
+
             assert not hasattr(self, 'parentId')
             self.parentId = parentId
             self.zoneId = zoneId
@@ -376,9 +397,6 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
     def sendGenerateWithRequired(self, repository, parentId, zoneId, optionalFields=[]):
         assert self.notify.debugStateCall(self)
-        if not wantOtpServer:
-            parentId = 0
-        # Make the dclass do the hard work
         if not wantOtpServer:
             dg = self.dclass.aiFormatGenerate(
                     self, self.doId, 0, zoneId,
