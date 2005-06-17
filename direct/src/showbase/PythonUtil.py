@@ -736,6 +736,9 @@ def printProfile(filename=PyUtilProfileDefaultFilename,
             s.print_callees(lines)
             s.print_callers(lines)
 
+def capitalizeFirst(str):
+    return '%s%s' % (string.upper(str[0]), str[1:])
+
 def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
     # getSetterName('color', 'get') -> 'getColor'
