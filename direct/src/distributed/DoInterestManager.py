@@ -38,9 +38,12 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert self.notify.debugCall()
         DoInterestManager._interestIdAssign += 1
-        DoInterestManager._interestIdScopes  += 1
         contextId = DoInterestManager._interestIdAssign
-        scopeId = DoInterestManager._interestIdScopes
+        scopeId = 0
+        if event is not None:
+            DoInterestManager._interestIdScopes  += 1
+            scopeId = DoInterestManager._interestIdScopes
+            
         DoInterestManager._interests[contextId] = [description, scopeId, event, "Active"]
         self._sendAddInterest(contextId, scopeId, parentId, zoneIdList)
         assert self.printInterestsIfDebug()
@@ -54,15 +57,15 @@ class DoInterestManager(DirectObject.DirectObject):
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
             if event is not None:
-                DoInterestManager._interestIdScopes  += 1
                 DoInterestManager._interests[contextId][3] = "PendingDel"
                 DoInterestManager._interests[contextId][2] = event
+                DoInterestManager._interestIdScopes  += 1
                 DoInterestManager._interests[contextId][1] = DoInterestManager._interestIdScopes
-                self._sendRemoveInterest(contextId)
+                self._sendRemoveInterest(contextId,DoInterestManager._interestIdScopes)
             else:
                 DoInterestManager._interests[contextId][2] = None
                 DoInterestManager._interests[contextId][1] = 0
-                self._sendRemoveInterest(contextId)
+                self._sendRemoveInterest(contextId,0)
                 del DoInterestManager._interests[contextId]
             answer = 1
         else:
@@ -77,13 +80,17 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.notify.debugCall()
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
-            DoInterestManager._interestIdScopes  += 1
             if description is not None:
                 DoInterestManager._interests[contextId][0] = description
 
-            DoInterestManager._interests[contextId][1] = DoInterestManager._interestIdScopes;
+            if event is not None:
+                DoInterestManager._interestIdScopes  += 1
+                DoInterestManager._interests[contextId][1] = DoInterestManager._interestIdScopes;
+            else:
+                DoInterestManager._interests[contextId][1] = 0;
+            
             DoInterestManager._interests[contextId][2] = event;
-            self._sendAddInterest(contextId, DoInterestManager._interestIdScopes, parentId, zoneIdList)
+            self._sendAddInterest(contextId,DoInterestManager._interests[contextId][1], parentId, zoneIdList)
             answer = 1
             assert self.printInterestsIfDebug()
         else:
@@ -170,7 +177,7 @@ class DoInterestManager(DirectObject.DirectObject):
            datagram.addUint32(zoneIdList)
         self.send(datagram)
 
-    def _sendRemoveInterest(self, contextId):
+    def _sendRemoveInterest(self, contextId, scopeId):
         """
         contextId is a client-side created number that refers to
                 a set of interests.  The same contextId number doesn't
@@ -182,6 +189,8 @@ class DoInterestManager(DirectObject.DirectObject):
         # Add message type
         datagram.addUint16(CLIENT_REMOVE_INTEREST)
         datagram.addUint16(contextId)
+        if scopeId != 0:
+            datagram.addUint32(scopeId)            
         self.send(datagram)
 
     def handleInterestDoneMessage(self, di):
