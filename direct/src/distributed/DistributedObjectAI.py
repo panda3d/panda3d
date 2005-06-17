@@ -2,12 +2,12 @@
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import PythonUtil
-from direct.showbase import DirectObject
+from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
-class DistributedObjectAI(DirectObject.DirectObject):
+class DistributedObjectAI(DirectObject):
     notify = directNotify.newCategory("DistributedObjectAI")
     QuietZone = 1
 
@@ -46,6 +46,17 @@ class DistributedObjectAI(DirectObject.DirectObject):
     #    For debugging purposes, this just prints out what got deleted
     #    """
     #    print ("Destructing: " + self.__class__.__name__)
+    
+    if __debug__:
+        def status(self):
+            try:
+                print "doId is", self.doId
+                print "parentId is", self.parentId
+                print "zoneId is", self.zoneId
+                print "class name is", self.__class__.__name__
+                print "isGenerated() is", self.isGenerated()
+                print "isDeleted() is", self.isDeleted()
+            except: pass
 
     def getDeleteEvent(self):
         # this is sent just before we get deleted

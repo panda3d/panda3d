@@ -68,6 +68,19 @@ class DistributedObject(PandaObject):
 
             #zone of the distributed object, default to 0
             self.zone = 0
+    
+    if __debug__:
+        def status(self):
+            try:
+                print "doId is", self.doId
+                print "parentId is", self.parentId
+                print "zoneId is", self.zoneId
+                print "class name is", self.__class__.__name__
+                print "generated is", self.activeState == ESGenerated
+                print "disabled is", self.activeState < ESGenerating
+                print "neverDisable is", self.neverDisable
+                print "cacheable is", self.cacheable
+            except: pass
 
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))
