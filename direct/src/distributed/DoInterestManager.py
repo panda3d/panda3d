@@ -202,18 +202,24 @@ class DoInterestManager(DirectObject.DirectObject):
         id = di.getUint16()
         scope = di.getUint32()
         expect_scope = self.getInterestScopeId(id)
-        print "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope);
+        self.notify.debug(
+            "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope))
         if expect_scope == scope:
-            print "handleInterestDoneMessage--> Scope Match:%s Scope:%s"%(id,scope);
+            self.notify.debug(
+                "handleInterestDoneMessage--> Scope Match:%s Scope:%s"
+                %(id,scope))
             event = self.getInterestScopeEvent(id)
             if event is not None:
-                print "handleInterestDoneMessage--> Send Event : %s"%(event);
+                self.notify.debug(
+                    "handleInterestDoneMessage--> Send Event : %s"%(event))
                 messenger.send(event)
             else:
-                print "handleInterestDoneMessage--> No Event ";
+                self.notify.debug("handleInterestDoneMessage--> No Event ")
             self._ponderRemoveFlaggedInterest(id)
         else:
-            print "handleInterestDoneMessage--> Scope MisMatch :%s :%s"%(expect_scope,scope);
+            self.notify.debug(
+                "handleInterestDoneMessage--> Scope MisMatch :%s :%s"
+                %(expect_scope,scope))
 
         assert self.printInterestsIfDebug()
 

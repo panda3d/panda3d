@@ -32,7 +32,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         return 1
 
     def getParentingRules(self):
-        print "calling getter"
+        self.notify.debug("calling getter")
         rule = ("%i%s%i%s%i" % (self.startingZone, self.RuleSeparator,
                                 self.gridSize, self.RuleSeparator,
                                 self.gridRadius))
@@ -40,7 +40,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
 
     # Reparent and setLocation on av to DistributedOceanGrid
     def addObjectToGrid(self, av, useZoneId=-1):
-        print "setting parent to grid %s" % self
+        self.notify.debug("setting parent to grid %s" % self)
         avId = av.doId
         
         # Create a grid parent
