@@ -47,7 +47,7 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   ]
 BUILDING_HEIGHTS = [10, 14, 20, 24, 25, 30]
 NUM_WALLS = [1,2,3]
-LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop']
+LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop', 'kartshop' ]
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -179,7 +179,7 @@ if sys.argv[1:]:
 # or you can hack this up for your own purposes.
 else:
     hoodString = base.config.GetString('level-editor-hoods',
-                                       'TT DD BR DG DL MM CC CL CM CS')
+                                       'TT DD BR DG DL MM CC CL CM CS GS')
     hoods = string.split(hoodString)
 
 # The list of neighborhoods to edit
@@ -193,6 +193,7 @@ hoodIds = {'TT' : 'toontown_central',
            'CL' : 'cog_hq_lawbot',
            'CM' : 'cog_hq_cashbot',
            'CS' : 'cog_hq_sellbot',
+           'GS' : 'goofy_speedway',
            }
 
 # Init neighborhood arrays
@@ -252,6 +253,9 @@ except NameError:
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_town.dna', CSDefault, 1)
     if 'CS' in hoods:
         loadDNAFile(DNASTORE, 'phase_9/dna/storage_CS.dna', CSDefault, 1)
+    if 'GS' in hoods:
+        loadDNAFile(DNASTORE, 'phase_4/dna/storage_GS.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_4/dna/storage_GS_sz.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -1524,7 +1528,7 @@ class LevelEditor(NodePath, PandaObject):
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
         # Headquarters do not have doors
-        if (specialType != 'hq'):
+        if (specialType not in [ 'hq', 'kartshop' ] ):
             newDNADoor = self.createDoor('landmark_door')
             newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
