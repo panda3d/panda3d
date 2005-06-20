@@ -1613,7 +1613,7 @@ class ParticlePanel(AppShell):
             self.rendererSpriteTextureEntry['state'] = 'normal'
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
-            self.rendererSpriteTextureEntry['background'] = 'SystemWindow'
+            self.rendererSpriteTextureEntry['background'] = '#FFFFFF'
             self.rendererSpriteFileEntry['background'] = '#C0C0C0'
             self.rendererSpriteNodeEntry['background'] = '#C0C0C0'
         else:
@@ -1621,8 +1621,8 @@ class ParticlePanel(AppShell):
             self.rendererSpriteFileEntry['state'] = 'normal'
             self.rendererSpriteNodeEntry['state'] = 'normal'
             self.rendererSpriteTextureEntry['background'] = '#C0C0C0'
-            self.rendererSpriteFileEntry['background'] = 'SystemWindow'
-            self.rendererSpriteNodeEntry['background'] = 'SystemWindow'
+            self.rendererSpriteFileEntry['background'] = '#FFFFFF'
+            self.rendererSpriteNodeEntry['background'] = '#FFFFFF'
     def setRendererSpriteTexture(self):
         if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
             self.particles.renderer.setTextureFromFile(self.rendererSpriteTexture.get())
