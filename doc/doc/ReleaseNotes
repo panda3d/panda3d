@@ -1,3 +1,19 @@
+------------------------  RELEASE 1.0.5  ------------------------
+
+  * Now compiles with MS Visual Toolkit (makefile changes)
+
+  * Now compiles under Mandrake 10.1 (a fix in the makefile)
+
+  * Now compiles under Debian Sarge (a fix in the VRML lexer)
+
+  * Now compiles under Ubuntu Hoary (verified)
+
+  * Add code for building debian 'deb' archives.
+
+  * Fix scene editor and particle panel so they work on linux.
+
+  * Add support for --no-python to makepanda.
+
 ------------------------  RELEASE 1.0.4  ------------------------
 
   * This version includes the new Max exporter and the new Maya
@@ -13,6 +29,8 @@
 
   * Makepanda now puts the maya and max plugins in a
     separate 'plugins' directory, for convenience.
+
+  * The 'libpandaegg' library has been exported to python.
 
 ------------------------  RELEASE 1.0.3  ------------------------
 
