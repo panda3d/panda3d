@@ -1,5 +1,7 @@
 ------------------------  RELEASE 1.0.5  ------------------------
 
+This release consists mainly of compatibility improvements.
+
   * Now compiles with MS Visual Toolkit (makefile changes)
 
   * Now compiles under Mandrake 10.1 (a fix in the makefile)
