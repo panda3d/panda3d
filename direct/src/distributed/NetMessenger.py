@@ -16,6 +16,7 @@ MESSAGE_TYPES=(
     "avatarOffline",
     "create",
     "needUberdogCreates",
+    "transferDo",
 )
 
 # This is the reverse look up for the recipient of the
