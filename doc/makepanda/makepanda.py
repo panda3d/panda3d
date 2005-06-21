@@ -1534,8 +1534,8 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".a")
             else: sys.exit("unknown suffix in object list.")
         if (older(wdll, wobj+xdep)):
-            if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -L' + PREFIX + '/lib'
-            else:                  cmd = 'g++ -shared -o ' + wdll + ' -L' + PREFIX + '/lib'
+            if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -L' + PREFIX + '/lib -L/usr/X11R6/lib'
+            else:                  cmd = 'g++ -shared -o ' + wdll + ' -L' + PREFIX + '/lib -L/usr/X11R6/lib'
             for x in obj:
                 suffix = x[-4:]
                 if   (suffix==".obj"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.o'
