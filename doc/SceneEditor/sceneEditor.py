@@ -1,3 +1,8 @@
+
+import sys
+try: import _tkinter
+except: sys.exit("Please install python module 'Tkinter'")
+
 import direct
 from direct.directbase.DirectStart import*
 from direct.showbase.TkGlobal import*
