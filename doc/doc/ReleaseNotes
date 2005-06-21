@@ -2,19 +2,21 @@
 
 This release consists mainly of compatibility improvements.
 
-  * Now compiles with MS Visual Toolkit (makefile changes)
+  * Now compiles under MS Visual Toolkit (makefile changes)
 
   * Now compiles under Mandrake 10.1 (a fix in the makefile)
 
   * Now compiles under Debian Sarge (a fix in the VRML lexer)
 
-  * Now compiles under Ubuntu Hoary (verified)
+  * Now compiles under Ubuntu HH (same as DEBIAN SARGE)
 
   * Add code for building debian 'deb' archives.
 
   * Fix scene editor and particle panel so they work on linux.
 
   * Add support for --no-python to makepanda.
+
+  * Tidied up makepanda a bit.
 
 ------------------------  RELEASE 1.0.4  ------------------------
 
