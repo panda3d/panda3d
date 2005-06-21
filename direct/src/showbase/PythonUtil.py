@@ -1240,11 +1240,13 @@ class POD:
         # bring less-derived classes to the front
         mostDerivedLast(bases)
         for c in (bases + [cls]):
-            # make sure this base has its dict of data defaults
-            c._compileDefaultDataSet()
-            if c.__dict__.has_key('DataSet'):
-                # apply this class' default data values to our dict
-                cls._DataSet.update(c.DataSet)
+            # skip multiple-inheritance base classes that do not derive from POD
+            if issubclass(c, POD):
+                # make sure this base has its dict of data defaults
+                c._compileDefaultDataSet()
+                if c.__dict__.has_key('DataSet'):
+                    # apply this class' default data values to our dict
+                    cls._DataSet.update(c.DataSet)
     _compileDefaultDataSet = classmethod(_compileDefaultDataSet)
     # END CLASS METHODS
 
