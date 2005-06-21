@@ -11,7 +11,7 @@
 from direct.showbase.PandaObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import*
-from direct.interval.intervalGlobal import *
+from direct.interval.IntervalGlobal import *
 from seCameraControl import *
 from seManipulation import *
 from seSelection import *

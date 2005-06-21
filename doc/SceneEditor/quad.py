@@ -7,7 +7,7 @@
 
 
 from direct.showbase.ShowBaseGlobal import *
-from direct.interval.intervalGlobal import *
+from direct.interval.IntervalGlobal import *
 from direct.showbase import DirectObject
 import math
 from pandac.MouseWatcher import *
