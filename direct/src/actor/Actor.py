@@ -1082,7 +1082,7 @@ class Actor(PandaObject, NodePath):
             anim = animDict.get(animName)
             if anim == None:
                 # anim was not present
-                Actor.notify.warning("couldn't find anim: %s" % (animName))
+                Actor.notify.debug("couldn't find anim: %s" % (animName))
             else:
                 # bind the animation first if we need to
                 if not isinstance(anim[1], AnimControl):
@@ -1149,7 +1149,7 @@ class Actor(PandaObject, NodePath):
                     anim = animDict.get(animName)
                     if anim == None:
                         # anim was not present
-                        Actor.notify.warning("couldn't find anim: %s" % (animName))
+                        Actor.notify.debug("couldn't find anim: %s" % (animName))
                     else:
                         # bind the animation first if we need to
                         if not isinstance(anim[1], AnimControl):

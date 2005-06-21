@@ -382,7 +382,7 @@ class DistributedObject(PandaObject):
             return self.__location
 
         def handleChildSetLocation(self, childObj, zoneId):
-            self.notify.info("handleChildSetLocation: %s childId: %s zoneId: %s" %
+            self.notify.debug("handleChildSetLocation: %s childId: %s zoneId: %s" %
                              (self.doId, childObj.doId, zoneId))
             # A new child has just setLocation beneath us.  Give us a
             # chance to run code when a new child sets location to us. For
