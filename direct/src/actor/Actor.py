@@ -535,6 +535,12 @@ class Actor(PandaObject, NodePath):
         if len(controls) == 0:
             return None
         return controls[0].getNumFrames()
+
+    def getFrameTime(self, anim, frame):
+        numFrames = self.getNumFrames(anim)
+        animTime = self.getDuration(anim)
+        frameTime = animTime * float(frame) / numFrames
+        return frameTime
         
     def getCurrentAnim(self, partName=None):
         """
