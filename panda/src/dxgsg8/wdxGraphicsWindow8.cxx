@@ -1115,23 +1115,23 @@ search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
 bool wdxGraphicsWindow8::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   assert((new_xsize > 0) && (new_ysize > 0));
-  bool bRetval = true;
+  bool retval = true;
 
-  DXScreenData *pScrn;
+  DXScreenData *screen = NULL;
   D3DPRESENT_PARAMETERS d3dpp;
   memcpy(&d3dpp, &_wcontext._presentation_params, sizeof(D3DPRESENT_PARAMETERS));
   _wcontext._presentation_params.BackBufferWidth = new_xsize;
   _wcontext._presentation_params.BackBufferHeight = new_ysize;
   make_current();
-  HRESULT hr = _dxgsg->reset_d3d_device(&_wcontext._presentation_params, &pScrn);
+  HRESULT hr = _dxgsg->reset_d3d_device(&_wcontext._presentation_params, &screen);
 
   if (FAILED(hr)) {
-    bRetval = false;
+    retval = false;
     wdxdisplay8_cat.error()
       << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
     if (hr == D3DERR_OUTOFVIDEOMEMORY) {
       memcpy(&_wcontext._presentation_params, &d3dpp, sizeof(D3DPRESENT_PARAMETERS));
-      hr = _dxgsg->reset_d3d_device(&_wcontext._presentation_params, &pScrn);
+      hr = _dxgsg->reset_d3d_device(&_wcontext._presentation_params, &screen);
       if (FAILED(hr)) {
         wdxdisplay8_cat.error()
           << "reset_device_resize_window Reset() failed OutOfVidmem, then failed again doing Reset w/original params:" << D3DERRORSTRING(hr);
@@ -1153,11 +1153,13 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     }
   }
   // before you init_resized_window you need to copy certain changes to _wcontext
-  if (pScrn)
-    _wcontext._swap_chain = pScrn->_swap_chain;
+  if (screen) {
+    _wcontext._swap_chain = screen->_swap_chain;
+  }
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
+  _gsg->mark_new();
   init_resized_window();
-  return bRetval;
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////

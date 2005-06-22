@@ -561,7 +561,7 @@ prepare_display_region() {
     HRESULT hr = _d3d_device->SetViewport(&vp);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-        << "pScrn_SwapChain = " << _screen->_swap_chain << " SwapChain = " << _swap_chain << "\n";
+        << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
       dxgsg8_cat.error()
         << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
         << ") failed" << D3DERRORSTRING(hr);
@@ -2906,7 +2906,7 @@ dx_cleanup() {
 //               only one window or it is the main window or
 //               fullscreen mode then, it resets the device. Finally
 //               it returns the new DXScreenData through parameter
-//               pScrn
+//               screen
 ////////////////////////////////////////////////////////////////////
 HRESULT DXGraphicsStateGuardian8::
 reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params, 
@@ -2917,7 +2917,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   assert(IS_VALID_PTR(_screen->_d3d8));
   assert(IS_VALID_PTR(_d3d_device));
 
-  release_all();
+  // It is not clear whether we need to call this or not.  Calling
+  // this forces all of the textures and vbuffers to be regenerated,
+  // but it doesn't appear to be necessary.
+  //release_all();
 
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed
@@ -2942,7 +2945,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     }
     
     get_engine()->reset_all_windows(false);// reset old swapchain by releasing
-
+    
     if (_screen->_swap_chain) {  //other windows might be using bigger buffers
       _presentation_reset.BackBufferWidth = max(_presentation_reset.BackBufferWidth, presentation_params->BackBufferWidth);
       _presentation_reset.BackBufferHeight = max(_presentation_reset.BackBufferHeight, presentation_params->BackBufferHeight);
@@ -2956,9 +2959,8 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     if (FAILED(hr)) {
       return hr;
     }
-
+    
     get_engine()->reset_all_windows(true);// reset with new swapchains by creating
-
     if (screen) {
       *screen = NULL;
     }
@@ -2966,13 +2968,15 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     if (presentation_params != &_screen->_presentation_params) {
       memcpy(&_screen->_presentation_params, presentation_params, sizeof(D3DPRESENT_PARAMETERS));
     }
+
     return hr;
   }
 
   // release the old swapchain and create a new one
   if (_screen && _screen->_swap_chain) {
     _screen->_swap_chain->Release();
-    wdxdisplay8_cat.debug() << "SwapChain " << _screen->_swap_chain << " is released\n";
+    wdxdisplay8_cat.debug() 
+      << "swap chain " << _screen->_swap_chain << " is released\n";
     _screen->_swap_chain = NULL;
     hr = _d3d_device->CreateAdditionalSwapChain(presentation_params, &_screen->_swap_chain);
   }
@@ -3002,12 +3006,13 @@ check_cooperative_level() {
     return true;
   }
 
-  switch(hr) {
+  switch (hr) {
   case D3DERR_DEVICENOTRESET:
     _dx_is_ready = false;
     hr = reset_d3d_device(&_screen->_presentation_params);
     if (FAILED(hr)) {
-      // I think this shouldnt fail unless I've screwed up the _presentation_params from the original working ones somehow
+      // I think this shouldnt fail unless I've screwed up the
+      // _presentation_params from the original working ones somehow
       dxgsg8_cat.error()
         << "check_cooperative_level Reset() failed, hr = " << D3DERRORSTRING(hr);
     }
