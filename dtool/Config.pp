@@ -317,7 +317,7 @@
 #define NSPR_IPATH /usr/include/nspr
 #define NSPR_LPATH
 #define NSPR_LIBS nspr4
-#defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
+#defer HAVE_NSPR $[isfile $[NSPR_IPATH]/prtypes.h]
 
 // Is a third-party STL library installed, and where?  This is only
 // necessary if the default include and link lines that come with the
