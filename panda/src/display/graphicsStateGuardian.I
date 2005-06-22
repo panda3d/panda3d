@@ -436,6 +436,17 @@ reset_if_new() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::mark_new
+//       Access: Public
+//  Description: Marks the GSG as "new", so that the next call to
+//               reset_if_new() will be effective.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+mark_new() {
+  _needs_reset = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::modify_state
 //       Access: Public
 //  Description: Applies the attributes indicated in the state set to

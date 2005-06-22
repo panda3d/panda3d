@@ -177,6 +177,7 @@ public:
   virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex);
 
   INLINE bool reset_if_new();
+  INLINE void mark_new();
   virtual void reset();
 
   INLINE void modify_state(const RenderState *state);
