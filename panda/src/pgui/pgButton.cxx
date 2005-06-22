@@ -198,16 +198,6 @@ setup(const string &label) {
   PT(PandaNode) rollover = new PandaNode("rollover");
   PT(PandaNode) inactive = new PandaNode("inactive");
 
-  get_state_def(S_ready).attach_new_node(ready);
-  get_state_def(S_depressed).attach_new_node(depressed);
-  get_state_def(S_rollover).attach_new_node(rollover);
-  get_state_def(S_inactive).attach_new_node(inactive);
-
-  ready->add_child(geom);
-  depressed->add_child(geom);
-  rollover->add_child(geom);
-  inactive->add_child(geom);
-
   PGFrameStyle style;
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   style.set_width(0.1f, 0.1f);
@@ -226,6 +216,16 @@ setup(const string &label) {
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   set_frame_style(S_depressed, style);
   depressed->set_transform(TransformState::make_pos(LVector3f(0.05f, 0.0f, -0.05f)));
+
+  get_state_def(S_ready).attach_new_node(ready);
+  get_state_def(S_depressed).attach_new_node(depressed);
+  get_state_def(S_rollover).attach_new_node(rollover);
+  get_state_def(S_inactive).attach_new_node(inactive);
+
+  ready->add_child(geom);
+  depressed->add_child(geom);
+  rollover->add_child(geom);
+  inactive->add_child(geom);
 }
 
 ////////////////////////////////////////////////////////////////////
