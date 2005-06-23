@@ -70,17 +70,32 @@ class DistributedObject(PandaObject):
             self.zone = 0
     
     if __debug__:
-        def status(self):
+        def status(self, indent=0):
+            """
+            print out "doId(parentId,zoneId) className
+                and conditionally show generated, disabled, neverDisable,
+                or cachable
+            """
+            spaces=' '*(indent+2)
             try:
-                print "doId is", self.doId
-                print "parentId is", self.parentId
-                print "zoneId is", self.zoneId
-                print "class name is", self.__class__.__name__
-                print "generated is", self.activeState == ESGenerated
-                print "disabled is", self.activeState < ESGenerating
-                print "neverDisable is", self.neverDisable
-                print "cacheable is", self.cacheable
-            except: pass
+                print "%s%s:"%(
+                    ' '*indent, self.__class__.__name__)
+                print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
+                    spaces, 
+                    self.doId, self.parentId, self.zoneId),
+                flags=[]
+                if self.activeState == ESGenerated:
+                    flags.append("generated")
+                if self.activeState < ESGenerating:
+                    flags.append("disabled")
+                if self.neverDisable:
+                    flags.append("neverDisable")
+                if self.cacheable:
+                    flags.append("cacheable")
+                if len(flags):
+                    print "(%s)"%(" ".join(flags),),
+                print
+            except Exception, e: print "%serror printing status"%(spaces,), e
 
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))
