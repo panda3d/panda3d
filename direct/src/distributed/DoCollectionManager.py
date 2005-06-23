@@ -1,6 +1,9 @@
 #hack:
 BAD_DO_ID = BAD_ZONE_ID = -1
 
+if __debug__:
+    from otp.avatar.DistributedPlayerAI import DistributedPlayerAI
+
 class DoCollectionManager:
     def __init__(self):
         # Dict of {DistributedObject ids : DistributedObjects}
@@ -46,7 +49,7 @@ class DoCollectionManager:
                     distObj.dclass.getName(),
                     distObj.__dict__.get("name"))
 
-    def getDoList(self, parentId, zoneId=None, classType=None):
+    def getDoIdList(self, parentId, zoneId=None, classType=None):
         """
         parentId is any distributed object id.
         zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
@@ -77,6 +80,11 @@ class DoCollectionManager:
             r = a
         return r
 
+    if __debug__:
+        def getPlayerAvatars(self):
+            return [i for i in simbase.air.doId2do.values()
+                      if isinstance(i, DistributedPlayerAI)]
+    
     def countObjects(self, classType):
         """
         Counts the number of objects of the given type in the
