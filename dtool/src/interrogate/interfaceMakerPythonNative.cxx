@@ -325,6 +325,8 @@ std::string  methodNameFromCppName(std::string cppName, const std::string &class
 
 std::string make_safe_comment(const std::string & name_in)
 {
+
+
     std::string name(name_in.substr(0,MAX_COMMENT_SIZE));
 
     static const char safe_chars2[] = ",.[](){}:;'`~!@#$%^&*+\\=/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ";
@@ -1701,6 +1703,7 @@ void InterfaceMakerPythonNative::write_function_for_name(
 
 
     std::string FunctionComment = func->_ifunc._comment;
+    std::string FunctionComment1;
     if(FunctionComment.size() > 2)
         FunctionComment += "\n";
 
@@ -1759,13 +1762,16 @@ void InterfaceMakerPythonNative::write_function_for_name(
         indent(out,4)<< "}\n";
 
         out << "    if(!PyErr_Occurred()) // let error pass on \n";
-        out << "        PyErr_SetString(PyExc_TypeError, \"Arguments must match one of:\\n" << expected_params << " \"); \n";
+        out << "        PyErr_SetString(PyExc_TypeError, \"Arguments must match one of:\\n" << make_safe_comment(expected_params) << " \"); \n";
         if (constructor)
             indent(out,4) << "return -1;\n";
           else
             indent(out,4) << "return (PyObject *) NULL; \n";
 
-        FunctionComment += expected_params;
+        if(!expected_params.empty() && FunctionComment1.empty())
+            FunctionComment1 += "C++ Interface:\n";
+
+        FunctionComment1 += expected_params;
     }
     else 
     {
@@ -1779,15 +1785,23 @@ void InterfaceMakerPythonNative::write_function_for_name(
        }
 
         out << "    if(!PyErr_Occurred())\n";
-        out << "        PyErr_SetString(PyExc_TypeError, \"Must Match :\\n" << expected_params << " \"); \n";
+        out << "        PyErr_SetString(PyExc_TypeError, \"Must Match :\\n" << make_safe_comment(expected_params) << " \"); \n";
         if (constructor)
             indent(out,4) << "return -1;\n";
         else
             indent(out,4) << "return (PyObject *) NULL; \n";
-        FunctionComment += expected_params;
+
+        if(!expected_params.empty() && FunctionComment1.empty())
+            FunctionComment1 += "C++ Interface:\n";
+
+         FunctionComment1 += expected_params;
     }
 
     out << "}\n\n";
+
+    if(!FunctionComment1.empty())
+        FunctionComment = FunctionComment1 + "\n" + FunctionComment;
+
 
     out << "#ifndef NDEBUG\n";
     out << "static char * " << func->_name << "_comment = \"" << make_safe_comment(FunctionComment) << " \";\n";
@@ -2139,7 +2153,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 
     pexprs.push_back(pexpr_string);
   }
-  expected_params += ")\\n";
+  expected_params += ")\n";
     
     
 
