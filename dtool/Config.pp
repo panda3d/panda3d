@@ -258,7 +258,7 @@
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
-#define PYTHON_IPATH /usr/include/python2.2
+#define PYTHON_IPATH /usr/include/python2.4
 #define PYTHON_LPATH
 #define PYTHON_FPATH
 #define PYTHON_FRAMEWORK
