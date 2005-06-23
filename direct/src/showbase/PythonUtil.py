@@ -1226,13 +1226,17 @@ class POD:
         # create setters & getters for this class
         if cls.__dict__.has_key('DataSet'):
             for name in cls.DataSet:
-                def defaultSetter(self, value, name=name):
-                    setattr(self, name, value)
-                cls.__dict__[getSetterName(name)] = defaultSetter
-                def defaultGetter(self, name=name,
-                                  default=cls.DataSet[name]):
-                    return getattr(self, name, default)
-                cls.__dict__[getSetterName(name, 'get')] = defaultGetter
+                setterName = getSetterName(name)
+                if not hasattr(cls, setterName):
+                    def defaultSetter(self, value, name=name):
+                        setattr(self, name, value)
+                    cls.__dict__[setterName] = defaultSetter
+                getterName = getSetterName(name, 'get')
+                if not hasattr(cls, getterName):
+                    def defaultGetter(self, name=name,
+                                      default=cls.DataSet[name]):
+                        return getattr(self, name, default)
+                    cls.__dict__[getterName] = defaultGetter
         # this dict will hold all of the aggregated default data values for
         # this particular class, including values from its base classes
         cls._DataSet = {}
