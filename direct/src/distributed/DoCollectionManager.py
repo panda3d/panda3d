@@ -1,7 +1,7 @@
 #hack:
 BAD_DO_ID = BAD_ZONE_ID = -1
 
-if __debug__:
+if __debug__ and game.process != 'client':
     from otp.avatar.DistributedPlayerAI import DistributedPlayerAI
 
 class DoCollectionManager:
@@ -80,7 +80,7 @@ class DoCollectionManager:
             r = a
         return r
 
-    if __debug__:
+    if __debug__ and game.process != 'client':
         def getPlayerAvatars(self):
             return [i for i in simbase.air.doId2do.values()
                       if isinstance(i, DistributedPlayerAI)]
