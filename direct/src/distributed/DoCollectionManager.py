@@ -1,9 +1,6 @@
 #hack:
 BAD_DO_ID = BAD_ZONE_ID = -1
 
-if __debug__ and game.process != 'client':
-    from otp.avatar.DistributedPlayerAI import DistributedPlayerAI
-
 class DoCollectionManager:
     def __init__(self):
         # Dict of {DistributedObject ids : DistributedObjects}
@@ -79,11 +76,6 @@ class DoCollectionManager:
                     a.append(obj)
             r = a
         return r
-
-    if __debug__ and game.process != 'client':
-        def getPlayerAvatars(self):
-            return [i for i in simbase.air.doId2do.values()
-                      if isinstance(i, DistributedPlayerAI)]
     
     def countObjects(self, classType):
         """
