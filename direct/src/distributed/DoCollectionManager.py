@@ -175,49 +175,6 @@ class DoCollectionManager:
                 zoneDoSet = parentZoneDict.setdefault(zoneId, set())
                 zoneDoSet.add(doId)
 
-            ## if oldParentId == parentId:
-                ## # Case 1: Same parent, new zone
-                ## parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
-                ## # Remove this doId from the old zone list
-                ## zoneDoSet = parentZoneDict.setdefault(oldZoneId, set())
-                ## if doId in zoneDoSet:
-                    ## zoneDoSet.remove(doId)
-                ## # Add it to the new zone list
-                ## zoneDoSet = parentZoneDict.setdefault(zoneId, {})
-                ## zoneDoSet[doId] = None
-                ## ## if zoneDoSet is None:
-                    ## ## # No existing objList for this zone, let's make a new one
-                    ## ## parentZoneDict[zoneId] = [doId]
-                ## ## else:
-                    ## ## # Just add this doId to the existing list
-                    ## ## assert(doId not in objList)
-                    ## ## zoneDoSet.append(doId)
-            ## else:
-                ## # Case 2: New parent, valid old parent
-                ## if (oldParentId is not None) and (oldZoneId is not None):
-                    ## # First delete the old location
-                    ## self.deleteObjectLocation(doId, oldParentId, oldZoneId)
-                ## # Case 2: continued, already deleted from old location
-                ## # Case 3: New parent - no old parent
-                ## parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
-                ## zoneDoSet = parentZoneDict.setdefault(zoneId, {})
-                ## zoneDoSet[doId] = None
-                ## ## if parentZoneDict is None:
-                    ## ## # This parent is not here, just fill the whole entry in
-                    ## ## self.__doHierarchy[parentId] = {zoneId : {doId: None}}
-                ## ## else:
-                    ## ## zoneDoSet = parentZoneDict.setdefault(zoneId, {})
-                    ## ## zoneDoSet[doId] = None
-                    ## ## objList = parentZoneDict.get(zoneId)
-                    ## ## if objList is None:
-                        ## ## # This parent has no objects in this zone before
-                        ## ## # create a new entry for this zone and list this doId
-                        ## ## parentZoneDict[zoneId] = {doId: None}
-                    ## ## else:
-                        ## ## assert doId not in objList
-                        ## ## # Just add this doId to the existing list
-                        ## ## objList[doId] = None
-
         def deleteObjectLocation(self, objId, parentId, zoneId):
             # Do not worry about null values
             if ((parentId is None) or (zoneId is None)):
