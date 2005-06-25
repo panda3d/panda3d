@@ -69,6 +69,9 @@ class DistributedObject(PandaObject):
             #zone of the distributed object, default to 0
             self.zone = 0
     
+            self.parentId = None
+            self.zoneId = None
+
     if __debug__:
         def status(self, indent=0):
             """
@@ -185,7 +188,8 @@ class DistributedObject(PandaObject):
             self.__callbacks = {}
             if wantOtpServer:
                 #self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
-                self.__location = (None, None)
+                self.setLocation(None, None)
+                #self.__location = (None, None)
                 # TODO: disable my children
 
     def isDisabled(self):
@@ -380,6 +384,17 @@ class DistributedObject(PandaObject):
             
         def setLocation(self, parentId, zoneId):
             #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
+            # parentId can be 'None', e.g. when an object is being disabled
+            oldParentId = self.parentId
+            oldZoneId = self.zoneId
+            parentIsNew = (oldParentId != parentId)
+
+            # notify any existing parent that we're moving away
+            if (oldParentId is not None) and parentIsNew:
+                oldParentObj = self.cr.doId2do.get(oldParentId)
+                if oldParentObj:
+                    oldParentObj.handleChildLeave(self, oldZoneId)
+
             # The store must run first so we know the old location
             self.__location = (parentId, zoneId)
             self.parentId = parentId
@@ -389,15 +404,16 @@ class DistributedObject(PandaObject):
             # Give the parent a chance to run code when a new child
             # sets location to it. For example, the parent may want to
             # scene graph reparent the child to some subnode it owns.
-            parentObj = self.cr.doId2do.get(parentId)
-            if parentObj:
-                parentObj.handleChildSetLocation(self, zoneId)
+            if (self.parentId is not None) and parentIsNew:
+                parentObj = self.cr.doId2do.get(parentId)
+                if parentObj:
+                    parentObj.handleChildArrive(self, zoneId)
             
         def getLocation(self):
             return self.__location
 
-        def handleChildSetLocation(self, childObj, zoneId):
-            self.notify.debug("handleChildSetLocation: %s childId: %s zoneId: %s" %
+        def handleChildArrive(self, childObj, zoneId):
+            self.notify.debug("handleChildArrive: %s childId: %s zoneId: %s" %
                              (self.doId, childObj.doId, zoneId))
             # A new child has just setLocation beneath us.  Give us a
             # chance to run code when a new child sets location to us. For
@@ -407,6 +423,19 @@ class DistributedObject(PandaObject):
             # Inheritors should override
             pass
 
+        def handleChildLeave(self, childObj, zoneId):
+            self.notify.debug("handleChildLeave: %s childId: %s zoneId: %s" %
+                             (self.doId, childObj.doId, zoneId))
+            # A child is about to setLocation away from us.  Give us a
+            # chance to run code just before a child sets location away from us.
+            
+            # Inheritors should override
+            pass
+
+        def getParentObj(self):
+            if self.parentId is None:
+                return None
+            return self.cr.doId2do.get(self.parentId)
 
     def isLocal(self):
         # This returns true if the distributed object is "local,"
