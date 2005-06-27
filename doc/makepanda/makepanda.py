@@ -724,8 +724,8 @@ def AddToVisualStudioPath(path,add):
 def LocateVisualStudio():
 
     # Try to use the Visual Toolkit 2003
-    vcdir = os.environ["VCTOOLKITINSTALLDIR"]
-    if (vcdir != 0):
+    if (os.environ.has_key["VCTOOLKITINSTALLDIR"]):
+        vcdir = os.environ["VCTOOLKITINSTALLDIR"]
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
                                "Install Dir")
         if (platsdk == 0): sys.exit("Found VC Toolkit, but cannot locate MS Platform SDK")
