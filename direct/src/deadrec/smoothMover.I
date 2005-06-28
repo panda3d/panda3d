@@ -292,6 +292,17 @@ get_smooth_pos() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_forward_axis
+//       Access: Published
+//  Description: Returns the smoothed position as computed by a
+//               previous call to compute_smooth_position().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase3f &SmoothMover::
+get_forward_axis() const {
+  return _forward_axis;
+}
+ 
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_smooth_hpr
 //       Access: Published
 //  Description: Returns the smoothed orientation as computed by a

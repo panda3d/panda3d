@@ -104,7 +104,7 @@ PUBLISHED:
 
   INLINE float get_smooth_forward_velocity() const;
   INLINE float get_smooth_rotational_velocity() const;
-
+  INLINE const LVecBase3f &get_forward_axis() const;
 
   // These static methods control the global properties of all
   // SmoothMovers.
