@@ -54,6 +54,11 @@ class Messenger:
                                    + '\n method: ' + `method`
                                    + '\n extraArgs: ' + `extraArgs`
                                    + '\n persistent: ' + `persistent`)
+        if not callable(method):
+            self.notify.warning(
+                "method not callable in accept (ignoring): %s %s"%
+                (method, extraArgs))
+            return
 
         acceptorDict = self.__callbacks.setdefault(event, {})
         acceptorDict[object] = [method, extraArgs, persistent]
@@ -195,7 +200,12 @@ class Messenger:
                 # we have cleaned up the accept hook, because the
                 # method itself might call accept() or acceptOnce()
                 # again.
-                apply(method, (extraArgs + sentArgs))
+                if callable(method):
+                    apply(method, (extraArgs + sentArgs))
+                else:
+                    self.notify.warning(
+                        "method not callable in send: %s %s %s"%
+                        (method, extraArgs, sentArgs))
 
     def clear(self):
         """
