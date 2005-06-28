@@ -21,7 +21,9 @@ class DistributedObjectAI(DirectObject):
             # Record the repository
             self.air = air
             # Record our parentId and zoneId
-            self.__location = None
+            ## self.__location = None
+            self.parentId = None
+            self.zoneId = None
 
             # Record our distributed class
             className = self.__class__.__name__
@@ -195,14 +197,15 @@ class DistributedObjectAI(DirectObject):
                     self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                     self.lastNonQuietZone = zoneId
             self.air.storeObjectLocation(self.doId, parentId, zoneId)
-            self.__location = (parentId, zoneId)
+            ## self.__location = (parentId, zoneId)
 
         # Set the initial values of parentId,zoneId
         def setInitLocation(self, parentId, zoneId):
-            self.__location = (parentId, zoneId)
+            self.parentId=parentId
+            self.zoneId=zoneId
             
         def getLocation(self):
-            return self.__location
+            return (self.parentId, self.zoneId)
 
     else:
         # NON OTP
@@ -314,9 +317,9 @@ class DistributedObjectAI(DirectObject):
 
             # The repository is the one that really does the work
             parentId = self.air.districtId
-            self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
             self.parentId = parentId
             self.zoneId = zoneId
+            self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
             self.generate()
     else:
         def generateWithRequired(self, zoneId, optionalFields=[]):
@@ -346,7 +349,7 @@ class DistributedObjectAI(DirectObject):
             self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
             self.parentId = parentId
             self.zoneId = zoneId
-            self.__location = (parentId, zoneId)
+            ## self.__location = (parentId, zoneId)
             self.generate()
     else:
         def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
@@ -371,7 +374,7 @@ class DistributedObjectAI(DirectObject):
             assert not hasattr(self, 'parentId')
             self.parentId = parentId
             self.zoneId = zoneId
-            self.__location = (parentId, zoneId)
+            ## self.__location = (parentId, zoneId)
             self.generate()
 
         def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
@@ -392,10 +395,10 @@ class DistributedObjectAI(DirectObject):
             # Send a generate message
             self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 
-            assert not hasattr(self, 'parentId')
+            assert not hasattr(self, 'parentId') or self.parentId is None
             self.parentId = parentId
             self.zoneId = zoneId
-            self.__location = (parentId, zoneId)
+            ## self.__location = (parentId, zoneId)
             self.generate()
 
     def generate(self):

@@ -35,9 +35,10 @@ class DistributedObject(PandaObject):
         except:
             self.DistributedObject_initialized = 1
             self.cr = cr
-            if wantOtpServer:
-                # Location stores the parentId, zoneId of this object
-                self.__location = (None, None)
+            self.children = {}
+            ## if wantOtpServer:
+                ## # Location stores the parentId, zoneId of this object
+                ## self.__location = (None, None)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take
@@ -396,7 +397,7 @@ class DistributedObject(PandaObject):
                     oldParentObj.handleChildLeave(self, oldZoneId)
 
             # The store must run first so we know the old location
-            self.__location = (parentId, zoneId)
+            ## self.__location = (parentId, zoneId)
             self.parentId = parentId
             self.zoneId = zoneId
             self.cr.storeObjectLocation(self.doId, parentId, zoneId)
@@ -410,24 +411,28 @@ class DistributedObject(PandaObject):
                     parentObj.handleChildArrive(self, zoneId)
             
         def getLocation(self):
-            return self.__location
+            return (self.parentId, self.zoneId)
 
         def handleChildArrive(self, childObj, zoneId):
-            self.notify.debug("handleChildArrive: %s childId: %s zoneId: %s" %
-                             (self.doId, childObj.doId, zoneId))
+            self.notify.debugCall()
             # A new child has just setLocation beneath us.  Give us a
             # chance to run code when a new child sets location to us. For
             # example, we may want to scene graph reparent the child to
             # some subnode we own.
+            ## zone=self.children.setdefault(zoneId, {})
+            ## zone[childObj.doId]=childObj
             
             # Inheritors should override
             pass
 
         def handleChildLeave(self, childObj, zoneId):
-            self.notify.debug("handleChildLeave: %s childId: %s zoneId: %s" %
-                             (self.doId, childObj.doId, zoneId))
+            self.notify.debugCall()
             # A child is about to setLocation away from us.  Give us a
             # chance to run code just before a child sets location away from us.
+            ## zone=self.children[zoneId]
+            ## del zone[childObj.doId]
+            ## if not len(zone):
+            ##     del self.children[zoneId]
             
             # Inheritors should override
             pass
