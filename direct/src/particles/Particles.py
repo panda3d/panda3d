@@ -283,14 +283,13 @@ class Particles(ParticleSystem):
         aMode = "PRALPHANONE"
         if (alphaMode == BaseParticleRenderer.PRALPHANONE):
             aMode = "PRALPHANONE"
-        elif (alphaMode ==
-                BaseParticleRenderer.PRALPHAOUT):
+        elif (alphaMode == BaseParticleRenderer.PRALPHAOUT):
             aMode = "PRALPHAOUT"
-        elif (alphaMode ==
-                BaseParticleRenderer.PRALPHAIN):
+        elif (alphaMode == BaseParticleRenderer.PRALPHAIN):
             aMode = "PRALPHAIN"
-        elif (alphaMode ==
-                BaseParticleRenderer.PRALPHAUSER):
+        elif (alphaMode == BaseParticleRenderer.PRALPHAINOUT):
+            aMode = "PRALPHAINOUT"
+        elif (alphaMode == BaseParticleRenderer.PRALPHAUSER):
             aMode = "PRALPHAUSER"
         file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
         file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % \
