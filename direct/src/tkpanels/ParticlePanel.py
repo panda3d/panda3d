@@ -561,6 +561,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OIncomingColorSaturate','OZero'),
                               self.setRendererGeomColorBlendIncomingOperand)
+        self.getVariable('Geom Renderer','Incoming Op.').set('OIncomingAlpha')
         self.createOptionMenu(p, 'Geom Renderer',
                               'Fbuffer Op.',
                               'See ColorBlendAttrib.h for explanation',
@@ -570,6 +571,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OZero'),
                               self.setRendererGeomColorBlendFbufferOperand)
+        self.getVariable('Geom Renderer','Fbuffer Op.').set('OOne')
         p.pack(fill = X)
         p = Frame(rendererGeomInterpolationPage)
         p.pack(fill = X)
@@ -775,6 +777,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OIncomingColorSaturate','OZero'),
                               self.setRendererSpriteColorBlendIncomingOperand)
+        self.getVariable('Sprite Renderer','Incoming Op.').set('OIncomingAlpha')
         self.createOptionMenu(p, 'Sprite Renderer',
                               'Fbuffer Op.',
                               'See ColorBlendAttrib.h for explanation',
@@ -784,6 +787,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OZero'),
                               self.setRendererSpriteColorBlendFbufferOperand)
+        self.getVariable('Sprite Renderer','Fbuffer Op.').set('OOne')
         p = Frame(rendererSpriteInterpolationPage)
         p.pack(fill = BOTH, expand = 1)
         addSegmentButton = Menubutton(p, text = 'Add Segment',
