@@ -43,6 +43,7 @@
 #ifdef HAVE_LONG_LONG
 #undef HAVE_LONG_LONG
 #endif 
+
 #include "Python.h"
 #include "structmember.h"
 #ifdef HAVE_LONG_LONG
@@ -801,7 +802,7 @@ static PyObject * GetSupperBase(PyObject * self)
 };
 
 
-static PyMethodDef Dtool_Methods_DTOOL_SUPPER_BASE[]= {
+PyMethodDef Dtool_Methods_DTOOL_SUPPER_BASE[]= {
   { "DtoolGetSupperBase",(PyCFunction ) &GetSupperBase, METH_NOARGS,"Will Return SUPPERbase Class"},
   { NULL, NULL }
 };
