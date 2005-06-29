@@ -58,7 +58,7 @@ using namespace std;
 
 #ifdef _WIN32
 #define EXPORT_THIS  __declspec(dllexport) 
-#define IMPORT_THIS  __declspec(dllimport) 
+#define IMPORT_THIS  extern __declspec(dllimport) 
 #else
 #define EXPORT_THIS 
 #define IMPORT_THIS     extern
@@ -868,7 +868,7 @@ int  Dtool_Init_DTOOL_SUPPER_BASE(PyObject *self, PyObject *args, PyObject *kwds
 
 
 #else
-extern IMPORT_THIS struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
+IMPORT_THIS struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
 #endif // DTOOL_CREATE_SUPPER_BASE
 
 
