@@ -818,7 +818,7 @@ static long  DTool_HashKey_Methods_DTOOL_SUPPER_BASE(PyObject * self)
 };
 
 
-inline void __cdecl Dtool_PyModuleClassInit_DTOOL_SUPPER_BASE(PyObject *module)
+inline void Dtool_PyModuleClassInit_DTOOL_SUPPER_BASE(PyObject *module)
 {
     static bool initdone = false;
     if(!initdone)
