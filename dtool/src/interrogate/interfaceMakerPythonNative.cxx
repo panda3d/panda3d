@@ -1176,7 +1176,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
     out << "//********************************************************************\n";
     out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
     out << "//********************************************************************\n";
-        out << "static PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
+        out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
 
 
 
