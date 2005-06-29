@@ -304,3 +304,4 @@ INLINE  int TypeHandle::get_best_parent_from_Set(const std::set< int > &legal_va
     }
     return -1;
 }
+
