@@ -428,7 +428,7 @@ inline  PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject
 
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 extern EXPORT_THIS    Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
-struct      PyMethodDef Dtool_Methods_##CLASS_NAME[];\
+extern struct      PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
