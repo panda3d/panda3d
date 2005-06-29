@@ -550,10 +550,7 @@ DTOOL_C_LINKAGE inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int typ
         di = GetRunTimeDictionary().find(type2);
         if(di != GetRunTimeDictionary().end())
             return di->second;
-
-        printf("Looking For RunTime Type %d Failed Reverting to base type\n",type);
     }
-
     return NULL;    
 };
 ///////////////////////////////////////////////////////////////////////////////
@@ -860,7 +857,6 @@ inline void __cdecl Dtool_PyModuleClassInit_DTOOL_SUPPER_BASE(PyObject *module)
         if(PyType_Ready(&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject()) < 0)
         {
              PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPPER_BASE)");
-             printf(" Error In Dtool_DTOOL_SUPPER_BASE");
              return;
         }
         Py_INCREF(&Dtool_DTOOL_SUPPER_BASE.As_PyTypeObject());
