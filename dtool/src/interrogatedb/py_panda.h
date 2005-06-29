@@ -867,7 +867,7 @@ int  Dtool_Init_DTOOL_SUPPER_BASE(PyObject *self, PyObject *args, PyObject *kwds
 
 
 #else
-extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
+extern IMPORT_THIS struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
 #endif // DTOOL_CREATE_SUPPER_BASE
 
 
