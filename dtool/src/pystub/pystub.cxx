@@ -81,12 +81,16 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyObject_GenericGetAttr(...);
   EXPCL_DTOOLCONFIG int PyArg_Parse(...);
   EXPCL_DTOOLCONFIG int PyDict_Type(...);
-
+  EXPCL_DTOOLCONFIG int PyArg_ParseTupleAndKeywords(...);
+  EXPCL_DTOOLCONFIG int PyDict_Size(...);
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
   EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
 };
 
+
+int PyArg_ParseTupleAndKeywords(...) { return 0; }
+int PyDict_Size(...){ return 0; }
 int PyArg_ParseTuple(...) { return 0; }
 int PyErr_Occurred(...) { return 0; }
 int PyErr_SetString(...) { return 0; }
