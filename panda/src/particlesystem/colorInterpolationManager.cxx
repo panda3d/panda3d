@@ -415,23 +415,23 @@ generateColor(const float interpolated_time) {
   ColorInterpolationSegment *cur_seg;
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
 
-  for(iter = _i_segs.begin();iter != _i_segs.end();++iter) {
-      cur_seg = (*iter);
-      if( cur_seg->is_enabled() && 
-          interpolated_time >= cur_seg->get_time_begin() 
-          && interpolated_time <= cur_seg->get_time_end() ) {
-          segment_found = true;
-          out += cur_seg->interpolateColor(interpolated_time);
-          out[0] = max(0,min(out[0],1.0f));
-          out[1] = max(0,min(out[1],1.0f));
-          out[2] = max(0,min(out[2],1.0f));
-          out[3] = max(0,min(out[3],1.0f));
-        }
+  for (iter = _i_segs.begin();iter != _i_segs.end();++iter) {
+    cur_seg = (*iter);
+    if( cur_seg->is_enabled() && 
+        interpolated_time >= cur_seg->get_time_begin() 
+        && interpolated_time <= cur_seg->get_time_end() ) {
+      segment_found = true;
+      out += cur_seg->interpolateColor(interpolated_time);
+      out[0] = max(0.0f, min(out[0], 1.0f));
+      out[1] = max(0.0f, min(out[1], 1.0f));
+      out[2] = max(0.0f, min(out[2], 1.0f));
+      out[3] = max(0.0f, min(out[3], 1.0f));
     }
+  }
   
   if(segment_found) {
-      return out;
+    return out;
   }
-
+  
   return _default_color;
 }
