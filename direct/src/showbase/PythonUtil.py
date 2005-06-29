@@ -1170,44 +1170,49 @@ class POD:
         # base class does not define any data items, but they would
         # appear here as 'name': value,
         }
-    def __init__(self, *args, **kwArgs):
+    def __init__(self, **kwArgs):
         self.__class__._compileDefaultDataSet()
-        if len(args) == 1 and len(kwArgs) == 0:
-            # extract our dataset from an existing POD instance
-            obj = args[0]
-            for name in self.getDataNames():
-                # if the other obj doesn't have this data item, stick to the
-                # default
-                if hasattr(obj, name):
-                    setattr(self, name, getattr(obj, name))
-                else:
-                    setattr(self, name, self.getDefaultValue(name))
-        else:
-            assert len(args) == 0
-            if __debug__:
-                for arg in kwArgs.keys():
-                    assert arg in self.getDataNames(), (
-                        "unknown argument for %s: '%s'" % (
-                        self.__class__, arg))
-            for name in self.getDataNames():
-                if name in kwArgs:
-                    setattr(self, name, kwArgs[name])
-                else:
-                    setattr(self, name, self.getDefaultValue(name))
+        if __debug__:
+            for arg in kwArgs.keys():
+                assert arg in self.getDataNames(), (
+                    "unknown argument for %s: '%s'" % (
+                    self.__class__, arg))
+        for name in self.getDataNames():
+            if name in kwArgs:
+                getSetter(self, name)(kwArgs[name])
+            else:
+                getSetter(self, name)(self.getDefaultValue(name))
 
     def setDefaultValues(self):
         # set all the default data values on ourself
         for name in self.getDataNames():
-            setattr(self, name, self.getDefaultValue(name))
+            getSetter(self, name)(self.getDefaultValue(name))
+    # this functionality used to be in the constructor, triggered by a single
+    # positional argument; that was conflicting with POD subclasses that wanted
+    # to define different behavior for themselves when given a positional
+    # constructor argument
+    def copyFrom(self, other, strict=False):
+        # if 'strict' is true, other must have a value for all of our data items
+        # otherwise we'll use the defaults
+        for name in self.getDataNames():
+            if hasattr(other, getSetterName(name, 'get')):
+                setattr(self, name, getSetter(other, name, 'get')())
+            else:
+                if strict:
+                    raise "object '%s' doesn't have value '%s'" % (other, name)
+                else:
+                    setattr(self, name, self.getDefaultValue(name))
+        # support 'p = POD.POD().copyFrom(other)'
+        return self
     def makeCopy(self):
         # returns a duplicate of this object
-        return self.__class__(self)
+        return self.__class__().copyFrom(self)
     def applyTo(self, obj):
         # Apply our entire set of data to another POD
         for name in self.getDataNames():
-            setattr(obj, name, getattr(self, name))
+            getSetter(obj, name)(getSetter(self, name, 'get')())
     def getValue(self, name):
-        return getattr(self, name)
+        return getSetter(self, name, 'get')()
 
     # CLASS METHODS
     def getDataNames(cls):
@@ -1257,8 +1262,28 @@ class POD:
     def __repr__(self):
         argStr = ''
         for name in self.getDataNames():
-            argStr += '%s=%s,' % (name, repr(getattr(self, name)))
+            argStr += '%s=%s,' % (name, repr(getSetter(self, name, 'get')()))
         return '%s(%s)' % (self.__class__.__name__, argStr)
+
+    """ TODO
+    if __dev__:
+        @staticmethod
+        def unitTest():
+            tColor = 'red'
+            tColor2 = 'blue'
+            class test(POD):
+                DataSet = {
+                    'color': tColor,
+                    }
+
+            t = test()
+            assert t.getColor() == tColor
+            t.setColor(tColor2)
+            assert t.getColor() == tColor2
+
+            t2 = test().makeCopy()
+            assert t2.getColor() == t.getColor() == tColor2
+            """
 
 def bound(value, bound1, bound2):
     """
