@@ -704,7 +704,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
         {
             Function *func = (*fi);
-            std::string fname =     "static int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
+            std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
 
             write_function_for_name(out, func,fname,"",ClassName);
         }
