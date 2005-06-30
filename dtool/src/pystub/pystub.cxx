@@ -43,6 +43,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
+  EXPCL_DTOOLCONFIG int PyObject_Free(...);
   EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_HasAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_IsInstance(...);
@@ -65,6 +66,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyCFunction_New(...);
+  EXPCL_DTOOLCONFIG int PyCFunction_NewEx(...);
   EXPCL_DTOOLCONFIG int PyDict_SetItemString(...);
   EXPCL_DTOOLCONFIG int PyDict_SetItem(...);
   EXPCL_DTOOLCONFIG int PyObject_GenericSetAttr(...);
@@ -115,6 +117,7 @@ int PyLong_Type(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
 int PyObject_Call(...) { return 0; }
+int PyObject_Free(...) { return 0; }
 int PyObject_GetAttrString(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
@@ -137,6 +140,7 @@ int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
+int PyCFunction_NewEx(...) { return 0; };
 int PyDict_SetItemString(...) { return 0; };
 int PyDict_SetItem(...) { return 0; };
 int PyObject_GenericSetAttr(...) { return 0; };
