@@ -28,7 +28,7 @@
 #include "unicodeLatinMap.h"
 #include "geomNode.h"
 #include "pointerTo.h"
-#include "qpgeom.h"
+#include "geom.h"
 
 class TextEncoder;
 
@@ -49,8 +49,8 @@ public:
 
   void clear();
 
-  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
-  INLINE qpGeom::UsageHint get_usage_hint() const;
+  INLINE void set_usage_hint(Geom::UsageHint usage_hint);
+  INLINE Geom::UsageHint get_usage_hint() const;
 
   bool set_wtext(const wstring &wtext, const TextProperties &properties,
                  int max_rows = 0);
@@ -183,7 +183,7 @@ private:
   LVector2f _lr;
 
   TextEncoder *_encoder;
-  qpGeom::UsageHint _usage_hint;
+  Geom::UsageHint _usage_hint;
 };
 
 #include "textAssembler.I"

@@ -21,8 +21,15 @@
 
 #include "indent.h"
 #include "geomNode.h"
+#include "geomVertexData.h"
 #include "geom.h"
-#include "geomprimitives.h"
+#include "geomPrimitive.h"
+#include "geomPoints.h"
+#include "geomLines.h"
+#include "geomLinestrips.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
 #include "transformState.h"
 #include "textureAttrib.h"
 #include "pta_ushort.h"
@@ -63,16 +70,14 @@ clear() {
   _num_nodes_with_attribs = 0;
   _num_geom_nodes = 0;
   _num_geoms = 0;
+  _num_geom_vertex_datas = 0;
 
   _num_vertices = 0;
   _num_normals = 0;
   _num_texcoords = 0;
   _num_tris = 0;
-  _num_quads = 0;
-  _num_polys = 0;
   _num_lines = 0;
   _num_points = 0;
-  _num_spheres = 0;
 
   _num_individual_tris = 0;
   _num_tristrips = 0;
@@ -122,7 +127,8 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 
   indent(out, indent_level)
-    << _num_geoms << " Geoms appear on " << _num_geom_nodes << " GeomNodes.\n";
+    << _num_geoms << " Geoms, with " << _num_geom_vertex_datas 
+    << " GeomVertexDatas, appear on " << _num_geom_nodes << " GeomNodes.\n";
 
   indent(out, indent_level)
     << _num_vertices << " vertices, " << _num_normals << " normals, "
@@ -162,9 +168,7 @@ write(ostream &out, int indent_level) const {
     << " of these are independent triangles.\n";
 
   indent(out, indent_level)
-    << _num_quads << " quads, " << _num_polys << " general polygons, "
-    << _num_lines << " lines, " << _num_points << " points, "
-    << _num_spheres << " spheres.\n";
+    << _num_lines << " lines, " << _num_points << " points.\n";
 
   indent(out, indent_level)
     << _textures.size() << " textures, estimated minimum "
@@ -261,91 +265,57 @@ collect_statistics(GeomNode *geom_node) {
 ////////////////////////////////////////////////////////////////////
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
-  int num_prims;
-  int num_verts;
-  int num_components;
+  const GeomVertexData *vdata = geom->get_vertex_data();
+  bool inserted = _vdatas.insert(vdata).second;
+  if (inserted) {
+    // This is the first time we've encountered this vertex data.
+    ++_num_geom_vertex_datas;
 
-  num_prims = geom->get_num_prims();
-  if (geom->uses_components()) {
-    num_verts = 0;
-    num_components = 0;
-    for (int i = 0; i < num_prims; i++) {
-      num_verts += geom->get_length(i);
-      num_components += (geom->get_length(i) - geom->get_num_more_vertices_than_components());
+    int num_rows = vdata->get_num_rows();
+    if (vdata->has_column(InternalName::get_vertex())) {
+      _num_vertices += num_rows;
     }
-  } else {
-    num_verts = num_prims * geom->get_num_vertices_per_prim();
-    num_components = 1;
+    if (vdata->has_column(InternalName::get_normal())) {
+      _num_normals += num_rows;
+    }
+    const GeomVertexFormat *format = vdata->get_format();
+    int num_texcoords = format->get_num_texcoords();
+    _num_texcoords += num_rows * num_texcoords;
   }
 
-  _num_vertices += num_verts;
+  // Now consider the primitives in the Geom.
+  int num_primitives = geom->get_num_primitives();
+  for (int i = 0; i < num_primitives; ++i) {
+    const GeomPrimitive *prim = geom->get_primitive(i);
 
-  PTA_Normalf norms;
-  GeomBindType nbind;
-  PTA_ushort nindex;
-  geom->get_normals(norms, nbind, nindex);
+    if (prim->is_of_type(GeomPoints::get_class_type())) {
+      _num_points += prim->get_num_primitives();
+      
+    } else if (prim->is_of_type(GeomLines::get_class_type())) {
+      _num_lines += prim->get_num_primitives();
+      
+    } else if (prim->is_of_type(GeomLinestrips::get_class_type())) {
+      _num_lines += prim->get_num_faces();
+      
+    } else if (prim->is_of_type(GeomTriangles::get_class_type())) {
+      _num_tris += prim->get_num_primitives();
+      _num_individual_tris += prim->get_num_primitives();
 
-  switch (nbind) {
-  case G_OVERALL:
-    consider_normals(norms, nindex, 1);
-    break;
+    } else if (prim->is_of_type(GeomTristrips::get_class_type())) {
+      _num_tris += prim->get_num_faces();
+      _num_tristrips += prim->get_num_primitives();
+      _num_triangles_in_strips += prim->get_num_faces();
 
-  case G_PER_PRIM:
-    consider_normals(norms, nindex, num_prims);
-    break;
+    } else if (prim->is_of_type(GeomTrifans::get_class_type())) {
+      _num_tris += prim->get_num_faces();
+      _num_trifans += prim->get_num_primitives();
+      _num_triangles_in_fans += prim->get_num_faces();
 
-  case G_PER_COMPONENT:
-    consider_normals(norms, nindex, num_components);
-    break;
-
-  case G_PER_VERTEX:
-    consider_normals(norms, nindex, num_verts);
-    break;
-
-  case G_OFF:
-    break;
-  }
-
-  if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX) {
-    _num_texcoords += num_verts;
-  }
-
-  if (geom->is_of_type(GeomPoint::get_class_type())) {
-    _num_points += num_verts;
-
-  } else if (geom->is_of_type(GeomLine::get_class_type())) {
-    _num_lines += num_prims;
-
-  } else if (geom->is_of_type(GeomLinestrip::get_class_type())) {
-    _num_lines += num_components;
-
-  } else if (geom->is_of_type(GeomPolygon::get_class_type())) {
-    _num_polys += num_prims;
-
-  } else if (geom->is_of_type(GeomQuad::get_class_type())) {
-    _num_quads += num_prims;
-
-  } else if (geom->is_of_type(GeomTri::get_class_type())) {
-    _num_tris += num_prims;
-    _num_individual_tris += num_prims;
-
-  } else if (geom->is_of_type(GeomTristrip::get_class_type())) {
-    _num_tris += num_components;
-    _num_tristrips += num_prims;
-    _num_triangles_in_strips += num_components;
-
-  } else if (geom->is_of_type(GeomTrifan::get_class_type())) {
-    _num_tris += num_components;
-    _num_trifans += num_prims;
-    _num_triangles_in_fans += num_components;
-
-  } else if (geom->is_of_type(GeomSphere::get_class_type())) {
-    _num_spheres += num_prims;
-
-  } else {
-    pgraph_cat.warning()
-      << "Unknown GeomType in SceneGraphAnalyzer: "
-      << geom->get_type() << "\n";
+    } else {
+      pgraph_cat.warning()
+        << "Unknown GeomPrimitive type in SceneGraphAnalyzer: "
+        << prim->get_type() << "\n";
+    }
   }
 }
 
@@ -379,46 +349,5 @@ collect_statistics(Texture *texture) {
   } else {
     // This texture has been encountered before; don't count it again.
     (*ti).second++;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::consider_normals
-//       Access: Private
-//  Description: Examines the indicated set of normals.
-////////////////////////////////////////////////////////////////////
-void SceneGraphAnalyzer::
-consider_normals(const Normalf *norms, const unsigned short *nindex,
-                 int num) {
-  _num_normals += num;
-
-  if (nindex != (const unsigned short *)NULL) {
-    // An indexed array.
-    for (int i = 0; i < num; i++) {
-      const Normalf &norm = norms[nindex[i]];
-      float l = norm.length();
-      if (IS_THRESHOLD_EQUAL(l, 1.0f, 0.01f)) {
-        // This normal is close enough to unit length to be ok.
-      } else if (l > 1.0f) {
-        _num_long_normals++;
-      } else { // l < 1.0f
-        _num_short_normals++;
-      }
-      _total_normal_length += l;
-    }
-  } else {
-    // A nonindexed array.
-    for (int i = 0; i < num; i++) {
-      const Normalf &norm = norms[i];
-      float l = norm.length();
-      if (IS_THRESHOLD_EQUAL(l, 1.0f, 0.01f)) {
-        // This normal is close enough to unit length to be ok.
-      } else if (l > 1.0f) {
-        _num_long_normals++;
-      } else { // l < 1.0
-        _num_short_normals++;
-      }
-      _total_normal_length += l;
-    }
   }
 }

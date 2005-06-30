@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_PANDAEGG
 
 #define COMPONENT_LIBS \
-    egg2pg egg2sg egg builder
+    egg2pg egg2sg egg
 
 #define LOCAL_LIBS putil express
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \

@@ -37,8 +37,6 @@
 //               Multiple combinations of these with different weights
 //               are used to implement soft-skinned vertices for an
 //               animated character.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA JointVertexTransform : public VertexTransform {
 private:

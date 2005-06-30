@@ -85,7 +85,7 @@ isbreakpoint(unsigned int ch) {
 TextAssembler::
 TextAssembler(TextEncoder *encoder) : 
   _encoder(encoder),
-  _usage_hint(qpGeom::UH_static)
+  _usage_hint(Geom::UH_static)
 {
   clear();
 }
@@ -1417,7 +1417,6 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
       }
     }
   }
-
   return false;
 }
 
@@ -1469,7 +1468,8 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
   LMatrix4f new_xform = _xform * extra_xform;
   Pieces::const_iterator pi;
   for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    PT(Geom) new_geom = (*pi)._geom->make_copy();
+    const Geom *geom = (*pi)._geom;
+    PT(Geom) new_geom = new Geom(*geom);
     new_geom->transform_vertices(new_xform);
     geom_node->add_geom(new_geom, state->compose((*pi)._state));
   }

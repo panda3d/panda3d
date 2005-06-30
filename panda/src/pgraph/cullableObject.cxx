@@ -25,9 +25,9 @@
 #include "lens.h"
 #include "stateMunger.h"
 #include "pStatTimer.h"
-#include "qpgeomVertexWriter.h"
-#include "qpgeomVertexReader.h"
-#include "qpgeomTriangles.h"
+#include "geomVertexWriter.h"
+#include "geomVertexReader.h"
+#include "geomTriangles.h"
 
 PStatCollector CullableObject::_munge_points_pcollector("*:Munge:Points");
 
@@ -43,76 +43,70 @@ TypeHandle CullableObject::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
-           qpGeomMunger *munger, const CullTraverser *traverser) {
+           GeomMunger *munger, const CullTraverser *traverser) {
   if (_geom != (Geom *)NULL) {
-    // Temporary test and dcast until the experimental Geom rewrite
-    // becomes the actual Geom rewrite.
-    if (_geom->is_qpgeom()) {
-      _munger = munger;
-      CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
-      _munged_data = qpgeom->get_vertex_data();
+    _munger = munger;
+    _munged_data = _geom->get_vertex_data();
 
-      int geom_rendering = qpgeom->get_geom_rendering();
-      geom_rendering = _state->get_geom_rendering(geom_rendering);
-      geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
-
-      GraphicsStateGuardianBase *gsg = traverser->get_gsg();
-      int gsg_bits = gsg->get_supported_geom_rendering();
-      if (!hardware_point_sprites) {
-        // If support for hardware point sprites or perspective-scaled
-        // points is disabled, we don't allow the GSG to tell us it
-        // supports them.
-        gsg_bits &= ~(qpGeom::GR_point_perspective | qpGeom::GR_point_sprite);
-      }
-      int unsupported_bits = geom_rendering & ~gsg_bits;
-      if ((unsupported_bits & qpGeom::GR_point_bits) != 0) {
-        // The GSG doesn't support rendering these fancy points
-        // directly; we have to render them in software instead.
-        // Munge them into quads.  This will replace the _geom and
-        // _munged_data, and might also replace _state.
-        if (pgraph_cat.is_spam()) {
-          pgraph_cat.spam()
-            << "munge_points_to_quads() for geometry with bits: " 
-            << hex << geom_rendering << ", unsupported: "
-            << (unsupported_bits & qpGeom::GR_point_bits) << dec << "\n";
-        }
-        munge_points_to_quads(traverser);
-        qpgeom = DCAST(qpGeom, _geom);
-      }
-
-      // Now invoke the munger to ensure the resulting geometry is in
-      // a GSG-friendly form.
-      munger->munge_geom(qpgeom, _munged_data);
-
-      StateMunger *state_munger;
-      DCAST_INTO_V(state_munger, munger);
-      _state = state_munger->munge_state(_state);
-
-      CPT(qpGeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices();
-#ifndef NDEBUG
-      if (show_cpu_animation && animated_vertices != _munged_data) {
-        // These vertices were CPU-animated, so flash them.
-        static const double flash_rate = 1.0;  // 1 state change per second
-        int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
-        if ((cycle & 1) == 0) {
-          static Colorf flash_color(0.8f, 0.2f, 0.2f, 1.0f);
-          if (animated_vertices->has_color()) {
-            animated_vertices = animated_vertices->set_color(flash_color);
-          } else {
-            // We have to add a color column, which means we have to
-            // re-munge.
-            animated_vertices = animated_vertices->set_color
-              (flash_color, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
-            animated_vertices = munger->munge_data(animated_vertices);
-          }
-          _state = _state->remove_attrib(TextureAttrib::get_class_type());
-        }
-      }
-#endif
-      _munged_data = animated_vertices;
-      _geom = qpgeom;
+    int geom_rendering = _geom->get_geom_rendering();
+    geom_rendering = _state->get_geom_rendering(geom_rendering);
+    geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
+    
+    GraphicsStateGuardianBase *gsg = traverser->get_gsg();
+    int gsg_bits = gsg->get_supported_geom_rendering();
+    if (!hardware_point_sprites) {
+      // If support for hardware point sprites or perspective-scaled
+      // points is disabled, we don't allow the GSG to tell us it
+      // supports them.
+      gsg_bits &= ~(Geom::GR_point_perspective | Geom::GR_point_sprite);
     }
+    int unsupported_bits = geom_rendering & ~gsg_bits;
+
+    if ((unsupported_bits & Geom::GR_point_bits) != 0) {
+      // The GSG doesn't support rendering these fancy points
+      // directly; we have to render them in software instead.
+      // Munge them into quads.  This will replace the _geom and
+      // _munged_data, and might also replace _state.
+      if (pgraph_cat.is_spam()) {
+        pgraph_cat.spam()
+          << "munge_points_to_quads() for geometry with bits: " 
+          << hex << geom_rendering << ", unsupported: "
+          << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
+      }
+      munge_points_to_quads(traverser);
+    }
+
+    // Now invoke the munger to ensure the resulting geometry is in
+    // a GSG-friendly form.
+    munger->munge_geom(_geom, _munged_data);
+    
+    StateMunger *state_munger;
+    DCAST_INTO_V(state_munger, munger);
+    _state = state_munger->munge_state(_state);
+    
+    CPT(GeomVertexData) animated_vertices = 
+      _munged_data->animate_vertices();
+#ifndef NDEBUG
+    if (show_cpu_animation && animated_vertices != _munged_data) {
+      // These vertices were CPU-animated, so flash them.
+      static const double flash_rate = 1.0;  // 1 state change per second
+      int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
+      if ((cycle & 1) == 0) {
+        static Colorf flash_color(0.8f, 0.2f, 0.2f, 1.0f);
+        if (animated_vertices->has_color()) {
+          animated_vertices = animated_vertices->set_color(flash_color);
+        } else {
+          // We have to add a color column, which means we have to
+          // re-munge.
+          animated_vertices = animated_vertices->set_color
+            (flash_color, 1, Geom::NT_packed_dabc, Geom::C_color);
+          animated_vertices = munger->munge_data(animated_vertices);
+        }
+        _state = _state->remove_attrib(TextureAttrib::get_class_type());
+      }
+    }
+#endif
+    _munged_data = animated_vertices;
   }
   if (_next != (CullableObject *)NULL) {
     if (_next->_state != (RenderState *)NULL) {
@@ -163,15 +157,14 @@ munge_points_to_quads(const CullTraverser *traverser) {
   PStatTimer timer(_munge_points_pcollector);
 
   GraphicsStateGuardianBase *gsg = traverser->get_gsg();
-  CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
 
-  qpGeomVertexReader vertex(_munged_data, InternalName::get_vertex());
-  qpGeomVertexReader normal(_munged_data, InternalName::get_normal());
-  qpGeomVertexReader color(_munged_data, InternalName::get_color());
-  qpGeomVertexReader texcoord(_munged_data, InternalName::get_texcoord());
-  qpGeomVertexReader rotate(_munged_data, InternalName::get_rotate());
-  qpGeomVertexReader size(_munged_data, InternalName::get_size());
-  qpGeomVertexReader aspect_ratio(_munged_data, InternalName::get_aspect_ratio());
+  GeomVertexReader vertex(_munged_data, InternalName::get_vertex());
+  GeomVertexReader normal(_munged_data, InternalName::get_normal());
+  GeomVertexReader color(_munged_data, InternalName::get_color());
+  GeomVertexReader texcoord(_munged_data, InternalName::get_texcoord());
+  GeomVertexReader rotate(_munged_data, InternalName::get_rotate());
+  GeomVertexReader size(_munged_data, InternalName::get_size());
+  GeomVertexReader aspect_ratio(_munged_data, InternalName::get_aspect_ratio());
 
   bool has_normal = (normal.has_column());
   bool has_color = (color.has_column());
@@ -191,18 +184,18 @@ munge_points_to_quads(const CullTraverser *traverser) {
     }
   }
 
-  PT(qpGeomVertexArrayFormat) new_array_format =
-    new qpGeomVertexArrayFormat(InternalName::get_vertex(), 4, 
-                                qpGeom::NT_float32,
-                                qpGeom::C_clip_point);
+  PT(GeomVertexArrayFormat) new_array_format =
+    new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
+                                Geom::NT_float32,
+                                Geom::C_clip_point);
   if (has_normal) {
-    const qpGeomVertexColumn *c = normal.get_column();
+    const GeomVertexColumn *c = normal.get_column();
     new_array_format->add_column
       (InternalName::get_normal(), c->get_num_components(),
        c->get_numeric_type(), c->get_contents());
   }
   if (has_color) {
-    const qpGeomVertexColumn *c = color.get_column();
+    const GeomVertexColumn *c = color.get_column();
     new_array_format->add_column
       (InternalName::get_color(), c->get_num_components(),
        c->get_numeric_type(), c->get_contents());
@@ -210,29 +203,29 @@ munge_points_to_quads(const CullTraverser *traverser) {
   if (sprite_texcoord) {
     new_array_format->add_column
       (InternalName::get_texcoord(), 2,
-       qpGeom::NT_float32,
-       qpGeom::C_texcoord);
+       Geom::NT_float32,
+       Geom::C_texcoord);
 
   } else if (has_texcoord) {
-    const qpGeomVertexColumn *c = texcoord.get_column();
+    const GeomVertexColumn *c = texcoord.get_column();
     new_array_format->add_column
       (InternalName::get_texcoord(), c->get_num_components(),
        c->get_numeric_type(), c->get_contents());
   }
 
-  CPT(qpGeomVertexFormat) new_format = 
-    qpGeomVertexFormat::register_format(new_array_format);
+  CPT(GeomVertexFormat) new_format = 
+    GeomVertexFormat::register_format(new_array_format);
 
-  PT(qpGeomVertexData) new_data = new qpGeomVertexData
-    (_munged_data->get_name(), new_format, qpGeom::UH_client);
+  PT(GeomVertexData) new_data = new GeomVertexData
+    (_munged_data->get_name(), new_format, Geom::UH_client);
 
-  qpGeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
-  qpGeomVertexWriter new_normal(new_data, InternalName::get_normal());
-  qpGeomVertexWriter new_color(new_data, InternalName::get_color());
-  qpGeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
+  GeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
+  GeomVertexWriter new_normal(new_data, InternalName::get_normal());
+  GeomVertexWriter new_color(new_data, InternalName::get_color());
+  GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
   int new_vi = 0;
 
-  PT(qpGeom) new_geom = new qpGeom();
+  PT(Geom) new_geom = new Geom();
   new_geom->set_vertex_data(new_data);
 
   const LMatrix4f &modelview = _modelview_transform->get_mat();
@@ -285,9 +278,9 @@ munge_points_to_quads(const CullTraverser *traverser) {
   // CullFaceAttrib but will always render all of the vertices of the
   // polygons.  This is certainly a bug, but in order to fix it we'd
   // have to do the face culling ourselves--not sure if it's worth it.
-  int num_primitives = qpgeom->get_num_primitives();
+  int num_primitives = _geom->get_num_primitives();
   for (int pi = 0; pi < num_primitives; ++pi) {
-    const qpGeomPrimitive *primitive = qpgeom->get_primitive(pi);
+    const GeomPrimitive *primitive = _geom->get_primitive(pi);
 
     // We must first convert all of the points to eye space.
     int num_points = primitive->get_max_vertex() + 1;
@@ -297,7 +290,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
     unsigned int *vertices_end = vertices + num_vertices;
 
     if (primitive->is_indexed()) {
-      qpGeomVertexReader index(primitive->get_vertices(), 0);
+      GeomVertexReader index(primitive->get_vertices(), 0);
       for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
         // Get the point in eye-space coordinates.
         unsigned int v = index.get_data1i();
@@ -330,7 +323,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
     // generally faster on PC hardware (otherwise, we'd have to nearly
     // double the vertices to stitch all the little triangle strips
     // together).
-    PT(qpGeomPrimitive) new_primitive = new qpGeomTriangles(qpGeom::UH_client);
+    PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
 
     for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
       // The point in eye coordinates.

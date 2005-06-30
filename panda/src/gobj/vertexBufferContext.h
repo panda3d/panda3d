@@ -23,7 +23,7 @@
 
 #include "savedContext.h"
 #include "updateSeq.h"
-#include "qpgeomVertexArrayData.h"
+#include "geomVertexArrayData.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexBufferContext
@@ -38,9 +38,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexBufferContext : public SavedContext {
 public:
-  INLINE VertexBufferContext(qpGeomVertexArrayData *data);
+  INLINE VertexBufferContext(GeomVertexArrayData *data);
 
-  INLINE qpGeomVertexArrayData *get_data() const;
+  INLINE GeomVertexArrayData *get_data() const;
 
   INLINE int get_data_size_bytes() const;
   INLINE bool changed_size() const;
@@ -51,13 +51,13 @@ public:
   INLINE void mark_loaded();
 
 private:
-  // This cannot be a PT(qpGeomVertexArrayData), because the data and
+  // This cannot be a PT(GeomVertexArrayData), because the data and
   // the GSG both own their VertexBufferContexts!  That would create a
   // circular reference count.
-  qpGeomVertexArrayData *_data;
+  GeomVertexArrayData *_data;
   UpdateSeq _modified;
   int _data_size_bytes;
-  qpGeomEnums::UsageHint _usage_hint;
+  GeomEnums::UsageHint _usage_hint;
 
 public:
   static TypeHandle get_class_type() {

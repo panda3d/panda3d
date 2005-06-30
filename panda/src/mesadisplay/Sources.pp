@@ -19,7 +19,5 @@
     osMesaGraphicsStateGuardian.h osMesaGraphicsStateGuardian.cxx \
     osMesaGraphicsStateGuardian.I
 
-  #define IGATESCAN osMesaGraphicsPipe.h
-
 #end lib_target
 

@@ -513,16 +513,10 @@ int TexMatrixAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
-  if (manager->get_file_minor_ver() < 11) {
-    // Pre-4.11 bams didn't store any pointers.
-
-  } else {
-    // More recent bams store the whole map.
-    for (size_t i = 0; i < _num_stages; i++) {
-      TextureStage *stage = DCAST(TextureStage, p_list[pi++]);
-      const TransformState *transform = DCAST(TransformState, p_list[pi++]);
-      _stages[stage] = transform;
-    }
+  for (size_t i = 0; i < _num_stages; i++) {
+    TextureStage *stage = DCAST(TextureStage, p_list[pi++]);
+    const TransformState *transform = DCAST(TransformState, p_list[pi++]);
+    _stages[stage] = transform;
   }
 
   return pi;
@@ -559,20 +553,9 @@ void TexMatrixAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  if (manager->get_file_minor_ver() < 11) {
-    // Pre-4.11 bams stored a single matrix for the TexMatrixAttrib,
-    // which applies to the default stage.
-    LMatrix4f mat;
-    mat.read_datagram(scan);
-    CPT(TransformState) transform = TransformState::make_mat(mat);
-    _stages.insert(Stages::value_type(TextureStage::get_default(), transform));
-
-  } else {
-    // More recent bams store the whole map.
-    _num_stages = scan.get_uint16();
-    for (size_t i = 0; i < _num_stages; i++) {
-      manager->read_pointer(scan);
-      manager->read_pointer(scan);
-    }
+  _num_stages = scan.get_uint16();
+  for (size_t i = 0; i < _num_stages; i++) {
+    manager->read_pointer(scan);
+    manager->read_pointer(scan);
   }
 }

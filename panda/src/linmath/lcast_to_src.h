@@ -44,7 +44,7 @@ INLINE_LINMATH FLOATNAME2(LPoint4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint4) &source);
 
 INLINE_LINMATH FLOATNAME2(LQuaternion)
-lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion)& c);
+lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion) &c);
 
 INLINE_LINMATH FLOATNAME2(LMatrix3)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix3) &source);

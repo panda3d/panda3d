@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE VertexBufferContext::
-VertexBufferContext(qpGeomVertexArrayData *data) :
+VertexBufferContext(GeomVertexArrayData *data) :
   _data(data),
   // Initially, the number of bytes is zero, until the data has been
   // loaded (and mark_loaded() is called).
@@ -37,7 +37,7 @@ VertexBufferContext(qpGeomVertexArrayData *data) :
 //  Description: Returns the pointer to the client-side array data
 //               object.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexArrayData *VertexBufferContext::
+INLINE GeomVertexArrayData *VertexBufferContext::
 get_data() const {
   return _data;
 }

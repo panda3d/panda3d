@@ -20,7 +20,6 @@
 #include "eggLoader.h"
 #include "config_egg2pg.h"
 #include "eggBinner.h"
-#include "computedVertices.h"
 #include "eggGroup.h"
 #include "eggPrimitive.h"
 #include "eggBin.h"
@@ -162,29 +161,23 @@ part_to_node(PartGroup *part, const string &name) const {
     }
   }
 
-  if (use_qpgeom) {
-    // We should always return a GeomNode, so that all polysets
-    // created at the same level will get added into the same
-    // GeomNode.  Look for a child of this node.  If it doesn't have a
-    // child yet, add a GeomNode and return it.  Otherwise, if it
-    // already has a child, return that.
-    if (node->is_geom_node() && node->get_name() == name) {
-      return node;
-    }
-    for (int i = 0; i < node->get_num_children(); i++) {
-      PandaNode *child = node->get_child(i);
-      if (child->is_geom_node() && child->get_name() == name) {
-        return child;
-      }
-    }
-    PT(GeomNode) geom_node = new GeomNode(name);
-    node->add_child(geom_node);
-    return geom_node;
-
-  } else {
-    // In the original Geom implementation, a node is a node.
+  // We should always return a GeomNode, so that all polysets
+  // created at the same level will get added into the same
+  // GeomNode.  Look for a child of this node.  If it doesn't have a
+  // child yet, add a GeomNode and return it.  Otherwise, if it
+  // already has a child, return that.
+  if (node->is_geom_node() && node->get_name() == name) {
     return node;
   }
+  for (int i = 0; i < node->get_num_children(); i++) {
+    PandaNode *child = node->get_child(i);
+    if (child->is_geom_node() && child->get_name() == name) {
+      return child;
+    }
+  }
+  PT(GeomNode) geom_node = new GeomNode(name);
+  node->add_child(geom_node);
+  return geom_node;
 }
 
 
@@ -192,9 +185,7 @@ part_to_node(PartGroup *part, const string &name) const {
 //     Function: CharacterMaker::create_slider
 //       Access: Public
 //  Description: Creates a new morph slider of the given name, and
-//               returns its index.  This is actually called by
-//               ComputedVerticesMaker, which is responsible for
-//               identifying all the unique morph target names.
+//               returns its index.
 ////////////////////////////////////////////////////////////////////
 int CharacterMaker::
 create_slider(const string &name) {
@@ -237,17 +228,8 @@ CharacterJointBundle *CharacterMaker::
 make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root, -1);
 
-  if (use_qpgeom) {
-    // The new, experimental Geom system.
-    make_qpgeometry(_egg_root);
+  make_geometry(_egg_root);
 
-  } else {
-    // The old Geom system.
-    make_geometry(_egg_root);
-    
-    _character_node->_computed_vertices =
-      _comp_verts_maker.make_computed_vertices(_character_node, *this);
-  }
   _bundle->sort_descendants();
   parent_joint_nodes(_skeleton_root);
 
@@ -330,59 +312,13 @@ parent_joint_nodes(PartGroup *part) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_geometry
 //       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CharacterMaker::
-make_geometry(EggNode *egg_node) {
-  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
-    EggPrimitive *egg_primitive = DCAST(EggPrimitive, egg_node);
-    if (!egg_primitive->empty()) {
-      EggGroupNode *prim_home = determine_primitive_home(egg_primitive);
-
-      if (prim_home == (EggGroupNode *)NULL &&
-          (egg_primitive->is_of_type(EggSurface::get_class_type()) ||
-           egg_primitive->is_of_type(EggCurve::get_class_type()))) {
-        // If the primitive would be dynamic but is a parametric
-        // primitive, we can't animate it anyway, so just put the
-        // whole thing under the primitive's parent node.
-        prim_home = egg_primitive->get_parent();
-      }
-
-      if (prim_home == (EggGroupNode *)NULL) {
-        // This is a totally dynamic primitive that lives under the
-        // character's node.
-        make_dynamic_primitive(egg_primitive, _egg_root);
-
-      } else {
-        // This is a static primitive that lives under a particular
-        // node.
-        make_static_primitive(egg_primitive, prim_home);
-      }
-    }
-  }
-
-  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
-    EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
-
-    EggGroupNode::const_iterator ci;
-    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
-      make_geometry(*ci);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_qpgeometry
-//       Access: Private
 //  Description: Walks the hierarchy, looking for bins that represent
 //               polysets, which are to be animated with the
 //               character.  Invokes the egg loader to create the
 //               animated geometry.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
-make_qpgeometry(EggNode *egg_node) {
+make_geometry(EggNode *egg_node) {
   if (egg_node->is_of_type(EggBin::get_class_type())) {
     EggBin *egg_bin = DCAST(EggBin, egg_node);
 
@@ -417,45 +353,9 @@ make_qpgeometry(EggNode *egg_node) {
 
     EggGroupNode::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
-      make_qpgeometry(*ci);
+      make_geometry(*ci);
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_static_primitive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CharacterMaker::
-make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
-  PandaNode *node = part_to_node(egg_to_part(prim_home), string());
-
-  // We need this funny transform to convert from the coordinate
-  // space of the original vertices to that of the new joint node.
-  LMatrix4d transform =
-    egg_primitive->get_vertex_frame() *
-    prim_home->get_node_frame_inv();
-
-  _loader.make_nonindexed_primitive(egg_primitive, node, &transform,
-                                    _comp_verts_maker);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_dynamic_primitive
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CharacterMaker::
-make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
-  PandaNode *node = part_to_node(egg_to_part(prim_home), string());
-
-  LMatrix4d transform =
-    egg_primitive->get_vertex_frame() *
-    prim_home->get_node_frame_inv();
-
-  _loader.make_indexed_primitive(egg_primitive, node, &transform,
-                                 _comp_verts_maker);
 }
 
 ////////////////////////////////////////////////////////////////////

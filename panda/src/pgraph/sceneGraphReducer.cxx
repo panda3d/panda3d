@@ -691,28 +691,26 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
     GeomNode *geom_node = DCAST(GeomNode, node);
     int num_geoms = geom_node->get_num_geoms();
     for (int i = 0; i < num_geoms; ++i) {
-      if (geom_node->get_geom(i)->is_qpgeom()) {
-        const qpGeom *geom = DCAST(qpGeom, geom_node->get_geom(i));
+      const Geom *geom = geom_node->get_geom(i);
 
-        // Check whether the geom is animated or dynamic, and skip it
-        // if the user specified so.
-        const qpGeomVertexData *data = geom->get_vertex_data();
-        int this_geom_bits = 0;
-        if (data->get_format()->get_animation().get_animation_type() !=
-            qpGeom::AT_none) {
-          this_geom_bits |= MN_avoid_animated;
-        }
-        if (data->get_usage_hint() != qpGeom::UH_static ||
-            geom->get_usage_hint() != qpGeom::UH_static) {
-          this_geom_bits |= MN_avoid_dynamic;
-        }
-
-        if ((nonindexed_bits & this_geom_bits) == 0) {
-          // The geom meets the user's qualifications for making
-          // nonindexed, so do it.
-          qpGeom *mgeom = DCAST(qpGeom, geom_node->modify_geom(i));
-          num_changed += mgeom->make_nonindexed((nonindexed_bits & MN_composite_only) != 0);
-        }
+      // Check whether the geom is animated or dynamic, and skip it
+      // if the user specified so.
+      const GeomVertexData *data = geom->get_vertex_data();
+      int this_geom_bits = 0;
+      if (data->get_format()->get_animation().get_animation_type() !=
+          Geom::AT_none) {
+        this_geom_bits |= MN_avoid_animated;
+      }
+      if (data->get_usage_hint() != Geom::UH_static ||
+          geom->get_usage_hint() != Geom::UH_static) {
+        this_geom_bits |= MN_avoid_dynamic;
+      }
+      
+      if ((nonindexed_bits & this_geom_bits) == 0) {
+        // The geom meets the user's qualifications for making
+        // nonindexed, so do it.
+        Geom *mgeom = DCAST(Geom, geom_node->modify_geom(i));
+        num_changed += mgeom->make_nonindexed((nonindexed_bits & MN_composite_only) != 0);
       }
     }
   }

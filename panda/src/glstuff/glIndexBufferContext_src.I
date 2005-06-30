@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(IndexBufferContext)::
-CLP(IndexBufferContext)(qpGeomPrimitive *data) :
+CLP(IndexBufferContext)(GeomPrimitive *data) :
   IndexBufferContext(data)
 {
   _index = 0;

@@ -25,13 +25,12 @@
 #include "filename.h"
 #include "loader.h"
 #include "keyboardButton.h"
-#include "geomTri.h"
-#include "qpgeom.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomVertexFormat.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomVertexData.h"
+#include "geomVertexFormat.h"
+#include "geomVertexWriter.h"
 #include "texturePool.h"
 #include "textureAttrib.h"
 #include "colorAttrib.h"
@@ -44,14 +43,11 @@
 #include "boundingSphere.h"
 #include "deg_2_rad.h"
 #include "config_framework.h"
-#include "depthTestAttrib.h"
-#include "depthWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "rescaleNormalAttrib.h"
 #include "shadeModelAttrib.h"
 #include "pgTop.h"
 #include "geomNode.h"
-#include "geomTristrip.h"
 #include "texture.h"
 #include "pnmImage.h"
 #include "loaderFileTypeRegistry.h"
@@ -259,18 +255,9 @@ get_render_2d() {
 
     // Some standard properties for the 2-d display.
 
-    // It's particularly important to turn off the depth test,
-    // since we'll be keeping the same depth buffer already filled
-    // by the previously-drawn 3-d scene--we don't want to pay for
-    // a clear operation, but we also don't want to collide with
-    // that depth buffer.
-    CPT(RenderAttrib) dt = DepthTestAttrib::make(DepthTestAttrib::M_none);
-    CPT(RenderAttrib) dw = DepthWriteAttrib::make(DepthWriteAttrib::M_off);
-    _render_2d.node()->set_attrib(dt, 1);
-    _render_2d.node()->set_attrib(dw, 1);
-
+    _render_2d.set_depth_write(0);
     _render_2d.set_material_off(1);
-    _render_2d.set_two_sided(1, 1);
+    _render_2d.set_two_sided(1);
 
     // Now set up a 2-d camera to view render_2d.
     
@@ -630,71 +617,39 @@ load_default_model(const NodePath &parent) {
   
   GeomNode *geomnode = new GeomNode("tri");
 
-  if (use_qpgeom) {
-    // New, experimental Geom code.
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (string(), qpGeomVertexFormat::get_v3n3cpt2(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter normal(vdata, InternalName::get_normal());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
-    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-
-    vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
-    vertex.add_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
-    vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
-
-    normal.add_data3f(Normalf::back());
-    normal.add_data3f(Normalf::back());
-    normal.add_data3f(Normalf::back());
-
-    color.add_data4f(0.5, 0.5, 1.0, 1.0);
-    color.add_data4f(0.5, 0.5, 1.0, 1.0);
-    color.add_data4f(0.5, 0.5, 1.0, 1.0);
-
-    texcoord.add_data2f(0.0, 0.0);
-    texcoord.add_data2f(1.0, 0.0);
-    texcoord.add_data2f(0.0, 1.0);
-    
-    PT(qpGeomTriangles) tri = new qpGeomTriangles(qpGeom::UH_static);
-    tri->add_consecutive_vertices(0, 3);
-    tri->close_primitive();
-    
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(tri);
-    
-    geomnode->add_geom(geom, state);
-
-  } else {
-    // Original, tried-and-true Geom code.
-    PTA_Vertexf coords;
-    PTA_TexCoordf uvs;
-    PTA_Normalf norms;
-    PTA_Colorf colors;
-    PTA_ushort cindex;
-    
-    coords.push_back(Vertexf::rfu(0.0, 0.0, 0.0));
-    coords.push_back(Vertexf::rfu(1.0, 0.0, 0.0));
-    coords.push_back(Vertexf::rfu(0.0, 0.0, 1.0));
-    uvs.push_back(TexCoordf(0.0, 0.0));
-    uvs.push_back(TexCoordf(1.0, 0.0));
-    uvs.push_back(TexCoordf(0.0, 1.0));
-    norms.push_back(Normalf::back());
-    colors.push_back(Colorf(0.5, 0.5, 1.0, 1.0));
-    cindex.push_back(0);
-    cindex.push_back(0);
-    cindex.push_back(0);
-    
-    PT(GeomTri) geom = new GeomTri;
-    geom->set_num_prims(1);
-    geom->set_coords(coords);
-    geom->set_texcoords(uvs, G_PER_VERTEX);
-    geom->set_normals(norms, G_PER_PRIM);
-    geom->set_colors(colors, G_PER_VERTEX, cindex);
-
-    geomnode->add_geom(geom, state);
-  }
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("tri", GeomVertexFormat::get_v3n3cpt2(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  
+  vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
+  vertex.add_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
+  vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
+  
+  normal.add_data3f(Normalf::back());
+  normal.add_data3f(Normalf::back());
+  normal.add_data3f(Normalf::back());
+  
+  color.add_data4f(0.5, 0.5, 1.0, 1.0);
+  color.add_data4f(0.5, 0.5, 1.0, 1.0);
+  color.add_data4f(0.5, 0.5, 1.0, 1.0);
+  
+  texcoord.add_data2f(0.0, 0.0);
+  texcoord.add_data2f(1.0, 0.0);
+  texcoord.add_data2f(0.0, 1.0);
+  
+  PT(GeomTriangles) tri = new GeomTriangles(Geom::UH_static);
+  tri->add_consecutive_vertices(0, 3);
+  tri->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(tri);
+  
+  geomnode->add_geom(geom, state);
 
   return parent.attach_new_node(geomnode);
 }
@@ -1058,59 +1013,31 @@ load_image_as_model(const Filename &filename) {
     card_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (string(), qpGeomVertexFormat::get_v3t2(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-
-    vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
-    vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
-    vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
-    vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
-    
-    texcoord.add_data2f(0.0f, 1.0f);
-    texcoord.add_data2f(0.0f, 0.0f);
-    texcoord.add_data2f(1.0f, 1.0f);
-    texcoord.add_data2f(1.0f, 0.0f);
-    
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    strip->add_consecutive_vertices(0, 4);
-    strip->close_primitive();
-    
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-    
-    card_node->add_geom(geom);
-
-  } else {
-    GeomTristrip *geom = new GeomTristrip;
-    PTA_int lengths=PTA_int::empty_array(0);
-    lengths.push_back(4);
-    
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf::rfu(left, 0.02f, top));
-    verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
-    verts.push_back(Vertexf::rfu(right, 0.02f, top));
-    verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
-    
-    geom->set_num_prims(1);
-    geom->set_lengths(lengths);
-    
-    geom->set_coords(verts);
-    
-    PTA_TexCoordf uvs;
-    uvs.push_back(TexCoordf(0.0f, 1.0f));
-    uvs.push_back(TexCoordf(0.0f, 0.0f));
-    uvs.push_back(TexCoordf(1.0f, 1.0f));
-    uvs.push_back(TexCoordf(1.0f, 0.0f));
-    
-    geom->set_texcoords(uvs, G_PER_VERTEX);
-
-    card_node->add_geom(geom);
-  }
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("card", GeomVertexFormat::get_v3t2(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  
+  vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
+  vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
+  vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
+  vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
+  
+  texcoord.add_data2f(0.0f, 1.0f);
+  texcoord.add_data2f(0.0f, 0.0f);
+  texcoord.add_data2f(1.0f, 1.0f);
+  texcoord.add_data2f(1.0f, 0.0f);
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  strip->add_consecutive_vertices(0, 4);
+  strip->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  
+  card_node->add_geom(geom);
 
   return card_node.p();
 }

@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgFrameStyle.h"
-#include "geomTristrip.h"
-#include "geomTrifan.h"
 #include "geomNode.h"
 #include "pandaNode.h"
 #include "transparencyAttrib.h"
@@ -27,9 +25,9 @@
 #include "textureAttrib.h"
 #include "renderState.h"
 #include "shadeModelAttrib.h"
-#include "qpgeom.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTristrips.h"
+#include "geomVertexWriter.h"
 
 // Specifies the UV range of textures applied to the frame.  Maybe
 // we'll have a reason to make this a parameter of the frame style one
@@ -180,98 +178,55 @@ generate_flat_geom(const LVecBase4f &frame) {
   float bottom = frame[2];
   float top = frame[3];
 
-  if (use_qpgeom) {
-    CPT(qpGeomVertexFormat) format;
-    if (has_texture()) {
-      format = qpGeomVertexFormat::get_v3cpt2();
-    } else {
-      format = qpGeomVertexFormat::get_v3cp();
-    }
-
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeom::UH_static);
-
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
-    vertex.add_data3f(left, 0.0f, top);
-    vertex.add_data3f(left, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(right, 0.0f, bottom);
-
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-
-    if (has_texture()) {
-      // Generate UV's.
-      left = uv_range[0];
-      right = uv_range[1];
-      bottom = uv_range[2];
-      top = uv_range[3];
-    
-      qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-      texcoord.add_data2f(left, top);
-      texcoord.add_data2f(left, bottom);
-      texcoord.add_data2f(right, top);
-      texcoord.add_data2f(right, bottom);
-    }
-
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    strip->add_next_vertices(4);
-    strip->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-    gnode->add_geom(geom);
-
-    if (has_texture()) {
-      CPT(RenderState) state = 
-        RenderState::make(TextureAttrib::make(get_texture()));
-      gnode->set_geom_state(0, state);
-    }
-
+  CPT(GeomVertexFormat) format;
+  if (has_texture()) {
+    format = GeomVertexFormat::get_v3cpt2();
   } else {
-    Geom *geom = new GeomTristrip;
-    gnode->add_geom(geom);
+    format = GeomVertexFormat::get_v3cp();
+  }
+  
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("PGFrame", format, Geom::UH_static);
+  
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  vertex.add_data3f(left, 0.0f, top);
+  vertex.add_data3f(left, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(right, 0.0f, bottom);
+  
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
 
-    PTA_int lengths;
-    lengths.push_back(4);
-
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf(left, 0.0f, top));
-    verts.push_back(Vertexf(left, 0.0f, bottom));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-
-    geom->set_num_prims(1);
-    geom->set_lengths(lengths);
-
-    geom->set_coords(verts);
-
-    PTA_Colorf colors;
-    colors.push_back(_color);
-    geom->set_colors(colors, G_OVERALL);
-
-    if (has_texture()) {
-      // Generate UV's.
-      left = uv_range[0];
-      right = uv_range[1];
-      bottom = uv_range[2];
-      top = uv_range[3];
+  if (has_texture()) {
+    // Generate UV's.
+    left = uv_range[0];
+    right = uv_range[1];
+    bottom = uv_range[2];
+    top = uv_range[3];
     
-      PTA_TexCoordf uvs;
-      uvs.push_back(TexCoordf(left, top));
-      uvs.push_back(TexCoordf(left, bottom));
-      uvs.push_back(TexCoordf(right, top));
-      uvs.push_back(TexCoordf(right, bottom));
-      geom->set_texcoords(uvs, G_PER_VERTEX);
-
-      CPT(RenderState) state = 
-        RenderState::make(TextureAttrib::make(get_texture()));
-      gnode->set_geom_state(0, state);
-    }
+    GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+    texcoord.add_data2f(left, top);
+    texcoord.add_data2f(left, bottom);
+    texcoord.add_data2f(right, top);
+    texcoord.add_data2f(right, bottom);
+  }
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  strip->add_next_vertices(4);
+  strip->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  gnode->add_geom(geom);
+  
+  if (has_texture()) {
+    CPT(RenderState) state = 
+      RenderState::make(TextureAttrib::make(get_texture()));
+    gnode->set_geom_state(0, state);
   }
   
   return gnode.p();
@@ -387,110 +342,60 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
               min(_color[2] * top_color_scale, 1.0f),
               _color[3]);
 
-  if (use_qpgeom) {
-    CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::get_v3cp();
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeom::UH_static);
-
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
-
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    // Tristrip 1.
-    vertex.add_data3f(right, 0.0f, bottom);
-    vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-    vertex.add_data3f(left, 0.0f, bottom);
-    vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-    vertex.add_data3f(left, 0.0f, top);
-    vertex.add_data3f(inner_left, 0.0f, inner_top);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(inner_right, 0.0f, inner_top);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cleft);
-    color.add_data4f(cleft);
-    color.add_data4f(ctop);
-    color.add_data4f(ctop);
-
-    strip->add_next_vertices(8);
-    strip->close_primitive();
-
-    // Tristrip 2.
-    vertex.add_data3f(right, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-    vertex.add_data3f(inner_right, 0.0f, inner_top);
-    vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-    vertex.add_data3f(inner_left, 0.0f, inner_top);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-
-    strip->add_next_vertices(6);
-    strip->close_primitive();
-    strip->set_shade_model(qpGeom::SM_flat_last_vertex);
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-
-    CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-    gnode->add_geom(geom, flat_state);
-
-  } else {
-    // Now make the tristrips.
-    Geom *geom = new GeomTristrip;
-    gnode->add_geom(geom);
-    
-    PTA_int lengths;
-    PTA_Vertexf verts;
-    PTA_Colorf colors;
-
-    // Tristrip 1.
-    lengths.push_back(8);
-    
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(left, 0.0f, bottom));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(left, 0.0f, top));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("PGFrame", format, Geom::UH_static);
   
-    colors.push_back(cbottom);
-    colors.push_back(cbottom);
-    colors.push_back(cleft);
-    colors.push_back(cleft);
-    colors.push_back(ctop);
-    colors.push_back(ctop);
-
-    // Tristrip 2.
-    lengths.push_back(6);
-
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
-
-    colors.push_back(cright);
-    colors.push_back(cright);
-    colors.push_back(_color);
-    colors.push_back(_color);
-
-    geom->set_num_prims(2);
-    geom->set_lengths(lengths);
-    geom->set_coords(verts);
-    geom->set_colors(colors, G_PER_COMPONENT);
-  }
-
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  // Tristrip 1.
+  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
+  vertex.add_data3f(left, 0.0f, bottom);
+  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
+  vertex.add_data3f(left, 0.0f, top);
+  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cleft);
+  color.add_data4f(cleft);
+  color.add_data4f(ctop);
+  color.add_data4f(ctop);
+  
+  strip->add_next_vertices(8);
+  strip->close_primitive();
+  
+  // Tristrip 2.
+  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
+  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
+  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  
+  strip->add_next_vertices(6);
+  strip->close_primitive();
+  strip->set_shade_model(Geom::SM_flat_last_vertex);
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  
+  CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
+  gnode->add_geom(geom, flat_state);
+  
   // For now, beveled and grooved geoms don't support textures.  Easy
   // to add if anyone really wants this.
   
@@ -653,159 +558,86 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
               min(_color[2] * top_color_scale, 1.0f),
               _color[3]);
 
-  if (use_qpgeom) {
-    CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::get_v3cp();
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("PGFrame", format, qpGeom::UH_static);
-
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
-
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    // Tristrip 1.
-    vertex.add_data3f(right, 0.0f, bottom);
-    vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-    vertex.add_data3f(left, 0.0f, bottom);
-    vertex.add_data3f(mid_left, 0.0f, mid_bottom);
-    vertex.add_data3f(left, 0.0f, top);
-    vertex.add_data3f(mid_left, 0.0f, mid_top);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(mid_right, 0.0f, mid_top);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-    color.add_data4f(cleft);
-    color.add_data4f(cleft);
-    color.add_data4f(ctop);
-    color.add_data4f(ctop);
-
-    strip->add_next_vertices(8);
-    strip->close_primitive();
-
-    // Tristrip 2.
-    vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-    vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-    vertex.add_data3f(mid_left, 0.0f, mid_bottom);
-    vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-    vertex.add_data3f(mid_left, 0.0f, mid_top);
-    vertex.add_data3f(inner_left, 0.0f, inner_top);
-    vertex.add_data3f(mid_right, 0.0f, mid_top);
-    vertex.add_data3f(inner_right, 0.0f, inner_top);
-    color.add_data4f(ctop);
-    color.add_data4f(ctop);
-    color.add_data4f(ctop);
-    color.add_data4f(ctop);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cbottom);
-    color.add_data4f(cbottom);
-
-    strip->add_next_vertices(8);
-    strip->close_primitive();
-
-    // Tristrip 3.
-    vertex.add_data3f(right, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-    vertex.add_data3f(mid_right, 0.0f, mid_top);
-    vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-    vertex.add_data3f(inner_right, 0.0f, inner_top);
-    vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-    vertex.add_data3f(inner_left, 0.0f, inner_top);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cright);
-    color.add_data4f(cleft);
-    color.add_data4f(cleft);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-
-    strip->add_next_vertices(8);
-    strip->close_primitive();
-
-    strip->set_shade_model(qpGeom::SM_flat_last_vertex);
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-
-    CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-    gnode->add_geom(geom, flat_state);
-
-  } else {
-    // Now make the tristrips.
-    Geom *geom = new GeomTristrip;
-    gnode->add_geom(geom);
-    
-    PTA_int lengths;
-    PTA_Vertexf verts;
-    PTA_Colorf colors;
-
-    // Tristrip 1.
-    lengths.push_back(8);
-    
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
-    verts.push_back(Vertexf(left, 0.0f, bottom));
-    verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
-    verts.push_back(Vertexf(left, 0.0f, top));
-    verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("PGFrame", format, Geom::UH_static);
   
-    colors.push_back(cbottom);
-    colors.push_back(cbottom);
-    colors.push_back(cleft);
-    colors.push_back(cleft);
-    colors.push_back(ctop);
-    colors.push_back(ctop);
-
-    // Tristrip 2.
-    lengths.push_back(8);
-    
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
   
-    colors.push_back(ctop);
-    colors.push_back(ctop);
-    colors.push_back(cright);
-    colors.push_back(cright);
-    colors.push_back(cbottom);
-    colors.push_back(cbottom);
-
-    // Tristrip 3.
-    lengths.push_back(8);
-
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
-    verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
-    verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
-
-    colors.push_back(cright);
-    colors.push_back(cright);
-    colors.push_back(cleft);
-    colors.push_back(cleft);
-    colors.push_back(_color);
-    colors.push_back(_color);
-
-    geom->set_num_prims(3);
-    geom->set_lengths(lengths);
-    geom->set_coords(verts);
-    geom->set_colors(colors, G_PER_COMPONENT);
-  }
-
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  // Tristrip 1.
+  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
+  vertex.add_data3f(left, 0.0f, bottom);
+  vertex.add_data3f(mid_left, 0.0f, mid_bottom);
+  vertex.add_data3f(left, 0.0f, top);
+  vertex.add_data3f(mid_left, 0.0f, mid_top);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(mid_right, 0.0f, mid_top);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  color.add_data4f(cleft);
+  color.add_data4f(cleft);
+  color.add_data4f(ctop);
+  color.add_data4f(ctop);
+  
+  strip->add_next_vertices(8);
+  strip->close_primitive();
+  
+  // Tristrip 2.
+  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
+  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
+  vertex.add_data3f(mid_left, 0.0f, mid_bottom);
+  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
+  vertex.add_data3f(mid_left, 0.0f, mid_top);
+  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  vertex.add_data3f(mid_right, 0.0f, mid_top);
+  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  color.add_data4f(ctop);
+  color.add_data4f(ctop);
+  color.add_data4f(ctop);
+  color.add_data4f(ctop);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cbottom);
+  color.add_data4f(cbottom);
+  
+  strip->add_next_vertices(8);
+  strip->close_primitive();
+  
+  // Tristrip 3.
+  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
+  vertex.add_data3f(mid_right, 0.0f, mid_top);
+  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
+  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
+  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cright);
+  color.add_data4f(cleft);
+  color.add_data4f(cleft);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  
+  strip->add_next_vertices(8);
+  strip->close_primitive();
+  
+  strip->set_shade_model(Geom::SM_flat_last_vertex);
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  
+  CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
+  gnode->add_geom(geom, flat_state);
+  
   // For now, beveled and grooved geoms don't support textures.  Easy
   // to add if anyone really wants this.
   

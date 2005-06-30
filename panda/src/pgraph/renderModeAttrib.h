@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "renderAttrib.h"
-#include "qpgeom.h"
+#include "geom.h"
 
 class FactoryParams;
 

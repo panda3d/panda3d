@@ -37,10 +37,10 @@ public:
   virtual ~CLP(GeomMunger)();
 
 protected:
-  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
-                                                    const qpGeomVertexAnimationSpec &animation);
-  virtual int compare_to_impl(const qpGeomMunger *other) const;
-  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
+  virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
+                                                    const GeomVertexAnimationSpec &animation);
+  virtual int compare_to_impl(const GeomMunger *other) const;
+  virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
 public:
   INLINE void *operator new(size_t size);
@@ -52,7 +52,7 @@ private:
   typedef pset<CLP(GeomContext) *> GeomContexts;
   GeomContexts _geom_contexts;
 
-  static qpGeomMunger *_deleted_chain;
+  static GeomMunger *_deleted_chain;
 
 public:
   static TypeHandle get_class_type() {

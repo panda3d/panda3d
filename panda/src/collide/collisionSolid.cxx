@@ -301,16 +301,9 @@ write_datagram(BamWriter *, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  if (manager->get_file_minor_ver() < 7) {
-    bool tangible = scan.get_bool();
-    if (!tangible) {
-      _flags &= ~F_tangible;
-    }
-  } else {
-    _flags = scan.get_uint8();
-    if ((_flags & F_effective_normal) != 0) {
-      _effective_normal.read_datagram(scan);
-    }
+  _flags = scan.get_uint8();
+  if ((_flags & F_effective_normal) != 0) {
+    _effective_normal.read_datagram(scan);
   }
 
   // The viz is always stale after reading from a bam file.

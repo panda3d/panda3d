@@ -32,8 +32,6 @@
 //               allows the user to specify any arbitrary transform
 //               matrix he likes.  This is rarely used except for
 //               testing.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA UserVertexTransform : public VertexTransform {
 PUBLISHED:

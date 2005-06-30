@@ -20,10 +20,9 @@
 #include "config_text.h"
 
 #include "geom.h"
-#include "geomPoint.h"
 #include "geomNode.h"
-#include "qpgeomVertexReader.h"
-#include "qpgeomPoints.h"
+#include "geomVertexReader.h"
+#include "geomPoints.h"
 #include "renderState.h"
 #include "dcast.h"
 
@@ -186,8 +185,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
 //               those two Geoms.
 ////////////////////////////////////////////////////////////////////
 void StaticTextFont::
-find_character_gsets(PandaNode *root, CPT(Geom) &ch, 
-                     const GeomPoint *&dot1, CPT(qpGeom) &dot2,
+find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
                      const RenderState *&state, const RenderState *net_state) {
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());
 
@@ -196,28 +194,18 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch,
 
     for (int i = 0; i < geode->get_num_geoms(); i++) {
       const Geom *geom = geode->get_geom(i);
-      if (geom->is_qpgeom()) {
-        CPT(qpGeom) qpgeom = DCAST(qpGeom, geom);
 
-        bool found_points = false;
-        for (int j = 0; j < qpgeom->get_num_primitives() && !found_points; j++) {
-          const qpGeomPrimitive *primitive = qpgeom->get_primitive(j);
-          if (primitive->is_of_type(qpGeomPoints::get_class_type())) {
-            dot2 = qpgeom;
-            found_points = true;
-          }
+      bool found_points = false;
+      for (int j = 0; j < geom->get_num_primitives() && !found_points; j++) {
+        const GeomPrimitive *primitive = geom->get_primitive(j);
+        if (primitive->is_of_type(GeomPoints::get_class_type())) {
+          dot = geom;
+          found_points = true;
         }
-        if (!found_points) {
-          // If it doesn't have any points, it must be the regular
-          // letter.
-          ch = geom;
-          state = next_net_state->compose(geode->get_geom_state(i));
-        }
-
-      } else if (geom->is_of_type(GeomPoint::get_class_type())) {
-        dot1 = DCAST(GeomPoint, geom);
-
-      } else {
+      }
+      if (!found_points) {
+        // If it doesn't have any points, it must be the regular
+        // letter.
         ch = geom;
         state = next_net_state->compose(geode->get_geom_state(i));
       }
@@ -227,7 +215,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch,
     PandaNode::Children cr = root->get_children();
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
-      find_character_gsets(cr.get_child(i), ch, dot1, dot2, state,
+      find_character_gsets(cr.get_child(i), ch, dot, state,
                            next_net_state);
     }
   }
@@ -259,29 +247,13 @@ find_characters(PandaNode *root, const RenderState *net_state) {
   if (all_digits) {
     int character = atoi(name.c_str());
     CPT(Geom) ch;
-    const GeomPoint *dot1 = NULL;
-    CPT(qpGeom) dot2;
+    CPT(Geom) dot;
     const RenderState *state = NULL;
-    find_character_gsets(root, ch, dot1, dot2, state, next_net_state);
-    if (dot1 != NULL) {
+    find_character_gsets(root, ch, dot, state, next_net_state);
+    if (ch != (Geom *)NULL && dot != (Geom *)NULL) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // origin of the next character.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      float width;
-      dot1->get_coords(alist, ilist);
-      if (ilist.empty()) {
-        width = alist[0][0];
-      } else {
-        width = alist[ilist[0]][0];
-      }
-
-      _glyphs[character] = new TextGlyph(ch, state, width);
-
-    } else if (ch != (Geom *)NULL && dot2 != (qpGeom *)NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // origin of the next character.
-      qpGeomVertexReader reader(dot2->get_vertex_data(), InternalName::get_vertex());
+      GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
       float width = reader.get_data1f();
 
       _glyphs[character] = new TextGlyph(ch, state, width);
@@ -292,28 +264,14 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     // design size, or line height.
 
     CPT(Geom) ch;
-    const GeomPoint *dot1 = NULL;
-    CPT(qpGeom) dot2;
+    CPT(Geom) dot;
     const RenderState *state = NULL;
-    find_character_gsets(root, ch, dot1, dot2, state, next_net_state);
-    if (dot1 != NULL) {
+    find_character_gsets(root, ch, dot, state, next_net_state);
+    if (ch != (Geom *)NULL && dot != (Geom *)NULL) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // design size indicator.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      dot1->get_coords(alist, ilist);
-      if (ilist.empty()) {
-        _line_height = alist[0][2];
-      } else {
-        _line_height = alist[ilist[0]][2];
-      }
-      _space_advance = 0.25f * _line_height;
-
-    } else if (ch != (Geom *)NULL && dot2 != (qpGeom *)NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // design size indicator.
-      const qpGeom *qpgeom = DCAST(qpGeom, ch);
-      qpGeomVertexReader reader(qpgeom->get_vertex_data(), InternalName::get_vertex());
+      const Geom *geom = DCAST(Geom, ch);
+      GeomVertexReader reader(geom->get_vertex_data(), InternalName::get_vertex());
       _line_height = reader.get_data3f()[2];
       _space_advance = 0.25f * _line_height;
     }

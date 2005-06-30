@@ -5,7 +5,7 @@
     fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfileegg xfile \
     converter pandatoolbase
   #define OTHER_LIBS \
-    egg2pg:c builder:c egg:c pandaegg:m \
+    egg2pg:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c \
     gobj:c chan:c parametrics:c pgraph:c \
     pnmimage:c grutil:c collide:c tform:c text:c \

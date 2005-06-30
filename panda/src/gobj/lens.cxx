@@ -20,10 +20,9 @@
 #include "throw_event.h"
 #include "compose_matrix.h"
 #include "look_at.h"
-#include "geomLinestrip.h"
-#include "qpgeom.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomLinestrips.h"
+#include "geomVertexWriter.h"
 #include "boundingHexahedron.h"
 #include "indent.h"
 #include "config_gobj.h"
@@ -903,133 +902,65 @@ make_geometry() {
   // subdivide the lines into several segments to get an approximation
   // of the curve.
 
-  if (use_qpgeom) {
-    // First, define all the points we'll use in this Geom.  That's one
-    // point at each corner of the near and far planes (and possibly
-    // more points along the edges).
-    int num_segments = define_geom_data();
-    if (num_segments == 0) {
-      // Can't do a frustum.
-      _geom_data.clear();
-      return (Geom *)NULL;
-    }
-
-    // Now string together the line segments.
-    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeom::UH_static);
-
-    // Draw a frame around the near plane.
-    int i, si;
-    for (i = 0; i < 4; ++i) {
-      for (si = 0; si < num_segments; ++si) {
-        line->add_vertex(i * 2 + si * (4 * 2) + 0);
-      }
-    }
-    line->add_vertex(0);
-    line->close_primitive();
-
-    // Draw a frame around the far plane.
-    for (i = 0; i < 4; ++i) {
-      for (si = 0; si < num_segments; ++si) {
-        line->add_vertex(i * 2 + si * (4 * 2) + 1);
-      }
-    }
-    line->add_vertex(1);
-    line->close_primitive();
-
-    // Draw connecting lines at the corners.
-    line->add_vertex(0 * 2 + 0);
-    line->add_vertex(0 * 2 + 1);
-    line->close_primitive();
-
-    line->add_vertex(1 * 2 + 0);
-    line->add_vertex(1 * 2 + 1);
-    line->close_primitive();
-
-    line->add_vertex(2 * 2 + 0);
-    line->add_vertex(2 * 2 + 1);
-    line->close_primitive();
-
-    line->add_vertex(3 * 2 + 0);
-    line->add_vertex(3 * 2 + 1);
-    line->close_primitive();
-
-    // And one more line for the viewing axis.
-    line->add_vertex(num_segments * (4 * 2) + 0);
-    line->add_vertex(num_segments * (4 * 2) + 1);
-    line->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(_geom_data);
-    geom->add_primitive(line);
-
-    return geom.p();
-
-  } else {
-    // First, define all the points we'll use in this Geom.  That's one
-    // point at each corner of the near and far planes (and possibly
-    // more points along the edges).
-    int num_segments = define_geom_coords();
-    if (num_segments == 0) {
-      // Can't do a frustum.
-      _geom_coords.clear();
-      return (Geom *)NULL;
-    }
-
-    // Now string together the line segments.
-    PTA_ushort vindex;
-    PTA_int lengths;
-    PTA_Colorf colors;
-
-    int num_points = num_segments * 4;
-
-    // Draw a frame around the near plane.
-    int i;
-    for (i = 0; i < num_points; i++) {
-      vindex.push_back(i * num_segments * 2);
-    }
-    vindex.push_back(0);
-    lengths.push_back(num_points + 1);
-
-    // Draw a frame around the far plane.
-    for (i = 0; i < num_points; i++) {
-      vindex.push_back(i * num_segments * 2 + 1);
-    }
-    vindex.push_back(1);
-    lengths.push_back(num_points + 1);
-
-    // Draw connecting lines at the corners.
-    vindex.push_back(0);
-    vindex.push_back(1);
-    lengths.push_back(2);
-
-    vindex.push_back(num_segments * 2 + 0);
-    vindex.push_back(num_segments * 2+ 1);
-    lengths.push_back(2);
-
-    vindex.push_back(num_segments * 4 + 0);
-    vindex.push_back(num_segments * 4 + 1);
-    lengths.push_back(2);
-
-    vindex.push_back(num_segments * 6 + 0);
-    vindex.push_back(num_segments * 6 + 1);
-    lengths.push_back(2);
-
-    // And one more line for the viewing axis.
-    vindex.push_back(num_segments * 8 + 0);
-    vindex.push_back(num_segments * 8 + 1);
-    lengths.push_back(2);
-
-    // We just specify overall color.
-    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-
-    GeomLinestrip *gline = new GeomLinestrip;
-    gline->set_coords(_geom_coords, vindex);
-    gline->set_colors(colors, G_OVERALL);
-    gline->set_lengths(lengths);
-    gline->set_num_prims(lengths.size());
-
-    return gline;
+  // First, define all the points we'll use in this Geom.  That's one
+  // point at each corner of the near and far planes (and possibly
+  // more points along the edges).
+  int num_segments = define_geom_data();
+  if (num_segments == 0) {
+    // Can't do a frustum.
+    _geom_data.clear();
+    return (Geom *)NULL;
   }
+  
+  // Now string together the line segments.
+  PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);
+  
+  // Draw a frame around the near plane.
+  int i, si;
+  for (i = 0; i < 4; ++i) {
+    for (si = 0; si < num_segments; ++si) {
+      line->add_vertex(i * 2 + si * (4 * 2) + 0);
+    }
+  }
+  line->add_vertex(0);
+  line->close_primitive();
+  
+  // Draw a frame around the far plane.
+  for (i = 0; i < 4; ++i) {
+    for (si = 0; si < num_segments; ++si) {
+      line->add_vertex(i * 2 + si * (4 * 2) + 1);
+    }
+  }
+  line->add_vertex(1);
+  line->close_primitive();
+  
+  // Draw connecting lines at the corners.
+  line->add_vertex(0 * 2 + 0);
+  line->add_vertex(0 * 2 + 1);
+  line->close_primitive();
+  
+  line->add_vertex(1 * 2 + 0);
+  line->add_vertex(1 * 2 + 1);
+  line->close_primitive();
+  
+  line->add_vertex(2 * 2 + 0);
+  line->add_vertex(2 * 2 + 1);
+  line->close_primitive();
+  
+  line->add_vertex(3 * 2 + 0);
+  line->add_vertex(3 * 2 + 1);
+  line->close_primitive();
+  
+  // And one more line for the viewing axis.
+  line->add_vertex(num_segments * (4 * 2) + 0);
+  line->add_vertex(num_segments * (4 * 2) + 1);
+  line->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(_geom_data);
+  geom->add_primitive(line);
+  
+  return geom.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1147,18 +1078,6 @@ throw_change_event() {
     throw_event(_change_event, this);
   }
 
-  // Also update the _geom_coords, if it is in use.
-  if (!_geom_coords.is_null()) {
-    if (_geom_coords.get_ref_count() == 1) {
-      // No one's using the array any more (other than us), so release
-      // it.
-      _geom_coords.clear();
-    } else {
-      // Someone else still has a handle to the array, so recompute
-      // it.
-      define_geom_coords();
-    }
-  }
   if (!_geom_data.is_null()) {
     if (_geom_data->get_ref_count() == 1) {
       // No one's using the data any more (there are no references to
@@ -1681,86 +1600,6 @@ resequence_fov_triad(char &newest, char &older_a, char &older_b) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::define_geom_coords
-//       Access: Private
-//  Description: Adjusts (or defines for the first time) all the
-//               vertices in the _geom_coords array to match the
-//               properties of the lens.  This will update the visual
-//               representation of the lens's frustum to match the
-//               changing parameters.  Returns the number of line
-//               segments per edge.
-////////////////////////////////////////////////////////////////////
-int Lens::
-define_geom_coords() {
-  int num_segments = 1;
-  if (!is_linear()) {
-    num_segments = 10;
-  }
-
-  PTA_Vertexf coords;
-  LPoint3f near_point, far_point;
-  for (int si = 0; si < num_segments; si++) {
-    float t = 2.0f * (float)si / (float)num_segments;
-
-    // Upper left, top edge.
-    LPoint2f p1(-1.0f + t, 1.0f);
-    if (!extrude(p1, near_point, far_point)) {
-      // Hey, this point is off the lens!  Can't do a frustum.
-      return 0;
-    }
-    coords.push_back(near_point);
-    coords.push_back(far_point);
-
-    // Upper right, right edge.
-    LPoint2f p2(1.0f, 1.0f - t);
-    if (!extrude(p2, near_point, far_point)) {
-      // Hey, this point is off the lens!  Can't do a frustum.
-      return 0;
-    }
-    coords.push_back(near_point);
-    coords.push_back(far_point);
-
-    // Lower right, bottom edge.
-    LPoint2f p3(1.0f - t, -1.0f);
-    if (!extrude(p3, near_point, far_point)) {
-      // Hey, this point is off the lens!  Can't do a frustum.
-      return 0;
-    }
-    coords.push_back(near_point);
-    coords.push_back(far_point);
-
-    // Lower left, left edge.
-    LPoint2f p4(-1.0f, -1.0f + t);
-    if (!extrude(p4, near_point, far_point)) {
-      // Hey, this point is off the lens!  Can't do a frustum.
-      return 0;
-    }
-    coords.push_back(near_point);
-    coords.push_back(far_point);
-  }
-
-  // Finally, push one more pair for the viewing axis.
-  LPoint3f near_axis = LPoint3f::origin(_cs) + LVector3f::forward(_cs) * _near_distance;
-  LPoint3f far_axis = LPoint3f::origin(_cs) + LVector3f::forward(_cs) * _far_distance;
-  const LMatrix4f &lens_mat = get_lens_mat();
-  near_axis = near_axis * lens_mat;
-  far_axis = far_axis * lens_mat;
-  coords.push_back(near_axis);
-  coords.push_back(far_axis);
-  
-  if (_geom_coords.is_null()) {
-    // If the previous array is NULL, simply assign the pointer.
-    _geom_coords = coords;
-  } else {
-    // Otherwise, swap out the vectors within the array so other
-    // objects that share the PTA will get the new data.
-    _geom_coords.v().swap(coords.v());
-  }
-
-  return num_segments;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Lens::define_geom_data
 //       Access: Private
 //  Description: Adjusts (or defines for the first time) all the
@@ -1777,13 +1616,13 @@ define_geom_data() {
     num_segments = 10;
   }
   
-  if (_geom_data == (qpGeomVertexData *)NULL) {
-    _geom_data = new qpGeomVertexData
-      ("lens", qpGeomVertexFormat::get_v3(),
-       qpGeom::UH_dynamic);
+  if (_geom_data == (GeomVertexData *)NULL) {
+    _geom_data = new GeomVertexData
+      ("lens", GeomVertexFormat::get_v3(),
+       Geom::UH_dynamic);
   }
 
-  qpGeomVertexWriter vertex(_geom_data, InternalName::get_vertex());
+  GeomVertexWriter vertex(_geom_data, InternalName::get_vertex());
   LPoint3f near_point, far_point;
   for (int si = 0; si < num_segments; si++) {
     float t = 2.0f * (float)si / (float)num_segments;

@@ -19,6 +19,7 @@
 #include "coordinateSystem.h"
 #include "config_linmath.h"
 #include "configVariableEnum.h"
+#include "string_utils.h"
 
 #include "dconfig.h"
 #include "notify.h"
@@ -42,26 +43,27 @@ CoordinateSystem
 parse_coordinate_system_string(const string &str) {
   // First, make sure the string is lowercase before we compare it, so
   // we'll be case-insensitive.
-  string lstr = str;
-  for (string::iterator si = lstr.begin();
-       si != lstr.end();
-       ++si) {
-    (*si) = tolower(*si);
-  }
-
-  if (lstr == "default") {
+  if (cmp_nocase_uh(str, "default") == 0) {
     return CS_default;
 
-  } else if (lstr == "z-up" || lstr == "z-up-right") {
+  } else if (cmp_nocase_uh(str, "zup") == 0 || 
+             cmp_nocase_uh(str, "zup-right") == 0 ||
+             cmp_nocase_uh(str, "z-up") == 0 || 
+             cmp_nocase_uh(str, "z-up-right") == 0) {
     return CS_zup_right;
 
-  } else if (lstr == "y-up" || lstr == "y-up-right") {
+  } else if (cmp_nocase_uh(str, "yup") == 0 || 
+             cmp_nocase_uh(str, "yup-right") == 0 ||
+             cmp_nocase_uh(str, "y-up") == 0 || 
+             cmp_nocase_uh(str, "y-up-right") == 0) {
     return CS_yup_right;
 
-  } else if (lstr == "z-up-left") {
+  } else if (cmp_nocase_uh(str, "z-up-left") == 0 || 
+             cmp_nocase_uh(str, "zup-left") == 0) {
     return CS_zup_left;
 
-  } else if (lstr == "y-up-left") {
+  } else if (cmp_nocase_uh(str, "y-up-left") == 0 || 
+             cmp_nocase_uh(str, "yup-left") == 0) {
     return CS_yup_left;
   }
 
@@ -112,7 +114,7 @@ operator << (ostream &out, CoordinateSystem cs) {
     return out << "invalid";
   }
 
-  linmath_cat.error()
+  linmath_cat->error()
     << "Invalid coordinate_system value: " << (int)cs << "\n";
   nassertr(false, out);
   return out;
@@ -123,6 +125,10 @@ operator >> (istream &in, CoordinateSystem &cs) {
   string word;
   in >> word;
   cs = parse_coordinate_system_string(word);
+  if (cs == CS_invalid) {
+    linmath_cat->error()
+      << "Invalid coordinate_system string: " << word << "\n";
+  }
   return in;
 }
 

@@ -29,21 +29,6 @@ is_valid_id(char table_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::has_table
-//       Access: Public
-//  Description: Returns true if the indicated subtable has been
-//               assigned.
-////////////////////////////////////////////////////////////////////
-INLINE bool AnimChannelMatrixXfmTable::
-has_table(char table_id) const {
-  int table_index = get_table_index(table_id);
-  if (table_index < 0) {
-    return false;
-  }
-  return !(_tables[table_index] == (const float *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::get_table
 //       Access: Public
 //  Description: Returns a pointer to the indicated subtable's data,
@@ -59,8 +44,23 @@ get_table(char table_id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::has_table
+//       Access: Published
+//  Description: Returns true if the indicated subtable has been
+//               assigned.
+////////////////////////////////////////////////////////////////////
+INLINE bool AnimChannelMatrixXfmTable::
+has_table(char table_id) const {
+  int table_index = get_table_index(table_id);
+  if (table_index < 0) {
+    return false;
+  }
+  return !(_tables[table_index] == (const float *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::clear_table
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated table from the definition.
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimChannelMatrixXfmTable::

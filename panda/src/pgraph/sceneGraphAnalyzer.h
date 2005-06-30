@@ -20,15 +20,15 @@
 #define SCENEGRAPHANALYZER_H
 
 #include "pandabase.h"
-
 #include "typedObject.h"
 #include "luse.h"
-
 #include "pmap.h"
+#include "pset.h"
 
 class PandaNode;
 class GeomNode;
 class Geom;
+class GeomVertexData;
 class Texture;
 
 ////////////////////////////////////////////////////////////////////
@@ -52,13 +52,12 @@ private:
   void collect_statistics(const Geom *geom);
   void collect_statistics(Texture *texture);
 
-  void consider_normals(const Normalf *norms, const unsigned short *nindex,
-                        int num);
-
   typedef pmap<PandaNode *, int> Nodes;
+  typedef pset<const GeomVertexData *> VDatas;
   typedef pmap<Texture *, int> Textures;
 
   Nodes _nodes;
+  VDatas _vdatas;
   Textures _textures;
 
 public:
@@ -68,16 +67,14 @@ public:
   int _num_nodes_with_attribs;
   int _num_geom_nodes;
   int _num_geoms;
+  int _num_geom_vertex_datas;
 
   int _num_vertices;
   int _num_normals;
   int _num_texcoords;
   int _num_tris;
-  int _num_quads;
-  int _num_polys;
   int _num_lines;
   int _num_points;
-  int _num_spheres;
 
   int _num_individual_tris;
   int _num_tristrips;

@@ -6,15 +6,13 @@
 #begin lib_target
   #define TARGET egg2pg
   #define LOCAL_LIBS \
-    parametrics collide egg builder pgraph chan char
+    parametrics collide egg pgraph chan char
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
     animBundleMaker.h \
     characterMaker.h \
-    computedVerticesMaker.I computedVerticesMaker.h \
-    computedVerticesMakerEntity.I computedVerticesMakerEntity.h \
     config_egg2pg.h \
     deferredNodeProperty.h \
     eggBinner.h \
@@ -27,7 +25,6 @@
   #define INCLUDED_SOURCES \
     animBundleMaker.cxx \
     characterMaker.cxx \
-    computedVerticesMaker.cxx \
     config_egg2pg.cxx \
     deferredNodeProperty.cxx \
     eggBinner.cxx \

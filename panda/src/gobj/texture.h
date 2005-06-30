@@ -319,7 +319,7 @@ private:
   // Each PGO conversely keeps a list (a set) of all the Textures that
   // have been prepared there.  When either destructs, it removes
   // itself from the other's list.
-  typedef pmap<PreparedGraphicsObjects *, TextureContext *, pointer_hash> Contexts;
+  typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
   Contexts _contexts;
 
   // This value represents the intersection of all the dirty flags of

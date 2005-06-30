@@ -24,7 +24,6 @@
 #include "config_dxgsg8.h"
 
 #include "graphicsStateGuardian.h"
-#include "geomprimitives.h"
 #include "texture.h"
 #include "displayRegion.h"
 #include "material.h"
@@ -53,15 +52,15 @@ public:
   void apply_texture(int i, TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
-  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void set_color_clear_value(const Colorf &value);
 
@@ -75,15 +74,15 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool begin_draw_primitives(const qpGeom *geom, 
-                                     const qpGeomMunger *munger,
-                                     const qpGeomVertexData *vertex_data);
-  virtual void draw_triangles(const qpGeomTriangles *primitive);
-  virtual void draw_tristrips(const qpGeomTristrips *primitive);
-  virtual void draw_trifans(const qpGeomTrifans *primitive);
-  virtual void draw_lines(const qpGeomLines *primitive);
-  virtual void draw_linestrips(const qpGeomLinestrips *primitive);
-  virtual void draw_points(const qpGeomPoints *primitive);
+  virtual bool begin_draw_primitives(const Geom *geom, 
+                                     const GeomMunger *munger,
+                                     const GeomVertexData *vertex_data);
+  virtual void draw_triangles(const GeomTriangles *primitive);
+  virtual void draw_tristrips(const GeomTristrips *primitive);
+  virtual void draw_trifans(const GeomTrifans *primitive);
+  virtual void draw_lines(const GeomLines *primitive);
+  virtual void draw_linestrips(const GeomLinestrips *primitive);
+  virtual void draw_points(const GeomPoints *primitive);
   virtual void end_draw_primitives();
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
@@ -115,7 +114,7 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
                           int light_id);
 
-  static D3DFORMAT get_index_type(qpGeom::NumericType numeric_type);
+  static D3DFORMAT get_index_type(Geom::NumericType numeric_type);
   INLINE static DWORD Colorf_to_D3DCOLOR(const Colorf &cColorf);
 
 protected:

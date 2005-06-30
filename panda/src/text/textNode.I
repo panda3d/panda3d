@@ -675,7 +675,7 @@ get_coordinate_system() const {
 //               geomEnums.h.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_usage_hint(qpGeom::UsageHint usage_hint) {
+set_usage_hint(Geom::UsageHint usage_hint) {
   _assembler.set_usage_hint(usage_hint);
   invalidate_no_measure();
 }
@@ -686,7 +686,7 @@ set_usage_hint(qpGeom::UsageHint usage_hint) {
 //  Description: Returns the UsageHint that will be applied to
 //               generated geometry.  See set_usage_hint().
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeom::UsageHint TextNode::
+INLINE Geom::UsageHint TextNode::
 get_usage_hint() const {
   return _assembler.get_usage_hint();
 }

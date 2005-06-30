@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::has_table
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the data table has been assigned.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimChannelScalarTable::
@@ -30,7 +30,7 @@ has_table() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::clear_table
-//       Access: Public
+//       Access: Published
 //  Description: Empties the data table.
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimChannelScalarTable::

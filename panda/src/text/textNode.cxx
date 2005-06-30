@@ -24,14 +24,10 @@
 
 #include "compose_matrix.h"
 #include "geom.h"
-#include "geomTristrip.h"
-#include "geomLinestrip.h"
-#include "geomPoint.h"
-#include "qpgeom.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomPoints.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
+#include "geomTristrips.h"
+#include "geomVertexWriter.h"
 #include "geomNode.h"
 #include "notify.h"
 #include "transformState.h"
@@ -630,59 +626,32 @@ make_frame() {
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _frame_width);
   CPT(RenderState) state = RenderState::make(thick);
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3(), get_usage_hint());
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-
-    vertex.add_data3f(left, 0.0f, top);
-    vertex.add_data3f(left, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, top);
-    
-    PT(qpGeomLinestrips) frame = new qpGeomLinestrips(get_usage_hint());
-    frame->add_consecutive_vertices(0, 4);
-    frame->add_vertex(0);
-    frame->close_primitive();
-    
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(frame);
-    frame_node->add_geom(geom, state);
-
-    if (get_frame_corners()) {
-      PT(qpGeomPoints) corners = new qpGeomPoints(get_usage_hint());
-      corners->add_consecutive_vertices(0, 4);
-      PT(qpGeom) geom2 = new qpGeom;
-      geom2->set_vertex_data(vdata);
-      geom2->add_primitive(corners);
-      frame_node->add_geom(geom2, state);
-    }
-
-  } else {
-    GeomLinestrip *geoset = new GeomLinestrip;
-    PTA_int lengths=PTA_int::empty_array(0);
-    PTA_Vertexf verts;
-    lengths.push_back(5);
-    verts.push_back(Vertexf(left, 0.0f, top));
-    verts.push_back(Vertexf(left, 0.0f, bottom));
-    verts.push_back(Vertexf(right, 0.0f, bottom));
-    verts.push_back(Vertexf(right, 0.0f, top));
-    verts.push_back(Vertexf(left, 0.0f, top));
-
-    geoset->set_num_prims(1);
-    geoset->set_lengths(lengths);
-
-    geoset->set_coords(verts);
-    frame_node->add_geom(geoset, state);
-
-    if (get_frame_corners()) {
-      GeomPoint *geoset = new GeomPoint;
-      
-      geoset->set_num_prims(4);
-      geoset->set_coords(verts);
-      frame_node->add_geom(geoset, state);
-    }
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("text", GeomVertexFormat::get_v3(), get_usage_hint());
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  vertex.add_data3f(left, 0.0f, top);
+  vertex.add_data3f(left, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, top);
+  
+  PT(GeomLinestrips) frame = new GeomLinestrips(get_usage_hint());
+  frame->add_consecutive_vertices(0, 4);
+  frame->add_vertex(0);
+  frame->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(frame);
+  frame_node->add_geom(geom, state);
+  
+  if (get_frame_corners()) {
+    PT(GeomPoints) corners = new GeomPoints(get_usage_hint());
+    corners->add_consecutive_vertices(0, 4);
+    PT(Geom) geom2 = new Geom;
+    geom2->set_vertex_data(vdata);
+    geom2->add_primitive(corners);
+    frame_node->add_geom(geom2, state);
   }
 
   return frame_node.p();
@@ -703,60 +672,30 @@ make_card() {
   float bottom = dimensions[2];
   float top = dimensions[3];
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3t2(), get_usage_hint());
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-
-    vertex.add_data3f(left, 0.0f, top);
-    vertex.add_data3f(left, 0.0f, bottom);
-    vertex.add_data3f(right, 0.0f, top);
-    vertex.add_data3f(right, 0.0f, bottom);
-
-    texcoord.add_data2f(0.0f, 1.0f);
-    texcoord.add_data2f(0.0f, 0.0f);
-    texcoord.add_data2f(1.0f, 1.0f);
-    texcoord.add_data2f(1.0f, 0.0f);
-    
-    PT(qpGeomTristrips) card = new qpGeomTristrips(get_usage_hint());
-    card->add_consecutive_vertices(0, 4);
-    card->close_primitive();
-    
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(card);
-
-    card_node->add_geom(geom);
-
-  } else {
-    GeomTristrip *geoset = new GeomTristrip;
-    PTA_int lengths=PTA_int::empty_array(0);
-    lengths.push_back(4);
-
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf(left, 0.02f, top));
-    verts.push_back(Vertexf(left, 0.02f, bottom));
-    verts.push_back(Vertexf(right, 0.02f, top));
-    verts.push_back(Vertexf(right, 0.02f, bottom));
-    
-    geoset->set_num_prims(1);
-    geoset->set_lengths(lengths);
-
-    geoset->set_coords(verts);
-
-    if (has_card_texture()) {
-      PTA_TexCoordf uvs;
-      uvs.push_back(TexCoordf(0.0f, 1.0f));
-      uvs.push_back(TexCoordf(0.0f, 0.0f));
-      uvs.push_back(TexCoordf(1.0f, 1.0f));
-      uvs.push_back(TexCoordf(1.0f, 0.0f));
-      
-      geoset->set_texcoords(uvs, G_PER_VERTEX);
-    }
-
-    card_node->add_geom(geoset);
-  }
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  
+  vertex.add_data3f(left, 0.0f, top);
+  vertex.add_data3f(left, 0.0f, bottom);
+  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3f(right, 0.0f, bottom);
+  
+  texcoord.add_data2f(0.0f, 1.0f);
+  texcoord.add_data2f(0.0f, 0.0f);
+  texcoord.add_data2f(1.0f, 1.0f);
+  texcoord.add_data2f(1.0f, 0.0f);
+  
+  PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
+  card->add_consecutive_vertices(0, 4);
+  card->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(card);
+  
+  card_node->add_geom(geom);
 
   return card_node.p();
 }
@@ -787,182 +726,84 @@ make_card_with_border() {
   // 10 12          14 16 - three
   //
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("text", qpGeomVertexFormat::get_v3t2(), get_usage_hint());
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  
+  // verts 1,2,3,4
+  vertex.add_data3f(left, 0.02f, top);
+  vertex.add_data3f(left, 0.02f, top - _card_border_size);
+  vertex.add_data3f(left + _card_border_size, 0.02f, top);
+  vertex.add_data3f(left + _card_border_size, 0.02f,
+                    top - _card_border_size);
+  // verts 5,6,7,8
+  vertex.add_data3f(right - _card_border_size, 0.02f, top);
+  vertex.add_data3f(right - _card_border_size, 0.02f,
+                    top - _card_border_size);
+  vertex.add_data3f(right, 0.02f, top);
+  vertex.add_data3f(right, 0.02f, top - _card_border_size);
+  // verts 9,10,11,12
+  vertex.add_data3f(left, 0.02f, bottom + _card_border_size);
+  vertex.add_data3f(left, 0.02f, bottom);
+  vertex.add_data3f(left + _card_border_size, 0.02f,
+                    bottom + _card_border_size);
+  vertex.add_data3f(left + _card_border_size, 0.02f, bottom);
+  // verts 13,14,15,16
+  vertex.add_data3f(right - _card_border_size, 0.02f,
+                    bottom + _card_border_size);
+  vertex.add_data3f(right - _card_border_size, 0.02f, bottom);
+  vertex.add_data3f(right, 0.02f, bottom + _card_border_size);
+  vertex.add_data3f(right, 0.02f, bottom);
+  
+  texcoord.add_data2f(0.0f, 1.0f); //1
+  texcoord.add_data2f(0.0f, 1.0f - _card_border_uv_portion); //2
+  texcoord.add_data2f(0.0f + _card_border_uv_portion, 1.0f); //3
+  texcoord.add_data2f(0.0f + _card_border_uv_portion,
+                      1.0f - _card_border_uv_portion); //4
+  texcoord.add_data2f(1.0f -_card_border_uv_portion, 1.0f); //5
+  texcoord.add_data2f(1.0f -_card_border_uv_portion,
+                      1.0f - _card_border_uv_portion); //6
+  texcoord.add_data2f(1.0f, 1.0f); //7
+  texcoord.add_data2f(1.0f, 1.0f - _card_border_uv_portion); //8
+  
+  texcoord.add_data2f(0.0f, _card_border_uv_portion); //9
+  texcoord.add_data2f(0.0f, 0.0f); //10
+  texcoord.add_data2f(_card_border_uv_portion, _card_border_uv_portion); //11
+  texcoord.add_data2f(_card_border_uv_portion, 0.0f); //12
 
-    // verts 1,2,3,4
-    vertex.add_data3f(left, 0.02f, top);
-    vertex.add_data3f(left, 0.02f, top - _card_border_size);
-    vertex.add_data3f(left + _card_border_size, 0.02f, top);
-    vertex.add_data3f(left + _card_border_size, 0.02f,
-                      top - _card_border_size);
-    // verts 5,6,7,8
-    vertex.add_data3f(right - _card_border_size, 0.02f, top);
-    vertex.add_data3f(right - _card_border_size, 0.02f,
-                      top - _card_border_size);
-    vertex.add_data3f(right, 0.02f, top);
-    vertex.add_data3f(right, 0.02f, top - _card_border_size);
-    // verts 9,10,11,12
-    vertex.add_data3f(left, 0.02f, bottom + _card_border_size);
-    vertex.add_data3f(left, 0.02f, bottom);
-    vertex.add_data3f(left + _card_border_size, 0.02f,
-                      bottom + _card_border_size);
-    vertex.add_data3f(left + _card_border_size, 0.02f, bottom);
-    // verts 13,14,15,16
-    vertex.add_data3f(right - _card_border_size, 0.02f,
-                      bottom + _card_border_size);
-    vertex.add_data3f(right - _card_border_size, 0.02f, bottom);
-    vertex.add_data3f(right, 0.02f, bottom + _card_border_size);
-    vertex.add_data3f(right, 0.02f, bottom);
-
-    texcoord.add_data2f(0.0f, 1.0f); //1
-    texcoord.add_data2f(0.0f, 1.0f - _card_border_uv_portion); //2
-    texcoord.add_data2f(0.0f + _card_border_uv_portion, 1.0f); //3
-    texcoord.add_data2f(0.0f + _card_border_uv_portion,
-                        1.0f - _card_border_uv_portion); //4
-    texcoord.add_data2f(1.0f -_card_border_uv_portion, 1.0f); //5
-    texcoord.add_data2f(1.0f -_card_border_uv_portion,
-                        1.0f - _card_border_uv_portion); //6
-    texcoord.add_data2f(1.0f, 1.0f); //7
-    texcoord.add_data2f(1.0f, 1.0f - _card_border_uv_portion); //8
-
-    texcoord.add_data2f(0.0f, _card_border_uv_portion); //9
-    texcoord.add_data2f(0.0f, 0.0f); //10
-    texcoord.add_data2f(_card_border_uv_portion, _card_border_uv_portion); //11
-    texcoord.add_data2f(_card_border_uv_portion, 0.0f); //12
-
-    texcoord.add_data2f(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
-    texcoord.add_data2f(1.0f - _card_border_uv_portion, 0.0f);//14
-    texcoord.add_data2f(1.0f, _card_border_uv_portion);//15
-    texcoord.add_data2f(1.0f, 0.0f);//16
-    
-    PT(qpGeomTristrips) card = new qpGeomTristrips(get_usage_hint());
-
-    // tristrip #1
-    card->add_consecutive_vertices(0, 8);
-    card->close_primitive();
-
-    // tristrip #2
-    card->add_vertex(1);
-    card->add_vertex(8);
-    card->add_vertex(3);
-    card->add_vertex(10);
-    card->add_vertex(5);
-    card->add_vertex(12);
-    card->add_vertex(7);
-    card->add_vertex(14);
-    card->close_primitive();
-
-    // tristrip #3
-    card->add_consecutive_vertices(8, 8);
-    card->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(card);
-
-    card_node->add_geom(geom);
-
-  } else {
-    GeomTristrip *geoset = new GeomTristrip;
-    PTA_int lengths;
-    lengths.push_back(8);
-    lengths.push_back(8);
-    lengths.push_back(8);
-    
-    PTA_Vertexf verts;
-    // verts 1,2,3,4
-    verts.push_back(Vertexf(left, 0.02f, top));
-    verts.push_back(Vertexf(left, 0.02f, top - _card_border_size));
-    verts.push_back(Vertexf(left + _card_border_size, 0.02f, top));
-    verts.push_back(Vertexf(left + _card_border_size, 0.02f,
-                            top - _card_border_size));
-    // verts 5,6,7,8
-    verts.push_back(Vertexf(right - _card_border_size, 0.02f, top));
-    verts.push_back(Vertexf(right - _card_border_size, 0.02f,
-                            top - _card_border_size));
-    verts.push_back(Vertexf(right, 0.02f, top));
-    verts.push_back(Vertexf(right, 0.02f, top - _card_border_size));
-    // verts 9,10,11,12
-    verts.push_back(Vertexf(left, 0.02f, bottom + _card_border_size));
-    verts.push_back(Vertexf(left, 0.02f, bottom));
-    verts.push_back(Vertexf(left + _card_border_size, 0.02f,
-                            bottom + _card_border_size));
-    verts.push_back(Vertexf(left + _card_border_size, 0.02f, bottom));
-    // verts 13,14,15,16
-    verts.push_back(Vertexf(right - _card_border_size, 0.02f,
-                            bottom + _card_border_size));
-    verts.push_back(Vertexf(right - _card_border_size, 0.02f, bottom));
-    verts.push_back(Vertexf(right, 0.02f, bottom + _card_border_size));
-    verts.push_back(Vertexf(right, 0.02f, bottom));
-    
-    PTA_ushort indices;
-    // tristrip #1
-    indices.push_back(0);
-    indices.push_back(1);
-    indices.push_back(2);
-    indices.push_back(3);
-    indices.push_back(4);
-    indices.push_back(5);
-    indices.push_back(6);
-    indices.push_back(7);
-    // tristrip #2
-    indices.push_back(1);
-    indices.push_back(8);
-    indices.push_back(3);
-    indices.push_back(10);
-    indices.push_back(5);
-    indices.push_back(12);
-    indices.push_back(7);
-    indices.push_back(14);
-    // tristrip #3
-    indices.push_back(8);
-    indices.push_back(9);
-    indices.push_back(10);
-    indices.push_back(11);
-    indices.push_back(12);
-    indices.push_back(13);
-    indices.push_back(14);
-    indices.push_back(15);
-    
-    geoset->set_num_prims(3);
-    geoset->set_lengths(lengths);
-    
-    geoset->set_coords(verts,indices);
-    
-    if (has_card_texture()) {
-      PTA_TexCoordf uvs;
-      uvs.push_back(TexCoordf(0.0f, 1.0f)); //1
-      uvs.push_back(TexCoordf(0.0f, 1.0f - _card_border_uv_portion)); //2
-      uvs.push_back(TexCoordf(0.0f + _card_border_uv_portion, 1.0f)); //3
-      uvs.push_back(TexCoordf(0.0f + _card_border_uv_portion,
-                              1.0f - _card_border_uv_portion)); //4
-      uvs.push_back(TexCoordf( 1.0f -_card_border_uv_portion, 1.0f)); //5
-      uvs.push_back(TexCoordf( 1.0f -_card_border_uv_portion,
-                               1.0f - _card_border_uv_portion)); //6
-      uvs.push_back(TexCoordf(1.0f, 1.0f)); //7
-      uvs.push_back(TexCoordf(1.0f, 1.0f - _card_border_uv_portion)); //8
-      
-      uvs.push_back(TexCoordf(0.0f, _card_border_uv_portion)); //9
-      uvs.push_back(TexCoordf(0.0f, 0.0f)); //10
-      uvs.push_back(TexCoordf(_card_border_uv_portion, _card_border_uv_portion)); //11
-      uvs.push_back(TexCoordf(_card_border_uv_portion, 0.0f)); //12
-      
-      uvs.push_back(TexCoordf(1.0f - _card_border_uv_portion, _card_border_uv_portion));//13
-      uvs.push_back(TexCoordf(1.0f - _card_border_uv_portion, 0.0f));//14
-      uvs.push_back(TexCoordf(1.0f, _card_border_uv_portion));//15
-      uvs.push_back(TexCoordf(1.0f, 0.0f));//16
-      
-      // we can use same ref's as before (same order)
-      geoset->set_texcoords(uvs, G_PER_VERTEX, indices);
-    }
-
-    card_node->add_geom(geoset);
-  }
-
+  texcoord.add_data2f(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
+  texcoord.add_data2f(1.0f - _card_border_uv_portion, 0.0f);//14
+  texcoord.add_data2f(1.0f, _card_border_uv_portion);//15
+  texcoord.add_data2f(1.0f, 0.0f);//16
+  
+  PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
+  
+  // tristrip #1
+  card->add_consecutive_vertices(0, 8);
+  card->close_primitive();
+  
+  // tristrip #2
+  card->add_vertex(1);
+  card->add_vertex(8);
+  card->add_vertex(3);
+  card->add_vertex(10);
+  card->add_vertex(5);
+  card->add_vertex(12);
+  card->add_vertex(7);
+  card->add_vertex(14);
+  card->close_primitive();
+  
+  // tristrip #3
+  card->add_consecutive_vertices(8, 8);
+  card->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(card);
+  
+  card_node->add_geom(geom);
+  
   return card_node.p();
 }
 

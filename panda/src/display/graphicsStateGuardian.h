@@ -45,8 +45,8 @@
 #include "lightAttrib.h"
 #include "transparencyAttrib.h"
 #include "config_display.h"
-#include "qpgeomMunger.h"
-#include "qpgeomVertexData.h"
+#include "geomMunger.h"
+#include "geomVertexData.h"
 
 #include "notify.h"
 #include "pvector.h"
@@ -117,14 +117,14 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
-  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  PT(qpGeomMunger) get_geom_munger(const RenderState *state);
-  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
+  PT(GeomMunger) get_geom_munger(const RenderState *state);
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -162,15 +162,15 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  virtual bool begin_draw_primitives(const qpGeom *geom, 
-                                     const qpGeomMunger *munger,
-                                     const qpGeomVertexData *vertex_data);
-  virtual void draw_triangles(const qpGeomTriangles *primitive);
-  virtual void draw_tristrips(const qpGeomTristrips *primitive);
-  virtual void draw_trifans(const qpGeomTrifans *primitive);
-  virtual void draw_lines(const qpGeomLines *primitive);
-  virtual void draw_linestrips(const qpGeomLinestrips *primitive);
-  virtual void draw_points(const qpGeomPoints *primitive);
+  virtual bool begin_draw_primitives(const Geom *geom, 
+                                     const GeomMunger *munger,
+                                     const GeomVertexData *vertex_data);
+  virtual void draw_triangles(const GeomTriangles *primitive);
+  virtual void draw_tristrips(const GeomTristrips *primitive);
+  virtual void draw_trifans(const GeomTrifans *primitive);
+  virtual void draw_lines(const GeomLines *primitive);
+  virtual void draw_linestrips(const GeomLinestrips *primitive);
+  virtual void draw_points(const GeomPoints *primitive);
   virtual void end_draw_primitives();
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
@@ -287,8 +287,8 @@ protected:
   CPT(RenderState) _state;
   CPT(TransformState) _external_transform;
   CPT(TransformState) _internal_transform;
-  CPT(qpGeomMunger) _munger;
-  CPT(qpGeomVertexData) _vertex_data;
+  CPT(GeomMunger) _munger;
+  CPT(GeomVertexData) _vertex_data;
 
   int _buffer_mask;
   Colorf _color_clear_value;

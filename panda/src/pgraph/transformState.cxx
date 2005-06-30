@@ -1682,11 +1682,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _flags |= (F_hpr_given | F_hpr_known);
     }
     _scale.read_datagram(scan);
-    if (manager->get_file_minor_ver() >= 6) {
-      _shear.read_datagram(scan);
-    } else {
-      _shear.set(0.0f, 0.0f, 0.0f);
-    }
+    _shear.read_datagram(scan);
+
     check_uniform_scale();
   }
 

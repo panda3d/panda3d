@@ -92,12 +92,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     Switch sw(0, 0);
     sw.read_datagram(scan);
 
-    if (manager->get_file_minor_ver() < 13) {
-      // Before bam version 4.13, we stored the square of the
-      // switching distance in the bam files.
-      sw.set_range(sqrtf(sw.get_in()), sqrtf(sw.get_out()));
-    }
-
     _switch_vector.push_back(sw);
   }
 }

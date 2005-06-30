@@ -19,9 +19,9 @@
 #include "sparkleParticleRenderer.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
-#include "qpgeom.h"
-#include "qpgeomVertexWriter.h"
-#include "geomLine.h"
+#include "geom.h"
+#include "geomVertexWriter.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SparkleParticleRenderer
@@ -117,11 +117,6 @@ kill_particle(int) {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 resize_pool(int new_size) {
-  if (!use_qpgeom) {
-    _vertex_array = PTA_Vertexf::empty_array(new_size * 12);
-    _color_array = PTA_Colorf::empty_array(new_size * 12);
-  }
-
   _max_pool_size = new_size;
 
   init_geoms();
@@ -134,21 +129,14 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 init_geoms() {
-  if (use_qpgeom) {
-    PT(qpGeom) qpgeom = new qpGeom; 
-    _line_primitive = qpgeom;
-    _vdata = new qpGeomVertexData
-      ("particles", qpGeomVertexFormat::get_v3cp(),
-       qpGeom::UH_dynamic);
-    qpgeom->set_vertex_data(_vdata);
-    _lines = new qpGeomLines(qpGeom::UH_dynamic);
-    qpgeom->add_primitive(_lines);
-
-  } else {
-    _line_primitive = new GeomLine;
-    _line_primitive->set_coords(_vertex_array);
-    _line_primitive->set_colors(_color_array, G_PER_VERTEX);
-  }
+  PT(Geom) geom = new Geom; 
+  _line_primitive = geom;
+  _vdata = new GeomVertexData
+    ("particles", GeomVertexFormat::get_v3cp(),
+     Geom::UH_dynamic);
+  geom->set_vertex_data(_vdata);
+  _lines = new GeomLines(Geom::UH_dynamic);
+  geom->add_primitive(_lines);
 
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -171,17 +159,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   int remaining_particles = ttl_particles;
   int i;
 
-  Vertexf *cur_vert = NULL;
-  Colorf *cur_color = NULL;
-  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
-  qpGeomVertexWriter color(_vdata, InternalName::get_color());
-  if (use_qpgeom) {
-    _lines->clear_vertices();
-
-  } else {
-    cur_vert = &_vertex_array[0];
-    cur_color = &_color_array[0];
-  }
+  GeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  GeomVertexWriter color(_vdata, InternalName::get_color());
+  _lines->clear_vertices();
 
   // init the aabb
 
@@ -246,80 +226,49 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // 6 lines coming from the center point.
 
-    if (use_qpgeom) {
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(radius, 0.0f, 0.0f));
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(neg_radius, 0.0f, 0.0f));
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(0.0f, radius, 0.0f));
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(0.0f, neg_radius, 0.0f));
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(0.0f, 0.0f, radius));
-      vertex.add_data3f(position);
-      vertex.add_data3f(position + Vertexf(0.0f, 0.0f, neg_radius));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(radius, 0.0f, 0.0f));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(neg_radius, 0.0f, 0.0f));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(0.0f, radius, 0.0f));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(0.0f, neg_radius, 0.0f));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(0.0f, 0.0f, radius));
+    vertex.add_data3f(position);
+    vertex.add_data3f(position + Vertexf(0.0f, 0.0f, neg_radius));
 
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-      color.add_data4f(center_color);
-      color.add_data4f(edge_color);
-
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-    } else {
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(radius, 0.0f, 0.0f);
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(neg_radius, 0.0f, 0.0f);
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(0.0f, radius, 0.0f);
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(0.0f, neg_radius, 0.0f);
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(0.0f, 0.0f, radius);
-      *cur_vert++ = position;
-      *cur_vert++ = position + Vertexf(0.0f, 0.0f, neg_radius);
-
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-      *cur_color++ = center_color;
-      *cur_color++ = edge_color;
-    }
-
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    color.add_data4f(center_color);
+    color.add_data4f(edge_color);
+    
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
+    
     remaining_particles--;
-    if (remaining_particles == 0)
+    if (remaining_particles == 0) {
       break;
-  }
-
-  if (!use_qpgeom) {
-    _line_primitive->set_num_prims(6 * ttl_particles);
+    }
   }
 
   // done filling geomline node, now do the bb stuff
@@ -351,20 +300,16 @@ output(ostream &out) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
-write(ostream &out, int indent) const {
-  #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"SparkleParticleRenderer:\n";
-  out.width(indent+2); out<<""; out<<"_center_color "<<_center_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_edge_color "<<_edge_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_birth_radius "<<_birth_radius<<"\n";
-  out.width(indent+2); out<<""; out<<"_death_radius "<<_death_radius<<"\n";
-  out.width(indent+2); out<<""; out<<"_line_primitive "<<_line_primitive<<"\n";
-  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
-  out.width(indent+2); out<<""; out<<"_life_scale "<<_life_scale<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
-  BaseParticleRenderer::write(out, indent+2);
-  #endif //] NDEBUG
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << "SparkleParticleRenderer:\n";
+  indent(out, indent_level + 2) << "_center_color "<<_center_color<<"\n";
+  indent(out, indent_level + 2) << "_edge_color "<<_edge_color<<"\n";
+  indent(out, indent_level + 2) << "_birth_radius "<<_birth_radius<<"\n";
+  indent(out, indent_level + 2) << "_death_radius "<<_death_radius<<"\n";
+  indent(out, indent_level + 2) << "_line_primitive "<<_line_primitive<<"\n";
+  indent(out, indent_level + 2) << "_max_pool_size "<<_max_pool_size<<"\n";
+  indent(out, indent_level + 2) << "_life_scale "<<_life_scale<<"\n";
+  indent(out, indent_level + 2) << "_aabb_min "<<_aabb_min<<"\n";
+  indent(out, indent_level + 2) << "_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent_level + 2);
 }

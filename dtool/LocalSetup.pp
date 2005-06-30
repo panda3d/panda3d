@@ -448,7 +448,4 @@ $[cdefine VC6_STYLE_ALLOCATOR]
 $[cdefine MODERN_STYLE_ALLOCATOR]
 $[cdefine NO_STYLE_ALLOCATOR]
 
-/* Define if you want to use Python before 2.3.  */
-$[cdefine USE_PYTHON_2_2_OR_EARLIER]
-
 #end dtool_config.h

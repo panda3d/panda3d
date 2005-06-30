@@ -46,8 +46,6 @@
 //               compute its dynamic vertices on the CPU.  See
 //               TransformTable for one set up to compute its
 //               dynamic vertices on the graphics card.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransformBlendTable : public TypedWritableReferenceCount {
 PUBLISHED:

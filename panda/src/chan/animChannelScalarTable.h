@@ -39,8 +39,9 @@ public:
   virtual bool has_changed(int last_frame, int this_frame);
   virtual void get_value(int frame, float &value);
 
-PUBLISHED:
   void set_table(const CPTA_float &table);
+
+PUBLISHED:
   INLINE bool has_table() const;
   INLINE void clear_table();
 

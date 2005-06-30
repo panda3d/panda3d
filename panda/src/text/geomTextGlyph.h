@@ -1,5 +1,5 @@
 // Filename: geomTextGlyph.h
-// Created by:  drose (11Feb02)
+// Created by:  drose (31Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -23,19 +23,19 @@
 
 #ifdef HAVE_FREETYPE
 
-#include "geomTristrip.h"
+#include "geom.h"
 #include "dynamicTextGlyph.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomTextGlyph
-// Description : This is a specialization on GeomTristrip for
-//               containing a triangle strip intended to represent a
+// Description : This is a specialization on Geom for containing a
+//               triangle strip intended to represent a
 //               DynamicTextGlyph.  Its sole purpose is to maintain
 //               the geom count on the glyph, so we can determine the
 //               actual usage count on a dynamic glyph (and thus know
 //               when it is safe to recycle the glyph).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTextGlyph : public GeomTristrip {
+class EXPCL_PANDA GeomTextGlyph : public Geom {
 public:
   INLINE GeomTextGlyph(DynamicTextGlyph *glyph);
   INLINE GeomTextGlyph(const GeomTextGlyph &copy);
@@ -57,9 +57,9 @@ PUBLISHED:
   }
 public:
   static void init_type() {
-    GeomTristrip::init_type();
+    Geom::init_type();
     register_type(_type_handle, "GeomTextGlyph",
-                  GeomTristrip::get_class_type());
+                  Geom::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

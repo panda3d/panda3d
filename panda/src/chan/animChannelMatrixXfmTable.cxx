@@ -145,20 +145,6 @@ get_scale(int frame, float scale[3]) {
   }
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::clear_all_tables
-//       Access: Public
-//  Description: Removes all the tables from the channel, and resets
-//               it to its initial state.
-////////////////////////////////////////////////////////////////////
-void AnimChannelMatrixXfmTable::
-clear_all_tables() {
-  for (int i = 0; i < num_matrix_components; i++) {
-    _tables[i] = NULL;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::set_table
 //       Access: Public
@@ -183,6 +169,20 @@ set_table(char table_id, const CPTA_float &table) {
   }
 
   _tables[i] = table;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::clear_all_tables
+//       Access: Published
+//  Description: Removes all the tables from the channel, and resets
+//               it to its initial state.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixXfmTable::
+clear_all_tables() {
+  for (int i = 0; i < num_matrix_components; i++) {
+    _tables[i] = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,30 +313,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   bool wrote_compressed = scan.get_bool();
 
-  bool new_hpr = false;
-  if (manager->get_file_minor_ver() >= 14) {
-    // Beginning in bam 4.14, we encode a bool to indicate whether
-    // we used the old hpr or the new hpr calculation.  Previously,
-    // we assume all bams used the old hpr calculation.
-    new_hpr = scan.get_bool();
-  }
+  bool new_hpr = scan.get_bool();
 
   if (!wrote_compressed) {
     // Regular floats.
 
     for (int i = 0; i < num_matrix_components; i++) {
-      if (manager->get_file_minor_ver() < 6 && i >= 3 && i < 6) {
-        // Old bam files didn't store a shear component.
-        _tables[i].clear();
-
-      } else {
-        int size = scan.get_uint16();
-        PTA_float ind_table;
-        for (int j = 0; j < size; j++) {
-          ind_table.push_back(scan.get_float32());
-        }
-        _tables[i] = ind_table;
+      int size = scan.get_uint16();
+      PTA_float ind_table;
+      for (int j = 0; j < size; j++) {
+        ind_table.push_back(scan.get_float32());
       }
+      _tables[i] = ind_table;
     }
 
     if ((!new_hpr && temp_hpr_fix) || (new_hpr && !temp_hpr_fix)) {
@@ -398,18 +386,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
-    if (manager->get_file_minor_ver() < 6) {
-      // Old bam files didn't store a shear.
-      _tables[3].clear();
-      _tables[4].clear();
-      _tables[5].clear();
-
-    } else {
-      for (i = 3; i < 6; i++) {
-        PTA_float ind_table = PTA_float::empty_array(0);
-        compressor.read_reals(scan, ind_table.v());
-        _tables[i] = ind_table;
-      }
+    for (i = 3; i < 6; i++) {
+      PTA_float ind_table = PTA_float::empty_array(0);
+      compressor.read_reals(scan, ind_table.v());
+      _tables[i] = ind_table;
     }
 
     // Read in the HPR array and store it back in the joint angles.

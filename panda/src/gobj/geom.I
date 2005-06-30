@@ -1,5 +1,5 @@
 // Filename: geom.I
-// Created by:  drose (04Feb99)
+// Created by:  drose (06Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,422 +18,298 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_binding
+//     Function: Geom::get_primitive_type
 //       Access: Published
-//  Description: Returns the GeomBindType which indicates the
-//               assignment of colors (or normals, etc.) to the
-//               primitives.
+//  Description: Returns the fundamental primitive type that is common
+//               to all GeomPrimitives added within the Geom.  All
+//               nested primitives within a particular Geom must be
+//               the same type (that is, you can mix triangles and
+//               tristrips, because they are both the same fundamental
+//               type PT_polygons, but you cannot mix triangles and
+//               points withn the same Geom).
 ////////////////////////////////////////////////////////////////////
-INLINE GeomBindType Geom::
-get_binding(int attr) const {
-  return _bind[attr];
+INLINE Geom::PrimitiveType Geom::
+get_primitive_type() const {
+  CDReader cdata(_cycler);
+  return cdata->_primitive_type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::has_any_texcoords
+//     Function: Geom::get_shade_model
 //       Access: Published
-//  Description: Returns true if the Geom defines any texture
-//               coordinates at all, false otherwise.
+//  Description: Returns the shade model common to all of the
+//               individual GeomPrimitives that have been added to the
+//               geom.
 ////////////////////////////////////////////////////////////////////
-INLINE bool Geom::
-has_any_texcoords() const {
-  return !_texcoords_by_name.empty();
+INLINE Geom::ShadeModel Geom::
+get_shade_model() const {
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::has_texcoords
+//     Function: Geom::get_geom_rendering
 //       Access: Published
-//  Description: Returns true if the Geom defines a set of texture
-//               coordinates for the indicated multitexture stage
-//               name, or false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool Geom::
-has_texcoords(const InternalName *name) const {
-  TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
-  return (tci != _texcoords_by_name.end());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_coords_array
-//       Access: Published
-//  Description: Returns the array of vertex coordinates associated
-//               with the Geom.  This must have binding type
-//               G_PER_VERTEX.  It may either be indexed or
-//               nonindexed, depending on whether get_coords_index()
-//               returns a NULL array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_Vertexf Geom::
-get_coords_array() const {
-  return _coords;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_normals_array
-//       Access: Published
-//  Description: Returns the array of normals associated with the
-//               Geom.  This may have any binding type.  It may either
-//               be indexed or nonindexed, depending on whether
-//               get_normals_index() returns a NULL array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_Normalf Geom::
-get_normals_array() const {
-  return _norms;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_colors_array
-//       Access: Published
-//  Description: Returns the array of colors associated with the
-//               Geom.  This may have any binding type.  It may either
-//               be indexed or nonindexed, depending on whether
-//               get_colors_index() returns a NULL array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_Colorf Geom::
-get_colors_array() const {
-  return _colors;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_texcoords_array
-//       Access: Published
-//  Description: Returns the array of texcoords associated with the
-//               Geom.  This may have a binding type of G_PER_VERTEX
-//               or G_OFF.  It may either be indexed or nonindexed,
-//               depending on whether get_texcoords_index() returns a
-//               NULL array.
-//
-//               This method is used in the single-texture case: it
-//               returns the default texture coordinates only.  In the
-//               presence of multitexturing, use the version of
-//               get_texcoords_array() method that takes a
-//               InternalName parameter.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_TexCoordf Geom::
-get_texcoords_array() const {
-  return get_texcoords_array(InternalName::get_texcoord());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_texcoords_array
-//       Access: Published
-//  Description: Returns the texcoords array in the geom with the
-//               indicated name.  This allows multitexturing support
-//               with multiple sets of texture coordinates in the same
-//               geom.  The return value will be NULL if there are no
-//               texture coordinates with the indicated name.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_TexCoordf Geom::
-get_texcoords_array(const InternalName *name) const {
-  TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
-  if (tci != _texcoords_by_name.end()) {
-    return (*tci).second._texcoords;
-  }
-  return PTA_TexCoordf();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_coords_index
-//       Access: Published
-//  Description: Returns the array of indices that, if nonempty, will
-//               be used to traverse the vertices in coords_array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_ushort Geom::
-get_coords_index() const {
-  return _vindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_normals_index
-//       Access: Published
-//  Description: Returns the array of indices that, if nonempty, will
-//               be used to traverse the vertices in normals_array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_ushort Geom::
-get_normals_index() const {
-  return _nindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_colors_index
-//       Access: Published
-//  Description: Returns the array of indices that, if nonempty, will
-//               be used to traverse the vertices in colors_array.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_ushort Geom::
-get_colors_index() const {
-  return _cindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_texcoords_index
-//       Access: Published
-//  Description: Returns the array of indices that, if nonempty, will
-//               be used to traverse the vertices in texcoords_array.
-//
-//               This method is used in the single-texture case: it
-//               returns the default texture coordinates only.  In the
-//               presence of multitexturing, use the version of
-//               get_texcoords_array() method that takes a
-//               InternalName parameter.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_ushort Geom::
-get_texcoords_index() const {
-  return get_texcoords_index(InternalName::get_texcoord());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_texcoords_index
-//       Access: Published
-//  Description: Returns the texcoords index within the geom with the
-//               indicated name.  This allows multitexturing support
-//               with multiple sets of texture coordinates in the same
-//               geom.  The return value will be NULL if there are no
-//               texture coordinates with the indicated name, or if
-//               the geom does not use indexed texcoords.
-////////////////////////////////////////////////////////////////////
-INLINE PTA_ushort Geom::
-get_texcoords_index(const InternalName *name) const {
-  TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
-  if (tci != _texcoords_by_name.end()) {
-    return (*tci).second._tindex;
-  }
-  return PTA_ushort();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::are_texcoords_indexed
-//       Access: Published
-//  Description: Returns true if any texcoords on the Geom (and,
-//               therefore, all of them) are indexed, false if there
-//               are no texcoords on the Geom already or if the
-//               texcoords on the Geom are nonindexed.
-////////////////////////////////////////////////////////////////////
-INLINE bool Geom::
-are_texcoords_indexed() const {
-  if (_texcoords_by_name.empty()) {
-    return false;
-  }
-  TexCoordsByName::const_iterator tci = _texcoords_by_name.begin();
-  return ((*tci).second._tindex != (ushort *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_num_prims
-//       Access: Published
-//  Description: Sets the number of primitives in the Geom.  The
-//               meaning of this depends on the precise type of Geom;
-//               generally, each prim is one triangle in a GeomTri, or
-//               one tristrip in a GeomTristrip.
-////////////////////////////////////////////////////////////////////
-INLINE void Geom::
-set_num_prims(int num) {
-  _numprims = num;
-  if (!uses_components()) {
-    // except for strips & fans with the length arrays, total verts will be simply this
-    _num_vertices = _numprims*get_num_vertices_per_prim();
-  }
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_prims
-//       Access: Published
-//  Description: Returns the number of primitives in the Geom.
+//  Description: Returns the set of GeomRendering bits that represent
+//               the rendering properties required to properly render
+//               this Geom.
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
-get_num_prims() const {
-  return _numprims;
+get_geom_rendering() const {
+  CDReader cdata(_cycler);
+  return cdata->_geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_lengths
+//     Function: Geom::get_usage_hint
 //       Access: Published
-//  Description: Sets the array that indicates the length (number of
-//               vertices) of each primitive.  This array should have
-//               get_num_prims() entries.  This only has meaning for
-//               composite type Geoms, like a GeomTristrip; it is
-//               ignored for simple Geoms, like a GeomTri.
+//  Description: Returns the minimum (i.e. most dynamic) usage_hint
+//               among all of the individual GeomPrimitives that have
+//               been added to the geom.
 ////////////////////////////////////////////////////////////////////
-INLINE void Geom::
-set_lengths(const PTA_int &lengths) {
-  _primlengths = lengths;
-  _num_vertices = sum_lengths(lengths);
-  make_dirty();
+INLINE Geom::UsageHint Geom::
+get_usage_hint() const {
+  CDReader cdata(_cycler);
+  if (!cdata->_got_usage_hint) {
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata);
+    ((Geom *)this)->reset_usage_hint(cdataw);
+    return cdataw->_usage_hint;
+  }
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_lengths
+//     Function: Geom::get_vertex_data
 //       Access: Published
-//  Description: Returns the array the indicates the length (number of
-//               vertices) of each primitive.  This array will
-//               generally only be defined for composite type Geoms,
-//               like a GeomTristrip; it is meaningless for simple
-//               Geoms.
+//  Description: Returns a const pointer to the GeomVertexData,
+//               for application code to directly examine (but not
+//               modify) the geom's underlying data.
 ////////////////////////////////////////////////////////////////////
-INLINE PTA_int Geom::
-get_lengths() const {
-  return _primlengths;
+INLINE CPT(GeomVertexData) Geom::
+get_vertex_data() const {
+  CDReader cdata(_cycler);
+  return cdata->_data;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_vertices
+//     Function: Geom::get_num_primitives
 //       Access: Published
-//  Description: Returns the number of vertices required by all all
-//               the prims in the Geom.
+//  Description: Returns the number of GeomPrimitive objects stored
+//               within the Geom, each of which represents a number of
+//               primitives of a particular type.
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
-get_num_vertices() const {
-  return _num_vertices;
-}
-
-
-
-////////////////////////////////////////////////////////////////////
-//
-// make_vertex_iterator(), get_next_vertex()
-// make_normal_iterator(), get_next_normal()
-// make_texcoord_iterator(), get_next_texcoord()
-// make_color_iterator(), get_next_color()
-//
-// These functions all work together to walk through the vertex (or
-// normal, etc.) values associated with the Geom.  Begin with a call
-// to make_vertex_iterator(), which returns an iterator value suitable
-// for passing to get_next_vertex().  The first call to
-// get_next_vertex() returns a const Vertexf &, which is the value of
-// the first vertex.  Each subsequent call to get_next_vertex() will
-// return the value of the next following vertex.
-//
-// The actual value of the vertex is returned, regardless of whether
-// the vertex array is indexed or nonindexed.
-//
-// There is no end-of-array indicator.  It is up to the caller to know
-// the length of the vertex array, and stop when the end is reached.
-//
-// Similar behavior is exhibited for normals, texcoords, and colors.
-//
-////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_vertex_iterator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Geom::VertexIterator Geom::
-make_vertex_iterator() const {
-  check_config();
-  VertexIterator i;
-  i._array = _coords;
-  i._index = _vindex;
-  return i;
+get_num_primitives() const {
+  CDReader cdata(_cycler);
+  return cdata->_primitives.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_vertex
-//       Access: Public
-//  Description:
+//     Function: Geom::get_primitive
+//       Access: Published
+//  Description: Returns a const pointer to the ith GeomPrimitive
+//               object stored within the Geom.  Use this call only to
+//               inspect the ith object; use modify_primitive() or
+//               set_primitive() if you want to modify it.
 ////////////////////////////////////////////////////////////////////
-INLINE const Vertexf &Geom::
-get_next_vertex(VertexIterator &viterator) const {
-  return _get_vertex(viterator);
+INLINE const GeomPrimitive *Geom::
+get_primitive(int i) const {
+  CDReader cdata(_cycler);
+  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  return cdata->_primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_normal_iterator
-//       Access: Public
-//  Description:
+//     Function: Geom::modify_primitive
+//       Access: Published
+//  Description: Returns a modifiable pointer to the ith GeomPrimitive
+//               object stored within the Geom, so application code
+//               can directly manipulate the properties of this
+//               primitive.
 ////////////////////////////////////////////////////////////////////
-INLINE Geom::NormalIterator Geom::
-make_normal_iterator() const {
-  check_config();
-  NormalIterator i;
-  i._array = _norms;
-  i._index = _nindex;
-  return i;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_normal
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const Normalf &Geom::
-get_next_normal(NormalIterator &niterator) const {
-  return _get_normal(niterator);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_texcoord_iterator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Geom::TexCoordIterator Geom::
-make_texcoord_iterator() const {
-  return make_texcoord_iterator(InternalName::get_texcoord());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_texcoord_iterator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Geom::TexCoordIterator Geom::
-make_texcoord_iterator(const InternalName *texcoord_name) const {
-  check_config();
-  TexCoordIterator i;
-
-  TexCoordsByName::const_iterator tci = 
-    _texcoords_by_name.find(texcoord_name);
-  if (tci != _texcoords_by_name.end()) {
-    i._array = (*tci).second._texcoords;
-    i._index = (*tci).second._tindex;;
-  } else {
-    i._array = NULL;
-    i._index = NULL;
+INLINE GeomPrimitive *Geom::
+modify_primitive(int i) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  cdata->_got_usage_hint = false;
+  cdata->_modified = Geom::get_next_modified();
+  if (cdata->_primitives[i]->get_ref_count() > 1) {
+    cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
   }
-
-  return i;
+  return cdata->_primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_texcoord
-//       Access: Public
-//  Description:
+//     Function: Geom::decompose
+//       Access: Published
+//  Description: Decomposes all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::decompose().
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoordf &Geom::
-get_next_texcoord(TexCoordIterator &tciterator) const {
-  return _get_texcoord(tciterator);
+INLINE CPT(Geom) Geom::
+decompose() const {
+  PT(Geom) new_geom = new Geom(*this);
+  new_geom->decompose_in_place();
+  return new_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_texcoord
-//       Access: Public
-//  Description:
+//     Function: Geom::rotate
+//       Access: Published
+//  Description: Rotates all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::rotate().
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoordf &Geom::
-get_next_multitexcoord(MultiTexCoordIterator &tciterator, int n) const {
-  return _get_texcoord(tciterator._stages[n]);
+INLINE CPT(Geom) Geom::
+rotate() const {
+  PT(Geom) new_geom = new Geom(*this);
+  new_geom->rotate_in_place();
+  return new_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_color_iterator
-//       Access: Public
-//  Description:
+//     Function: Geom::unify
+//       Access: Published
+//  Description: Unifies all of the primitives contained within this
+//               Geom into a single primitive object.  This may
+//               require decomposing the primitives if, for instance,
+//               the Geom contains both triangle strips and triangle
+//               fans.
 ////////////////////////////////////////////////////////////////////
-INLINE Geom::ColorIterator Geom::
-make_color_iterator() const {
-  check_config();
-  ColorIterator i;
-  i._array = _colors;
-  i._index = _cindex;
-  return i;
+INLINE CPT(Geom) Geom::
+unify() const {
+  PT(Geom) new_geom = new Geom(*this);
+  new_geom->unify_in_place();
+  return new_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_color
+//     Function: Geom::get_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time any of the primitives in
+//               the Geom is modified, or the set of primitives is
+//               modified.  However, this does not include
+//               modifications to the vertex data, which should be
+//               tested separately.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq Geom::
+get_modified() const {
+  CDReader cdata(_cycler);
+  return cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: Expands min_point and max_point to include all of the
+//               vertices in the Geom, if any.  found_any is set true
+//               if any points are found.  It is the caller's
+//               responsibility to initialize min_point, max_point,
+//               and found_any before calling this function.
+//
+//               This version of the method assumes the Geom will use
+//               its own vertex data, and the results are computed in
+//               the Geom's own coordinate space.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  bool &found_any) const {
+  calc_tight_bounds(min_point, max_point, found_any,
+                    get_vertex_data(), false, LMatrix4f::ident_mat());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheEntry::
+CacheEntry(const GeomVertexData *source_data, const GeomMunger *modifier) :
+  _source(NULL),
+  _source_data(source_data),
+  _modifier(modifier),
+  _geom_result(NULL),
+  _data_result(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheEntry::
+CacheEntry(Geom *source, const GeomVertexData *source_data,
+           const GeomMunger *modifier, const Geom *geom_result, 
+           const GeomVertexData *data_result) :
+  _source(source),
+  _source_data(source_data),
+  _modifier(modifier),
+  _geom_result(geom_result),
+  _data_result(data_result)
+{
+  if (_geom_result != _source) {
+    _geom_result->ref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::operator <
+//       Access: Public
+//  Description: Provides a unique ordering within the set.
+////////////////////////////////////////////////////////////////////
+INLINE bool Geom::CacheEntry::
+operator < (const CacheEntry &other) const {
+  if (_modifier != other._modifier) {
+    int compare = _modifier->geom_compare_to(*other._modifier);
+    if (compare != 0) {
+      return (compare < 0);
+    }
+  }
+  if (_source_data != other._source_data) {
+    return (_source_data < other._source_data);
+  }
+  return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Geom::
-get_next_color(ColorIterator &citerator) const {
-  return _get_color(citerator);
+INLINE Geom::CData::
+CData() :
+  _primitive_type(PT_none),
+  _shade_model(SM_uniform),
+  _geom_rendering(0),
+  _usage_hint(UH_unspecified),
+  _got_usage_hint(false)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CData::
+CData(const Geom::CData &copy) :
+  _data(copy._data),
+  _primitives(copy._primitives),
+  _primitive_type(copy._primitive_type),
+  _shade_model(copy._shade_model),
+  _geom_rendering(copy._geom_rendering),
+  _usage_hint(copy._usage_hint),
+  _got_usage_hint(copy._got_usage_hint),
+  _modified(copy._modified)
+{
+}
+
+INLINE ostream &
+operator << (ostream &out, const Geom &obj) {
+  obj.output(out);
+  return out;
 }

@@ -154,13 +154,18 @@ protected:
   void set_no_mouse();
   void set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy);
 
+private:
+  void consider_keyboard_suppress(const MouseWatcherRegion *region);
+
+protected:
   // This wants to be a set, but because you cannot export sets across
   // dlls in windows, we will make it a vector instead
   typedef pvector< PT(MouseWatcherGroup) > Groups;
   Groups _groups;
 
   bool _has_mouse;
-  int _suppress_flags;
+  int _internal_suppress;
+  int _external_suppress;
   LPoint2f _mouse;
   LPoint2f _mouse_pixel;
 

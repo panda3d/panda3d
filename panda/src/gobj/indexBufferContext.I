@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IndexBufferContext::
-IndexBufferContext(qpGeomPrimitive *data) :
+IndexBufferContext(GeomPrimitive *data) :
   _data(data),
   // Initially, the number of bytes is zero, until the data has been
   // loaded (and mark_loaded() is called).
@@ -37,7 +37,7 @@ IndexBufferContext(qpGeomPrimitive *data) :
 //  Description: Returns the pointer to the client-side array data
 //               object.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomPrimitive *IndexBufferContext::
+INLINE GeomPrimitive *IndexBufferContext::
 get_data() const {
   return _data;
 }

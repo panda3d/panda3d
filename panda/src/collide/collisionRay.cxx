@@ -22,7 +22,6 @@
 #include "config_collide.h"
 #include "geom.h"
 #include "geomNode.h"
-#include "geomLinestrip.h"
 #include "boundingLine.h"
 #include "lensNode.h"
 #include "lens.h"
@@ -30,9 +29,9 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "qpgeom.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomLinestrips.h"
+#include "geomVertexWriter.h"
 
 TypeHandle CollisionRay::_type_handle;
 
@@ -155,59 +154,30 @@ fill_viz_geom() {
   static const int num_points = 100;
   static const double scale = 100.0;
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3cp(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3cp(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  
+  for (int i = 0; i < num_points; i++) {
+    double t = ((double)i / (double)num_points);
+    vertex.add_data3f(get_origin() + t * scale * get_direction());
     
-    for (int i = 0; i < num_points; i++) {
-      double t = ((double)i / (double)num_points);
-      vertex.add_data3f(get_origin() + t * scale * get_direction());
-      
-      color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 1.0f) +
-                       t * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
-    }
-
-    PT(qpGeomLinestrips) line = new qpGeomLinestrips(qpGeom::UH_static);
-    line->add_next_vertices(num_points);
-    line->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(line);
-
-    _viz_geom->add_geom(geom, get_other_viz_state());
-    _bounds_viz_geom->add_geom(geom, get_other_bounds_viz_state());
-
-  } else {
-    GeomLinestrip *line = new GeomLinestrip;
-    PTA_Vertexf verts;
-    PTA_Colorf colors;
-    PTA_int lengths;
-
-    verts.reserve(num_points);
-    colors.reserve(num_points);
-    
-    for (int i = 0; i < num_points; i++) {
-      double t = ((double)i / (double)num_points);
-      verts.push_back(get_origin() + t * scale * get_direction());
-      
-      colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f) +
-                       t * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
-    }
-    line->set_coords(verts);
-    line->set_colors(colors, G_PER_VERTEX);
-    
-    lengths.push_back(num_points-1);
-    line->set_lengths(lengths);
-    
-    line->set_num_prims(1);
-    
-    _viz_geom->add_geom(line, get_other_viz_state());
-    _bounds_viz_geom->add_geom(line, get_other_bounds_viz_state());
+    color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 1.0f) +
+                     t * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
   }
+
+  PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);
+  line->add_next_vertices(num_points);
+  line->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(line);
+  
+  _viz_geom->add_geom(geom, get_other_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_other_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

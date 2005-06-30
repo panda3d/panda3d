@@ -23,7 +23,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE EggLoader::PrimitiveUnifier::
-PrimitiveUnifier(const qpGeomPrimitive *prim) :
+PrimitiveUnifier(const GeomPrimitive *prim) :
   _type(prim->get_type()),
   _shade_model(prim->get_shade_model())
 {

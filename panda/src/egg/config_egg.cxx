@@ -120,7 +120,7 @@ ConfigVariableBool egg_subdivide_polys
 ("egg-subdivide-polys", true,
  PRC_DESC("This is obsolete.  In the old Geom implementation, it used to "
           "be true to force higher-order polygons that were not otherwise "
-          "meshed to be subdivided into triangles.  In the new experimental "
+          "meshed to be subdivided into triangles.  In the new "
           "Geom implementation, this happens anyway."));
 
 ConfigVariableBool egg_consider_fans

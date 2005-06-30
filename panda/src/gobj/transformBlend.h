@@ -35,8 +35,6 @@
 //               TransformBlendTable.  It represents a unique
 //               combination of VertexTransform pointers and blend
 //               amounts.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransformBlend {
 PUBLISHED:

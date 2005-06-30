@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "qpgeom.h"
+#include "geom.h"
 #include "renderAttrib.h"
 #include "textureStage.h"
 #include "texture.h"

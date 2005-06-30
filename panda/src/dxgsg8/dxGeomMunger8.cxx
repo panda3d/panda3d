@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dxGeomMunger8.h"
-#include "qpgeomVertexReader.h"
-#include "qpgeomVertexWriter.h"
+#include "geomVertexReader.h"
+#include "geomVertexWriter.h"
 #include "config_dxgsg8.h"
 
-qpGeomMunger *DXGeomMunger8::_deleted_chain = NULL;
+GeomMunger *DXGeomMunger8::_deleted_chain = NULL;
 TypeHandle DXGeomMunger8::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -30,9 +30,9 @@ TypeHandle DXGeomMunger8::_type_handle;
 //  Description: Given a source GeomVertexFormat, converts it if
 //               necessary to the appropriate format for rendering.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexFormat) DXGeomMunger8::
-munge_format_impl(const qpGeomVertexFormat *orig,
-                  const qpGeomVertexAnimationSpec &animation) {
+CPT(GeomVertexFormat) DXGeomMunger8::
+munge_format_impl(const GeomVertexFormat *orig,
+                  const GeomVertexAnimationSpec &animation) {
   if (dxgsg8_cat.is_debug()) {
     if (animation.get_animation_type() != AT_none) {
       dxgsg8_cat.debug()
@@ -42,15 +42,15 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   // We have to build a completely new format that includes only the
   // appropriate components, in the appropriate order, in just one
   // array.
-  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
+  PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
   new_format->set_animation(animation);
-  PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
+  PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
 
-  const qpGeomVertexColumn *vertex_type = orig->get_vertex_column();
-  const qpGeomVertexColumn *normal_type = orig->get_normal_column(); 
-  const qpGeomVertexColumn *color_type = orig->get_color_column();
+  const GeomVertexColumn *vertex_type = orig->get_vertex_column();
+  const GeomVertexColumn *normal_type = orig->get_normal_column(); 
+  const GeomVertexColumn *color_type = orig->get_color_column();
 
-  if (vertex_type != (const qpGeomVertexColumn *)NULL) {
+  if (vertex_type != (const GeomVertexColumn *)NULL) {
     new_array_format->add_column
       (InternalName::get_vertex(), 3, NT_float32,
        vertex_type->get_contents());
@@ -88,13 +88,13 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     new_format->remove_column(InternalName::get_transform_blend());
   }
 
-  if (normal_type != (const qpGeomVertexColumn *)NULL) {
+  if (normal_type != (const GeomVertexColumn *)NULL) {
     new_array_format->add_column
       (InternalName::get_normal(), 3, NT_float32, C_vector);
     new_format->remove_column(normal_type->get_name());
   }
 
-  if (color_type != (const qpGeomVertexColumn *)NULL) {
+  if (color_type != (const GeomVertexColumn *)NULL) {
     new_array_format->add_column
       (InternalName::get_color(), 1, NT_packed_dabc, C_color);
     new_format->remove_column(color_type->get_name());
@@ -120,9 +120,9 @@ munge_format_impl(const qpGeomVertexFormat *orig,
       const InternalName *name = stage->get_texcoord_name();
       if (used_stages.insert(name).second) {
         // This is the first time we've encountered this texcoord name.
-        const qpGeomVertexColumn *texcoord_type = orig->get_column(name);
+        const GeomVertexColumn *texcoord_type = orig->get_column(name);
         
-        if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
+        if (texcoord_type != (const GeomVertexColumn *)NULL) {
           new_array_format->add_column
             (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
         } else {
@@ -144,7 +144,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   // Use the new format; make sure the FVF-style array we just built
   // up is first in the list.
   new_format->insert_array(0, new_array_format);
-  return qpGeomVertexFormat::register_format(new_format);
+  return GeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 //               different type.
 ////////////////////////////////////////////////////////////////////
 int DXGeomMunger8::
-compare_to_impl(const qpGeomMunger *other) const {
+compare_to_impl(const GeomMunger *other) const {
   const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
@@ -177,7 +177,7 @@ compare_to_impl(const qpGeomMunger *other) const {
 //               different type.
 ////////////////////////////////////////////////////////////////////
 int DXGeomMunger8::
-geom_compare_to_impl(const qpGeomMunger *other) const {
+geom_compare_to_impl(const GeomMunger *other) const {
   // Unlike GLGeomMunger, we do consider _texture and _tex_gen
   // important for this purpose, since they control the number and
   // order of texture coordinates we might put into the FVF.

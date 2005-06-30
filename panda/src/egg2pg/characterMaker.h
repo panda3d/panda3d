@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "computedVerticesMaker.h"
 #include "vertexTransform.h"
 #include "vertexSlider.h"
 #include "character.h"
@@ -70,12 +69,7 @@ private:
   void parent_joint_nodes(PartGroup *part);
 
   void make_geometry(EggNode *egg_node);
-  void make_qpgeometry(EggNode *egg_node);
 
-  void make_static_primitive(EggPrimitive *egg_primitive,
-                             EggGroupNode *prim_home);
-  void make_dynamic_primitive(EggPrimitive *egg_primitive,
-                              EggGroupNode *prim_home);
   EggGroupNode *determine_primitive_home(EggPrimitive *egg_primitive);
   EggGroupNode *determine_bin_home(EggBin *egg_bin);
   VertexTransform *get_identity_transform();
@@ -97,7 +91,6 @@ private:
   EggGroup *_egg_root;
   PT(Character) _character_node;
   CharacterJointBundle *_bundle;
-  ComputedVerticesMaker _comp_verts_maker;
   PartGroup *_morph_root;
   PartGroup *_skeleton_root;
 };

@@ -50,9 +50,9 @@ TexMatrixAttrib(const TexMatrixAttrib &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE int TexMatrixAttrib::
 get_geom_rendering(int geom_rendering) const {
-  if ((geom_rendering & qpGeom::GR_point_sprite) != 0) {
+  if ((geom_rendering & Geom::GR_point_sprite) != 0) {
     if (!is_empty()) {
-      geom_rendering |= qpGeom::GR_point_sprite_tex_matrix;
+      geom_rendering |= Geom::GR_point_sprite_tex_matrix;
     }
   }
 

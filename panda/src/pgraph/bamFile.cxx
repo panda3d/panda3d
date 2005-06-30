@@ -337,6 +337,24 @@ get_file_minor_ver() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamFile::get_file_endian
+//       Access: Public
+//  Description: Returns the endian preference indicated by the Bam
+//               file currently being read or written.
+////////////////////////////////////////////////////////////////////
+BamEndian BamFile::
+get_file_endian() const {
+  if (_writer != (BamWriter *)NULL) {
+    return _writer->get_file_endian();
+  }
+  if (_reader != (BamReader *)NULL) {
+    return _reader->get_file_endian();
+  }
+
+  return bam_endian;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamFile::get_current_major_ver
 //       Access: Public
 //  Description: Returns the system current major version number.

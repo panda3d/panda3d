@@ -62,43 +62,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pandabase.h"
-
-#include "stl_compares.h"
-#include "lvec2_ops.h"
-#include "lvec3_ops.h"
-#include "lvec4_ops.h"
-#include "lmat_ops.h"
-#include "lmatrix.h"
-#include "lquaternion.h"
-#include "lrotation.h"
-#include "lorientation.h"
-#include "lcast_to.h"
-
-//ensure FLOATTYPE is set to float for macros are used outside of LINMATH
-#include "fltnames.h"
-
-// This macro defines the cast-to-another-numeric-type operator for
-// all of the things defined in this package.  It works by virtue of
-// there being an appropriate lcast_to() template function defined for
-// each class.
-
-#define LCAST(numeric_type, object) lcast_to((numeric_type *)0, object)
-
-
-// Now we define some handy typedefs for these classes.
-typedef LPoint3f Vertexf;
-typedef LVector3f Normalf;
-typedef LPoint2f TexCoordf;
-typedef LVecBase4f Colorf;
-typedef LVecBase3f RGBColorf;
-
-typedef LPoint3d Vertexd;
-typedef LVector3d Normald;
-typedef LPoint2d TexCoordd;
-typedef LVecBase4d Colord;
-typedef LVecBase3d RGBColord;
-
+// All of the guts is actually defined in this other header file,
+// which is not intended to be included directly by the user.
+#include "aa_luse.h"
 
 #endif
 

@@ -27,11 +27,13 @@
 #include "geomNode.h"
 #include "config_pgraph.h"
 #include "boundingSphere.h"
-#include "geomSphere.h"
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
 #include "depthOffsetAttrib.h"
+#include "geomVertexWriter.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
 
 TypeHandle PortalClipper::_type_handle;
 
@@ -43,9 +45,7 @@ TypeHandle PortalClipper::_type_handle;
 PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup) {
   _previous = new GeomNode("my_frustum");
-  _geom_line = new GeomLine;
-  _geom_point = new GeomPoint;
-  _geom_linestrip = new GeomLinestrip;
+  _geom = new Geom;
 
   _view_frustum = _reduced_frustum = DCAST(BoundingHexahedron, frustum);
 
@@ -158,19 +158,21 @@ draw_current_portal()
 //               White frustum is the camera frustum
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-draw_lines()
-{
+draw_lines() {
   if (!_list.empty()) {
-    _created_verts.clear();
-    _created_colors.clear();
+    _created_data = NULL;
+      
+    CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
+    CPT(RenderState) state = RenderState::make(thick);
+
+    PT(GeomVertexData) vdata = new GeomVertexData
+      ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    GeomVertexWriter color(vdata, InternalName::get_color());
     
-    // One array each for the indices into these arrays for points
-    // and lines, and one for our line-segment lengths array.
-    PTA_ushort point_index;
-    PTA_ushort line_index;
-    PTA_int lengths;
+    PT(GeomLinestrips) lines = new GeomLinestrips(Geom::UH_static);
+    PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
     
-    // Now fill up the arrays.
     int v = 0;
     LineList::const_iterator ll;
     SegmentList::const_iterator sl;
@@ -179,49 +181,39 @@ draw_lines()
       const SegmentList &segs = (*ll);
       
       if (segs.size() < 2) {
-        point_index.push_back(v);
-      } else {
-        lengths.push_back(segs.size());
-      }
-      
-      for (sl = segs.begin(); sl != segs.end(); sl++) {
-        if (segs.size() >= 2) {
-          line_index.push_back(v);
+        // A segment of length 1 is just a point.
+        for (sl = segs.begin(); sl != segs.end(); sl++) {
+          points->add_vertex(v);
+          vertex.add_data3f((*sl)._point);
+          color.add_data4f((*sl)._color);
+          v++;
         }
-        _created_verts.push_back((*sl)._point);
-        _created_colors.push_back((*sl)._color);
-        v++;
-        //nassertr(v == (int)_created_verts.size(), previous);
+        points->close_primitive();
+        
+      } else {
+        // A segment of length 2 or more is a line segment or
+        // segments.
+        for (sl = segs.begin(); sl != segs.end(); sl++) {
+          lines->add_vertex(v);
+          vertex.add_data3f((*sl)._point);
+          color.add_data4f((*sl)._color);
+          v++;
+        }
+        lines->close_primitive();
       }
     }
 
-
-    // Now create the lines.
-    Geom *geom;
-    if (line_index.size() > 0) {
-      // Create a new Geom and add the line segments.
-      if (line_index.size() <= 2) {
-        // Here's a special case: just one line segment.
-        _geom_line->set_num_prims(1);
-        //_geom_line->set_width(_thick);
-        geom = _geom_line;
-
-      } else {
-        // The more normal case: multiple line segments, connected
-        // end-to-end like a series of linestrips.
-        _geom_linestrip->set_num_prims(lengths.size());
-        _geom_linestrip->set_lengths(lengths);
-        //_geom_linestrip->set_width(_thick);
-        geom = _geom_linestrip;
-      }
-
-      geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
-      geom->set_coords(_created_verts, line_index);
-
-      //geom->write_verbose(cerr, 0);
-
-      _previous->add_geom(geom);
-      pgraph_cat.spam() << "added geometry" << endl;
+    if (lines->get_num_vertices() != 0) {
+      PT(Geom) geom = new Geom;
+      geom->set_vertex_data(vdata);
+      geom->add_primitive(lines);
+      _previous->add_geom(geom, state);
+    }
+    if (points->get_num_vertices() != 0) {
+      PT(Geom) geom = new Geom;
+      geom->set_vertex_data(vdata);
+      geom->add_primitive(points);
+      _previous->add_geom(geom, state);
     }
   }
 }

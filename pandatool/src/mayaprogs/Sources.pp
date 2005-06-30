@@ -119,7 +119,7 @@
   #define LOCAL_LIBS \
     mayaegg ptloader converter pandatoolbase
   #define OTHER_LIBS \
-    egg2pg:c builder:c egg:c pandaegg:m \
+    egg2pg:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolconfig dtool

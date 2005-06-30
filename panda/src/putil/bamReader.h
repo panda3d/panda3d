@@ -26,6 +26,7 @@
 #include "datagramGenerator.h"
 #include "datagramIterator.h"
 #include "bamReaderParam.h"
+#include "bamEndian.h"
 #include "factory.h"
 #include "vector_int.h"
 #include "pset.h"
@@ -43,7 +44,7 @@ struct PipelineCyclerBase;
   void *t;                                            \
   if ((t = Manager->get_pta(source)) == (void*)NULL)  \
   {                                                   \
-    array = Read_func(source);                        \
+    array = Read_func(Manager, source);               \
     Manager->register_pta(array.get_void_ptr());      \
   }                                                   \
   else                                                \
@@ -109,6 +110,7 @@ public:
 
   INLINE int get_file_major_ver() const;
   INLINE int get_file_minor_ver() const;
+  INLINE BamEndian get_file_endian() const;
 
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
@@ -125,6 +127,8 @@ public:
   void skip_pointer(DatagramIterator &scan);
 
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler);
+  void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
+                  void *extra_data);
 
   void register_finalize(TypedWritable *whom);
 
@@ -229,6 +233,7 @@ private:
   AuxData _aux_data;
 
   int _file_major, _file_minor;
+  BamEndian _file_endian;
   static const int _cur_major;
   static const int _cur_minor;
 };

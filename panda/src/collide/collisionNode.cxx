@@ -505,24 +505,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _from_collide_mask.set_word(scan.get_uint32());
-  if (manager->get_file_minor_ver() < 12) {
-    // Bam files prior to 4.12 stored the into_collide_mask here.
-    // (4.12 and later store this in the PandaNode base class
-    // instead.)
-    CollideMask into_collide_mask;
-    into_collide_mask.set_word(scan.get_uint32());
-
-    // We also introduced the concept of the CollisionNode-reserved
-    // bits and the GeomNode-reserved bits with version 4.12.  Prior
-    // to that, CollisionNodes tended to have all bits set.  Assume
-    // they didn't mean to have the GeomNode bits set.
-    into_collide_mask &= ~GeomNode::get_default_collide_mask();
-    _from_collide_mask &= ~GeomNode::get_default_collide_mask();
-
-    set_into_collide_mask(into_collide_mask);
-
-    // Bam files prior to 4.12 also had a _flags member, which is no
-    // longer supported.
-    scan.get_uint8();
-  }
 }

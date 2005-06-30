@@ -31,7 +31,6 @@
 #include "texture.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
-#include "builder.h"
 #include "lmatrix.h"
 #include "indirectCompareTo.h"
 #include "textureAttrib.h"
@@ -39,9 +38,8 @@
 #include "texGenAttrib.h"
 #include "colorBlendAttrib.h"
 #include "eggTransform3d.h"
-#include "computedVerticesMaker.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomPrimitive.h"
+#include "geomVertexData.h"
+#include "geomPrimitive.h"
 
 class EggNode;
 class EggBin;
@@ -77,14 +75,6 @@ public:
   void build_graph();
   void reparent_decals();
 
-  void make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                                 const LMatrix4d *transform,
-                                 ComputedVerticesMaker &comp_verts_maker);
-
-  void make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                              const LMatrix4d *transform,
-                              ComputedVerticesMaker &comp_verts_maker);
-
   void make_polyset(EggBin *egg_bin, PandaNode *parent, 
                     const LMatrix4d *transform, bool is_dynamic,
                     CharacterMaker *character_maker);
@@ -108,13 +98,13 @@ private:
   // This is used by make_primitive().
   class PrimitiveUnifier {
   public:
-    INLINE PrimitiveUnifier(const qpGeomPrimitive *prim);
+    INLINE PrimitiveUnifier(const GeomPrimitive *prim);
     INLINE bool operator < (const PrimitiveUnifier &other) const;
 
     TypeHandle _type;
-    qpGeomPrimitive::ShadeModel _shade_model;
+    GeomPrimitive::ShadeModel _shade_model;
   };
-  typedef pmap<PrimitiveUnifier, PT(qpGeomPrimitive) > Primitives;
+  typedef pmap<PrimitiveUnifier, PT(GeomPrimitive) > Primitives;
   
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
@@ -127,9 +117,6 @@ private:
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
   PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
-
-  void setup_bucket(BuilderBucket &bucket, BakeInUVs &bake_in_uvs,
-                    PandaNode *parent, EggPrimitive *egg_prim);
 
   void separate_switches(EggNode *egg_node);
 
@@ -145,12 +132,12 @@ private:
 
   void check_for_polysets(EggGroup *egg_group, bool &all_polysets, 
                           bool &any_hidden);
-  PT(qpGeomVertexData) make_vertex_data
+  PT(GeomVertexData) make_vertex_data
   (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
    EggNode *primitive_home, const LMatrix4d &transform, bool is_dynamic, 
    CharacterMaker *character_maker);
   void record_morph
-  (qpGeomVertexArrayFormat *array_format,
+  (GeomVertexArrayFormat *array_format,
    CharacterMaker *character_maker, const string &morph_name, 
    InternalName *column_name, int num_components);
 
@@ -215,8 +202,6 @@ private:
   static ColorBlendAttrib::Operand
   get_color_blend_operand(EggGroup::BlendOperand operand);
 
-  Builder _builder;
-
   typedef pmap<PT_EggTexture, TextureDef> Textures;
   Textures _textures;
 
@@ -234,12 +219,10 @@ private:
     BakeInUVs _bake_in_uvs;
     LMatrix4d _transform;
   };
-  typedef pmap<VertexPoolTransform, PT(qpGeomVertexData) > VertexPoolData;
+  typedef pmap<VertexPoolTransform, PT(GeomVertexData) > VertexPoolData;
   VertexPoolData _vertex_pool_data;
 
   DeferredNodes _deferred_nodes;
-
-  ComputedVerticesMaker _comp_verts_maker;
 
 public:
   PT(PandaNode) _root;

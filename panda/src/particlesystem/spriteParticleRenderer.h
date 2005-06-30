@@ -24,12 +24,9 @@
 #include "baseParticle.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "pointerToArray.h"
-#include "pta_float.h"
 #include "geom.h"
-#include "geomSprite.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomPoints.h"
+#include "geomVertexData.h"
+#include "geomPoints.h"
 #include "colorInterpolationManager.h"
 
 class NodePath;
@@ -94,20 +91,14 @@ PUBLISHED:
   INLINE bool get_alpha_disable() const;  
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
   PT(Geom) _sprite_primitive;
-  PT(qpGeomPoints) _sprites;
+  PT(GeomPoints) _sprites;
   PT(Texture) _texture;
 
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-  PTA_float _x_texel_array;
-  PTA_float _y_texel_array;
-  PTA_float _theta_array;
-  GeomBindType _x_bind, _y_bind, _theta_bind;
-  PT(qpGeomVertexData) _vdata;
+  PT(GeomVertexData) _vdata;
 
   Colorf _color;
 

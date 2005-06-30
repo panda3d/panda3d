@@ -37,16 +37,16 @@ TypeHandle RenderModeAttrib::_type_handle;
 //               The thickness parameter specifies the thickness to be
 //               used for wireframe lines, as well as for ordinary
 //               linestrip lines; it also specifies the diameter of
-//               points.  It is not supported in DirectX, which only
-//               supports pixel-based lines and points.
+//               points.  (Thick lines are presently only supported in
+//               OpenGL; but thick points are supported on either
+//               platform.)
 //
 //               If perspective is true, the point thickness
 //               represented is actually a width in 3-d units, and the
 //               points should scale according to perspective.  When
 //               it is false, the point thickness is actually a width
-//               in pixels, and points are a uniform size regardless
-//               of distance from the camera.  This feature is not
-//               supported by all graphics drivers.
+//               in pixels, and points are a uniform screen size
+//               regardless of distance from the camera.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderModeAttrib::
 make(RenderModeAttrib::Mode mode, float thickness, bool perspective) {
@@ -236,8 +236,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (Mode)scan.get_int8();
   _thickness = scan.get_float32();
-  _perspective = false;
-  if (manager->get_file_minor_ver() >= 18) {
-    _perspective = scan.get_bool();
-  }
+  _perspective = scan.get_bool();
 }

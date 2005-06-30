@@ -18,7 +18,7 @@
 
 #include "dcast.h"
 
-qpGeomMunger *CLP(GeomMunger)::_deleted_chain = NULL;
+GeomMunger *CLP(GeomMunger)::_deleted_chain = NULL;
 TypeHandle CLP(GeomMunger)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,20 +43,20 @@ CLP(GeomMunger)::
 //  Description: Given a source GeomVertexFormat, converts it if
 //               necessary to the appropriate format for rendering.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexFormat) CLP(GeomMunger)::
-munge_format_impl(const qpGeomVertexFormat *orig,
-                  const qpGeomVertexAnimationSpec &animation) {
-  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
+CPT(GeomVertexFormat) CLP(GeomMunger)::
+munge_format_impl(const GeomVertexFormat *orig,
+                  const GeomVertexAnimationSpec &animation) {
+  PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
   new_format->set_animation(animation);
 
-  const qpGeomVertexColumn *color_type = orig->get_color_column();
-  if (color_type != (qpGeomVertexColumn *)NULL &&
+  const GeomVertexColumn *color_type = orig->get_color_column();
+  if (color_type != (GeomVertexColumn *)NULL &&
       color_type->get_numeric_type() == NT_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
 
-    PT(qpGeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
+    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
 
     // Replace the existing color format with the new format.
     new_array_format->add_column
@@ -77,7 +77,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     new_format->remove_column(InternalName::get_transform_blend());
 
     if (animation.get_num_transforms() > 1) {
-      PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
+      PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column
         (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
          NT_float32, C_other);
@@ -103,11 +103,11 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   /*
   if (true) {
     // Split out the interleaved array into n parallel arrays.
-    CPT(qpGeomVertexFormat) format = new_format;
-    new_format = new qpGeomVertexFormat;
+    CPT(GeomVertexFormat) format = new_format;
+    new_format = new GeomVertexFormat;
     for (int i = 0; i < format->get_num_columns(); i++) {
-      const qpGeomVertexColumn *column = format->get_column(i);
-      PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
+      const GeomVertexColumn *column = format->get_column(i);
+      PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
                                       column->get_numeric_type());
       new_format->add_array(new_array_format);
@@ -115,7 +115,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   }
   */
 
-  return qpGeomVertexFormat::register_format(new_format);
+  return GeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 //               different type.
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
-compare_to_impl(const qpGeomMunger *other) const {
+compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
@@ -148,7 +148,7 @@ compare_to_impl(const qpGeomMunger *other) const {
 //               different type.
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
-geom_compare_to_impl(const qpGeomMunger *other) const {
+geom_compare_to_impl(const GeomMunger *other) const {
   // We don't consider _texture and _tex_gen for this purpose; they
   // affect only whether the GL display list should be regenerated or
   // not, and don't require reconverting the vertices.

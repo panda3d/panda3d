@@ -24,6 +24,8 @@
 #include "pointerToArray.h"
 #include "pta_ushort.h"
 
+class BamReader;
+class BamWriter;
 class Datagram;
 class DatagramIterator;
 
@@ -37,8 +39,8 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA IoPtaDatagramShort {
 public:
-  static void write_datagram(Datagram &dest, CPTA_ushort array);
-  static PTA_ushort read_datagram(DatagramIterator &source);
+  static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_ushort array);
+  static PTA_ushort read_datagram(BamReader *manager, DatagramIterator &source);
 };
 
 typedef IoPtaDatagramShort IPD_ushort;

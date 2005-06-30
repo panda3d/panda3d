@@ -130,7 +130,6 @@ private:
   Colorf _vignette_color;
   Colorf _frame_color;
 
-  PTA_Colorf _colors;
   LMatrix4f _rel_top_mat;
   bool _computed_rel_top_mat;
   bool _stale;

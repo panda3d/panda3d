@@ -19,9 +19,9 @@
 #include "lineParticleRenderer.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
-#include "qpgeom.h"
-#include "qpgeomVertexWriter.h"
-#include "geomLine.h"
+#include "geom.h"
+#include "geomVertexWriter.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : LineParticleRenderer
@@ -120,11 +120,6 @@ kill_particle(int) {
 
 void LineParticleRenderer::
 resize_pool(int new_size) {
-  if (!use_qpgeom) {
-    _vertex_array = PTA_Vertexf::empty_array(new_size * 2);
-    _color_array = PTA_Colorf::empty_array(new_size * 2);
-  }
-
   _max_pool_size = new_size;
 
   init_geoms();
@@ -138,21 +133,14 @@ resize_pool(int new_size) {
 
 void LineParticleRenderer::
 init_geoms() {
-  if (use_qpgeom) {
-    PT(qpGeom) qpgeom = new qpGeom; 
-    _line_primitive = qpgeom;
-    _vdata = new qpGeomVertexData
-      ("particles", qpGeomVertexFormat::get_v3cp(),
-       qpGeom::UH_dynamic);
-    qpgeom->set_vertex_data(_vdata);
-    _lines = new qpGeomLines(qpGeom::UH_dynamic);
-    qpgeom->add_primitive(_lines);
-
-  } else {
-    _line_primitive = new GeomLine;
-    _line_primitive->set_coords(_vertex_array);
-    _line_primitive->set_colors(_color_array, G_PER_VERTEX);
-  }
+  PT(Geom) geom = new Geom; 
+  _line_primitive = geom;
+  _vdata = new GeomVertexData
+    ("particles", GeomVertexFormat::get_v3cp(),
+     Geom::UH_dynamic);
+  geom->set_vertex_data(_vdata);
+  _lines = new GeomLines(Geom::UH_dynamic);
+  geom->add_primitive(_lines);
 
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -176,13 +164,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   int remaining_particles = ttl_particles;
   int i;
 
-  Vertexf *cur_vert = &_vertex_array[0];
-  Colorf *cur_color = &_color_array[0];
-  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
-  qpGeomVertexWriter color(_vdata, InternalName::get_color());
-  if (use_qpgeom) {
-    _lines->clear_vertices();
-  }
+  GeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  GeomVertexWriter color(_vdata, InternalName::get_color());
+  _lines->clear_vertices();
 
   // init the aabb
 
@@ -243,33 +227,18 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // one line from current position to last position
 
-    if (use_qpgeom) {
-      vertex.add_data3f(position);
-      LPoint3f last_position = position + 
-        (cur_particle->get_last_position() - position) * _line_scale_factor;
-      vertex.add_data3f(last_position);
-      color.add_data4f(head_color);
-      color.add_data4f(tail_color);
-      _lines->add_next_vertices(2);
-      _lines->close_primitive();
-    } else {
-      LPoint3f last_position = position + 
-        (cur_particle->get_last_position() - position) * _line_scale_factor;
-
-      *cur_vert++ = position;
-      *cur_vert++ = last_position;
-
-      *cur_color++ = head_color;
-      *cur_color++ = tail_color;
-    }
+    vertex.add_data3f(position);
+    LPoint3f last_position = position + 
+      (cur_particle->get_last_position() - position) * _line_scale_factor;
+    vertex.add_data3f(last_position);
+    color.add_data4f(head_color);
+    color.add_data4f(tail_color);
+    _lines->add_next_vertices(2);
+    _lines->close_primitive();
 
     remaining_particles--;
     if (remaining_particles == 0)
       break;
-  }
-
-  if (!use_qpgeom) {
-    _line_primitive->set_num_prims(ttl_particles);
   }
 
   // done filling geomline node, now do the bb stuff
@@ -301,17 +270,13 @@ output(ostream &out) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LineParticleRenderer::
-write(ostream &out, int indent) const {
-  #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"LineParticleRenderer:\n";
-  out.width(indent+2); out<<""; out<<"_head_color "<<_head_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_tail_color "<<_tail_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_line_primitive "<<_line_primitive<<"\n";
-  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
-  BaseParticleRenderer::write(out, indent+2);
-  #endif //] NDEBUG
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << "LineParticleRenderer:\n";
+  indent(out, indent_level + 2) << "_head_color "<<_head_color<<"\n";
+  indent(out, indent_level + 2) << "_tail_color "<<_tail_color<<"\n";
+  indent(out, indent_level + 2) << "_line_primitive "<<_line_primitive<<"\n";
+  indent(out, indent_level + 2) << "_max_pool_size "<<_max_pool_size<<"\n";
+  indent(out, indent_level + 2) << "_aabb_min "<<_aabb_min<<"\n";
+  indent(out, indent_level + 2) << "_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent_level + 2);
 }

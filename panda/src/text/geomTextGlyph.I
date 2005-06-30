@@ -1,5 +1,5 @@
 // Filename: geomTextGlyph.I
-// Created by:  drose (11Feb02)
+// Created by:  drose (31Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -38,7 +38,7 @@ GeomTextGlyph(DynamicTextGlyph *glyph) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomTextGlyph::
 GeomTextGlyph(const GeomTextGlyph &copy) :
-  GeomTristrip(copy),
+  Geom(copy),
   _glyph(copy._glyph)
 {
   if (_glyph != (DynamicTextGlyph *)NULL) {

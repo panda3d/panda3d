@@ -22,8 +22,8 @@
 #include "pandabase.h"
 
 #include "luse.h"
-#include "qpgeom.h"
-#include "qpgeomVertexData.h"
+#include "geom.h"
+#include "geomVertexData.h"
 
 class GeomNode;
 class RenderState;
@@ -72,103 +72,55 @@ public:
 
   bool apply_state(GeomNode *node, const RenderState *state);
 
-  int collect_vertex_data(qpGeom *geom, int collect_bits);
+  int collect_vertex_data(Geom *geom, int collect_bits);
   int collect_vertex_data(GeomNode *node, int collect_bits);
 
 private:
   int _max_collect_vertices;
-
-  class qpSourceVertices {
-  public:
-    INLINE bool operator < (const qpSourceVertices &other) const;
-
-    LMatrix4f _mat;
-    CPT(qpGeomVertexData) _vertex_data;
-  };
-  typedef pmap<qpSourceVertices, PT(qpGeomVertexData) > NewVertices;
-  NewVertices _qpvertices;
-
-  class qpSourceTexCoords {
-  public:
-    INLINE bool operator < (const qpSourceTexCoords &other) const;
-
-    LMatrix4f _mat;
-    CPT(InternalName) _from;
-    CPT(InternalName) _to;
-    CPT(qpGeomVertexData) _vertex_data;
-  };
-  typedef pmap<qpSourceTexCoords, PT(qpGeomVertexData) > NewTexCoords;
-  NewTexCoords _qptexcoords;
-
-  class qpSourceColors {
-  public:
-    INLINE bool operator < (const qpSourceColors &other) const;
-
-    LVecBase4f _color;
-    CPT(qpGeomVertexData) _vertex_data;
-  };
-  typedef pmap<qpSourceColors, CPT(qpGeomVertexData) > NewColors;
-
-  // We have two concepts of colors: the "fixed" colors, which are
-  // slapped in as a complete replacement of the original colors
-  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
-  // modified from the original colors (e.g. via a ColorScaleAttrib).
-  NewColors _qpfcolors, _qptcolors;
-
 
   class SourceVertices {
   public:
     INLINE bool operator < (const SourceVertices &other) const;
 
     LMatrix4f _mat;
-    PTA_Vertexf _coords;
+    CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceVertices, PTA_Vertexf> Vertices;
-  Vertices _vertices;
-
-  class SourceNormals {
-  public:
-    INLINE bool operator < (const SourceNormals &other) const;
-
-    LMatrix4f _mat;
-    PTA_Normalf _norms;
-  };
-  typedef pmap<SourceNormals, PTA_Normalf> Normals;
-  Normals _normals;
+  typedef pmap<SourceVertices, PT(GeomVertexData) > NewVertices;
+  NewVertices _vertices;
 
   class SourceTexCoords {
   public:
     INLINE bool operator < (const SourceTexCoords &other) const;
 
     LMatrix4f _mat;
-    PTA_TexCoordf _texcoords;
+    CPT(InternalName) _from;
+    CPT(InternalName) _to;
+    CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceTexCoords, PTA_TexCoordf> TexCoords;
-  TexCoords _texcoords;
-
-  // We have two concepts of colors: the "fixed" colors, which are
-  // slapped in as a complete replacement of the original colors
-  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
-  // modified from the original colors (e.g. via a ColorScaleAttrib).
-  typedef pmap<Colorf, PTA_Colorf> FColors;
-  FColors _fcolors;
+  typedef pmap<SourceTexCoords, PT(GeomVertexData) > NewTexCoords;
+  NewTexCoords _texcoords;
 
   class SourceColors {
   public:
     INLINE bool operator < (const SourceColors &other) const;
 
-    LVecBase4f _scale;
-    PTA_Colorf _colors;
+    LVecBase4f _color;
+    CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceColors, PTA_Colorf> TColors;
-  TColors _tcolors;
+  typedef pmap<SourceColors, CPT(GeomVertexData) > NewColors;
+
+  // We have two concepts of colors: the "fixed" colors, which are
+  // slapped in as a complete replacement of the original colors
+  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
+  // modified from the original colors (e.g. via a ColorScaleAttrib).
+  NewColors _fcolors, _tcolors;
 
   class AlreadyCollectedData {
   public:
-    CPT(qpGeomVertexData) _data;
+    CPT(GeomVertexData) _data;
     int _offset;
   };
-  typedef pmap< CPT(qpGeomVertexData), AlreadyCollectedData> AlreadyCollected;
+  typedef pmap< CPT(GeomVertexData), AlreadyCollectedData> AlreadyCollected;
   AlreadyCollected _already_collected;
 
   class NewCollectedKey {
@@ -176,10 +128,10 @@ private:
     INLINE bool operator < (const NewCollectedKey &other) const;
 
     string _name;
-    CPT(qpGeomVertexFormat) _format;
-    qpGeom::UsageHint _usage_hint;
+    CPT(GeomVertexFormat) _format;
+    Geom::UsageHint _usage_hint;
   };
-  typedef pmap< NewCollectedKey, PT(qpGeomVertexData) > NewCollectedData;
+  typedef pmap< NewCollectedKey, PT(GeomVertexData) > NewCollectedData;
   NewCollectedData _new_collected_data;
 };
 

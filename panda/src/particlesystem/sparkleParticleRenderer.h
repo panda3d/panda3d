@@ -25,8 +25,8 @@
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "geom.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomLines.h"
+#include "geomVertexData.h"
+#include "geomLines.h"
 
 enum SparkleParticleLifeScale {
   SP_NO_SCALE,
@@ -70,7 +70,7 @@ PUBLISHED:
   INLINE SparkleParticleLifeScale get_life_scale() const;
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
   Colorf _center_color;
@@ -80,11 +80,8 @@ private:
   float _death_radius;
 
   PT(Geom) _line_primitive;
-  PT(qpGeomLines) _lines;
-
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-  PT(qpGeomVertexData) _vdata;
+  PT(GeomLines) _lines;
+  PT(GeomVertexData) _vdata;
 
   int _max_pool_size;
 

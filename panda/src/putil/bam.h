@@ -29,31 +29,13 @@
 // ASCII/Binary conversion.
 static const string _bam_header = string("pbj\0\n\r", 6);
 
-static const unsigned short _bam_major_ver = 4;
+static const unsigned short _bam_major_ver = 5;
 // Bumped to major version 2 on 7/6/00 due to major changes in Character.
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
+// Bumped to major version 5 on 5/6/05 for new Geom implementation.
 
-static const unsigned short _bam_minor_ver = 19;
-// Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
-// Bumped to minor version 2 on 4/12/03 to add num_components to texture.
-// Bumped to minor version 3 on 4/15/03 to add ImageBuffer::_alpha_file_channel
-// Bumped to minor version 4 on 6/12/03 to add PandaNode::set_tag().
-// Bumped to minor version 5 on 7/09/03 to add rawdata mode to texture.
-// Bumped to minor version 6 on 7/22/03 to add shear to scene graph and animation data.
-// Bumped to minor version 7 on 11/10/03 to add CollisionSolid::_effective_normal
-// Bumped to minor version 8 on 11/12/03 to add FFTCompressor::reject_compression
-// Bumped to minor version 9 on 12/02/03 to change CollisionPolygon internals.
-// Bumped to minor version 10 on 04/23/04 to make ComputedVertices use uint32's.
-// Bumped to minor version 11 on 07/26/04 to add multitexture pointers.
-// Bumped to minor version 12 on 09/22/04 to add PandaNode::into_collide_mask.
-// Bumped to minor version 13 on 09/24/04 to store actual LODNode switch distances instead of squares.
-// Bumped to minor version 14 on 11/18/04 to differentiate old_hpr from new_hpr in compressed anim channels.
-// Bumped to minor version 15 on 1/16/05 to remove width from GeomLine, etc.
-// Bumped to minor version 16 on 2/24/05 to add TextureStage::rgb_scale, etc.
-// Bumped to minor version 17 on 3/03/05 to add 3-d textures, etc.
-// Bumped to minor version 18 on 4/05/05 to add RenderModeAttrib::perspective.
-// Bumped to minor version 19 on 4/19/05 to add nonindexed qpgeom primitives.
+static const unsigned short _bam_minor_ver = 0;
 
 
 #endif

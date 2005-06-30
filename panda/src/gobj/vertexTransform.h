@@ -39,8 +39,6 @@ class TransformTable;
 //               This is used to implement soft-skinned and animated
 //               vertices.  Derived classes will define how the
 //               transform is actually computed.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexTransform : public TypedWritableReferenceCount {
 PUBLISHED:

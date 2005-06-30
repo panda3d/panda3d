@@ -28,7 +28,7 @@
 #include "textAssembler.h"
 #include "pandaNode.h"
 #include "luse.h"
-#include "qpgeom.h"
+#include "geom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextNode
@@ -120,8 +120,8 @@ PUBLISHED:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
 
-  INLINE void set_usage_hint(qpGeom::UsageHint usage_hint);
-  INLINE qpGeom::UsageHint get_usage_hint() const;
+  INLINE void set_usage_hint(Geom::UsageHint usage_hint);
+  INLINE Geom::UsageHint get_usage_hint() const;
 
   // These methods are inherited from TextProperties, but we override
   // here so we can flag the TextNode as dirty when they have been

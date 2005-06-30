@@ -23,9 +23,9 @@
 #include "nurbsCurveEvaluator.h"
 #include "pandaNode.h"
 #include "pStatCollector.h"
-#include "qpgeomVertexFormat.h"
+#include "geomVertexFormat.h"
 
-class qpGeomVertexData;
+class GeomVertexData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RopeNode
@@ -146,7 +146,7 @@ protected:
   virtual BoundingVolume *recompute_internal_bound();
 
 private:
-  CPT(qpGeomVertexFormat) get_format(bool support_normals) const;
+  CPT(GeomVertexFormat) get_format(bool support_normals) const;
 
   BoundingVolume *do_recompute_bound(const NodePath &rel_to);
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
@@ -170,27 +170,13 @@ private:
   void get_connected_segments(CurveSegments &curve_segments,
                               const NurbsCurveResult *result) const;
 
-  void compute_thread_vertices(qpGeomVertexData *vdata,
+  void compute_thread_vertices(GeomVertexData *vdata,
                                const CurveSegments &curve_segments) const;
-  void compute_billboard_vertices(qpGeomVertexData *vdata,
+  void compute_billboard_vertices(GeomVertexData *vdata,
                                   const LVector3f &camera_vec,
                                   const CurveSegments &curve_segments,
                                   NurbsCurveResult *result) const;
-  void compute_tube_vertices(qpGeomVertexData *vdata,
-                             int &num_verts_per_slice,
-                             const CurveSegments &curve_segments,
-                             NurbsCurveResult *result) const;
-
-  void compute_thread_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
-                               PTA_Colorf &colors,
-                               const CurveSegments &curve_segments) const;
-  void compute_billboard_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
-                                  PTA_Colorf &colors,
-                                  const LVector3f &camera_vec,
-                                  const CurveSegments &curve_segments,
-                                  NurbsCurveResult *result) const;
-  void compute_tube_vertices(PTA_Vertexf &verts, PTA_Normalf &normals,
-                             PTA_TexCoordf &uvs, PTA_Colorf &colors,
+  void compute_tube_vertices(GeomVertexData *vdata,
                              int &num_verts_per_slice,
                              const CurveSegments &curve_segments,
                              NurbsCurveResult *result) const;

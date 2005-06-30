@@ -22,8 +22,8 @@
 #include "indexBufferContext.h"
 #include "texture.h"
 #include "geom.h"
-#include "qpgeomVertexArrayData.h"
-#include "qpgeomPrimitive.h"
+#include "geomVertexArrayData.h"
+#include "geomPrimitive.h"
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
@@ -398,7 +398,7 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
 //               do this (presumably at the next frame).
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-enqueue_vertex_buffer(qpGeomVertexArrayData *data) {
+enqueue_vertex_buffer(GeomVertexArrayData *data) {
   MutexHolder holder(_lock);
 
   _enqueued_vertex_buffers.insert(data);
@@ -419,7 +419,7 @@ enqueue_vertex_buffer(qpGeomVertexArrayData *data) {
 //               queued.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-dequeue_vertex_buffer(qpGeomVertexArrayData *data) {
+dequeue_vertex_buffer(GeomVertexArrayData *data) {
   MutexHolder holder(_lock);
 
   EnqueuedVertexBuffers::iterator qi = _enqueued_vertex_buffers.find(data);
@@ -453,7 +453,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
   // released.
-  vbc->_data = (qpGeomVertexArrayData *)NULL;
+  vbc->_data = (GeomVertexArrayData *)NULL;
 
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
@@ -482,7 +482,7 @@ release_all_vertex_buffers() {
     VertexBufferContext *vbc = (*vbci);
     vbc->_data->clear_prepared(this);
     _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
-    vbc->_data = (qpGeomVertexArrayData *)NULL;
+    vbc->_data = (GeomVertexArrayData *)NULL;
 
     _released_vertex_buffers.insert(vbc);
   }
@@ -515,7 +515,7 @@ release_all_vertex_buffers() {
 //               VertexBufferContext will be deleted.
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *PreparedGraphicsObjects::
-prepare_vertex_buffer_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
+prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new VertexBufferContext.  There might
@@ -545,7 +545,7 @@ prepare_vertex_buffer_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase
 //               do this (presumably at the next frame).
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-enqueue_index_buffer(qpGeomPrimitive *data) {
+enqueue_index_buffer(GeomPrimitive *data) {
   MutexHolder holder(_lock);
 
   _enqueued_index_buffers.insert(data);
@@ -566,7 +566,7 @@ enqueue_index_buffer(qpGeomPrimitive *data) {
 //               queued.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-dequeue_index_buffer(qpGeomPrimitive *data) {
+dequeue_index_buffer(GeomPrimitive *data) {
   MutexHolder holder(_lock);
 
   EnqueuedIndexBuffers::iterator qi = _enqueued_index_buffers.find(data);
@@ -600,7 +600,7 @@ release_index_buffer(IndexBufferContext *ibc) {
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
   // released.
-  ibc->_data = (qpGeomPrimitive *)NULL;
+  ibc->_data = (GeomPrimitive *)NULL;
 
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
@@ -629,7 +629,7 @@ release_all_index_buffers() {
     IndexBufferContext *ibc = (*ibci);
     ibc->_data->clear_prepared(this);
     _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
-    ibc->_data = (qpGeomPrimitive *)NULL;
+    ibc->_data = (GeomPrimitive *)NULL;
 
     _released_index_buffers.insert(ibc);
   }
@@ -662,7 +662,7 @@ release_all_index_buffers() {
 //               IndexBufferContext will be deleted.
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *PreparedGraphicsObjects::
-prepare_index_buffer_now(qpGeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
+prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new IndexBufferContext.  There might
@@ -768,7 +768,7 @@ update(GraphicsStateGuardianBase *gsg) {
   for (qvbi = _enqueued_vertex_buffers.begin();
        qvbi != _enqueued_vertex_buffers.end();
        ++qvbi) {
-    qpGeomVertexArrayData *data = (*qvbi);
+    GeomVertexArrayData *data = (*qvbi);
     data->prepare_now(this, gsg);
   }
 
@@ -778,7 +778,7 @@ update(GraphicsStateGuardianBase *gsg) {
   for (qibi = _enqueued_index_buffers.begin();
        qibi != _enqueued_index_buffers.end();
        ++qibi) {
-    qpGeomPrimitive *data = (*qibi);
+    GeomPrimitive *data = (*qibi);
     data->prepare_now(this, gsg);
   }
 

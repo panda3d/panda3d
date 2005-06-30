@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
-  INLINE CLP(VertexBufferContext)(qpGeomVertexArrayData *data);
+  INLINE CLP(VertexBufferContext)(GeomVertexArrayData *data);
 
   // This is the GL "name" of the data object.
   GLuint _index;

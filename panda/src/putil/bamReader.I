@@ -52,6 +52,20 @@ get_file_minor_ver() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_file_endian
+//       Access: Public
+//  Description: Returns the endian preference indicated by the Bam
+//               file currently being read.  This does not imply that
+//               every number is stored using the indicated
+//               convention, but individual objects may choose to
+//               respect this flag when recording data.
+////////////////////////////////////////////////////////////////////
+INLINE BamEndian BamReader::
+get_file_endian() const {
+  return _file_endian;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_current_major_ver
 //       Access: Public
 //  Description: Returns the major version number of Bam files

@@ -1314,15 +1314,13 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *Texture::
 make_Texture(const FactoryParams &params) {
-  //The process of making a texture is slightly
-  //different than making other Writable objects.
-  //That is because all creation of Textures should
-  //be done through calls to TexturePool, which ensures
-  //that any loads of the same Texture, refer to the
-  //same memory
+  // The process of making a texture is slightly different than making
+  // other TypedWritable objects.  That is because all creation of
+  // Textures should be done through calls to TexturePool, which
+  // ensures that any loads of the same filename refer to the same
+  // memory.
   DatagramIterator scan;
   BamReader *manager;
-  bool has_rawdata = false;
 
   parse_params(params, scan, manager);
 
@@ -1331,27 +1329,14 @@ make_Texture(const FactoryParams &params) {
   Filename filename = scan.get_string();
   Filename alpha_filename = scan.get_string();
 
-  int primary_file_num_channels = 0;  
-  int alpha_file_channel = 0;  
-
-  if (manager->get_file_minor_ver() == 2) {
-    // We temporarily had a version that stored the number of channels
-    // here.
-    primary_file_num_channels = scan.get_uint8();
-
-  } else if (manager->get_file_minor_ver() >= 3) {
-    primary_file_num_channels = scan.get_uint8();
-    alpha_file_channel = scan.get_uint8();
-  }
-
-  // from minor version 5, read the rawdata mode, else carry on
-  if (manager->get_file_minor_ver() >= 5) {
-    has_rawdata = scan.get_bool();
-  }
+  int primary_file_num_channels = scan.get_uint8();
+  int alpha_file_channel = scan.get_uint8();
+  bool has_rawdata = scan.get_bool();
 
   Texture *me = NULL;
   if (has_rawdata) {
-    // then create a Texture and don't load from the file
+    // If the raw image data is included, then just create a Texture
+    // and don't load from the file.
     me = new Texture;
 
   } else {
@@ -1398,63 +1383,43 @@ void Texture::
 fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   // We have already read in the filenames; don't read them again.
 
-  if (manager->get_file_minor_ver() < 17) {
-    _texture_type = TT_2d_texture;
-  } else {
-    _texture_type = (TextureType)scan.get_uint8();
-  }
-
+  _texture_type = (TextureType)scan.get_uint8();
   _wrap_u = (WrapMode)scan.get_uint8();
   _wrap_v = (WrapMode)scan.get_uint8();
-  if (manager->get_file_minor_ver() < 17) {
-    _wrap_w = WM_repeat;
-  } else {
-    _wrap_w = (WrapMode)scan.get_uint8();
-  }
+  _wrap_w = (WrapMode)scan.get_uint8();
   _minfilter = (FilterType)scan.get_uint8();
   _magfilter = (FilterType)scan.get_uint8();
   _anisotropic_degree = scan.get_int16();
 
-  bool has_pbuffer = true;
-  if (manager->get_file_minor_ver() < 17) {
-    has_pbuffer = scan.get_bool();
+  Format format = (Format)scan.get_uint8();
+  int num_components = scan.get_uint8();
+
+  if (num_components == get_num_components()) {
+    // Only reset the format if the number of components hasn't
+    // changed, since if the number of components has changed our
+    // texture no longer matches what it was when the bam was
+    // written.
+    set_format(format);
   }
-  if (has_pbuffer) {
-    Format format = (Format)scan.get_uint8();
-    int num_channels = -1;
-    num_channels = scan.get_uint8();
-
-    if (num_channels == get_num_components()) {
-      // Only reset the format if the number of components hasn't
-      // changed, since if the number of components has changed our
-      // texture no longer matches what it was when the bam was
-      // written.
-      set_format(format);
-    }
+  
+  if (has_rawdata) {
+    // In the rawdata case, we must always set the format.
+    _format = format;
+    _num_components = num_components;
+    _x_size = scan.get_uint32();
+    _y_size = scan.get_uint32();
+    _z_size = scan.get_uint32();
+    _component_type = (ComponentType)scan.get_uint8();
+    _component_width = scan.get_uint8();
+    _loaded_from_disk = false;
     
-    if (has_rawdata) {
-      // In the rawdata case, we must always set the format.
-      _format = format;
-      _x_size = scan.get_uint32();
-      _y_size = scan.get_uint32();
-      if (manager->get_file_minor_ver() < 17) {
-        _z_size = 1;
-      } else {
-        _z_size = scan.get_uint32();
-      }
-      _component_type = (ComponentType)scan.get_uint8();
-      _num_components = scan.get_uint8();
-      _component_width = scan.get_uint8();
-      _loaded_from_disk = false;
-
-      PN_uint32 u_size = scan.get_uint32();
-      
-      // fill the _image buffer with image data
-      string temp_buff = scan.extract_bytes(u_size);
-      _image = PTA_uchar::empty_array((int) u_size);
-      for (PN_uint32 u_idx=0; u_idx < u_size; ++u_idx) {
-        _image[(int)u_idx] = (uchar) temp_buff[u_idx];
-      }
+    PN_uint32 u_size = scan.get_uint32();
+    
+    // fill the _image buffer with image data
+    string temp_buff = scan.extract_bytes(u_size);
+    _image = PTA_uchar::empty_array((int) u_size);
+    for (PN_uint32 u_idx=0; u_idx < u_size; ++u_idx) {
+      _image[(int)u_idx] = (uchar) temp_buff[u_idx];
     }
   }
 }
@@ -1544,7 +1509,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint32(_y_size);
     me.add_uint32(_z_size);
     me.add_uint8(_component_type);
-    me.add_uint8(_num_components);
     me.add_uint8(_component_width);
 
     me.add_uint32(_image.size());

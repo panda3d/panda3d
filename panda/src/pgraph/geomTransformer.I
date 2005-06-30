@@ -42,12 +42,12 @@ set_max_collect_vertices(int max_collect_vertices) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::qpSourceVertices::Ordering Operator
+//     Function: GeomTransformer::SourceVertices::Ordering Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::qpSourceVertices::
-operator < (const GeomTransformer::qpSourceVertices &other) const {
+INLINE bool GeomTransformer::SourceVertices::
+operator < (const GeomTransformer::SourceVertices &other) const {
   if (_vertex_data != other._vertex_data) {
     return _vertex_data < other._vertex_data;
   }
@@ -55,12 +55,12 @@ operator < (const GeomTransformer::qpSourceVertices &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::qpSourceTexCoords::Ordering Operator
+//     Function: GeomTransformer::SourceTexCoords::Ordering Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::qpSourceTexCoords::
-operator < (const GeomTransformer::qpSourceTexCoords &other) const {
+INLINE bool GeomTransformer::SourceTexCoords::
+operator < (const GeomTransformer::SourceTexCoords &other) const {
   if (_vertex_data != other._vertex_data) {
     return _vertex_data < other._vertex_data;
   }
@@ -74,68 +74,16 @@ operator < (const GeomTransformer::qpSourceTexCoords &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::qpSourceColors::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::qpSourceColors::
-operator < (const GeomTransformer::qpSourceColors &other) const {
-  if (_vertex_data != other._vertex_data) {
-    return _vertex_data < other._vertex_data;
-  }
-  return (_color.compare_to(other._color) < 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceVertices::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::SourceVertices::
-operator < (const GeomTransformer::SourceVertices &other) const {
-  if (_coords != other._coords) {
-    return _coords < other._coords;
-  }
-  return (_mat.compare_to(other._mat) < 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceNormals::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::SourceNormals::
-operator < (const GeomTransformer::SourceNormals &other) const {
-  if (_norms != other._norms) {
-    return _norms < other._norms;
-  }
-  return (_mat.compare_to(other._mat) < 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceTexCoords::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomTransformer::SourceTexCoords::
-operator < (const GeomTransformer::SourceTexCoords &other) const {
-  if (_texcoords != other._texcoords) {
-    return _texcoords < other._texcoords;
-  }
-  return (_mat.compare_to(other._mat) < 0);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::SourceColors::Ordering Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomTransformer::SourceColors::
 operator < (const GeomTransformer::SourceColors &other) const {
-  if (_colors != other._colors) {
-    return _colors < other._colors;
+  if (_vertex_data != other._vertex_data) {
+    return _vertex_data < other._vertex_data;
   }
-  return (_scale.compare_to(other._scale) < 0);
+  return (_color.compare_to(other._color) < 0);
 }
 
 ////////////////////////////////////////////////////////////////////

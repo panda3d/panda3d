@@ -34,8 +34,8 @@ class EggTexture;
 class LODNode;
 class GeomNode;
 class GeomTri;
-class qpGeomVertexData;
-class qpGeomTriangles;
+class GeomVertexData;
+class GeomTriangles;
 class PandaNode;
 class RenderState;
 class Texture;
@@ -59,13 +59,11 @@ private:
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
                          EggGroupNode *egg_parent, bool has_decal);
-  void convert_triangles(const qpGeomVertexData *vertex_data,
-                         const qpGeomTriangles *primitive, 
+  void convert_triangles(const GeomVertexData *vertex_data,
+                         const GeomTriangles *primitive, 
                          const RenderState *net_state, 
                          const LMatrix4f &net_mat, EggGroupNode *egg_parent);
 
-  void convert_geom_tri(GeomTri *geom, const RenderState *net_state,
-                        const LMatrix4f &net_mat, EggGroupNode *egg_parent);
   void recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                      bool has_decal);
   bool apply_node_properties(EggGroup *egg_group, PandaNode *node);

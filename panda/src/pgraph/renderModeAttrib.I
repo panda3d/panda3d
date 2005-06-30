@@ -83,13 +83,13 @@ get_perspective() const {
 INLINE int RenderModeAttrib::
 get_geom_rendering(int geom_rendering) const {
   if (_mode == M_point) {
-    geom_rendering |= qpGeom::GR_point;
+    geom_rendering |= Geom::GR_point;
   }
-  if ((geom_rendering & qpGeom::GR_point) != 0) {
+  if ((geom_rendering & Geom::GR_point) != 0) {
     if (_perspective) {
-      geom_rendering |= (qpGeom::GR_point_perspective | qpGeom::GR_point_uniform_size);
+      geom_rendering |= (Geom::GR_point_perspective | Geom::GR_point_uniform_size);
     } else if (_thickness != 1.0f) {
-      geom_rendering |= qpGeom::GR_point_uniform_size;
+      geom_rendering |= Geom::GR_point_uniform_size;
     }
   }
 

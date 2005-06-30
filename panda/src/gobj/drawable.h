@@ -34,8 +34,8 @@ class Datagram;
 class DatagramIterator;
 class BamReader;
 class BamWriter;
-class qpGeomMunger;
-class qpGeomVertexData;
+class GeomMunger;
+class GeomVertexData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Drawable
@@ -53,8 +53,8 @@ public:
   virtual ~dDrawable();
 
   virtual void draw(GraphicsStateGuardianBase *gsg, 
-                    const qpGeomMunger *munger,
-                    const qpGeomVertexData *vertex_data) const;
+                    const GeomMunger *munger,
+                    const GeomVertexData *vertex_data) const;
   virtual bool is_dynamic() const;
 
 protected:

@@ -41,6 +41,15 @@ ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
+ConfigVariableEnum<BamEndian> bam_endian
+("bam-endian", BE_native,
+ PRC_DESC("The default endianness to use for writing major numeric data "
+          "tables to bam files.  This does not affect all numbers written "
+          "to bam files, only those for which the individual object was "
+          "designed to support this flag.  The default is \"native\"; you "
+          "may set it to \"littleendian\" or \"bigendian\" to target a "
+          "particular platform."));
+
 ConfigVariableSearchPath model_path
 ("model-path", 
  PRC_DESC("The default directories to search for all models and general "

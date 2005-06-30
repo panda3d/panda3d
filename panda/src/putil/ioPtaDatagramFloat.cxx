@@ -28,10 +28,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void IoPtaDatagramFloat::
-write_datagram(Datagram &dest, CPTA_float array)
-{
+write_datagram(BamWriter *, Datagram &dest, CPTA_float array) {
   dest.add_uint32(array.size());
-  for (int i = 0; i < (int)array.size(); i++) {
+  for (int i = 0; i < (int)array.size(); ++i) {
     dest.add_float32(array[i]);
   }
 }
@@ -42,12 +41,11 @@ write_datagram(Datagram &dest, CPTA_float array)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PTA_float IoPtaDatagramFloat::
-read_datagram(DatagramIterator &source)
-{
+read_datagram(BamReader *, DatagramIterator &source) {
   PTA_float array;
 
   int size = source.get_uint32();
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; ++i) {
     array.push_back(source.get_float32());
   }
 

@@ -15,3 +15,18 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_file_endian
+//       Access: Public
+//  Description: Returns the endian preference indicated by the Bam
+//               file currently being written.  This does not imply
+//               that every number is stored using the indicated
+//               convention, but individual objects may choose to
+//               respect this flag when recording data.
+////////////////////////////////////////////////////////////////////
+INLINE BamEndian BamWriter::
+get_file_endian() const {
+  return _file_endian;
+}

@@ -104,9 +104,9 @@ StandardMunger::
 //  Description: Given a source GeomVertexData, converts it as
 //               necessary for rendering.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexData) StandardMunger::
-munge_data_impl(const qpGeomVertexData *data) {
-  CPT(qpGeomVertexData) new_data = data;
+CPT(GeomVertexData) StandardMunger::
+munge_data_impl(const GeomVertexData *data) {
+  CPT(GeomVertexData) new_data = data;
 
   if (_munge_color) {
     new_data = new_data->set_color(_color, _num_components, _numeric_type,
@@ -116,7 +116,7 @@ munge_data_impl(const qpGeomVertexData *data) {
                                      _numeric_type, _contents);
   }
 
-  qpGeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
+  GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
   if (hardware_animated_vertices &&
       animation.get_animation_type() == AT_panda &&
       new_data->get_slider_table() == (SliderTable *)NULL) {
@@ -151,8 +151,8 @@ munge_data_impl(const qpGeomVertexData *data) {
     }
   }
   
-  CPT(qpGeomVertexFormat) orig_format = new_data->get_format();
-  CPT(qpGeomVertexFormat) new_format = munge_format(orig_format, animation);
+  CPT(GeomVertexFormat) orig_format = new_data->get_format();
+  CPT(GeomVertexFormat) new_format = munge_format(orig_format, animation);
 
   if (new_format == orig_format) {
     // Trivial case.
@@ -168,7 +168,7 @@ munge_data_impl(const qpGeomVertexData *data) {
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 bool StandardMunger::
-munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   int geom_rendering = geom->get_geom_rendering();
   int supported_geom_rendering = _gsg->get_supported_geom_rendering();
 
@@ -178,7 +178,7 @@ munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
     // Even beyond munging the vertex format, we have to convert the
     // Geom itself into a new primitive type the GSG can render
     // directly.
-    if ((unsupported_bits & qpGeom::GR_composite_bits) != 0) {
+    if ((unsupported_bits & Geom::GR_composite_bits) != 0) {
       // This decomposes everything in the primitive, so that if (for
       // instance) the primitive contained both strips and fans, but
       // the GSG didn't support fans, it would decompose the strips
@@ -189,15 +189,15 @@ munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
       // fans.
       geom = geom->decompose();
     }
-    if ((unsupported_bits & qpGeom::GR_shade_model_bits) != 0) {
+    if ((unsupported_bits & Geom::GR_shade_model_bits) != 0) {
       // Rotate the vertices to account for different shade-model
       // expectations (e.g. SM_flat_last_vertex to
       // SM_flat_first_vertex)
       geom = geom->rotate();
     }
-    if ((unsupported_bits & qpGeom::GR_indexed_bits) != 0) {
+    if ((unsupported_bits & Geom::GR_indexed_bits) != 0) {
       // Convert indexed geometry to nonindexed geometry.
-      PT(qpGeom) new_geom = new qpGeom(*geom);
+      PT(Geom) new_geom = new Geom(*geom);
       new_geom->make_nonindexed(false);
       geom = new_geom;
     }
@@ -215,7 +215,7 @@ munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &vertex_data) {
 //               different type.
 ////////////////////////////////////////////////////////////////////
 int StandardMunger::
-compare_to_impl(const qpGeomMunger *other) const {
+compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
   if (_render_mode != om->_render_mode) {
     return _render_mode < om->_render_mode ? -1 : 1;
@@ -254,7 +254,7 @@ compare_to_impl(const qpGeomMunger *other) const {
 //               them to be the same.)
 ////////////////////////////////////////////////////////////////////
 int StandardMunger::
-geom_compare_to_impl(const qpGeomMunger *other) const {
+geom_compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
   if (_munge_color != om->_munge_color) {
     return (int)_munge_color - (int)om->_munge_color;

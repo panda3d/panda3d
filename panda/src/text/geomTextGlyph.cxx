@@ -1,5 +1,5 @@
 // Filename: geomTextGlyph.cxx
-// Created by:  drose (11Feb02)
+// Created by:  drose (31Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -33,7 +33,7 @@ TypeHandle GeomTextGlyph::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void GeomTextGlyph::
 operator = (const GeomTextGlyph &copy) {
-  GeomTristrip::operator = (copy);
+  Geom::operator = (copy);
   if (_glyph != copy._glyph) {
     if (_glyph != (DynamicTextGlyph *)NULL) {
       _glyph->_geom_count--;
@@ -93,8 +93,6 @@ make_GeomTextGlyph(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   me->fillin(scan, manager);
-  me->make_dirty();
-  me->config();
   return me;
 }
 

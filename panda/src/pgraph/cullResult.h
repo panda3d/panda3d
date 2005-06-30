@@ -23,7 +23,7 @@
 #include "cullBin.h"
 #include "renderState.h"
 #include "cullableObject.h"
-#include "qpgeomMunger.h"
+#include "geomMunger.h"
 
 #include "referenceCount.h"
 #include "pointerTo.h"

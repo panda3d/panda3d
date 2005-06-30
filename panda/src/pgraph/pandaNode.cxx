@@ -143,9 +143,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
 
   _draw_mask.set_word(scan.get_uint32());
-  if (manager->get_file_minor_ver() >= 12) {
-    _into_collide_mask.set_word(scan.get_uint32());
-  }
+  _into_collide_mask.set_word(scan.get_uint32());
 
   // Read the parent and child pointers.
   fillin_up_list(_up, scan, manager);
@@ -153,13 +151,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   fillin_down_list(_stashed, scan, manager);
 
   // Read in the tag list.
-  if (manager->get_file_minor_ver() >= 4) {
-    int num_tags = scan.get_uint32();
-    for (int i = 0; i < num_tags; i++) {
-      string key = scan.get_string();
-      string value = scan.get_string();
-      _tag_data[key] = value;
-    }
+  int num_tags = scan.get_uint32();
+  for (int i = 0; i < num_tags; i++) {
+    string key = scan.get_string();
+    string value = scan.get_string();
+    _tag_data[key] = value;
   }
 }
 

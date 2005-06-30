@@ -76,11 +76,14 @@ init() {
   _next_pta_id = 1;
   _long_pta_id = false;
 
+  _file_endian = bam_endian;
+
   // Write out the current major and minor BAM file version numbers.
   Datagram header;
 
   header.add_uint16(_bam_major_ver);
   header.add_uint16(_bam_minor_ver);
+  header.add_uint8(_file_endian);
 
   if (!_target->put_datagram(header)) {
     util_cat.error()
@@ -279,6 +282,20 @@ void BamWriter::
 write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
   const CycleData *cdata = cycler.read();
   cdata->write_datagram(this, packet);
+  cycler.release_read(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_cdata
+//       Access: Public
+//  Description: This version of write_cdata allows passing an
+//               additional parameter to cdata->write_datagram().
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
+            void *extra_data) {
+  const CycleData *cdata = cycler.read();
+  cdata->write_datagram(this, packet, extra_data);
   cycler.release_read(cdata);
 }
 

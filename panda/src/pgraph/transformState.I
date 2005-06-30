@@ -458,9 +458,9 @@ get_mat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_geom_rendering(int geom_rendering) const {
-  if ((geom_rendering & qpGeomEnums::GR_point_perspective) != 0) {
+  if ((geom_rendering & GeomEnums::GR_point_perspective) != 0) {
     if (!has_identity_scale()) {
-      geom_rendering |= qpGeomEnums::GR_point_scale;
+      geom_rendering |= GeomEnums::GR_point_scale;
     }
   }
 

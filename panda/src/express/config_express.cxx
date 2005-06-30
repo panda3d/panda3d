@@ -118,7 +118,7 @@ ConfigVariableInt multifile_encryption_iteration_count
           "each subfile in order to decrypt it."));
 
 ConfigVariableBool vfs_case_sensitive
-("vfs-case-sensitive", false,
+("vfs-case-sensitive", true,
  PRC_DESC("Set this true to make the VirtualFileSystem present the native "
           "OS-provided filesystem as if it were a case-sensitive file "
           "system, even if it is not (e.g. on Windows).  This variable "

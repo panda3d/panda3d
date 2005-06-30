@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomNode.h"
-#include "qpgeom.h"
+#include "geom.h"
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
 #include "accumulatedAttribs.h"
@@ -194,7 +194,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = new Geom(*entry._geom);
 
     AccumulatedAttribs geom_attribs = attribs;
     entry._state = geom_attribs.collect(entry._state, attrib_types);
@@ -352,38 +352,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   int num_geoms = get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = get_geom(i);
-    
-    // Temporary test until the experimental Geom rewrite is final.
-    if (geom->is_qpgeom()) {
-      const qpGeom *qpgeom = DCAST(qpGeom, geom);
-      qpgeom->calc_tight_bounds(min_point, max_point, found_any,
-                                qpgeom->get_vertex_data()->animate_vertices(),
-                                !next_transform->is_identity(), mat);
-
-    } else {
-      Geom::VertexIterator vi = geom->make_vertex_iterator();
-      int num_prims = geom->get_num_prims();
-      
-      for (int p = 0; p < num_prims; p++) {
-        int length = geom->get_length(p);
-        for (int v = 0; v < length; v++) {
-          Vertexf vertex = geom->get_next_vertex(vi) * mat;
-          
-          if (found_any) {
-            min_point.set(min(min_point[0], vertex[0]),
-                          min(min_point[1], vertex[1]),
-                          min(min_point[2], vertex[2]));
-            max_point.set(max(max_point[0], vertex[0]),
-                          max(max_point[1], vertex[1]),
-                          max(max_point[2], vertex[2]));
-          } else {
-            min_point = vertex;
-            max_point = vertex;
-            found_any = true;
-          }
-        }
-      }
-    }
+    geom->calc_tight_bounds(min_point, max_point, found_any,
+                              geom->get_vertex_data()->animate_vertices(),
+                              !next_transform->is_identity(), mat);
   }
 
   return next_transform;
@@ -481,19 +452,14 @@ unify() {
     const GeomEntry &entry = (*gi);
     
     bool unified = false;
-    if (entry._geom->is_qpgeom()) {
-      Geoms::iterator gj;
-      for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
-        GeomEntry &new_entry = (*gj);
-        if (new_entry._geom->is_qpgeom()) {
-          if (entry._state == new_entry._state) {
-            // Both states match, so try to combine the primitives.
-            if (DCAST(qpGeom, new_entry._geom)->copy_primitives_from
-                (DCAST(qpGeom, entry._geom))) {
-              // Successfully combined!
-              unified = true;
-            }
-          }
+    Geoms::iterator gj;
+    for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
+      GeomEntry &new_entry = (*gj);
+      if (entry._state == new_entry._state) {
+        // Both states match, so try to combine the primitives.
+        if (new_entry._geom->copy_primitives_from(entry._geom)) {
+          // Successfully combined!
+          unified = true;
         }
       }
     }
@@ -512,9 +478,7 @@ unify() {
   // Finally, go back through and unify the resulting geom(s).
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    if (entry._geom->is_qpgeom()) {
-      DCAST(qpGeom, entry._geom)->unify_in_place();
-    }
+    entry._geom->unify_in_place();
   }
 }
 
@@ -551,7 +515,7 @@ write_verbose(ostream &out, int indent_level) const {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
       << *entry._geom << " " << *entry._state << "\n";
-    entry._geom->write_verbose(out, indent_level + 4);
+    entry._geom->write(out, indent_level + 4);
   }
 }
 

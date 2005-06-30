@@ -25,7 +25,7 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    builder:c collide:c chan:c char:c display:c downloader:c \
+    collide:c chan:c char:c display:c downloader:c \
     dgraph:c egg2pg:c egg:c event:c express:c \
     grutil:c gobj:c gsgbase:c lerp:c linmath:c mathutil:c \
     pgraph:c parametrics:c pnmimagetypes:c pnmimage:c putil:c \

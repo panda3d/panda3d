@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "geom.h"
+#include "geomVertexData.h"
 #include "sceneSetup.h"
 #include "renderState.h"
 #include "portalNode.h"
@@ -35,9 +36,6 @@
 #include "config_pgraph.h"
 
 #include "geom.h"
-#include "geomPoint.h"
-#include "geomLine.h"
-#include "geomLinestrip.h"
 #include "geomNode.h"
 
 class PandaNode;
@@ -125,12 +123,8 @@ private:
   Colorf _color;
   float _thick;
 
-  PTA_Vertexf _created_verts;
-  PTA_Colorf _created_colors;
-
-  PT(GeomLine) _geom_line;
-  PT(GeomPoint) _geom_point;
-  PT(GeomLinestrip) _geom_linestrip;
+  PT(GeomVertexData) _created_data;
+  PT(Geom) _geom;
 
   BoundingHexahedron *_view_frustum;
   BoundingHexahedron *_reduced_frustum;

@@ -49,9 +49,12 @@ PUBLISHED:
   INLINE void add_data(double value);
 
   INLINE int get_size() const;
+
+public:
   INLINE PTA_double get_data() const;
   INLINE void set_data(const PTA_double &data);
 
+PUBLISHED:
   void quantize(double quantum);
 
 protected:

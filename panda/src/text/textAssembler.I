@@ -28,7 +28,7 @@
 //               geomEnums.h.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextAssembler::
-set_usage_hint(qpGeom::UsageHint usage_hint) {
+set_usage_hint(Geom::UsageHint usage_hint) {
   _usage_hint = usage_hint;
 }
 
@@ -38,7 +38,7 @@ set_usage_hint(qpGeom::UsageHint usage_hint) {
 //  Description: Returns the UsageHint that will be applied to
 //               generated geometry.  See set_usage_hint().
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeom::UsageHint TextAssembler::
+INLINE Geom::UsageHint TextAssembler::
 get_usage_hint() const {
   return _usage_hint;
 }

@@ -105,12 +105,6 @@ set_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_x_scale_flag(bool animate_x_ratio) {
-  if (animate_x_ratio && !_animate_x_ratio) {
-    _x_texel_array = PTA_float::empty_array(_pool_size);
-  } else if (!animate_x_ratio && _animate_x_ratio) {
-    _x_texel_array = PTA_float::empty_array(1);
-  }
-
   _animate_x_ratio = animate_x_ratio;
   init_geoms();
 }
@@ -121,12 +115,6 @@ set_x_scale_flag(bool animate_x_ratio) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_y_scale_flag(bool animate_y_ratio) {
-  if (animate_y_ratio && !_animate_y_ratio) {
-    _y_texel_array = PTA_float::empty_array(_pool_size);
-  } else if (!animate_y_ratio && _animate_y_ratio) {
-    _y_texel_array = PTA_float::empty_array(1);
-  }
-
   _animate_y_ratio = animate_y_ratio;
   init_geoms();
 }
@@ -137,12 +125,6 @@ set_y_scale_flag(bool animate_y_ratio) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_anim_angle_flag(bool animate_theta) {
-  if (animate_theta && !_animate_theta) {
-    _theta_array = PTA_float::empty_array(_pool_size);
-  } else if (!animate_theta && _animate_theta) {
-    _theta_array = PTA_float::empty_array(_pool_size);
-  }
-
   _animate_theta = animate_theta;
   init_geoms();
 }

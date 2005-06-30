@@ -114,6 +114,8 @@ init() {
     return false;
   }
 
+  _file_endian = (BamEndian)scan.get_uint8();
+
   if (bam_cat.is_debug()) {
     bam_cat.debug()
       << "Bam file is version " << _file_major << "." << _file_minor
@@ -123,6 +125,8 @@ init() {
         << "(Current version is " << _bam_major_ver << "." << _bam_minor_ver
         << ".)\n";
     }
+    bam_cat.debug()
+      << "Endian preference is " << _file_endian << "\n";
   }
 
   return true;
@@ -598,6 +602,23 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
   _reading_cycler = &cycler;
   CycleData *cdata = cycler.write();
   cdata->fillin(scan, this);
+  cycler.release_write(cdata);
+  _reading_cycler = old_cycler;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_cdata
+//       Access: Public
+//  Description: This flavor of BamReader allows passing an additional
+//               parameter to cdata->fillin().
+////////////////////////////////////////////////////////////////////
+void BamReader::
+read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
+           void *extra_data) {
+  PipelineCyclerBase *old_cycler = _reading_cycler;
+  _reading_cycler = &cycler;
+  CycleData *cdata = cycler.write();
+  cdata->fillin(scan, this, extra_data);
   cycler.release_write(cdata);
   _reading_cycler = old_cycler;
 }

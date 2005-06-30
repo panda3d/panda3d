@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dxVertexBufferContext8.h"
-#include "qpgeomVertexArrayData.h"
-#include "qpgeomVertexArrayFormat.h"
+#include "geomVertexArrayData.h"
+#include "geomVertexArrayFormat.h"
 #include "graphicsStateGuardian.h"
 #include "pStatTimer.h"
 #include "internalName.h"
@@ -33,12 +33,12 @@ TypeHandle DXVertexBufferContext8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXVertexBufferContext8::
-DXVertexBufferContext8(qpGeomVertexArrayData *data) :
+DXVertexBufferContext8(GeomVertexArrayData *data) :
   VertexBufferContext(data),
   _vbuffer(NULL)
 {
   // Now fill in the FVF code.
-  const qpGeomVertexArrayFormat *array_format = data->get_array_format();
+  const GeomVertexArrayFormat *array_format = data->get_array_format();
 
   // We have to start with the vertex data, and work up from there in
   // order, since that's the way the FVF is defined.
@@ -110,8 +110,8 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
   // same order they appear in the array.
   int texcoord_index = 0;
   while (n < num_columns && 
-         array_format->get_column(n)->get_contents() == qpGeom::C_texcoord) {
-    const qpGeomVertexColumn *column = array_format->get_column(n);
+         array_format->get_column(n)->get_contents() == Geom::C_texcoord) {
+    const GeomVertexColumn *column = array_format->get_column(n);
     switch (column->get_num_values()) {
     case 1:
       _fvf |= D3DFVF_TEXCOORDSIZE1(texcoord_index);

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dxIndexBufferContext8.h"
-#include "qpgeomPrimitive.h"
+#include "geomPrimitive.h"
 #include "config_dxgsg8.h"
 #include "graphicsStateGuardian.h"
 #include "pStatTimer.h"
@@ -31,7 +31,7 @@ TypeHandle DXIndexBufferContext8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXIndexBufferContext8::
-DXIndexBufferContext8(qpGeomPrimitive *data) :
+DXIndexBufferContext8(GeomPrimitive *data) :
   IndexBufferContext(data),
   _ibuffer(NULL)
 {

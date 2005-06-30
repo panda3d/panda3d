@@ -303,12 +303,14 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
 
-    #ifndef USE_PYTHON_2_2_OR_EARLIER
     } else if (TypeManager::is_unsigned_integer(type)) {
-      out << "unsigned int " << param_name;
-      format_specifiers += "I";  // This requires Python 2.3 or better
+      out << "PyObject *" << param_name;
+      format_specifiers += "O";
       parameter_list += ", &" + param_name;
-    #endif
+      extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
+      extra_param_check += "|| (" + param_name + "_uint == NULL)";
+      pexpr_string = "(unsigned int)PyLong_AsUnsignedLong(" + param_name + "_uint)";
+      extra_cleanup += " Py_XDECREF(" + param_name + "_uint);";
 
     } else if (TypeManager::is_integer(type)) {
       out << "int " << param_name;
@@ -463,11 +465,9 @@ pack_return_value(ostream &out, int indent_level,
     indent(out, indent_level)
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
-  #ifndef USE_PYTHON_2_2_OR_EARLIER
   } else if (TypeManager::is_unsigned_integer(type)) {
     indent(out, indent_level)
       << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
-  #endif
 
   } else if (TypeManager::is_integer(type)) {
     indent(out, indent_level)

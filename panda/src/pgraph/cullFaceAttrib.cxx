@@ -313,7 +313,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
-  if (manager->get_file_minor_ver() >= 1) {
-    _reverse = scan.get_bool();
-  }
+  _reverse = scan.get_bool();
 }

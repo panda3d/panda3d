@@ -1,3 +1,4 @@
+#include "bamEndian.cxx"
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"
 #include "bamWriter.cxx"

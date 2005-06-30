@@ -1,4 +1,7 @@
-#define BUILD_DIRECTORY $[HAVE_DX]
+// DX9 build is temporarily disabled until we bring it up-to-date with
+// the new Geom rewrite.
+#define BUILD_DIRECTORY
+//#define BUILD_DIRECTORY $[HAVE_DX]
 
 // DIR_TYPE "metalib" indicates we are building a shared library that
 // consists mostly of references to other shared libraries.  Under

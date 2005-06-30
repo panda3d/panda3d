@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "notify.h"
-
+#include "bamEndian.h"
 #include "typedWritable.h"
 #include "datagramSink.h"
 #include "pdeque.h"
@@ -35,7 +35,7 @@ struct PipelineCyclerBase;
 #define WRITE_PTA(Manager, dest, Write_func, array)  \
   if (!Manager->register_pta(dest, array.p()))       \
   {                                                  \
-    Write_func(dest, array);                         \
+    Write_func(Manager, dest, array);                \
   }                                                  \
 
 
@@ -85,11 +85,15 @@ public:
   bool write_object(const TypedWritable *obj);
   bool has_object(const TypedWritable *obj) const;
 
+  INLINE BamEndian get_file_endian() const;
+
 public:
   // Functions to support classes that write themselves to the Bam.
 
   void write_pointer(Datagram &packet, const TypedWritable *dest);
   void write_cdata(Datagram &packet, const PipelineCyclerBase &cycler);
+  void write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
+                   void *extra_data);
   bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
@@ -99,6 +103,8 @@ private:
   void write_object_id(Datagram &dg, int object_id);
   void write_pta_id(Datagram &dg, int pta_id);
   int enqueue_object(const TypedWritable *object);
+
+  BamEndian _file_endian;
 
   // This is the set of all TypeHandles already written.
   pset<int, int_hash> _types_written;

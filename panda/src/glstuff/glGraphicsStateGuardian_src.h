@@ -19,8 +19,7 @@
 #include "pandabase.h"
 
 #include "graphicsStateGuardian.h"
-#include "geomprimitives.h"
-#include "qpgeomVertexColumn.h"
+#include "geomVertexColumn.h"
 #include "texture.h"
 #include "displayRegion.h"
 #include "material.h"
@@ -36,7 +35,7 @@
 #include "graphicsWindow.h"
 #include "pset.h"
 #include "pmap.h"
-#include "qpgeomVertexArrayData.h"
+#include "geomVertexArrayData.h"
 #include "pmutex.h"
 #ifdef HAVE_CGGL
 #include "cgShader.h"
@@ -82,26 +81,15 @@ public:
   virtual bool begin_frame();
   virtual void end_frame();
 
-  virtual void draw_point(GeomPoint *geom, GeomContext *gc);
-  virtual void draw_line(GeomLine *geom, GeomContext *gc);
-  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
-  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc);
-  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc);
-  virtual void draw_quad(GeomQuad *geom, GeomContext *gc);
-  virtual void draw_tri(GeomTri *geom, GeomContext *gc);
-  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
-  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
-  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
-
-  virtual bool begin_draw_primitives(const qpGeom *geom, 
-                                     const qpGeomMunger *munger,
-                                     const qpGeomVertexData *vertex_data);
-  virtual void draw_triangles(const qpGeomTriangles *primitive);
-  virtual void draw_tristrips(const qpGeomTristrips *primitive);
-  virtual void draw_trifans(const qpGeomTrifans *primitive);
-  virtual void draw_lines(const qpGeomLines *primitive);
-  virtual void draw_linestrips(const qpGeomLinestrips *primitive);
-  virtual void draw_points(const qpGeomPoints *primitive);
+  virtual bool begin_draw_primitives(const Geom *geom, 
+                                     const GeomMunger *munger,
+                                     const GeomVertexData *vertex_data);
+  virtual void draw_triangles(const GeomTriangles *primitive);
+  virtual void draw_tristrips(const GeomTristrips *primitive);
+  virtual void draw_trifans(const GeomTrifans *primitive);
+  virtual void draw_lines(const GeomLines *primitive);
+  virtual void draw_linestrips(const GeomLinestrips *primitive);
+  virtual void draw_points(const GeomPoints *primitive);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
@@ -113,17 +101,17 @@ public:
   virtual void release_geom(GeomContext *gc);
   void record_deleted_display_list(GLuint index);
 
-  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
-  const unsigned char *setup_array_data(const qpGeomVertexArrayData *data);
+  const unsigned char *setup_array_data(const GeomVertexArrayData *data);
 
-  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
-  const unsigned char *setup_primitive(const qpGeomPrimitive *data);
+  const unsigned char *setup_primitive(const GeomPrimitive *data);
 
-  virtual PT(qpGeomMunger) make_geom_munger(const RenderState *state);
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
@@ -165,7 +153,6 @@ public:
   //enabled/disable GL State compared to what GL says it is
   void dump_state(void);
 
-  void issue_scaled_color(const Colorf &color) const;
   const float *get_light_color(Light *light) const;
 
   INLINE static bool report_errors(int line, const char *source_file);
@@ -223,13 +210,10 @@ protected:
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
 
-  INLINE void issue_scene_graph_color();
-  INLINE void issue_flat_shading(Geom *geom);
-
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  static GLenum get_numeric_type(qpGeom::NumericType numeric_type);
+  static GLenum get_numeric_type(Geom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
@@ -246,7 +230,7 @@ protected:
   static GLenum get_fog_mode_type(Fog::Mode m);
   static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
-  static GLenum get_usage(qpGeom::UsageHint usage_hint);
+  static GLenum get_usage(Geom::UsageHint usage_hint);
 
   static CPT(RenderState) get_untextured_state();
   static CPT(RenderState) get_smooth_state();

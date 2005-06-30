@@ -19,9 +19,9 @@
 #include "pointParticleRenderer.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
-#include "geomPoint.h"
-#include "qpgeom.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomVertexWriter.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : PointParticleRenderer
@@ -97,11 +97,6 @@ resize_pool(int new_size) {
 
   _max_pool_size = new_size;
 
-  if (!use_qpgeom) {
-    _vertex_array = PTA_Vertexf::empty_array(new_size);
-    _color_array = PTA_Colorf::empty_array(new_size);
-  }
-
   init_geoms();
 }
 
@@ -113,21 +108,14 @@ resize_pool(int new_size) {
 
 void PointParticleRenderer::
 init_geoms() {
-  if (use_qpgeom) {
-    PT(qpGeom) qpgeom = new qpGeom; 
-    _point_primitive = qpgeom;
-    _vdata = new qpGeomVertexData
-      ("particles", qpGeomVertexFormat::get_v3cp(),
-       qpGeom::UH_dynamic);
-    qpgeom->set_vertex_data(_vdata);
-    _points = new qpGeomPoints(qpGeom::UH_dynamic);
-    qpgeom->add_primitive(_points);
-
-  } else {
-    _point_primitive = new GeomPoint;
-    _point_primitive->set_coords(_vertex_array);
-    _point_primitive->set_colors(_color_array, G_PER_VERTEX);
-  }
+  PT(Geom) geom = new Geom; 
+  _point_primitive = geom;
+  _vdata = new GeomVertexData
+    ("particles", GeomVertexFormat::get_v3cp(),
+     Geom::UH_dynamic);
+  geom->set_vertex_data(_vdata);
+  _points = new GeomPoints(Geom::UH_dynamic);
+  geom->add_primitive(_points);
   
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -238,10 +226,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   int remaining_particles = ttl_particles;
   int i;
 
-  Vertexf *cur_vert = &_vertex_array[0];
-  Colorf *cur_color = &_color_array[0];
-  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
-  qpGeomVertexWriter color(_vdata, InternalName::get_color());
+  GeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  GeomVertexWriter color(_vdata, InternalName::get_color());
 
   // init the aabb
 
@@ -281,13 +267,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // stuff it into the arrays
 
-    if (use_qpgeom) {
-      vertex.add_data3f(position);
-      color.add_data4f(create_color(cur_particle));
-    } else {
-      *cur_vert++ = position;
-      *cur_color++ = create_color(cur_particle);
-    }
+    vertex.add_data3f(position);
+    color.add_data4f(create_color(cur_particle));
 
     // maybe jump out early?
 
@@ -296,12 +277,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       break;
   }
 
-  if (use_qpgeom) {
-    _points->clear_vertices();
-    _points->add_next_vertices(ttl_particles);
-  } else {
-    _point_primitive->set_num_prims(ttl_particles);
-  }
+  _points->clear_vertices();
+  _points->add_next_vertices(ttl_particles);
 
   // done filling geompoint node, now do the bb stuff
 
@@ -332,20 +309,16 @@ output(ostream &out) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PointParticleRenderer::
-write(ostream &out, int indent) const {
-  #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"PointParticleRenderer:\n";
-  out.width(indent+2); out<<""; out<<"_start_color "<<_start_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_end_color "<<_end_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_point_size "<<_point_size<<"\n";
-  out.width(indent+2); out<<""; out<<"_point_primitive "<<_point_primitive<<"\n";
-  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
-  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
-  out.width(indent+2); out<<""; out<<"_blend_type "<<_blend_type<<"\n";
-  out.width(indent+2); out<<""; out<<"_blend_method "<<_blend_method<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
-  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
-  BaseParticleRenderer::write(out, indent+2);
-  #endif //] NDEBUG
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << "PointParticleRenderer:\n";
+  indent(out, indent_level + 2) << "_start_color "<<_start_color<<"\n";
+  indent(out, indent_level + 2) << "_end_color "<<_end_color<<"\n";
+  indent(out, indent_level + 2) << "_point_size "<<_point_size<<"\n";
+  indent(out, indent_level + 2) << "_point_primitive "<<_point_primitive<<"\n";
+  indent(out, indent_level + 2) << "_max_pool_size "<<_max_pool_size<<"\n";
+  indent(out, indent_level + 2) << "_blend_type "<<_blend_type<<"\n";
+  indent(out, indent_level + 2) << "_blend_method "<<_blend_method<<"\n";
+  indent(out, indent_level + 2) << "_aabb_min "<<_aabb_min<<"\n";
+  indent(out, indent_level + 2) << "_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent_level + 2);
 }

@@ -1,4 +1,0 @@
-#! /bin/sh
-
-echo "genPyCodeNative is now deprecated; just use genPyCode."
-exit 1

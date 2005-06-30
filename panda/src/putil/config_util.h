@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableSearchPath.h"
+#include "configVariableEnum.h"
+#include "bamEndian.h"
 #include "dconfig.h"
 
 class DSearchPath;
@@ -36,6 +38,7 @@ NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
 // MemoryUsage.
 
 //extern EXPCL_PANDA const bool track_memory_usage;
+extern EXPCL_PANDA ConfigVariableEnum<BamEndian> bam_endian;
 
 extern EXPCL_PANDA ConfigVariableSearchPath model_path;
 extern EXPCL_PANDA ConfigVariableSearchPath texture_path;

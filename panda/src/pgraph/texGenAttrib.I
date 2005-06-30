@@ -53,9 +53,9 @@ TexGenAttrib(const TexGenAttrib &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE int TexGenAttrib::
 get_geom_rendering(int geom_rendering) const {
-  if ((geom_rendering & qpGeom::GR_point) != 0) {
+  if ((geom_rendering & Geom::GR_point) != 0) {
     if (_num_point_sprites > 0) {
-      geom_rendering |= qpGeom::GR_point_sprite;
+      geom_rendering |= Geom::GR_point_sprite;
     }
   }
 

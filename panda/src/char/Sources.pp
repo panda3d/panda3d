@@ -14,9 +14,7 @@
     characterJoint.h characterJointBundle.I  \
     characterJointBundle.h characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \
-    computedVertices.I  \
-    computedVertices.h computedVerticesMorph.I  \
-    computedVerticesMorph.h config_char.h dynamicVertices.h \
+    config_char.h \
     jointVertexTransform.I jointVertexTransform.h
     
   #define INCLUDED_SOURCES \
@@ -24,9 +22,7 @@
     characterJoint.cxx characterJointBundle.cxx  \
     characterSlider.cxx \
     characterVertexSlider.cxx \
-    computedVertices.cxx  \
-    computedVerticesMorph.cxx config_char.cxx  \
-    dynamicVertices.cxx \
+    config_char.cxx  \
     jointVertexTransform.cxx
 
   #define INSTALL_HEADERS \
@@ -34,9 +30,7 @@
     characterJoint.h characterJointBundle.I \
     characterJointBundle.h characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \
-    computedVertices.I \
-    computedVertices.h computedVerticesMorph.I computedVerticesMorph.h \
-    config_char.h dynamicVertices.h \
+    config_char.h \
     jointVertexTransform.I jointVertexTransform.h
     
   #define IGATESCAN all

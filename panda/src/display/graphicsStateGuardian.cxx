@@ -39,9 +39,9 @@
 #include "throw_event.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLinestrips.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLinestrips.h"
 
 #include <algorithm>
 
@@ -138,12 +138,6 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   // twiddling the material and/or ambient light (which could mean
   // enabling lighting even without a LightAttrib).
   _color_scale_via_lighting = color_scale_via_lighting;
-
-  if (!use_qpgeom) {
-    // The old Geom interface doesn't really work too well with the
-    // color_scale_via_lighting trick.
-    _color_scale_via_lighting = false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +337,7 @@ release_geom(GeomContext *) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *GraphicsStateGuardian::
-prepare_vertex_buffer(qpGeomVertexArrayData *) {
+prepare_vertex_buffer(GeomVertexArrayData *) {
   return (VertexBufferContext *)NULL;
 }
 
@@ -365,7 +359,7 @@ release_vertex_buffer(VertexBufferContext *) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *GraphicsStateGuardian::
-prepare_index_buffer(qpGeomPrimitive *) {
+prepare_index_buffer(GeomPrimitive *) {
   return (IndexBufferContext *)NULL;
 }
 
@@ -387,7 +381,7 @@ release_index_buffer(IndexBufferContext *) {
 //               vertices appropriate to this GSG for the indicated
 //               state.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomMunger) GraphicsStateGuardian::
+PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state) {
   // Before we even look up the map, see if the _last_mi value points
   // to this GSG.  This is likely because we tend to visit the same
@@ -408,7 +402,7 @@ get_geom_munger(const RenderState *state) {
   }
 
   // Nothing in the map; create a new entry.
-  PT(qpGeomMunger) munger = make_geom_munger(state);
+  PT(GeomMunger) munger = make_geom_munger(state);
 
   // Cast the RenderState to a non-const object.  We can do this
   // because we are only updating a cache within the RenderState, not
@@ -426,7 +420,7 @@ get_geom_munger(const RenderState *state) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomMunger) GraphicsStateGuardian::
+PT(GeomMunger) GraphicsStateGuardian::
 make_geom_munger(const RenderState *state) {
   // The default implementation returns no munger at all, but
   // presumably, every kind of GSG needs some special munging action,
@@ -814,8 +808,8 @@ finish_decal() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_draw_primitives(const qpGeom *, const qpGeomMunger *munger,
-                      const qpGeomVertexData *data) {
+begin_draw_primitives(const Geom *, const GeomMunger *munger,
+                      const GeomVertexData *data) {
   _munger = munger;
   _vertex_data = data;
 
@@ -828,7 +822,7 @@ begin_draw_primitives(const qpGeom *, const qpGeomMunger *munger,
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_triangles(const qpGeomTriangles *) {
+draw_triangles(const GeomTriangles *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -837,7 +831,7 @@ draw_triangles(const qpGeomTriangles *) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_tristrips(const qpGeomTristrips *primitive) {
+draw_tristrips(const GeomTristrips *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -846,7 +840,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_trifans(const qpGeomTrifans *primitive) {
+draw_trifans(const GeomTrifans *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -855,7 +849,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_lines(const qpGeomLines *) {
+draw_lines(const GeomLines *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -864,7 +858,7 @@ draw_lines(const qpGeomLines *) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_linestrips(const qpGeomLinestrips *primitive) {
+draw_linestrips(const GeomLinestrips *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -873,7 +867,7 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_points(const qpGeomPoints *) {
+draw_points(const GeomPoints *) {
 }
 
 ////////////////////////////////////////////////////////////////////

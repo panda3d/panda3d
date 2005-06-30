@@ -18,13 +18,12 @@
 
 #include "cardMaker.h"
 #include "geomNode.h"
-#include "geomTristrip.h"
 #include "transformState.h"
 #include "colorAttrib.h"
 #include "sceneGraphReducer.h"
-#include "qpgeom.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTristrips.h"
+#include "geomVertexWriter.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -64,78 +63,45 @@ generate() {
   float bottom = _frame[2];
   float top = _frame[3];
 
-  if (use_qpgeom) {
-    CPT(qpGeomVertexFormat) format;
-    if (_has_uvs) {
-      format = qpGeomVertexFormat::get_v3cpt2();
-    } else {
-      format = qpGeomVertexFormat::get_v3cp();
-    }
-
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("card", format, qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
-
-    vertex.add_data3f(Vertexf::rfu(left, 0.0f, top));
-    vertex.add_data3f(Vertexf::rfu(left, 0.0f, bottom));
-    vertex.add_data3f(Vertexf::rfu(right, 0.0f, top));
-    vertex.add_data3f(Vertexf::rfu(right, 0.0f, bottom));
-
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-    color.add_data4f(_color);
-
-    if (_has_uvs) {
-      qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-      texcoord.add_data2f(_ll[0], _ur[1]);
-      texcoord.add_data2f(_ll[0], _ll[1]);
-      texcoord.add_data2f(_ur[0], _ur[1]);
-      texcoord.add_data2f(_ur[0], _ll[1]);
-    }
-
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    strip->add_next_vertices(4);
-    strip->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-
-    gnode->add_geom(geom);
-
+  CPT(GeomVertexFormat) format;
+  if (_has_uvs) {
+    format = GeomVertexFormat::get_v3cpt2();
   } else {
-    Geom *geom = new GeomTristrip;
-    gnode->add_geom(geom);
-
-    PTA_int lengths = PTA_int::empty_array(0);
-    lengths.push_back(4);
-    
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf::rfu(left, 0.0f, top));
-    verts.push_back(Vertexf::rfu(left, 0.0f, bottom));
-    verts.push_back(Vertexf::rfu(right, 0.0f, top));
-    verts.push_back(Vertexf::rfu(right, 0.0f, bottom));
-    
-    geom->set_num_prims(1);
-    geom->set_lengths(lengths);
-    
-    geom->set_coords(verts);
-    
-    PTA_Colorf colors;
-    colors.push_back(_color);
-    geom->set_colors(colors, G_OVERALL);
-    
-    if (_has_uvs) {
-      PTA_TexCoordf uvs;
-      uvs.push_back(TexCoordf(_ll[0], _ur[1]));
-      uvs.push_back(TexCoordf(_ll[0], _ll[1]));
-      uvs.push_back(TexCoordf(_ur[0], _ur[1]));
-      uvs.push_back(TexCoordf(_ur[0], _ll[1]));
-      geom->set_texcoords(uvs, G_PER_VERTEX);
-    }
+    format = GeomVertexFormat::get_v3cp();
   }
+  
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("card", format, Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  
+  vertex.add_data3f(Vertexf::rfu(left, 0.0f, top));
+  vertex.add_data3f(Vertexf::rfu(left, 0.0f, bottom));
+  vertex.add_data3f(Vertexf::rfu(right, 0.0f, top));
+  vertex.add_data3f(Vertexf::rfu(right, 0.0f, bottom));
+  
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  color.add_data4f(_color);
+  
+  if (_has_uvs) {
+    GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+    texcoord.add_data2f(_ll[0], _ur[1]);
+    texcoord.add_data2f(_ll[0], _ll[1]);
+    texcoord.add_data2f(_ur[0], _ur[1]);
+    texcoord.add_data2f(_ur[0], _ll[1]);
+  }
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  strip->add_next_vertices(4);
+  strip->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  
+  gnode->add_geom(geom);
   
   return gnode.p();
 }

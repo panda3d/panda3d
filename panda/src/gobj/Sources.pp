@@ -13,32 +13,28 @@
     boundedObject.I boundedObject.h \
     config_gobj.h \
     drawable.h \
-    geom.I geom.h \
+    geom.h geom.I \
     geomContext.I geomContext.h \
-    geomLine.h geomLinestrip.h geomPoint.h geomPolygon.h  \
-    geomQuad.h geomSphere.h geomSprite.I geomSprite.h geomTri.h  \
-    geomTrifan.h geomTristrip.h  \
-    qpgeom.h qpgeom.I \
-    qpgeomEnums.h \
-    qpgeomMunger.h qpgeomMunger.I \
-    qpgeomPrimitive.h qpgeomPrimitive.I \
-    qpgeomTriangles.h \
-    qpgeomTristrips.h \
-    qpgeomTrifans.h \
-    qpgeomLines.h \
-    qpgeomLinestrips.h \
-    qpgeomPoints.h \
-    qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
-    qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
-    qpgeomCacheEntry.h qpgeomCacheEntry.I \
-    qpgeomCacheManager.h qpgeomCacheManager.I \
-    qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
-    qpgeomVertexData.h qpgeomVertexData.I \
-    qpgeomVertexColumn.h qpgeomVertexColumn.I \
-    qpgeomVertexFormat.h qpgeomVertexFormat.I \
-    qpgeomVertexReader.h qpgeomVertexReader.I \
-    qpgeomVertexRewriter.h qpgeomVertexRewriter.I \
-    qpgeomVertexWriter.h qpgeomVertexWriter.I \
+    geomEnums.h \
+    geomMunger.h geomMunger.I \
+    geomPrimitive.h geomPrimitive.I \
+    geomTriangles.h \
+    geomTristrips.h \
+    geomTrifans.h \
+    geomLines.h \
+    geomLinestrips.h \
+    geomPoints.h \
+    geomVertexArrayData.h geomVertexArrayData.I \
+    geomVertexArrayFormat.h geomVertexArrayFormat.I \
+    geomCacheEntry.h geomCacheEntry.I \
+    geomCacheManager.h geomCacheManager.I \
+    geomVertexAnimationSpec.h geomVertexAnimationSpec.I \
+    geomVertexData.h geomVertexData.I \
+    geomVertexColumn.h geomVertexColumn.I \
+    geomVertexFormat.h geomVertexFormat.I \
+    geomVertexReader.h geomVertexReader.I \
+    geomVertexRewriter.h geomVertexRewriter.I \
+    geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h materialPool.I materialPool.h  \
@@ -65,32 +61,29 @@
   #define INCLUDED_SOURCES \
     boundedObject.cxx \
     config_gobj.cxx \
-    drawable.cxx geom.cxx  \
+    drawable.cxx \
     geomContext.cxx \
-    geomLine.cxx geomLinestrip.cxx geomPoint.cxx geomPolygon.cxx  \
-    geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
-    geomTrifan.cxx geomTristrip.cxx \
-    qpgeom.cxx \
-    qpgeomEnums.cxx \
-    qpgeomMunger.cxx \
-    qpgeomPrimitive.cxx \
-    qpgeomTriangles.cxx \
-    qpgeomTristrips.cxx \
-    qpgeomTrifans.cxx \
-    qpgeomLines.cxx \
-    qpgeomLinestrips.cxx \
-    qpgeomPoints.cxx \
-    qpgeomVertexArrayData.cxx \
-    qpgeomVertexArrayFormat.cxx \
-    qpgeomCacheEntry.cxx \
-    qpgeomCacheManager.cxx \
-    qpgeomVertexAnimationSpec.cxx \
-    qpgeomVertexData.cxx \
-    qpgeomVertexColumn.cxx \
-    qpgeomVertexFormat.cxx \
-    qpgeomVertexReader.cxx \
-    qpgeomVertexRewriter.cxx \
-    qpgeomVertexWriter.cxx \
+    geom.cxx \
+    geomEnums.cxx \
+    geomMunger.cxx \
+    geomPrimitive.cxx \
+    geomTriangles.cxx \
+    geomTristrips.cxx \
+    geomTrifans.cxx \
+    geomLines.cxx \
+    geomLinestrips.cxx \
+    geomPoints.cxx \
+    geomVertexArrayData.cxx \
+    geomVertexArrayFormat.cxx \
+    geomCacheEntry.cxx \
+    geomCacheManager.cxx \
+    geomVertexAnimationSpec.cxx \
+    geomVertexData.cxx \
+    geomVertexColumn.cxx \
+    geomVertexFormat.cxx \
+    geomVertexReader.cxx \
+    geomVertexRewriter.cxx \
+    geomVertexWriter.cxx \
     indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
@@ -116,31 +109,28 @@
     config_gobj.h \
     drawable.h geom.I geom.h \
     textureContext.I textureContext.h \
-    geomLine.h \
-    geomLinestrip.h geomPoint.h geomPolygon.h geomQuad.h geomSphere.h \
-    geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
-    geomprimitives.h \
-    qpgeom.h qpgeom.I \
-    qpgeomEnums.h \
-    qpgeomMunger.h qpgeomMunger.I \
-    qpgeomPrimitive.h qpgeomPrimitive.I \
-    qpgeomTriangles.h \
-    qpgeomTristrips.h \
-    qpgeomTrifans.h \
-    qpgeomLines.h \
-    qpgeomLinestrips.h \
-    qpgeomPoints.h \
-    qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
-    qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
-    qpgeomCacheEntry.h qpgeomCacheEntry.I \
-    qpgeomCacheManager.h qpgeomCacheManager.I \
-    qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
-    qpgeomVertexData.h qpgeomVertexData.I \
-    qpgeomVertexColumn.h qpgeomVertexColumn.I \
-    qpgeomVertexFormat.h qpgeomVertexFormat.I \
-    qpgeomVertexReader.h qpgeomVertexReader.I \
-    qpgeomVertexRewriter.h qpgeomVertexRewriter.I \
-    qpgeomVertexWriter.h qpgeomVertexWriter.I \
+    geom.h geom.I \
+    geomContext.I geomContext.h \
+    geomEnums.h \
+    geomMunger.h geomMunger.I \
+    geomPrimitive.h geomPrimitive.I \
+    geomTriangles.h \
+    geomTristrips.h \
+    geomTrifans.h \
+    geomLines.h \
+    geomLinestrips.h \
+    geomPoints.h \
+    geomVertexArrayData.h geomVertexArrayData.I \
+    geomVertexArrayFormat.h geomVertexArrayFormat.I \
+    geomCacheEntry.h geomCacheEntry.I \
+    geomCacheManager.h geomCacheManager.I \
+    geomVertexAnimationSpec.h geomVertexAnimationSpec.I \
+    geomVertexData.h geomVertexData.I \
+    geomVertexColumn.h geomVertexColumn.I \
+    geomVertexFormat.h geomVertexFormat.I \
+    geomVertexReader.h geomVertexReader.I \
+    geomVertexRewriter.h geomVertexRewriter.I \
+    geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h \

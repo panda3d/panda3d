@@ -25,15 +25,14 @@
 #include "lensNode.h"
 #include "geomNode.h"
 #include "lens.h"
-#include "geomLine.h"
 #include "geometricBoundingVolume.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "qpgeom.h"
-#include "qpgeomLines.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomLines.h"
+#include "geomVertexWriter.h"
 
 TypeHandle CollisionSegment::_type_handle;
 
@@ -159,41 +158,24 @@ fill_viz_geom() {
       << "Recomputing viz for " << *this << "\n";
   }
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3cp(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    
-    vertex.add_data3f(_a);
-    vertex.add_data3f(_b);
-
-    PT(qpGeomLines) line = new qpGeomLines(qpGeom::UH_static);
-    line->add_next_vertices(2);
-    line->close_primitive();
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(line);
-
-    _viz_geom->add_geom(geom, get_other_viz_state());
-    _bounds_viz_geom->add_geom(geom, get_other_bounds_viz_state());
-
-  } else {
-    GeomLine *segment = new GeomLine;
-    PTA_Vertexf verts;
-    PTA_Colorf colors;
-    verts.push_back(_a);
-    verts.push_back(_b);
-    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    segment->set_coords(verts);
-    segment->set_colors(colors, G_OVERALL);
-    
-    segment->set_num_prims(1);
-
-    _viz_geom->add_geom(segment, get_other_viz_state());
-    _bounds_viz_geom->add_geom(segment, get_other_bounds_viz_state());
-  }
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3cp(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  vertex.add_data3f(_a);
+  vertex.add_data3f(_b);
+  
+  PT(GeomLines) line = new GeomLines(Geom::UH_static);
+  line->add_next_vertices(2);
+  line->close_primitive();
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(line);
+  
+  _viz_geom->add_geom(geom, get_other_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_other_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

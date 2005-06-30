@@ -28,17 +28,6 @@ get_bundle() const {
   return DCAST(CharacterJointBundle, PartBundleNode::get_bundle());
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: Character::get_computed_vertices
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ComputedVertices *Character::
-get_computed_vertices() const {
-  return _computed_vertices;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::get_num_parts
 //       Access: Published

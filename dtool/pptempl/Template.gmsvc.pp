@@ -427,19 +427,19 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib] : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #define local $[get_dllname $[TARGET]].$[dlllib]
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 #endif
 
 $[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
 #define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 
 #if $[and $[build_dlls],$[build_pdbs]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].pdb
 #define local $[get_dllname $[TARGET]].pdb
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 #endif
 
 #if $[igatescan]
@@ -458,7 +458,7 @@ $[TAB] cp -f $[ODIR]/$[local] $[dest]/
 $[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%] : $[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -610,7 +610,7 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
 #define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 
 #end static_lib_target ss_lib_target
 
@@ -645,7 +645,7 @@ $[TAB] rm -f $[sort $[installed_files]]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
 $[install_bin_dir]/$[TARGET] : $[ODIR]/$[TARGET]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 
 #end sed_bin_target
 
@@ -699,13 +699,13 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 
 #if $[build_pdbs]
 $[install_bin_dir]/$[TARGET].pdb : $[ODIR]/$[TARGET].pdb
 #define local $[TARGET].pdb
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[ODIR]/$[local] $[dest]/
+$[TAB] cp -p -f $[ODIR]/$[local] $[dest]/
 #endif
 
 #if $[bin_postprocess_target]
@@ -717,7 +717,7 @@ $[TAB] rm -f $[output_exe]
 $[TAB] $[bin_postprocess_cmd] $[bin_postprocess_arg1] $[input_exe] $[bin_postprocess_arg2] $[output_exe]
 
 $[install_bin_dir]/$[bin_postprocess_target].exe : $[output_exe]
-$[TAB] cp -f $[output_exe] $[install_bin_dir]/
+$[TAB] cp -p -f $[output_exe] $[install_bin_dir]/
 #endif
 
 #end bin_target
@@ -850,14 +850,14 @@ $[TAB] $[COMPILE_C++]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-$[TAB] chmod +x $[local]; cp -f $[local] $[dest]/
+$[TAB] chmod +x $[local]; cp -p -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_parser_inc]
@@ -866,12 +866,12 @@ $[install_parser_inc_dir]/$[file] : $[notdir $[file]]
   #define local $[notdir $[file]]
   #define dest $[install_parser_inc_dir]/$[dir $[file]]
 $[TAB] mkdir -p $[install_parser_inc_dir]/$[dir $[file]] || echo
-$[TAB] cp -f $[local] $[dest]
+$[TAB] cp -p -f $[local] $[dest]
 #else
 $[install_parser_inc_dir]/$[file] : $[file]
   #define local $[file]
   #define dest $[install_parser_inc_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #endif
 #end file
 
@@ -879,21 +879,21 @@ $[TAB] cp -f $[local] $[dest]/
 $[install_data_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_py]
 $[install_py_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_py_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #end file
 
 #if $[install_py]
@@ -1049,7 +1049,7 @@ $[TAB] @test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
 $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] cp -p -f $[local] $[dest]/
 #endif
 
 // Finally, the rules to freshen the Makefile itself.

@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    chan:c char:c downloader:c egg2pg:c event:c lerp:c builder:c \
+    chan:c char:c downloader:c egg2pg:c event:c lerp:c \
     tform:c grutil:c text:c dgraph:c display:c gsgbase:c collide:c gobj:c \
     parametrics:c pgraph:c egg:c pandaegg:m \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \

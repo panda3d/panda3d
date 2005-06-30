@@ -30,7 +30,7 @@
 #include "renderModeAttrib.h"
 #include "texGenAttrib.h"
 #include "texMatrixAttrib.h"
-#include "qpgeomMunger.h"
+#include "geomMunger.h"
 #include "weakPointerTo.h"
 
 class GraphicsStateGuardianBase;
@@ -223,7 +223,7 @@ private:
   // since there are likely to be far fewer GSG's than RenderStates.
   // The code to manage this map lives in
   // GraphicsStateGuardian::get_geom_munger().
-  typedef pmap<WCPT(GraphicsStateGuardianBase), PT(qpGeomMunger) > Mungers;
+  typedef pmap<WCPT(GraphicsStateGuardianBase), PT(GeomMunger) > Mungers;
   Mungers _mungers;
   Mungers::const_iterator _last_mi;
 

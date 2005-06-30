@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "computedVertices.h"
 #include "characterJoint.h"
 #include "characterSlider.h"
 #include "characterVertexSlider.h"
@@ -61,7 +60,6 @@ public:
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle() const;
 
-  INLINE ComputedVertices *get_computed_vertices() const;
   INLINE int get_num_parts() const;
   INLINE PartGroup *get_part(int n) const;
 
@@ -99,17 +97,6 @@ private:
 
   PT(JointVertexTransform) redirect_joint(const VertexTransform *vt, JointMap &joint_map);
   PT(CharacterVertexSlider) redirect_slider(const VertexSlider *vs, SliderMap &slider_map);
-
-  // These are the actual dynamic vertex pools for this Character's
-  // ComputedVertices--the vertices that it will recompute each frame
-  // based on the soft-skinning and morphing requirements.  Note that
-  // we store this concretely, instead of as a pointer, just because
-  // we don't really need to make it a pointer.
-  DynamicVertices _cv;
-
-  // And this is the object that animates them.  It *is* a pointer, so
-  // it can be shared between multiple instances of this Character.
-  PT(ComputedVertices) _computed_vertices;
 
   // This vector is used by the ComputedVertices object to index back
   // into our joints and sliders.

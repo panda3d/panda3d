@@ -29,8 +29,6 @@
 // Description : This is a specialization on VertexSlider that
 //               returns the slider value associated with a particular
 //               CharacterSlider object.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CharacterVertexSlider : public VertexSlider {
 private:

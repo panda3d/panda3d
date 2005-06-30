@@ -33,17 +33,17 @@
 #include "textureAttrib.h"
 #include "materialPool.h"
 #include "geomNode.h"
-#include "qpgeomVertexFormat.h"
-#include "qpgeomVertexArrayFormat.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomVertexWriter.h"
-#include "qpgeom.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLines.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomPoints.h"
+#include "geomVertexFormat.h"
+#include "geomVertexArrayFormat.h"
+#include "geomVertexData.h"
+#include "geomVertexWriter.h"
+#include "geom.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLines.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
@@ -200,7 +200,6 @@ build_graph() {
   // Now build up the scene graph.
   _root = new ModelRoot(_data->get_egg_filename().get_basename());
   make_node(_data, _root);
-  _builder.build();
 
   reparent_decals();
 
@@ -272,279 +271,6 @@ reparent_decals() {
   }
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_nonindexed_primitive
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void EggLoader::
-make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                          const LMatrix4d *transform,
-                          ComputedVerticesMaker &comp_verts_maker) {
-  if (egg_prim->determine_indexed()) {
-    // Whoops, the primitive inherits the "indexed" flag.  This means
-    // it should be an indexed primitive, even though the caller asked
-    // for a nonindexed primitive.
-    make_indexed_primitive(egg_prim, parent, transform, comp_verts_maker);
-    return;
-  }
-
-  BuilderBucket bucket;
-  BakeInUVs bake_in_uvs;
-  setup_bucket(bucket, bake_in_uvs, parent, egg_prim);
-  if (bucket._hidden && egg_suppress_hidden) {
-    // Eat this primitive.
-    return;
-  }
-
-  LMatrix4d mat;
-
-  if (transform != NULL) {
-    mat = (*transform);
-  } else {
-    mat = egg_prim->get_vertex_to_node();
-  }
-
-  if (egg_prim->is_of_type(EggNurbsCurve::get_class_type())) {
-    make_nurbs_curve(DCAST(EggNurbsCurve, egg_prim), parent, mat);
-
-  } else if (egg_prim->is_of_type(EggNurbsSurface::get_class_type())) {
-    make_nurbs_surface(DCAST(EggNurbsSurface, egg_prim), parent, mat);
-
-  } else {
-    // A normal primitive: polygon, line, or point.
-    BuilderPrim bprim;
-    bprim.set_type(BPT_poly);
-    if (egg_prim->is_of_type(EggLine::get_class_type())) {
-      bprim.set_type(BPT_linestrip);
-    } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
-      bprim.set_type(BPT_point);
-    }
-    
-    if (egg_prim->has_normal()) {
-      Normald norm = egg_prim->get_normal() * mat;
-      norm.normalize();
-      bprim.set_normal(LCAST(float, norm));
-    }
-    if (egg_prim->has_color() && !egg_false_color) {
-      bprim.set_color(egg_prim->get_color());
-    }
-    
-    bool has_vert_color = true;
-    EggPrimitive::const_iterator vi;
-    for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
-      EggVertex *egg_vert = *vi;
-      if (egg_vert->get_num_dimensions() != 3) {
-        egg2pg_cat.error()
-          << "Vertex " << egg_vert->get_pool()->get_name() 
-          << ":" << egg_vert->get_index() << " has dimension " 
-          << egg_vert->get_num_dimensions() << "\n";
-      } else {
-        BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
-        
-        if (egg_vert->has_normal()) {
-          Normald norm = egg_vert->get_normal() * mat;
-          norm.normalize();
-          bvert.set_normal(LCAST(float, norm));
-        }
-        if (egg_vert->has_color() && !egg_false_color) {
-          bvert.set_color(egg_vert->get_color());
-        } else {
-          // If any vertex doesn't have a color, we can't use any of the
-          // vertex colors.
-          has_vert_color = false;
-        }
-
-        EggVertex::const_uv_iterator ui;
-        for (ui = egg_vert->uv_begin(); ui != egg_vert->uv_end(); ++ui) {
-          EggVertexUV *uv_obj = (*ui);
-          TexCoordd uv = uv_obj->get_uv();
-          CPT(InternalName) uv_name;
-          if (uv_obj->has_name() && uv_obj->get_name() != string("default")) {
-            uv_name = InternalName::get_texcoord_name(uv_obj->get_name());
-          } else {
-            uv_name = InternalName::get_texcoord();
-          }
-
-          BakeInUVs::const_iterator buv = bake_in_uvs.find(uv_name);
-          if (buv != bake_in_uvs.end()) {
-            // If we are to bake in a texture matrix, do so now.
-            uv = uv * (*buv).second->get_transform();
-          }
-
-          bvert.set_texcoord(uv_name, LCAST(float, uv));
-        }
-        
-        bprim.add_vertex(bvert);
-      }
-    }
-
-    // Finally, if the primitive didn't have a color, and it didn't have
-    // vertex color, make it white.
-    if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
-      bprim.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
-    }
-
-    _builder.add_prim(bucket, bprim);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_indexed_primitive
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void EggLoader::
-make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                       const LMatrix4d *transform,
-                       ComputedVerticesMaker &comp_verts_maker) {
-  BuilderBucket bucket;
-  BakeInUVs bake_in_uvs;
-  setup_bucket(bucket, bake_in_uvs, parent, egg_prim);
-  if (bucket._hidden && egg_suppress_hidden) {
-    // Eat this primitive.
-    return;
-  }
-
-  LMatrix4d mat;
-
-  if (transform != NULL) {
-    mat = (*transform);
-  } else {
-    mat = egg_prim->get_vertex_to_node();
-  }
-
-  BuilderPrimI bprim;
-  bprim.set_type(BPT_poly);
-  if (egg_prim->is_of_type(EggLine::get_class_type())) {
-    bprim.set_type(BPT_linestrip);
-  } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
-    bprim.set_type(BPT_point);
-  }
-
-  if (egg_prim->has_normal()) {
-    // Define the transform space of the polygon normal.  This will be
-    // the average of all the vertex transform spaces.
-    comp_verts_maker.begin_new_space();
-    EggPrimitive::const_iterator vi;
-    for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
-      EggVertex *egg_vert = *vi;
-      comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
-    }
-    comp_verts_maker.mark_space();
-
-    int nindex =
-      comp_verts_maker.add_normal(egg_prim->get_normal(),
-                                  egg_prim->_dnormals, mat);
-
-    bprim.set_normal(nindex);
-  }
-
-  if (egg_prim->has_color() && !egg_false_color) {
-    int cindex =
-      comp_verts_maker.add_color(egg_prim->get_color(),
-                                 egg_prim->_drgbas);
-    bprim.set_color(cindex);
-  }
-
-  bool has_vert_color = true;
-  EggPrimitive::const_iterator vi;
-  for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
-    EggVertex *egg_vert = *vi;
-
-    if (egg_vert->get_num_dimensions() != 3) {
-      egg2pg_cat.error()
-        << "Vertex " << egg_vert->get_pool()->get_name() 
-        << ":" << egg_vert->get_index() << " has dimension " 
-        << egg_vert->get_num_dimensions() << "\n";
-    } else {
-      // Set up the ComputedVerticesMaker for the coordinate space of
-      // the vertex.
-      comp_verts_maker.begin_new_space();
-      comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
-      comp_verts_maker.mark_space();
-      
-      int vindex =
-        comp_verts_maker.add_vertex(egg_vert->get_pos3(),
-                                     egg_vert->_dxyzs, mat);
-      BuilderVertexI bvert(vindex);
-      
-      if (egg_vert->has_normal()) {
-        int nindex =
-          comp_verts_maker.add_normal(egg_vert->get_normal(),
-                                       egg_vert->_dnormals,
-                                       mat);
-        bvert.set_normal(nindex);
-      }
-      
-      if (egg_vert->has_color() && !egg_false_color) {
-        int cindex =
-          comp_verts_maker.add_color(egg_vert->get_color(),
-                                      egg_vert->_drgbas);
-        bvert.set_color(cindex);
-      } else {
-        // If any vertex doesn't have a color, we can't use any of the
-        // vertex colors.
-        has_vert_color = false;
-      }
-
-      EggVertex::const_uv_iterator ui;
-      for (ui = egg_vert->uv_begin(); ui != egg_vert->uv_end(); ++ui) {
-        EggVertexUV *uv_obj = (*ui);
-        TexCoordd uv = uv_obj->get_uv();
-        CPT(InternalName) uv_name;
-        if (uv_obj->has_name() && uv_obj->get_name() != string("default")) {
-          uv_name = InternalName::get_texcoord_name(uv_obj->get_name());
-        } else {
-          uv_name = InternalName::get_texcoord();
-        }
-
-        LMatrix3d mat = LMatrix3d::ident_mat();
-
-        BakeInUVs::const_iterator buv = bake_in_uvs.find(uv_name);
-        if (buv != bake_in_uvs.end()) {
-          // If we are to bake in a texture matrix, do so now.
-          mat = (*buv).second->get_transform();
-        }
-        
-        int tindex =
-          comp_verts_maker.add_texcoord(uv_name, uv, uv_obj->_duvs, mat);
-        bvert.set_texcoord(uv_name, tindex);
-      }
-      
-      bprim.add_vertex(bvert);
-    }
-  }
-
-  // Finally, if the primitive didn't have a color, and it didn't have
-  // vertex color, make it white.
-  if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
-    int cindex =
-      comp_verts_maker.add_color(Colorf(1.0, 1.0, 1.0, 1.0),
-                                  EggMorphColorList());
-    bprim.set_color(cindex);
-  }
-
-  // We have to set up the arrays after we have iterated through the
-  // vertices, because iterating through the vertices might discover
-  // additional texture coordinate sets that we didn't know about
-  // before.
-  bucket.set_coords(comp_verts_maker._coords);
-  bucket.set_normals(comp_verts_maker._norms);
-  bucket.set_colors(comp_verts_maker._colors);
-
-  ComputedVerticesMaker::TexCoords::const_iterator tci;
-  for (tci = comp_verts_maker._texcoords.begin();
-       tci != comp_verts_maker._texcoords.end();
-       ++tci) {
-    const InternalName *name = (*tci).first;
-    bucket.set_texcoords(name, (*tci).second);
-  }
-
-  _builder.add_prim(bucket, bprim);
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_polyset
 //       Access: Public
@@ -575,18 +301,6 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
   if (render_state->_hidden && egg_suppress_hidden) {
     // Eat this polyset.
-    return;
-  }
-
-  if (!use_qpgeom) {
-    // In the old Geom system, just send each primitive to the
-    // Builder.
-    for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-      EggPrimitive *egg_prim;
-      DCAST_INTO_V(egg_prim, (*ci));
-      make_nonindexed_primitive(egg_prim, parent, transform, _comp_verts_maker);
-    }
-
     return;
   }
 
@@ -634,19 +348,19 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
     // Now convert the vertex pool to a GeomVertexData.
     nassertv(vertex_pool != (EggVertexPool *)NULL);
-    PT(qpGeomVertexData) vertex_data = 
+    PT(GeomVertexData) vertex_data = 
       make_vertex_data(render_state, vertex_pool, egg_bin, mat,
                        is_dynamic, character_maker);
-    nassertv(vertex_data != (qpGeomVertexData *)NULL);
+    nassertv(vertex_data != (GeomVertexData *)NULL);
 
     // And create a Geom to hold the primitives.
-    PT(qpGeom) geom = new qpGeom;
+    PT(Geom) geom = new Geom;
     geom->set_vertex_data(vertex_data);
 
     // Add each new primitive to the Geom.
     Primitives::const_iterator pi;
     for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
-      qpGeomPrimitive *primitive = (*pi).second;
+      GeomPrimitive *primitive = (*pi).second;
       geom->add_primitive(primitive);
     }
 
@@ -726,20 +440,14 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
     rope->set_num_subdiv(max(subdiv_per_segment, 1));
   }
 
-  // Now get the attributes to apply to the rope.  We create a
-  // BuilderBucket for this purpose, so we can call setup_bucket(),
-  // but all we do with this bucket is immediately extract the state
-  // from it.
-  BuilderBucket bucket;
-  BakeInUVs bake_in_uvs;
-  setup_bucket(bucket, bake_in_uvs, parent, egg_curve);
-  if (bucket._hidden && egg_suppress_hidden) {
+  const EggRenderState *render_state;
+  DCAST_INTO_V(render_state, egg_curve->get_user_data(EggRenderState::get_class_type()));
+  if (render_state->_hidden && egg_suppress_hidden) {
     // Eat this primitive.
     return;
   }
-  nassertv(bake_in_uvs.empty());
 
-  rope->set_state(bucket._state);
+  rope->set_state(render_state->_state);
   rope->set_uv_mode(RopeNode::UV_parametric);
 
   if (egg_curve->has_vertex_color()) {
@@ -867,20 +575,14 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
     sheet->set_num_v_subdiv(max(v_subdiv_per_segment, 1));
   }
 
-  // Now get the attributes to apply to the sheet.  We create a
-  // BuilderBucket for this purpose, so we can call setup_bucket(),
-  // but all we do with this bucket is immediately extract the state
-  // from it.
-  BuilderBucket bucket;
-  BakeInUVs bake_in_uvs;
-  setup_bucket(bucket, bake_in_uvs, parent, egg_surface);
-  if (bucket._hidden && egg_suppress_hidden) {
+  const EggRenderState *render_state;
+  DCAST_INTO_V(render_state, egg_surface->get_user_data(EggRenderState::get_class_type()));
+  if (render_state->_hidden && egg_suppress_hidden) {
     // Eat this primitive.
     return;
   }
-  nassertv(bake_in_uvs.empty());
 
-  sheet->set_state(bucket._state);
+  sheet->set_state(render_state->_state);
 
   if (egg_surface->has_vertex_color()) {
     // If the surface had individual vertex color, enable it.
@@ -1445,48 +1147,6 @@ make_texture_stage(const EggTexture *egg_tex) {
   return stage;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::setup_bucket
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void EggLoader::
-setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
-             PandaNode *parent, EggPrimitive *egg_prim) {
-  bucket._node = parent;
-  bucket._mesh = egg_mesh;
-  bucket._retesselate_coplanar = egg_retesselate_coplanar;
-  bucket._unroll_fans = egg_unroll_fans;
-  bucket._show_tstrips = egg_show_tstrips;
-  bucket._show_qsheets = egg_show_qsheets;
-  bucket._show_quads = egg_show_quads;
-  bucket._show_normals = egg_show_normals;
-  bucket._normal_scale = egg_normal_scale;
-  bucket._subdivide_polys = egg_subdivide_polys;
-  bucket._consider_fans = egg_consider_fans;
-  bucket._max_tfan_angle = egg_max_tfan_angle;
-  bucket._min_tfan_tris = egg_min_tfan_tris;
-  bucket._coplanar_threshold = egg_coplanar_threshold;
-
-  // If a primitive has a name that does not begin with a digit, it
-  // should be used to group primitives together--i.e. each primitive
-  // with the same name gets placed into the same GeomNode.  However,
-  // if a prim's name begins with a digit, just ignore it.
-  if (egg_prim->has_name() && !isdigit(egg_prim->get_name()[0])) {
-    bucket.set_name(egg_prim->get_name());
-  }
-
-  EggRenderState render_state(*this);
-  render_state.fill_state(egg_prim);
-
-  bucket._state = render_state._state;
-  bucket._hidden = render_state._hidden;
-  bake_in_uvs = render_state._bake_in_uvs;
-}
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::separate_switches
 //       Access: Private
@@ -1549,38 +1209,6 @@ make_node(EggNode *egg_node, PandaNode *parent) {
 
   return (PandaNode *)NULL;
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_node (EggPrimitive)
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode *EggLoader::
-make_node(EggPrimitive *egg_prim, PandaNode *parent) {
-  assert(parent != NULL);
-  assert(!parent->is_of_type(GeomNode::get_class_type()));
-
-  if (egg_prim->cleanup()) {
-    if (parent->is_of_type(SelectiveChildNode::get_class_type())) {
-      // If we're putting a primitive under a SelectiveChildNode of
-      // some kind, its exact position within the group is relevant,
-      // so we need to create a placeholder now.
-      PandaNode *group = new PandaNode(egg_prim->get_name());
-      parent->add_child(group);
-      make_nonindexed_primitive(egg_prim, group, NULL, _comp_verts_maker);
-      return group;
-    }
-
-    // Otherwise, we don't really care what the position of this
-    // primitive is within its parent's list of children, and in fact
-    // we want to allow it to be combined with other polygons added to
-    // the same parent.
-    make_nonindexed_primitive(egg_prim, parent, NULL, _comp_verts_maker);
-  }
-  return (PandaNode *)NULL;
-}
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggBin)
@@ -1785,12 +1413,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // GeomNode for all of the children.
     bool all_polysets = false;
     bool any_hidden = false;
-    if (use_qpgeom) {
-      // We don't want to ever create a GeomNode under a "decal" flag,
-      // since that can confuse the decal reparenting.
-      if (!egg_group->determine_decal()) {
-        check_for_polysets(egg_group, all_polysets, any_hidden);
-      }
+
+    // We don't want to ever create a GeomNode under a "decal" flag,
+    // since that can confuse the decal reparenting.
+    if (!egg_group->determine_decal()) {
+      check_for_polysets(egg_group, all_polysets, any_hidden);
     }
 
     if (all_polysets && !any_hidden) {
@@ -1997,7 +1624,7 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 //               GeomVertexData has already been created for this
 //               transform, just returns it.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomVertexData) EggLoader::
+PT(GeomVertexData) EggLoader::
 make_vertex_data(const EggRenderState *render_state, 
                  EggVertexPool *vertex_pool, EggNode *primitive_home,
                  const LMatrix4d &transform,
@@ -2014,22 +1641,22 @@ make_vertex_data(const EggRenderState *render_state,
   }
 
   // Decide on the format for the vertices.
-  PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat;
+  PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     qpGeom::NT_float32, qpGeom::C_point);
+     Geom::NT_float32, Geom::C_point);
 
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3, 
-       qpGeom::NT_float32, qpGeom::C_vector);
+       Geom::NT_float32, Geom::C_vector);
   }
 
   bool has_colors = vertex_pool->has_nonwhite_colors();
   if (has_colors) {
     array_format->add_column
       (InternalName::get_color(), 1, 
-       qpGeom::NT_packed_dabc, qpGeom::C_color);
+       Geom::NT_packed_dabc, Geom::C_color);
   }
 
   vector_string uv_names;
@@ -2043,10 +1670,10 @@ make_vertex_data(const EggRenderState *render_state,
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
     array_format->add_column
       (iname, 2,
-       qpGeom::NT_float32, qpGeom::C_texcoord);
+       Geom::NT_float32, Geom::C_texcoord);
   }
 
-  PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
+  PT(GeomVertexFormat) temp_format = new GeomVertexFormat(array_format);
 
   PT(TransformBlendTable) blend_table;
   PT(SliderTable) slider_table;
@@ -2060,16 +1687,16 @@ make_vertex_data(const EggRenderState *render_state,
 
     // Tell the format that we're setting it up for Panda-based
     // animation.
-    qpGeomVertexAnimationSpec animation;
+    GeomVertexAnimationSpec animation;
     animation.set_panda();
     temp_format->set_animation(animation);
 
     blend_table = new TransformBlendTable;
 
-    PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;
+    PT(GeomVertexArrayFormat) anim_array_format = new GeomVertexArrayFormat;
     anim_array_format->add_column
       (InternalName::get_transform_blend(), 1, 
-       qpGeom::NT_uint16, qpGeom::C_index);
+       Geom::NT_uint16, Geom::C_index);
     temp_format->add_array(anim_array_format);
 
     pset<string> slider_names;
@@ -2134,16 +1761,16 @@ make_vertex_data(const EggRenderState *render_state,
     name = character_maker->get_name();
   }
 
-  CPT(qpGeomVertexFormat) format =
-    qpGeomVertexFormat::register_format(temp_format);
+  CPT(GeomVertexFormat) format =
+    GeomVertexFormat::register_format(temp_format);
 
   // Now create a new GeomVertexData using the indicated format.  It
   // is actually correct to create it with UH_static even it
   // represents a dynamic object, because the vertex data itself won't
   // be changing--just the result of applying the animation is
   // dynamic.
-  PT(qpGeomVertexData) vertex_data =
-    new qpGeomVertexData(name, format, qpGeom::UH_static);
+  PT(GeomVertexData) vertex_data =
+    new GeomVertexData(name, format, Geom::UH_static);
 
   vertex_data->set_transform_blend_table(blend_table);
   if (slider_table != (SliderTable *)NULL) {
@@ -2153,7 +1780,7 @@ make_vertex_data(const EggRenderState *render_state,
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;
   for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
-    qpGeomVertexWriter gvw(vertex_data);
+    GeomVertexWriter gvw(vertex_data);
     EggVertex *vertex = (*vi);
     gvw.set_row(vertex->get_index());
 
@@ -2286,7 +1913,7 @@ make_vertex_data(const EggRenderState *render_state,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-record_morph(qpGeomVertexArrayFormat *array_format,
+record_morph(GeomVertexArrayFormat *array_format,
              CharacterMaker *character_maker,
              const string &morph_name, InternalName *column_name,
              int num_components) {
@@ -2296,7 +1923,7 @@ record_morph(qpGeomVertexArrayFormat *array_format,
   if (!array_format->has_column(delta_name)) {
     array_format->add_column
       (delta_name, num_components,
-       qpGeom::NT_float32, qpGeom::C_morph_delta);
+       Geom::NT_float32, Geom::C_morph_delta);
   }
 }
 
@@ -2309,30 +1936,30 @@ record_morph(qpGeomVertexArrayFormat *array_format,
 void EggLoader::
 make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim, 
                EggLoader::Primitives &primitives) {
-  PT(qpGeomPrimitive) primitive;
+  PT(GeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {
-      primitive = new qpGeomTriangles(qpGeom::UH_static);
+      primitive = new GeomTriangles(Geom::UH_static);
     }
 
   } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
-    primitive = new qpGeomTristrips(qpGeom::UH_static);
+    primitive = new GeomTristrips(Geom::UH_static);
 
   } else if (egg_prim->is_of_type(EggTriangleFan::get_class_type())) {
-    primitive = new qpGeomTrifans(qpGeom::UH_static);
+    primitive = new GeomTrifans(Geom::UH_static);
 
   } else if (egg_prim->is_of_type(EggLine::get_class_type())) {
     if (egg_prim->size() == 2) {
-      primitive = new qpGeomLines(qpGeom::UH_static);
+      primitive = new GeomLines(Geom::UH_static);
     } else {
-      primitive = new qpGeomLinestrips(qpGeom::UH_static);
+      primitive = new GeomLinestrips(Geom::UH_static);
     }
 
   } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
-    primitive = new qpGeomPoints(qpGeom::UH_static);
+    primitive = new GeomPoints(Geom::UH_static);
   }
 
-  if (primitive == (qpGeomPrimitive *)NULL) {
+  if (primitive == (GeomPrimitive *)NULL) {
     // Don't know how to make this kind of primitive.
     egg2pg_cat.warning()
       << "Ignoring " << egg_prim->get_type() << "\n";
@@ -2340,13 +1967,13 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   }
 
   if (render_state->_flat_shaded) {
-    primitive->set_shade_model(qpGeomPrimitive::SM_flat_first_vertex);
+    primitive->set_shade_model(GeomPrimitive::SM_flat_first_vertex);
 
   } else if (egg_prim->get_shading() == EggPrimitive::S_overall) {
-    primitive->set_shade_model(qpGeomPrimitive::SM_uniform);
+    primitive->set_shade_model(GeomPrimitive::SM_uniform);
 
   } else {
-    primitive->set_shade_model(qpGeomPrimitive::SM_smooth);
+    primitive->set_shade_model(GeomPrimitive::SM_smooth);
   }
 
   // Insert the primitive into the set, but if we already have a

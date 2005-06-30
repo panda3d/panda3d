@@ -45,17 +45,17 @@ class GeomTri;
 class GeomTristrip;
 class GeomTrifan;
 class GeomSphere;
-class qpGeom;
-class qpGeomVertexData;
-class qpGeomVertexArrayData;
-class qpGeomPrimitive;
-class qpGeomTriangles;
-class qpGeomTristrips;
-class qpGeomTrifans;
-class qpGeomLines;
-class qpGeomLinestrips;
-class qpGeomPoints;
-class qpGeomMunger;
+class Geom;
+class GeomVertexData;
+class GeomVertexArrayData;
+class GeomPrimitive;
+class GeomTriangles;
+class GeomTristrips;
+class GeomTrifans;
+class GeomLines;
+class GeomLinestrips;
+class GeomPoints;
+class GeomMunger;
 
 class PreparedGraphicsObjects;
 class GraphicsOutput;
@@ -136,13 +136,13 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
 
-  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data)=0;
+  virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;
   virtual void release_vertex_buffer(VertexBufferContext *vbc)=0;
 
-  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data)=0;
+  virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
 
-  virtual PT(qpGeomMunger) get_geom_munger(const RenderState *state)=0;
+  virtual PT(GeomMunger) get_geom_munger(const RenderState *state)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;
@@ -183,15 +183,15 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc) { }
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc) { }
 
-  virtual bool begin_draw_primitives(const qpGeom *geom, 
-                                     const qpGeomMunger *munger,
-                                     const qpGeomVertexData *vertex_data)=0;
-  virtual void draw_triangles(const qpGeomTriangles *primitive)=0;
-  virtual void draw_tristrips(const qpGeomTristrips *primitive)=0;
-  virtual void draw_trifans(const qpGeomTrifans *primitive)=0;
-  virtual void draw_lines(const qpGeomLines *primitive)=0;
-  virtual void draw_linestrips(const qpGeomLinestrips *primitive)=0;
-  virtual void draw_points(const qpGeomPoints *primitive)=0;
+  virtual bool begin_draw_primitives(const Geom *geom, 
+                                     const GeomMunger *munger,
+                                     const GeomVertexData *vertex_data)=0;
+  virtual void draw_triangles(const GeomTriangles *primitive)=0;
+  virtual void draw_tristrips(const GeomTristrips *primitive)=0;
+  virtual void draw_trifans(const GeomTrifans *primitive)=0;
+  virtual void draw_lines(const GeomLines *primitive)=0;
+  virtual void draw_linestrips(const GeomLinestrips *primitive)=0;
+  virtual void draw_points(const GeomPoints *primitive)=0;
   virtual void end_draw_primitives()=0;
 
   virtual void framebuffer_copy_to_texture

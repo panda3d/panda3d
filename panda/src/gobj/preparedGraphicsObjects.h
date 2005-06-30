@@ -23,8 +23,8 @@
 #include "referenceCount.h"
 #include "texture.h"
 #include "geom.h"
-#include "qpgeomVertexArrayData.h"
-#include "qpgeomPrimitive.h"
+#include "geomVertexArrayData.h"
+#include "geomPrimitive.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -76,22 +76,22 @@ public:
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
-  void enqueue_vertex_buffer(qpGeomVertexArrayData *data);
-  bool dequeue_vertex_buffer(qpGeomVertexArrayData *data);
+  void enqueue_vertex_buffer(GeomVertexArrayData *data);
+  bool dequeue_vertex_buffer(GeomVertexArrayData *data);
   void release_vertex_buffer(VertexBufferContext *vbc);
   int release_all_vertex_buffers();
 
   VertexBufferContext *
-  prepare_vertex_buffer_now(qpGeomVertexArrayData *data,
+  prepare_vertex_buffer_now(GeomVertexArrayData *data,
                             GraphicsStateGuardianBase *gsg);
 
-  void enqueue_index_buffer(qpGeomPrimitive *data);
-  bool dequeue_index_buffer(qpGeomPrimitive *data);
+  void enqueue_index_buffer(GeomPrimitive *data);
+  bool dequeue_index_buffer(GeomPrimitive *data);
   void release_index_buffer(IndexBufferContext *ibc);
   int release_all_index_buffers();
 
   IndexBufferContext *
-  prepare_index_buffer_now(qpGeomPrimitive *data,
+  prepare_index_buffer_now(GeomPrimitive *data,
                            GraphicsStateGuardianBase *gsg);
 
   void update(GraphicsStateGuardianBase *gsg);
@@ -102,9 +102,9 @@ private:
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
   typedef phash_set<VertexBufferContext *, pointer_hash> VertexBuffers;
-  typedef phash_set< PT(qpGeomVertexArrayData) > EnqueuedVertexBuffers;
+  typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set<IndexBufferContext *, pointer_hash> IndexBuffers;
-  typedef phash_set< PT(qpGeomPrimitive) > EnqueuedIndexBuffers;
+  typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
 
   Mutex _lock;
   Textures _prepared_textures, _released_textures;  

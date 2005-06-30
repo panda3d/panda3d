@@ -600,10 +600,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
 
   // First, check the reject_compression flag.  If it's set, we
   // decided to just write out the stream uncompressed.
-  bool reject_compression = false;
-  if (_bam_minor_version >= 8) {
-    reject_compression = di.get_bool();
-  }
+  bool reject_compression = di.get_bool();
   if (reject_compression) {
     array.reserve(array.size() + length);
     for (int i = 0; i < length; i++) {

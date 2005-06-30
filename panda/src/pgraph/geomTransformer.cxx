@@ -19,8 +19,8 @@
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
 #include "geomNode.h"
-#include "qpgeom.h"
-#include "qpgeomVertexRewriter.h"
+#include "geom.h"
+#include "geomVertexRewriter.h"
 #include "renderState.h"
 #include "transformTable.h"
 #include "transformBlendTable.h"
@@ -75,105 +75,40 @@ GeomTransformer::
 bool GeomTransformer::
 transform_vertices(Geom *geom, const LMatrix4f &mat) {
   PStatTimer timer(apply_vertex_collector);
-  bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
-
-  if (geom->is_qpgeom()) {
-    qpGeom *qpgeom = DCAST(qpGeom, geom);
-
-    qpSourceVertices sv;
-    sv._mat = mat;
-    sv._vertex_data = qpgeom->get_vertex_data();
-
-    PT(qpGeomVertexData) &new_data = _qpvertices[sv];
-    if (new_data.is_null()) {
-      // We have not yet converted these vertices.  Do so now.
-      new_data = new qpGeomVertexData(*sv._vertex_data);
-      CPT(qpGeomVertexFormat) format = new_data->get_format();
-
-      int ci;
-      for (ci = 0; ci < format->get_num_points(); ci++) {
-        qpGeomVertexRewriter data(new_data, format->get_point(ci));
-
-        while (!data.is_at_end()) {
-          const LPoint3f &point = data.get_data3f();
-          data.set_data3f(point * mat);
-        }
-      }
-      for (ci = 0; ci < format->get_num_vectors(); ci++) {
-        qpGeomVertexRewriter data(new_data, format->get_vector(ci));
-
-        while (!data.is_at_end()) {
-          const LVector3f &vector = data.get_data3f();
-          data.set_data3f(normalize(vector * mat));
-        }
+  SourceVertices sv;
+  sv._mat = mat;
+  sv._vertex_data = geom->get_vertex_data();
+  
+  PT(GeomVertexData) &new_data = _vertices[sv];
+  if (new_data.is_null()) {
+    // We have not yet converted these vertices.  Do so now.
+    new_data = new GeomVertexData(*sv._vertex_data);
+    CPT(GeomVertexFormat) format = new_data->get_format();
+    
+    int ci;
+    for (ci = 0; ci < format->get_num_points(); ci++) {
+      GeomVertexRewriter data(new_data, format->get_point(ci));
+      
+      while (!data.is_at_end()) {
+        const LPoint3f &point = data.get_data3f();
+        data.set_data3f(point * mat);
       }
     }
-
-    qpgeom->set_vertex_data(new_data);
-    transformed = true;
-
-  } else {
-    PTA_Vertexf coords;
-    PTA_ushort index;
-    
-    geom->get_coords(coords, index);
-    
-    if (!coords.empty()) {
-      // Look up the Geom's coords in our table--have we already
-      // transformed this array?
-      SourceVertices sv;
-      sv._mat = mat;
-      sv._coords = coords;
+    for (ci = 0; ci < format->get_num_vectors(); ci++) {
+      GeomVertexRewriter data(new_data, format->get_vector(ci));
       
-      PTA_Vertexf &new_coords = _vertices[sv];
-      
-      if (new_coords.is_null()) {
-        // We have not transformed the array yet.  Do so now.
-        new_coords.reserve(coords.size());
-        PTA_Vertexf::const_iterator vi;
-        for (vi = coords.begin(); vi != coords.end(); ++vi) {
-          new_coords.push_back((*vi) * mat);
-        }
-        nassertr(new_coords.size() == coords.size(), false);
+      while (!data.is_at_end()) {
+        const LVector3f &vector = data.get_data3f();
+        data.set_data3f(normalize(vector * mat));
       }
-      
-      geom->set_coords(new_coords, index);
-      transformed = true;
-    }
-
-    // Now do the same thing for normals.
-    PTA_Normalf norms;
-    GeomBindType bind;
-    
-    geom->get_normals(norms, bind, index);
-    
-    if (bind != G_OFF) {
-      SourceNormals sn;
-      sn._mat = mat;
-      sn._norms = norms;
-      
-      PTA_Normalf &new_norms = _normals[sn];
-      
-      if (new_norms.is_null()) {
-        // We have not transformed the array yet.  Do so now.
-        new_norms.reserve(norms.size());
-        PTA_Normalf::const_iterator ni;
-        for (ni = norms.begin(); ni != norms.end(); ++ni) {
-          Normalf new_norm = (*ni) * mat;
-          new_norm.normalize();
-          new_norms.push_back(new_norm);
-        }
-        nassertr(new_norms.size() == norms.size(), false);
-      }
-      
-      geom->set_normals(new_norms, bind, index);
-      transformed = true;
     }
   }
+  
+  geom->set_vertex_data(new_data);
 
-  return transformed;
+  return true;
 }
 
 
@@ -196,7 +131,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = new Geom(*entry._geom);
     if (transform_vertices(new_geom, mat)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -218,83 +153,48 @@ bool GeomTransformer::
 transform_texcoords(Geom *geom, const InternalName *from_name, 
                     const InternalName *to_name, const LMatrix4f &mat) {
   PStatTimer timer(apply_texcoord_collector);
-  bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
-  if (geom->is_qpgeom()) {
-    qpGeom *qpgeom = DCAST(qpGeom, geom);
 
-    qpSourceTexCoords st;
-    st._mat = mat;
-    st._from = from_name;
-    st._to = to_name;
-    st._vertex_data = qpgeom->get_vertex_data();
-
-    PT(qpGeomVertexData) &new_data = _qptexcoords[st];
-    if (new_data.is_null()) {
-      if (!st._vertex_data->has_column(from_name)) {
-        // No from_name column; no change.
-        return false;
-      }
-
-      // We have not yet converted these texcoords.  Do so now.
-      if (st._vertex_data->has_column(to_name)) {
-        new_data = new qpGeomVertexData(*st._vertex_data);
-      } else {
-        const qpGeomVertexColumn *old_column = 
-          st._vertex_data->get_format()->get_column(from_name);
-        new_data = st._vertex_data->replace_column
-          (to_name, old_column->get_num_components(),
-           old_column->get_numeric_type(),
-           old_column->get_contents());
-      }
-
-      CPT(qpGeomVertexFormat) format = new_data->get_format();
-      
-      qpGeomVertexWriter tdata(new_data, to_name);
-      qpGeomVertexReader fdata(new_data, from_name);
-      
-      while (!fdata.is_at_end()) {
-        const LPoint4f &coord = fdata.get_data4f();
-        tdata.set_data4f(coord * mat);
-      }
+  SourceTexCoords st;
+  st._mat = mat;
+  st._from = from_name;
+  st._to = to_name;
+  st._vertex_data = geom->get_vertex_data();
+  
+  PT(GeomVertexData) &new_data = _texcoords[st];
+  if (new_data.is_null()) {
+    if (!st._vertex_data->has_column(from_name)) {
+      // No from_name column; no change.
+      return false;
     }
-
-    qpgeom->set_vertex_data(new_data);
-    transformed = true;
-
-  } else {
-    PTA_TexCoordf texcoords = geom->get_texcoords_array(from_name);
-    PTA_ushort index = geom->get_texcoords_index(from_name);
-
-    if (!texcoords.is_null()) {
-      // Look up the Geom's texcoords in our table--have we already
-      // transformed this array?
-      SourceTexCoords stc;
-      stc._mat = mat;
-      stc._texcoords = texcoords;
-      
-      PTA_TexCoordf &new_texcoords = _texcoords[stc];
-      
-      if (new_texcoords.is_null()) {
-        // We have not transformed the array yet.  Do so now.
-        new_texcoords.reserve(texcoords.size());
-        PTA_TexCoordf::const_iterator tci;
-        for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
-          const TexCoordf &tc = (*tci);
-          LVecBase4f v4(tc[0], tc[1], 0.0f, 1.0f);
-          v4 = v4 * mat;
-          new_texcoords.push_back(TexCoordf(v4[0] / v4[3], v4[1] / v4[3]));
-        }
-        nassertr(new_texcoords.size() == texcoords.size(), false);
-      }
-
-      geom->set_texcoords(to_name, new_texcoords, index);
-      transformed = true;
+    
+    // We have not yet converted these texcoords.  Do so now.
+    if (st._vertex_data->has_column(to_name)) {
+      new_data = new GeomVertexData(*st._vertex_data);
+    } else {
+      const GeomVertexColumn *old_column = 
+        st._vertex_data->get_format()->get_column(from_name);
+      new_data = st._vertex_data->replace_column
+        (to_name, old_column->get_num_components(),
+         old_column->get_numeric_type(),
+         old_column->get_contents());
+    }
+    
+    CPT(GeomVertexFormat) format = new_data->get_format();
+    
+    GeomVertexWriter tdata(new_data, to_name);
+    GeomVertexReader fdata(new_data, from_name);
+    
+    while (!fdata.is_at_end()) {
+      const LPoint4f &coord = fdata.get_data4f();
+      tdata.set_data4f(coord * mat);
     }
   }
+  
+  geom->set_vertex_data(new_data);
 
-  return transformed;
+  return true;
 }
 
 
@@ -318,7 +218,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = new Geom(*entry._geom);
     if (transform_texcoords(new_geom, from_name, to_name, mat)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -339,46 +239,25 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 bool GeomTransformer::
 set_color(Geom *geom, const Colorf &color) {
   PStatTimer timer(apply_set_color_collector);
-  bool transformed = false;
 
-  if (geom->is_qpgeom()) {
-    qpGeom *qpgeom = DCAST(qpGeom, geom);
-
-    qpSourceColors sc;
-    sc._color = color;
-    sc._vertex_data = qpgeom->get_vertex_data();
-
-    CPT(qpGeomVertexData) &new_data = _qpfcolors[sc];
-    if (new_data.is_null()) {
-      // We have not yet converted these colors.  Do so now.
-      if (sc._vertex_data->has_column(InternalName::get_color())) {
-        new_data = sc._vertex_data->set_color(color);
-      } else {
-        new_data = sc._vertex_data->set_color
-          (color, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
-      }
+  SourceColors sc;
+  sc._color = color;
+  sc._vertex_data = geom->get_vertex_data();
+  
+  CPT(GeomVertexData) &new_data = _fcolors[sc];
+  if (new_data.is_null()) {
+    // We have not yet converted these colors.  Do so now.
+    if (sc._vertex_data->has_column(InternalName::get_color())) {
+      new_data = sc._vertex_data->set_color(color);
+    } else {
+      new_data = sc._vertex_data->set_color
+        (color, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
-
-    qpgeom->set_vertex_data(new_data);
-    transformed = true;
-
-  } else {
-    // In this case, we always replace whatever color array was there
-    // with a new color array containing just this color.
-    
-    // We do want to share this one-element array between Geoms, though.
-    PTA_Colorf &new_colors = _fcolors[color];
-    
-    if (new_colors.is_null()) {
-      // We haven't seen this color before; define a new color array.
-      new_colors.push_back(color);
-    }
-    
-    geom->set_colors(new_colors, G_OVERALL);
-    transformed = true;
   }
+  
+  geom->set_vertex_data(new_data);
 
-  return transformed;
+  return true;
 }
 
 
@@ -398,7 +277,7 @@ set_color(GeomNode *node, const Colorf &color) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = new Geom(*entry._geom);
     if (set_color(new_geom, color)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -418,68 +297,27 @@ set_color(GeomNode *node, const Colorf &color) {
 bool GeomTransformer::
 transform_colors(Geom *geom, const LVecBase4f &scale) {
   PStatTimer timer(apply_scale_color_collector);
-  bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
 
-  if (geom->is_qpgeom()) {
-    qpGeom *qpgeom = DCAST(qpGeom, geom);
-
-    qpSourceColors sc;
-    sc._color = scale;
-    sc._vertex_data = qpgeom->get_vertex_data();
-
-    CPT(qpGeomVertexData) &new_data = _qptcolors[sc];
-    if (new_data.is_null()) {
-      // We have not yet converted these colors.  Do so now.
-      if (sc._vertex_data->has_column(InternalName::get_color())) {
-        new_data = sc._vertex_data->scale_color(scale);
-      } else {
-        new_data = sc._vertex_data->set_color
-          (scale, 1, qpGeom::NT_packed_dabc, qpGeom::C_color);
-      }
-    }
-
-    qpgeom->set_vertex_data(new_data);
-    transformed = true;
-
-  } else {
-    PTA_Colorf colors;
-    GeomBindType bind;
-    PTA_ushort index;
-    
-    geom->get_colors(colors, bind, index);
-    
-    if (bind != G_OFF) {
-      // Look up the Geom's colors in our table--have we already
-      // transformed this array?
-      SourceColors sc;
-      sc._scale = scale;
-      sc._colors = colors;
-      
-      PTA_Colorf &new_colors = _tcolors[sc];
-      
-      if (new_colors.is_null()) {
-        // We have not transformed the array yet.  Do so now.
-        new_colors.reserve(colors.size());
-        PTA_Colorf::const_iterator ci;
-        for (ci = colors.begin(); ci != colors.end(); ++ci) {
-          const Colorf &c = (*ci);
-          Colorf transformed(c[0] * scale[0], 
-                             c[1] * scale[1], 
-                             c[2] * scale[2],
-                             c[3] * scale[3]);
-          new_colors.push_back(transformed);
-        }
-        nassertr(new_colors.size() == colors.size(), false);
-      }
-      
-      geom->set_colors(new_colors, bind, index);
-      transformed = true;
+  SourceColors sc;
+  sc._color = scale;
+  sc._vertex_data = geom->get_vertex_data();
+  
+  CPT(GeomVertexData) &new_data = _tcolors[sc];
+  if (new_data.is_null()) {
+    // We have not yet converted these colors.  Do so now.
+    if (sc._vertex_data->has_column(InternalName::get_color())) {
+      new_data = sc._vertex_data->scale_color(scale);
+    } else {
+      new_data = sc._vertex_data->set_color
+        (scale, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
   }
+  
+  geom->set_vertex_data(new_data);
 
-  return transformed;
+  return true;
 }
 
 
@@ -501,7 +339,7 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = new Geom(*entry._geom);
     if (transform_colors(new_geom, scale)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -545,15 +383,15 @@ apply_state(GeomNode *node, const RenderState *state) {
 //               Returns the number of unique GeomVertexDatas created.
 ////////////////////////////////////////////////////////////////////
 int GeomTransformer::
-collect_vertex_data(qpGeom *geom, int collect_bits) {
-  const qpGeomVertexData *vdata = geom->get_vertex_data();
+collect_vertex_data(Geom *geom, int collect_bits) {
+  const GeomVertexData *vdata = geom->get_vertex_data();
 
   if (vdata->get_num_rows() > _max_collect_vertices) {
     // Don't even bother.
     return 0;
   }
 
-  const qpGeomVertexFormat *format = vdata->get_format();
+  const GeomVertexFormat *format = vdata->get_format();
 
   NewCollectedKey key;
   if ((collect_bits & SceneGraphReducer::CVD_name) != 0) {
@@ -576,11 +414,11 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
   int num_created = 0;
 
   NewCollectedData::iterator ni = _new_collected_data.find(key);
-  PT(qpGeomVertexData) new_data;
+  PT(GeomVertexData) new_data;
   if (ni != _new_collected_data.end()) {
     new_data = (*ni).second;
   } else {
-    new_data = new qpGeomVertexData(vdata->get_name(), format, 
+    new_data = new GeomVertexData(vdata->get_name(), format, 
                                     vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
     ++num_created;
@@ -591,7 +429,7 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
   if (new_num_vertices > _max_collect_vertices) {
     // Whoa, hold the phone!  Too many vertices going into this one
     // GeomVertexData object; we'd better start over.
-    new_data = new qpGeomVertexData(vdata->get_name(), format, 
+    new_data = new GeomVertexData(vdata->get_name(), format, 
                                     vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
     offset = 0;
@@ -602,8 +440,8 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
   new_data->set_num_rows(new_num_vertices);
 
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
-    qpGeomVertexArrayData *new_array = new_data->modify_array(i);
-    const qpGeomVertexArrayData *old_array = vdata->get_array(i);
+    GeomVertexArrayData *new_array = new_data->modify_array(i);
+    const GeomVertexArrayData *old_array = vdata->get_array(i);
     int stride = format->get_array(i)->get_stride();
     int start_byte = offset * stride;
     int copy_bytes = old_array->get_data_size_bytes();
@@ -671,7 +509,7 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
     // values in the new table.  This requires a nested loop, since
     // each column of transform_index might define multiple index
     // values.
-    qpGeomVertexRewriter index(new_data, InternalName::get_transform_index());
+    GeomVertexRewriter index(new_data, InternalName::get_transform_index());
     if (index.has_column()) {
       int num_values = index.get_column()->get_num_values();
       int new_index[4];
@@ -714,7 +552,7 @@ collect_vertex_data(qpGeom *geom, int collect_bits) {
     // Modify the indices.  This is simpler than the transform_index,
     // above, because each column of transform_blend may only define
     // one index value.
-    qpGeomVertexRewriter index(new_data, InternalName::get_transform_blend());
+    GeomVertexRewriter index(new_data, InternalName::get_transform_blend());
     if (index.has_column()) {
       index.set_row(offset);
       while (!index.is_at_end()) {
@@ -774,22 +612,20 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    if (entry._geom->is_qpgeom()) {
-      PT(qpGeom) new_geom = DCAST(qpGeom, entry._geom->make_copy());
-      entry._geom = new_geom;
+    PT(Geom) new_geom = new Geom(*entry._geom);
+    entry._geom = new_geom;
 
-      if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&
-          new_geom->get_vertex_data()->get_usage_hint() < qpGeom::UH_static) {
-        // This one has some dynamic properties.  Collect it
-        // independently of the outside world.
-        if (dynamic == (GeomTransformer *)NULL) {
-          dynamic = new GeomTransformer(*this);
-        }
-        num_created += dynamic->collect_vertex_data(new_geom, collect_bits);
-        
-      } else {
-        num_created += collect_vertex_data(new_geom, collect_bits);
+    if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&
+        new_geom->get_vertex_data()->get_usage_hint() < Geom::UH_static) {
+      // This one has some dynamic properties.  Collect it
+      // independently of the outside world.
+      if (dynamic == (GeomTransformer *)NULL) {
+        dynamic = new GeomTransformer(*this);
       }
+      num_created += dynamic->collect_vertex_data(new_geom, collect_bits);
+      
+    } else {
+      num_created += collect_vertex_data(new_geom, collect_bits);
     }
   }
 

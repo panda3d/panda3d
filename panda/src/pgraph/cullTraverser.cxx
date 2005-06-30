@@ -31,12 +31,11 @@
 #include "config_pgraph.h"
 #include "boundingSphere.h"
 #include "boundingHexahedron.h"
-#include "geomSphere.h"
 #include "portalClipper.h"
-#include "qpgeom.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTristrips.h"
+#include "geomLinestrips.h"
+#include "geomVertexWriter.h"
 
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
 PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
@@ -310,47 +309,34 @@ make_bounds_viz(const BoundingVolume &vol) {
   } else if (vol.is_of_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, &vol);
 
-    if (use_qpgeom) {
-      static const int num_slices = 16;
-      static const int num_stacks = 8;
+    static const int num_slices = 16;
+    static const int num_stacks = 8;
 
-      PT(qpGeomVertexData) vdata = new qpGeomVertexData
-        ("bounds", qpGeomVertexFormat::get_v3(),
-         qpGeom::UH_stream);
-      qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-      
-      PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_stream);
-      for (int sl = 0; sl < num_slices; ++sl) {
-        float longitude0 = (float)sl / (float)num_slices;
-        float longitude1 = (float)(sl + 1) / (float)num_slices;
-        vertex.add_data3f(compute_point(sphere, 0.0, longitude0));
-        for (int st = 1; st < num_stacks; ++st) {
-          float latitude = (float)st / (float)num_stacks;
-          vertex.add_data3f(compute_point(sphere, latitude, longitude0));
-          vertex.add_data3f(compute_point(sphere, latitude, longitude1));
-        }
-        vertex.add_data3f(compute_point(sphere, 1.0, longitude0));
-        
-        strip->add_next_vertices(num_stacks * 2);
-        strip->close_primitive();
+    PT(GeomVertexData) vdata = new GeomVertexData
+      ("bounds", GeomVertexFormat::get_v3(),
+       Geom::UH_stream);
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    
+    PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
+    for (int sl = 0; sl < num_slices; ++sl) {
+      float longitude0 = (float)sl / (float)num_slices;
+      float longitude1 = (float)(sl + 1) / (float)num_slices;
+      vertex.add_data3f(compute_point(sphere, 0.0, longitude0));
+      for (int st = 1; st < num_stacks; ++st) {
+        float latitude = (float)st / (float)num_stacks;
+        vertex.add_data3f(compute_point(sphere, latitude, longitude0));
+        vertex.add_data3f(compute_point(sphere, latitude, longitude1));
       }
+      vertex.add_data3f(compute_point(sphere, 1.0, longitude0));
       
-      PT(qpGeom) qpgeom = new qpGeom;
-      qpgeom->set_vertex_data(vdata);
-      qpgeom->add_primitive(strip);
-      geom = qpgeom.p();
-
-    } else {
-      geom = new GeomSphere;
-      PTA_Vertexf verts;
-      LPoint3f center = sphere->get_center();
-      verts.push_back(center);
-      center[0] += sphere->get_radius();
-      verts.push_back(center);
-      geom->set_coords(verts);
-      geom->set_num_prims(1);
+      strip->add_next_vertices(num_stacks * 2);
+      strip->close_primitive();
     }
     
+    geom = new Geom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+
   } else {
     pgraph_cat.warning()
       << "Don't know how to draw a representation of "
@@ -376,10 +362,10 @@ make_tight_bounds_viz(PandaNode *node) {
   bool found_any = false;
   node->calc_tight_bounds(n, x, found_any, TransformState::make_identity());
   if (found_any) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("bounds", qpGeomVertexFormat::get_v3(),
-      qpGeom::UH_stream);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    PT(GeomVertexData) vdata = new GeomVertexData
+      ("bounds", GeomVertexFormat::get_v3(),
+      Geom::UH_stream);
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     
     vertex.add_data3f(n[0], n[1], n[2]);
     vertex.add_data3f(n[0], n[1], x[2]);
@@ -390,7 +376,7 @@ make_tight_bounds_viz(PandaNode *node) {
     vertex.add_data3f(x[0], x[1], n[2]);
     vertex.add_data3f(x[0], x[1], x[2]);
   
-    PT(qpGeomLinestrips) strip = new qpGeomLinestrips(qpGeom::UH_stream);
+    PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
 
     // We wind one long linestrip around the wireframe cube.  This
     // does require backtracking a few times here and there.
@@ -412,10 +398,10 @@ make_tight_bounds_viz(PandaNode *node) {
     strip->add_vertex(1);
     strip->close_primitive();
       
-    PT(qpGeom) qpgeom = new qpGeom;
-    qpgeom->set_vertex_data(vdata);
-    qpgeom->add_primitive(strip);
-    geom = qpgeom.p();
+    PT(Geom) geom = new Geom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+    geom = geom.p();
   }
 
   return geom;

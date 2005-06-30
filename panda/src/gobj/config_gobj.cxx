@@ -21,20 +21,18 @@
 #include "config_gobj.h"
 #include "drawable.h"
 #include "geom.h"
-#include "geomprimitives.h"
-#include "qpgeom.h"
-#include "qpgeomMunger.h"
-#include "qpgeomPrimitive.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLines.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomPoints.h"
-#include "qpgeomVertexArrayData.h"
-#include "qpgeomVertexArrayFormat.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomVertexFormat.h"
+#include "geomMunger.h"
+#include "geomPrimitive.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLines.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
+#include "geomVertexArrayData.h"
+#include "geomVertexArrayFormat.h"
+#include "geomVertexData.h"
+#include "geomVertexFormat.h"
 #include "material.h"
 #include "orthographicLens.h"
 #include "matrixLens.h"
@@ -79,25 +77,6 @@ ConfigVariableBool keep_texture_ram
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
 
-ConfigVariableBool keep_geom_ram
-("keep-geom-ram", true,
- PRC_DESC("Set this to true to retain the vertices in ram for each geom "
-          "after it has been prepared with the GSG.  This is similar to "
-          "keep-texture-ram, but it is a little more dangerous, because if "
-          "anyone calls release_all_geoms() on the GSG (or if there are "
-          "multiple GSG's rendering a given geom), Panda won't be able to "
-          "restore the vertices."));
-
-ConfigVariableBool retained_mode
-("retained-mode", false,
- PRC_DESC("Set this true to allow the use of retained mode rendering, which "
-          "creates specific cache information (like display lists or vertex "
-          "buffers) with the GSG for static geometry, when supported by the "
-          "GSG.  Set it false to use only immediate mode, which sends the "
-          "vertices to the GSG every frame.  This is used only in the "
-          "original Geom implementation; it is replaced by display-lists "
-          "in the experimental Geom rewrite."));
-
 ConfigVariableBool vertex_buffers
 ("vertex-buffers", true,
  PRC_DESC("Set this true to allow the use of vertex buffers (or buffer "
@@ -109,7 +88,7 @@ ConfigVariableBool vertex_buffers
           "make little or no difference."));
 
 ConfigVariableBool display_lists
-("display-lists", true,
+("display-lists", false,
  PRC_DESC("Set this true to allow the use of OpenGL display lists for "
           "rendering static geometry.  On some systems, this can result "
           "in a performance improvement over vertex buffers alone; on "
@@ -168,24 +147,6 @@ ConfigVariableBool connect_triangle_strips
           "with no degenerate triangles.  On PC hardware, using one long "
           "triangle strip may help performance by reducing the number "
           "of separate graphics calls that have to be made."));
-
-ConfigVariableBool use_qpgeom
-("use-qpgeom", true,
- PRC_DESC("A temporary variable while the experimental Geom rewrite is "
-          "underway.  Set this true if you want to use the experimental "
-          "code.  This is now the default setting, as the formerly "
-          "experimental code appears to be more robust."));
-
-ConfigVariableBool support_old_geom
-("support-old-geom", true,
- PRC_DESC("A temporary variable while the experimental Geom rewrite is "
-          "underway.  Set this false if you DON't want to see anything "
-          "rendered from a legacy Geom.  This is intended to help "
-          "prove visually that the experimental Geoms are actually "
-          "being used.  You don't really want to set this false, and "
-          "you certainly don't want to monkey with it if you haven't "
-          "also set use-qpgeom true."));
-
 
 ConfigVariableEnum<BamTextureMode> bam_texture_mode
 ("bam-texture-mode", BTM_relative,
@@ -251,29 +212,18 @@ ConfigVariableDouble default_keystone
 ConfigureFn(config_gobj) {
   BoundedObject::init_type();
   Geom::init_type();
-  GeomLine::init_type();
-  GeomLinestrip::init_type();
-  GeomPoint::init_type();
-  GeomSprite::init_type();
-  GeomPolygon::init_type();
-  GeomQuad::init_type();
-  GeomSphere::init_type();
-  GeomTri::init_type();
-  GeomTrifan::init_type();
-  GeomTristrip::init_type();
-  qpGeom::init_type();
-  qpGeomMunger::init_type();
-  qpGeomPrimitive::init_type();
-  qpGeomTriangles::init_type();
-  qpGeomTristrips::init_type();
-  qpGeomTrifans::init_type();
-  qpGeomLines::init_type();
-  qpGeomLinestrips::init_type();
-  qpGeomPoints::init_type();
-  qpGeomVertexArrayData::init_type();
-  qpGeomVertexArrayFormat::init_type();
-  qpGeomVertexData::init_type();
-  qpGeomVertexFormat::init_type();
+  GeomMunger::init_type();
+  GeomPrimitive::init_type();
+  GeomTriangles::init_type();
+  GeomTristrips::init_type();
+  GeomTrifans::init_type();
+  GeomLines::init_type();
+  GeomLinestrips::init_type();
+  GeomPoints::init_type();
+  GeomVertexArrayData::init_type();
+  GeomVertexArrayFormat::init_type();
+  GeomVertexData::init_type();
+  GeomVertexFormat::init_type();
   TextureContext::init_type();
   GeomContext::init_type();
   VertexBufferContext::init_type();
@@ -297,27 +247,17 @@ ConfigureFn(config_gobj) {
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
-  GeomPoint::register_with_read_factory();
-  GeomLine::register_with_read_factory();
-  GeomLinestrip::register_with_read_factory();
-  GeomSprite::register_with_read_factory();
-  GeomPolygon::register_with_read_factory();
-  GeomQuad::register_with_read_factory();
-  GeomTri::register_with_read_factory();
-  GeomTristrip::register_with_read_factory();
-  GeomTrifan::register_with_read_factory();
-  GeomSphere::register_with_read_factory();
-  qpGeom::register_with_read_factory();
-  qpGeomTriangles::register_with_read_factory();
-  qpGeomTristrips::register_with_read_factory();
-  qpGeomTrifans::register_with_read_factory();
-  qpGeomLines::register_with_read_factory();
-  qpGeomLinestrips::register_with_read_factory();
-  qpGeomPoints::register_with_read_factory();
-  qpGeomVertexArrayData::register_with_read_factory();
-  qpGeomVertexArrayFormat::register_with_read_factory();
-  qpGeomVertexData::register_with_read_factory();
-  qpGeomVertexFormat::register_with_read_factory();
+  Geom::register_with_read_factory();
+  GeomTriangles::register_with_read_factory();
+  GeomTristrips::register_with_read_factory();
+  GeomTrifans::register_with_read_factory();
+  GeomLines::register_with_read_factory();
+  GeomLinestrips::register_with_read_factory();
+  GeomPoints::register_with_read_factory();
+  GeomVertexArrayData::register_with_read_factory();
+  GeomVertexArrayFormat::register_with_read_factory();
+  GeomVertexData::register_with_read_factory();
+  GeomVertexFormat::register_with_read_factory();
   Material::register_with_read_factory();
   OrthographicLens::register_with_read_factory();
   MatrixLens::register_with_read_factory();

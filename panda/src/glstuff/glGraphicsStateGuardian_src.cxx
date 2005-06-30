@@ -20,15 +20,14 @@
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"
-#include "geomIssuer.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLines.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomPoints.h"
-#include "qpgeomVertexReader.h"
+#include "geomVertexData.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLines.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
+#include "geomVertexReader.h"
 #include "graphicsWindow.h"
 #include "lens.h"
 #include "perspectiveLens.h"
@@ -76,62 +75,6 @@ TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
-
-static void
-issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator, 
-                GraphicsStateGuardianBase *) {
-  const Vertexf &vertex = geom->get_next_vertex(viterator);
-  // GLCAT.spam() << "Issuing vertex " << vertex << "\n";
-  GLP(Vertex3fv)(vertex.get_data());
-}
-
-static void
-issue_normal_gl(const Geom *geom, Geom::NormalIterator &niterator, 
-                GraphicsStateGuardianBase *) {
-  const Normalf &normal = geom->get_next_normal(niterator);
-  // GLCAT.spam() << "Issuing normal " << normal << "\n";
-  GLP(Normal3fv)(normal.get_data());
-}
-
-static void
-issue_texcoord_single_gl(const Geom *geom, 
-                         Geom::MultiTexCoordIterator &tciterator, 
-                         GraphicsStateGuardianBase *) {
-  const TexCoordf &texcoord = geom->get_next_multitexcoord(tciterator, 0);
-  // GLCAT.spam() << "Issuing texcoord " << texcoord << " on unit 0 (single-texture mode)\n";
-  GLP(TexCoord2fv)(texcoord.get_data());
-}
-
-static void
-issue_texcoord_multi_gl(const Geom *geom, 
-                        Geom::MultiTexCoordIterator &tciterator, 
-                        GraphicsStateGuardianBase *gsgbase) {
-  // We avoid DCAST here because we don't really need it, and it's
-  // nice not to have to pay that overhead on each vertex.
-  CLP(GraphicsStateGuardian) *gsg = (CLP(GraphicsStateGuardian) *)gsgbase;
-  for (int i = 0; i < tciterator._num_stages; i++) {
-    const TexCoordf &texcoord = geom->get_next_multitexcoord(tciterator, i);
-    int stage_index = tciterator._stage_index[i];
-    // GLCAT.spam() << "Issuing texcoord " << texcoord << " on unit " << stage_index << "\n";
-    gsg->_glMultiTexCoord2fv(GL_TEXTURE0 + stage_index, texcoord.get_data());
-  }
-}
-
-static void
-issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-               GraphicsStateGuardianBase *) {
-  const Colorf &color = geom->get_next_color(citerator);
-  //  GLCAT.spam() << "Issuing color " << color << "\n";
-  GLP(Color4fv)(color.get_data());
-}
-
-static void
-issue_scaled_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-                           GraphicsStateGuardianBase *gsg) {
-  const CLP(GraphicsStateGuardian) *glgsg = DCAST(CLP(GraphicsStateGuardian), gsg);
-  const Colorf &color = geom->get_next_color(citerator);
-  glgsg->issue_scaled_color(color);
-}
 
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
@@ -369,10 +312,10 @@ reset() {
   report_extensions();
 
   _supported_geom_rendering = 
-    qpGeom::GR_indexed_point |
-    qpGeom::GR_point | qpGeom::GR_point_uniform_size |
-    qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
-    qpGeom::GR_flat_last_vertex;
+    Geom::GR_indexed_point |
+    Geom::GR_point | Geom::GR_point_uniform_size |
+    Geom::GR_triangle_strip | Geom::GR_triangle_fan |
+    Geom::GR_flat_last_vertex;
 
   _supports_point_parameters = false;
 
@@ -394,7 +337,7 @@ reset() {
     }
   }
   if (_supports_point_parameters) {
-    _supported_geom_rendering |= qpGeom::GR_point_perspective;
+    _supported_geom_rendering |= Geom::GR_point_perspective;
   } else {
     _glPointParameterfv = null_glPointParameterfv;
   }
@@ -405,7 +348,7 @@ reset() {
     // texture transforms on the generated texture coordinates.  How
     // inconsistent.  Because of this, we don't advertise
     // GR_point_sprite_tex_matrix.
-    _supported_geom_rendering |= qpGeom::GR_point_sprite;
+    _supported_geom_rendering |= Geom::GR_point_sprite;
   }
 
   _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
@@ -1116,1074 +1059,6 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_point
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_point(GeomPoint *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_point()" << endl;
-#endif
-
-  setup_antialias_point();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-
-#ifdef DO_PSTATS
-  PStatTimer timer(_draw_primitive_pcollector);
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  GLP(Begin)(GL_POINTS);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    // Draw per vertex, same thing.
-    issuer.issue_color(G_PER_VERTEX, ci);
-    issuer.issue_normal(G_PER_VERTEX, ni);
-    issuer.issue_texcoord(G_PER_VERTEX, ti);
-    issuer.issue_vertex(G_PER_VERTEX, vi);
-  }
-
-  GLP(End)();
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_line
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_line(GeomLine *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_line()" << endl;
-#endif
-
-  setup_antialias_line();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  PStatTimer timer(_draw_primitive_pcollector);
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  GLP(Begin)(GL_LINES);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    for (int j = 0; j < 2; j++) {
-      // Draw per vertex
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-  }
-
-  GLP(End)();
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_linestrip
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_linestrip()" << endl;
-#endif
-
-  setup_antialias_line();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 2);
-
-    GLP(Begin)(GL_LINE_STRIP);
-
-    // Per-component attributes for the first line segment?
-    issuer.issue_color(G_PER_COMPONENT, ci);
-    issuer.issue_normal(G_PER_COMPONENT, ni);
-
-    // Draw the first 2 vertices
-    int v;
-    for (v = 0; v < 2; v++) {
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-
-    // Now draw each of the remaining vertices.  Each vertex from
-    // this point on defines a new line segment.
-    for (v = 2; v < num_verts; v++) {
-      // Per-component attributes?
-      issuer.issue_color(G_PER_COMPONENT, ci);
-      issuer.issue_normal(G_PER_COMPONENT, ni);
-
-      // Per-vertex attributes
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    GLP(End)();
-  }
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_sprite
-//       Access: Public, Virtual
-//  Description: CSN, 7/11/00
-////////////////////////////////////////////////////////////////////
-
-// this class exists because an alpha sort is necessary for correct
-// sprite rendering, and we can't simply sort the vertex arrays as
-// each vertex may or may not have corresponding information in the
-// x/y texel-world-ratio and rotation arrays.
-class WrappedSprite {
-public:
-  Vertexf _v;
-  Colorf _c;
-  float _x_ratio;
-  float _y_ratio;
-  float _theta;
-};
-
-// this struct exists because the STL can sort faster than i can.
-struct draw_sprite_vertex_less {
-  INLINE bool operator ()(const WrappedSprite& v0,
-                          const WrappedSprite& v1) const {
-    return v0._v[2] < v1._v[2]; }
-};
-
-void CLP(GraphicsStateGuardian)::
-draw_sprite(GeomSprite *geom, GeomContext *) {
-  // this is a little bit of a mess, but it's ok.  Here's the deal:
-  // we want to draw, and draw quickly, an arbitrarily large number
-  // of sprites all facing the screen.  Performing the billboard math
-  // for ~1000 sprites is way too slow.  Ideally, we want one
-  // matrix transformation that will handle everything, and this is
-  // just about what ends up happening. We're getting the front-facing
-  // effect by setting up a new frustum (of the same z-depth as the
-  // current one) that is very small in x and y.  This way regularly
-  // rendered triangles that might not be EXACTLY facing the camera
-  // will certainly look close enough.  Then, we transform to camera-space
-  // by hand and apply the inverse frustum to the transformed point.
-  // For some cracked out reason, this actually works.
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_sprite()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  // get the array traversal set up.
-  int nprims = geom->get_num_prims();
-  if (nprims==0) {
-      return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  // need some interface so user can set 2d dimensions if no texture specified
-  float tex_x_size = 1.0f;  
-  float tex_y_size = 1.0f;
-
-  Texture *tex = geom->get_texture();
-  if(tex != NULL) {
-    // set up the texture-rendering state
-    modify_state(RenderState::make(TextureAttrib::make(tex)));
-    tex_x_size = tex->get_x_size();
-    tex_y_size = tex->get_y_size();
-  }
-
-  // save the modelview matrix
-  const LMatrix4f &modelview_mat = _internal_transform->get_mat();
-
-  // We don't need to mess with the aspect ratio, since we are now
-  // using the default projection matrix, which has the right aspect
-  // ratio built in.
-
-  // load up our own matrices
-  GLP(MatrixMode)(GL_MODELVIEW);
-  GLP(LoadIdentity)();
-
-  // precomputation stuff
-  float tex_left = geom->get_ll_uv()[0];
-  float tex_right = geom->get_ur_uv()[0];
-  float tex_bottom = geom->get_ll_uv()[1];
-  float tex_top = geom->get_ur_uv()[1];
-
-  float half_width =  0.5f * tex_x_size * fabs(tex_right - tex_left);
-  float half_height = 0.5f * tex_y_size * fabs(tex_top - tex_bottom);
-  float scaled_width = 0.0f;
-  float scaled_height = 0.0f;
-
-  // the user can override alpha sorting if they want
-  bool alpha = false;
-
-  if (!geom->get_alpha_disable()) {
-    // figure out if alpha's enabled (if not, no reason to sort)
-    const TransparencyAttrib *trans = _state->get_transparency();
-    if (trans != (const TransparencyAttrib *)NULL) {
-      alpha = (trans->get_mode() != TransparencyAttrib::M_none);
-    }
-  }
-
-  // sort container and iterator
-  pvector< WrappedSprite > cameraspace_vector;
-  pvector< WrappedSprite >::iterator vec_iter;
-
-  // inner loop vars
-  int i;
-  Vertexf source_vert, cameraspace_vert;
-  float *x_walk = (float *)NULL;
-  float *y_walk = (float *)NULL;
-  float *theta_walk = (float *)NULL;
-  float theta = 0.0f;
-
-  nassertv(geom->get_x_bind_type() != G_PER_VERTEX);
-  nassertv(geom->get_y_bind_type() != G_PER_VERTEX);
-
-  // set up the non-built-in bindings
-  bool x_overall = (geom->get_x_bind_type() == G_OVERALL);
-  bool y_overall = (geom->get_y_bind_type() == G_OVERALL);
-  bool theta_overall = (geom->get_theta_bind_type() == G_OVERALL);
-  bool color_overall = (geom->get_binding(G_COLOR) == G_OVERALL);
-  bool theta_on = !(geom->get_theta_bind_type() == G_OFF);
-
-  // x direction
-  if (x_overall)
-    scaled_width = geom->_x_texel_ratio[0] * half_width;
-  else {
-    nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
-    x_walk = &geom->_x_texel_ratio[0];
-  }
-
-  // y direction
-  if (y_overall)
-    scaled_height = geom->_y_texel_ratio[0] * half_height;
-  else {
-    nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
-    y_walk = &geom->_y_texel_ratio[0];
-  }
-
-  // theta
-  if (theta_on) {
-    if (theta_overall)
-      theta = geom->_theta[0];
-    else {
-      nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
-      theta_walk = &geom->_theta[0];
-    }
-  }
-
-  /////////////////////////////////////////////////////////////////////
-  // INNER LOOP PART 1 STARTS HERE
-  // Here we transform each point to cameraspace and fill our sort
-  // vector with the final geometric information.
-  /////////////////////////////////////////////////////////////////////
-
-  cameraspace_vector.reserve(nprims);   //pre-alloc space for nprims
-
-  // the state is set, start running the prims
-  for (i = 0; i < nprims; i++) {
-    WrappedSprite ws;
-
-    source_vert = geom->get_next_vertex(vi);
-
-    // this mult converts to y-up cameraspace.
-    cameraspace_vert = source_vert * modelview_mat;
-    // build the final object that will go into the vector.
-    ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
-
-    if (!color_overall)
-      ws._c = geom->get_next_color(ci);
-    if (!x_overall)
-      ws._x_ratio = *x_walk++;
-    if (!y_overall)
-      ws._y_ratio = *y_walk++;
-    if (theta_on) {
-      if (!theta_overall)
-        ws._theta = *theta_walk++;
-    }
-
-    cameraspace_vector.push_back(ws);
-  }
-
-  // now the verts are properly sorted by alpha (if necessary).  Of course,
-  // the sort is only local, not scene-global, so if you look closely you'll
-  // notice that alphas may be screwy.  It's ok though, because this is fast.
-  // if you want accuracy, use billboards and take the speed hit.
-  if (alpha) {
-    sort(cameraspace_vector.begin(), cameraspace_vector.end(),
-         draw_sprite_vertex_less());
-
-     if (_dithering_enabled)
-         GLP(Disable)(GL_DITHER);
-  }
-
-  Vertexf ul, ur, ll, lr;
-
-  if (color_overall)
-    GLP(Color4fv)(geom->get_next_color(ci).get_data());
-
-  ////////////////////////////////////////////////////////////////////////////
-  // INNER LOOP PART 2 STARTS HERE
-  // Now we run through the cameraspace vector and compute the geometry for each
-  // tristrip.  This includes scaling as per the ratio arrays, as well as
-  // rotating in the z.
-  ////////////////////////////////////////////////////////////////////////////
-
-  vec_iter = cameraspace_vector.begin();
-  for (; vec_iter != cameraspace_vector.end(); vec_iter++) {
-    WrappedSprite& cur_image = *vec_iter;
-
-    // if not G_OVERALL, calculate the scale factors
-    if (x_overall == false)
-      scaled_width = cur_image._x_ratio * half_width;
-
-    if (y_overall == false)
-      scaled_height = cur_image._y_ratio * half_height;
-
-    // if not G_OVERALL, do some trig for this z rotate
-    if (theta_on) {
-      if (theta_overall == false)
-        theta = cur_image._theta;
-
-      // create the rotated points
-      LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * LMatrix3f::scale_mat(scaled_width, scaled_height);
-
-      ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
-      ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
-      lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
-      ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
-    }
-    else {
-      // create the normal points
-      ur.set(scaled_width, scaled_height, 0);
-      ul.set(-scaled_width, scaled_height, 0);
-      lr.set(scaled_width, -scaled_height, 0);
-      ll.set(-scaled_width, -scaled_height, 0);
-
-      ur += cur_image._v;
-      ul += cur_image._v;
-      lr += cur_image._v;
-      ll += cur_image._v;
-    }
-
-    // set the color
-    if (color_overall == false)
-      GLP(Color4fv)(cur_image._c.get_data());
-
-    // draw each one as a 2-element tri-strip
-    GLP(Begin)(GL_TRIANGLE_STRIP);
-    GLP(Normal3f)(0.0f, 0.0f, 1.0f);
-    GLP(TexCoord2f)(tex_left, tex_bottom);  GLP(Vertex3fv)(ll.get_data());
-    GLP(TexCoord2f)(tex_right, tex_bottom); GLP(Vertex3fv)(lr.get_data());
-    GLP(TexCoord2f)(tex_left, tex_top);     GLP(Vertex3fv)(ul.get_data());
-    GLP(TexCoord2f)(tex_right, tex_top);    GLP(Vertex3fv)(ur.get_data());
-    GLP(End)();
-  }
-
-  // restore the matrices
-  GLP(LoadMatrixf)(modelview_mat.get_data());
-
-  if(alpha && _dithering_enabled)
-     GLP(Enable)(GL_DITHER);
-
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_polygon
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_polygon(GeomPolygon *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_polygon()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 3);
-
-    GLP(Begin)(GL_POLYGON);
-
-    // Draw the vertices.
-    int v;
-    for (v = 0; v < num_verts; v++) {
-      // Per-vertex attributes.
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    GLP(End)();
-  }
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_tri
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_tri(GeomTri *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_tri()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_tri_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  GLP(Begin)(GL_TRIANGLES);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    for (int j = 0; j < 3; j++) {
-      // Draw per vertex
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-  }
-
-  GLP(End)();
-  report_my_gl_errors();
-#ifdef DO_PSTATS
-  _draw_primitive_pcollector.stop();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_quad
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_quad(GeomQuad *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_quad()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  GLP(Begin)(GL_QUADS);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    for (int j = 0; j < 4; j++) {
-      // Draw per vertex
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-  }
-
-  GLP(End)();
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_tristrip
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
-  
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_tristrip()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  if (geom->get_coords_index().is_null()) {
-    _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
-  } else {
-    _vertices_indexed_tristrip_pcollector.add_level(geom->get_num_vertices());
-  }
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 3);
-
-    GLP(Begin)(GL_TRIANGLE_STRIP);
-
-    // Per-component attributes for the first triangle?
-    issuer.issue_color(G_PER_COMPONENT, ci);
-    issuer.issue_normal(G_PER_COMPONENT, ni);
-
-    // Draw the first three vertices.
-    int v;
-    for (v = 0; v < 3; v++) {
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-
-    // Now draw each of the remaining vertices.  Each vertex from
-    // this point on defines a new triangle.
-    for (v = 3; v < num_verts; v++) {
-      // Per-component attributes?
-      issuer.issue_color(G_PER_COMPONENT, ci);
-      issuer.issue_normal(G_PER_COMPONENT, ni);
-
-      // Per-vertex attributes.
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    GLP(End)();
-  }
-
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-  
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_trifan
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_trifan(GeomTrifan *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_trifan()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  issue_flat_shading(geom);
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 3);
-
-    GLP(Begin)(GL_TRIANGLE_FAN);
-
-    // Per-component attributes for the first triangle?
-    issuer.issue_color(G_PER_COMPONENT, ci);
-    issuer.issue_normal(G_PER_COMPONENT, ni);
-
-    // Draw the first three vertices.
-    int v;
-    for (v = 0; v < 3; v++) {
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-
-    // Now draw each of the remaining vertices.  Each vertex from
-    // this point on defines a new triangle.
-    for (v = 3; v < num_verts; v++) {
-      // Per-component attributes?
-      issuer.issue_color(G_PER_COMPONENT, ci);
-      issuer.issue_normal(G_PER_COMPONENT, ni);
-
-      // Per-vertex attributes.
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    GLP(End)();
-  }
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_sphere(GeomSphere *geom, GeomContext *gc) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "draw_sphere()" << endl;
-#endif
-
-  setup_antialias_polygon();
-
-  if (draw_display_list(gc)) {
-    return;
-  }
-
-#ifdef DO_PSTATS
-  //  PStatTimer timer(_draw_primitive_pcollector);
-  // Using PStatTimer may cause a compiler crash.
-  _draw_primitive_pcollector.start();
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-#endif
-
-  issue_scene_graph_color();
-
-  int nprims = geom->get_num_prims();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::MultiTexCoordIterator ti;
-  geom->setup_multitexcoord_iterator(ti, _current_texture->get_on_stages(),
-                                     _current_tex_gen->get_no_texcoords());
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-  GeomIssuer::IssueColor *issue_color;
-
-  if (_color_blend_involves_color_scale || !_color_scale_enabled ||
-      _color_scale_via_lighting) {
-    issue_color = issue_color_gl;
-  } else {
-    issue_color = issue_scaled_color_gl;
-  }
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_color,
-                    issue_texcoord_single_gl,
-                    issue_texcoord_multi_gl,
-                    ti);
-
-  if (wants_normals()) {
-    if (_flat_shade_model) {
-      modify_state(get_smooth_state());
-    }
-  }
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-
-  GLUquadricObj *sph = GLUP(NewQuadric)();
-  GLUP(QuadricNormals)(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
-  GLUP(QuadricTexture)(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
-  GLUP(QuadricOrientation)(sph, (GLenum)GLU_OUTSIDE);
-  GLUP(QuadricDrawStyle)(sph, (GLenum)GLU_FILL);
-  //GLUP(QuadricDrawStyle)(sph, (GLenum)GLU_LINE);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-
-    for (int j = 0; j < 2; j++) {
-      // Draw per vertex
-      issuer.issue_color(G_PER_VERTEX, ci);
-    }
-    Vertexf center = geom->get_next_vertex(vi);
-    Vertexf edge = geom->get_next_vertex(vi);
-    LVector3f v = edge - center;
-    float r = sqrt(dot(v, v));
-
-    // Since GLUP(Sphere) doesn't have a center parameter, we have to use
-    // a matrix transform.
-
-    GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(PushMatrix)();
-    GLP(MultMatrixf)(LMatrix4f::translate_mat(center).get_data());
-
-    // Now render the sphere using GLU calls.
-    GLUP(Sphere)(sph, r, 16, 10);
-
-    GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(PopMatrix)();
-  }
-
-  GLUP(DeleteQuadric)(sph);
-  report_my_gl_errors();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_draw_primitives
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
@@ -2192,8 +1067,8 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
-                      const qpGeomVertexData *vertex_data) {
+begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
+                      const GeomVertexData *vertex_data) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *vertex_data << "\n";
@@ -2203,29 +1078,29 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
-  nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
+  nassertr(_vertex_data != (GeomVertexData *)NULL, false);
 
   _geom_display_list = 0;
 
   if (_auto_antialias_mode) {
     switch (geom->get_primitive_type()) {
-    case qpGeomPrimitive::PT_polygons:
+    case GeomPrimitive::PT_polygons:
       setup_antialias_polygon();
       break;
-    case qpGeomPrimitive::PT_points:
+    case GeomPrimitive::PT_points:
       setup_antialias_point();
       break;
-    case qpGeomPrimitive::PT_lines:
+    case GeomPrimitive::PT_lines:
       setup_antialias_line();
       break;
-    case qpGeomPrimitive::PT_none:
+    case GeomPrimitive::PT_none:
       break;
     }
   }
 
-  const qpGeomVertexAnimationSpec &animation = 
+  const GeomVertexAnimationSpec &animation = 
     _vertex_data->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == qpGeom::AT_hardware);
+  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
   if (hardware_animation) {
     // Set up the transform matrices for vertex blending.
     nassertr(_supports_vertex_blend, false);
@@ -2320,8 +1195,8 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GLP(LoadIdentity)();
   }
 
-  if (geom->get_usage_hint() == qpGeom::UH_static && 
-      _vertex_data->get_usage_hint() == qpGeom::UH_static &&
+  if (geom->get_usage_hint() == Geom::UH_static && 
+      _vertex_data->get_usage_hint() == Geom::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
@@ -2337,7 +1212,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       _current_ibuffer_index = 0;
     }
 
-    GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
+    GeomContext *gc = ((Geom *)geom)->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
@@ -2388,9 +1263,9 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 #endif
   }
 
-  const qpGeomVertexArrayData *array_data;
+  const GeomVertexArrayData *array_data;
   int num_values;
-  qpGeom::NumericType numeric_type;
+  Geom::NumericType numeric_type;
   int start;
   int stride;
 
@@ -2414,7 +1289,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
                                    start, stride) &&
-      numeric_type != qpGeom::NT_packed_dabc) {
+      numeric_type != Geom::NT_packed_dabc) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
                       stride, client_pointer + start);
@@ -2519,7 +1394,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_triangles(const qpGeomTriangles *primitive) {
+draw_triangles(const GeomTriangles *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_triangles: " << *primitive << "\n";
@@ -2553,7 +1428,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_tristrips(const qpGeomTristrips *primitive) {
+draw_tristrips(const GeomTristrips *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_tristrips: " << *primitive << "\n";
@@ -2588,8 +1463,8 @@ draw_tristrips(const qpGeomTristrips *primitive) {
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
       int index_stride = primitive->get_index_stride();
-      qpGeomVertexReader mins(primitive->get_mins(), 0);
-      qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+      GeomVertexReader mins(primitive->get_mins(), 0);
+      GeomVertexReader maxs(primitive->get_maxs(), 0);
       nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
                primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
@@ -2624,7 +1499,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_trifans(const qpGeomTrifans *primitive) {
+draw_trifans(const GeomTrifans *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_trifans: " << *primitive << "\n";
@@ -2639,8 +1514,8 @@ draw_trifans(const qpGeomTrifans *primitive) {
   if (primitive->is_indexed()) {
     const unsigned char *client_pointer = setup_primitive(primitive);
     int index_stride = primitive->get_index_stride();
-    qpGeomVertexReader mins(primitive->get_mins(), 0);
-    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+    GeomVertexReader mins(primitive->get_mins(), 0);
+    GeomVertexReader maxs(primitive->get_maxs(), 0);
     nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
              primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
@@ -2673,7 +1548,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_lines(const qpGeomLines *primitive) {
+draw_lines(const GeomLines *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_lines: " << *primitive << "\n";
@@ -2706,7 +1581,7 @@ draw_lines(const qpGeomLines *primitive) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_linestrips(const qpGeomLinestrips *primitive) {
+draw_linestrips(const GeomLinestrips *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_linestrips: " << *primitive << "\n";
@@ -2721,7 +1596,7 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_points(const qpGeomPoints *primitive) {
+draw_points(const GeomPoints *primitive) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_points: " << *primitive << "\n";
@@ -2851,81 +1726,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 GeomContext *CLP(GraphicsStateGuardian)::
 prepare_geom(Geom *geom) {
-  // Temporary test until the experimental Geom rewrite becomes the
-  // actual Geom implementation.
-  if (geom->is_qpgeom()) {
-    CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
-    return ggc;
-
-  } else {
-    // Original Geom display list implementation.  Slightly broken,
-    // since it doesn't work well with scene graph color
-    // manipulations.
-
-    if (!_vertex_colors_enabled) {
-      // We can't build a display list (or play back a display list) if
-      // its color is overridden with a scene graph color.  Maybe if we
-      // take advantage of the OpenGL color matrix we can do this, but
-      // for now we'll just ignore it.
-      return NULL;
-    }
-
-    if (geom->is_dynamic()) {
-      // If the Geom is dynamic in some way, we shouldn't try to
-      // display-list it.
-      return NULL;
-    }
-
-    CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
-    ggc->_deprecated_index = GLP(GenLists)(1);
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "preparing " << *geom << ", index " << ggc->_deprecated_index << "\n";
-    }
-    if (ggc->_deprecated_index == 0) {
-      GLCAT.error()
-        << "Ran out of display list indices.\n";
-      delete ggc;
-      return NULL;
-    }
-
-    // We need to temporarily force normals and UV's on, so the display
-    // list will have them built in.
-    //force_texcoords(); 
-    force_normals();
-
-#ifdef DO_PSTATS
-    // Count up the number of vertices we're about to render, by
-    // checking the PStats vertex counters now, and at the end.  This is
-    // kind of hacky, but this is debug code.
-    float num_verts_before =
-      _vertices_tristrip_pcollector.get_level() +
-      _vertices_trifan_pcollector.get_level() +
-      _vertices_tri_pcollector.get_level() +
-      _vertices_other_pcollector.get_level();
-#endif
-
-    // Now define the display list.
-    GLP(NewList)(ggc->_deprecated_index, GL_COMPILE);
-    geom->draw_immediate(this, NULL);
-    GLP(EndList)();
-
-#ifdef DO_PSTATS
-    float num_verts_after =
-      _vertices_tristrip_pcollector.get_level() +
-      _vertices_trifan_pcollector.get_level() +
-      _vertices_tri_pcollector.get_level() +
-      _vertices_other_pcollector.get_level();
-    float num_verts = num_verts_after - num_verts_before;
-    ggc->_num_verts = (int)(num_verts + 0.5);
-#endif
-
-    undo_force_normals();
-    //undo_force_texcoords();
-
-    report_my_gl_errors();
-    return ggc;
-  }
+  return new CLP(GeomContext)(geom);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2973,7 +1774,7 @@ record_deleted_display_list(GLuint index) {
 //               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *CLP(GraphicsStateGuardian)::
-prepare_vertex_buffer(qpGeomVertexArrayData *data) {
+prepare_vertex_buffer(GeomVertexArrayData *data) {
   if (_supports_buffers) {
     CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(data);
     _glGenBuffers(1, &gvbc->_index);
@@ -3078,13 +1879,13 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
 const unsigned char *CLP(GraphicsStateGuardian)::
-setup_array_data(const qpGeomVertexArrayData *data) {
+setup_array_data(const GeomVertexArrayData *data) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     return data->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == qpGeom::UH_client) {
+      data->get_usage_hint() == Geom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_vbuffer_index != 0) {
@@ -3095,7 +1896,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
   }
 
   // Prepare the buffer object and bind it.
-  VertexBufferContext *vbc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  VertexBufferContext *vbc = ((GeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, data->get_data());
   apply_vertex_buffer(vbc);
 
@@ -3117,7 +1918,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
 //               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *CLP(GraphicsStateGuardian)::
-prepare_index_buffer(qpGeomPrimitive *data) {
+prepare_index_buffer(GeomPrimitive *data) {
   if (_supports_buffers) {
     CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(data);
     _glGenBuffers(1, &gibc->_index);
@@ -3223,13 +2024,13 @@ release_index_buffer(IndexBufferContext *ibc) {
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
 const unsigned char *CLP(GraphicsStateGuardian)::
-setup_primitive(const qpGeomPrimitive *data) {
+setup_primitive(const GeomPrimitive *data) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     return data->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == qpGeom::UH_client) {
+      data->get_usage_hint() == Geom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
@@ -3240,7 +2041,7 @@ setup_primitive(const qpGeomPrimitive *data) {
   }
 
   // Prepare the buffer object and bind it.
-  IndexBufferContext *ibc = ((qpGeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
+  IndexBufferContext *ibc = ((GeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(ibc != (IndexBufferContext *)NULL, data->get_data());
   apply_index_buffer(ibc);
 
@@ -3254,10 +2055,10 @@ setup_primitive(const qpGeomPrimitive *data) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomMunger) CLP(GraphicsStateGuardian)::
+PT(GeomMunger) CLP(GraphicsStateGuardian)::
 make_geom_munger(const RenderState *state) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
-  return qpGeomMunger::register_munger(munger);
+  return GeomMunger::register_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4364,20 +3165,20 @@ set_read_buffer(const RenderBuffer &rb) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_numeric_type(qpGeom::NumericType numeric_type) {
+get_numeric_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
-  case qpGeom::NT_uint16:
+  case Geom::NT_uint16:
     return GL_UNSIGNED_SHORT;
 
-  case qpGeom::NT_uint32:
+  case Geom::NT_uint32:
     return GL_UNSIGNED_INT;
 
-  case qpGeom::NT_uint8:
-  case qpGeom::NT_packed_dcba:
-  case qpGeom::NT_packed_dabc:
+  case Geom::NT_uint8:
+  case Geom::NT_packed_dcba:
+  case Geom::NT_packed_dabc:
     return GL_UNSIGNED_BYTE;
     
-  case qpGeom::NT_float32:
+  case Geom::NT_float32:
     return GL_FLOAT;
   }
 
@@ -4904,19 +3705,19 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
 //  Description: Maps from UsageHint to the GL symbol.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_usage(qpGeom::UsageHint usage_hint) {
+get_usage(Geom::UsageHint usage_hint) {
   switch (usage_hint) {
-  case qpGeom::UH_stream:
+  case Geom::UH_stream:
     return GL_STREAM_DRAW;
 
-  case qpGeom::UH_static:
-  case qpGeom::UH_unspecified:
+  case Geom::UH_static:
+  case Geom::UH_unspecified:
     return GL_STATIC_DRAW;
 
-  case qpGeom::UH_dynamic:
+  case Geom::UH_dynamic:
     return GL_DYNAMIC_DRAW;
 
-  case qpGeom::UH_client:
+  case Geom::UH_client:
     break;
   }
 
@@ -4972,23 +3773,6 @@ print_gfx_visual() {
                                             << (int)j << endl;
 
   GLP(GetIntegerv)( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_scaled_color
-//       Access: Public
-//  Description: Transform the color by the current color matrix, and
-//               calls the appropriate glColor function.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_scaled_color(const Colorf &color) const {
-  Colorf transformed
-    (color[0] * _current_color_scale[0],
-     color[1] * _current_color_scale[1],
-     color[2] * _current_color_scale[2],
-     color[3] * _current_color_scale[3]);
-
-  GLP(Color4fv)(transformed.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////

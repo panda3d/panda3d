@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(VertexBufferContext)::
-CLP(VertexBufferContext)(qpGeomVertexArrayData *data) :
+CLP(VertexBufferContext)(GeomVertexArrayData *data) :
   VertexBufferContext(data)
 {
   _index = 0;

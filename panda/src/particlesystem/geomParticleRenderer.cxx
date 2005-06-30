@@ -33,8 +33,8 @@ GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
   BaseParticleRenderer(am),
   _geom_node(geom_node),
-  _pool_size(0),
-  _color_interpolation_manager(new ColorInterpolationManager(Colorf(1.0f,1.0f,1.0f,1.0f)))
+  _color_interpolation_manager(new ColorInterpolationManager(Colorf(1.0f,1.0f,1.0f,1.0f))),
+  _pool_size(0)
 {
   if (_geom_node.is_null())
     _geom_node = new PandaNode("empty");

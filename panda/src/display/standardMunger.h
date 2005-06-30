@@ -33,8 +33,6 @@
 //               all GSG types; for instance, applies ColorAttrib and
 //               ColorScaleAttrib to the vertices, and checks for
 //               hardware-accelerated animation capabilities.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StandardMunger : public StateMunger {
 public:
@@ -46,10 +44,10 @@ public:
   INLINE GraphicsStateGuardian *get_gsg() const;
 
 protected:
-  virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
-  virtual int compare_to_impl(const qpGeomMunger *other) const;
-  virtual bool munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
-  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
+  virtual CPT(GeomVertexData) munge_data_impl(const GeomVertexData *data);
+  virtual int compare_to_impl(const GeomMunger *other) const;
+  virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+  virtual int geom_compare_to_impl(const GeomMunger *other) const;
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
 private:

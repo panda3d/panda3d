@@ -23,8 +23,6 @@
 #include "characterJointBundle.h"
 #include "characterSlider.h"
 #include "characterVertexSlider.h"
-#include "computedVertices.h"
-#include "dynamicVertices.h"
 #include "jointVertexTransform.h"
 #include "dconfig.h"
 #include "lmatrix4.h"
@@ -66,8 +64,6 @@ init_libchar() {
   CharacterJointBundle::init_type();
   CharacterSlider::init_type();
   CharacterVertexSlider::init_type();
-  ComputedVertices::init_type();
-  DynamicVertices::init_type();
   JointVertexTransform::init_type();
 
   // This isn't defined in this package, but it *is* essential that it
@@ -83,7 +79,6 @@ init_libchar() {
   CharacterJointBundle::register_with_read_factory();
   CharacterSlider::register_with_read_factory();
   CharacterVertexSlider::register_with_read_factory();
-  ComputedVertices::register_with_read_factory();
   JointVertexTransform::register_with_read_factory();
 }
 

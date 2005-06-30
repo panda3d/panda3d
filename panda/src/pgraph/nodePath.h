@@ -710,6 +710,8 @@ PUBLISHED:
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
 
+  void analyze() const;
+
   int flatten_light();
   int flatten_medium();
   int flatten_strong();

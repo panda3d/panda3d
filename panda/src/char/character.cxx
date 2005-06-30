@@ -18,7 +18,6 @@
 
 #include "character.h"
 #include "characterJoint.h"
-#include "computedVertices.h"
 #include "config_char.h"
 
 #include "geomNode.h"
@@ -43,8 +42,6 @@ PStatCollector Character::_animation_pcollector("*:Animation");
 Character::
 Character(const Character &copy) :
   PartBundleNode(copy, new CharacterJointBundle(copy.get_bundle()->get_name())),
-  _cv(DynamicVertices::deep_copy(copy._cv)),
-  _computed_vertices(copy._computed_vertices),
   _parts(copy._parts),
   _joints_pcollector(copy._joints_pcollector),
   _skinning_pcollector(copy._skinning_pcollector)
@@ -221,14 +218,8 @@ force_update() {
   // Statistics
   PStatTimer timer(_joints_pcollector);
 
-  // First, update all the joints and sliders.
+  // Update all the joints and sliders.
   get_bundle()->force_update();
-
-  // Now update the vertices.
-  if (_computed_vertices != (ComputedVertices *)NULL) {
-    PStatTimer timer2(_skinning_pcollector);
-    _computed_vertices->update(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -239,21 +230,11 @@ force_update() {
 ////////////////////////////////////////////////////////////////////
 void Character::
 do_update() {
-  // First, update all the joints and sliders.
-  bool any_changed;
+  // Update all the joints and sliders.
   if (even_animation) {
-    any_changed = get_bundle()->force_update();
+    get_bundle()->force_update();
   } else {
-    any_changed = get_bundle()->update();
-  }
-
-  // Now update the vertices, if we need to.  This is likely to be a
-  // slow operation.
-  if (any_changed || even_animation) {
-    if (_computed_vertices != (ComputedVertices *)NULL) {
-      PStatTimer timer2(_skinning_pcollector);
-      _computed_vertices->update(this);
-    }
+    get_bundle()->update();
   }
 }
 
@@ -383,68 +364,20 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 PT(Geom) Character::
 copy_geom(const Geom *source, const Character *from,
           Character::JointMap &joint_map, Character::SliderMap &slider_map) {
-  if (source->is_qpgeom()) {
-    CPT(qpGeom) qpsource = DCAST(qpGeom, source);
-    CPT(qpGeomVertexFormat) format = qpsource->get_vertex_data()->get_format();
-    if (format->get_animation().get_animation_type() == qpGeom::AT_none) {
-      // Not animated, so never mind.
-      return (Geom *)source;
-    }
-
-    PT(qpGeom) dest = new qpGeom(*qpsource);
-    PT(qpGeomVertexData) vdata = dest->modify_vertex_data();
-
-    vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table(), joint_map));
-    vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table(), joint_map));
-    vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table(), slider_map));
-
-    return dest.p();
-
-  } else {
-    GeomBindType bind;
-    PTA_ushort index;
-
-    PTA_Vertexf coords;
-    PTA_Normalf norms;
-    PTA_Colorf colors;
-    PTA_TexCoordf texcoords;
-    
-    PT(Geom) dest = (Geom *)source;
-    
-    source->get_coords(coords, index);
-    if ((coords != (void *)NULL) && (coords == (from->_cv._coords))) {
-      if (dest == source) {
-        dest = source->make_copy();
-      }
-      dest->set_coords(_cv._coords, index);
-    }
-    
-    source->get_normals(norms, bind, index);
-    if (bind != G_OFF && norms == from->_cv._norms) {
-      if (dest == source) {
-        dest = source->make_copy();
-      }
-      dest->set_normals(_cv._norms, bind, index);
-    }
-    
-    source->get_colors(colors, bind, index);
-    if (bind != G_OFF && colors == from->_cv._colors) {
-      if (dest == source) {
-        dest = source->make_copy();
-      }
-      dest->set_colors(_cv._colors, bind, index);
-    }
-    
-    source->get_texcoords(texcoords, bind, index);
-    if (bind != G_OFF && texcoords == from->_cv._texcoords) {
-      if (dest == source) {
-        dest = source->make_copy();
-      }
-      dest->set_texcoords(_cv._texcoords, bind, index);
-    }
-    
-    return dest;
+  CPT(GeomVertexFormat) format = source->get_vertex_data()->get_format();
+  if (format->get_animation().get_animation_type() == Geom::AT_none) {
+    // Not animated, so never mind.
+    return (Geom *)source;
   }
+  
+  PT(Geom) dest = new Geom(*source);
+  PT(GeomVertexData) vdata = dest->modify_vertex_data();
+  
+  vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table(), joint_map));
+  vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table(), joint_map));
+  vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table(), slider_map));
+  
+  return dest;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -672,8 +605,6 @@ register_with_read_factory() {
 void Character::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PartBundleNode::write_datagram(manager, dg);
-  _cv.write_datagram(manager, dg);
-  manager->write_pointer(dg, _computed_vertices);
 
   dg.add_uint16(_parts.size());
   Parts::const_iterator pi;
@@ -692,7 +623,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int Character::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PartBundleNode::complete_pointers(p_list, manager);
-  _computed_vertices = DCAST(ComputedVertices, p_list[pi++]);
 
   int num_parts = _parts.size();
   for (int i = 0; i < num_parts; i++) {
@@ -732,8 +662,6 @@ make_from_bam(const FactoryParams &params) {
 void Character::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PartBundleNode::fillin(scan, manager);
-  _cv.fillin(scan, manager);
-  manager->read_pointer(scan);
 
   // Read the number of parts to expect in the _parts list, and then
   // fill the array up with NULLs.  We'll fill in the actual values in

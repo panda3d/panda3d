@@ -58,7 +58,7 @@ MouseWatcher(const string &name) :
   _button_events = new ButtonEventList;
 
   _has_mouse = false;
-  _suppress_flags = 0;
+  _internal_suppress = 0;
   _preferred_region = (MouseWatcherRegion *)NULL;
   _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
@@ -657,9 +657,10 @@ press(ButtonHandle button) {
       // all the keyboard events, even if it doesn't set its
       // keyboard flag.
       _preferred_region->press(param);
+      consider_keyboard_suppress(_preferred_region);
     }
 
-    if ((_suppress_flags & MouseWatcherRegion::SF_other_button) == 0) {
+    if ((_internal_suppress & MouseWatcherRegion::SF_other_button) == 0) {
       // All the other regions only get the keyboard events if they
       // set their global keyboard flag, *and* the current region does
       // not suppress keyboard buttons.
@@ -738,6 +739,7 @@ keystroke(int keycode) {
     if (region->get_keyboard()) {
       param.set_outside(region != _preferred_region);
       region->keystroke(param);
+      consider_keyboard_suppress(region);
     }
   }
 
@@ -751,6 +753,7 @@ keystroke(int keycode) {
       if (region->get_keyboard()) {
         param.set_outside(region != _preferred_region);
         region->keystroke(param);
+        consider_keyboard_suppress(region);
       }
     }
   }
@@ -813,6 +816,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
 
     if (region != _preferred_region && region->get_keyboard()) {
       region->press(param);
+      consider_keyboard_suppress(region);
     }
   }
 
@@ -825,6 +829,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
 
       if (region != _preferred_region && region->get_keyboard()) {
         region->press(param);
+        consider_keyboard_suppress(region);
       }
     }
   }
@@ -942,6 +947,25 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::consider_keyboard_suppress
+//       Access: Private
+//  Description: If we send any keyboard events to a region that has
+//               the SF_any_button suppress flag set, that means we
+//               should not send the keyboard event along the data
+//               graph.  
+//
+//               This method is called as each keyboard event is sent
+//               to a region; it should update the internal
+//               _keyboard_suppress bitmask to indicate this.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+consider_keyboard_suppress(const MouseWatcherRegion *region) {
+  if ((region->get_suppress_flags() & MouseWatcherRegion::SF_any_button) != 0) {
+    _external_suppress |= MouseWatcherRegion::SF_any_button;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::do_transmit_data
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of transmit_data().  This
@@ -959,7 +983,8 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   bool mouse_moved = false;
   // Initially, we do not suppress any events to objects below us in
   // the data graph.
-  _suppress_flags = 0;
+  _internal_suppress = 0;
+  _external_suppress = 0;
 
   if (!input.has_data(_xy_input)) {
     // No mouse in the window.
@@ -992,7 +1017,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         set_no_mouse();
 
         // This also means we should suppress button events below us.
-        _suppress_flags = MouseWatcherRegion::SF_any_button;
+        _internal_suppress |= MouseWatcherRegion::SF_any_button;
 
       } else {
         // The mouse is within the display region; rescale it.
@@ -1016,7 +1041,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   // owned by a region because of a recent button-down event, that
   // region determines whether we suppress events below us.
   if (_preferred_region != (MouseWatcherRegion *)NULL) {
-    _suppress_flags = _preferred_region->get_suppress_flags();
+    _internal_suppress |= _preferred_region->get_suppress_flags();
   }
 
   // Look for button events.
@@ -1057,7 +1082,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   if (_has_mouse &&
-      (_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0) {
+      (_internal_suppress & MouseWatcherRegion::SF_mouse_position) == 0) {
     if (mouse_moved) {
       move(ButtonHandle::none());
       //tform_cat.info() << "do_transmit_data()::mouse_moved" << endl;
@@ -1069,7 +1094,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
   }
 
-  int suppress_buttons = (_suppress_flags & MouseWatcherRegion::SF_any_button);
+  int suppress_buttons = ((_internal_suppress | _external_suppress) & MouseWatcherRegion::SF_any_button);
 
   if (suppress_buttons != 0) {
     // Suppress some buttons.

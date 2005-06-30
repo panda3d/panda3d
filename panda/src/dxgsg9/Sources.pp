@@ -1,4 +1,7 @@
-#define BUILD_DIRECTORY $[HAVE_DX]
+// DX9 build is temporarily disabled until we bring it up-to-date with
+// the new Geom rewrite.
+#define BUILD_DIRECTORY
+//#define BUILD_DIRECTORY $[HAVE_DX]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m

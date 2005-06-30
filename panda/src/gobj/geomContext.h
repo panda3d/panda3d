@@ -49,14 +49,6 @@ public:
   // reference count.
   Geom *_geom;
 
-  INLINE void mark_dirty(int flags_to_set);
-  INLINE void clear_dirty_flags(int flags_to_clear = ~0);
-  INLINE int get_dirty_flags() const;
-
-private:
-  int _dirty_flags;
-
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -1,5 +1,5 @@
 // Filename: geom.cxx
-// Created by:  mike (09Jan97)
+// Created by:  drose (06Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,288 +17,559 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geom.h"
-#include "config_gobj.h"
-
+#include "geomPoints.h"
+#include "geomVertexReader.h"
+#include "geomVertexRewriter.h"
 #include "graphicsStateGuardianBase.h"
-#include "geometricBoundingVolume.h"
-#include "datagram.h"
-#include "datagramIterator.h"
+#include "preparedGraphicsObjects.h"
+#include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "ioPtaDatagramShort.h"
-#include "ioPtaDatagramInt.h"
-#include "ioPtaDatagramLinMath.h"
-#include "preparedGraphicsObjects.h"
-#include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
-
+UpdateSeq Geom::_next_modified;
 TypeHandle Geom::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_*_nonindexed
-//  Description: Retrieves the next component of the nonindexed array.
-////////////////////////////////////////////////////////////////////
-static const Vertexf &get_vertex_nonindexed(Geom::VertexIterator &vi) {
-  return *(vi._array++);
-}
-static const Normalf &get_normal_nonindexed(Geom::NormalIterator &vi) {
-  return *(vi._array++);
-}
-static const TexCoordf &get_texcoord_nonindexed(Geom::TexCoordIterator &vi) {
-  return *(vi._array++);
-}
-static const Colorf &get_color_nonindexed(Geom::ColorIterator &vi) {
-  return *(vi._array++);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: get_*_indexed
-//  Description: Retrieves the next component of the indexed array.
-////////////////////////////////////////////////////////////////////
-static const Vertexf &get_vertex_indexed(Geom::VertexIterator &vi) {
-  return vi._array[*(vi._index++)];
-}
-static const Normalf &get_normal_indexed(Geom::NormalIterator &vi) {
-  return vi._array[*(vi._index++)];
-}
-static const TexCoordf &get_texcoord_indexed(Geom::TexCoordIterator &vi) {
-  return vi._array[*(vi._index++)];
-}
-static const Colorf &get_color_indexed(Geom::ColorIterator &vi) {
-  return vi._array[*(vi._index++)];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: get_*_noop
-//  Description: Doesn't retrieve anything at all.
-////////////////////////////////////////////////////////////////////
-static const Vertexf &get_vertex_noop(Geom::VertexIterator &) {
-  static Vertexf nothing;
-  return nothing;
-}
-static const Normalf &get_normal_noop(Geom::NormalIterator &) {
-  static Normalf nothing;
-  return nothing;
-}
-static const TexCoordf &get_texcoord_noop(Geom::TexCoordIterator &) {
-  static TexCoordf nothing;
-  return nothing;
-}
-static const Colorf &get_color_noop(Geom::ColorIterator &) {
-  static Colorf nothing;
-  return nothing;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomBindType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &operator << (ostream &out, GeomBindType t) {
-  switch (t) {
-  case G_OFF:
-    return out << "off";
-  case G_OVERALL:
-    return out << "overall";
-  case G_PER_PRIM:
-    return out << "per prim";
-  case G_PER_COMPONENT:
-    return out << "per component";
-  case G_PER_VERTEX:
-    return out << "per vertex";
-  }
-  return out << "(**invalid**)";
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomAttrType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &operator << (ostream &out, GeomAttrType t) {
-  switch (t) {
-  case G_COORD:
-    return out << "coord";
-  case G_COLOR:
-    return out << "color";
-  case G_NORMAL:
-    return out << "normal";
-  case G_TEXCOORD:
-    return out << "texcoord";
-  }
-  return out << "(**invalid**)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: describe_attr
-//  Description: A handy helper function for output_verbose,
-//               below.
-////////////////////////////////////////////////////////////////////
-template <class VecType>
-static void
-describe_attr(ostream &out, const Geom *geom,
-              GeomBindType bind, const PTA(VecType) &array,
-              bool newline, int indent_level) {
-  PTA_int lengths = geom->get_lengths();
-  int num_prims = geom->get_num_prims();
-  bool components = geom->uses_components();
-
-  int i, j, vi;
-  switch (bind) {
-  case G_PER_VERTEX:
-    indent(out, indent_level)
-      << "Per vertex:";
-    vi = 0;
-    int num_verts;
-    num_verts = geom->get_num_vertices_per_prim();
-    for (i = 0; i < num_prims; i++) {
-      if (components) {
-        num_verts = lengths[i];
-      }
-      out << "\n";
-      indent(out, indent_level) << "[ ";
-      if (num_verts > 0) {
-        out << array[vi++];
-        for (j = 1; j < num_verts; j++) {
-          if (newline) {
-            out << "\n";
-            indent(out, indent_level + 2);
-          } else {
-            out << " ";
-          }
-          out << array[vi++];
-        }
-      }
-      out << " ]";
-    }
-    break;
-
-  case G_PER_COMPONENT:
-    if (!components) {
-      indent(out, indent_level)
-        << "Invalid per-component attribute specified!";
-    } else {
-      indent(out, indent_level)
-        << "Per component:";
-      vi = 0;
-      for (i = 0; i < num_prims; i++) {
-        num_verts = lengths[i] - geom->get_num_more_vertices_than_components();
-        out << "\n";
-        indent(out, indent_level) << "[ ";
-        if (num_verts > 0) {
-          out << array[vi++];
-          for (j = 1; j < num_verts; j++) {
-            if (newline) {
-              out << "\n";
-              indent(out, indent_level + 2);
-            } else {
-              out << " ";
-            }
-            out << array[vi++];
-          }
-          out << " ]";
-        }
-      }
-    }
-    break;
-
-  case G_PER_PRIM:
-    indent(out, indent_level)
-      << "Per prim:";
-    for (i = 0; i < num_prims; i++) {
-      if (newline) {
-        out << "\n";
-        indent(out, indent_level + 2);
-      } else {
-        out << " ";
-      }
-      out << array[i];
-    }
-    break;
-
-  case G_OVERALL:
-    indent(out, indent_level)
-      << "Overall:";
-    if (newline) {
-      out << "\n";
-      indent(out, indent_level + 2);
-    } else {
-      out << " ";
-    }
-    out << array[0];
-
-  case G_OFF:
-    break;
-  }
-  out << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Geom::Constructor
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom() {
-  _all_dirty_flags = 0;
-  init();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::Copy Constructor
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 Geom::
-Geom(const Geom &copy) : dDrawable() {
-  _all_dirty_flags = 0;
-  *this = copy;
+Geom(const Geom &copy) :
+  TypedWritableReferenceCount(copy),
+  BoundedObject(copy),
+  _cycler(copy._cycler)  
+{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-Geom::
-~Geom() {
-  release_all();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::Copy assignment operator
-//       Access: Public
+//     Function: Geom::Copy Assignment Operator
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 operator = (const Geom &copy) {
-  _coords = copy._coords;
-  _norms = copy._norms;
-  _colors = copy._colors;
+  TypedWritableReferenceCount::operator = (copy);
+  BoundedObject::operator = (copy);
+  clear_cache();
+  _cycler = copy._cycler;
+  mark_bound_stale();
+}
 
-  _vindex = copy._vindex;
-  _nindex = copy._nindex;
-  _cindex = copy._cindex;
-
-  _texcoords_by_name = copy._texcoords_by_name;
-
-  _numprims = copy._numprims;
-  _num_vertices = copy._num_vertices;
-  _primlengths = copy._primlengths;
-  for (int i = 0; i < num_GeomAttrTypes; i++) {
-    _bind[i] = copy._bind[i];
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Geom::
+~Geom() {
+  // When we destruct, we should ensure that all of our cached
+  // entries, across all pipeline stages, are properly removed from
+  // the cache manager.
+  int num_stages = _cycler.get_num_stages();
+  for (int i = 0; i < num_stages; i++) {
+    if (_cycler.is_stage_unique(i)) {
+      CData *cdata = _cycler.write_stage(i);
+      for (Cache::iterator ci = cdata->_cache.begin();
+           ci != cdata->_cache.end();
+           ++ci) {
+        CacheEntry *entry = (*ci);
+        entry->erase();
+      }
+      cdata->_cache.clear();
+      _cycler.release_write_stage(i, cdata);
+    }
   }
 
-  _get_vertex = copy._get_vertex;
-  _get_normal = copy._get_normal;
-  _get_color = copy._get_color;
-  _get_texcoord = copy._get_texcoord;
+  release_all();
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_usage_hint
+//       Access: Published
+//  Description: Changes the UsageHint hint for all of the primitives
+//               on this Geom to the same value.  See
+//               get_usage_hint().
+////////////////////////////////////////////////////////////////////
+void Geom::
+set_usage_hint(Geom::UsageHint usage_hint) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage_hint;
+
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    if ((*pi)->get_ref_count() > 1) {
+      (*pi) = (*pi)->make_copy();
+    }
+    (*pi)->set_usage_hint(usage_hint);
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::modify_vertex_data
+//       Access: Published
+//  Description: Returns a modifiable pointer to the GeomVertexData,
+//               so that application code may directly maniuplate the
+//               geom's underlying data.
+////////////////////////////////////////////////////////////////////
+PT(GeomVertexData) Geom::
+modify_vertex_data() {
+  // Perform copy-on-write: if the reference count on the vertex data
+  // is greater than 1, assume some other Geom has the same pointer,
+  // so make a copy of it first.
+  clear_cache();
+  CDWriter cdata(_cycler);
+  if (cdata->_data->get_ref_count() > 1) {
+    cdata->_data = new GeomVertexData(*cdata->_data);
+  }
   mark_bound_stale();
-  make_dirty();
+  return cdata->_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_vertex_data
+//       Access: Published
+//  Description: Replaces the Geom's underlying vertex data table with
+//               a completely new table.
+////////////////////////////////////////////////////////////////////
+void Geom::
+set_vertex_data(const GeomVertexData *data) {
+  nassertv(check_will_be_valid(data));
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_data = (GeomVertexData *)data;
+  mark_bound_stale();
+  reset_geom_rendering(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::offset_vertices
+//       Access: Published
+//  Description: Replaces a Geom's vertex table with a new table, and
+//               simultaneously adds the indicated offset to all
+//               vertex references within the Geom's primitives.  This
+//               is intended to be used to combine multiple
+//               GeomVertexDatas from different Geoms into a single
+//               big buffer, with each Geom referencing a subset of
+//               the vertices in the buffer.
+////////////////////////////////////////////////////////////////////
+void Geom::
+offset_vertices(const GeomVertexData *data, int offset) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_data = (GeomVertexData *)data;
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    if ((*pi)->get_ref_count() > 1) {
+      (*pi) = (*pi)->make_copy();
+    }
+    (*pi)->offset_vertices(offset);
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_nonindexed
+//       Access: Published
+//  Description: Converts the geom from indexed to nonindexed by
+//               duplicating vertices as necessary.  If composite_only
+//               is true, then only composite primitives such as
+//               trifans and tristrips are converted.  Returns the
+//               number of GeomPrimitive objects converted.
+////////////////////////////////////////////////////////////////////
+int Geom::
+make_nonindexed(bool composite_only) {
+  int num_changed = 0;
+
+  clear_cache();
+  CDWriter cdata(_cycler);
+  CPT(GeomVertexData) orig_data = cdata->_data;
+  PT(GeomVertexData) new_data = new GeomVertexData(*cdata->_data);
+  new_data->clear_rows();
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  Primitives new_prims;
+  new_prims.reserve(cdata->_primitives.size());
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    PT(GeomPrimitive) primitive = (*pi)->make_copy();
+    new_prims.push_back(primitive);
+
+    // GeomPoints are considered "composite" for the purposes of
+    // making nonindexed, since there's no particular advantage to
+    // having indexed points (as opposed to, say, indexed triangles or
+    // indexed lines).
+    if (primitive->is_indexed() && 
+        (primitive->is_composite() || 
+         primitive->is_exact_type(GeomPoints::get_class_type()) || 
+         !composite_only)) {
+      primitive->make_nonindexed(new_data, orig_data);
+      ++num_changed;
+    } else {
+      // If it's a simple primitive, pack it anyway, so it can share
+      // the same GeomVertexData.
+      primitive->pack_vertices(new_data, orig_data);
+    }
+
+#ifndef NDEBUG
+    if (!primitive->check_valid(new_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  nassertr(all_is_valid, 0);
+
+  if (num_changed != 0) {
+    // If any at all were changed, then keep the result (otherwise,
+    // discard it, since we might have de-optimized the indexed
+    // geometry a bit).
+    cdata->_data = new_data;
+    cdata->_primitives.swap(new_prims);
+    cdata->_modified = Geom::get_next_modified();
+  }
+
+  return num_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_primitive
+//       Access: Published
+//  Description: Replaces the ith GeomPrimitive object stored within
+//               the Geom with the new object.
+////////////////////////////////////////////////////////////////////
+void Geom::
+set_primitive(int i, const GeomPrimitive *primitive) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(primitive->check_valid(cdata->_data));
+
+  // All primitives within a particular Geom must have the same
+  // fundamental primitive type (triangles, points, or lines).
+  nassertv(cdata->_primitive_type == PT_none ||
+           cdata->_primitive_type == primitive->get_primitive_type());
+
+  // They also should have the a compatible shade model.
+  CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
+  nassertv_always(compat != (GeomPrimitive *)NULL);
+
+  cdata->_primitives[i] = (GeomPrimitive *)compat.p();
+  PrimitiveType new_primitive_type = compat->get_primitive_type();
+  if (new_primitive_type != cdata->_primitive_type) {
+    cdata->_primitive_type = new_primitive_type;
+  }
+  ShadeModel new_shade_model = compat->get_shade_model();
+  if (new_shade_model != cdata->_shade_model &&
+      new_shade_model != SM_uniform) {
+    cdata->_shade_model = new_shade_model;
+  }
+
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
+  cdata->_modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::add_primitive
+//       Access: Published
+//  Description: Adds a new GeomPrimitive structure to the Geom
+//               object.  This specifies a particular subset of
+//               vertices that are used to define geometric primitives
+//               of the indicated type.
+////////////////////////////////////////////////////////////////////
+void Geom::
+add_primitive(const GeomPrimitive *primitive) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+  nassertv(primitive->check_valid(cdata->_data));
+
+  // All primitives within a particular Geom must have the same
+  // fundamental primitive type (triangles, points, or lines).
+  nassertv(cdata->_primitive_type == PT_none ||
+           cdata->_primitive_type == primitive->get_primitive_type());
+
+  // They also should have the a compatible shade model.
+  CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
+  nassertv_always(compat != (GeomPrimitive *)NULL);
+
+  cdata->_primitives.push_back((GeomPrimitive *)compat.p());
+  PrimitiveType new_primitive_type = compat->get_primitive_type();
+  if (new_primitive_type != cdata->_primitive_type) {
+    cdata->_primitive_type = new_primitive_type;
+  }
+  ShadeModel new_shade_model = compat->get_shade_model();
+  if (new_shade_model != cdata->_shade_model &&
+      new_shade_model != SM_uniform) {
+    cdata->_shade_model = new_shade_model;
+  }
+
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
+  cdata->_modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::remove_primitive
+//       Access: Published
+//  Description: Removes the ith primitive from the list.
+////////////////////////////////////////////////////////////////////
+void Geom::
+remove_primitive(int i) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  cdata->_primitives.erase(cdata->_primitives.begin() + i);
+  if (cdata->_primitives.empty()) {
+    cdata->_primitive_type = PT_none;
+    cdata->_shade_model = SM_uniform;
+  }
+  reset_geom_rendering(cdata);
+  cdata->_got_usage_hint = false;
+  cdata->_modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::clear_primitives
+//       Access: Published
+//  Description: Removes all the primitives from the Geom object (but
+//               keeps the same table of vertices).  You may then
+//               re-add primitives one at a time via calls to
+//               add_primitive().
+////////////////////////////////////////////////////////////////////
+void Geom::
+clear_primitives() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_primitives.clear();
+  cdata->_primitive_type = PT_none;
+  cdata->_shade_model = SM_uniform;
+  reset_geom_rendering(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::decompose_in_place
+//       Access: Published
+//  Description: Decomposes all of the primitives within this Geom,
+//               leaving the results in place.  See
+//               GeomPrimitive::decompose().
+////////////////////////////////////////////////////////////////////
+void Geom::
+decompose_in_place() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi)->decompose();
+    (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(cdata->_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::rotate_in_place
+//       Access: Published
+//  Description: Rotates all of the primitives within this Geom,
+//               leaving the results in place.  See
+//               GeomPrimitive::rotate().
+////////////////////////////////////////////////////////////////////
+void Geom::
+rotate_in_place() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi)->rotate();
+    (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!(*pi)->check_valid(cdata->_data)) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::unify_in_place
+//       Access: Published
+//  Description: Unifies all of the primitives contained within this
+//               Geom into a single primitive object.  This may
+//               require decomposing the primitives if, for instance,
+//               the Geom contains both triangle strips and triangle
+//               fans.
+////////////////////////////////////////////////////////////////////
+void Geom::
+unify_in_place() {
+  if (get_num_primitives() <= 1) {
+    // If we don't have more than one primitive to start with, no need
+    // to do anything.
+    return;
+  }
+
+  clear_cache();
+  CDWriter cdata(_cycler);
+
+  PT(GeomPrimitive) new_prim;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) primitive = (*pi);
+    if (new_prim == (GeomPrimitive *)NULL) {
+      // The first primitive type we come across is copied directly.
+      new_prim = primitive->make_copy();
+    } else {
+      // Thereafter, we must try to merge primitives.  If they are not
+      // the same type, we have to decompose both of them.
+      if (new_prim->get_type() != primitive->get_type()) {
+        CPT(GeomPrimitive) decomposed = new_prim->decompose();
+        new_prim = (GeomPrimitive *)decomposed.p();
+        primitive = primitive->decompose();
+
+        nassertv(new_prim->get_type() == primitive->get_type());
+      }
+
+      // Now simply copy in the vertices.
+      int num_primitives = primitive->get_num_primitives();
+      for (int pi = 0; pi < num_primitives; ++pi) {
+        int start = primitive->get_primitive_start(pi);
+        int end = primitive->get_primitive_end(pi);
+        for (int vi = start; vi < end; ++vi) {
+          new_prim->add_vertex(primitive->get_vertex(vi));
+        }
+        new_prim->close_primitive();
+      }
+    }
+  }
+
+  // At the end of the day, we have just one primitive, which becomes
+  // the one primitive in our list of primitives.
+  nassertv(new_prim->check_valid(cdata->_data));
+
+  // The new primitive, naturally, inherits the Geom's overall shade
+  // model.
+  new_prim->set_shade_model(cdata->_shade_model);
+
+  cdata->_primitives.clear();
+  cdata->_primitives.push_back(new_prim);
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::copy_primitives_from
+//       Access: Published
+//  Description: Copies the primitives from the indicated Geom into
+//               this one.  This does require that both Geoms contain
+//               the same fundamental type primitives, both have a
+//               compatible shade model, and both use the same
+//               GeomVertexData.
+//
+//               Returns true if the copy is successful, or false
+//               otherwise (because the Geoms were mismatched).
+////////////////////////////////////////////////////////////////////
+bool Geom::
+copy_primitives_from(const Geom *other) {
+  if (get_primitive_type() != PT_none &&
+      other->get_primitive_type() != get_primitive_type()) {
+    return false;
+  }
+  if (get_vertex_data() != other->get_vertex_data()) {
+    return false;
+  }
+
+  ShadeModel this_shade_model = get_shade_model();
+  ShadeModel other_shade_model = other->get_shade_model();
+  if (this_shade_model != SM_uniform && other_shade_model != SM_uniform &&
+      this_shade_model != other_shade_model) {
+    if ((this_shade_model == SM_flat_first_vertex && other_shade_model == SM_flat_last_vertex) ||
+        (this_shade_model == SM_flat_last_vertex && other_shade_model == SM_flat_first_vertex)) {
+      // This is acceptable; we can rotate the primitives to match.
+
+    } else {
+      // Otherwise, we have incompatible shade models.
+      return false;
+    }
+  }
+
+  int num_primitives = other->get_num_primitives();
+  for (int i = 0; i < num_primitives; i++) {
+    add_primitive(other->get_primitive(i));
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_bytes
+//       Access: Published
+//  Description: Returns the number of bytes consumed by the geom and
+//               its primitives (but not including its vertex table).
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_num_bytes() const {
+  CDReader cdata(_cycler);
+
+  int num_bytes = sizeof(Geom);
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    num_bytes += (*pi)->get_num_bytes();
+  }
+
+  return num_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,267 +587,116 @@ operator = (const Geom &copy) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 transform_vertices(const LMatrix4f &mat) {
-  PTA_Vertexf coords;
-  PTA_ushort index;
-  get_coords(coords, index);
-  PTA_Vertexf new_coords;
-  new_coords.reserve(coords.size());
-  PTA_Vertexf::const_iterator vi;
-  for (vi = coords.begin(); vi != coords.end(); ++vi) {
-    new_coords.push_back((*vi) * mat);
+  PT(GeomVertexData) new_data = modify_vertex_data();
+  CPT(GeomVertexFormat) format = new_data->get_format();
+  
+  int ci;
+  for (ci = 0; ci < format->get_num_points(); ci++) {
+    GeomVertexRewriter data(new_data, format->get_point(ci));
+    
+    while (!data.is_at_end()) {
+      const LPoint3f &point = data.get_data3f();
+      data.set_data3f(point * mat);
+    }
   }
-  nassertv(new_coords.size() == coords.size());
-  set_coords(new_coords, index);
+  for (ci = 0; ci < format->get_num_vectors(); ci++) {
+    GeomVertexRewriter data(new_data, format->get_vector(ci));
+    
+    while (!data.is_at_end()) {
+      const LVector3f &vector = data.get_data3f();
+      data.set_data3f(normalize(vector * mat));
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::check_valid
 //       Access: Published
-//  Description: This is only here temporarily; it has meaning at the
-//               qpGeom level.
+//  Description: Verifies that the all of the primitives within the
+//               geom reference vertices that actually exist within
+//               the geom's GeomVertexData.  Returns true if the geom
+//               appears to be valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool Geom::
 check_valid() const {
+  CDReader cdata(_cycler);
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi)->check_valid(cdata->_data)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_coords
+//     Function: Geom::output
 //       Access: Published
-//  Description:
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_coords(const PTA_Vertexf &coords, 
-           const PTA_ushort &vindex) {
-  _coords = coords;
-  _bind[G_COORD] = G_PER_VERTEX;
-  _vindex = vindex;
+output(ostream &out) const {
+  CDReader cdata(_cycler);
 
-  mark_bound_stale();
-  make_dirty();
+  // Get a list of the primitive types contained within this object.
+  int num_faces = 0;
+  pset<TypeHandle> types;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    num_faces += (*pi)->get_num_faces();
+    types.insert((*pi)->get_type());
+  }
+
+  out << "Geom [";
+  pset<TypeHandle>::iterator ti;
+  for (ti = types.begin(); ti != types.end(); ++ti) {
+    out << " " << (*ti);
+  }
+  out << " ], " << num_faces << " faces";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_coords
+//     Function: Geom::write
 //       Access: Published
-//  Description:
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_coords(const PTA_Vertexf &coords, GeomBindType bind,
-           const PTA_ushort &vindex) {
-  nassertv(bind==G_PER_VERTEX);
-  set_coords(coords, vindex);
-}
+write(ostream &out, int indent_level) const {
+  CDReader cdata(_cycler);
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_normals
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-set_normals(const PTA_Normalf &norms, GeomBindType bind,
-            const PTA_ushort &nindex) {
-  _norms = norms;
-  _bind[G_NORMAL] = bind;
-  _nindex = nindex;
-
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_colors
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-set_colors(const PTA_Colorf &colors, GeomBindType bind,
-           const PTA_ushort &cindex) {
-  _colors = colors;
-  _bind[G_COLOR] = bind;
-  _cindex = cindex;
-
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_texcoords
-//       Access: Published
-//  Description: This single-texturing version of set_texcoords() only
-//               changes the default texcoords name.  Use the version
-//               of set_texcoords() that takes a InternalName
-//               parameter to set up different texture coordinates for
-//               different stages of a multitexture pipeline.
-////////////////////////////////////////////////////////////////////
-void Geom::
-set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
-              const PTA_ushort &tindex) {
-  nassertv(bind == G_PER_VERTEX || bind == G_OFF);
-
-  if (bind == G_OFF) {
-    remove_texcoords(InternalName::get_texcoord());
-  } else {
-    set_texcoords(InternalName::get_texcoord(), texcoords, tindex);
+  // Get a list of the primitive types contained within this object.
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    (*pi)->write(out, indent_level);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_texcoords
+//     Function: Geom::clear_cache
 //       Access: Published
-//  Description: Sets the texture coordinates for a particular name of
-//               the pipeline.  This implicitly sets the binding of
-//               these texture coordinates to G_PER_VERTEX.  See also
-//               remove_texcoords().
+//  Description: Removes all of the previously-cached results of
+//               munge_geom().
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_texcoords(const InternalName *name, const PTA_TexCoordf &texcoords,
-              const PTA_ushort &tindex) {
-  nassertv(name != (InternalName *)NULL);
-
-#ifndef NDEBUG
-  // All of the texture coordinates must be either nonindexed, or all
-  // must be indexed.  If there are already (different) texture
-  // coordinates set on the Geom, then ensure this is so.
-  remove_texcoords(name);
-  if (!_texcoords_by_name.empty()) {
-    TexCoordDef &def = (*_texcoords_by_name.begin()).second;
-    bool previous_is_indexed = (def._tindex != (ushort *)NULL);
-    bool this_is_indexed = (tindex != (ushort *)NULL);
-    nassertv(this_is_indexed == previous_is_indexed);
+clear_cache() {
+  // Probably we shouldn't do anything at all here unless we are
+  // running in pipeline stage 0.
+  CData *cdata = CDWriter(_cycler);
+  for (Cache::iterator ci = cdata->_cache.begin();
+       ci != cdata->_cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    entry->erase();
   }
-#endif
-
-  TexCoordDef &def = _texcoords_by_name[name];
-  def._texcoords = texcoords;
-  def._tindex = tindex;
-
-  if (name == InternalName::get_texcoord()) {
-    _bind[G_TEXCOORD] = G_PER_VERTEX;
-  }
-
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::remove_texcoords
-//       Access: Published
-//  Description: Removes the texture coordinates for a particular name
-//               of the pipeline.  This implicitly sets the binding of
-//               these texture coordinates to G_OFF.  See also
-//               set_texcoords().
-////////////////////////////////////////////////////////////////////
-void Geom::
-remove_texcoords(const InternalName *name) {
-  _texcoords_by_name.erase(name);
-
-  if (name == InternalName::get_texcoord()) {
-    _bind[G_TEXCOORD] = G_OFF;
-  }
-
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_coords
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_coords(PTA_Vertexf &coords, PTA_ushort &vindex) const {
-  coords = _coords;
-  vindex = _vindex;
-
-  // G_PER_VERTEX is implicit binding
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_coords
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_coords(PTA_Vertexf &coords, GeomBindType &bind,
-           PTA_ushort &vindex) const {
-  coords = _coords;
-  bind = _bind[G_COORD];
-  vindex = _vindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_normals
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_normals(PTA_Normalf &norms, GeomBindType &bind,
-            PTA_ushort &nindex) const {
-  norms = _norms;
-  bind = _bind[G_NORMAL];
-  nindex = _nindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_colors
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_colors(PTA_Colorf &colors, GeomBindType &bind,
-           PTA_ushort &cindex) const {
-  colors = _colors;
-  bind = _bind[G_COLOR];
-  cindex = _cindex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_texcoords
-//       Access: Public
-//  Description: Returns the texcoords associated with the default
-//               name only.  See has_texcoords(),
-//               get_texcoords_array(), and get_texcoords_index() to
-//               get the texcoords associated with an arbitrary name
-//               of a multitexture pipeline.
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
-              PTA_ushort &tindex) const { 
-  TexCoordsByName::const_iterator tci = 
-    _texcoords_by_name.find(InternalName::get_texcoord());
-  if (tci != _texcoords_by_name.end()) {
-    const TexCoordDef &def = (*tci).second;
-    texcoords = def._texcoords;
-    bind = G_PER_VERTEX;
-    tindex = def._tindex;
-  } else {
-    texcoords.clear();
-    bind = G_OFF;
-    tindex.clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::is_dynamic
-//       Access: Published, Virtual
-//  Description: Returns true if the Geom has any dynamic properties
-//               that are expected to change from one frame to the
-//               next, or false if the Geom is largely static.  For
-//               now, this is the same thing as asking whether its
-//               vertices are indexed.
-////////////////////////////////////////////////////////////////////
-bool Geom::
-is_dynamic() const {
-  return (_vindex != (ushort*)0L);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::is_qpgeom
-//       Access: Published, Virtual
-//  Description: Returns true if this is a new-style qpGeom class,
-//               false otherwise.  Temporary until the experimental
-//               Geom rewrite becomes the actual Geom implementation.
-////////////////////////////////////////////////////////////////////
-bool Geom::
-is_qpgeom() const {
-  return false;
+  cdata->_cache.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -585,8 +705,8 @@ is_qpgeom() const {
 //  Description: Indicates that the geom should be enqueued to be
 //               prepared in the indicated prepared_objects at the
 //               beginning of the next frame.  This will ensure the
-//               geom is already loaded into the GSG if it is expected
-//               to be rendered soon.
+//               geom is already loaded into geom memory if it
+//               is expected to be rendered soon.
 //
 //               Use this function instead of prepare_now() to preload
 //               geoms from a user interface standpoint.
@@ -597,250 +717,54 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_vertices_per_prim
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-int Geom::
-get_num_vertices_per_prim() const {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_more_vertices_than_components
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-int Geom::
-get_num_more_vertices_than_components() const {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::uses_components
-//       Access: Published, Virtual
-//  Description: 
+//     Function: Geom::release
+//       Access: Published
+//  Description: Frees the geom context only on the indicated object,
+//               if it exists there.  Returns true if it was released,
+//               false if it had not been prepared.
 ////////////////////////////////////////////////////////////////////
 bool Geom::
-uses_components() const {
-  return false;
+release(PreparedGraphicsObjects *prepared_objects) {
+  Contexts::iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    GeomContext *gc = (*ci).second;
+    prepared_objects->release_geom(gc);
+    return true;
+  }
+
+  // Maybe it wasn't prepared yet, but it's about to be.
+  return prepared_objects->dequeue_geom(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_length
-//       Access: Published, Virtual
-//  Description: 
+//     Function: Geom::release_all
+//       Access: Published
+//  Description: Frees the context allocated on all objects for which
+//               the geom has been declared.  Returns the number of
+//               contexts which have been freed.
 ////////////////////////////////////////////////////////////////////
 int Geom::
-get_length(int) const {
-  return 0;
-}
+release_all() {
+  // We have to traverse a copy of the _contexts list, because the
+  // PreparedGraphicsObjects object will call clear_prepared() in response
+  // to each release_geom(), and we don't want to be modifying the
+  // _contexts list while we're traversing it.
+  Contexts temp = _contexts;
+  int num_freed = (int)_contexts.size();
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::explode
-//       Access: Published, Virtual
-//  Description: If the Geom is a composite type such as a tristrip,
-//               this allocates and returns a new Geom that represents
-//               the same geometry as a simple type, for instance a
-//               set of triangles.  If the Geom is already a simple
-//               type, this allocates and returns a copy.  This is
-//               just a convenience function for dealing with
-//               composite types when performance is less than
-//               paramount.
-////////////////////////////////////////////////////////////////////
-Geom *Geom::
-explode() const {
-  return make_copy();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_tris
-//       Access: Published, Virtual
-//  Description: This is similar in principle to explode(), except it
-//               returns only a list of triangle vertex indices, with
-//               no information about color or whatever.  The array
-//               returned is a set of indices into the geom's _coords
-//               array, as retrieve by get_coords(); there will be 3*n
-//               elements in the array, where n is the number of
-//               triangles described by the geometry.  This is useful
-//               when it's important to determine the physical
-//               structure of the geometry, without necessarily
-//               worrying about its rendering properties, and when
-//               performance considerations are not overwhelming.
-////////////////////////////////////////////////////////////////////
-PTA_ushort Geom::
-get_tris() const {
-  return PTA_ushort();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << endl;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-output(ostream &out) const {
-  out << get_type() << " (" << _numprims << ")";
-
-  /*
-      << " v:" << _coords.size()
-      << " n:" << _norms.size()
-      << " c:" << _colors.size()
-      << " t:" << _texcoords.size()
-      << " vi:" << _vindex.size()
-      << " ni:" << _nindex.size()
-      << " ci:" << _cindex.size()
-      << " ti:" << _tindex.size();
-  */
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::write_verbose
-//       Access: Public
-//  Description: Writes to the indicated ostream a formatted picture
-//               of the contents of the Geom, in detail--but hopefully
-//               not too much detail.
-////////////////////////////////////////////////////////////////////
-void Geom::
-write_verbose(ostream &out, int indent_level) const {
-  GeomBindType bind_normals;
-  GeomBindType bind_colors;
-
-  PTA_Vertexf g_coords;
-  PTA_Normalf g_normals;
-  PTA_Colorf g_colors;
-
-  PTA_ushort i_coords;
-  PTA_ushort i_normals;
-  PTA_ushort i_colors;
-
-  get_coords(g_coords, i_coords);
-  get_normals(g_normals, bind_normals, i_normals);
-  get_colors(g_colors, bind_colors, i_colors);
-
-  out << "\n";
-  indent(out, indent_level)
-    << get_type() << " contains "
-    << get_num_prims() << " primitives:\n";
-
-  if ((i_coords == (ushort *)NULL) && (g_coords == (Vertexf *)NULL)) {
-    indent(out, indent_level)
-      << "No coords\n";
-  } else if (i_coords!=(ushort*)0L) {
-    indent(out, indent_level)
-      << "Indexed coords = " << (void *)g_coords << ", length = "
-      << g_coords.size() << ":\n";
-    describe_attr(out, this, G_PER_VERTEX, i_coords, false, indent_level + 2);
-  } else {
-    indent(out, indent_level)
-      << "Nonindexed coords:\n";
-    describe_attr(out, this, G_PER_VERTEX, g_coords, true, indent_level + 2);
+  Contexts::const_iterator ci;
+  for (ci = temp.begin(); ci != temp.end(); ++ci) {
+    PreparedGraphicsObjects *prepared_objects = (*ci).first;
+    GeomContext *gc = (*ci).second;
+    prepared_objects->release_geom(gc);
   }
 
-  if (bind_colors == G_OFF) {
-    indent(out, indent_level)
-      << "No colors\n";
-  } else if (i_colors!=(ushort*)0L) {
-    indent(out, indent_level)
-      << "Indexed colors = " << (void *)g_colors << ", length = "
-      << g_colors.size() << "\n";
-    describe_attr(out, this, bind_colors, i_colors, false, indent_level + 2);
-  } else {
-    indent(out, indent_level)
-      << "Nonindexed colors:\n";
-    describe_attr(out, this, bind_colors, g_colors, true, indent_level + 2);
-  }
+  // Now that we've called release_geom() on every known context,
+  // the _contexts list should have completely emptied itself.
+  nassertr(_contexts.empty(), num_freed);
 
-  if (bind_normals == G_OFF) {
-    indent(out, indent_level)
-      << "No normals\n";
-  } else if (i_normals!=(ushort*)0L) {
-    indent(out, indent_level)
-      << "Indexed normals = " << (void *)g_normals << ", length = "
-      << g_normals.size() << "\n";
-    describe_attr(out, this, bind_normals, i_normals, false, indent_level + 2);
-  } else {
-    indent(out, indent_level)
-      << "Nonindexed normals:\n";
-    describe_attr(out, this, bind_normals, g_normals, true, indent_level + 2);
-  }
-
-  if (_texcoords_by_name.empty()) {
-    indent(out, indent_level)
-      << "No texcoords\n";
-
-  } else {
-    TexCoordsByName::const_iterator tci;
-    for (tci = _texcoords_by_name.begin(); 
-         tci != _texcoords_by_name.end();
-         ++tci) {
-      const InternalName *name = (*tci).first;
-      const TexCoordDef &def = (*tci).second;
-      if (def._tindex != (ushort *)NULL) {
-        indent(out, indent_level)
-          << "Indexed texcoords \"" << name->get_name() << "\" = "
-          << def._texcoords << ", length = " << def._texcoords.size() << "\n";
-        describe_attr(out, this, G_PER_VERTEX, def._tindex, false, 
-                      indent_level + 2);
-
-      } else {
-        indent(out, indent_level)
-          << "Nonindexed texcoords \"" << name->get_name() << "\":\n";
-        describe_attr(out, this, G_PER_VERTEX, def._texcoords, true, 
-                      indent_level + 2);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::setup_multitexcoord_iterator
-//       Access: Public
-//  Description: Fills in the values on the indicated
-//               MultiTexCoordIterator to prepare it to walk through
-//               the texture coordinates on this Geom, to issue the
-//               appropriate texture coordinates for the currently
-//               active stages.
-////////////////////////////////////////////////////////////////////
-void Geom::
-setup_multitexcoord_iterator(MultiTexCoordIterator &iterator,
-                             const ActiveTextureStages &active_stages,
-                             const NoTexCoordStages &no_texcoords) const {
-  check_config();
-  iterator._num_stages = 0;
-  int max_stage_index = (int)active_stages.size();
-  int i = 0;
-  for (int stage_index = 0; stage_index < max_stage_index; stage_index++) {
-    TextureStage *stage = active_stages[stage_index];
-    if (no_texcoords.find(stage) == no_texcoords.end()) {
-      // This stage is not one of the stages that doesn't need
-      // texcoords issued for it.
-      const InternalName *name = stage->get_texcoord_name();
-      TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
-      if (tci != _texcoords_by_name.end()) {
-        // This Geom does have texcoords for this stage.
-        const TexCoordDef &def = (*tci).second;
-        
-        nassertv(i < max_geom_texture_stages);
-        iterator._stages[i]._array = def._texcoords;
-        iterator._stages[i]._index = def._tindex;
-        iterator._stage_index[i] = stage_index;
-        i++;
-      }
-    }
-  }
-
-  iterator._num_stages = i;
+  return num_freed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -871,235 +795,101 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
   if (gc != (GeomContext *)NULL) {
     _contexts[prepared_objects] = gc;
-
-    // Now that we have a new GeomContext with zero dirty flags, our
-    // intersection of all dirty flags must be zero.  This doesn't mean
-    // that some other contexts aren't still dirty, but at least one
-    // context isn't.
-    _all_dirty_flags = 0;
   }
   return gc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::release
-//       Access: Public
-//  Description: Frees the geom context only on the indicated object,
-//               if it exists there.  Returns true if it was released,
-//               false if it had not been prepared.
-////////////////////////////////////////////////////////////////////
-bool Geom::
-release(PreparedGraphicsObjects *prepared_objects) {
-  Contexts::iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    GeomContext *gc = (*ci).second;
-    prepared_objects->release_geom(gc);
-    return true;
-  }
-
-  // Maybe it wasn't prepared yet, but it's about to be.
-  return prepared_objects->dequeue_geom(this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::release_all
-//       Access: Public
-//  Description: Frees the context allocated on all objects for which
-//               the geom has been declared.  Returns the number of
-//               contexts which have been freed.
-////////////////////////////////////////////////////////////////////
-int Geom::
-release_all() {
-  // We have to traverse a copy of the _contexts list, because the
-  // PreparedGraphicsObjects object will call clear_prepared() in response
-  // to each release_geom(), and we don't want to be modifying the
-  // _contexts list while we're traversing it.
-  Contexts temp = _contexts;
-  int num_freed = (int)_contexts.size();
-
-  Contexts::const_iterator ci;
-  for (ci = temp.begin(); ci != temp.end(); ++ci) {
-    PreparedGraphicsObjects *prepared_objects = (*ci).first;
-    GeomContext *gc = (*ci).second;
-    prepared_objects->release_geom(gc);
-  }
-
-  // Now that we've called release_geom() on every known context,
-  // the _contexts list should have completely emptied itself.
-  nassertr(_contexts.empty(), num_freed);
-
-  return num_freed;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Geom::draw
-//       Access: Public, Virtual
-//  Description: Actually draws the Geom with the indicated GSG.
+//       Access: Public
+//  Description: Actually draws the Geom with the indicated GSG, using
+//               the indicated vertex data (which might have been
+//               pre-munged to support the GSG's needs).
 ////////////////////////////////////////////////////////////////////
 void Geom::
-draw(GraphicsStateGuardianBase *gsg, 
-     const qpGeomMunger *, const qpGeomVertexData *) const {
-  if (!support_old_geom) {
-    return;
-  }
-  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
-  if (is_dirty()) {
-    ((Geom *)this)->config(); 
-    ((Geom *)this)->release(prepared_objects);
-  }
-
-  if (retained_mode) {
-    GeomContext *gc = ((Geom *)this)->prepare_now(gsg->get_prepared_objects(), gsg);
-    ((Geom *)this)->draw_immediate(gsg, gc);
-  } else {
-    ((Geom *)this)->draw_immediate(gsg, NULL);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::config
-//       Access: Public, Virtual
-//  Description: Configure rendering based on current settings
-////////////////////////////////////////////////////////////////////
-void Geom::
-config() {
-  WritableConfigurable::config();
-
-  // Only per vertex binding makes any sense
-  if (_coords != (Vertexf*)0L && _bind[G_COORD] != G_OFF) {
-    _get_vertex =
-      (_vindex == (ushort*)0L) ? get_vertex_nonindexed : get_vertex_indexed;
-
-  } else {
-    // It's not really an error not to have a vertex array; maybe
-    // there are no vertices in the Geom.  This happens sometimes with
-    // the particle system.  It's perfectly legal to have a Geom with
-    // no vertices--it just doesn't look like much.
-
-    //    gobj_cat.error()
-    //      << "Geom::Config() - no vertex array!" << endl;
-    _get_vertex = get_vertex_noop;
-  }
-
-  // Set up normal rendering configuration
-  if (_norms != (Normalf*)0L && _bind[G_NORMAL] != G_OFF) {
-    _get_normal =
-      (_nindex == (ushort*)0L) ? get_normal_nonindexed : get_normal_indexed;
-  } else {
-    _get_normal = get_normal_noop;
-  }
-
-  // Set up texture coordinate rendering configuration
-  if (_texcoords_by_name.empty()) {
-    _get_texcoord = get_texcoord_noop;
-
-  } else {
-    _get_texcoord = get_texcoord_indexed;
-
-    // If any of the texture coordinates are nonindexed, all of them
-    // must be.
-    TexCoordsByName::const_iterator tci;
-    for (tci = _texcoords_by_name.begin(); 
-         tci != _texcoords_by_name.end();
-         ++tci) {
-      if ((*tci).second._tindex == (ushort *)NULL) {
-        _get_texcoord = get_texcoord_nonindexed;
-        break;
-      }
+draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+     const GeomVertexData *vertex_data) const {
+#ifdef DO_PIPELINING
+  // Make sure the usage_hint is already updated before we start to
+  // draw, so we don't end up with a circular lock if the GSG asks us
+  // to update this while we're holding the read lock.
+  {
+    CDReader cdata(_cycler);
+    if (!cdata->_got_usage_hint) {
+      CDWriter cdataw(((Geom *)this)->_cycler, cdata);
+      ((Geom *)this)->reset_usage_hint(cdataw);
     }
   }
+  // TODO: fix up the race condition between this line and the next.
+  // Maybe CDWriter's elevate-to-write should return the read lock to
+  // its original locked state when it's done.
+#endif  // DO_PIPELINING
 
-  // Set up color rendering configuration
-  if (_colors != (Colorf*)0L && _bind[G_COLOR] != G_OFF) {
-    _get_color =
-      (_cindex == (ushort*)0L) ? get_color_nonindexed : get_color_indexed;
-  } else {
-    _get_color = get_color_noop;
+  CDReader cdata(_cycler);
+  
+  if (gsg->begin_draw_primitives(this, munger, vertex_data)) {
+    Primitives::const_iterator pi;
+    for (pi = cdata->_primitives.begin(); 
+         pi != cdata->_primitives.end();
+         ++pi) {
+      const GeomPrimitive *primitive = (*pi);
+      if (primitive->get_num_vertices() != 0) {
+        (*pi)->draw(gsg);
+      }
+    }
+    gsg->end_draw_primitives();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::draw_immediate
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void Geom::
-draw_immediate(GraphicsStateGuardianBase *, GeomContext *) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::print_draw_immediate
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void Geom::
-print_draw_immediate() const {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::calc_tight_bounds
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Expands min_point and max_point to include all of the
 //               vertices in the Geom, if any.  found_any is set true
 //               if any points are found.  It is the caller's
 //               responsibility to initialize min_point, max_point,
 //               and found_any before calling this function.
+//
+//               This version of the method allows the Geom to specify
+//               an alternate vertex data table (for instance, if the
+//               vertex data has already been munged), and also allows
+//               the result to be computed in any coordinate space by
+//               specifying a transform matrix.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, 
-                  bool &found_any) const {
-  Geom::VertexIterator vi = make_vertex_iterator();
-  int num_prims = get_num_prims();
-    
-  for (int p = 0; p < num_prims; p++) {
-    int length = get_length(p);
-    for (int v = 0; v < length; v++) {
-      Vertexf vertex = get_next_vertex(vi);
-      
-      if (found_any) {
-        min_point.set(min(min_point[0], vertex[0]),
-                      min(min_point[1], vertex[1]),
-                      min(min_point[2], vertex[2]));
-        max_point.set(max(max_point[0], vertex[0]),
-                      max(max_point[1], vertex[1]),
-                      max(max_point[2], vertex[2]));
-      } else {
-        min_point = vertex;
-        max_point = vertex;
-        found_any = true;
-      }
-    }
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  bool &found_any, 
+                  const GeomVertexData *vertex_data,
+                  bool got_mat, const LMatrix4f &mat) const {
+
+  CDReader cdata(_cycler);
+  
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    (*pi)->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
+                             got_mat, mat);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::init
-//       Access: Protected
-//  Description:
+//     Function: Geom::get_next_modified
+//       Access: Public, Static
+//  Description: Returns a monotonically increasing sequence.  Each
+//               time this is called, a new sequence number is
+//               returned, higher than the previous value.
+//
+//               This is used to ensure that
+//               GeomVertexArrayData::get_modified() and
+//               GeomPrimitive::get_modified() update from the same
+//               space, so that Geom::get_modified() returns a
+//               meaningful value.
 ////////////////////////////////////////////////////////////////////
-void Geom::
-init() {
-  int i;
-
-  _coords.clear();
-  _norms.clear();
-  _colors.clear();
-  _vindex.clear();
-  _nindex.clear();
-  _cindex.clear();
-  _texcoords_by_name.clear();
-  _primlengths.clear();
-
-  for ( i = 0; i < num_GeomAttrTypes; i++ )
-    _bind[i] = G_OFF;
-
-  _get_vertex = get_vertex_noop;
-  _get_normal = get_normal_noop;
-  _get_texcoord = get_texcoord_noop;
-  _get_color = get_color_noop;
-
-  WritableConfigurable::config();
+UpdateSeq Geom::
+get_next_modified() {
+  ++_next_modified;
+  return _next_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1116,43 +906,23 @@ recompute_bound() {
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
-  // Now actually compute the bounding volume by putting it around all
-  // of our vertices.
-  pvector<LPoint3f> vertices;
-  VertexIterator vi = make_vertex_iterator();
-  int num_vertices = _coords.size();
-  
-  if (_vindex.is_null()) {
-    // Nonindexed case.
-    int vcount = 0;
-    for (int p = 0; p < get_num_prims(); p++) {
-      for (int v = 0; v < get_length(p); v++) {
-        nassertr(vcount < num_vertices, bound);
-        vertices.push_back(get_next_vertex(vi));
-        ++vcount;
-      }
-    }
-    //nassertr(vcount == num_vertices, bound);
+  // Now actually compute the bounding volume.  We do this by using
+  // calc_tight_bounds to determine our minmax first.
+  LPoint3f points[2];
+  bool found_any = false;
+  calc_tight_bounds(points[0], points[1], found_any, get_vertex_data(),
+                    false, LMatrix4f::ident_mat());
+  if (found_any) {
+    // Then we put the bounding volume around both of those points.
+    // Technically, we should put it around the eight points at the
+    // corners of the rectangular solid, but we happen to know that
+    // the two diagonally opposite points is good enough to define any
+    // of our bound volume types.
 
-  } else {
-    // Indexed case.
-    int num_indices = _vindex.size();
-    int vindex = 0;
-    for (int p = 0; p < get_num_prims(); p++) {
-      for (int v = 0; v < get_length(p); v++) {
-        nassertr(vindex < num_indices, bound);
-        nassertr(_vindex[vindex] < num_vertices, bound);
-        vertices.push_back(get_next_vertex(vi));
-        ++vindex;
-      }
-    }
-    //nassertr(vindex == num_indices, bound);
+    const LPoint3f *points_begin = &points[0];
+    const LPoint3f *points_end = points_begin + 2;
+    gbv->around(points_begin, points_end);
   }
-
-  const LPoint3f *vertices_begin = &vertices[0];
-  const LPoint3f *vertices_end = vertices_begin + vertices.size();
-
-  gbv->around(vertices_begin, vertices_end);
 
   return bound;
 }
@@ -1174,183 +944,299 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     _contexts.erase(ci);
   } else {
     // If this assertion fails, clear_prepared() was given a
-    // prepared_objects which the geom didn't know about.
+    // prepared_objects that the geom didn't know about.
     nassertv(false);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::sum_lengths
-//       Access: Private, Static
-//  Description: Returns the total number of vertices named in the
-//               lengths array.
+//     Function: Geom::check_will_be_valid
+//       Access: Private
+//  Description: Verifies that the all of the primitives within the
+//               geom reference vertices that actually exist within
+//               the indicated GeomVertexData (presumably in
+//               preparation for assigning the geom to use this data).
+//               Returns true if the data appears to be valid, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-int Geom::
-sum_lengths(const PTA_int &lengths) {
-  int num_vertices = 0;
+bool Geom::
+check_will_be_valid(const GeomVertexData *vertex_data) const {
+  CDReader cdata(_cycler);
 
-  for (PTA_int::const_iterator li = lengths.begin();
-       li != lengths.end();
-       ++li) {
-    num_vertices += (*li);
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi)->check_valid(vertex_data)) {
+      return false;
+    }
   }
 
-  return num_vertices;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::reset_usage_hint
+//       Access: Private
+//  Description: Recomputes the minimum usage_hint.
+////////////////////////////////////////////////////////////////////
+void Geom::
+reset_usage_hint(Geom::CDWriter &cdata) {
+  cdata->_usage_hint = UH_unspecified;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    cdata->_usage_hint = min(cdata->_usage_hint, (*pi)->get_usage_hint());
+  }
+  cdata->_got_usage_hint = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::reset_geom_rendering
+//       Access: Private
+//  Description: Rederives the _geom_rendering member.
+////////////////////////////////////////////////////////////////////
+void Geom::
+reset_geom_rendering(Geom::CDWriter &cdata) {
+  cdata->_geom_rendering = 0;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    cdata->_geom_rendering |= (*pi)->get_geom_rendering();
+  }
+
+  if ((cdata->_geom_rendering & GR_point) != 0) {
+    if (cdata->_data->has_column(InternalName::get_size())) {
+      cdata->_geom_rendering |= GR_per_point_size;
+    }
+    if (cdata->_data->has_column(InternalName::get_aspect_ratio())) {
+      cdata->_geom_rendering |= GR_point_aspect_ratio;
+    }
+    if (cdata->_data->has_column(InternalName::get_rotate())) {
+      cdata->_geom_rendering |= GR_point_rotate;
+    }
+  }
+
+  switch (get_shade_model()) {
+  case SM_flat_first_vertex:
+    cdata->_geom_rendering |= GR_flat_first_vertex;
+    break;
+
+  case SM_flat_last_vertex:
+    cdata->_geom_rendering |= GR_flat_last_vertex;
+    break;
+
+  default:
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               Geom.
+////////////////////////////////////////////////////////////////////
+void Geom::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-write_datagram(BamWriter *manager, Datagram &me) {
-  int i;
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
 
-  // Coordinates
-  WRITE_PTA(manager, me, IPD_Vertexf::write_datagram, _coords);
-  // Normals
-  WRITE_PTA(manager, me, IPD_Normalf::write_datagram, _norms);
-  // Colors
-  WRITE_PTA(manager, me, IPD_Colorf::write_datagram, _colors);
-  /*
-  // pre bam 4.11
-  // Texture Coordinates
-  WRITE_PTA(manager, me, IPD_TexCoordf::write_datagram, get_texcoords_array());
-  */
-  // write the multitexture data
-  nassertv(_texcoords_by_name.size() < 256);
-  me.add_uint8(_texcoords_by_name.size());  // write the size of the map
-  // write the TexCoordsByName pointers if any
-  TexCoordsByName::const_iterator tci;
-  for (tci = _texcoords_by_name.begin(); tci != _texcoords_by_name.end(); ++tci) {
-    CPT(InternalName) tc = (*tci).first;
-    manager->write_pointer(me, tc);
-    WRITE_PTA(manager, me, IPD_TexCoordf::write_datagram, (*tci).second._texcoords);
-    WRITE_PTA(manager, me, IPD_ushort::write_datagram, (*tci).second._tindex);
+  manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type Geom is encountered
+//               in the Bam file.  It should create the Geom
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *Geom::
+make_from_bam(const FactoryParams &params) {
+  Geom *object = new Geom;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  object->fillin(scan, manager);
+  manager->register_finalize(object);
+
+  return object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void Geom::
+finalize(BamReader *manager) {
+  CDWriter cdata(_cycler);
+
+  // Make sure our GeomVertexData is finalized first.  This may result
+  // in the data getting finalized multiple times, but it doesn't mind
+  // that.
+  if (cdata->_data != (GeomVertexData *)NULL) {
+    cdata->_data->finalize(manager);
   }
 
-  // Now write out the indices for each array
-  WRITE_PTA(manager, me, IPD_ushort::write_datagram, _vindex);
-  WRITE_PTA(manager, me, IPD_ushort::write_datagram, _nindex);
-  WRITE_PTA(manager, me, IPD_ushort::write_datagram, _cindex);
-  /*
-  // pre bam 4.11
-  WRITE_PTA(manager, me, IPD_ushort::write_datagram, get_texcoords_index());
-  */
-  // the texcoord indices are already written with the texcoords
+  reset_geom_rendering(cdata);
+}
 
-  me.add_uint16(_numprims);
-  WRITE_PTA(manager, me, IPD_int::write_datagram, _primlengths);
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Geom.
+////////////////////////////////////////////////////////////////////
+void Geom::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
 
-  // Write out the bindings for vertices, normals, colors and texture
-  // coordinates
-  for(i = 0; i < num_GeomAttrTypes; i++) {
-    me.add_uint8(_bind[i]);
+  manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Geom::CacheEntry::
+~CacheEntry() {
+  if (_geom_result != _source) {
+    unref_delete(_geom_result);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::complete_pointers
+//     Function: Geom::CacheEntry::evict_callback
+//       Access: Public, Virtual
+//  Description: Called when the entry is evicted from the cache, this
+//               should clean up the owning object appropriately.
+////////////////////////////////////////////////////////////////////
+void Geom::CacheEntry::
+evict_callback() {
+  // We have to operate on stage 0 of the pipeline, since that's where
+  // the cache really counts.  Because of the multistage pipeline, we
+  // might not actually have a cache entry there (it might have been
+  // added to stage 1 instead).  No big deal if we don't.
+  CData *cdata = _source->_cycler.write_stage(0);
+  Cache::iterator ci = cdata->_cache.find(this);
+  if (ci != cdata->_cache.end()) {
+    cdata->_cache.erase(ci);
+  }
+  _source->_cycler.release_write_stage(0, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Geom::CacheEntry::
+output(ostream &out) const {
+  out << "geom " << (void *)_source << ", " 
+      << (const void *)_modifier;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *Geom::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void Geom::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  manager->write_pointer(dg, _data);
+
+  dg.add_uint16(_primitives.size());
+  Primitives::const_iterator pi;
+  for (pi = _primitives.begin(); pi != _primitives.end(); ++pi) {
+    manager->write_pointer(dg, *pi);
+  }
+
+  dg.add_uint8(_primitive_type);
+  dg.add_uint8(_shade_model);
+
+  // Actually, we shouldn't bother writing out _geom_rendering; we'll
+  // just throw it away anyway.
+  dg.add_uint16(_geom_rendering);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::complete_pointers
 //       Access: Public, Virtual
 //  Description: Receives an array of pointers, one for each time
 //               manager->read_pointer() was called in fillin().
 //               Returns the number of pointers processed.
 ////////////////////////////////////////////////////////////////////
-int Geom::
+int Geom::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = dDrawable::complete_pointers(p_list, manager);
+  int pi = CycleData::complete_pointers(p_list, manager);
 
-  // complete the pointers and build the _texcoords_by_name
-  TexCoordDefSet::iterator ci;
-  for (ci = _temp_texcoord_set.begin();
-       ci != _temp_texcoord_set.end();
-       ++ci) {
-    CPT(InternalName) tc = DCAST(InternalName, p_list[pi++]);
-    TexCoordDef *def = (*ci);
-    _texcoords_by_name[tc] = *def;
-    delete def;
-    if (tc == InternalName::get_texcoord()) {
-      _bind[G_TEXCOORD] = G_PER_VERTEX;
-    }
+  _data = DCAST(GeomVertexData, p_list[pi++]);
+
+  Primitives::iterator pri;
+  for (pri = _primitives.begin(); pri != _primitives.end(); ++pri) {
+    (*pri) = DCAST(GeomPrimitive, p_list[pi++]);
   }
-  _temp_texcoord_set.clear();
-
-  make_dirty();
 
   return pi;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
+//     Function: Geom::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Geom.
 ////////////////////////////////////////////////////////////////////
-void Geom::
-fillin(DatagramIterator& scan, BamReader* manager) {
-  int i;
+void Geom::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_pointer(scan);
 
-  // Coordinates
-  READ_PTA(manager, scan, IPD_Vertexf::read_datagram, _coords);
-  // Normals
-  READ_PTA(manager, scan, IPD_Normalf::read_datagram, _norms);
-  // Colors
-  READ_PTA(manager, scan, IPD_Colorf::read_datagram, _colors);
-  // Texture Coordinates
-  PTA_TexCoordf texcoords;
-  if (manager->get_file_minor_ver() < 11) {
-    READ_PTA(manager, scan, IPD_TexCoordf::read_datagram, texcoords);
-  } else {
-    // read the multitexture data
-    int num_texcoords_by_names = scan.get_uint8();
-    // read the TexCoordsByName pointers of num_texcoords_by_names
-    _temp_texcoord_set.reserve(num_texcoords_by_names);
-    for (int i=0; i<num_texcoords_by_names; ++i) {
-      manager->read_pointer(scan);
-      TexCoordDef *tcd = new TexCoordDef;
-      READ_PTA(manager, scan, IPD_TexCoordf::read_datagram, tcd->_texcoords);
-      READ_PTA(manager, scan, IPD_ushort::read_datagram, tcd->_tindex);
-      _temp_texcoord_set.push_back(tcd);
-    }
-  }
-      
-  // Now read in the indices for each array
-  READ_PTA(manager, scan, IPD_ushort::read_datagram, _vindex);
-  READ_PTA(manager, scan, IPD_ushort::read_datagram, _nindex);
-  READ_PTA(manager, scan, IPD_ushort::read_datagram, _cindex);
-  PTA_ushort tindex;
-  if (manager->get_file_minor_ver() < 11) {
-    READ_PTA(manager, scan, IPD_ushort::read_datagram, tindex);
+  int num_primitives = scan.get_uint16();
+  _primitives.reserve(num_primitives);
+  for (int i = 0; i < num_primitives; ++i) {
+    manager->read_pointer(scan);
+    _primitives.push_back(NULL);
   }
 
-  _numprims = scan.get_uint16();
+  _primitive_type = (PrimitiveType)scan.get_uint8();
+  _shade_model = (ShadeModel)scan.get_uint8();
 
-  // is there any point in doing this for uses_components()==false?
-  READ_PTA(manager, scan, IPD_int::read_datagram, _primlengths);
+  // To be removed: we no longer read _geom_rendering from the bam
+  // file; instead, we rederive it in finalize().
+  scan.get_uint16();
 
-  if (uses_components()) {
-    _num_vertices = sum_lengths(_primlengths);
-
-  } else {
-    // except for strips & fans with the length arrays, total verts
-    // will be simply this
-    _num_vertices = _numprims * get_num_vertices_per_prim();
-  }
-
-  // Read in the bindings for vertices, normals, colors and texture
-  // coordinates
-  for(i = 0; i < num_GeomAttrTypes; i++) {
-    _bind[i] = (enum GeomBindType) scan.get_uint8();
-  }
-
-  if (manager->get_file_minor_ver() < 11) {
-    if (_bind[G_TEXCOORD] == G_PER_VERTEX) {
-      set_texcoords(texcoords, G_PER_VERTEX, tindex);
-    }
-  }
+  _got_usage_hint = false;
+  _modified = Geom::get_next_modified();
 }

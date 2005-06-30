@@ -27,9 +27,9 @@
 #include "transformState.h"
 #include "geomNode.h"
 #include "geom.h"
-#include "qpgeom.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomVertexReader.h"
+#include "geom.h"
+#include "geomTriangles.h"
+#include "geomVertexReader.h"
 #include "lodNode.h"
 #include "nodePath.h"
 #include "pStatTimer.h"
@@ -765,54 +765,32 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
     ci = _colliders.find(entry.get_from_node_path());
     nassertv(ci != _colliders.end());
 
-    if (geom->is_qpgeom()) {
-      const qpGeom *qpgeom = DCAST(qpGeom, geom);
-      if (qpgeom->get_primitive_type() == qpGeom::PT_polygons) {
-        const qpGeomVertexData *data =qpgeom->get_vertex_data();
-        qpGeomVertexReader vertex(data, InternalName::get_vertex());
-
-        int num_primitives = qpgeom->get_num_primitives();
-        for (int i = 0; i < num_primitives; ++i) {
-          const qpGeomPrimitive *primitive = qpgeom->get_primitive(i);
-          CPT(qpGeomPrimitive) tris = primitive->decompose();
-          nassertv(tris->is_of_type(qpGeomTriangles::get_class_type()));
-          int num_vertices = tris->get_num_vertices();
-          nassertv((num_vertices % 3) == 0);
-
-          for (int vi = 0; vi < num_vertices; vi += 3) {
-            vertex.set_row(tris->get_vertex(vi));
-            Vertexf v0 = vertex.get_data3f();
-            vertex.set_row(tris->get_vertex(vi + 1));
-            Vertexf v1 = vertex.get_data3f();
-            vertex.set_row(tris->get_vertex(vi + 2));
-            Vertexf v2 = vertex.get_data3f();
-
-            // Generate a temporary CollisionPolygon on the fly for
-            // each triangle in the Geom.
-            if (CollisionPolygon::verify_points(v0, v1, v2)) {
-              entry._into = new CollisionPolygon(v0, v1, v2);
-              entry.test_intersection((*ci).second, this);
-            }
-          }
-        }
-      }
-
-    } else {
-      PTA_Vertexf coords;
-      PTA_ushort vindex;
-      geom->get_coords(coords, vindex);
-      PTA_ushort tris = geom->get_tris();
+    if (geom->get_primitive_type() == Geom::PT_polygons) {
+      const GeomVertexData *data =geom->get_vertex_data();
+      GeomVertexReader vertex(data, InternalName::get_vertex());
       
-      for (int i = 0; i < (int)tris.size(); i += 3) {
-        if (CollisionPolygon::verify_points(coords[tris[i]],
-                                            coords[tris[i + 1]],
-                                            coords[tris[i + 2]])) {
-          // Generate a temporary CollisionPolygon on the fly for each
-          // triangle in the Geom.
-          entry._into =
-            new CollisionPolygon(coords[tris[i]], coords[tris[i + 1]],
-                                 coords[tris[i + 2]]);
-          entry.test_intersection((*ci).second, this);
+      int num_primitives = geom->get_num_primitives();
+      for (int i = 0; i < num_primitives; ++i) {
+        const GeomPrimitive *primitive = geom->get_primitive(i);
+        CPT(GeomPrimitive) tris = primitive->decompose();
+        nassertv(tris->is_of_type(GeomTriangles::get_class_type()));
+        int num_vertices = tris->get_num_vertices();
+        nassertv((num_vertices % 3) == 0);
+        
+        for (int vi = 0; vi < num_vertices; vi += 3) {
+          vertex.set_row(tris->get_vertex(vi));
+          Vertexf v0 = vertex.get_data3f();
+          vertex.set_row(tris->get_vertex(vi + 1));
+          Vertexf v1 = vertex.get_data3f();
+          vertex.set_row(tris->get_vertex(vi + 2));
+          Vertexf v2 = vertex.get_data3f();
+          
+          // Generate a temporary CollisionPolygon on the fly for
+          // each triangle in the Geom.
+          if (CollisionPolygon::verify_points(v0, v1, v2)) {
+            entry._into = new CollisionPolygon(v0, v1, v2);
+            entry.test_intersection((*ci).second, this);
+          }
         }
       }
     }

@@ -26,7 +26,7 @@
 #include "renderState.h"
 #include "renderAttrib.h"
 #include "internalName.h"
-#include "qpgeomPrimitive.h"
+#include "geomPrimitive.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "pvector.h"
@@ -65,7 +65,7 @@ public:
   CPT(RenderState) _state;
   bool _hidden;
   bool _flat_shaded;
-  qpGeom::PrimitiveType _primitive_type;
+  Geom::PrimitiveType _primitive_type;
 
   typedef EggLoader::BakeInUVs BakeInUVs;
   typedef EggLoader::TextureDef TextureDef;

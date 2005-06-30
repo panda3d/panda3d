@@ -29,13 +29,12 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "geomTristrip.h"
 #include "nearly_zero.h"
 #include "cmath.h"
 #include "mathNumbers.h"
-#include "qpgeom.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTristrips.h"
+#include "geomVertexWriter.h"
 
 TypeHandle CollisionSphere::_type_handle;
 
@@ -327,63 +326,33 @@ fill_viz_geom() {
   static const int num_slices = 16;
   static const int num_stacks = 8;
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    
-    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeom::UH_static);
-    for (int sl = 0; sl < num_slices; ++sl) {
-      float longitude0 = (float)sl / (float)num_slices;
-      float longitude1 = (float)(sl + 1) / (float)num_slices;
-      vertex.add_data3f(compute_point(0.0, longitude0));
-      for (int st = 1; st < num_stacks; ++st) {
-        float latitude = (float)st / (float)num_stacks;
-        vertex.add_data3f(compute_point(latitude, longitude0));
-        vertex.add_data3f(compute_point(latitude, longitude1));
-      }
-      vertex.add_data3f(compute_point(1.0, longitude0));
-
-      strip->add_next_vertices(num_stacks * 2);
-      strip->close_primitive();
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  for (int sl = 0; sl < num_slices; ++sl) {
+    float longitude0 = (float)sl / (float)num_slices;
+    float longitude1 = (float)(sl + 1) / (float)num_slices;
+    vertex.add_data3f(compute_point(0.0, longitude0));
+    for (int st = 1; st < num_stacks; ++st) {
+      float latitude = (float)st / (float)num_stacks;
+      vertex.add_data3f(compute_point(latitude, longitude0));
+      vertex.add_data3f(compute_point(latitude, longitude1));
     }
-
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vdata);
-    geom->add_primitive(strip);
-
-    _viz_geom->add_geom(geom, get_solid_viz_state());
-    _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
-
-  } else {
-    GeomTristrip *sphere = new GeomTristrip;
-    PTA_Vertexf verts;
-    PTA_int lengths;
-    verts.reserve((num_stacks * 2) * num_slices);
-    lengths.reserve(num_slices);
+    vertex.add_data3f(compute_point(1.0, longitude0));
     
-    for (int sl = 0; sl < num_slices; sl++) {
-      float longitude0 = (float)sl / (float)num_slices;
-      float longitude1 = (float)(sl + 1) / (float)num_slices;
-      verts.push_back(compute_point(0.0, longitude0));
-      for (int st = 1; st < num_stacks; st++) {
-        float latitude = (float)st / (float)num_stacks;
-        verts.push_back(compute_point(latitude, longitude0));
-        verts.push_back(compute_point(latitude, longitude1));
-      }
-      verts.push_back(compute_point(1.0, longitude0));
-      
-      lengths.push_back(num_stacks * 2);
-    }
-    
-    sphere->set_coords(verts);
-    sphere->set_lengths(lengths);
-    sphere->set_num_prims(num_slices);
-    
-    _viz_geom->add_geom(sphere, get_solid_viz_state());
-    _bounds_viz_geom->add_geom(sphere, get_solid_bounds_viz_state());
+    strip->add_next_vertices(num_stacks * 2);
+    strip->close_primitive();
   }
+  
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vdata);
+  geom->add_primitive(strip);
+  
+  _viz_geom->add_geom(geom, get_solid_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

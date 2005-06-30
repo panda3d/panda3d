@@ -23,7 +23,7 @@
 
 #include "savedContext.h"
 #include "updateSeq.h"
-#include "qpgeomPrimitive.h"
+#include "geomPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndexBufferContext
@@ -38,9 +38,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA IndexBufferContext : public SavedContext {
 public:
-  INLINE IndexBufferContext(qpGeomPrimitive *data);
+  INLINE IndexBufferContext(GeomPrimitive *data);
 
-  INLINE qpGeomPrimitive *get_data() const;
+  INLINE GeomPrimitive *get_data() const;
 
   INLINE int get_data_size_bytes() const;
   INLINE bool changed_size() const;
@@ -51,13 +51,13 @@ public:
   INLINE void mark_loaded();
 
 private:
-  // This cannot be a PT(qpGeomPrimitive), because the data and
+  // This cannot be a PT(GeomPrimitive), because the data and
   // the GSG both own their IndexBufferContexts!  That would create a
   // circular reference count.
-  qpGeomPrimitive *_data;
+  GeomPrimitive *_data;
   UpdateSeq _modified;
   int _data_size_bytes;
-  qpGeomEnums::UsageHint _usage_hint;
+  GeomEnums::UsageHint _usage_hint;
 
 public:
   static TypeHandle get_class_type() {

@@ -26,8 +26,8 @@
 #include "pointerToArray.h"
 #include "luse.h"
 #include "geom.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomPoints.h"
+#include "geomVertexData.h"
+#include "geomPoints.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointParticleRenderer
@@ -69,7 +69,7 @@ PUBLISHED:
   INLINE ParticleRendererBlendMethod get_blend_method() const;
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
   Colorf _start_color;
@@ -78,11 +78,8 @@ private:
   CPT(RenderAttrib) _thick;
 
   PT(Geom) _point_primitive;
-  PT(qpGeomPoints) _points;
-
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-  PT(qpGeomVertexData) _vdata;
+  PT(GeomPoints) _points;
+  PT(GeomVertexData) _vdata;
 
   int _max_pool_size;
 

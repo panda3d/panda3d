@@ -38,7 +38,7 @@ has_mouse() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcher::
 is_mouse_open() const {
-  return _has_mouse && (_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0;
+  return _has_mouse && (_internal_suppress & MouseWatcherRegion::SF_mouse_position) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////

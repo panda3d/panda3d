@@ -41,8 +41,6 @@ class SliderTable;
 //               It is similar to VertexTransform, which keeps a full
 //               4x4 transform matrix, but the VertexSlider only keeps
 //               a single float value.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexSlider : public TypedWritableReferenceCount {
 PUBLISHED:

@@ -42,8 +42,6 @@
 //               Also, it is only used when animating vertices on the
 //               CPU, since GPU's don't support morphs at this point
 //               in time.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SliderTable : public TypedWritableReferenceCount {
 PUBLISHED:

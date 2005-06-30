@@ -18,8 +18,8 @@
 
 #include "pandabase.h"
 #include "geomContext.h"
-#include "qpgeomMunger.h"
-#include "qpgeomVertexData.h"
+#include "geomMunger.h"
+#include "geomVertexData.h"
 #include "pointerTo.h"
 #include "pmap.h"
 

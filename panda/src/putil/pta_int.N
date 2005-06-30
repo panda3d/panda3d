@@ -1,3 +1,0 @@
-forcetype  PointerToArray< int >
-forcetype  ConstPointerToArray< int >
-forcetype  PointerToBase<RefCountObj<pvector<int>>>

@@ -28,7 +28,7 @@
 #include "event.h"
 #include "updateSeq.h"
 #include "pStatCollector.h"
-#include "qpgeomEnums.h"
+#include "geomEnums.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;

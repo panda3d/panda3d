@@ -25,7 +25,7 @@
 #include "luse.h"
 #include "geom.h"
 #include "updateSeq.h"
-#include "qpgeomVertexData.h"
+#include "geomVertexData.h"
 #include "pointerTo.h"
 
 class BoundingVolume;
@@ -185,7 +185,6 @@ protected:
 
 private:
   static void resequence_fov_triad(char &newest, char &older_a, char &older_b);
-  int define_geom_coords();
   int define_geom_data();
   static void build_shear_mat(LMatrix4f &shear_mat,
                               const LPoint3f &cul, const LPoint3f &cur,
@@ -256,8 +255,7 @@ protected:
   // specified these three parameters.  A bit of a mess.
   char _focal_length_seq, _fov_seq, _film_size_seq;
 
-  PTA_Vertexf _geom_coords;
-  PT(qpGeomVertexData) _geom_data;
+  PT(GeomVertexData) _geom_data;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

@@ -23,11 +23,8 @@
 
 #include "luse.h"
 #include "geom.h"
-#include "geomPoint.h"
-#include "geomLine.h"
-#include "geomLinestrip.h"
 #include "geomNode.h"
-#include "qpgeomVertexData.h"
+#include "geomVertexData.h"
 #include "namable.h"
 
 #include "pvector.h"
@@ -65,12 +62,12 @@ PUBLISHED:
   // Functions to move the line vertices after they have been created.
   INLINE int get_num_vertices() const;
 
-  INLINE Vertexf get_vertex(int vertex) const;
-  INLINE void set_vertex(int vertex, const Vertexf &vert);
+  Vertexf get_vertex(int n) const;
+  void set_vertex(int n, const Vertexf &vert);
   INLINE void set_vertex(int vertex, float x, float y, float z);
 
-  INLINE Colorf get_vertex_color(int vertex) const;
-  INLINE void set_vertex_color(int vertex, const Colorf &color);
+  Colorf get_vertex_color(int vertex) const;
+  void set_vertex_color(int vertex, const Colorf &c);
   INLINE void set_vertex_color(int vertex, float r, float g, float b, float a = 1.0f);
 
 private:
@@ -92,9 +89,7 @@ private:
   Colorf _color;
   float _thick;
 
-  PTA_Vertexf _created_verts;
-  PTA_Colorf _created_colors;
-  PT(qpGeomVertexData) _created_data;
+  PT(GeomVertexData) _created_data;
 };
 
 #include "lineSegs.I"

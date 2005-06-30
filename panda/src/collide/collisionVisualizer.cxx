@@ -23,12 +23,17 @@
 #include "cullableObject.h"
 #include "cullHandler.h"
 #include "renderState.h"
+#include "renderModeAttrib.h"
+#include "geomVertexData.h"
+#include "geomVertexFormat.h"
+#include "geomVertexArrayFormat.h"
+#include "geom.h"
+#include "geomPoints.h"
+#include "geomLines.h"
 #include "omniBoundingVolume.h"
 #include "depthOffsetAttrib.h"
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
-#include "geomLine.h"
-#include "geomSphere.h"
 
 
 #ifdef DO_COLLISION_RECORDING
@@ -159,54 +164,83 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // Now draw all of the detected points.
     if (!viz_info._points.empty()) {
       CPT(RenderState) empty_state = RenderState::make_empty();
-        
-      PTA_Colorf colors;
-      colors.push_back(Colorf(1.0f, 0.0f, 0.0f, 1.0f));
-      colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, true));
+
+      PT(GeomVertexArrayFormat) point_array_format = 
+        new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
+                                  Geom::NT_float32, Geom::C_point,
+                                  InternalName::get_color(), 1,
+                                  Geom::NT_packed_dabc, Geom::C_color,
+                                  InternalName::get_size(), 1, 
+                                  Geom::NT_float32, Geom::C_other);
+      CPT(GeomVertexFormat) point_format = 
+        GeomVertexFormat::register_format(point_array_format);
         
       Points::const_iterator pi;
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
-          
-        // Draw a small red sphere at the surface point, and a smaller
-        // white sphere at the interior point.
+
+        // Draw a small red point at the surface point, and a smaller
+        // white point at the interior point.
         {
-          PT(GeomSphere) sphere = new GeomSphere;
-          PTA_Vertexf verts;
-          verts.push_back(point._surface_point);
-          verts.push_back(point._surface_point + 
-                          LVector3f(0.1f * _viz_scale, 0.0f, 0.0f));
-          sphere->set_coords(verts);
-          sphere->set_colors(colors, G_PER_PRIM);
-          sphere->set_num_prims(1);
-            
+          PT(GeomVertexData) point_vdata = 
+            new GeomVertexData("viz", point_format, Geom::UH_stream);
+          
+          PT(GeomPoints) points = new GeomPoints(Geom::UH_stream);
+
+          GeomVertexWriter vertex(point_vdata, InternalName::get_vertex());
+          GeomVertexWriter color(point_vdata, InternalName::get_color());
+          GeomVertexWriter size(point_vdata, InternalName::get_size());
+
+          vertex.add_data3f(point._surface_point);
+          color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+          size.add_data1f(0.1f * _viz_scale);
+          points->add_next_vertices(1);
+          points->close_primitive();
+
           if (point._interior_point != point._surface_point) {
-            verts.push_back(point._interior_point);
-            verts.push_back(point._interior_point + 
-                            LVector3f(0.05f * _viz_scale, 0.0f, 0.0f));
-            sphere->set_num_prims(2);
+            vertex.add_data3f(point._interior_point);
+            color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
+            size.add_data1f(0.05f * _viz_scale);
+            points->add_next_vertices(1);
+            points->close_primitive();
           }
+
+          PT(Geom) geom = new Geom;
+          geom->set_vertex_data(point_vdata);
+          geom->add_primitive(points);
             
           CullableObject *object = 
-            new CullableObject(sphere, empty_state, xform_data._modelview_transform);
+            new CullableObject(geom, point_state, xform_data._modelview_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }
 
         // Draw the normal vector at the surface point.
         if (!point._surface_normal.almost_equal(LVector3f::zero())) {
-          PT(GeomLine) line = new GeomLine;
-        
-          PTA_Vertexf verts;
-          verts.push_back(point._surface_point);
-          verts.push_back(point._surface_point + 
-                          point._surface_normal * _viz_scale);
-          line->set_coords(verts);
-          line->set_colors(colors, G_PER_VERTEX);
-          line->set_num_prims(1);
+          PT(GeomVertexData) line_vdata = 
+            new GeomVertexData("viz", GeomVertexFormat::get_v3cp(),
+                               Geom::UH_stream);
+
+          PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
+
+          GeomVertexWriter vertex(line_vdata, InternalName::get_vertex());
+          GeomVertexWriter color(line_vdata, InternalName::get_color());
+
+          vertex.add_data3f(point._surface_point);
+          vertex.add_data3f(point._surface_point + 
+                            point._surface_normal * _viz_scale);
+          color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+          color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
+          lines->add_next_vertices(2);
+          lines->close_primitive();
+
+          PT(Geom) geom = new Geom;
+          geom->set_vertex_data(line_vdata);
+          geom->add_primitive(lines);
           
           CullableObject *object = 
-            new CullableObject(line, empty_state, xform_data._modelview_transform);
+            new CullableObject(geom, empty_state, xform_data._modelview_transform);
           
           trav->get_cull_handler()->record_object(object, trav);
         }

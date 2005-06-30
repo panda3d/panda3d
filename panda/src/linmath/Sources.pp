@@ -9,11 +9,11 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
+     aa_luse.h \
      compose_matrix.h compose_matrix_src.I  \
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
      coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h  \
-     flt2dblnames.h fltnames.h ioPtaDatagramLinMath.I  \
-     ioPtaDatagramLinMath.h lcast_to.h lcast_to_src.h  \
+     flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
      lcast_to_src.I lmatrix.h lmatrix3.h lmatrix3_src.I  \
      lmatrix3_src.cxx lmatrix3_src.h lmatrix4.h lmatrix4_src.I  \
      lmatrix4_src.cxx lmatrix4_src.h lorientation.h  \
@@ -33,28 +33,26 @@
      lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.cxx  \
      lvector2_src.h lvector3.h lvector3_src.I lvector3_src.cxx  \
      lvector3_src.h lvector4.h lvector4_src.I lvector4_src.cxx  \
-     lvector4_src.h mathNumbers.h mathNumbers.I pta_Colorf.h  \
-     pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h  \
+     lvector4_src.h mathNumbers.h mathNumbers.I vector_Colorf.h  \
      vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h  \
      vector_TexCoordf.h vector_Vertexf.h
     
    #define INCLUDED_SOURCES \
      compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx  \
-     ioPtaDatagramLinMath.cxx lmatrix.cxx lmatrix3.cxx  \
+     lmatrix.cxx lmatrix3.cxx  \
      lmatrix4.cxx lorientation.cxx lorientation lpoint2.cxx  \
      lpoint3.cxx lpoint4.cxx lquaternion.cxx lrotation.cxx  \
      lrotation luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx  \
      lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx  \
-     pta_Colorf.cxx pta_Normalf.cxx pta_TexCoordf.cxx  \
-     pta_Vertexf.cxx vector_Colorf.cxx vector_LPoint2f.cxx  \
+     vector_Colorf.cxx vector_LPoint2f.cxx  \
      vector_LVecBase3f.cxx vector_Normalf.cxx vector_Vertexf.cxx  \
 
   #define INSTALL_HEADERS \
+    aa_luse.h \
     compose_matrix.h compose_matrix_src.I \
     compose_matrix_src.h config_linmath.h coordinateSystem.h \
     dbl2fltnames.h dblnames.h deg_2_rad.h \
-    flt2dblnames.h fltnames.h ioPtaDatagramLinMath.I \
-    ioPtaDatagramLinMath.h lcast_to.h lcast_to_src.I lcast_to_src.h \
+    flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.I lcast_to_src.h \
     lmat_ops.h lmat_ops_src.I lmat_ops_src.h lmatrix.h lmatrix3.h \
     lmatrix3_src.I lmatrix3_src.h lmatrix4.h lmatrix4_src.I \
     lmatrix4_src.h lorientation.h lorientation_src.I \
@@ -68,8 +66,7 @@
     lvecBase3_src.I lvecBase3_src.h lvecBase4.h lvecBase4_src.I \
     lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.h \
     lvector3.h lvector3_src.I lvector3_src.h lvector4.h lvector4_src.I \
-    lvector4_src.h mathNumbers.h mathNumbers.I pta_Colorf.h \
-    pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h \
+    lvector4_src.h mathNumbers.h mathNumbers.I vector_Colorf.h \
     vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h \
     vector_TexCoordf.h vector_Vertexf.h
 

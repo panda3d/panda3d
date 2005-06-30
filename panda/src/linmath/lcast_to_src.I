@@ -62,7 +62,7 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint4) &source) {
 }
 
 INLINE_LINMATH FLOATNAME2(LQuaternion)
-lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion)& c) {
+lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion) &c) {
   return FLOATNAME2(LQuaternion)(c.get_r(), c.get_i(), c.get_j(), c.get_k());
 }
 

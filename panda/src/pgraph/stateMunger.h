@@ -20,7 +20,7 @@
 #define STATEMUNGER_H
 
 #include "pandabase.h"
-#include "qpgeomMunger.h"
+#include "geomMunger.h"
 #include "renderState.h"
 #include "weakPointerTo.h"
 
@@ -30,10 +30,8 @@
 //               adds the ability to munge states.  That functionality
 //               can't be declared in the base class, since it doesn't
 //               really know about RenderState.
-//
-//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StateMunger : public qpGeomMunger {
+class EXPCL_PANDA StateMunger : public GeomMunger {
 public:
   virtual ~StateMunger();
   CPT(RenderState) munge_state(const RenderState *state);
@@ -49,9 +47,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    qpGeomMunger::init_type();
+    GeomMunger::init_type();
     register_type(_type_handle, "StateMunger",
-                  qpGeomMunger::get_class_type());
+                  GeomMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

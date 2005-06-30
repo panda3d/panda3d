@@ -49,6 +49,7 @@
 #include "plist.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
+#include "sceneGraphAnalyzer.h"
 #include "sceneGraphReducer.h"
 #include "textureCollection.h"
 #include "textureStageCollection.h"
@@ -4812,6 +4813,21 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
                             TransformState::make_identity());
 
   return found_any;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::analyze
+//       Access: Published
+//  Description: Analyzes the geometry below this node and reports the
+//               number of vertices, triangles, etc.  This is the same
+//               information reported by the bam-info program.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+analyze() const {
+  nassertv_always(!is_empty());
+  SceneGraphAnalyzer sga;
+  sga.add_node(node());
+  sga.write(nout);
 }
 
 ////////////////////////////////////////////////////////////////////

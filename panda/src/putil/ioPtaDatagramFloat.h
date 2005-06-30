@@ -24,6 +24,8 @@
 #include "pointerToArray.h"
 #include "pta_float.h"
 
+class BamReader;
+class BamWriter;
 class Datagram;
 class DatagramIterator;
 
@@ -37,8 +39,8 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA IoPtaDatagramFloat {
 public:
-  static void write_datagram(Datagram &dest, CPTA_float array);
-  static PTA_float read_datagram(DatagramIterator &source);
+  static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_float array);
+  static PTA_float read_datagram(BamReader *manager, DatagramIterator &source);
 };
 
 typedef IoPtaDatagramFloat IPD_float;

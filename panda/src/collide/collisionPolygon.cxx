@@ -33,14 +33,13 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "geomPolygon.h"
 #include "transformState.h"
 #include "clipPlaneAttrib.h"
 #include "nearly_zero.h"
-#include "qpgeom.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomVertexWriter.h"
+#include "geom.h"
+#include "geomTrifans.h"
+#include "geomLinestrips.h"
+#include "geomVertexWriter.h"
 
 #include <algorithm>
 
@@ -351,14 +350,9 @@ write(ostream &out, int indent_level) const {
   LMatrix4f to_3d_mat;
   rederive_to_3d_mat(to_3d_mat);
   out << "In 3-d space:\n";
-  PTA_Vertexf verts;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    verts.push_back(to_3d((*pi)._p, to_3d_mat));
-  }
-
-  PTA_Vertexf::const_iterator vi;
-  for (vi = verts.begin(); vi != verts.end(); ++vi) {
-    indent(out, indent_level + 2) << (*vi) << "\n";
+    Vertexf vert = to_3d((*pi)._p, to_3d_mat);
+    indent(out, indent_level + 2) << vert << "\n";
   }
 }
 
@@ -818,61 +812,38 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
   LMatrix4f to_3d_mat;
   rederive_to_3d_mat(to_3d_mat);
 
-  if (use_qpgeom) {
-    PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3(),
-       qpGeom::UH_static);
-    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-
-    Points::const_iterator pi;
-    for (pi = points.begin(); pi != points.end(); ++pi) {
-      vertex.add_data3f(to_3d((*pi)._p, to_3d_mat));
-    }
-    
-    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeom::UH_static);
-    body->add_consecutive_vertices(0, points.size());
-    body->close_primitive();
-
-    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeom::UH_static);
-    border->add_consecutive_vertices(0, points.size());
-    border->add_vertex(0);
-    border->close_primitive();
-
-    PT(qpGeom) geom1 = new qpGeom;
-    geom1->set_vertex_data(vdata);
-    geom1->add_primitive(body);
-
-    PT(qpGeom) geom2 = new qpGeom;
-    geom2->set_vertex_data(vdata);
-    geom2->add_primitive(border);
-
-    viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
-    viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
-
-    bounds_viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
-    bounds_viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
-
-  } else {
-    PTA_Vertexf verts;
-    Points::const_iterator pi;
-    for (pi = points.begin(); pi != points.end(); ++pi) {
-      verts.push_back(to_3d((*pi)._p, to_3d_mat));
-    }
-    
-    PTA_int lengths;
-    lengths.push_back(points.size());
-    
-    GeomPolygon *polygon = new GeomPolygon;
-    polygon->set_coords(verts);
-    polygon->set_num_prims(1);
-    polygon->set_lengths(lengths);
-    
-    viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
-    viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
-    
-    bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
-    bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  Points::const_iterator pi;
+  for (pi = points.begin(); pi != points.end(); ++pi) {
+    vertex.add_data3f(to_3d((*pi)._p, to_3d_mat));
   }
+  
+  PT(GeomTrifans) body = new GeomTrifans(Geom::UH_static);
+  body->add_consecutive_vertices(0, points.size());
+  body->close_primitive();
+  
+  PT(GeomLinestrips) border = new GeomLinestrips(Geom::UH_static);
+  border->add_consecutive_vertices(0, points.size());
+  border->add_vertex(0);
+  border->close_primitive();
+  
+  PT(Geom) geom1 = new Geom;
+  geom1->set_vertex_data(vdata);
+  geom1->add_primitive(body);
+  
+  PT(Geom) geom2 = new Geom;
+  geom2->set_vertex_data(vdata);
+  geom2->add_primitive(border);
+
+  viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
+  viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+  
+  bounds_viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
+  bounds_viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
 }
 
 
@@ -1227,49 +1198,16 @@ write_datagram(BamWriter *manager, Datagram &me) {
 void CollisionPolygon::
 fillin(DatagramIterator &scan, BamReader *manager) {
   CollisionPlane::fillin(scan, manager);
-  if (manager->get_file_minor_ver() < 9) {
-    // Decode old-style collision polygon.
 
-    Points points;
-    size_t size = scan.get_uint16();
-    for (size_t i = 0; i < size; i++) {
-      LPoint2f p;
-      p.read_datagram(scan);
-      
-      points.push_back(PointDef(p[0], p[1]));
-    }
-    LPoint2f median;
-    median.read_datagram(scan);
-
-    int axis = scan.get_uint8();
-    bool reversed = (scan.get_uint8() != 0);
-
-    // Now convert the above points into 3-d by the old-style rules.
-    pvector<LPoint3f> verts;
-    Points::const_iterator pi;
-    for (pi = points.begin(); pi != points.end(); ++pi) {
-      verts.push_back(legacy_to_3d((*pi)._p, axis));
-    }
-    if (reversed) {
-      reverse(verts.begin(), verts.end());
-    }
-
-    const LPoint3f *verts_begin = &verts[0];
-    const LPoint3f *verts_end = verts_begin + verts.size();
-    setup_points(verts_begin, verts_end);
-
-  } else {
-    // Load new-style collision polygon.
-    size_t size = scan.get_uint16();
-    for (size_t i = 0; i < size; i++) {
-      LPoint2f p;
-      LVector2f v;
-      p.read_datagram(scan);
-      v.read_datagram(scan);
-      _points.push_back(PointDef(p, v));
-    }
-    _to_2d_mat.read_datagram(scan);
+  size_t size = scan.get_uint16();
+  for (size_t i = 0; i < size; i++) {
+    LPoint2f p;
+    LVector2f v;
+    p.read_datagram(scan);
+    v.read_datagram(scan);
+    _points.push_back(PointDef(p, v));
   }
+  _to_2d_mat.read_datagram(scan);
 }
 
 

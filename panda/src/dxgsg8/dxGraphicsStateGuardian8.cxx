@@ -21,8 +21,6 @@
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"
-#include "geomSphere.h"
-#include "geomIssuer.h"
 #include "graphicsWindow.h"
 #include "graphicsEngine.h"
 #include "lens.h"
@@ -47,15 +45,15 @@
 #include "depthOffsetAttrib.h"
 #include "fog.h"
 #include "throw_event.h"
-#include "qpgeomVertexFormat.h"
-#include "qpgeomVertexData.h"
-#include "qpgeomTriangles.h"
-#include "qpgeomTristrips.h"
-#include "qpgeomTrifans.h"
-#include "qpgeomLines.h"
-#include "qpgeomLinestrips.h"
-#include "qpgeomPoints.h"
-#include "qpGeomVertexReader.h"
+#include "geomVertexFormat.h"
+#include "geomVertexData.h"
+#include "geomTriangles.h"
+#include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLines.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
+#include "GeomVertexReader.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
 #include "dxVertexBufferContext8.h"
@@ -113,10 +111,10 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   // texture coordinates via a texture matrix, so we don't advertise
   // GR_point_sprite_tex_matrix.
   _supported_geom_rendering = 
-    qpGeom::GR_point | qpGeom::GR_point_uniform_size |
-    qpGeom::GR_point_perspective | qpGeom::GR_point_sprite |
-    qpGeom::GR_triangle_strip | qpGeom::GR_triangle_fan |
-    qpGeom::GR_flat_first_vertex;
+    Geom::GR_point | Geom::GR_point_uniform_size |
+    Geom::GR_point_perspective | Geom::GR_point_sprite |
+    Geom::GR_triangle_strip | Geom::GR_triangle_fan |
+    Geom::GR_flat_first_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,7 +280,7 @@ release_texture(TextureContext *tc) {
 //               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *DXGraphicsStateGuardian8::
-prepare_vertex_buffer(qpGeomVertexArrayData *data) {
+prepare_vertex_buffer(GeomVertexArrayData *data) {
   DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
   return dvbc;
 }
@@ -300,7 +298,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   if (dvbc->_vbuffer == NULL) {
     // Attempt to create a new vertex buffer.
     if (vertex_buffers &&
-        dvbc->get_data()->get_usage_hint() != qpGeom::UH_client) {
+        dvbc->get_data()->get_usage_hint() != Geom::UH_client) {
       dvbc->create_vbuffer(*_screen);
     }
 
@@ -375,7 +373,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 //               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *DXGraphicsStateGuardian8::
-prepare_index_buffer(qpGeomPrimitive *data) {
+prepare_index_buffer(GeomPrimitive *data) {
   DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
   return dibc;
 }
@@ -451,10 +449,10 @@ release_index_buffer(IndexBufferContext *ibc) {
 //  Description: Creates a new GeomMunger object to munge vertices
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomMunger) DXGraphicsStateGuardian8::
+PT(GeomMunger) DXGraphicsStateGuardian8::
 make_geom_munger(const RenderState *state) {
   PT(DXGeomMunger8) munger = new DXGeomMunger8(this, state);
-  return qpGeomMunger::register_munger(munger);
+  return GeomMunger::register_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -768,25 +766,25 @@ end_frame() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
-                      const qpGeomVertexData *vertex_data) {
+begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
+                      const GeomVertexData *vertex_data) {
   if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
-  nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
+  nassertr(_vertex_data != (GeomVertexData *)NULL, false);
 
-  const qpGeomVertexFormat *format = _vertex_data->get_format();
+  const GeomVertexFormat *format = _vertex_data->get_format();
 
   // The munger should have put the FVF data in the first array.
-  const qpGeomVertexArrayData *data = _vertex_data->get_array(0);
+  const GeomVertexArrayData *data = _vertex_data->get_array(0);
 
-  VertexBufferContext *vbc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  VertexBufferContext *vbc = ((GeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   apply_vertex_buffer(vbc);
 
-  const qpGeomVertexAnimationSpec &animation = 
+  const GeomVertexAnimationSpec &animation = 
     vertex_data->get_format()->get_animation();
-  if (animation.get_animation_type() == qpGeom::AT_hardware) {
+  if (animation.get_animation_type() == Geom::AT_hardware) {
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
     case 1:
@@ -869,7 +867,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_triangles(const qpGeomTriangles *primitive) {
+draw_triangles(const GeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
   if (primitive->is_indexed()) {
@@ -878,7 +876,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -927,7 +925,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_tristrips(const qpGeomTristrips *primitive) {
+draw_tristrips(const GeomTristrips *primitive) {
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
@@ -939,7 +937,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, one line triangle strip.
-        IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+        IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
 
@@ -990,14 +988,14 @@ draw_tristrips(const qpGeomTristrips *primitive) {
       int index_stride = primitive->get_index_stride();
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
 
-      qpGeomVertexReader mins(primitive->get_mins(), 0);
-      qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+      GeomVertexReader mins(primitive->get_mins(), 0);
+      GeomVertexReader maxs(primitive->get_maxs(), 0);
       nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
                primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, individual triangle strips.
-        IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+        IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
 
@@ -1077,7 +1075,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_trifans(const qpGeomTrifans *primitive) {
+draw_trifans(const GeomTrifans *primitive) {
   CPTA_int ends = primitive->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
 
@@ -1089,14 +1087,14 @@ draw_trifans(const qpGeomTrifans *primitive) {
     // with degenerate vertices, so no worries about that.
     int index_stride = primitive->get_index_stride();
 
-    qpGeomVertexReader mins(primitive->get_mins(), 0);
-    qpGeomVertexReader maxs(primitive->get_maxs(), 0);
+    GeomVertexReader mins(primitive->get_mins(), 0);
+    GeomVertexReader maxs(primitive->get_maxs(), 0);
     nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
              primitive->get_maxs()->get_num_rows() == (int)ends.size());
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -1175,7 +1173,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_lines(const qpGeomLines *primitive) {
+draw_lines(const GeomLines *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1185,7 +1183,7 @@ draw_lines(const qpGeomLines *primitive) {
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -1234,7 +1232,7 @@ draw_lines(const qpGeomLines *primitive) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_linestrips(const qpGeomLinestrips *primitive) {
+draw_linestrips(const GeomLinestrips *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1243,7 +1241,7 @@ draw_linestrips(const qpGeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_points(const qpGeomPoints *primitive) {
+draw_points(const GeomPoints *primitive) {
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -2103,12 +2101,12 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 //               to DirectX's.
 ////////////////////////////////////////////////////////////////////
 D3DFORMAT DXGraphicsStateGuardian8::
-get_index_type(qpGeom::NumericType numeric_type) {
+get_index_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
-  case qpGeom::NT_uint16:
+  case Geom::NT_uint16:
     return D3DFMT_INDEX16;
 
-  case qpGeom::NT_uint32:
+  case Geom::NT_uint32:
     return D3DFMT_INDEX32;
   }
 

@@ -279,13 +279,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = (TextureStage::Mode) scan.get_uint8();
   _color.read_datagram(scan);
 
-  if (manager->get_file_minor_ver() >= 16) {
-    _rgb_scale = scan.get_uint8();
-    _alpha_scale = scan.get_uint8();
-  } else {
-    _rgb_scale = 1;
-    _alpha_scale = 1;
-  }
+  _rgb_scale = scan.get_uint8();
+  _alpha_scale = scan.get_uint8();
   
   _combine_rgb_mode = (TextureStage::CombineMode) scan.get_uint8();
   _num_combine_rgb_operands = scan.get_uint8();
