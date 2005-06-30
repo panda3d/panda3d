@@ -2237,7 +2237,10 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 //     Function: MayaShader::set_shader_attributes
 //       Access: Private
 //  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
+//               egg primitive. Note: For multi-textures, Maya lists 
+//               the top most texture in slot 0. But Panda puts the 
+//               base texture at slot 0. Hence I parse the list of 
+//               textures from last to first.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
@@ -2249,9 +2252,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   // if present, replaces the color. Also now there could be multiple textures
   MayaShaderColorDef *color_def = NULL;
   const MayaShaderColorDef &trans_def = shader._transparency;
-  for (size_t i=0; i<shader._color.size(); ++i) {
+  //for (size_t i=0; i<shader._color.size(); ++i) {
+  for (int i=shader._color.size()-1; i>=0; --i) {
     color_def = shader.get_color_def(i);
-    //mayaegg_cat.spam() << "got color_def: " << color_def << endl;
+    mayaegg_cat.spam() << "slot " << i << ":got color_def: " << color_def << endl;
     if (color_def->_has_texture || trans_def._has_texture) {
       EggTexture tex(shader.get_name(), "");
       string uvset_name = color_def->_texture_name;
@@ -2269,7 +2273,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         }
       }
       
-      //maya_cat.debug() << "got shader name:" << shader.get_name() << endl;
+      maya_cat.debug() << "got shader name:" << shader.get_name() << endl;
       maya_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
       
       if (color_def->_has_texture) {
@@ -2332,8 +2336,8 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           //tex.set_format(EggTexture::F_rgb);
         }
         
-        // if multi-textured, first texture in maya is on top, so
         if (shader._color.size() > 1) {
+          // if multi-textured, first texture in maya is on top, so
           // last shader on the list is the base one, which should always pick up the alpha
           // from the texture file. But the top textures may have to strip the alpha
           if (i!=shader._color.size()-1) {
@@ -2355,16 +2359,13 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           _path_replace->match_path(filename, get_texture_path());
         tex.set_filename(_path_replace->store_path(fullpath));
         tex.set_fullpath(fullpath);
-        //tex.set_format(EggTexture::F_alpha);
         apply_texture_properties(tex, trans_def);
       }
       
-      //mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
+      mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
       EggTexture *new_tex =
         _textures.create_unique_texture(tex, ~0);
-      //_textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
       
-      //if (pi && shader._color.size() > 1) {
       if (pi) {
         // see if the uvset_name exists for this polygon, if yes, add the texture to primitive
         if (pi->hasUVs(MString(uvset_name.c_str()))) {
@@ -2373,23 +2374,8 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
             color_def->_uvset_name.assign("default");
           else
             color_def->_uvset_name.assign(uvset_name.c_str());
-          //new_tex->set_uv_name(color_def->_texture_name);
           new_tex->set_uv_name(color_def->_uvset_name);
-        }/* else {
-          // if the uvset is under different name, try taking out the
-          // numeric from the uv name. This was a compromise to support
-          // one uvset but different layered texture for layer1 texture
-          uvset_name.resize(uvset_name.length()-1);
-          mayaegg_cat.debug() << "ssa:trying uvset_name: " << uvset_name << endl;
-          if (pi->hasUVs(MString(uvset_name.c_str()))) {
-            primitive.add_texture(new_tex);
-            color_def->_uvset_name.assign(uvset_name.c_str());
-            //new_tex->set_uv_name(color_def->_texture_name);
-            new_tex->set_uv_name(color_def->_uvset_name);
-          } else {
-            mayaegg_cat.debug() << "ssa: didn't find uvset_name: " << uvset_name << endl;
-          }
-          }*/
+        }
       } else {
         primitive.add_texture(new_tex);
         new_tex->set_uv_name(color_def->_uvset_name);
@@ -2420,7 +2406,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
 
   primitive.set_color(rgba);
 
-  //mayaegg_cat.spam() << "  set_shader_attributes : end\n";
+  mayaegg_cat.spam() << "  set_shader_attributes : end\n";
 }
 
 ////////////////////////////////////////////////////////////////////
