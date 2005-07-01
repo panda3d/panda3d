@@ -1522,7 +1522,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/utillib.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/stlport_vc7.lib'
             if (PkgSelected(opts,"NSPR")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/libnspr4.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/nspr4.lib'
             if (PkgSelected(opts,"SSL")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/ssleay32.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libeay32.lib'
