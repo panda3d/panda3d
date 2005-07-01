@@ -1,0 +1,6 @@
+*.egg
+*.pt
+Makefile
+bams/
+optchar/
+pal_egg/
