@@ -31,6 +31,7 @@ TypeHandle EggVertexUV::_type_handle;
 EggVertexUV::
 EggVertexUV(const string &name, const TexCoordd &uv) :
   EggNamedObject(name),
+  _flags(0),
   _uv(uv)
 {
 }
@@ -44,6 +45,9 @@ EggVertexUV::
 EggVertexUV(const EggVertexUV &copy) :
   EggNamedObject(copy),
   _duvs(copy._duvs),
+  _flags(copy._flags),
+  _tangent(copy._tangent),
+  _binormal(copy._binormal),
   _uv(copy._uv)
 {
 }
@@ -57,6 +61,9 @@ EggVertexUV &EggVertexUV::
 operator = (const EggVertexUV &copy) {
   EggNamedObject::operator = (copy);
   _duvs = copy._duvs;
+  _flags = copy._flags;
+  _tangent = copy._tangent;
+  _binormal = copy._binormal;
   _uv = copy._uv;
 
   return (*this);
@@ -72,6 +79,25 @@ EggVertexUV::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::transform
+//       Access: Published, Virtual
+//  Description: Applies the indicated transformation matrix to the
+//               UV's tangent and/or binormal.  This does nothing if
+//               there is no tangent or binormal.
+////////////////////////////////////////////////////////////////////
+void EggVertexUV::
+transform(const LMatrix4d &mat) {
+  if (has_tangent()) {
+    _tangent = _tangent * mat;
+    _tangent.normalize();
+  }
+  if (has_binormal()) {
+    _binormal = _binormal * mat;
+    _binormal.normalize();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::write
 //       Access: Public
 //  Description: 
@@ -83,12 +109,20 @@ write(ostream &out, int indent_level) const {
     inline_name += ' ';
   }
 
-  if (_duvs.empty()) {
+  if (_duvs.empty() && _flags == 0) {
     indent(out, indent_level)
       << "<UV> " << inline_name << "{ " << get_uv() << " }\n";
   } else {
     indent(out, indent_level) << "<UV> " << inline_name << "{\n";
     indent(out, indent_level+2) << get_uv() << "\n";
+    if (has_tangent()) {
+      indent(out, indent_level + 2)
+        << "<Tangent> { " << get_tangent() << " }\n";
+    }
+    if (has_binormal()) {
+      indent(out, indent_level + 2)
+        << "<Binormal> { " << get_binormal() << " }\n";
+    }
     _duvs.write(out, indent_level+2);
     indent(out, indent_level) << "}\n";
   }
@@ -103,11 +137,29 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 int EggVertexUV::
 compare_to(const EggVertexUV &other) const {
-  int compare =
-    _uv.compare_to(other._uv, egg_parameters->_uv_threshold);
+  if (_flags != other._flags) {
+    return _flags - other._flags;
+  }
+  int compare;
+  compare = _uv.compare_to(other._uv, egg_parameters->_uv_threshold);
   if (compare != 0) {
     return compare;
   }
+
+  if (has_tangent()) {
+    compare = _tangent.compare_to(other._tangent, egg_parameters->_normal_threshold);
+    if (compare != 0) {
+      return compare;
+    }
+  }
+
+  if (has_binormal()) {
+    compare = _binormal.compare_to(other._binormal, egg_parameters->_normal_threshold);
+    if (compare != 0) {
+      return compare;
+    }
+  }
+
   if (_duvs != other._duvs) {
     return _duvs < other._duvs ? -1 : 1;
   }

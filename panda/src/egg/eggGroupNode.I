@@ -17,3 +17,24 @@
 ////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::TBNVertexValue::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::TBNVertexValue::
+operator < (const TBNVertexValue &other) const {
+  int compare = _pos.compare_to(other._pos);
+  if (compare != 0) {
+    return compare < 0;
+  }
+  compare = _normal.compare_to(other._normal);
+  if (compare != 0) {
+    return compare < 0;
+  }
+  compare = _uv.compare_to(other._uv);
+  if (compare != 0) {
+    return compare < 0;
+  }
+  return _uv_name < other._uv_name;
+}

@@ -43,12 +43,32 @@ PUBLISHED:
   INLINE const TexCoordd &get_uv() const;
   INLINE void set_uv(const TexCoordd &texCoord);
 
+  INLINE bool has_tangent() const;
+  INLINE const Normald &get_tangent() const;
+  INLINE void set_tangent(const Normald &tangent);
+  INLINE void clear_tangent();
+
+  INLINE bool has_binormal() const;
+  INLINE const Normald &get_binormal() const;
+  INLINE void set_binormal(const Normald &binormal);
+  INLINE void clear_binormal();
+
+  void transform(const LMatrix4d &mat);
+
   void write(ostream &out, int indent_level) const;
   int compare_to(const EggVertexUV &other) const;
 
   EggMorphTexCoordList _duvs;
 
 private:
+  enum Flags {
+    F_has_tangent   = 0x001,
+    F_has_binormal  = 0x002,
+  };
+
+  int _flags;
+  Normald _tangent;
+  Normald _binormal;
   TexCoordd _uv;
 
 public:

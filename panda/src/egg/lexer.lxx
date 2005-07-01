@@ -351,6 +351,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return BILLBOARDCENTER;
 }
+"<BINORMAL>" {
+  accept();
+  return BINORMAL;
+}
 "<BUNDLE>" {
   accept();
   return BUNDLE;
@@ -578,6 +582,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "<TAG>" {
   accept();
   return TAG;
+}
+"<TANGENT>" {
+  accept();
+  return TANGENT;
 }
 "<TEXLIST>" {
   accept();

@@ -20,6 +20,7 @@
 
 #include "string_utils.h"
 #include "compose_matrix.h"
+#include "globPattern.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggWriter::Constructor
@@ -160,6 +161,14 @@ post_process_egg_file() {
   case NM_preserve:
     // Do nothing.
     break;
+  }
+
+  for (vector_string::const_iterator si = _tbn_names.begin();
+       si != _tbn_names.end();
+       ++si) {
+    GlobPattern uv_name(*si);
+    nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
+    _data->recompute_tangent_binormal(uv_name);
   }
 }
 

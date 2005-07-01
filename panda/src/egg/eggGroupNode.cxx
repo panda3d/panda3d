@@ -696,6 +696,45 @@ strip_normals() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::recompute_tangent_binormal
+//       Access: Published
+//  Description: This function recomputes the tangent and binormal for
+//               the named texture coordinate set for all vertices at
+//               this level and below.  Use the empty string for the
+//               default texture coordinate set.
+//
+//               It is necessary for each vertex to already have a
+//               normal (or at least a polygon normal), as well as a
+//               texture coordinate in the named texture coordinate
+//               set, before calling this function.  You might precede
+//               this with recompute_vertex_normals() to ensure that
+//               the normals exist.
+//
+//               Like recompute_vertex_normals(), this function does
+//               not remove or adjust vertices in the vertex pool; it
+//               only adds new vertices with the normals removed.
+//               Thus, it is a good idea to call
+//               remove_unused_vertices() after calling this.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+recompute_tangent_binormal(const GlobPattern &uv_name) {
+  // First, collect all the vertices together with their shared
+  // polygons.
+  TBNVertexCollection collection;
+  r_collect_tangent_binormal(uv_name, collection);
+
+  // Now compute the tangent and binormal separately for each common
+  // group of vertices.
+  TBNVertexCollection::const_iterator ci;
+  for (ci = collection.begin(); ci != collection.end(); ++ci) {
+    const TBNVertexValue &value = (*ci).first;
+    const TBNVertexGroup &group = (*ci).second;
+
+    do_compute_tangent_binormal(value, group);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::triangulate_polygons
 //       Access: Published
 //  Description: Replace all higher-order polygons at this point in
@@ -1644,7 +1683,7 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_collect_vertex_normals
+//     Function: EggGroupNode::do_compute_vertex_normals
 //       Access: Private
 //  Description: This is part of the implementation of
 //               recompute_vertex_normals().  It accepts a group of
@@ -1683,3 +1722,159 @@ do_compute_vertex_normals(const NVertexGroup &group) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::r_collect_tangent_binormal
+//       Access: Private
+//  Description: This is part of the implementation of
+//               recompute_tangent_binormal().  It walks the scene
+//               graph at this group node and below, identifying all
+//               the polygons and the vertices they have in common.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+r_collect_tangent_binormal(const GlobPattern &uv_name,
+                           EggGroupNode::TBNVertexCollection &collection) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPolygon::get_class_type())) {
+      EggPolygon *polygon = DCAST(EggPolygon, child);
+
+      TBNVertexReference ref;
+      ref._polygon = polygon;
+
+      // Now add each vertex from the polygon separately to our
+      // collection.
+      size_t num_vertices = polygon->size();
+      for (size_t i = 0; i < num_vertices; i++) {
+        // We look at the triangle formed by each three consecutive
+        // vertices to determine the s direction and t direction at
+        // each vertex.  v1 is the key vertex, the one at position i;
+        // v2 is vertex i + 1, and v3 is vertex i - 1.
+        EggVertex *v1 = polygon->get_vertex(i);
+        EggVertex *v2 = polygon->get_vertex((i + 1) % num_vertices);
+        EggVertex *v3 = polygon->get_vertex((i + num_vertices - 1) % num_vertices);
+        if (v1->has_normal() || polygon->has_normal()) {
+          // Go through all of the UV names on the vertex, looking for
+          // one that matches the glob pattern.
+          EggVertex::const_uv_iterator uvi;
+          for (uvi = v1->uv_begin(); uvi != v1->uv_end(); ++uvi) {
+            EggVertexUV *uv_obj = (*uvi);
+            string name = uv_obj->get_name();
+            if (uv_name.matches(name) &&
+                v2->has_uv(name) && v3->has_uv(name)) {
+              TBNVertexValue value;
+              value._uv_name = name;
+              value._pos = v1->get_pos3();
+              if (v1->has_normal()) {
+                value._normal = v1->get_normal();
+              } else {
+                value._normal = polygon->get_normal();
+              }
+              value._uv = v1->get_uv(name);
+              
+              // Compute the s direction and t direction for this vertex.
+              LPoint3d p1 = v1->get_pos3();
+              LPoint3d p2 = v2->get_pos3();
+              LPoint3d p3 = v3->get_pos3();
+              
+              TexCoordd w1 = v1->get_uv(name);
+              TexCoordd w2 = v2->get_uv(name);
+              TexCoordd w3 = v3->get_uv(name);
+              
+              double x1 = p2[0] - p1[0];
+              double x2 = p3[0] - p1[0];
+              double y1 = p2[1] - p1[1];
+              double y2 = p3[1] - p1[1];
+              double z1 = p2[2] - p1[2];
+              double z2 = p3[2] - p1[2];
+              
+              double s1 = w2[0] - w1[0];
+              double s2 = w3[0] - w1[0];
+              double t1 = w2[1] - w1[1];
+              double t2 = w3[1] - w1[1];
+              
+              double r = 1.0f / (s1 * t2 - s2 * t1);
+              ref._sdir.set((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+                            (t2 * z1 - t1 * z2) * r);
+              ref._tdir.set((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+                            (s1 * z2 - s2 * z1) * r);
+
+              // Store the vertex referenced to the polygon.
+              ref._vertex = i;
+              collection[value].push_back(ref);
+            }
+          }
+        }
+      }
+
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *group = DCAST(EggGroupNode, child);
+
+      // We can't share vertices across an Instance node.  Don't
+      // even bother trying.  Instead, just restart.
+      if (group->is_under_instance()) {
+        group->recompute_tangent_binormal(uv_name);
+      } else {
+        group->r_collect_tangent_binormal(uv_name, collection);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::do_compute_tangent_binormal
+//       Access: Private
+//  Description: This is part of the implementation of
+//               recompute_tangent_binormal().  It accepts a group of
+//               polygons and their common normals and UV's, and
+//               computes the tangent and binormal for all their
+//               shared vertices.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+do_compute_tangent_binormal(const TBNVertexValue &value,
+                            const TBNVertexGroup &group) {
+  nassertv(!group.empty());
+
+  // Accumulate together all of the s vectors and t vectors computed
+  // for the different vertices that are together here.
+  Normald sdir(0.0, 0.0, 0.0);
+  Normald tdir(0.0, 0.0, 0.0);
+
+  TBNVertexGroup::const_iterator gi;
+  for (gi = group.begin(); gi != group.end(); ++gi) {
+    const TBNVertexReference &ref = (*gi);
+    sdir += ref._sdir;
+    tdir += ref._tdir;
+  }
+
+  Normald tangent = (sdir - value._normal * value._normal.dot(sdir));
+  tangent.normalize();
+
+  Normald binormal = cross(value._normal, tangent);
+  if (dot(binormal, tdir) < 0.0f) {
+    binormal = -binormal;
+  }
+  // Shouldn't need to normalize this, but we do just for good measure.
+  binormal.normalize();
+
+  // Now we have the common tangent and binormal; apply them to all
+  // the vertices.
+
+  for (gi = group.begin(); gi != group.end(); ++gi) {
+    const TBNVertexReference &ref = (*gi);
+    EggVertex *vertex = ref._polygon->get_vertex(ref._vertex);
+    EggVertexPool *pool = vertex->get_pool();
+
+    EggVertex new_vertex(*vertex);
+    EggVertexUV *uv_obj = new_vertex.get_uv_obj(value._uv_name);
+    nassertv(uv_obj != (EggVertexUV *)NULL);
+    uv_obj->set_tangent(tangent);
+    uv_obj->set_binormal(binormal);
+
+    EggVertex *unique = pool->create_unique_vertex(new_vertex);
+    unique->copy_grefs_from(*vertex);
+
+    ref._polygon->set_vertex(ref._vertex, unique);
+  }
+}

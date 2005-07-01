@@ -146,7 +146,7 @@ egg_cleanup_parser() {
 %token <_ulong> ULONG
 %token <_string> STRING
 
-%token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BUNDLE CLOSED
+%token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BINORMAL BUNDLE CLOSED
 %token COLLIDE COMMENT COMPONENT
 %token COORDSYSTEM CV DART
 %token DNORMAL DRGBA DUV DXYZ DCS DISTANCE DTREF
@@ -157,7 +157,7 @@ egg_cleanup_parser() {
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
 %token OUTTANGENT POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
-%token TABLE TABLE_V TAG TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
+%token TABLE TABLE_V TAG TANGENT TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
 %token TREF TRIANGLEFAN TRIANGLESTRIP 
 %token TRIM TXT UKNOTS UV VKNOTS VERTEX VERTEXANIM
 %token VERTEXPOOL VERTEXREF
@@ -952,6 +952,22 @@ vertex_uv_body:
         real real
 {
   DCAST(EggVertexUV, egg_stack.back())->set_uv(TexCoordd($1, $2));
+}
+        | vertex_uv_body TANGENT '{' real real real '}'
+{
+  if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
+    eggyywarning("Ignoring repeated tangent");
+  } else {
+    DCAST(EggVertexUV, egg_stack.back())->set_tangent(Normald($4, $5, $6));
+  }
+}
+        | vertex_uv_body BINORMAL '{' real real real '}'
+{
+  if (DCAST(EggVertexUV, egg_stack.back())->has_binormal()) {
+    eggyywarning("Ignoring repeated binormal");
+  } else {
+    DCAST(EggVertexUV, egg_stack.back())->set_binormal(Normald($4, $5, $6));
+  }
 }
         | vertex_uv_body DUV string '{' real real '}'
 {

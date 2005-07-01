@@ -137,6 +137,19 @@ get_tangent() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_tangent_name
+//       Access: Published, Static
+//  Description: Returns the InternalName "tangent.name", where name
+//               is the supplied string.  This is the column header
+//               for the tangent associated with the named texture
+//               coordinate set.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_tangent_name(const string &name) {
+  return get_tangent()->append(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_binormal
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "binormal".  This is
@@ -153,6 +166,19 @@ get_binormal() {
     _binormal = InternalName::make("binormal");
   }
   return _binormal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_binormal_name
+//       Access: Published, Static
+//  Description: Returns the InternalName "binormal.name", where name
+//               is the supplied string.  This is the column header
+//               for the binormal associated with the named texture
+//               coordinate set.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_binormal_name(const string &name) {
+  return get_binormal()->append(name);
 }
 
 ////////////////////////////////////////////////////////////////////

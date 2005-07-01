@@ -67,7 +67,9 @@ PUBLISHED:
   INLINE static PT(InternalName) get_vertex();
   INLINE static PT(InternalName) get_normal();
   INLINE static PT(InternalName) get_tangent();
+  INLINE static PT(InternalName) get_tangent_name(const string &name);
   INLINE static PT(InternalName) get_binormal();
+  INLINE static PT(InternalName) get_binormal_name(const string &name);
   INLINE static PT(InternalName) get_texcoord();
   INLINE static PT(InternalName) get_texcoord_name(const string &name);
   INLINE static PT(InternalName) get_color();

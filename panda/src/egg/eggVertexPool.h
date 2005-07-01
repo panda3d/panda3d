@@ -98,7 +98,7 @@ PUBLISHED:
   bool has_colors() const;
   bool has_nonwhite_colors() const;
   bool has_uvs() const;
-  void get_uv_names(vector_string &uv_names) const;
+  void get_uv_names(vector_string &uv_names, vector_string &tbn_names) const;
 
 public:
   // Can be used to traverse all the vertices in index number order.

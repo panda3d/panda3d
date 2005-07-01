@@ -412,6 +412,11 @@ transform(const LMatrix4d &mat) {
     morph.set_offset((*mi).get_offset() * mat);
   }
 
+  UVMap::iterator ui;
+  for (ui = _uv_map.begin(); ui != _uv_map.end(); ++ui) {
+    (*ui).second->transform(mat);
+  }
+
   EggAttributes::transform(mat);
 }
 

@@ -105,7 +105,9 @@ private:
     GeomPrimitive::ShadeModel _shade_model;
   };
   typedef pmap<PrimitiveUnifier, PT(GeomPrimitive) > Primitives;
-  
+
+  void show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node);  
+
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
   void make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,

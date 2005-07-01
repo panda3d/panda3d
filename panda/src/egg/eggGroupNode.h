@@ -27,7 +27,7 @@
 #include "typedObject.h"
 #include "pointerTo.h"
 #include "luse.h"
-
+#include "globPattern.h"
 #include "plist.h"
 
 class EggTextureCollection;
@@ -130,6 +130,8 @@ PUBLISHED:
   void recompute_polygon_normals(CoordinateSystem cs = CS_default);
   void strip_normals();
 
+  void recompute_tangent_binormal(const GlobPattern &uv_name);
+
   enum TriangulateFlags {
     T_polygon     = 0x001,
     T_convex      = 0x002,
@@ -196,6 +198,30 @@ private:
   void r_collect_vertex_normals(NVertexCollection &collection,
                                 double threshold, CoordinateSystem cs);
   void do_compute_vertex_normals(const NVertexGroup &group);
+
+  // This bit is in support of recompute_tangent_binormal().
+  class TBNVertexReference {
+  public:
+    EggPolygon *_polygon;
+    size_t _vertex;
+    LVector3d _sdir;
+    LVector3d _tdir;
+  };
+  class TBNVertexValue {
+  public:
+    INLINE bool operator < (const TBNVertexValue &other) const;
+    Vertexd _pos;
+    Normald _normal;
+    string _uv_name;
+    TexCoordd _uv;
+  };
+  typedef pvector<TBNVertexReference> TBNVertexGroup;
+  typedef pmap<TBNVertexValue, TBNVertexGroup> TBNVertexCollection;
+
+  void r_collect_tangent_binormal(const GlobPattern &uv_name,
+                                  TBNVertexCollection &collection);
+  void do_compute_tangent_binormal(const TBNVertexValue &value,
+                                   const TBNVertexGroup &group);
 
 public:
   static TypeHandle get_class_type() {

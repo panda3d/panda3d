@@ -371,21 +371,85 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     // Now, is our parent node a GeomNode, or just an ordinary
     // PandaNode?  If it's a GeomNode, we can add the new Geom directly
     // to our parent; otherwise, we need to create a new node.
+    PT(GeomNode) geom_node;
     if (parent->is_geom_node() && !render_state->_hidden) {
-      DCAST(GeomNode, parent)->add_geom(geom, render_state->_state);
+      geom_node = DCAST(GeomNode, parent);
       
     } else {
-      PT(GeomNode) geom_node = new GeomNode(egg_bin->get_name());
+      geom_node = new GeomNode(egg_bin->get_name());
       if (render_state->_hidden) {
         parent->add_stashed(geom_node);
       } else {
         parent->add_child(geom_node);
       }
-      geom_node->add_geom(geom, render_state->_state);
+    }
+
+    geom_node->add_geom(geom, render_state->_state);
+    if (egg_show_normals) {
+      show_normals(vertex_pool, geom_node);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::show_normals
+//       Access: Private
+//  Description: In the presence of egg-show-normals, generate some
+//               additional geometry to represent the normals,
+//               tangents, and binormals of each vertex.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
+  PT(GeomPrimitive) primitive = new GeomLines(Geom::UH_static);
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  PT(GeomVertexData) vertex_data =
+    new GeomVertexData(vertex_pool->get_name(), format, Geom::UH_static);
+
+  GeomVertexWriter vertex(vertex_data, InternalName::get_vertex());
+  GeomVertexWriter color(vertex_data, InternalName::get_color());
+
+  EggVertexPool::const_iterator vi;
+  for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
+    EggVertex *vert = (*vi);
+    LPoint3d pos = vert->get_pos3();
+
+    if (vert->has_normal()) {
+      vertex.add_data3f(LCAST(float, pos));
+      vertex.add_data3f(LCAST(float, pos + vert->get_normal() * egg_normal_scale));
+      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+      primitive->add_next_vertices(2);
+      primitive->close_primitive();
+    }
+
+    // Also look for tangents and binormals in each texture coordinate
+    // set.
+    EggVertex::const_uv_iterator uvi;
+    for (uvi = vert->uv_begin(); uvi != vert->uv_end(); ++uvi) {
+      EggVertexUV *uv_obj = (*uvi);
+      if (uv_obj->has_tangent()) {
+        vertex.add_data3f(LCAST(float, pos));
+        vertex.add_data3f(LCAST(float, pos + uv_obj->get_tangent() * egg_normal_scale));
+        color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
+        color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
+        primitive->add_next_vertices(2);
+        primitive->close_primitive();
+      }
+      if (uv_obj->has_binormal()) {
+        vertex.add_data3f(LCAST(float, pos));
+        vertex.add_data3f(LCAST(float, pos + uv_obj->get_binormal() * egg_normal_scale));
+        color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
+        color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
+        primitive->add_next_vertices(2);
+        primitive->close_primitive();
+      }
     }
   }
 
-  return;
+  PT(Geom) geom = new Geom;
+  geom->set_vertex_data(vertex_data);
+  geom->add_primitive(primitive);
+  geom_node->add_geom(geom);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1659,8 +1723,8 @@ make_vertex_data(const EggRenderState *render_state,
        Geom::NT_packed_dabc, Geom::C_color);
   }
 
-  vector_string uv_names;
-  vertex_pool->get_uv_names(uv_names);
+  vector_string uv_names, tbn_names;
+  vertex_pool->get_uv_names(uv_names, tbn_names);
   vector_string::const_iterator ni;
   for (ni = uv_names.begin(); ni != uv_names.end(); ++ni) {
     string name = (*ni);
@@ -1669,8 +1733,19 @@ make_vertex_data(const EggRenderState *render_state,
     }
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
     array_format->add_column
-      (iname, 2,
-       Geom::NT_float32, Geom::C_texcoord);
+      (iname, 2, Geom::NT_float32, Geom::C_texcoord);
+  }
+  for (ni = tbn_names.begin(); ni != tbn_names.end(); ++ni) {
+    string name = (*ni);
+    if (name == "default") {
+      name = string();
+    }
+    PT(InternalName) iname = InternalName::get_tangent_name(name);
+    array_format->add_column
+      (iname, 3, Geom::NT_float32, Geom::C_vector);
+    iname = InternalName::get_binormal_name(name);
+    array_format->add_column
+      (iname, 3, Geom::NT_float32, Geom::C_vector);
   }
 
   PT(GeomVertexFormat) temp_format = new GeomVertexFormat(array_format);
@@ -1866,6 +1941,19 @@ make_vertex_data(const EggRenderState *render_state,
           
           gvw.add_data2f(LCAST(float, duv));
         }
+      }
+
+      // Also add the tangent and binormal, if present.
+      if (egg_uv->has_tangent() && egg_uv->has_binormal()) {
+        PT(InternalName) iname = InternalName::get_tangent_name(name);
+        gvw.set_column(iname);
+        if (gvw.has_column()) {
+          LVector3d tangent = egg_uv->get_tangent();
+          LVector3d binormal = egg_uv->get_binormal();
+          gvw.add_data3f(LCAST(float, tangent));
+          gvw.set_column(InternalName::get_binormal_name(name));
+          gvw.add_data3f(LCAST(float, binormal));
+        }          
       }
     }
 
