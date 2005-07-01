@@ -35,7 +35,10 @@
 #endif
 
 // Where should we install DMODELS?
-#if $[or $[CTPROJS],$[DMODELS]]
+#if $[DMODELS_INSTALL]
+  #define DMODELS_INSTALL $[DMODELS_INSTALL]
+  #define DMODELS_INSTALL_OTHER $[DMODELS_INSTALL]
+#elif $[or $[CTPROJS],$[DMODELS]]
   #define DMODELS_INSTALL $[DMODELS]
   #define DMODELS_INSTALL_OTHER $(DMODELS)
   #if $[eq $[DMODELS],]
@@ -60,3 +63,5 @@
 
 // Define some global variables for this tree.
 #define FLT2EGG_OPTS -no -uo ft
+#define MAYA2EGG_OPTS -fri 24 -uo ft -p
+#define EGG2BAM_OPTS -combine-geoms 1
