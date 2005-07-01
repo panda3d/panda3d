@@ -3306,7 +3306,7 @@ if (OMIT.count("PYTHON")==0):
     CompileC(ipath=IPATH, opts=OPTS, src='dcLexer.cxx', obj='dcparser_dcLexer.obj')
     Interrogate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', outc='libdcparser_igate.cxx',
                 src='direct/src/dcparser',  module='direct', library='libdcparser',
-                skip=['dcParser.h', 'dcmsgtypes.h'],
+                skip=['dcmsgtypes.h'],
                 also=["dcparser_composite1.cxx", "dcparser_composite2.cxx"])
     CompileC(ipath=IPATH, opts=OPTS, src='libdcparser_igate.cxx', obj='libdcparser_igate.obj')
 
