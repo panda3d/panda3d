@@ -56,12 +56,11 @@
 
 // Also get the DIRECT Package file and everything that includes.
 #if $[not $[isfile $[DIRECT_SOURCE]/Package.pp]]
-  #error DIRECT source directory not found!  Are you attached properly?
+  #printvar DIRECT_SOURCE
+  #error DIRECT source directory not found from dmodels!  Are you attached properly?
 #endif
 
 #include $[DIRECT_SOURCE]/Package.pp
 
 // Define some global variables for this tree.
 #define FLT2EGG_OPTS -no -uo ft
-#define MAYA2EGG_OPTS -fri 24 -uo ft -p
-#define EGG2BAM_OPTS -combine-geoms 1

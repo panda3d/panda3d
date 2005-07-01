@@ -49,7 +49,8 @@
 
 // Also get the PANDA Package file and everything that includes.
 #if $[not $[isfile $[PANDA_SOURCE]/Package.pp]]
-  #error PANDA source directory not found!  Are you attached properly?
+  #printvar PANDA_SOURCE
+  #error PANDA source directory not found from pandatool!  Are you attached properly?
 #endif
 
 #include $[PANDA_SOURCE]/Package.pp

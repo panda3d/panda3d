@@ -48,7 +48,8 @@
 
 // Also get the PANDATOOL Package file and everything that includes.
 #if $[not $[isfile $[PANDATOOL_SOURCE]/Package.pp]]
-  #error PANDATOOL source directory not found!  Are you attached properly?
+  #printvar PANDATOOL 
+  #error PANDATOOL source directory not found from pandaapp!  Are you attached properly?
 #endif
 
 #include $[PANDATOOL_SOURCE]/Package.pp
