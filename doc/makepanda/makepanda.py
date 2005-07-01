@@ -1196,10 +1196,12 @@ def CompileBison(pre,dstc,dsth,src):
             CopyFile(PREFIX+"/tmp/", "thirdparty/win-util/bison.simple")
             bisonFullPath=os.path.abspath("thirdparty/win-util/bison.exe")
             oslocalcmd(PREFIX+"/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
+            CopyFile(dstc, PREFIX+"/tmp/y_tab.c")
+            CopyFile(dsth, PREFIX+"/tmp/y_tab.h")
         if (COMPILER=="LINUXA"):
             oslocalcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
-        CopyFile(dstc, PREFIX+"/tmp/y.tab.c")
-        CopyFile(dsth, PREFIX+"/tmp/y.tab.h")
+            CopyFile(dstc, PREFIX+"/tmp/y.tab.c")
+            CopyFile(dsth, PREFIX+"/tmp/y.tab.h")
         updatefiledate(dstc)
         updatefiledate(dsth)
 
