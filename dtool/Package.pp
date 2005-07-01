@@ -31,7 +31,11 @@
 #endif
 
 // Where should we install DTOOL, specifically?
-#if $[or $[CTPROJS],$[DTOOL]]
+#if $[DTOOL_INSTALL]
+  #set DTOOL $[unixfilename $[DTOOL_INSTALL]]
+  #define DTOOL_INSTALL $[DTOOL]
+  #define DTOOL_INSTALL_OTHER $(DTOOL)
+#elif $[or $[CTPROJS],$[DTOOL]]
   // If we are presently attached, use the environment variable.
   // We define two variables: one for ourselves, which burns in the
   // current value of the DTOOL environment variable (so that any
@@ -85,14 +89,14 @@
 // above.
 #if $[ne $[PPREMAKE_CONFIG],]
   #define PPREMAKE_CONFIG $[unixfilename $[PPREMAKE_CONFIG]]
-  #print Reading $[PPREMAKE_CONFIG]
+  #print Reading $[PPREMAKE_CONFIG] (referred to by PPREMAKE_CONFIG)
   #include $[PPREMAKE_CONFIG]
 
 #elif $[wildcard $[unixfilename $[INSTALL_DIR]]/Config.pp]
   // If the PPREMAKE_CONFIG variable is not, but there exists a
   // Config.pp in the compiled-in INSTALL_DIR, use that one by default.
   #define PPREMAKE_CONFIG $[unixfilename $[INSTALL_DIR]]/Config.pp
-  #print Reading $[PPREMAKE_CONFIG]
+  #print Reading $[PPREMAKE_CONFIG] (referred to by INSTALL_DIR, because PPREMAKE_CONFIG is empty)
   #include $[PPREMAKE_CONFIG]
 
 #else

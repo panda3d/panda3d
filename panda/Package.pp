@@ -20,7 +20,9 @@
 
 
 // Where should we find the DTOOL source directory?
-#if $[or $[CTPROJS],$[DTOOL]]
+#if $[DTOOL_SOURCE]
+  #define DTOOL_SOURCE $[unixfilename $[DTOOL_SOURCE]]
+#elif $[or $[CTPROJS],$[DTOOL]]
   // If we are presently attached, use the environment variable.
   #define DTOOL_SOURCE $[unixfilename $[DTOOL]]
   #if $[eq $[DTOOL],]
@@ -33,7 +35,10 @@
 #endif
 
 // Where should we install PANDA?
-#if $[or $[CTPROJS],$[PANDA]]
+#if $[PANDA_INSTALL]
+  #define PANDA_INSTALL $[PANDA_INSTALL]
+  #define PANDA_INSTALL_OTHER $(PANDA_INSTALL)
+#elif $[or $[CTPROJS],$[PANDA]]
   #set PANDA $[unixfilename $[PANDA]]
   #define PANDA_INSTALL $[PANDA]
   #define PANDA_INSTALL_OTHER $(PANDA)
@@ -47,7 +52,8 @@
 
 // Also get the DTOOL Package file and everything that includes.
 #if $[not $[isfile $[DTOOL_SOURCE]/Package.pp]]
-  #error DTOOL source directory not found!  Are you attached properly?
+  #printvar DTOOL_SOURCE
+  #error DTOOL source directory not found from panda!  Are you attached properly?
 #endif
 
 #include $[DTOOL_SOURCE]/Package.pp

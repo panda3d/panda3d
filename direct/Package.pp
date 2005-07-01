@@ -20,7 +20,9 @@
 
 
 // Where should we find the PANDA source directory?
-#if $[or $[CTPROJS],$[PANDA]]
+#if $[PANDA_SOURCE]
+  #define PANDA_SOURCE $[unixfilename $[PANDA_SOURCE]]
+#elif $[or $[CTPROJS],$[PANDA]]
   // If we are presently attached, use the environment variable.
   #define PANDA_SOURCE $[unixfilename $[PANDA]]
   #if $[eq $[PANDA],]
@@ -33,7 +35,10 @@
 #endif
 
 // Where should we install DIRECT?
-#if $[or $[CTPROJS],$[DIRECT]]
+#if $[DIRECT_INSTALL]
+  #define DIRECT_INSTALL $[DIRECT_INSTALL]
+  #define DIRECT_INSTALL_OTHER $(DIRECT_INSTALL)
+#elif $[or $[CTPROJS],$[DIRECT]]
   #set DIRECT $[unixfilename $[DIRECT]]
   #define DIRECT_INSTALL $[DIRECT]
   #define DIRECT_INSTALL_OTHER $(DIRECT)
@@ -47,7 +52,8 @@
 
 // Also get the PANDA Package file and everything that includes.
 #if $[not $[isfile $[PANDA_SOURCE]/Package.pp]]
-  #error PANDA source directory not found!  Are you attached properly?
+  #printvar PANDA_SOURCE
+  #error PANDA source directory not found from direct!  Are you attached properly?
 #endif
 
 #include $[PANDA_SOURCE]/Package.pp
