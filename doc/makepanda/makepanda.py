@@ -1305,13 +1305,22 @@ def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, also=0, skip=0):
     if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         sys.exit("syntax error in Interrogate directive")
+
+    # generate list of files to interrogate.
     dirlisting = os.listdir(src)
     files = fnmatch.filter(dirlisting,"*.h")
     if (skip=='ALL'): files=[]
     else:
         files.sort()
-        for x in skip: files.remove(x)
+        for x in skip:
+            if (files.count(x)==0):
+                w = "WARNING: file %s is not present in directory %s"%(x,src)
+                print w
+                WARNINGS.append(w)
+            else: files.remove(x)
     for x in also: files.append(x)
+
+    # interrogate them.
     ALLIN.append(outd)
     outd = PREFIX+"/pandac/input/"+outd
     outc = PREFIX+"/tmp/"+outc
@@ -3127,7 +3136,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='parser.cxx', obj='egg_parser.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='lexer.cxx', obj='egg_lexer.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libegg.in', outc='libegg_igate.cxx',
             src='panda/src/egg',  module='pandaegg', library='libegg',
-            skip=["parser.h"], also=["egg_composite1.cxx","egg_composite2.cxx"])
+            skip=[], also=["egg_composite1.cxx","egg_composite2.cxx"])
 CompileC(ipath=IPATH, opts=OPTS, src='libegg_igate.cxx', obj='libegg_igate.obj')
 
 #
