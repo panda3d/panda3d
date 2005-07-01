@@ -170,7 +170,7 @@ class FileSaver:
                     if(not oldFilename.isRegularFile()):
                         if(texfilename.resolveFilename(getTexturePath(),"")):
                             oldFilename=texfilename
-                    oldtexpath=oldFilename.toOsSpecific();
+                    oldtexpath=oldFilename.toOsSpecific()
                 
                     newtexpath=dirname + "/" + texfilename.getBasename()
                     newtexpathF=Filename(newtexpath)
@@ -299,7 +299,7 @@ class FileSaver:
                     if(not oldFilename.isRegularFile()):
                         if(texfilename.resolveFilename(getTexturePath(),"")):
                             oldFilename=texfilename
-                    oldtexpath=oldFilename.toOsSpecific();
+                    oldtexpath=oldFilename.toOsSpecific()
 
 
                     newtexpath=dirname + "/" + texfilename.getBasename()

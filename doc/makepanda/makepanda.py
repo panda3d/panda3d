@@ -641,7 +641,7 @@ if sys.platform == "win32" and DIRECTXSDK is None:
 MAYAVERSIONS=[("MAYA5",  "SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath"),
               ("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
               ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath")
-];
+]
 
 for (ver,key) in MAYAVERSIONS:
     if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):

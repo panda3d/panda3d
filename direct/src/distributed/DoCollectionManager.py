@@ -82,7 +82,7 @@ class DoCollectionManager:
         Counts the number of objects of the given type in the
         repository (for testing purposes)
         """
-        count = 0;
+        count = 0
         for dobj in self.doId2do.values():
             if isinstance(dobj, classType):
                 count += 1
@@ -293,7 +293,7 @@ class DoCollectionManager:
         # NON OTP
 
         def changeDOZoneInTables(self, do, newZoneId, oldZoneId):
-            ##print "changeDOZoneInTables:%s, dclass:%s, newZoneId:%s OldZoneId:%s"%(do.doId, do.dclass.getName(), newZoneId,oldZoneId);
+            ##print "changeDOZoneInTables:%s, dclass:%s, newZoneId:%s OldZoneId:%s"%(do.doId, do.dclass.getName(), newZoneId,oldZoneId)
 
             assert self.notify.debugStateCall(self)
             assert oldZoneId in self.zoneId2doIds

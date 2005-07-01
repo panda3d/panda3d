@@ -47,24 +47,24 @@ class LineNodePath(NodePath):
         self.lineSegs.setThickness(thickness)
 
     def setColor(self, *_args):
-        apply( self.lineSegs.setColor, _args )
+        apply(self.lineSegs.setColor, _args)
 
-    def setVertex( self, *_args):
-        apply( self.lineSegs.setVertex, _args )
+    def setVertex(self, *_args):
+        apply(self.lineSegs.setVertex, _args)
 
-    def setVertexColor( self, vertex, *_args ):
+    def setVertexColor(self, vertex, *_args):
         apply( self.lineSegs.setVertexColor, (vertex,) + _args )
 
-    def getCurrentPosition( self ):
+    def getCurrentPosition(self):
         return self.lineSegs.getCurrentPosition()
 
-    def getNumVertices( self ):
+    def getNumVertices(self):
         return self.lineSegs.getNumVertices()
 
-    def getVertex( self, index ):
+    def getVertex(self, index):
         return self.lineSegs.getVertex(index)
 
-    def getVertexColor( self ):
+    def getVertexColor(self):
         return self.lineSegs.getVertexColor()
 
     def drawArrow(self, sv, ev, arrowAngle, arrowLength):
@@ -199,7 +199,7 @@ def qSlerp(startQuat, endQuat, t):
     # If the above dot product is negative, it would be better to
     # go between the negative of the initial and the final, so that
     # we take the shorter path.
-    if ( cosOmega < 0.0 ):
+    if cosOmega < 0.0:
         cosOmega *= -1
         startQ.setI(-1 * startQ.getI())
         startQ.setJ(-1 * startQ.getJ())

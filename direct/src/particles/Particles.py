@@ -351,7 +351,7 @@ class Particles(ParticleSystem):
             segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
             for sid in segIdList:
                 seg = cim.getSegment(sid)
-                if( seg.isEnabled() ):
+                if seg.isEnabled():
                     t_b = seg.getTimeBegin()
                     t_e = seg.getTimeEnd()
                     fun = seg.getFunction()
@@ -440,7 +440,7 @@ class Particles(ParticleSystem):
             segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
             for sid in segIdList:
                 seg = cim.getSegment(sid)
-                if( seg.isEnabled() ):
+                if seg.isEnabled():
                     t_b = seg.getTimeBegin()
                     t_e = seg.getTimeEnd()
                     fun = seg.getFunction()

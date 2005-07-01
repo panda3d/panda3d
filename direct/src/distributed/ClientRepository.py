@@ -505,7 +505,7 @@ class ClientRepository(ConnectionRepository):
         # This method is only used in conjunction with the CMU LAN
         # server.
 
-        assert(self.DOIDnext < self.DOIDlast);
+        assert self.DOIDnext < self.DOIDlast
         zone = di.getUint32()
         for obj in self.doId2do.values():
             if obj.zone == zone:
@@ -672,16 +672,16 @@ class ClientRepository(ConnectionRepository):
             """
             This Will Move The avatar and set an interest to that location ..
             """
-            parentId = parentIdin;
+            parentId = parentIdin
             if parentId is None:
-                parentId = base.localAvatar.defaultShard;
+                parentId = base.localAvatar.defaultShard
 
-            MyAvID = base.localAvatar.doId;
+            MyAvID = base.localAvatar.doId
             # move thwe avatar..
-            self.sendSetLocation(MyAvID,parentId,zoneId);
+            self.sendSetLocation(MyAvID,parentId,zoneId)
             # move the interest..
 
-            InterestZones = zoneId;
+            InterestZones = zoneId
             if visibleZoneList is not None:
                 InterestZones = visibleZoneList
 
@@ -691,8 +691,8 @@ class ClientRepository(ConnectionRepository):
                 self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)
 
         def sendEmulateSetZoneOff(self):
-            MyAvID = base.localAvatar.doId;
-            self.sendSetLocation(MyAvID,0,0);
+            MyAvID = base.localAvatar.doId
+            self.sendSetLocation(MyAvID,0,0)
             if self.old_setzone_interest_handle is not None:
                 self.removeInterest(self.old_setzone_interest_handle)
                 self.old_setzone_interest_handle = None

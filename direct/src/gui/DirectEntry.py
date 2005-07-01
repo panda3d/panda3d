@@ -169,8 +169,8 @@ class DirectEntry(DirectFrame):
         lineHeight = self.onscreenText.textNode.getLineHeight()
         numLines = self['numLines']
         width = self['width']
-        self.ll.set(0.0, 0.0, -0.3 * lineHeight - (lineHeight * (numLines - 1)));
-        self.ur.set(width, 0.0, lineHeight * 1.3);
+        self.ll.set(0.0, 0.0, -0.3 * lineHeight - (lineHeight * (numLines - 1)))
+        self.ur.set(width, 0.0, lineHeight * 1.3)
 
         # Scale bounds to give a pad around graphics.  We also want to
         # scale around the border width.

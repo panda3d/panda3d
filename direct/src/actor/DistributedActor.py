@@ -5,10 +5,6 @@ from direct.distributed import DistributedNode
 import Actor
 
 class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
-    """Distributed Actor class:"""
-
-# Constructor for DistributedActor
-
     def __init__(self, cr):
         try:
             self.DistributedActor_initialized
@@ -20,15 +16,11 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
             # rather cache them than delete them if possible.       
             self.setCacheable(1)
 
-# Disable the DistributedActor
-
     def disable(self):
         # remove all anims, on all parts and all lods
         if (not self.isEmpty()):
             Actor.Actor.unloadAnims(self, None, None, None)
         DistributedNode.DistributedNode.disable(self)
-
-# Delete the DistributedActor
 
     def delete(self):
         try:
@@ -40,4 +32,4 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
 
 
     def loop(self, animName, restart=1, partName=None,fromFrame=None, toFrame=None):       
-        return Actor.Actor.loop(self,animName,restart,partName,fromFrame,toFrame);
+        return Actor.Actor.loop(self,animName,restart,partName,fromFrame,toFrame)

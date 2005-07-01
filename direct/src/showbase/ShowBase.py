@@ -599,7 +599,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Temporary try..except for old pandas.
         try:
-            self.render.node().setAttrib(RescaleNormalAttrib.makeDefault());
+            self.render.node().setAttrib(RescaleNormalAttrib.makeDefault())
         except:
             pass
 
@@ -1304,8 +1304,8 @@ class ShowBase(DirectObject.DirectObject):
             self.wireframeOn()
 
     def wireframeOn(self):
-        self.render.setRenderModeWireframe(100);
-        self.render.setTwoSided(1);
+        self.render.setRenderModeWireframe(100)
+        self.render.setTwoSided(1)
         self.wireframeEnabled = 1
 
     def wireframeOff(self):

@@ -22,8 +22,8 @@ class DoInterestManager(DirectObject.DirectObject):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory("DoInterestManager")
 
-    _interestIdAssign = 1;
-    _interestIdScopes = 100;
+    _interestIdAssign = 1
+    _interestIdScopes = 100
     _interests = {}
     if __debug__:
         _debug_currentInterests = []
@@ -85,11 +85,11 @@ class DoInterestManager(DirectObject.DirectObject):
 
             if event is not None:
                 DoInterestManager._interestIdScopes  += 1
-                DoInterestManager._interests[contextId][1] = DoInterestManager._interestIdScopes;
+                DoInterestManager._interests[contextId][1] = DoInterestManager._interestIdScopes
             else:
-                DoInterestManager._interests[contextId][1] = 0;
+                DoInterestManager._interests[contextId][1] = 0
             
-            DoInterestManager._interests[contextId][2] = event;
+            DoInterestManager._interests[contextId][2] = event
             self._sendAddInterest(contextId,DoInterestManager._interests[contextId][1], parentId, zoneIdList)
             answer = 1
             assert self.printInterestsIfDebug()
@@ -106,7 +106,7 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.notify.debugCall()
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
-            answer = DoInterestManager._interests[contextId][1];
+            answer = DoInterestManager._interests[contextId][1]
         else:
             self.notify.warning("GetInterestScopeID: contextId not found: %s" % (contextId))
         return answer
@@ -119,7 +119,7 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.notify.debugCall()
         answer = None
         if  DoInterestManager._interests.has_key(contextId):
-            answer = DoInterestManager._interests[contextId][2];
+            answer = DoInterestManager._interests[contextId][2]
         else:
             self.notify.warning("GetInterestScopeEvent: contextId not found: %s" % (contextId))
         return answer

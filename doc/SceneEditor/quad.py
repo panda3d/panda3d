@@ -327,8 +327,8 @@ class QuadView(DirectObject.DirectObject):
     def ToggleWire(self):
         if (self.CurrentQuad==1): # Front View
             if(self.FrontWire): # Wireframe is On so turn it off
-                self.FrontScene.setRenderModeWireframe(100);
-                self.FrontScene.setTwoSided(1);
+                self.FrontScene.setRenderModeWireframe(100)
+                self.FrontScene.setTwoSided(1)
                 self.FrontScene.setTextureOff(100)
                 self.FrontWire=0
             else:
@@ -339,8 +339,8 @@ class QuadView(DirectObject.DirectObject):
                 self.FrontWire=1
         elif (self.CurrentQuad==2): # Front View
             if(self.TopWire): # Wireframe is On so turn it off
-                self.TopScene.setRenderModeWireframe(100);
-                self.TopScene.setTwoSided(1);
+                self.TopScene.setRenderModeWireframe(100)
+                self.TopScene.setTwoSided(1)
                 self.TopScene.setTextureOff(100)
                 self.TopWire=0
             else:
@@ -351,8 +351,8 @@ class QuadView(DirectObject.DirectObject):
                 self.TopWire=1
         elif (self.CurrentQuad==3): # Front View
             if(self.LeftWire): # Wireframe is On so turn it off
-                self.LeftScene.setRenderModeWireframe(100);
-                self.LeftScene.setTwoSided(1);
+                self.LeftScene.setRenderModeWireframe(100)
+                self.LeftScene.setTwoSided(1)
                 self.LeftScene.setTextureOff(100)
                 self.LeftWire=0
             else:
@@ -363,8 +363,8 @@ class QuadView(DirectObject.DirectObject):
                 self.LeftWire=1
         elif (self.CurrentQuad==4): # Front View
             if(self.PerspectiveWire): # Wireframe is On so turn it off
-                self.PerspectiveScene.setRenderModeWireframe(100);
-                self.PerspectiveScene.setTwoSided(1);
+                self.PerspectiveScene.setRenderModeWireframe(100)
+                self.PerspectiveScene.setTwoSided(1)
                 self.PerspectiveScene.setTextureOff(100)
                 self.PerspectiveWire=0
             else:
@@ -379,28 +379,28 @@ class QuadView(DirectObject.DirectObject):
         if (self.CurrentQuad==1): # Front View
             if(self.FrontTexture): # Texture is on so turn it off
                 self.FrontScene.setTextureOff(100)
-                self.FrontTexture=0;
+                self.FrontTexture=0
             else:
                 self.FrontScene.clearTexture()
                 self.FrontTexture=1
         elif (self.CurrentQuad==2): # Top View
             if(self.TopTexture): # Texture is on so turn it off
                 self.TopScene.setTextureOff(100)
-                self.TopTexture=0;
+                self.TopTexture=0
             else:
                 self.TopScene.clearTexture()
                 self.TopTexture=1
         elif (self.CurrentQuad==3): # Left View
             if(self.LeftTexture): # Texture is on so turn it off
                 self.LeftScene.setTextureOff(100)
-                self.LeftTexture=0;
+                self.LeftTexture=0
             else:
                 self.LeftScene.clearTexture()
                 self.LeftTexture=1
         elif (self.CurrentQuad==4): # Perspective View
             if(self.PerspectiveTexture): # Texture is on so turn it off
                 self.PerspectiveScene.setTextureOff(100)
-                self.PerspectiveTexture=0;
+                self.PerspectiveTexture=0
             else:
                 self.PerspectiveScene.clearTexture()
                 self.PerspectiveTexture=1

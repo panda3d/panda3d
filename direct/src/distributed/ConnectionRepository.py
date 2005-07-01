@@ -231,7 +231,7 @@ class ConnectionRepository(
         if hasProxy:
             self.notify.info("Connecting to gameserver via proxy list: %s" % (proxies))
         else:
-            self.notify.info("Connecting to gameserver directly (no proxy).");
+            self.notify.info("Connecting to gameserver directly (no proxy).")
 
         if self.connectMethod == 'http':
             self.connectHttp = 1

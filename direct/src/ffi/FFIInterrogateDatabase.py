@@ -773,7 +773,7 @@ class FFIInterrogateDatabase:
         pandaSqueezeTool.squeeze(squeezedName, unsqueezedName,
                                  files, outputDir)
 
-        if( deleteSource ):
+        if deleteSource:
             # Remove the now-squeezed source files.
             for file in files:
                 os.remove(file)

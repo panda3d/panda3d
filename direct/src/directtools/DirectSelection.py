@@ -504,7 +504,7 @@ class SelectionQueue(CollisionHandlerQueue):
     def findNextCollisionEntry(self, skipFlags = SKIP_NONE):
         return self.findCollisionEntry(skipFlags, self.index + 1)
 
-    def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0 ):
+    def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0):
         # Init self.index and self.entry
         self.setCurrentIndex(-1)
         self.setCurrentEntry(None)
@@ -573,7 +573,7 @@ class SelectionRay(SelectionQueue):
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
-    def pickWidget(self, targetNodePath = render, skipFlags = SKIP_NONE ):
+    def pickWidget(self, targetNodePath = render, skipFlags = SKIP_NONE):
         self.collideWithWidget()
         self.pick(targetNodePath)
         # Determine collision entry
@@ -588,7 +588,7 @@ class SelectionRay(SelectionQueue):
         
     def pickGeom3D(self, targetNodePath = render,
                    origin = Point3(0), dir = Vec3(0,0,-1),
-                   skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+                   skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
         self.collideWithGeom()
         self.pick3D(targetNodePath, origin, dir)
         # Determine collision entry
@@ -597,7 +597,7 @@ class SelectionRay(SelectionQueue):
     def pickBitMask3D(self, bitMask = BitMask32.allOff(),
                       targetNodePath = render,
                       origin = Point3(0), dir = Vec3(0,0,-1),
-                      skipFlags = SKIP_ALL ):
+                      skipFlags = SKIP_ALL):
         self.collideWithBitMask(bitMask)
         self.pick3D(targetNodePath, origin, dir)
         # Determine collision entry
@@ -623,7 +623,7 @@ class SelectionSegment(SelectionQueue):
         self.numColliders += 1
 
     def pickGeom(self, targetNodePath = render, endPointList = [],
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
         self.collideWithGeom()
         for i in range(min(len(endPointList), self.numColliders)):
             pointA, pointB = endPointList[i]
@@ -636,7 +636,7 @@ class SelectionSegment(SelectionQueue):
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = render, endPointList = [],
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
         self.collideWithBitMask(bitMask)
         for i in range(min(len(endPointList), self.numColliders)):
             pointA, pointB = endPointList[i]
@@ -700,13 +700,13 @@ class SelectionSphere(SelectionQueue):
         return self.findCollisionEntry(skipFlags)
 
     def pickGeom(self, targetNodePath = render,
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
         self.collideWithGeom()
         return self.pick(targetNodePath, skipFlags)
     
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = render,
-                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
         self.collideWithBitMask(bitMask)
         return self.pick(targetNodePath, skipFlags)
 

@@ -109,42 +109,42 @@ class Valuator(Pmw.MegaWidget):
 
             # A Dictionary of dictionaries for the popup property dialog
             self.propertyDict = {
-                'state' :
+                'state':
                 {'widget': self,
                  'type': 'string',
                  'help': 'Enter state: normal or disabled.'
                  },
                 
-                'text' :
+                'text':
                 {'widget': self,
                  'type': 'string',
                  'help': 'Enter label text.'
                  },
                 
-                'min' :
+                'min':
                 { 'widget' : self,
                   'type': 'real',
                   'fNone': 1,
                   'help': 'Minimum allowable value. Enter None for no minimum.'},
-                'max' :
+                'max':
                 { 'widget': self,
                   'type': 'real',
                   'fNone': 1,
                   'help': 'Maximum allowable value. Enter None for no maximum.'},
-                'numDigits' :
+                'numDigits':
                 {'widget': self,
                  'type': 'integer',
                  'help': 'Number of digits after decimal point.'
                  },
                 
-                'resolution' :
+                'resolution':
                 {'widget': self,
                  'type': 'real',
                  'fNone': 1,
                  'help':'Widget resolution. Enter None for no resolution .'
                  },
                 
-                'resetValue' :
+                'resetValue':
                 { 'widget': self,
                   'type': 'real',
                   'help': 'Enter value to set widget to on reset.'}

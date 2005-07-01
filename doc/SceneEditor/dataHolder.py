@@ -629,7 +629,7 @@ class dataHolder:
         if self.curveDict.has_key(name):
             index = None
             for curve in self.curveDict[name]:
-                if curve.getCurve(0).getName() == curveName :
+                if curve.getCurve(0).getName() == curveName:
                     index = self.curveDict[name].index(curve)
                     break
             del self.curveDict[name][index]

@@ -37,7 +37,7 @@ def funcToMethod(func,clas,method_name=None):
         clas.__dict__[func.__name__]=func
 
 
-def FFIInstance(classdef, this = 0, userManagesMemory = 0 ):
+def FFIInstance(classdef, this = 0, userManagesMemory = 0):
     answer = instance(classdef)
     answer.this = this
     answer.userManagesMemory = userManagesMemory

@@ -1996,7 +1996,7 @@ class MopathRecorder(AppShell, PandaObject):
         '''
         print curveList
         self.ignore('curveListFor'+self.name)
-        if curveList != None :
+        if curveList != None:
             for collection in curveList:
                 self.curveCollection = collection
                 self.extractPointSetFromCurveCollection(curveName=self.curveCollection.getCurve(0).getName())

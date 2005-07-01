@@ -283,7 +283,7 @@ class DistributedObjectAI(DirectObject):
 
     if wantOtpServer:
         def GetPuppetConnectionChannel(self, doId):
-            return doId + (1L << 32);
+            return doId + (1L << 32)
 
         def GetAccountIDFromChannelCode(self, channel):
             return channel >> 32

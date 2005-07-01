@@ -246,7 +246,7 @@ class FFIMethodArgumentTreeCollection:
             (not isinstance(self.methodSpecList[0], FFISpecs.GlobalFunctionSpecification))):
                 self.outputOverloadedStaticFooter(file, nesting)
         else:
-            if self.classTypeDesc :
+            if self.classTypeDesc:
                 indent(file, nesting,   "FFIExternalObject.funcToMethod("+methodName+','+ self.classTypeDesc.foreignTypeName+ ",'"+methodName+"')\n")
                 indent(file, nesting,   'del '+methodName+'\n')
                 indent(file, nesting, ' \n')

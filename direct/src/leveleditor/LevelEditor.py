@@ -397,7 +397,7 @@ def DNASetBaselineString(baseline, text):
     # replace each text item and then add or remove at the end.
     # This should allow inlined graphics to stay in place.
     # end of todo.
-    DNARemoveAllChildrenOfClass(baseline, DNA_SIGN_TEXT);
+    DNARemoveAllChildrenOfClass(baseline, DNA_SIGN_TEXT)
 
     # We can't just blindly iterate through the text, because it might
     # be utf-8 encoded, meaning some characters are represented using
@@ -1528,7 +1528,7 @@ class LevelEditor(NodePath, PandaObject):
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
         # Headquarters do not have doors
-        if (specialType not in [ 'hq', 'kartshop' ] ):
+        if specialType not in [ 'hq', 'kartshop' ]:
             newDNADoor = self.createDoor('landmark_door')
             newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
@@ -1601,10 +1601,10 @@ class LevelEditor(NodePath, PandaObject):
         baseline = DNASignBaseline('baseline')
         baseline.setCode("humanist")
         baseline.setColor(VBase4(0.0, 0.0, 0.0, 1.0))
-        #baseline.setKern(1.0);
-        #baseline.setWiggle(30.0);
-        #baseline.setStumble(1.0);
-        #baseline.setStomp(10.0);
+        #baseline.setKern(1.0)
+        #baseline.setWiggle(30.0)
+        #baseline.setStumble(1.0)
+        #baseline.setStomp(10.0)
         #baseline.setWidth(16.0)
         #baseline.setHeight(16.0)
         baseline.setScale(VBase3(0.7, 1.0, 0.7))
@@ -5568,7 +5568,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             flags=settings['flags']
             if flags != None:
                 self.bigFirstLetterIntVar.set('b' in flags)
-                self.setBigFirstLetter();
+                self.setBigFirstLetter()
                 
                 self.allCapsIntVar.set('c' in flags)
                 self.setAllCaps()
@@ -5606,7 +5606,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def setBaselineString(self, val):
         baseline=self.currentBaselineDNA
         if baseline:
-            DNASetBaselineString(baseline, val);
+            DNASetBaselineString(baseline, val)
             self.baselineMenu.delete(self.currentBaselineIndex)
             self.baselineMenu.insert(self.currentBaselineIndex, val)
             self.baselineMenu.selectitem(self.currentBaselineIndex)

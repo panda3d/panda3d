@@ -562,7 +562,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             
         ##########################
         ## Extension methods moved up locally
-        if extensionsDir :
+        if extensionsDir:
             self.copyExtensions(extensionsDir, file, 0)                    
             
         ##########################
@@ -650,7 +650,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # If you have no destructor, inherit one            
         ##########################
         ## Extension methods moved up locally
-        if extensionsDir :
+        if extensionsDir:
             self.copyExtensions(extensionsDir, file, 0)                    
             
 
@@ -978,7 +978,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         
         #indent(file, nesting, 'returnObject = ')
         #file.write('FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')
-        #indent(file,nesting, 'returnObject.this = 0\n');
+        #indent(file,nesting, 'returnObject.this = 0\n')
         #indent(file,nesting, 'returnObject.userManagesMemory = 0\n');        
         
         ##
