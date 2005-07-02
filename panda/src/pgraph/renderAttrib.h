@@ -92,6 +92,74 @@ PUBLISHED:
     M_always            // Always draw.  
   };
 
+  // This is the enumerated type for TexGenAttrib.  It is inherited
+  // into TexGenAttrib.  It is defined up at this level only to avoid
+  // circular dependencies in the header files.
+  enum TexGenMode {
+    M_off,
+
+    // In the types below, "eye" means the coordinate space of the
+    // observing camera, "object" means the local coordinate space of
+    // the object, and "world" means world coordinates, e.g. the
+    // coordinate space of the root of the graph.
+
+    // Sphere maps are classic static reflection maps.  They are
+    // supported on just about any hardware, and require a precomputed
+    // 180-degree fisheye image.  Sphere maps only make sense in eye
+    // coordinate space.
+    M_eye_sphere_map,
+
+    // Cube maps are a modern improvement on the sphere map; they
+    // don't suffer from any polar singularities, but they require six
+    // texture images.  They can also be generated dynamically for
+    // real-time reflections (see GraphicsOutput::make_cube_map()).
+    // Typically, a statically-generated cube map will be in eye
+    // space, while a dynamically-generated map will be in world space
+    // or object space (depending on where the camera rig that
+    // generates the map is parented).
+
+    // Cube mapping is not supported on all hardware.
+    M_world_cube_map,
+    M_eye_cube_map,
+
+    // Normal maps are most useful for applying diffuse lighting
+    // effects via a pregenerated cube map.
+    M_world_normal,
+    M_eye_normal,
+
+    // Position maps convert XYZ coordinates directly to texture
+    // coordinates.  This is particularly useful for implementing
+    // projective texturing (see NodePath::project_texture()).
+    M_world_position,
+    M_object_position,
+    M_eye_position,
+
+    // With M_point_sprite, texture coordinates will be generated for
+    // large points in the range (0,0) - (1,1) from upper-left to
+    // lower-right across the point's face.  Without this, each point
+    // will have just a single uniform texture coordinate value across
+    // its face.
+
+    // Unfortunately, the generated texture coordinates are inverted
+    // (upside-down) from Panda's usual convention, but this is what
+    // the graphics card manufacturers decided to use.  You could use
+    // a texture matrix to re-invert the texture, but that will
+    // probably force software rendering.  You'll have to paint your
+    // textures upside-down if you want true hardware sprites.
+    M_point_sprite,
+
+    // M_light_vector generates special 3-d texture coordinates that
+    // represent the vector to a particular Light in the scene graph,
+    // expressed in each vertex's tangent space.  This is used to
+    // implement bumpmapping.
+
+    // This requires a Light to be specified to the TexGenAttrib.  It
+    // also requires each vertex to define a normal, as well as a
+    // tangent and binormal for the particular named texture
+    // coordinate set.
+    M_light_vector,
+  };
+
 protected:
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;

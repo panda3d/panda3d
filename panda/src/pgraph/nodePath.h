@@ -24,7 +24,6 @@
 #include "pandaNode.h"
 #include "renderState.h"
 #include "transformState.h"
-#include "texGenAttrib.h"
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
 #include "nodePathComponent.h"
@@ -581,11 +580,13 @@ PUBLISHED:
   INLINE float get_tex_rotate(const NodePath &other, TextureStage *stage) const;
   INLINE LVecBase2f get_tex_scale(const NodePath &other, TextureStage *stage) const;
 
-  void set_tex_gen(TextureStage *stage, TexGenAttrib::Mode mode, int priority = 0);
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, const NodePath &light, int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
   bool has_tex_gen(TextureStage *stage) const;
-  TexGenAttrib::Mode get_tex_gen(TextureStage *stage) const;
+  RenderAttrib::TexGenMode get_tex_gen(TextureStage *stage) const;
+  NodePath get_tex_gen_light(TextureStage *stage) const;
 
   void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to);
   void clear_tex_projector(TextureStage *stage);

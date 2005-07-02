@@ -150,6 +150,8 @@ PUBLISHED:
   INLINE void setup_cube_map(int size,
                              ComponentType component_type, Format format);
 
+  void generate_normalization_cube_map(int size);
+
   bool read(const Filename &fullpath, int z = 0,
             int primary_file_num_channels = 0);
   bool read(const Filename &fullpath, const Filename &alpha_fullpath, 

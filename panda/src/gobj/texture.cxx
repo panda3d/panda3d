@@ -92,12 +92,17 @@ void Texture::
 setup_texture(Texture::TextureType texture_type, int x_size, int y_size, 
               int z_size, Texture::ComponentType component_type, 
               Texture::Format format) {
-#ifndef NDEBUG
   if (texture_type == TT_cube_map) {
     // Cube maps must always consist of six square images.
     nassertv(x_size == y_size && z_size == 6);
+
+    // In principle the wrap mode shouldn't mean anything to a cube
+    // map, but some drivers seem to misbehave if it's other than
+    // WM_clamp.
+    _wrap_u = WM_clamp;
+    _wrap_v = WM_clamp;
+    _wrap_w = WM_clamp;
   }
-#endif
 
   _texture_type = texture_type;
   _x_size = x_size;
@@ -108,6 +113,109 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 
   clear_ram_image();
   _loaded_from_disk = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::generate_normalization_cube_map
+//       Access: Published
+//  Description: Generates a special cube map image in the texture
+//               that can be used to apply bump mapping effects: for
+//               each texel in the cube map that is indexed by the 3-d
+//               texture coordinates (x, y, z), the resulting value is
+//               the normalized vector (x, y, z) (compressed from
+//               -1..1 into 0..1).
+//
+//               This also implicitly sets keep_ram_image to true.
+////////////////////////////////////////////////////////////////////
+void Texture::
+generate_normalization_cube_map(int size) {
+  setup_cube_map(size, T_unsigned_byte, F_rgb);
+  PTA_uchar image = modify_ram_image();
+
+  float half_size = (float)size * 0.5f;
+  float center = half_size - 0.5f;
+
+  LMatrix4f scale
+    (127.5f, 0.0f, 0.0f, 0.0f,
+     0.0f, 127.5f, 0.0f, 0.0f,
+     0.0f, 0.0f, 127.5f, 0.0f,
+     127.5f, 127.5f, 127.5f, 1.0f);
+
+  unsigned char *p = image;
+  int xi, yi;
+
+  // Page 0: positive X.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(half_size, center - yi, center - xi);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
+
+  // Page 1: negative X.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(-half_size, center - yi, xi - center);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
+
+  // Page 2: positive Y.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(xi - center, half_size, yi - center);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
+
+  // Page 3: negative Y.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(xi - center, -half_size, center - yi);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
+
+  // Page 4: positive Z.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(xi - center, center - yi, half_size);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
+
+  // Page 5: negative Z.
+  for (yi = 0; yi < size; ++yi) {
+    for (xi = 0; xi < size; ++xi) {
+      LVector3f vec(center - xi, center - yi, -half_size);
+      vec.normalize();
+      vec = scale.xform_point(vec);
+      *p++ = (unsigned char)vec[0];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[2];
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

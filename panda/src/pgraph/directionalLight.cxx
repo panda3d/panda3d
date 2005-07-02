@@ -134,6 +134,32 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DirectionalLight::get_vector_to_light
+//       Access: Public, Virtual
+//  Description: Computes the vector from a particular vertex to this
+//               light.  The exact vector depends on the type of light
+//               (e.g. point lights return a different result than
+//               directional lights).
+//
+//               The input parameters are the vertex position in
+//               question, expressed in object space, and the matrix
+//               which converts from light space to object space.  The
+//               result is expressed in object space.
+//
+//               The return value is true if the result is successful,
+//               or false if it cannot be computed (e.g. for an
+//               ambient light).
+////////////////////////////////////////////////////////////////////
+bool DirectionalLight::
+get_vector_to_light(LVector3f &result, const LPoint3f &, 
+                    const LMatrix4f &to_object_space) {
+  CDReader cdata(_cycler);
+  result = cdata->_direction * to_object_space;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DirectionalLight::bind
 //       Access: Public, Virtual
 //  Description:

@@ -62,6 +62,10 @@ public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id)=0;
 
+  virtual bool get_vector_to_light(LVector3f &result,
+                                   const LPoint3f &from_object_point, 
+                                   const LMatrix4f &to_object_space);
+
   GeomNode *get_viz();
 
 protected:

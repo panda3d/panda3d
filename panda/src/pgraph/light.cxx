@@ -68,6 +68,28 @@ Light::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Light::get_vector_to_light
+//       Access: Public, Virtual
+//  Description: Computes the vector from a particular vertex to this
+//               light.  The exact vector depends on the type of light
+//               (e.g. point lights return a different result than
+//               directional lights).
+//
+//               The input parameters are the vertex position in
+//               question, expressed in object space, and the matrix
+//               which converts from light space to object space.  The
+//               result is expressed in object space.
+//
+//               The return value is true if the result is successful,
+//               or false if it cannot be computed (e.g. for an
+//               ambient light).
+////////////////////////////////////////////////////////////////////
+bool Light::
+get_vector_to_light(LVector3f &, const LPoint3f &, const LMatrix4f &) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Light::get_viz
 //       Access: Public
 //  Description: Returns a GeomNode that may be rendered to visualize

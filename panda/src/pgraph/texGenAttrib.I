@@ -25,7 +25,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TexGenAttrib::
 TexGenAttrib() :
-  _num_point_sprites(0)
+  _num_point_sprites(0),
+  _num_light_vectors(0),
+  _point_geom_rendering(0),
+  _geom_rendering(0)
 {
 }
 
@@ -39,7 +42,10 @@ INLINE TexGenAttrib::
 TexGenAttrib(const TexGenAttrib &copy) :
   _stages(copy._stages),
   _no_texcoords(copy._no_texcoords),
-  _num_point_sprites(copy._num_point_sprites)
+  _num_point_sprites(copy._num_point_sprites),
+  _num_light_vectors(copy._num_light_vectors),
+  _point_geom_rendering(copy._point_geom_rendering),
+  _geom_rendering(copy._geom_rendering)
 {
 }
 
@@ -54,12 +60,10 @@ TexGenAttrib(const TexGenAttrib &copy) :
 INLINE int TexGenAttrib::
 get_geom_rendering(int geom_rendering) const {
   if ((geom_rendering & Geom::GR_point) != 0) {
-    if (_num_point_sprites > 0) {
-      geom_rendering |= Geom::GR_point_sprite;
-    }
+    geom_rendering |= _point_geom_rendering;
   }
 
-  return geom_rendering;
+  return geom_rendering | _geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,3 +79,40 @@ INLINE const Geom::NoTexCoordStages &TexGenAttrib::
 get_no_texcoords() const {
   return _no_texcoords;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::get_light_vectors
+//       Access: Public
+//  Description: Returns the set of TextureStages that have
+//               M_light_vector in effect, as well as the associated
+//               Lights.
+////////////////////////////////////////////////////////////////////
+INLINE const TexGenAttrib::LightVectors &TexGenAttrib::
+get_light_vectors() const {
+  return _light_vectors;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::ModeDef::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TexGenAttrib::ModeDef::
+ModeDef() :
+  _mode(M_off)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::ModeDef::compare_to
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int TexGenAttrib::ModeDef::
+compare_to(const TexGenAttrib::ModeDef &other) const {
+  if (_mode != other._mode) {
+    return (int)_mode < (int)other._mode ? -1 : 1;
+  }
+  return _light.compare_to(other._light);
+}
+

@@ -23,6 +23,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "config_pgraph.h"
 
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
@@ -39,6 +40,9 @@ TypeHandle ClipPlaneAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -73,6 +77,9 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -111,6 +118,9 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
      PlaneNode *plane3) {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -152,6 +162,9 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
      PlaneNode *plane3, PlaneNode *plane4) {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -202,6 +215,9 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
 ////////////////////////////////////////////////////////////////////
 ClipPlaneAttrib::Operation ClipPlaneAttrib::
 get_operation() const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (has_all_off()) {
     return O_set;
 
@@ -225,6 +241,9 @@ get_operation() const {
 ////////////////////////////////////////////////////////////////////
 int ClipPlaneAttrib::
 get_num_planes() const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (get_num_off_planes() == 0) {
     return get_num_on_planes();
   } else {
@@ -244,6 +263,9 @@ get_num_planes() const {
 ////////////////////////////////////////////////////////////////////
 PlaneNode *ClipPlaneAttrib::
 get_plane(int n) const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (get_num_off_planes() == 0) {
     return DCAST(PlaneNode, get_on_plane(n).node());
   } else {
@@ -264,6 +286,9 @@ get_plane(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool ClipPlaneAttrib::
 has_plane(PlaneNode *plane) const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (get_num_off_planes() == 0) {
     return has_on_plane(NodePath(plane));
   } else {
@@ -282,6 +307,9 @@ has_plane(PlaneNode *plane) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ClipPlaneAttrib::
 add_plane(PlaneNode *plane) const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (get_num_off_planes() == 0) {
     return add_on_plane(NodePath(plane));
   } else {
@@ -301,6 +329,9 @@ add_plane(PlaneNode *plane) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ClipPlaneAttrib::
 remove_plane(PlaneNode *plane) const {
+  pgraph_cat.warning()
+    << "Using deprecated ClipPlaneAttrib interface.\n";
+
   if (get_num_off_planes() == 0) {
     return remove_on_plane(NodePath(plane));
   } else {

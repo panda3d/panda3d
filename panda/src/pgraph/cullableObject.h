@@ -85,6 +85,7 @@ public:
 
 private:
   void munge_points_to_quads(const CullTraverser *traverser);
+  void munge_texcoord_light_vector(const CullTraverser *traverser);
 
 private:
   // This class is used internally by munge_points_to_quads().
@@ -105,6 +106,7 @@ private:
   static int _num_ever_allocated;
 
   static PStatCollector _munge_points_pcollector;
+  static PStatCollector _munge_light_vector_pcollector;
 
 public:
   static TypeHandle get_class_type() {

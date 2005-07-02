@@ -18,6 +18,7 @@
 
 #include "cullableObject.h"
 #include "textureAttrib.h"
+#include "texGenAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
 #include "cullTraverser.h"
@@ -28,8 +29,10 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 #include "geomTriangles.h"
+#include "light.h"
 
 PStatCollector CullableObject::_munge_points_pcollector("*:Munge:Points");
+PStatCollector CullableObject::_munge_light_vector_pcollector("*:Munge:Light Vector");
 
 CullableObject *CullableObject::_deleted_chain = (CullableObject *)NULL;
 int CullableObject::_num_ever_allocated = 0;
@@ -74,6 +77,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
           << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
       }
       munge_points_to_quads(traverser);
+    }
+    if (unsupported_bits & Geom::GR_texcoord_light_vector) {
+      munge_texcoord_light_vector(traverser);
     }
 
     // Now invoke the munger to ensure the resulting geometry is in
@@ -369,8 +375,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
       LPoint2f c0(scale_x, scale_y);
       LPoint2f c1(-scale_x, scale_y);
 
-      if (has_rotate) {
-        // If we have a rotate factor, apply it to those two corners.
+      if (has_rotate) { 
+       // If we have a rotate factor, apply it to those two corners.
         rotate.set_row(*vi);
         float r = rotate.get_data1f();
         LMatrix3f mat = LMatrix3f::rotate_mat(r);
@@ -438,4 +444,92 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
   _geom = new_geom.p();
   _munged_data = new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::munge_texcoord_light_vector
+//       Access: Private
+//  Description: Generates the vector from each vertex to the
+//               indicated light as a 3-d texture coordinate.
+//
+//               This may replace _geom, _munged_data, and _state.
+////////////////////////////////////////////////////////////////////
+void CullableObject::
+munge_texcoord_light_vector(const CullTraverser *traverser) {
+  PStatTimer timer(_munge_light_vector_pcollector);
+
+  if (_modelview_transform->is_singular()) {
+    // If we're under a singular transform, never mind.
+    return;
+  }
+
+  CPT(TransformState) net_transform =
+    traverser->get_camera_transform()->compose(_modelview_transform);
+
+  if (!_munged_data->has_column(InternalName::get_vertex()) || 
+      !_munged_data->has_column(InternalName::get_normal())) {
+    // No vertex or normal; can't compute light vector.
+    return;
+  }
+
+  CPT(TexGenAttrib) tex_gen = _state->get_tex_gen();
+  nassertv(tex_gen != (TexGenAttrib *)NULL);
+
+  const TexGenAttrib::LightVectors &light_vectors = tex_gen->get_light_vectors();
+  TexGenAttrib::LightVectors::const_iterator lvi;
+  for (lvi = light_vectors.begin();
+       lvi != light_vectors.end();
+       ++lvi) {
+    TextureStage *stage = (*lvi).first;
+    const NodePath &light = (*lvi).second;
+    nassertv(!light.is_empty());
+    Light *light_obj = light.node()->as_light();
+    nassertv(light_obj != (Light *)NULL);
+
+    // Determine the names of the tangent and binormal columns
+    // associated with the stage's texcoord name.
+    CPT(InternalName) texcoord_name = stage->get_texcoord_name();
+    string basename;
+    if (texcoord_name != InternalName::get_texcoord()) {
+      basename = texcoord_name->get_basename();
+    }
+
+    CPT(InternalName) tangent_name = InternalName::get_tangent_name(basename);
+    CPT(InternalName) binormal_name = InternalName::get_binormal_name(basename);
+
+    if (_munged_data->has_column(tangent_name) &&
+        _munged_data->has_column(binormal_name)) {
+      // Create a new column for the new texcoords.
+      PT(GeomVertexData) new_data = _munged_data->replace_column
+        (texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
+      _munged_data = new_data;
+
+      // Remove this TexGen stage from the state, since we're handling
+      // it now.
+      _state = _state->add_attrib(tex_gen->remove_stage(stage));
+      
+      // Get the transform from the light to the object.
+      CPT(TransformState) light_transform =
+        net_transform->invert_compose(light.get_net_transform());
+      const LMatrix4f &light_mat = light_transform->get_mat();
+
+      GeomVertexWriter texcoord(new_data, texcoord_name);
+      GeomVertexReader vertex(new_data, InternalName::get_vertex());
+      GeomVertexReader tangent(new_data, tangent_name);
+      GeomVertexReader binormal(new_data, binormal_name);
+      GeomVertexReader normal(new_data, InternalName::get_normal());
+      
+      while (!vertex.is_at_end()) {
+        LPoint3f p = vertex.get_data3f();
+        LVector3f t = tangent.get_data3f();
+        LVector3f b = binormal.get_data3f();
+        LVector3f n = normal.get_data3f();
+
+        LVector3f lv;
+        if (light_obj->get_vector_to_light(lv, p, light_mat)) {
+          texcoord.add_data3f(lv.dot(t), lv.dot(b), lv.dot(n));
+        }
+      }
+    }
+  }
 }

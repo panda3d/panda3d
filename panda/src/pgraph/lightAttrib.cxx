@@ -24,6 +24,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "config_pgraph.h"
 
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;
@@ -40,6 +41,9 @@ TypeHandle LightAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -74,6 +78,9 @@ make(LightAttrib::Operation op, Light *light) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2) {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -111,7 +118,10 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
-     Light *light3) {
+     Light *light3) { 
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -153,6 +163,9 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
      Light *light3, Light *light4) {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   CPT(RenderAttrib) attrib;
 
   switch (op) {
@@ -203,6 +216,9 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
 ////////////////////////////////////////////////////////////////////
 LightAttrib::Operation LightAttrib::
 get_operation() const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (has_all_off()) {
     return O_set;
 
@@ -226,6 +242,9 @@ get_operation() const {
 ////////////////////////////////////////////////////////////////////
 int LightAttrib::
 get_num_lights() const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (get_num_off_lights() == 0) {
     return get_num_on_lights();
   } else {
@@ -245,6 +264,9 @@ get_num_lights() const {
 ////////////////////////////////////////////////////////////////////
 Light *LightAttrib::
 get_light(int n) const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (get_num_off_lights() == 0) {
     return get_on_light(n).node()->as_light();
   } else {
@@ -265,6 +287,9 @@ get_light(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool LightAttrib::
 has_light(Light *light) const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (get_num_off_lights() == 0) {
     return has_on_light(NodePath(light->as_node()));
   } else {
@@ -283,6 +308,9 @@ has_light(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (get_num_off_lights() == 0) {
     return add_on_light(NodePath(light->as_node()));
   } else {
@@ -302,6 +330,9 @@ add_light(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
+  pgraph_cat.warning()
+    << "Using deprecated LightAttrib interface.\n";
+
   if (get_num_off_lights() == 0) {
     return remove_on_light(NodePath(light->as_node()));
   } else {

@@ -28,7 +28,6 @@
 #include "updateSeq.h"
 #include "pStatCollector.h"
 #include "renderModeAttrib.h"
-#include "texGenAttrib.h"
 #include "texMatrixAttrib.h"
 #include "geomMunger.h"
 #include "weakPointerTo.h"
@@ -40,6 +39,7 @@ class TransparencyAttrib;
 class ColorAttrib;
 class ColorScaleAttrib;
 class TextureAttrib;
+class TexGenAttrib;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ PUBLISHED:
   INLINE const TexMatrixAttrib *get_tex_matrix() const;
   INLINE const RenderModeAttrib *get_render_mode() const;
 
-  INLINE int get_geom_rendering(int geom_rendering) const;
+  int get_geom_rendering(int geom_rendering) const;
 
 public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 

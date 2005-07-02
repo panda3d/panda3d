@@ -40,6 +40,10 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual void write(ostream &out, int indent_level) const;
 
+  virtual bool get_vector_to_light(LVector3f &result,
+                                   const LPoint3f &from_object_point, 
+                                   const LMatrix4f &to_object_space);
+
 PUBLISHED:
   INLINE const Colorf &get_specular_color() const;
   INLINE void set_specular_color(const Colorf &color);

@@ -337,29 +337,6 @@ get_render_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_geom_rendering
-//       Access: Published
-//  Description: Returns the union of the Geom::GeomRendering bits
-//               that will be required once this RenderState is
-//               applied to a geom which includes the indicated
-//               geom_rendering bits.
-////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
-get_geom_rendering(int geom_rendering) const {
-  if (get_render_mode() != (const RenderModeAttrib *)NULL) {
-    geom_rendering = _render_mode->get_geom_rendering(geom_rendering);
-  }
-  if (get_tex_gen() != (const TexGenAttrib *)NULL) {
-    geom_rendering = _tex_gen->get_geom_rendering(geom_rendering);
-  }
-  if (get_tex_matrix() != (const TexMatrixAttrib *)NULL) {
-    geom_rendering = _tex_matrix->get_geom_rendering(geom_rendering);
-  }
-
-  return geom_rendering;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the

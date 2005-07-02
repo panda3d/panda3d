@@ -27,6 +27,7 @@
 #include "colorScaleAttrib.h"
 #include "lightAttrib.h"
 #include "textureAttrib.h"
+#include "texGenAttrib.h"
 #include "renderState.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"

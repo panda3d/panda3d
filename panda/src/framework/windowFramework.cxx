@@ -848,10 +848,10 @@ set_lighting(bool enable) {
     if (!_got_lights) {
       setup_lights();
     }
-    render.node()->set_attrib(LightAttrib::make(LightAttrib::O_add, 
-                                                _alight, _dlight));
+    render.set_light(_alight);
+    render.set_light(_dlight);
   } else {
-    render.node()->clear_attrib(LightAttrib::get_class_type());
+    render.clear_light();
   }
 
   _lighting_enabled = enable;
@@ -963,11 +963,12 @@ setup_lights() {
   NodePath camera_group = get_camera_group();
   NodePath light_group = camera_group.attach_new_node("lights");
 
-  _alight = new AmbientLight("ambient");
-  _alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));
-  _dlight = new DirectionalLight("directional");
-  light_group.attach_new_node(_alight);
-  light_group.attach_new_node(_dlight);
+  AmbientLight *alight = new AmbientLight("ambient");
+  alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));
+  DirectionalLight *dlight = new DirectionalLight("directional");
+
+  _alight = light_group.attach_new_node(alight);
+  _dlight = light_group.attach_new_node(dlight);
   
   _got_lights = true;
 }

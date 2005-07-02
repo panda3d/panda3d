@@ -26,6 +26,7 @@
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
 #include "texMatrixAttrib.h"
+#include "texGenAttrib.h"
 #include "materialAttrib.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
@@ -3226,7 +3227,7 @@ get_tex_transform(const NodePath &other, TextureStage *stage) const {
 //               the indicated texture stage.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_tex_gen(TextureStage *stage, TexGenAttrib::Mode mode, int priority) {
+set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3244,6 +3245,36 @@ set_tex_gen(TextureStage *stage, TexGenAttrib::Mode mode, int priority) {
   }
 
   node()->set_attrib(tga->add_stage(stage, mode), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_gen
+//       Access: Published
+//  Description: Enables automatic texture coordinate generation for
+//               the indicated texture stage.  This version of this
+//               method is useful when setting M_light_vector, which
+//               requires a specific light.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+            const NodePath &light, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+
+  CPT(TexGenAttrib) tga;
+
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+    tga = DCAST(TexGenAttrib, attrib);
+
+  } else {
+    tga = DCAST(TexGenAttrib, TexGenAttrib::make());
+  }
+
+  node()->set_attrib(tga->add_stage(stage, mode, light), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3311,7 +3342,7 @@ has_tex_gen(TextureStage *stage) const {
 //               the given stage, or M_off if there is no explicit
 //               mode set for the given stage.
 ////////////////////////////////////////////////////////////////////
-TexGenAttrib::Mode NodePath::
+RenderAttrib::TexGenMode NodePath::
 get_tex_gen(TextureStage *stage) const {
   nassertr_always(!is_empty(), TexGenAttrib::M_off);
 
@@ -3323,6 +3354,28 @@ get_tex_gen(TextureStage *stage) const {
   }
 
   return TexGenAttrib::M_off;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_gen_light
+//       Access: Published
+//  Description: Returns the particular Light set for the indicated
+//               texgen mode's texture stage, or empty NodePath if no
+//               light is set.  This is only meaningful if the texgen
+//               mode (returned by get_tex_gen()) is M_light_vector.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+get_tex_gen_light(TextureStage *stage) const {
+  nassertr_always(!is_empty(), NodePath::fail());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
+    return tga->get_light(stage);
+  }
+
+  return NodePath();
 }
 
 ////////////////////////////////////////////////////////////////////

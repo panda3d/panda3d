@@ -144,8 +144,8 @@ private:
   NodePath _mouse;
   PT(Trackball) _trackball;
 
-  AmbientLight *_alight;
-  DirectionalLight *_dlight;
+  NodePath _alight;
+  NodePath _dlight;
   
   bool _got_keyboard;
   bool _got_trackball;
