@@ -41,6 +41,7 @@
 #include "colorWriteAttrib.h"
 #include "colorBlendAttrib.h"
 #include "textureAttrib.h"
+#include "texGenAttrib.h"
 #include "materialAttrib.h"
 #include "lightAttrib.h"
 #include "transparencyAttrib.h"
