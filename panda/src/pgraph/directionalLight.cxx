@@ -154,7 +154,7 @@ bool DirectionalLight::
 get_vector_to_light(LVector3f &result, const LPoint3f &, 
                     const LMatrix4f &to_object_space) {
   CDReader cdata(_cycler);
-  result = cdata->_direction * to_object_space;
+  result = -(cdata->_direction * to_object_space);
 
   return true;
 }

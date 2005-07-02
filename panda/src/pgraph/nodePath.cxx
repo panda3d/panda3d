@@ -3253,11 +3253,13 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
 //  Description: Enables automatic texture coordinate generation for
 //               the indicated texture stage.  This version of this
 //               method is useful when setting M_light_vector, which
-//               requires a specific light.
+//               requires the name of the texture coordinate set that
+//               supplies the tangent and binormal, as well as the
+//               specific light to generate coordinates for.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
-            const NodePath &light, int priority) {
+            const string &source_name, const NodePath &light, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3274,7 +3276,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
     tga = DCAST(TexGenAttrib, TexGenAttrib::make());
   }
 
-  node()->set_attrib(tga->add_stage(stage, mode, light), priority);
+  node()->set_attrib(tga->add_stage(stage, mode, source_name, light), priority);
 }
 
 ////////////////////////////////////////////////////////////////////

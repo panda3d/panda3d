@@ -113,6 +113,10 @@ compare_to(const TexGenAttrib::ModeDef &other) const {
   if (_mode != other._mode) {
     return (int)_mode < (int)other._mode ? -1 : 1;
   }
-  return _light.compare_to(other._light);
+  int compare = _light.compare_to(other._light);
+  if (compare != 0) {
+    return compare;
+  }
+  return strcmp(_source_name.c_str(), other._source_name.c_str());
 }
 

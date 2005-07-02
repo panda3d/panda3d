@@ -151,9 +151,9 @@ generate_normalization_cube_map(int size) {
       vec.normalize();
       vec = scale.xform_point(vec);
 
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 
@@ -163,9 +163,9 @@ generate_normalization_cube_map(int size) {
       LVector3f vec(-half_size, center - yi, xi - center);
       vec.normalize();
       vec = scale.xform_point(vec);
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 
@@ -175,9 +175,9 @@ generate_normalization_cube_map(int size) {
       LVector3f vec(xi - center, half_size, yi - center);
       vec.normalize();
       vec = scale.xform_point(vec);
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 
@@ -187,9 +187,9 @@ generate_normalization_cube_map(int size) {
       LVector3f vec(xi - center, -half_size, center - yi);
       vec.normalize();
       vec = scale.xform_point(vec);
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 
@@ -199,9 +199,9 @@ generate_normalization_cube_map(int size) {
       LVector3f vec(xi - center, center - yi, half_size);
       vec.normalize();
       vec = scale.xform_point(vec);
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 
@@ -211,9 +211,9 @@ generate_normalization_cube_map(int size) {
       LVector3f vec(center - xi, center - yi, -half_size);
       vec.normalize();
       vec = scale.xform_point(vec);
-      *p++ = (unsigned char)vec[0];
-      *p++ = (unsigned char)vec[1];
       *p++ = (unsigned char)vec[2];
+      *p++ = (unsigned char)vec[1];
+      *p++ = (unsigned char)vec[0];
     }
   }
 }

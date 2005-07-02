@@ -54,14 +54,15 @@ public:
 
 PUBLISHED:
   static CPT(RenderAttrib) make();
-  static CPT(RenderAttrib) make(TextureStage *stage, Mode mode, const NodePath &light = NodePath());
+  static CPT(RenderAttrib) make(TextureStage *stage, Mode mode, const string &source_name = string(), const NodePath &light = NodePath());
 
-  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const NodePath &light = NodePath()) const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const string &source_name = string(), const NodePath &light = NodePath()) const;
   CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
 
   bool is_empty() const;
   bool has_stage(TextureStage *stage) const;
   Mode get_mode(TextureStage *stage) const;
+  string get_source_name(TextureStage *stage) const;
   NodePath get_light(TextureStage *stage) const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
@@ -69,7 +70,7 @@ PUBLISHED:
 public:
   INLINE const Geom::NoTexCoordStages &get_no_texcoords() const;
 
-  typedef pmap<TextureStage *, NodePath> LightVectors;
+  typedef pset<TextureStage *> LightVectors;
   INLINE const LightVectors &get_light_vectors() const;
 
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -87,6 +88,7 @@ private:
     INLINE ModeDef();
     INLINE int compare_to(const ModeDef &other) const;
     Mode _mode;
+    string _source_name;
     NodePath _light;
   };
   typedef pmap<PT(TextureStage), ModeDef> Stages;
@@ -99,8 +101,7 @@ private:
   Geom::NoTexCoordStages _no_texcoords;
 
   // This is another optimization during rendering; it lists the
-  // texture stages (if any) that use M_light_vector, and their
-  // associated lights.
+  // texture stages (if any) that use M_light_vector.
   LightVectors _light_vectors;
 
   // This element is only used during reading from a bam file.  It has

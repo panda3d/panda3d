@@ -61,8 +61,9 @@ make() {
 //               indicated stage.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
-make(TextureStage *stage, TexGenAttrib::Mode mode, const NodePath &light) {
-  return DCAST(TexGenAttrib, make())->add_stage(stage, mode, light);
+make(TextureStage *stage, TexGenAttrib::Mode mode, 
+     const string &source_name, const NodePath &light) {
+  return DCAST(TexGenAttrib, make())->add_stage(stage, mode, source_name, light);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,12 +75,14 @@ make(TextureStage *stage, TexGenAttrib::Mode mode, const NodePath &light) {
 //               replaced.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
-add_stage(TextureStage *stage, TexGenAttrib::Mode mode, const NodePath &light) const {
+add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
+          const string &source_name, const NodePath &light) const {
   CPT(RenderAttrib) removed = remove_stage(stage);
   TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
 
   ModeDef &mode_def = attrib->_stages[stage];
   mode_def._mode = mode;
+  mode_def._source_name = source_name;
   mode_def._light = light;
   switch (mode) {
   case M_point_sprite:
@@ -100,7 +103,7 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode, const NodePath &light) c
         nassert_raise(strm.str());
 
       } else {
-        attrib->_light_vectors[stage] = light;
+        attrib->_light_vectors.insert(stage);
         attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
         attrib->_num_light_vectors++;
       }
@@ -190,6 +193,26 @@ get_mode(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::get_source_name
+//       Access: Published
+//  Description: Returns the source name associated with the named
+//               texture stage, or the empty string if no name is
+//               associated with the indicated stage.  This is only
+//               meaningful if the mode is M_light_vector, in which
+//               case it indicates the name of the source texture
+//               coordinate set from which the tangent and binormal
+//               are derived.
+////////////////////////////////////////////////////////////////////
+string TexGenAttrib::
+get_source_name(TextureStage *stage) const {
+  Stages::const_iterator mi = _stages.find(stage);
+  if (mi != _stages.end()) {
+    return (*mi).second._source_name;
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::get_light
 //       Access: Published
 //  Description: Returns the Light associated with the named texture
@@ -272,7 +295,8 @@ output(ostream &out) const {
       break;
 
     case M_light_vector:
-      out << "light_vector: " << mode_def._light;
+      out << "light_vector: \"" << mode_def._source_name << "\", "
+          << mode_def._light;
       break;
     }
     out << ")";
@@ -402,7 +426,6 @@ compose_impl(const RenderAttrib *other) const {
     TextureStage *stage = (*ri).first;
     const ModeDef &mode_def = (*ri).second;
     Mode mode = mode_def._mode;
-    const NodePath &light = mode_def._light;
 
     switch (mode) {
     case M_point_sprite:
@@ -412,7 +435,7 @@ compose_impl(const RenderAttrib *other) const {
       break;
       
     case M_light_vector:
-      attrib->_light_vectors[stage] = light;
+      attrib->_light_vectors.insert(stage);
       attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
       attrib->_num_light_vectors++;
       break;
@@ -487,7 +510,6 @@ invert_compose_impl(const RenderAttrib *other) const {
     TextureStage *stage = (*ri).first;
     const ModeDef &mode_def = (*ri).second;
     Mode mode = mode_def._mode;
-    const NodePath &light = mode_def._light;
 
     switch (mode) {
     case M_point_sprite:
@@ -497,7 +519,7 @@ invert_compose_impl(const RenderAttrib *other) const {
       break;
       
     case M_light_vector:
-      attrib->_light_vectors[stage] = light;
+      attrib->_light_vectors.insert(stage);
       attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
       attrib->_num_light_vectors++;
       break;
