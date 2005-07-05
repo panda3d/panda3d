@@ -18,13 +18,13 @@
 #include "pandatoolbase.h"
 
 //Includes & Definitions
-#include "MaxToEgg.h"
-#include "MaxEggExpOptions.h"
+#include "maxToEgg.h"
+#include "maxEggExpOptions.h"
 #include "windef.h"
 
 /* Error-Reporting Includes
  */
-#include "Logger.h"
+#include "maxLogger.h"
 #define ME Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM6
 #define MaxEggPlugin_CLASS_ID	Class_ID(0x7ac0d6b7, 0x55731ef6)
 

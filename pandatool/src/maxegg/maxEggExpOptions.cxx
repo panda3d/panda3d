@@ -1,5 +1,5 @@
 /*
-  MaxEgg.cpp 
+  maxEggExpOptions.cxx
   Created by Phillip Saltzman, 2/15/05
   Carnegie Mellon University, Entetainment Technology Center
 
@@ -7,7 +7,7 @@
   what to export from 3D Studio max
 */
 
-#include "MaxEggExpOptions.h"
+#include "maxEggExpOptions.h"
 
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)

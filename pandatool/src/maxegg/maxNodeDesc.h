@@ -32,12 +32,12 @@
 //Disable the "Too many actual parameters in istdplug.h" warning in Max5
 #pragma warning(push)
 #pragma warning(disable: 4002)
-#include "pre_max_include.h"
+#include "max_pre_include.h"
 #endif
 #include <Max.h>
 #include "bipexp.h"
 #ifdef MAX5
-#include "post_max_include.h"
+#include "max_post_include.h"
 #pragma warning(pop)
 #endif
 

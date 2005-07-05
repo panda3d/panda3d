@@ -9,7 +9,7 @@
 */
 
 //Includes & Defines
-#include "MaxEgg.h"
+#include "maxEgg.h"
 //Types and structures from windows system-level calls
 #include <sys/types.h>
 #include <sys/stat.h>

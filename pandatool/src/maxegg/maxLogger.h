@@ -1,5 +1,5 @@
-#ifndef __Kens_Logger__H
-#define __Kens_Logger__H
+#ifndef __maxLogger__H
+#define __maxLogger__H
 
 /*	Standard C++ Includes for file and stream output
  */

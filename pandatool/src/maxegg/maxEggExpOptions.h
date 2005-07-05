@@ -1,5 +1,5 @@
 /*
-  MaxEggExpOptions.h 
+  maxEggExpOptions.h 
   Created by Phillip Saltzman, 2/15/05
   Carnegie Mellon University, Entetainment Technology Center
 
@@ -7,8 +7,8 @@
   export options, and then execute the export
 */
 
-#ifndef __MaxEggExpOptions__H
-#define __MaxEggExpOptions__H
+#ifndef __maxEggExpOptions__H
+#define __maxEggExpOptions__H
 
 #pragma conform(forScope, off)
 
@@ -17,7 +17,7 @@
 #include "windef.h"
 
 /* Error-Reporting Includes */
-#include "Logger.h"
+#include "maxLogger.h"
 #define ME Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM6
 #define MNEG Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM2
 #define MNEG_GEOMETRY_GENERATION Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM3

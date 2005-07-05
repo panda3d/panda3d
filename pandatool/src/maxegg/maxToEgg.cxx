@@ -1,12 +1,12 @@
 /*
-  MaxToEgg.cpp
+  maxToEgg.cxx
   Created by Ken Strickland 02/24/03
   Modified and maintained by Corey Revilla, (05/22/03)-(Present)
   Carnegie Mellon University, Entetainment Technology Center
 */
 
 //Our headers, which in turn includes some Max headers. 
-#include "MaxToEgg.h"
+#include "maxToEgg.h"
 
 //Member Function Definitions
 /* ~MaxToEgg() - Uninteresting destructor.

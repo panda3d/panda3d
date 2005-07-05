@@ -1,5 +1,5 @@
 /*
-  MaxToEgg.h 
+  maxToEgg.h 
   Created by Ken Strickland, 02/24/03
   Modified + Maintained by Corey Revilla, (05/22/03-Present)
   CMU's Entertainment Technology Center
@@ -12,18 +12,18 @@
   class, MaxEggPlugin. This class, in turn, is a wrapper about the 
   MaxToEggConverter class, which actually twiddles the bits, as they say.
 */
-#ifndef __MaxToEgg__H
-#define __MaxToEgg__H
+#ifndef __maxToEgg__H
+#define __maxToEgg__H
 
 #pragma conform(forScope, off)
 
 #include "pandatoolbase.h"
 
-#include "MaxToEggConverter.h"
+#include "maxToEggConverter.h"
 
 /* Error-Reporting Includes
  */
-#include "Logger.h"
+#include "maxLogger.h"
 #define MTE Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM5
 
 /**
