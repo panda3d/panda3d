@@ -213,7 +213,7 @@ VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
-          "BISONFLEX"]
+          "BISON","FLEX"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -512,7 +512,7 @@ def usage(problem):
 
 def parseopts(args):
     global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,GENMAN
-    global PPGAME,COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
+    global PPGAME,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
@@ -1157,7 +1157,7 @@ def CopyAllHeaders(dir):
             print msg
             WARNINGS.append(msg)
         for x in SetDifference(cvsheaders, files):
-            msg = "WARNING: header file %s is in your directory, but not in CVS"%(dir+"/"+x)
+            msg = "WARNING: header file %s is CVS, but not in your directory"%(dir+"/"+x)
             print msg
             WARNINGS.append(msg)
     # actually copy the headers.
@@ -1188,7 +1188,7 @@ def CompileBison(pre,dstc,dsth,src):
     """
     Generate a CXX file from a source YXX file.
     """
-    if (OMIT.count("BISONFLEX")):
+    if (OMIT.count("BISON")):
         dir = os.path.dirname(src)
         CopyFile(PREFIX+"/tmp/"+dstc, dir+"/"+dstc+".prebuilt")
         CopyFile(PREFIX+"/tmp/"+dsth, dir+"/"+dsth+".prebuilt")
@@ -1215,7 +1215,7 @@ def CompileFlex(pre,dst,src,dashi):
     """
     Generate a CXX file from a source LXX file.
     """
-    if (OMIT.count("BISONFLEX")):
+    if (OMIT.count("FLEX")):
         dir = os.path.dirname(src)
         CopyFile(PREFIX+"/tmp/"+dst, dir+"/"+dst+".prebuilt")
         return()
@@ -1485,7 +1485,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (OPTIMIZE==3): cmd = cmd + " /MAP:NUL "
             if (OPTIMIZE==4): cmd = cmd + " /MAP:NUL /LTCG"
             cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-            if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/MaxEgg.def'
+            if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/maxEgg.def'
             cmd = cmd + ' /OUT:' + dll + ' /IMPLIB:' + lib
             if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
             for x in wobj: cmd = cmd + ' ' + x
@@ -2397,7 +2397,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1
 CompileC(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libgobj.in', outc='libgobj_igate.cxx',
             src='panda/src/gobj',  module='panda', library='libgobj',
-            skip=["geomprimitives.h"], also=["gobj_composite1.cxx", "gobj_composite2.cxx"])
+            skip=[], also=["gobj_composite1.cxx", "gobj_composite2.cxx"])
 CompileC(ipath=IPATH, opts=OPTS, src='libgobj_igate.cxx', obj='libgobj_igate.obj')
 
 #
@@ -2459,7 +2459,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='char_composite1.cxx', obj='char_composite1
 CompileC(ipath=IPATH, opts=OPTS, src='char_composite2.cxx', obj='char_composite2.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libchar.in', outc='libchar_igate.cxx',
             src='panda/src/char',  module='panda', library='libchar',
-            skip=['char_headers.h'], also=["char_composite1.cxx", "char_composite2.cxx"])
+            skip=[], also=["char_composite1.cxx", "char_composite2.cxx"])
 CompileC(ipath=IPATH, opts=OPTS, src='libchar_igate.cxx', obj='libchar_igate.obj')
 
 #
@@ -3059,8 +3059,6 @@ CompileLink(dll='libpandaegg.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'egg_parser.obj',
              'egg_lexer.obj',
              'libegg_igate.obj',
-             'builder_composite1.obj',
-             'builder_composite2.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
              'libdtoolconfig.dll',
@@ -4007,12 +4005,11 @@ for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
-    CopyAllHeaders(IPATH[0])
-    CopyFile(PREFIX+"/tmp/MaxEgg.obj", "pandatool/src/maxegg/MaxEgg.obj")
+    CopyFile(PREFIX+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
                 'maxegg'+VER+'_composite1.obj',
-                'MaxEgg.obj',
+                'maxEgg.obj',
                 'libeggbase.lib',
                 'libprogbase.lib',
                 'libpandatoolbase.lib',
@@ -4137,7 +4134,6 @@ for VER in ["5","6","65"]:
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
     OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
-    CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
     CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayaloader'+VER+'_config_mayaloader.obj',
@@ -4615,15 +4611,15 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 ##########################################################################################
 
 if (OMIT.count("PYTHON")==0):
-    if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
-        ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
+    if (older(PREFIX+'/pandac/PandaModules.py',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
+        ALLTARGETS.append(PREFIX+'/pandac/PandaModules.py')
         if (sys.platform=="win32"):
             if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
             else       : oscmd(PREFIX+"/bin/genpycode.exe")
         else:
             if (GENMAN): oscmd(PREFIX+"/bin/genpycode -m")
             else       : oscmd(PREFIX+"/bin/genpycode")
-        updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
+        updatefiledate(PREFIX+'/pandac/PandaModules.py')
 
 ########################################################################
 ##
@@ -4711,7 +4707,7 @@ Description: The panda3D free 3D engine
             oscmd("ln -sf /usr/lib/"+base+" debtmp/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
             oscmd("cp built/lib/"+base+" debtmp/usr/lib/"+base)
         for base in os.listdir("debtmp/usr/share/panda3d/direct/src"):
-            if (base != "extensions"):
+            if ((base != "extensions") and (base != "extensions_native")):
                 compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
         compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
         compileall.compile_dir("debtmp/usr/share/panda3d/epydoc")

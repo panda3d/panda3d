@@ -78,7 +78,6 @@ Section "${SMDIRECTORY}" SecCore
         File ${PANDA}\direct\__init__.py
         SetOutPath $INSTDIR\pandac
         File /r ${PANDA}\pandac\*.py
-        File /r ${PANDA}\pandac\*.pyz
         SetOutPath $INSTDIR\python
         File /r /x CVS /x *.pyc ${PANDA}\python\*
 
