@@ -50,19 +50,19 @@ if (PANDAC is None):
 EXTENSIONS=None
 
 if (EXTENSIONS is None):
-  if os.path.isdir(os.path.join(DIRECT,"src","extensions")):
-    EXTENSIONS=os.path.join(DIRECT,"src","extensions")
+  if os.path.isdir(os.path.join(DIRECT,"src","extensions_native")):
+    EXTENSIONS=os.path.join(DIRECT,"src","extensions_native")
 
 if (EXTENSIONS is None):
-  if os.path.isdir(os.path.join(DIRECT,"extensions")):
-    EXTENSIONS=os.path.join(DIRECT,"extensions")
+  if os.path.isdir(os.path.join(DIRECT,"extensions_native")):
+    EXTENSIONS=os.path.join(DIRECT,"extensions_native")
 
 if (EXTENSIONS is None):
-  if os.path.isdir(os.path.join(DIRECT,"..","..","direct","src","extensions")):
-    EXTENSIONS=os.path.join(DIRECT,"..","..","direct","src","extensions")
+  if os.path.isdir(os.path.join(DIRECT,"..","..","direct","src","extensions_native")):
+    EXTENSIONS=os.path.join(DIRECT,"..","..","direct","src","extensions_native")
 
 if (EXTENSIONS is None):
-  sys.exit("Could not locate direct/src/extensions")
+  sys.exit("Could not locate direct/src/extensions_native")
 
 ##############################################################
 #
@@ -78,6 +78,7 @@ DoGenPyCode.extensionsDir = EXTENSIONS
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = ['libpandaexpress','libpanda','libpandaphysics','libpandafx','libdirect','libpandaegg']
 DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
+DoGenPyCode.native = 1
 
 #print "outputDir = ",DoGenPyCode.outputDir
 #print "directDir = ",DoGenPyCode.directDir
@@ -85,6 +86,7 @@ DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
 #print "interrogateLib = ",DoGenPyCode.interrogateLib
 #print "codeLibs = ",DoGenPyCode.codeLibs
 #print "etcPath = ",DoGenPyCode.etcPath
+#print "native = ",DoGenPyCode.native
 
 DoGenPyCode.run()
 
