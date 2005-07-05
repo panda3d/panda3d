@@ -67,7 +67,7 @@ void MaxToEgg::Run(ULONG *selection_list, int len)
   converter.setMaxInterface( pMaxInterface );
   Logger::Log( MTE, Logger::SAT_DEBUG_SPAM_LEVEL,
 	       "Setting converter's egg data." );
-  converter.set_egg_data( &_data, false );
+  converter.set_egg_data( _data );
   // applies the parameters from the command line options
   apply_parameters(converter);
   converter.set_double_sided(doubleSided);
