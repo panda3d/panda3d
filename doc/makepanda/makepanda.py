@@ -1896,7 +1896,7 @@ fullscreen #f
 # "software" in the following line, otherwise remove it to force
 # hardware only.
 
-framebuffer-mode rgba double-buffer depth multisample hardware software
+framebuffer-mode rgba double-buffer depth hardware
 
 # These control the amount of output Panda gives for some various
 # categories.  The severity levels, in order, are "spam", "debug",
@@ -1927,6 +1927,11 @@ texture-path  $THIS_PRC_DIR/../models
 
 want-directtools  #f
 want-tk           #f
+
+# Enable/disable performance profiling tool and frame-rate meter
+
+want-pstats            #f
+show-frame-rate-meter  #f
 
 # This enables simple networked programs to easily provide a DC file
 
