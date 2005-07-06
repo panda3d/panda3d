@@ -28,7 +28,10 @@ static const double network_time_precision = 100.0;  // Matches ClockDelta.py
 CConnectionRepository *CDistributedSmoothNodeBase::_repository = NULL;
 bool CDistributedSmoothNodeBase::_is_ai;
 CHANNEL_TYPE CDistributedSmoothNodeBase::_ai_id;
+
+#ifdef HAVE_PYTHON
 PyObject *CDistributedSmoothNodeBase::_clock_delta = NULL;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::Constructor
@@ -269,10 +272,12 @@ begin_send_update(DCPacker &packer, const string &field_name) {
 ////////////////////////////////////////////////////////////////////
 void CDistributedSmoothNodeBase::
 finish_send_update(DCPacker &packer) {
+#ifdef HAVE_PYTHON
   PyObject *clock_delta = PyObject_GetAttrString(_clock_delta, "delta");
   nassertv(clock_delta != NULL);
   double delta = PyFloat_AsDouble(clock_delta);
   Py_DECREF(clock_delta);
+#endif  // HAVE_PYTHON
 
   double local_time = ClockObject::get_global_clock()->get_frame_time();
 

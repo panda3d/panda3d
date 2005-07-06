@@ -43,8 +43,10 @@ PUBLISHED:
   set_repository(CConnectionRepository *repository,
                  bool is_ai, CHANNEL_TYPE ai_id);
 
+#ifdef HAVE_PYTHON
   INLINE static void
   set_clock_delta(PyObject *clock_delta);
+#endif
 
   void initialize(const NodePath &node_path, DCClass *dclass,
                   CHANNEL_TYPE do_id);
@@ -87,7 +89,9 @@ private:
   static CConnectionRepository *_repository;
   static bool _is_ai;
   static CHANNEL_TYPE _ai_id;
+#ifdef HAVE_PYTHON
   static PyObject *_clock_delta;
+#endif
 
   LPoint3f _store_xyz;
   LVecBase3f _store_hpr;

@@ -31,6 +31,7 @@ set_repository(CConnectionRepository *repository,
   _ai_id = ai_id;
 }
 
+#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::set_clock_delta
 //       Access: Published, Static
@@ -41,6 +42,7 @@ INLINE void CDistributedSmoothNodeBase::
 set_clock_delta(PyObject *clock_delta) {
   _clock_delta = clock_delta;
 }
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::only_changed
