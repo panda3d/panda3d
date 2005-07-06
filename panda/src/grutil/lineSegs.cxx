@@ -213,16 +213,14 @@ get_current_position() {
 GeomNode *LineSegs::
 create(GeomNode *previous, bool dynamic) {
   if (!_list.empty()) {
-    _created_data = NULL;
-      
     CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
     CPT(RenderState) state = RenderState::make(thick);
 
-    PT(GeomVertexData) vdata = new GeomVertexData
+    _created_data = new GeomVertexData
       ("lineSegs", GeomVertexFormat::get_v3cp(),
        dynamic ? Geom::UH_dynamic : Geom::UH_static);
-    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    GeomVertexWriter color(vdata, InternalName::get_color());
+    GeomVertexWriter vertex(_created_data, InternalName::get_vertex());
+    GeomVertexWriter color(_created_data, InternalName::get_color());
     
     PT(GeomLinestrips) lines = new GeomLinestrips(Geom::UH_static);
     PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
@@ -259,13 +257,13 @@ create(GeomNode *previous, bool dynamic) {
 
     if (lines->get_num_vertices() != 0) {
       PT(Geom) geom = new Geom;
-      geom->set_vertex_data(vdata);
+      geom->set_vertex_data(_created_data);
       geom->add_primitive(lines);
       previous->add_geom(geom, state);
     }
     if (points->get_num_vertices() != 0) {
       PT(Geom) geom = new Geom;
-      geom->set_vertex_data(vdata);
+      geom->set_vertex_data(_created_data);
       geom->add_primitive(points);
       previous->add_geom(geom, state);
     }
