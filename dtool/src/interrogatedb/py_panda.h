@@ -102,13 +102,7 @@ struct Dtool_PyInstDef
 ////////////////////////////////////////////////////////////////////////
 // A Offset Dictionary Definign How to read the Above Object..
 ////////////////////////////////////////////////////////////////////////
-static PyMemberDef standard_type_members[] = {
-	{"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
-	{"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
-	{"this_signiture", T_INT, offsetof(Dtool_PyInstDef, _signiture), READONLY,"A type check signiture"},
-	{"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
-	{NULL}	/* Sentinel */
-};
+extern EXPCL_DTOOLCONFIG PyMemberDef standard_type_members[];
 
 ////////////////////////////////////////////////////////////////////////
 // The Class Definition Structor For a Dtool python type.
@@ -286,7 +280,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 inline bool DtoolCanThisBeAPandaInstance(PyObject *self)
 {
     // simple sanity check for the class type..size.. will stop basic foobars..
-    if(self->ob_type->tp_basicsize >= sizeof(Dtool_PyInstDef))
+    if(self->ob_type->tp_basicsize >= (int)sizeof(Dtool_PyInstDef))
     {
         Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
         if(pyself->_signiture == PY_PANDA_SIGNITURE)
@@ -428,7 +422,7 @@ inline  PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject
 //     init some values for a Dtool Py Type object.
 /////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-//struct Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
+//struct Dtool_PyTypedObject Dtool_##CLASS_NAME;
 
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;  \

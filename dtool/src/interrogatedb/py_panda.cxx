@@ -17,3 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "py_panda.h"
+
+PyMemberDef standard_type_members[] = {
+	{"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
+	{"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
+	{"this_signiture", T_INT, offsetof(Dtool_PyInstDef, _signiture), READONLY,"A type check signiture"},
+	{"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
+	{NULL}	/* Sentinel */
+};
