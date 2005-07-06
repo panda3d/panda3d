@@ -116,7 +116,7 @@ class AsyncRequest(DirectObject):
             self.accept(
                 "doRequestResponse-%s"%(context,), 
                 self._checkCompletion, [None])
-            self.air.queryObjectSnapshot(doId, context)
+            self.air.queryObjectAll(doId, context)
 
     def createObject(self, name, className, context=None, values=None):
         """
