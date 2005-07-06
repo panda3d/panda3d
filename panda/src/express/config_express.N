@@ -6,6 +6,9 @@ forcetype GlobPattern
 forcetype Notify
 forcetype NotifyCategory
 forcetype NotifySeverity
+forcetype TypedObject
+forcetype TypeHandle
+forcetype TypeRegistry
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress

@@ -4200,6 +4200,7 @@ finish_modify_state() {
       TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
       switch (mode) {
       case TexGenAttrib::M_off:
+      case TexGenAttrib::M_light_vector:
         break;
         
       case TexGenAttrib::M_eye_sphere_map:

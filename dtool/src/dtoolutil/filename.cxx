@@ -19,6 +19,7 @@
 #include "filename.h"
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
+#include "vector_string.h"
 
 #include <stdio.h>  // For rename() and tempnam()
 #include <time.h>   // for clock() and time()
@@ -644,7 +645,7 @@ standardize() {
     return;
   }
 
-  vector<string> components;
+  vector_string components;
 
   // Pull off the components of the filename one at a time.
   bool global = (_filename[0] == '/');
@@ -1091,12 +1092,12 @@ compare_timestamps(const Filename &other,
     // This file doesn't, the other one does.
     return this_missing_is_old ? -1 : 1;
 
-  } else { // !other_exists
-    assert(!other_exists);
-
-    // This file exists, the other one doesn't.
-    return other_missing_is_old ? 1 : -1;
   }
+  // !other_exists
+  assert(!other_exists);
+  
+  // This file exists, the other one doesn't.
+  return other_missing_is_old ? 1 : -1;
 }
 
 ////////////////////////////////////////////////////////////////////

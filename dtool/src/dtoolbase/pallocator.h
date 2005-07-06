@@ -104,6 +104,7 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
 
+  /*
 #ifdef __GNUC__
   // The gcc 4.0 version seems to pass any old type to construct() and
   // destroy(), so we need template methods.
@@ -116,6 +117,7 @@ public:
     p->~Subtype();
   }
 #endif  // __GNUC__
+  */
 
   template<class U> struct rebind { 
     typedef pallocator<U> other;

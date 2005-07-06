@@ -17,11 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-// In general, we use the express_cat->info() syntax in this file
-// (instead of express_cat.info()), because much of this work is done at
-// static init time, and we must use the arrow syntax to force
-// initialization of the express_cat category.
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Constructor
 //       Access: Published

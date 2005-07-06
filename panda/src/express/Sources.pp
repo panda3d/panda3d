@@ -26,7 +26,7 @@
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h \
     hashGeneratorBase.I hashGeneratorBase.h \
-    hashVal.I hashVal.h indent.I indent.h \
+    hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
     littleEndian.h \
     memoryInfo.I memoryInfo.h \
@@ -50,7 +50,6 @@
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
@@ -60,11 +59,8 @@
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
-    tokenBoard.h trueClock.I trueClock.h typeHandle.I \
-    typeHandle.h typedObject.I typedObject.h \
+    tokenBoard.h trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
-    typeRegistry.I typeRegistry.h \
-    typeRegistryNode.I typeRegistryNode.h \
     unicodeLatinMap.h \
     vector_uchar.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
@@ -89,7 +85,7 @@
     datagramSink.cxx dcast.cxx \
     encryptStreamBuf.cxx encryptStream.cxx \
     error_utils.cxx \
-    hashGeneratorBase.cxx hashVal.cxx indent.cxx \
+    hashGeneratorBase.cxx hashVal.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
     pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
@@ -105,16 +101,15 @@
     profileTimer.cxx \
     pta_uchar.cxx \
     ramfile.cxx \
-    referenceCount.cxx register_type.cxx \
+    referenceCount.cxx \
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
     stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
     textEncoder.cxx \
     thread.cxx threadDummyImpl.cxx threadNsprImpl.cxx \
-    trueClock.cxx typeHandle.cxx \
-    typedObject.cxx typedReferenceCount.cxx \
-    typeRegistry.cxx typeRegistryNode.cxx \
+    trueClock.cxx \
+    typedReferenceCount.cxx \
     unicodeLatinMap.cxx \
     vector_uchar.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
@@ -146,7 +141,6 @@
     error_utils.h  \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
-    indent.I indent.h \
     indirectLess.I indirectLess.h \
     littleEndian.h memoryInfo.I memoryInfo.h memoryUsage.I \
     memoryUsage.h memoryUsagePointerCounts.I \
@@ -167,7 +161,6 @@
     profileTimer.h pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
@@ -177,11 +170,9 @@
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
-    tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h \
-    typedObject.I typedObject.h typedReferenceCount.I \
+    tokenBoard.h trueClock.I trueClock.h \
+    typedReferenceCount.I \
     typedReferenceCount.h typedef.h \
-    typeRegistry.I typeRegistry.h \
-    typeRegistryNode.I typeRegistryNode.h \
     unicodeLatinMap.h \
     vector_uchar.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \

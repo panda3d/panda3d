@@ -1,4 +1,4 @@
-#define LOCAL_LIBS dtoolutil dtoolbase prc dconfig interrogatedb
+#define LOCAL_LIBS pystub dtoolutil dtoolbase prc dconfig interrogatedb
 
 #begin bin_target
   #define BUILD_TARGET $[HAVE_SSL]

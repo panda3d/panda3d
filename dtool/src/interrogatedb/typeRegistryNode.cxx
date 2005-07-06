@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "typeRegistryNode.h"
+#include "config_interrogatedb.h"
 
 #include <algorithm>
 
@@ -68,7 +69,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
     if (_paranoid_inheritance) {
       bool paranoid_derives = check_derived_from(child, base);
       if (derives != paranoid_derives) {
-        express_cat.error()
+        interrogatedb_cat.error()
           << "Inheritance test for " << child->_name 
           << " from " << base->_name << " failed!\n"
           << "Result: " << derives << " should have been: "
@@ -133,7 +134,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   if (_paranoid_inheritance) {
     bool paranoid_derives = check_derived_from(child, base);
     if (derives != paranoid_derives) {
-      express_cat.error()
+      interrogatedb_cat.error()
         << "Inheritance test for " << child->_name 
         << " from " << base->_name << " failed!\n"
         << "Result: " << derives << " should have been: "

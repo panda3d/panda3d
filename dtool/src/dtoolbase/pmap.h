@@ -52,11 +52,11 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmap : public map<Key, Value, Compare, pallocator<Value> > {
+class pmap : public map<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
 public:
-  pmap() : map<Key, Value, Compare, pallocator<Value> >() { }
-  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<Value> >(copy) { }
-  pmap(const Compare &comp) : map<Key, Value, Compare, pallocator<Value> >(comp) { }
+  pmap() : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
+  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
+  pmap(const Compare &comp) : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -67,11 +67,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmultimap : public multimap<Key, Value, Compare, pallocator<Value> > {
+class pmultimap : public multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
 public:
-  pmultimap() : multimap<Key, Value, Compare, pallocator<Value> >() { }
-  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<Value> >(copy) { }
-  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator<Value> >(comp) { }
+  pmultimap() : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
+  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
+  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
 };
 
 #ifdef HAVE_STL_HASH
@@ -83,11 +83,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_map : public hash_map<Key, Value, Compare, pallocator<Value> > {
+class phash_map : public hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
 public:
-  phash_map() : hash_map<Key, Value, Compare, pallocator<Value> >() { }
-  phash_map(const phash_map<Key, Value, Compare> &copy) : hash_map<Key, Value, Compare, pallocator<Value> >(copy) { }
-  phash_map(const Compare &comp) : hash_map<Key, Value, Compare, pallocator<Value> >(comp) { }
+  phash_map() : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
+  phash_map(const phash_map<Key, Value, Compare> &copy) : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
+  phash_map(const Compare &comp) : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -98,11 +98,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_multimap : public hash_multimap<Key, Value, Compare, pallocator<Value> > {
+class phash_multimap : public hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
 public:
-  phash_multimap() : hash_multimap<Key, Value, Compare, pallocator<Value> >() { }
-  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : hash_multimap<Key, Value, Compare, pallocator<Value> >(copy) { }
-  phash_multimap(const Compare &comp) : hash_multimap<Key, Value, Compare, pallocator<Value> >(comp) { }
+  phash_multimap() : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
+  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
+  phash_multimap(const Compare &comp) : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
 };
 
 #else // HAVE_STL_HASH

@@ -48,32 +48,3 @@ freshen_derivations() {
     _derivations_fresh = true;
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistry::is_derived_from
-//       Access: Public
-//  Description: Returns true if the first type is derived from the
-//               second type, false otherwise.
-//
-//               The "child_object" pointer is an optional pointer to
-//               the TypedObject class that owns the child TypeHandle.
-//               It is only used in case the TypeHandle is
-//               inadvertently undefined.
-//
-//               This function definition follows the definitions for
-//               look_up() and freshen_derivations() just to maximize
-//               the chance the the compiler will be able to inline
-//               the above functions.  Yeah, a compiler shouldn't
-//               care, but there's a big different between "shouldn't"
-//               and "doesn't".
-////////////////////////////////////////////////////////////////////
-INLINE bool TypeRegistry::
-is_derived_from(TypeHandle child, TypeHandle base,
-                TypedObject *child_object) {
-  const TypeRegistryNode *child_node = look_up(child, child_object);
-  const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
-  nassertr(child_node != (TypeRegistryNode *)NULL &&
-           base_node != (TypeRegistryNode *)NULL, false);
-  freshen_derivations();
-  return TypeRegistryNode::is_derived_from(child_node, base_node);
-}

@@ -22,10 +22,7 @@
 #include "dtoolbase.h"
 
 #include "notifySeverity.h"
-
-#include <string>
-#include <vector>
-#include <map>
+#include "pmap.h"
 
 class NotifyCategory;
 
@@ -96,7 +93,7 @@ private:
   bool _assert_failed;
   string _assert_error_message;
 
-  typedef map<string, NotifyCategory *> Categories;
+  typedef pmap<string, NotifyCategory *> Categories;
   Categories _categories;
 
   static Notify *_global_ptr;

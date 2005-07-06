@@ -19,7 +19,7 @@
 #ifndef REGISTER_TYPE_H
 #define REGISTER_TYPE_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include "typeHandle.h"
 #include "typeRegistry.h"
@@ -85,13 +85,13 @@ register_dynamic_type(const string &name,
 
 
 // A few system-wide TypeHandles are defined for some basic types.
-extern TypeHandle EXPCL_PANDAEXPRESS long_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS int_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS short_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS char_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS bool_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS double_type_handle;
-extern TypeHandle EXPCL_PANDAEXPRESS float_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG long_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG int_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG short_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG char_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG bool_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG double_type_handle;
+extern TypeHandle EXPCL_DTOOLCONFIG float_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;
@@ -102,7 +102,7 @@ extern TypeHandle double_p_type_handle;
 extern TypeHandle float_p_type_handle;
 extern TypeHandle void_p_type_handle;
 
-void EXPCL_PANDAEXPRESS init_system_type_handles();
+void EXPCL_DTOOLCONFIG init_system_type_handles();
 
 // The following template function and its specializations will return
 // a TypeHandle for any type in the world, from a pointer to that

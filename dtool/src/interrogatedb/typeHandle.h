@@ -19,13 +19,11 @@
 #ifndef TYPEHANDLE_H
 #define TYPEHANDLE_H
 
-#include "pandabase.h"
-
+#include "dtoolbase.h"
+#include "typeRegistry.h"
 #include "notify.h"
 
-#include "config_express.h"
-
-#include "set"
+#include <set>
 
 // The following illustrates the convention for declaring a type that
 // uses TypeHandle.  In this example, ThisThingie inherits from
@@ -90,7 +88,7 @@ class TypedObject;
 //               ancestry of a particular type may be queried, and the
 //               type name may be retrieved for run-time display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS TypeHandle {
+class EXPCL_DTOOLCONFIG TypeHandle {
 PUBLISHED:
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);

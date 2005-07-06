@@ -19,12 +19,12 @@
 #ifndef TYPEDOBJECT_H
 #define TYPEDOBJECT_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include "typeHandle.h"
 #include "register_type.h"
 
-#include "set"
+#include <set>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TypedObject
@@ -104,7 +104,7 @@
 //               }
 //               
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS TypedObject {
+class EXPCL_DTOOLCONFIG TypedObject {
 public:
   INLINE TypedObject();
   INLINE TypedObject(const TypedObject &copy);

@@ -6,6 +6,7 @@
     dallocator.T dallocator.h \
     dtoolbase.cxx dtoolbase.h dtoolbase_cc.h dtoolsymbols.h \
     fakestringstream.h \
+    indent.I indent.h indent.cxx \
     nearly_zero.h \
     stl_compares.I stl_compares.h \
     pallocator.T pallocator.h \
@@ -15,6 +16,7 @@
     cmath.I cmath.h \
     dallocator.T dallocator.h \
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h fakestringstream.h \
+    indent.I indent.h \
     nearly_zero.h \
     stl_compares.I stl_compares.h \
     pallocator.T pallocator.h \

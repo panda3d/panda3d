@@ -17,16 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "typeRegistry.h"
+#include "typeRegistryNode.h"
+#include "typeHandle.h"
 #include "typedObject.h"
 #include "indent.h"
-#include "config_express.h"
+#include "config_interrogatedb.h"
+#include "configVariableBool.h"
 
 #include <algorithm>
 
-// In general, we use the express_cat->info() syntax in this file
-// (instead of express_cat.info()), because much of this work is done at
+// In general, we use the interrogatedb_cat->info() syntax in this file
+// (instead of interrogatedb_cat.info()), because much of this work is done at
 // static init time, and we must use the arrow syntax to force
-// initialization of the express_cat category.
+// initialization of the interrogatedb_cat category.
 
 TypeRegistry *TypeRegistry::_global_pointer = NULL;
 
@@ -64,9 +67,9 @@ register_type(TypeHandle &type_handle, const string &name) {
 
 #ifdef NOTIFY_DEBUG
     // This code runs at static init time, so cannot use the
-    // express_cat.is_spam() syntax.
-    if (express_cat->is_spam()) {
-      express_cat->spam() << "Registering type " << name << "\n";
+    // interrogatedb_cat.is_spam() syntax.
+    if (interrogatedb_cat->is_spam()) {
+      interrogatedb_cat->spam() << "Registering type " << name << "\n";
     }
 #endif
 
@@ -101,7 +104,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // at the first call to register_type(), and we got the same
     // reference passed in this time, but now it's different!  Bad
     // juju.
-    express_cat->error()
+    interrogatedb_cat->error()
       << "Reregistering " << name << "\n";
     type_handle == rnode->_handle;
     return false;
@@ -109,7 +112,7 @@ register_type(TypeHandle &type_handle, const string &name) {
 
   if (type_handle != rnode->_handle) {
     // Hmm, we seem to have a contradictory type registration!
-    express_cat->warning()
+    interrogatedb_cat->warning()
       << "Attempt to register type " << name << " more than once!\n";
 
     // This is invalid, but we'll allow it anyway.  It seems to happen
@@ -142,9 +145,9 @@ register_dynamic_type(const string &name) {
 
 #ifdef NOTIFY_DEBUG
     // This code runs at static init time, so cannot use the
-    // express_cat.is_spam() syntax.
-    if (express_cat->is_spam()) {
-      express_cat->spam() << "Registering type " << name << "\n";
+    // interrogatedb_cat.is_spam() syntax.
+    if (interrogatedb_cat->is_spam()) {
+      interrogatedb_cat->spam() << "Registering type " << name << "\n";
     }
 #endif
 
@@ -211,7 +214,7 @@ record_alternate_name(TypeHandle type, const string &name) {
     NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
     if ((*ri).second != rnode) {
-      express_cat.warning()
+      interrogatedb_cat.warning()
         << "Name " << name << " already assigned to TypeHandle "
         << rnode->_name << "; cannot reassign to " << type << "\n";
     }
@@ -252,6 +255,35 @@ get_name(TypeHandle type, TypedObject *object) const {
   TypeRegistryNode *rnode = look_up(type, object);
   nassertr(rnode != (TypeRegistryNode *)NULL, "");
   return rnode->_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::is_derived_from
+//       Access: Public
+//  Description: Returns true if the first type is derived from the
+//               second type, false otherwise.
+//
+//               The "child_object" pointer is an optional pointer to
+//               the TypedObject class that owns the child TypeHandle.
+//               It is only used in case the TypeHandle is
+//               inadvertently undefined.
+//
+//               This function definition follows the definitions for
+//               look_up() and freshen_derivations() just to maximize
+//               the chance the the compiler will be able to inline
+//               the above functions.  Yeah, a compiler shouldn't
+//               care, but there's a big different between "shouldn't"
+//               and "doesn't".
+////////////////////////////////////////////////////////////////////
+bool TypeRegistry::
+is_derived_from(TypeHandle child, TypeHandle base,
+                TypedObject *child_object) {
+  const TypeRegistryNode *child_node = look_up(child, child_object);
+  const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
+  nassertr(child_node != (TypeRegistryNode *)NULL &&
+           base_node != (TypeRegistryNode *)NULL, false);
+  freshen_derivations();
+  return TypeRegistryNode::is_derived_from(child_node, base_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,7 +432,7 @@ reregister_types() {
        ++ri) {
     TypeRegistryNode *rnode = (*ri);
     if (rnode != NULL && rnode->_handle != rnode->_ref) {
-      express_cat->warning()
+      interrogatedb_cat->warning()
         << "Reregistering " << rnode->_name << "\n";
     }
   }
@@ -439,8 +471,8 @@ TypeRegistry *TypeRegistry::
 ptr() {
   if (_global_pointer == NULL) {
 #ifdef NOTIFY_DEBUG
-    if (express_cat->is_spam()) {
-      express_cat->spam()
+    if (interrogatedb_cat->is_spam()) {
+      interrogatedb_cat->spam()
         << "Creating global TypeRegistry\n";
     }
 #endif
@@ -478,7 +510,13 @@ init_global_pointer() {
 
   // Now that we've created the TypeRegistry, we can assign this
   // Config variable.
-  TypeRegistryNode::_paranoid_inheritance = get_paranoid_inheritance();
+
+  ConfigVariableBool paranoid_inheritance
+    ("paranoid-inheritance", true,
+     PRC_DESC("Set this to true to double-check the test for inheritance of "
+              "TypeHandles, e.g. via is_of_type().  This has no effect if NDEBUG "
+              "is defined."));
+  TypeRegistryNode::_paranoid_inheritance = paranoid_inheritance;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -491,7 +529,7 @@ init_global_pointer() {
 void TypeRegistry::
 rebuild_derivations() {
 #ifdef NOTIFY_DEBUG
-  express_cat->debug()
+  interrogatedb_cat->debug()
     << "Rebuilding derivation tree.\n";
 #endif
 
@@ -575,19 +613,19 @@ look_up(TypeHandle handle, TypedObject *object) const {
       handle = object->force_init_type();
       if (handle._index == 0) {
         // Strange.
-        express_cat->error()
+        interrogatedb_cat->error()
           << "Unable to force_init_type() on unregistered TypeHandle.\n";
         nassertr(false, NULL);
       }
       if (handle == object->get_type()) {
         // Problem solved!
-        express_cat->warning()
+        interrogatedb_cat->warning()
           << "Type " << handle << " was unregistered!\n";
       } else {
         // No good; it looks like the TypeHandle belongs to a class
         // that defined get_type(), but didn't define
         // force_init_type().
-        express_cat->error()
+        interrogatedb_cat->error()
           << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
           << "class derived from " << handle << " that doesn't define a good\n"
           << "force_init_type() method.\n";
@@ -597,17 +635,17 @@ look_up(TypeHandle handle, TypedObject *object) const {
     } else {
       // We don't have a TypedObject pointer, so there's nothing we
       // can do about it.
-      express_cat->error()
+      interrogatedb_cat->error()
         << "Attempt to reference unregistered TypeHandle!\n"
         << "Registered TypeHandles are:\n";
-      write(express_cat->error(false));
+      write(interrogatedb_cat->error(false));
       nassertr(false, NULL);
     }
   }
 
   if (handle._index < 0 ||
       handle._index >= (int)_handle_registry.size()) {
-    express_cat->fatal()
+    interrogatedb_cat->fatal()
       << "Invalid TypeHandle index " << handle._index
       << "!  Is memory corrupt?\n";
     nassertr(false, NULL);
@@ -624,7 +662,7 @@ TypeHandle  TypeRegistry::find_type_by_id(int id) const
 {
   if (id < 0 ||id >= (int)_handle_registry.size()) 
   {
-    express_cat->fatal()
+    interrogatedb_cat->fatal()
       << "Invalid TypeHandle index " << id
       << "!  Is memory corrupt?\n";
     //nassertr(false, NULL);

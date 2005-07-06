@@ -95,6 +95,7 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
 
+  /*
 #ifdef __GNUC__
   template<class Subtype>
   INLINE void destroy(Subtype *p) {
@@ -105,6 +106,7 @@ public:
     ::new(p) Subtype(value);
   }
 #endif  // __GNUC__
+  */
 
   template<class U> struct rebind { 
     typedef dallocator<U> other; 

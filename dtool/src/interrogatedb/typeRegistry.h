@@ -19,14 +19,17 @@
 #ifndef TYPEREGISTRY_H
 #define TYPEREGISTRY_H
 
-#include "pandabase.h"
-
-#include "typeHandle.h"
-#include "typeRegistryNode.h"
+#include "dtoolbase.h"
 
 #include "notify.h"
 #include "pvector.h"
 #include "pmap.h"
+
+#include <set>
+
+class TypeHandle;
+class TypeRegistryNode;
+class TypedObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TypeRegistry
@@ -37,7 +40,7 @@
 //               initially, and it should be migrated to shared memory
 //               as soon as shared memory becomes available.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS TypeRegistry {
+class EXPCL_DTOOLCONFIG TypeRegistry {
 public:
   // User code shouldn't generally need to call
   // TypeRegistry::register_type() or record_derivation() directly;
@@ -55,8 +58,8 @@ PUBLISHED:
 
 
   string get_name(TypeHandle type, TypedObject *object) const;
-  INLINE bool is_derived_from(TypeHandle child, TypeHandle base,
-                              TypedObject *child_object);
+  bool is_derived_from(TypeHandle child, TypeHandle base,
+                       TypedObject *child_object);
 
   int get_num_root_classes();
   TypeHandle get_root_class(int n);
@@ -115,7 +118,7 @@ private:
 
 ///////////////////////////////////////////
 // Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_PANDAEXPRESS  int get_best_parent_from_Set(int id, const std::set<int> &set);
+extern "C" EXPCL_DTOOLCONFIG  int get_best_parent_from_Set(int id, const std::set<int> &set);
 
 #include "typeRegistry.I"
 

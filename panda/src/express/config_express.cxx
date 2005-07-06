@@ -249,21 +249,6 @@ get_paranoid_clock() {
 }
 
 bool
-get_paranoid_inheritance() {
-  static ConfigVariableBool *paranoid_inheritance = NULL;
-
-  if (paranoid_inheritance == (ConfigVariableBool *)NULL) {
-    paranoid_inheritance = new ConfigVariableBool
-      ("paranoid-inheritance", true,
-       PRC_DESC("Set this to true to double-check the test for inheritance of "
-                "TypeHandles, e.g. via is_of_type().  This has no effect if NDEBUG "
-                "is defined."));
-  }
-
-  return *paranoid_inheritance;
-}
-
-bool
 get_verify_dcast() {
   static ConfigVariableBool *verify_dcast = NULL;
 

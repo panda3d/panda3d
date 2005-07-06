@@ -1,5 +1,6 @@
 
 #include "vector_int.cxx"
+#include "dtool_super_base.cxx"
 #include "config_interrogatedb.cxx"
 #include "indexRemapper.cxx"
 #include "interrogateComponent.cxx"

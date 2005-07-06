@@ -19,7 +19,7 @@
 #ifndef INDENT_H
 #define INDENT_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: indent
@@ -29,7 +29,7 @@
 //               stream itself.  Useful for indenting a series of
 //               lines of text by a given amount.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDAEXPRESS ostream &
+EXPCL_DTOOL ostream &
 indent(ostream &out, int indent_level);
 
 ////////////////////////////////////////////////////////////////////

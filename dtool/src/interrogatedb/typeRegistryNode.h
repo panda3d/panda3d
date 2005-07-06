@@ -19,7 +19,7 @@
 #ifndef TYPEREGISTRYNODE_H
 #define TYPEREGISTRYNODE_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include "typeHandle.h"
 
@@ -32,7 +32,7 @@
 //               class; this class is hidden within the TypeRegistry
 //               accessors.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS TypeRegistryNode {
+class EXPCL_DTOOLCONFIG TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
 

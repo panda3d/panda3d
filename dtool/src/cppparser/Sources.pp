@@ -21,8 +21,7 @@
      cppSimpleType.h cppStructType.h cppTBDType.h  \
      cppTemplateParameterList.h cppTemplateScope.h cppToken.h  \
      cppType.h cppTypeDeclaration.h cppTypeParser.h  \
-     cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h  \
-     indent.h 
+     cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h 
 
   #define INCLUDED_SOURCES  \
      cppArrayType.cxx cppClassTemplateParameter.cxx  \
@@ -38,6 +37,6 @@
      cppTemplateParameterList.cxx cppTemplateScope.cxx  \
      cppToken.cxx cppType.cxx cppTypeDeclaration.cxx  \
      cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx  \
-     cppUsing.cxx cppVisibility.cxx indent.cxx 
+     cppUsing.cxx cppVisibility.cxx
 
 #end static_lib_target

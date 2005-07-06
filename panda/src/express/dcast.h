@@ -23,6 +23,7 @@
 
 #include "typeHandle.h"
 #include "typedObject.h"
+#include "config_express.h"
 
 // The DCAST (downcast) macro is defined as a convenience for
 // downcasting from some TypedObject pointer (or a PointerTo).  It's

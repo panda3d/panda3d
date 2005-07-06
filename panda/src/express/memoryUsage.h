@@ -138,7 +138,7 @@ private:
   // Actually, it turns out that it doesn't matter, since somehow the
   // pallocator gets used even though we specify dallocator here, so
   // we have to make special code that handles the recursion anyway.
-  typedef map<void *, MemoryInfo, less<void *>, dallocator<MemoryInfo> > Table;
+  typedef map<void *, MemoryInfo, less<void *>, dallocator<pair<void * const, MemoryInfo> > > Table;
   Table _table;
   int _freeze_index;
   int _count;
@@ -156,7 +156,7 @@ private:
   private:
     // Cannot use a pmap, since that would be recursive!
     typedef map<TypeHandle, MemoryUsagePointerCounts, 
-      less<TypeHandle>, dallocator<MemoryUsagePointerCounts> > Counts;
+                less<TypeHandle>, dallocator<pair<const TypeHandle, MemoryUsagePointerCounts> > > Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;
