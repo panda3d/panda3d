@@ -1832,7 +1832,128 @@ get_net_tag(const string &key) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 has_net_tag(const string &key) const {
-  return find_net_tag(key).has_tag(key);
+  return !find_net_tag(key).is_empty();
+}
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_python_tag
+//       Access: Published
+//  Description: Associates an arbitrary Python object with a
+//               user-defined key which is stored on the node.  This
+//               object has no meaning to Panda; but it is stored
+//               indefinitely on the node until it is requested again.
+//
+//               Each unique key stores a different Python object.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the nature of
+//               any one key's object.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_python_tag(const string &key, PyObject *value) {
+  nassertv_always(!is_empty());
+  node()->set_python_tag(key, value);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_python_tag
+//       Access: Published
+//  Description: Retrieves the Python object that was previously
+//               set on this node for the particular key, if any.  If
+//               no object has been previously set, returns None.
+//               See also get_net_python_tag().
+////////////////////////////////////////////////////////////////////
+INLINE PyObject *NodePath::
+get_python_tag(const string &key) const {
+  // An empty NodePath quietly returns no tags.  This makes
+  // get_net_python_tag() easier to implement.
+  if (is_empty()) {
+    return Py_None;
+  }
+  return node()->get_python_tag(key);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_python_tag
+//       Access: Published
+//  Description: Returns true if a Python object has been defined on
+//               this node for the particular key (even if that value
+//               is the empty string), or false if no value has been
+//               set.  See also has_net_python_tag().
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_python_tag(const string &key) const {
+  // An empty NodePath quietly has no tags.  This makes has_net_python_tag()
+  // easier to implement.
+  if (is_empty()) {
+    return false;
+  }
+  return node()->has_python_tag(key);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_python_tag
+//       Access: Published
+//  Description: Removes the Python object defined for this key on this
+//               particular node.  After a call to clear_python_tag(),
+//               has_python_tag() will return false for the indicated
+//               key.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_python_tag(const string &key) {
+  nassertv_always(!is_empty());
+  node()->clear_python_tag(key);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_net_python_tag
+//       Access: Published
+//  Description: Returns the Python object that has been defined on
+//               this node, or the nearest ancestor node, for the
+//               indicated key.  If no value has been defined for the
+//               indicated key on any ancestor node, returns None.
+//               See also get_python_tag().
+////////////////////////////////////////////////////////////////////
+INLINE PyObject *NodePath::
+get_net_python_tag(const string &key) const {
+  return find_net_python_tag(key).get_python_tag(key);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_net_python_tag
+//       Access: Published
+//  Description: Returns true if the indicated Python object has been
+//               defined on this node or on any ancestor node, or
+//               false otherwise.  See also has_python_tag().
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_net_python_tag(const string &key) const {
+  return !find_net_python_tag(key).is_empty();
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::list_tags
+//       Access: Published
+//  Description: Lists the tags to the nout stream, one per line.  See
+//               PandaNode::list_tags() for a variant that allows you
+//               to specify the output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+list_tags() const {
+  nassertv_always(!is_empty());
+  node()->list_tags(nout);
+  nout << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

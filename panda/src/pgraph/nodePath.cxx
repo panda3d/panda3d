@@ -4998,6 +4998,27 @@ find_net_tag(const string &key) const {
   return get_parent().find_net_tag(key);
 }
 
+#ifdef HAVE_PYTHON 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_net_python_tag
+//       Access: Published
+//  Description: Returns the lowest ancestor of this node that
+//               contains a tag definition with the indicated key, if
+//               any, or an empty NodePath if no ancestor of this node
+//               contains this tag definition.  See set_python_tag().
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+find_net_python_tag(const string &key) const {
+  if (is_empty()) {
+    return NodePath::not_found();
+  }
+  if (has_python_tag(key)) {
+    return *this;
+  }
+  return get_parent().find_net_python_tag(key);
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::write_bam_file
 //       Access: Published

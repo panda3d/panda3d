@@ -357,6 +357,20 @@ PandaNode::
 #endif  // NDEBUG
 
   remove_all_children();
+
+#ifdef HAVE_PYTHON
+  {
+    // Free all of the Python objects held by this node.
+    CDReader cdata(_cycler);
+    PythonTagData::const_iterator ti;
+    for (ti = cdata->_python_tag_data.begin();
+         ti != cdata->_python_tag_data.end();
+         ++ti) {
+      PyObject *value = (*ti).second;
+      Py_XDECREF(value);
+    }
+  }
+#endif  // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -385,6 +399,20 @@ PandaNode(const PandaNode &copy) :
   cdata->_draw_mask = copy_cdata->_draw_mask;
   cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
   cdata->_fixed_internal_bound = copy_cdata->_fixed_internal_bound;
+
+#ifdef HAVE_PYTHON
+  // Copy and increment all of the Python objects held by the other
+  // node.
+  cdata->_python_tag_data = copy_cdata->_python_tag_data;
+  PythonTagData::const_iterator ti;
+  for (ti = cdata->_python_tag_data.begin();
+       ti != cdata->_python_tag_data.end();
+       ++ti) {
+    PyObject *value = (*ti).second;
+    Py_XINCREF(value);
+  }
+#endif  // HAVE_PYTHON
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1248,6 +1276,31 @@ copy_tags(PandaNode *other) {
        ++ti) {
     cdataw->_tag_data[(*ti).first] = (*ti).second;
   }
+
+#ifdef HAVE_PYTHON
+  PythonTagData::const_iterator pti;
+  for (pti = cdatar->_python_tag_data.begin();
+       pti != cdatar->_python_tag_data.end();
+       ++pti) {
+    const string &key = (*pti).first;
+    PyObject *value = (*pti).second;
+    Py_XINCREF(value);
+
+    pair<PythonTagData::iterator, bool> result;
+    result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
+
+    if (!result.second) {
+      // The insert was unsuccessful; that means the key was already
+      // present in the map.  In this case, we should decrement the
+      // original value's reference count and replace it with the new
+      // object.
+      PythonTagData::iterator wpti = result.first;
+      PyObject *old_value = (*wpti).second;
+      Py_XDECREF(old_value);
+      (*wpti).second = value;
+    }
+  }
+#endif // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1274,6 +1327,21 @@ list_tags(ostream &out, const string &separator) const {
       ++ti;
     }
   }
+
+#ifdef HAVE_PYTHON
+  if (!cdata->_python_tag_data.empty()) {
+    if (!cdata->_tag_data.empty()) {
+      out << separator;
+    }
+    PythonTagData::const_iterator ti = cdata->_python_tag_data.begin();
+    out << (*ti).first;
+    ++ti;
+    while (ti != cdata->_python_tag_data.end()) {
+      out << separator << (*ti).first;
+      ++ti;
+    }
+  }
+#endif  // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1311,7 +1379,7 @@ void PandaNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   CDReader cdata(_cycler);
-  if (!cdata->_tag_data.empty()) {
+  if (has_tags()) {
     out << " [";
     list_tags(out, " ");
     out << "]";
@@ -2025,7 +2093,7 @@ void PandaNode::
 r_list_descendants(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   indent(out, indent_level) << *this;
-  if (!cdata->_tag_data.empty()) {
+  if (has_tags()) {
     out << " [";
     list_tags(out, " ");
     out << "]";

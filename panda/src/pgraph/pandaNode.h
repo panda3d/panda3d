@@ -41,6 +41,14 @@
 #include "pointerToArray.h"
 #include "notify.h"
 
+#ifdef HAVE_PYTHON
+
+#undef HAVE_LONG_LONG  // NSPR and Python both define this.
+#undef _POSIX_C_SOURCE
+#include <Python.h>
+
+#endif  // HAVE_PYTHON
+
 class NodePathComponent;
 class CullTraverser;
 class CullTraverserData;
@@ -159,6 +167,15 @@ PUBLISHED:
   INLINE string get_tag(const string &key) const;
   INLINE bool has_tag(const string &key) const;
   INLINE void clear_tag(const string &key);
+
+#ifdef HAVE_PYTHON
+  INLINE void set_python_tag(const string &key, PyObject *value);
+  INLINE PyObject *get_python_tag(const string &key) const;
+  INLINE bool has_python_tag(const string &key) const;
+  INLINE void clear_python_tag(const string &key);
+#endif  // HAVE_PYTHON
+
+  INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
   void list_tags(ostream &out, const string &separator = "\n") const;
 
@@ -286,6 +303,9 @@ private:
   // This is used to maintain a table of keyed data on each node, for
   // the user's purposes.
   typedef phash_map<string, string, string_hash> TagData;
+#ifdef HAVE_PYTHON
+  typedef phash_map<string, PyObject *, string_hash> PythonTagData;
+#endif  // HAVE_PYTHON
 
   
   // This is the data that must be cycled between pipeline stages.
@@ -322,6 +342,9 @@ private:
     NCPT(TransformState) _prev_transform;
 
     TagData _tag_data;
+#ifdef HAVE_PYTHON
+    PythonTagData _python_tag_data;
+#endif  // HAVE_PYTHON
 
     // This is the draw_mask of this particular node.
     DrawMask _draw_mask;

@@ -727,6 +727,18 @@ PUBLISHED:
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
 
+#ifdef HAVE_PYTHON
+  INLINE void set_python_tag(const string &key, PyObject *value);
+  INLINE PyObject *get_python_tag(const string &key) const;
+  INLINE bool has_python_tag(const string &key) const;
+  INLINE void clear_python_tag(const string &key);
+  INLINE PyObject *get_net_python_tag(const string &key) const;
+  INLINE bool has_net_python_tag(const string &key) const;
+  NodePath find_net_python_tag(const string &key) const;
+#endif  // HAVE_PYTHON
+
+  INLINE void list_tags() const;
+
   INLINE void set_name(const string &name);
   INLINE string get_name() const;
 
