@@ -1375,7 +1375,7 @@ class Actor(PandaObject, NodePath):
                     if joint:
                         joint.setValueNode(node.node())
                     else:
-                        Actor.notify.debug("controlled joint %s is not present", jointName)
+                        Actor.notify.error("controlled joint %s is not present" % jointName)
 
         # bind anim
         animControl = bundle.bindAnim(animBundle, -1)
