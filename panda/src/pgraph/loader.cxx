@@ -449,7 +449,7 @@ load_file(const Filename &filename, bool search) const {
     return NULL;
   }
 
-  for (int i = 0; i < num_files; i++) {
+  for (int i = 0; i < num_files; ++i) {
     const Filename &path = results.get_file(i);
     LoaderFileType *type = results.get_file_type(i);
     PT(PandaNode) result = type->load_file(path, true);
@@ -462,8 +462,8 @@ load_file(const Filename &filename, bool search) const {
   if (search) {
     loader_cat.error()
       << "Couldn't load file " << filename
-      << ": all matching files on model path invalid.\n";
-
+      << ": all matching files on model path invalid "
+      << "(the model path is currently: \"" << get_model_path() << "\")\n";
   } else {
     loader_cat.error()
       << "Couldn't load file " << filename
