@@ -1201,7 +1201,8 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   // now, we assume this is the app thread.
   _app.add_window(_app._window, window);
   
-  display_cat.info()
+  // This was info(), but that is spammy now with the ParisiteBuffer.
+  display_cat.debug()
     << "Created " << window->get_type() << " " << (void *)window << "\n";
   
   // By default, try to open each window as it is added.
