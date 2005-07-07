@@ -456,7 +456,7 @@ class ClientRepository(ConnectionRepository):
         # Find the DO
 
         do = self.doId2do.get(doId)
-        if (do != None):
+        if do is not None:
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
         else:
@@ -537,6 +537,8 @@ class ClientRepository(ConnectionRepository):
                 self.handleGenerateWithRequiredOther(di)
             elif msgType == CLIENT_DONE_INTEREST_RESP:
                 self.handleInterestDoneMessage(di)
+            elif msgType == CLIENT_QUERY_ONE_FIELD_RESP:
+                self.handleQueryOneFieldResp(di)
             elif msgType == CLIENT_OBJECT_LOCATION:
                 self.handleObjectLocation(di)
             else:
@@ -575,21 +577,22 @@ class ClientRepository(ConnectionRepository):
                 currentLoginStateName +
                 " game state: " +
                 currentGameStateName)
-
-
+                    
     def createWithRequired(self, className, zoneId = 0, optionalFields=None):
         # This method is only used in conjunction with the CMU LAN
         # server.
 
-        if (self.DOIDnext >= self.DOIDlast):
-            self.notify.error("Cannot allocate a distributed object ID: all IDs used up.")
+        if self.DOIDnext >= self.DOIDlast:
+            self.notify.error(
+                "Cannot allocate a distributed object ID: all IDs used up.")
             return None
         id = self.DOIDnext
         self.DOIDnext = self.DOIDnext + 1
         dclass = self.dclassesByName[className]
         classDef = dclass.getClassDef()
         if classDef == None:
-            self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+            self.notify.error("Could not create an undefined %s object." % (
+                dclass.getName()))
         obj = classDef(self)
         obj.dclass = dclass
         obj.zone = zoneId
@@ -668,7 +671,8 @@ class ClientRepository(ConnectionRepository):
         return doDict
 
     if wantOtpServer:
-        def sendEmulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
+        def sendEmulateSetZone(self, zoneId, visibleZoneList=None,
+                parentIdin=None, event=None):
             """
             This Will Move The avatar and set an interest to that location ..
             """
@@ -686,9 +690,11 @@ class ClientRepository(ConnectionRepository):
                 InterestZones = visibleZoneList
 
             if(self.old_setzone_interest_handle == None):
-                self.old_setzone_interest_handle = self.addInterest(parentId, InterestZones, "OldSetZone Imulator", event)
+                self.old_setzone_interest_handle = self.addInterest(
+                    parentId, InterestZones, "OldSetZone Imulator", event)
             else:
-                self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)
+                self.alterInterest(self.old_setzone_interest_handle,
+                    parentId, InterestZones, "OldSetZone Imulator", event)
 
         def sendEmulateSetZoneOff(self):
             MyAvID = base.localAvatar.doId
