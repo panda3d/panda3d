@@ -89,7 +89,9 @@ if wantOtpServer:
     # This is no longer supported. Alter just calls ADD_INTEREST
     # CLIENT_ALTER_INTEREST =                      98
     CLIENT_REMOVE_INTEREST =                     99
-    CLIENT_OBJECT_LOCATION =                     102
+    CLIENT_QUERY_ONE_FIELD =                    101
+    CLIENT_OBJECT_LOCATION =                    102
+    CLIENT_QUERY_ONE_FIELD_RESP =               103
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
