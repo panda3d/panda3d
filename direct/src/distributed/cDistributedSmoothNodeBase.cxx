@@ -248,9 +248,11 @@ begin_send_update(DCPacker &packer, const string &field_name) {
   nassertv(field != (DCField *)NULL);
 
   if (_is_ai) {
+
+    packer.raw_pack_uint8(1);
     packer.RAW_PACK_CHANNEL(_do_id);
     packer.RAW_PACK_CHANNEL(_ai_id);
-    packer.raw_pack_uint8('A');
+    //packer.raw_pack_uint8('A');
     packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
     packer.raw_pack_uint32(_do_id);
     packer.raw_pack_uint16(field->get_number());

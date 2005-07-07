@@ -196,6 +196,11 @@ class Messenger:
                             self.__methodRepr(method),
                             tuple(extraArgs + sentArgs))
 
+                #print "Messenger: \"%s\" --> %s%s"%(
+                #            event,
+                #            self.__methodRepr(method),
+                #            tuple(extraArgs + sentArgs))
+
                 # It is important to make the actual call here, after
                 # we have cleaned up the accept hook, because the
                 # method itself might call accept() or acceptOnce()

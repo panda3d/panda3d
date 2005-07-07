@@ -142,8 +142,14 @@ get_datagram_iterator(DatagramIterator &di) {
 //               information is not available to the client.
 ////////////////////////////////////////////////////////////////////
 INLINE CHANNEL_TYPE CConnectionRepository::
-get_msg_channel() const {
-  return _msg_channel;
+get_msg_channel(int offset) const {
+   nassertr(offset < (int)_msg_channels.size(),0);
+   return _msg_channels[offset];
+}
+
+INLINE int CConnectionRepository::
+get_msg_channel_count() const {
+    return _msg_channels.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,10 +171,10 @@ get_msg_sender() const {
 //               message, according to the datagram headers.  This
 //               information is not available to the client.
 ////////////////////////////////////////////////////////////////////
-INLINE unsigned char CConnectionRepository::
-get_sec_code() const {
-  return _sec_code;
-}
+//INLINE unsigned char CConnectionRepository::
+//get_sec_code() const {
+//  return _sec_code;
+//}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_msg_type

@@ -6,6 +6,8 @@
 from pandac.PandaModules import *
 # Import the type numbers
 
+from otp.ai.AIMsgTypes import *
+
 class PyDatagram(Datagram):
 
     # This is a little helper Dict to replace the huge <if> statement
@@ -28,6 +30,30 @@ class PyDatagram(Datagram):
 
         
     addChannel = Datagram.addUint64
+    
+    def AddServerHeader(self, channel, sender, code):
+        self.addInt8(1)
+        self.addChannel(channel)
+        self.addChannel(sender)
+        self.addUint16(code)
+    
+    
+    def AddOldServerHeader(self, channel, sender, code):
+        self.addChannel(channel)
+        self.addChannel(sender)
+        self.addChannel('A')
+        self.addUint16(code)
+    
+    
+    def AddServerControlHeader(self,   code):
+        self.addInt8(1)
+        self.addChannel(CONTROL_MESSAGE)
+        self.addUint16(code)
+    
+    
+    def AddOldServerControlHeader(self,   code):
+        self.addChannel(CONTROL_MESSAGE)
+        self.addUint16(code)
     
     def putArg(self, arg, subatomicType, divisor=1):
         if (divisor == 1):

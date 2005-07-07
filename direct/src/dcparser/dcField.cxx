@@ -634,9 +634,10 @@ Datagram DCField::
 ai_format_update(int do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCPacker packer;
 
+  packer.raw_pack_uint8(1);
   packer.RAW_PACK_CHANNEL(to_id);
   packer.RAW_PACK_CHANNEL(from_id);
-  packer.raw_pack_uint8('A');
+  //packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);

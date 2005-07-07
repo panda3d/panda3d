@@ -869,9 +869,10 @@ ai_format_generate(PyObject *distobj, int do_id,
                    PyObject *optional_fields) const {
   DCPacker packer;
 
+  packer.raw_pack_uint8(1);
   packer.RAW_PACK_CHANNEL(district_channel_id);
   packer.RAW_PACK_CHANNEL(from_channel_id);
-  packer.raw_pack_uint8('A');
+    //packer.raw_pack_uint8('A');
 
   bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
 
@@ -952,9 +953,10 @@ ai_database_generate_context(
     CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
 {
   DCPacker packer;
+  packer.raw_pack_uint8(1);
   packer.RAW_PACK_CHANNEL(database_server_id);
   packer.RAW_PACK_CHANNEL(from_channel_id);
-  packer.raw_pack_uint8('A');
+  //packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
   packer.raw_pack_uint32(parent_id);  
   packer.raw_pack_uint32(zone_id);

@@ -62,12 +62,13 @@ class NetMessenger(Messenger):
         assert self.notify.debugCall()
         datagram = PyDatagram()
         # To:
+        datagram.addUint8(1)
         datagram.addChannel(self.channels[0])
         # From:
         datagram.addChannel(self.air.ourChannel)
-        if 1: # We send this just because the air expects it:
-            # Add an 'A' for AI
-            datagram.addUint8(ord('A'))
+        #if 1: # We send this just because the air expects it:
+        #    # Add an 'A' for AI
+        #    datagram.addUint8(ord('A'))
 
         messageType=MESSAGE_STRINGS.get(message, 0)
         datagram.addUint16(messageType)

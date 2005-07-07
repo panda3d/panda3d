@@ -81,9 +81,10 @@ PUBLISHED:
   bool check_datagram();
   INLINE void get_datagram(Datagram &dg);
   INLINE void get_datagram_iterator(DatagramIterator &di);
-  INLINE CHANNEL_TYPE get_msg_channel() const;
+  INLINE CHANNEL_TYPE get_msg_channel(int offset = 0) const;
+  INLINE int          get_msg_channel_count() const;
   INLINE CHANNEL_TYPE get_msg_sender() const;
-  INLINE unsigned char get_sec_code() const;
+//  INLINE unsigned char get_sec_code() const;
   INLINE unsigned int get_msg_type() const;
 
   INLINE static const string &get_overflow_event_name();
@@ -137,10 +138,10 @@ private:
 
   Datagram _dg;
   DatagramIterator _di;
-  CHANNEL_TYPE _msg_channel;
-  CHANNEL_TYPE _msg_sender;
-  unsigned char _sec_code;
-  unsigned int _msg_type;
+
+  std::vector<CHANNEL_TYPE>             _msg_channels;
+  CHANNEL_TYPE                          _msg_sender;
+  unsigned int                          _msg_type;
 
   static const string _overflow_event_name;
 

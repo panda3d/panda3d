@@ -55,9 +55,8 @@ CConnectionRepository() :
   _client_datagram(true),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
-  _msg_channel(0),
+//  _msg_channels(),
   _msg_sender(0),
-  _sec_code(0),
   _msg_type(0)
 {
 #if defined(HAVE_NSPR) && defined(SIMULATE_NETWORK_DELAY)
@@ -145,10 +144,16 @@ check_datagram() {
     // Start breaking apart the datagram.
     _di = DatagramIterator(_dg);
 
-    if (!_client_datagram) {
-      _msg_channel = _di.get_uint64();
+    if (!_client_datagram) 
+    {
+      unsigned char  wc_cnt;
+      wc_cnt = _di.get_uint8();
+      for(unsigned char lp1 = 0; lp1 < wc_cnt; lp1++)
+      {
+            CHANNEL_TYPE  schan  = _di.get_uint64();
+            _msg_channels.push_back(schan);
+      }
       _msg_sender = _di.get_uint64();
-      _sec_code = _di.get_uint8();
       
 #ifdef HAVE_PYTHON
       // For now, we need to stuff this field onto the Python
@@ -459,10 +464,13 @@ describe_message(ostream &out, const string &prefix,
   int msg_type;
   bool is_update = false;
 
-  if (!_client_datagram) {
-    packer.RAW_UNPACK_CHANNEL();  // msg_channel
+  if (!_client_datagram) 
+  {
+    unsigned char mcnt = packer.raw_unpack_uint8();
+    for( ;mcnt > 0; mcnt--)
+        packer.RAW_UNPACK_CHANNEL();  // msg_channel
+
     packer.RAW_UNPACK_CHANNEL();  // msg_sender
-    packer.raw_unpack_uint8();    // sec_code
     msg_type = packer.raw_unpack_uint16();
     is_update = (msg_type == STATESERVER_OBJECT_UPDATE_FIELD);
     
