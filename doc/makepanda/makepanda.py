@@ -1143,33 +1143,37 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
             if (suflen==0) or (x[-suflen:]==suffix):
                 CopyFile(dstdir+x, srcdir+x)
 
-def CopyAllHeaders(dir):
+def CopyAllHeaders(dir, skip=[]):
     # get a list of headers
     dirlist = os.listdir(dir)
     dirlist.sort()
     files = fnmatch.filter(dirlist,"*.h")+fnmatch.filter(dirlist,"*.I")+fnmatch.filter(dirlist,"*.T")
+    # actually copy the headers.
+    copied = []
+    if (skip!="ALL"):
+        for filename in files:
+            if (skip.count(filename)==0):
+                srcfile = dir + "/" + filename
+                dstfile = PREFIX + "/include/" + filename
+                if (older(dstfile,srcfile)):
+                    copied.append(filename)
+                    WriteFile(dstfile,ReadFile(srcfile))
+    if (len(copied)>0):
+        print "\nCompiling in directory: %s\n\nCopied headers: %s"%(dir,copied)
     # sanity check - do headers in directory match headers in CVS?
     cvsentries = ReadCvsEntries(dir)
     if (cvsentries != 0):
         cvsheaders = fnmatch.filter(cvsentries,"*.h")+fnmatch.filter(cvsentries,"*.I")+fnmatch.filter(cvsentries,"*.T")
         for x in SetDifference(files, cvsheaders):
-            msg = "WARNING: header file %s is in your directory, but not in CVS"%(dir+"/"+x)
-            print msg
-            WARNINGS.append(msg)
+            if ((skip=="ALL") or (skip.count(x)==0)):
+                msg = "WARNING: header file %s is in your directory, but not in CVS"%(dir+"/"+x)
+                print msg
+                WARNINGS.append(msg)
         for x in SetDifference(cvsheaders, files):
-            msg = "WARNING: header file %s is CVS, but not in your directory"%(dir+"/"+x)
-            print msg
-            WARNINGS.append(msg)
-    # actually copy the headers.
-    copied = []
-    for filename in files:
-        srcfile = dir + "/" + filename
-        dstfile = PREFIX + "/include/" + filename
-        if (older(dstfile,srcfile)):
-            copied.append(filename)
-            WriteFile(dstfile,ReadFile(srcfile))
-    if (len(copied)>0):
-        print "\nCompiling in directory: %s\n\nCopied headers: %s"%(dir,copied)
+            if ((skip=="ALL") or (skip.count(x)==0)):
+                msg = "WARNING: header file %s is CVS, but not in your directory"%(dir+"/"+x)
+                print msg
+                WARNINGS.append(msg)
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
@@ -1324,11 +1328,7 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, als
     else:
         files.sort()
         for x in skip:
-            if (files.count(x)==0):
-                w = "WARNING: file %s is not present in directory %s"%(x,src)
-                print w
-                WARNINGS.append(w)
-            else: files.remove(x)
+            if (files.count(x)!=0): files.remove(x)
     for x in also: files.append(x)
 
     # interrogate them.
@@ -2026,6 +2026,7 @@ IPATH=['dtool/src/dtoolbase']
 OPTS=['BUILDING_DTOOL', 'NSPR']
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
 
 #
 # DIRECTORY: dtool/src/dtoolutil/
@@ -2033,7 +2034,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.o
 
 IPATH=['dtool/src/dtoolutil']
 OPTS=['BUILDING_DTOOL', 'NSPR']
-CopyAllHeaders(IPATH[0])
+CopyAllHeaders(IPATH[0], skip=["pandaVersion.h", "checkPandaVersion.h"])
 CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 CompileC(ipath=IPATH, opts=OPTS, src='gnu_getopt.c',             obj='dtoolutil_gnu_getopt.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='gnu_getopt1.c',            obj='dtoolutil_gnu_getopt1.obj')
@@ -2055,6 +2056,7 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='libdtool.dll', obj=[
              'dtoolutil_composite1.obj',
              'dtoolutil_composite2.obj',
              'dtoolbase_dtoolbase.obj',
+             'dtoolbase_indent.obj',
 ])
 
 #
@@ -2063,7 +2065,7 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='libdtool.dll', obj=[
 
 IPATH=['dtool/src/cppparser']
 OPTS=['NSPR']
-# CopyAllHeaders(IPATH[0]) --- do NOT copy these headers.
+CopyAllHeaders(IPATH[0], skip="ALL")
 CompileBison(pre='cppyy', dstc='cppBison.cxx', dsth='cppBison.h', src='dtool/src/cppparser/cppBison.yxx')
 CompileC(ipath=IPATH, opts=OPTS, src='cppParser_composite1.cxx', obj='cppParser_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='cppParser_composite2.cxx', obj='cppParser_composite2.obj')
@@ -2196,6 +2198,7 @@ if (OMIT.count("SSL")==0):
 
 IPATH=['dtool/src/test_interrogate']
 OPTS=['NSPR']
+CopyAllHeaders(IPATH[0], skip="ALL")
 CompileC(ipath=IPATH, opts=OPTS, src='test_interrogate.cxx', obj='test_interrogate_test_interrogate.obj')
 CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='test_interrogate.exe', obj=[
              'test_interrogate_test_interrogate.obj',
