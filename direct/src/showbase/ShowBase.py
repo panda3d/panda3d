@@ -499,7 +499,7 @@ class ShowBase(DirectObject.DirectObject):
                 # error not to open a window.
                 raise StandardError, 'Could not open window.'
 
-        return (self.win != None)
+        return self.win != None
 
     def isMainWindowOpen(self):
         if self.win != None:

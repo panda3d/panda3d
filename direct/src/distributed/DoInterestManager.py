@@ -160,7 +160,8 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert self.notify.debugCall()
         if __debug__:
-            DoInterestManager._debug_currentInterests.append((contextId, scopeId, parentId, zoneIdList))
+            DoInterestManager._debug_currentInterests.append(
+                (contextId, scopeId, parentId, zoneIdList))
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_ADD_INTEREST)

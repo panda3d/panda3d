@@ -803,7 +803,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
         win->clear();
       
         int num_display_regions = win->get_num_active_display_regions();
-        for (int i = 0; i < num_display_regions; i++) {
+        for (int i = 0; i < num_display_regions; ++i) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
             cull_bin_draw(win, dr);
@@ -1177,7 +1177,7 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   // us to assure that recently-added windows end up on the end of the
   // list.
   window->_internal_sort_index = _window_sort_index;
-  _window_sort_index++;
+  ++_window_sort_index;
 
   _windows_sorted = false;
   _windows.push_back(window);
