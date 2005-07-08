@@ -226,6 +226,13 @@
 // below, is also true.
 #define INTERROGATE_PYTHON_INTERFACE 1
 
+// Define this true to use the new interrogate feature to generate
+// Python-native objects directly, rather than requiring a separate
+// FFI step.  This loads and runs much more quickly than the original
+// mechanism.  Define this false (that is, empty) to use the original
+// interfaces.
+#define PYTHON_NATIVE 1
+
 // Do you want to generate a C-callable interrogate interface?  This
 // generates an interface similar to the Python interface above, with
 // a C calling convention.  It should be useful for most other kinds
@@ -809,8 +816,9 @@
 // a running program without crashing the running instance.  However,
 // it doesn't understanding installing a program from a subdirectory,
 // so we have to cd into the source directory first.
-#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] -p $[notdir $[local]] $[dest]/
-#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] -p $[notdir $[local]] $[dest]/
+#defer install_dash_p $[if $[KEEP_TIMESTAMPS],-p,]
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[install_dash_p] $[notdir $[local]] $[dest]/
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
 
 // Variable definitions for building with the Irix MIPSPro compiler.
 #if $[eq $[USE_COMPILER], MIPS]
