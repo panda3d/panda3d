@@ -1,7 +1,8 @@
-"""Notifier module: contains methods for handling information output
-   for the programmer/user"""
-
-from LoggerGlobal import *
+"""
+Notifier module: contains methods for handling information output
+for the programmer/user
+"""
+from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
 import time
 import types

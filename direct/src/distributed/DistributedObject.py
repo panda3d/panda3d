@@ -1,7 +1,7 @@
 """DistributedObject module: contains the DistributedObject class"""
 
 from direct.showbase.PandaObject import *
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
@@ -20,7 +20,7 @@ class DistributedObject(PandaObject):
     (i.e. distributed) objects.  These will usually (always?) have a
     dclass entry in a *.dc file.
     """
-    notify = DirectNotifyGlobal.directNotify.newCategory("DistributedObject")
+    notify = directNotify.newCategory("DistributedObject")
 
     # A few objects will set neverDisable to 1... Examples are
     # localToon, and anything that lives in the UberZone. This
@@ -36,9 +36,6 @@ class DistributedObject(PandaObject):
             self.DistributedObject_initialized = 1
             self.cr = cr
             self.children = {}
-            ## if wantOtpServer:
-                ## # Location stores the parentId, zoneId of this object
-                ## self.__location = (None, None)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take
@@ -188,9 +185,8 @@ class DistributedObject(PandaObject):
             self.activeState = ESDisabled
             self.__callbacks = {}
             if wantOtpServer:
-                #self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
+                #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
                 self.setLocation(None, None)
-                #self.__location = (None, None)
                 # TODO: disable my children
 
     def isDisabled(self):
@@ -397,7 +393,6 @@ class DistributedObject(PandaObject):
                     oldParentObj.handleChildLeave(self, oldZoneId)
 
             # The store must run first so we know the old location
-            ## self.__location = (parentId, zoneId)
             self.parentId = parentId
             self.zoneId = zoneId
             self.cr.storeObjectLocation(self.doId, parentId, zoneId)
