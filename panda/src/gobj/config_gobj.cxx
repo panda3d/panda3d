@@ -98,7 +98,7 @@ ConfigVariableBool display_lists
           "on dynamic geometry (e.g. soft-skinned animation)."));
 
 ConfigVariableBool hardware_animated_vertices
-("hardware-animated-vertices", false,
+("hardware-animated-vertices", true,
  PRC_DESC("Set this true to allow the transforming of soft-skinned "
           "animated vertices via hardware, if supported, or false always "
           "to perform the vertex animation via software within Panda.  "

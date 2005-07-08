@@ -195,12 +195,11 @@ ConfigVariableDouble lod_fade_time
           "transitions between its different levels."));
 
 
-ConfigVariableBool show_cpu_animation
-("show-cpu-animation", false,
- PRC_DESC("Set this true to flash any objects that are animated via Panda, "
-          "on the CPU, so you can visually see what's being animated on "
-          "the CPU and what's being animated by hardware.  This only "
-          "has effect when NDEBUG is defined."));
+ConfigVariableBool show_vertex_animation
+("show-vertex-animation", false,
+ PRC_DESC("Set this true to flash any objects whose vertices are animated "
+          "by Panda on the CPU (flash red) or by hardware (flash blue).  "
+          "This only has effect when NDEBUG is defined."));
 
 ConfigVariableBool m_dual
 ("m-dual", true,

@@ -48,7 +48,7 @@ extern ConfigVariableInt max_collect_indices;
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
 
-extern ConfigVariableBool show_cpu_animation;
+extern ConfigVariableBool show_vertex_animation;
 
 extern ConfigVariableBool m_dual;
 extern ConfigVariableBool m_dual_opaque;

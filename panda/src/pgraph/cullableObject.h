@@ -87,6 +87,9 @@ private:
   void munge_points_to_quads(const CullTraverser *traverser);
   void munge_texcoord_light_vector(const CullTraverser *traverser);
 
+  static CPT(RenderState) get_flash_cpu_state();
+  static CPT(RenderState) get_flash_hardware_state();
+
 private:
   // This class is used internally by munge_points_to_quads().
   class PointData {

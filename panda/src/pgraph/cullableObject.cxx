@@ -17,7 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullableObject.h"
-#include "textureAttrib.h"
+#include "ambientLight.h"
+#include "lightAttrib.h"
+#include "nodePath.h"
+#include "material.h"
+#include "materialAttrib.h"
 #include "texGenAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
@@ -93,22 +97,16 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     CPT(GeomVertexData) animated_vertices = 
       _munged_data->animate_vertices();
 #ifndef NDEBUG
-    if (show_cpu_animation && animated_vertices != _munged_data) {
-      // These vertices were CPU-animated, so flash them.
-      static const double flash_rate = 1.0;  // 1 state change per second
-      int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
-      if ((cycle & 1) == 0) {
-        static Colorf flash_color(0.8f, 0.2f, 0.2f, 1.0f);
-        if (animated_vertices->has_color()) {
-          animated_vertices = animated_vertices->set_color(flash_color);
-        } else {
-          // We have to add a color column, which means we have to
-          // re-munge.
-          animated_vertices = animated_vertices->set_color
-            (flash_color, 1, Geom::NT_packed_dabc, Geom::C_color);
-          animated_vertices = munger->munge_data(animated_vertices);
+    if (show_vertex_animation) {
+      bool cpu_animated = (animated_vertices != _munged_data);
+      bool hardware_animated = (animated_vertices->get_format()->get_animation().get_animation_type() == Geom::AT_hardware);
+      if (cpu_animated || hardware_animated) {
+        // These vertices were animated, so flash them red or blue.
+        static const double flash_rate = 1.0;  // 1 state change per second
+        int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
+        if ((cycle & 1) == 0) {
+          _state = cpu_animated ? get_flash_cpu_state() : get_flash_hardware_state();
         }
-        _state = _state->remove_attrib(TextureAttrib::get_class_type());
       }
     }
 #endif
@@ -529,4 +527,72 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::get_flash_cpu_state
+//       Access: Private, Static
+//  Description: Returns a RenderState for flashing the object red, to
+//               show it is animated by the CPU when
+//               show-vertex-animation is on.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullableObject::
+get_flash_cpu_state() {
+  static const Colorf flash_cpu_color(0.8f, 0.2f, 0.2f, 1.0f);
+
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) flash_cpu_state = (const RenderState *)NULL;
+  if (flash_cpu_state == (const RenderState *)NULL) {
+    PT(AmbientLight) ambient_light = new AmbientLight("alight");
+    ambient_light->set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    NodePath alight(ambient_light);
+
+    CPT(LightAttrib) light_attrib = DCAST(LightAttrib, LightAttrib::make_all_off());
+    light_attrib = DCAST(LightAttrib, light_attrib->add_on_light(alight));
+
+    PT(Material) material = new Material;
+    material->set_ambient(flash_cpu_color);
+    material->set_diffuse(flash_cpu_color);
+
+    flash_cpu_state = RenderState::make
+      (light_attrib, 
+       MaterialAttrib::make(material));
+  }
+
+  return flash_cpu_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::get_flash_hardware_state
+//       Access: Private, Static
+//  Description: Returns a RenderState for flashing the object blue,
+//               to show it is animated by the hardware when
+//               show-vertex-animation is on.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullableObject::
+get_flash_hardware_state() {
+  static const Colorf flash_hardware_color(0.2f, 0.2f, 0.8f, 1.0f);
+
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) flash_hardware_state = (const RenderState *)NULL;
+  if (flash_hardware_state == (const RenderState *)NULL) {
+    PT(AmbientLight) ambient_light = new AmbientLight("alight");
+    ambient_light->set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    NodePath alight(ambient_light);
+
+    CPT(LightAttrib) light_attrib = DCAST(LightAttrib, LightAttrib::make_all_off());
+    light_attrib = DCAST(LightAttrib, light_attrib->add_on_light(alight));
+
+    PT(Material) material = new Material;
+    material->set_ambient(flash_hardware_color);
+    material->set_diffuse(flash_hardware_color);
+
+    flash_hardware_state = RenderState::make
+      (light_attrib, 
+       MaterialAttrib::make(material));
+  }
+
+  return flash_hardware_state;
 }
