@@ -1105,11 +1105,12 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     // Set up the transform matrices for vertex blending.
     nassertr(_supports_vertex_blend, false);
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
-    _glVertexBlendARB(animation.get_num_transforms() - 1);
+    _glVertexBlendARB(animation.get_num_transforms());
 
     const TransformTable *table = _vertex_data->get_transform_table();
     if (table != (TransformTable *)NULL) {
       if (animation.get_indexed_transforms()) {
+        nassertr(_supports_matrix_palette, false);
         // We are loading the indexed matrix palette.  The ARB decided
         // to change this interface from that for the list of
         // nonindexed matrices, to make it easier to load an arbitrary
