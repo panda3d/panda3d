@@ -14,18 +14,18 @@ class PyDatagram(Datagram):
     # for trying to match up datagram subatomic types with add funtions
     # If Python had an O(1) "case" statement we would use that instead
     FuncDict = {
-        STInt8  : (Datagram.addInt8, int),
-        STInt16 : (Datagram.addInt16, int),
-        STInt32 : (Datagram.addInt32, int),
-        STInt64 : (Datagram.addInt64, int),
-        STUint8  : (Datagram.addUint8, int),
-        STUint16 : (Datagram.addUint16, int),
-        STUint32 : (Datagram.addUint32, int),
-        STUint64 : (Datagram.addUint64, int),
-        STFloat64 : (Datagram.addFloat64, None),
-        STString : (Datagram.addString, None),
-        STBlob : (Datagram.addString, None),
-        STBlob32 : (Datagram.addString32, None),
+        STInt8: (Datagram.addInt8, int),
+        STInt16: (Datagram.addInt16, int),
+        STInt32: (Datagram.addInt32, int),
+        STInt64: (Datagram.addInt64, int),
+        STUint8: (Datagram.addUint8, int),
+        STUint16: (Datagram.addUint16, int),
+        STUint32: (Datagram.addUint32, int),
+        STUint64: (Datagram.addUint64, int),
+        STFloat64: (Datagram.addFloat64, None),
+        STString: (Datagram.addString, None),
+        STBlob: (Datagram.addString, None),
+        STBlob32: (Datagram.addString32, None),
         }
 
         
