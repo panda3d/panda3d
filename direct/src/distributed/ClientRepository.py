@@ -305,7 +305,8 @@ class ClientRepository(ConnectionRepository):
         # Construct a new one
         classDef = dclass.getClassDef()
         if classDef == None:
-             self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+             self.notify.error("Could not create an undefined %s object."%(
+                dclass.getName()))
         distObj = classDef(self)
         distObj.dclass = dclass
         # Assign it an Id
@@ -323,7 +324,8 @@ class ClientRepository(ConnectionRepository):
         # updateRequiredFields calls announceGenerate
         return  distObj
 
-    def generateWithRequiredOtherFields(self, dclass, doId, di, parentId = None, zoneId = None):
+    def generateWithRequiredOtherFields(self, dclass, doId, di,
+            parentId = None, zoneId = None):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
@@ -513,7 +515,7 @@ class ClientRepository(ConnectionRepository):
                 if (self.isLocalId(id)):
                     self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
 
-    def handleUnexpectedMsgType(self, msgType, di):
+    def handleMessageType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
@@ -744,7 +746,7 @@ class ClientRepository(ConnectionRepository):
                 self.handleSetZoneDone()
 
         if self.handler == None:
-            self.handleUnexpectedMsgType(msgType, di)
+            self.handleMessageType(msgType, di)
         else:
             self.handler(msgType, di)
 
@@ -772,7 +774,7 @@ class ClientRepository(ConnectionRepository):
         elif msgType == CLIENT_REQUEST_GENERATES:
             self.handleRequestGenerates(di)
         else:
-            self.handleUnexpectedMsgType(msgType, di)
+            self.handleMessageType(msgType, di)
 
     def sendHeartbeat(self):
         datagram = PyDatagram()
