@@ -141,12 +141,29 @@ get_distributor() {
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_compiler() {
-#ifdef COMPILER
-  // MSVC defines this macro.
-  return COMPILER;
+#if defined(_MSC_VER)
+  // MSVC defines this macro.  It's an integer; we need to format it.
+  ostringstream strm;
+  strm << "MSC v." << _MSC_VER;
+
+  // We also get this suite of macros that tells us what the build
+  // platform is.
+#if defined(_M_IX86)
+  #ifdef MS_WIN64
+  strm << " 64 bit (Intel)";
+  #else  // MS_WIN64
+  strm << " 32 bit (Intel)";
+  #endif  // MS_WIN64
+#elif defined(_M_IA64)
+  strm << " 64 bit (Itanium)";
+#elif defined(_M_AMD64)
+  strm << " 64 bit (AMD64)";
+#endif
+
+  return strm.str();
 
 #elif defined(__GNUC__)
-  // GCC defines this one.
+  // GCC defines this simple macro.
   return "GCC " __VERSION__;
 
 #else
