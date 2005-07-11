@@ -1839,7 +1839,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             // The vertex color is a color scale that modifies the
             // polygon color, not an override that replaces it.
             vert.set_color(Colorf(c.r * poly_color[0], c.g * poly_color[1],
-                                  c.b * poly_color[2], poly_color[3]));
+                                  c.b * poly_color[2], c.a * poly_color[3]));
           }
         } else {
           vert.set_color(poly_color);
