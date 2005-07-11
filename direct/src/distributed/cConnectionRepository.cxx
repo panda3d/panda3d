@@ -148,6 +148,7 @@ check_datagram() {
     {
       unsigned char  wc_cnt;
       wc_cnt = _di.get_uint8();
+      _msg_channels.clear();
       for(unsigned char lp1 = 0; lp1 < wc_cnt; lp1++)
       {
             CHANNEL_TYPE  schan  = _di.get_uint64();
