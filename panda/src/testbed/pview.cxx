@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaFramework.h"
+#include "pandaSystem.h"
 #include "textNode.h"
 #include "configVariableBool.h"
 #include "texturePool.h"
@@ -221,9 +222,20 @@ help() {
     "  -s filename\n"
     "      After displaying the models, immediately take a screenshot and\n"
     "      exit.\n\n"
+
+    "  -V\n"
+    "      Report the current version of Panda, and exit.\n\n"
     
     "  -h\n"
     "      Display this help text.\n\n";
+}
+
+void 
+report_version() {
+  nout << "\n";
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->write(nout);
+  nout << "\n";
 }
 
 int
@@ -238,7 +250,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "clhs:";
+  static const char *optflags = "cls:Vh";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -250,15 +262,19 @@ main(int argc, char *argv[]) {
     case 'l':
       show_loading = true;
       break;
-
-    case 'h':
-      help();
-      return 1;
       
     case 's':
       auto_screenshot = true;
       screenshotfn = optarg;
       break;
+
+    case 'V':
+      report_version();
+      return 1;
+
+    case 'h':
+      help();
+      return 1;
 
     case '?':
       usage();
