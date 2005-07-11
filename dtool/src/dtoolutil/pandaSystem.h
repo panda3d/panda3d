@@ -43,6 +43,8 @@ PUBLISHED:
   static bool is_official_version();
   
   static string get_distributor();
+  static string get_compiler();
+  static string get_build_date();
 
   bool has_system(const string &system) const;
   int get_num_systems() const;

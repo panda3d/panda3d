@@ -131,6 +131,41 @@ string PandaSystem::
 get_distributor() {
   return PANDA_DISTRIBUTOR;
 }
+  
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_compiler
+//       Access: Published, Static
+//  Description: Returns a string representing the compiler that was
+//               used to generate this version of Panda, if it is
+//               available, or "unknown" if it is not.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_compiler() {
+#ifdef COMPILER
+  // MSVC defines this macro.
+  return COMPILER;
+
+#elif defined(__GNUC__)
+  // GCC defines this one.
+  return "GCC " __VERSION__;
+
+#else
+  // For other compilers, you're on your own.
+  return "unknown";
+#endif
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_build_date
+//       Access: Published, Static
+//  Description: Returns a string representing the date and time at
+//               which this version of Panda (or at least dtool) was
+//               compiled, if available.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_build_date() {
+  return __DATE__ " " __TIME__;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::has_system
