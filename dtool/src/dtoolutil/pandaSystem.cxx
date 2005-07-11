@@ -311,8 +311,12 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void PandaSystem::
 write(ostream &out) const {
-  out << *this << ":\n";
+  out << *this << "\n"
+      << "compiled on " << get_build_date() << " by "
+      << get_distributor() << "\n"
+      << "with compiler " << PandaSystem::get_compiler() << "\n\n";
 
+  out << "Optional systems:\n";
   for (Systems::const_iterator si = _systems.begin();
        si != _systems.end();
        ++si) {
