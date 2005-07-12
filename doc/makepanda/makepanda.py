@@ -3760,16 +3760,6 @@ CompileLink(dll='egg2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'libdtool.dll',
              'libpystub.dll',
 ])
-CompileC(ipath=IPATH, opts=OPTS, src='eggImport.cxx', obj='eggImport_eggImport.obj')
-CompileLink(dll='eggImport.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'eggImport_eggImport.obj',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
 
 #
 # DIRECTORY: pandatool/src/flt/
