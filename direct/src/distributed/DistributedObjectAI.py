@@ -348,6 +348,7 @@ class DistributedObjectAI(DirectObject):
             self.parentId = parentId
             self.zoneId = zoneId
             self.generate()
+            self.announceGenerate()
     else:
         def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
             assert self.notify.debugStateCall(self)
@@ -360,6 +361,7 @@ class DistributedObjectAI(DirectObject):
             self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
             self.zoneId = zoneId
             self.generate()
+            self.announceGenerate()
 
     if wantOtpServer:
         def generateGlobalObject(self, parentId, zoneId, doId):
