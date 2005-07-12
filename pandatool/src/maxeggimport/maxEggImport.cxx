@@ -10,8 +10,8 @@
 #include "stdmat.h"
 #include "decomp.h"
 #include "shape.h"
-#include "splshape.h"
-#include "dummy.h"
+#include "simpobj.h"
+#include "iparamb2.h"
 
 #include "eggData.h"
 #include "eggVertexPool.h"
@@ -33,10 +33,13 @@ static FILE *lgfile;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class MaxEggMesh;
+class MaxEggJoint;
+class BoneFunctions;
 
 class MaxEggImporter : public SceneImport 
 {
 public:
+  // GUI-related methods
   MaxEggImporter();
   ~MaxEggImporter();
   int		    ExtCount();        // Number of extensions supported 
@@ -50,23 +53,35 @@ public:
   unsigned int Version();          // Version number * 100 (i.e. v3.01 = 301) 
   void	ShowAbout(HWND hWnd);      // Show DLL's "About..." box
   int	DoImport(const TCHAR *name,ImpInterface *ei,Interface *i, BOOL suppressPrompts);
-  MaxEggMesh *GetMesh(EggVertexPool *pool);
+
+public:
+  // GUI-related fields
+  static Interface     *_ip;
+  static ImpInterface  *_impip;
+  static BOOL           _merge;
+  static BOOL           _importmodel;
+  static BOOL           _importanim;
+
+public:
+  // Import-related methods:
   void  TraverseEggData(EggData *data);
   void  TraverseEggNode(EggNode *node, EggGroup *context);
+  MaxEggMesh *GetMesh(EggVertexPool *pool);
+  MaxEggJoint *FindJoint(EggGroup *joint);
+  MaxEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
   
 public:
-  Interface    *_ip;
-  ImpInterface *_impip;
-  static BOOL   _merge;
-  static BOOL   _importmodel;
-  static BOOL   _importanim;
-
-  typedef pmap<EggVertexPool *, MaxEggMesh *> MeshTable;
+  // Import-related fields:
+  typedef phash_map<EggVertexPool *, MaxEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
+  typedef phash_map<EggGroup *, MaxEggJoint *> JointTable;
+  typedef second_of_pair_iterator<JointTable::const_iterator> JointIterator;
   MeshTable _mesh_tab;
+  JointTable _joint_tab;
 };
 
-
+Interface     *MaxEggImporter::_ip;
+ImpInterface  *MaxEggImporter::_impip;
 BOOL MaxEggImporter::_merge       = TRUE;
 BOOL MaxEggImporter::_importmodel = TRUE;
 BOOL MaxEggImporter::_importanim  = TRUE;
@@ -146,12 +161,14 @@ static BOOL CALLBACK AboutBoxDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
     return FALSE;
   }
   return TRUE;
-}       
+}      
 
 void MaxEggImporter::ShowAbout(HWND hWnd)
 {
-  DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, AboutBoxDlgProc, 0);
+  DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX),
+                 hWnd, AboutBoxDlgProc, 0);
 }
+
 
 static BOOL CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -240,16 +257,7 @@ public:
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2);
-  void LogData(void);
 };
-
-void MaxEggMesh::LogData(void)
-{
-  fprintf(lgfile,"Mesh %08x faces: %d\n",_mesh,_mesh->numFaces);
-  for (int i=0; i<_mesh->numFaces; i++) {
-    fprintf(lgfile," -- %d %d %d\n",_mesh->tvFace[i].t[0],_mesh->tvFace[i].t[1],_mesh->tvFace[i].t[2]);
-  }
-}
 
 int MaxEggMesh::GetVert(Vertexd pos, Normald norm, EggGroup *context)
 {
@@ -339,6 +347,158 @@ int MaxEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+// MaxEggJoint
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class MaxEggJoint
+{
+public:
+  Point3         _xv,_yv,_zv;
+  Point3         _pos;
+  Point3         _endpos;
+  Point3         _zaxis;
+  double         _thickness;
+  bool           _anyvertex;
+  SimpleObject2 *_bone;
+  INode         *_node;
+  EggGroup      *_egg_joint;
+  MaxEggJoint   *_parent;
+  vector <MaxEggJoint *> _children;
+
+public:
+  MaxEggJoint *ChooseBestChild(Point3 dir);
+  void ChooseEndPos(double thickness);
+  void CreateMaxBone(void);
+};
+
+MaxEggJoint *MaxEggImporter::FindJoint(EggGroup *joint)
+{
+  if (joint==0) return 0;
+  return _joint_tab[joint];
+}
+
+MaxEggJoint *MaxEggImporter::MakeJoint(EggGroup *joint, EggGroup *context)
+{
+  MaxEggJoint *parent = FindJoint(context);
+  MaxEggJoint *result = new MaxEggJoint;
+  LMatrix4d t = joint->get_transform();
+  if (parent) {
+    result->_xv  = parent->_xv*((float)t(0,0)) + parent->_yv*((float)t(0,1)) + parent->_zv*((float)t(0,2));
+    result->_yv  = parent->_xv*((float)t(1,0)) + parent->_yv*((float)t(1,1)) + parent->_zv*((float)t(1,2));
+    result->_zv  = parent->_xv*((float)t(2,0)) + parent->_yv*((float)t(2,1)) + parent->_zv*((float)t(2,2));
+    result->_pos = parent->_xv*((float)t(3,0)) + parent->_yv*((float)t(3,1)) + parent->_zv*((float)t(3,2)) + parent->_pos;
+  } else {
+    result->_xv  = Point3(((float)t(0,0)), ((float)t(0,1)), ((float)t(0,2)));
+    result->_yv  = Point3(((float)t(1,0)), ((float)t(1,1)), ((float)t(1,2)));
+    result->_zv  = Point3(((float)t(2,0)), ((float)t(2,1)), ((float)t(2,2)));
+    result->_pos = Point3(((float)t(3,0)), ((float)t(3,1)), ((float)t(3,2)));
+  }
+  result->_endpos = Point3(0,0,0);
+  result->_zaxis = Point3(0,0,0);
+  result->_thickness = 0.0;
+  result->_anyvertex = false;
+  result->_bone = 0;
+  result->_node = 0;
+  result->_egg_joint = joint;
+  result->_parent = parent;
+  if (parent) parent->_children.push_back(result);
+  _joint_tab[joint] = result;
+  return result;
+}
+
+MaxEggJoint *MaxEggJoint::ChooseBestChild(Point3 dir)
+{
+  if (dir.Length() < 0.001) return 0;
+  dir = dir.Normalize();
+  double firstbest = -1000;
+  MaxEggJoint *firstchild = 0;
+  Point3 firstpos = _pos;
+  double secondbest = 0;
+  for (int i=0; i<_children.size(); i++) {
+    MaxEggJoint *child = _children[i];
+    Point3 tryfwd = child->_pos - _pos;
+    if ((child->_pos != firstpos) && (tryfwd.Length() > 0.001)) {
+      Point3 trydir = tryfwd.Normalize();
+      double quality = trydir % dir;
+      if (quality > firstbest) {
+        secondbest = firstbest;
+        firstbest = quality;
+        firstpos = child->_pos;
+        firstchild = child;
+      } else if (quality > secondbest) {
+        secondbest = quality;
+      }
+    }
+  }
+  if (firstbest > secondbest + 0.1)
+    return firstchild;
+  return 0;
+}
+
+void MaxEggJoint::ChooseEndPos(double thickness)
+{
+  Point3 parentpos(0,0,0);
+  Point3 parentendpos(0,0,1);
+  if (_parent) {
+    parentpos = _parent->_pos;
+    parentendpos = _parent->_endpos;
+  }
+  Point3 fwd = _pos - parentpos;
+  if (fwd.Length() < 0.001) {
+    fwd = parentendpos - parentpos;
+  }
+  fwd = fwd.Normalize();
+  MaxEggJoint *child = ChooseBestChild(fwd);
+  if (child == 0) {
+    _endpos = fwd * ((float)(thickness * 0.8)) + _pos;
+    _thickness = thickness * 0.8;
+  } else {
+    _endpos = child->_pos;
+    _thickness = (_endpos - _pos).Length();
+    if (_thickness > thickness) _thickness = thickness;
+  }
+  Point3 orient = (_endpos - _pos).Normalize();
+  Point3 altaxis = orient ^ Point3(0,-1,0);
+  if (altaxis.Length() < 0.001) altaxis = orient ^ Point3(0,0,1);
+  _zaxis = (altaxis ^ orient).Normalize();
+}
+
+void MaxEggJoint::CreateMaxBone(void)
+{
+  Point3 fwd = _endpos - _pos;
+  double len = fwd.Length();
+  Point3 txv = fwd * ((float)(1.0/len));
+  Point3 tzv = _zaxis;
+  Point3 tyv = tzv ^ txv;
+  Point3 row1 = Point3(txv % _xv, txv % _yv, txv % _zv);
+  Point3 row2 = Point3(tyv % _xv, tyv % _yv, tyv % _zv);
+  Point3 row3 = Point3(tzv % _xv, tzv % _yv, tzv % _zv);
+  _bone = (SimpleObject2*)CreateInstance(GEOMOBJECT_CLASS_ID, BONE_OBJ_CLASSID);
+  _node = (MaxEggImporter::_ip)->CreateObjectNode(_bone);
+  if (_parent) {
+    _node->Detach(0, 1);
+    _parent->_node->AttachChild(_node, 1);
+  }
+  _node->SetNodeTM(0, Matrix3(_xv, _yv, _zv, _pos));
+  _node->SetObjOffsetRot(Quat(Matrix3(row1, row2, row3, Point3(0,0,0))));
+  IParamBlock2 *blk = _bone->pblock2;
+  for (int i=0; i<blk->NumParams(); i++) {
+    TSTR n = blk->GetLocalName(i);
+    if      (strcmp(n, "Length")==0) blk->SetValue(i,0,(float)len); 
+    else if (strcmp(n, "Width")==0)  blk->SetValue(i,0,(float)_thickness);
+    else if (strcmp(n, "Height")==0) blk->SetValue(i,0,(float)_thickness);
+  }
+  Point3 boneColor = GetUIColor(COLOR_BONES);
+  _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
+  _node->SetBoneNodeOnOff(TRUE, 0);
+  _node->SetRenderable(FALSE);
+  _node->SetName((TCHAR*)(_egg_joint->get_name().c_str()));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // TraverseEggData
 //
 // We have an EggData in memory, and now we're going to copy that
@@ -375,7 +535,10 @@ void MaxEggImporter::TraverseEggNode(EggNode *node, EggGroup *context)
     EggGroupNode *group = DCAST(EggGroupNode, node);
     if (node->is_of_type(EggGroup::get_class_type())) {
       EggGroup *group = DCAST(EggGroup, node);
-      if (group->is_joint()) context = group;
+      if (group->is_joint()) {
+        MakeJoint(group, context);
+        context = group;
+      }
     }
     EggGroupNode::const_iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
@@ -387,7 +550,13 @@ void MaxEggImporter::TraverseEggNode(EggNode *node, EggGroup *context)
 void MaxEggImporter::TraverseEggData(EggData *data)
 {
   lgfile = fopen("MaxEggImporter.log","w");
+
+  SuspendAnimate();
+  SuspendSetKeyMode();
+  AnimateOff();
+
   TraverseEggNode(data, NULL);
+
   MeshIterator ci;
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MaxEggMesh *mesh = (*ci);
@@ -401,6 +570,23 @@ void MaxEggImporter::TraverseEggData(EggData *data)
     mesh->_mesh->InvalidateGeomCache();
     mesh->_mesh->buildNormals();
   }
+
+  double thickness = 0.0;
+  JointIterator ji;
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
+    double dfo = ((*ji)->_pos).Length();
+    if (dfo > thickness) thickness = dfo;
+  }
+  thickness = thickness * 0.025;
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
+    MaxEggJoint *joint = *ji;
+    joint->ChooseEndPos(thickness);
+    joint->CreateMaxBone();
+  }
+  
+  ResumeSetKeyMode();
+  ResumeAnimate();
+
   if (lgfile) fclose(lgfile);
 }
 
