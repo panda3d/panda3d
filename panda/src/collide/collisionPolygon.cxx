@@ -1136,10 +1136,10 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
                  const TransformState *net_transform) const {
   bool all_in = true;
 
-  int num_planes = cpa->get_num_planes();
+  int num_planes = cpa->get_num_on_planes();
   if (num_planes > 0) {
-    PlaneNode *plane_node = cpa->get_plane(0);
-    NodePath plane_path(plane_node);
+    NodePath plane_path = cpa->get_on_plane(0);
+    PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     CPT(TransformState) new_transform = 
       net_transform->invert_compose(plane_path.get_net_transform());
     
@@ -1149,8 +1149,8 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
     }
 
     for (int i = 1; i < num_planes; i++) {
-      PlaneNode *plane_node = cpa->get_plane(i);
-      NodePath plane_path(plane_node);
+      NodePath plane_path = cpa->get_on_plane(0);
+      PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
       CPT(TransformState) new_transform = 
         net_transform->invert_compose(plane_path.get_net_transform());
       
