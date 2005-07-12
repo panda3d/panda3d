@@ -94,6 +94,10 @@ PUBLISHED:
   INLINE int get_max_3d_texture_dimension() const;
   INLINE int get_max_cube_map_dimension() const;
 
+  INLINE bool get_supports_texture_combine() const;
+  INLINE bool get_supports_texture_crossbar() const;
+  INLINE bool get_supports_texture_dot3() const;
+
   INLINE int get_max_lights() const;
   INLINE int get_max_clip_planes() const;
 
@@ -361,6 +365,10 @@ protected:
   int _max_texture_dimension;
   int _max_3d_texture_dimension;
   int _max_cube_map_dimension;
+
+  bool _supports_texture_combine;
+  bool _supports_texture_crossbar;
+  bool _supports_texture_dot3;
 
   int _max_lights;
   int _max_clip_planes;

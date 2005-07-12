@@ -120,6 +120,12 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _max_3d_texture_dimension = 0;
   _max_cube_map_dimension = 0;
 
+  // Assume we don't support these fairly advanced texture combiner
+  // modes.
+  _supports_texture_combine = false;
+  _supports_texture_crossbar = false;
+  _supports_texture_dot3 = false;
+
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
   _max_clip_planes = -1;

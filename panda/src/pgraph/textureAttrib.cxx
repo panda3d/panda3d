@@ -109,6 +109,25 @@ make_all_off() {
   return _all_off_attrib;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::find_on_stage
+//       Access: Published
+//  Description: Returns the index number of the indicated
+//               TextureStage within the list of on_stages, or -1 if
+//               the indicated stage is not listed.
+////////////////////////////////////////////////////////////////////
+int TextureAttrib::
+find_on_stage(const TextureStage *stage) const {
+  for (int n = 0; n < (int)_on_stages.size(); ++n) {
+    if (_on_stages[n] == stage) {
+      return n;
+    }
+  }
+
+  return -1;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::add_on_stage
 //       Access: Published

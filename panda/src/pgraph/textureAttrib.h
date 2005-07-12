@@ -62,6 +62,8 @@ PUBLISHED:
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
 
+  int find_on_stage(const TextureStage *stage) const;
+
   INLINE int get_num_off_stages() const;
   INLINE TextureStage *get_off_stage(int n) const;
   INLINE bool has_off_stage(TextureStage *stage) const;

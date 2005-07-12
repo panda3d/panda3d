@@ -516,6 +516,13 @@ reset() {
     _glClientActiveTexture = null_glActiveTexture;
   }
 
+  _supports_texture_combine = 
+    has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
+  _supports_texture_crossbar =
+    has_extension("GL_ARB_texture_env_crossbar") || is_at_least_version(1, 4);
+  _supports_texture_dot3 =
+    has_extension("GL_ARB_texture_env_dot3") || is_at_least_version(1, 3);
+
   _supports_buffers = false;
     
   if (is_at_least_version(1, 5)) {
@@ -3543,12 +3550,14 @@ get_texture_combine_type(TextureStage::CombineMode cm) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_texture_src_type
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Maps from the texture stage's CombineSource types
 //               to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_texture_src_type(TextureStage::CombineSource cs) {
+get_texture_src_type(TextureStage::CombineSource cs,
+                     const TextureStage *source_stage, 
+                     const TextureAttrib *attrib, int this_stage) const {
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
   case TextureStage::CS_texture: return GL_TEXTURE;
@@ -3556,6 +3565,31 @@ get_texture_src_type(TextureStage::CombineSource cs) {
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
   case TextureStage::CS_previous: return GL_PREVIOUS;
   case TextureStage::CS_constant_color_scale: return GL_CONSTANT;
+
+  case TextureStage::CS_crossbar_stage:
+    {
+      int n = attrib->find_on_stage(source_stage);
+      if (n >= 0) {
+        if (_supports_texture_crossbar) {
+          return GL_TEXTURE0 + n;
+
+        } else if (n == this_stage) {
+          return GL_TEXTURE;
+
+        } else if (n == this_stage - 1) {
+          return GL_PREVIOUS;
+
+        } else {
+          GLCAT.warning()
+            << "Crossbar blending not supported\n";
+          return GL_PRIMARY_COLOR;
+        }
+      }
+      GLCAT.warning()
+        << "TextureStage " << *attrib->get_on_stage(this_stage)
+        << " sources unused stage: " << *source_stage << "\n";
+      return GL_PRIMARY_COLOR;
+    } 
   }
 
   GLCAT.error()
@@ -4502,7 +4536,7 @@ do_issue_texture() {
       }
 
       if (stage->get_mode() == TextureStage::M_decal) {
-        if (texture->get_num_components() < 3) {
+        if (texture->get_num_components() < 3 && _supports_texture_combine) {
           // Make a special case for 1- and 2-channel decal textures.
           // OpenGL does not define their use with GL_DECAL for some
           // reason, so implement them using the combiner instead.
@@ -4523,67 +4557,84 @@ do_issue_texture() {
         }
 
       } else if (stage->get_mode() == TextureStage::M_combine) {
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_RGB_SCALE, stage->get_rgb_scale());
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_ALPHA_SCALE, stage->get_alpha_scale());
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, 
-                     get_texture_combine_type(stage->get_combine_rgb_mode()));
-
-        switch (stage->get_num_combine_rgb_operands()) {
-        case 3:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source2()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand2()));
-          // fall through
-
-        case 2:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source1()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand1()));
-          // fall through
-
-        case 1:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source0()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand0()));
-          // fall through
-
-        default:
-          break;
+        if (!_supports_texture_combine) {
+          GLCAT.warning()
+            << "TextureStage::M_combine mode is not supported.\n";
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        } else {
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_RGB_SCALE, stage->get_rgb_scale());
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_ALPHA_SCALE, stage->get_alpha_scale());
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, 
+                       get_texture_combine_type(stage->get_combine_rgb_mode()));
+          
+          switch (stage->get_num_combine_rgb_operands()) {
+          case 3:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
+                         get_texture_src_type(stage->get_combine_rgb_source2(),
+                                              stage->get_combine_rgb_source2_stage(), 
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
+                         get_texture_operand_type(stage->get_combine_rgb_operand2()));
+            // fall through
+            
+          case 2:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
+                         get_texture_src_type(stage->get_combine_rgb_source1(),
+                                              stage->get_combine_rgb_source1_stage(),
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
+                         get_texture_operand_type(stage->get_combine_rgb_operand1()));
+            // fall through
+            
+          case 1:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
+                         get_texture_src_type(stage->get_combine_rgb_source0(),
+                                              stage->get_combine_rgb_source0_stage(),
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
+                         get_texture_operand_type(stage->get_combine_rgb_operand0()));
+            // fall through
+            
+          default:
+            break;
+          }
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, 
+                       get_texture_combine_type(stage->get_combine_alpha_mode()));
+          
+          switch (stage->get_num_combine_alpha_operands()) {
+          case 3:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
+                         get_texture_src_type(stage->get_combine_alpha_source2(),
+                                              stage->get_combine_alpha_source2_stage(),
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
+                         get_texture_operand_type(stage->get_combine_alpha_operand2()));
+            // fall through
+            
+          case 2:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
+                         get_texture_src_type(stage->get_combine_alpha_source1(),
+                                              stage->get_combine_alpha_source1_stage(),
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
+                         get_texture_operand_type(stage->get_combine_alpha_operand1()));
+            // fall through
+            
+          case 1:
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
+                         get_texture_src_type(stage->get_combine_alpha_source0(),
+                                              stage->get_combine_alpha_source0_stage(),
+                                              new_texture, i));
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
+                         get_texture_operand_type(stage->get_combine_alpha_operand0()));
+            // fall through
+            
+          default:
+            break;
+          }
         }
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, 
-                     get_texture_combine_type(stage->get_combine_alpha_mode()));
-
-        switch (stage->get_num_combine_alpha_operands()) {
-        case 3:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source2()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand2()));
-          // fall through
-
-        case 2:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source1()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand1()));
-          // fall through
-
-        case 1:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source0()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand0()));
-          // fall through
-
-        default:
-          break;
-        }
-
       } else {
         GLint glmode = get_texture_apply_mode_type(stage->get_mode());
         GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);

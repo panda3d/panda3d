@@ -234,6 +234,49 @@ get_max_cube_map_dimension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_texture_combine
+//       Access: Published
+//  Description: Returns true if this particular GSG can use the
+//               TextureStage::M_combine mode, which includes all of
+//               the texture blend modes specified by
+//               set_combine_rgb() and/or set_combine_alpha().  If
+//               this is false, you must limit yourself to using the
+//               simpler blend modes.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_texture_combine() const {
+  return _supports_texture_combine;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_texture_crossbar
+//       Access: Published
+//  Description: Returns true if this GSG can use the
+//               TextureStage::CS_crossbar_stage blend source, which
+//               allows you to specify an arbitrary TextureStage as a
+//               source parameter to set_combine_rgb() or
+//               set_combine_alpha().  If this is false, you must use
+//               choose from one of the available enumerated values
+//               for the source of each operand.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_texture_crossbar() const {
+  return _supports_texture_crossbar;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_texture_dot3
+//       Access: Published
+//  Description: Returns true if this GSG can use the
+//               TextureStage::CM_dot3_rgb or CM_dot3_rgba combine
+//               modes.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_texture_dot3() const {
+  return _supports_texture_dot3;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_lights
 //       Access: Published
 //  Description: Returns the maximum number of simultaneous lights
