@@ -296,7 +296,7 @@ class ClientRepository(ConnectionRepository):
                 print "New DO:%s, dclass:%s"%(doId, dclass.getName())
         return distObj
 
-    def generateGlobalObject(self , doId, dcname):
+    def generateGlobalObject(self, doId, dcname):
         # Look up the dclass
         dclass = self.dclassesByName[dcname]
         # Create a new distributed object, and put it in the dictionary
@@ -316,11 +316,12 @@ class ClientRepository(ConnectionRepository):
         # Update the required fields
         distObj.generateInit()  # Only called when constructed
         distObj.generate()
-        if wantOtpServer:
-            # TODO: ROGER: where should we get parentId and zoneId?
-            parentId = None
-            zoneId = None
-            distObj.setLocation(parentId, zoneId)
+        if not wantGlobalManagers:
+            if wantOtpServer:
+                # TODO: ROGER: where should we get parentId and zoneId?
+                parentId = None
+                zoneId = None
+                distObj.setLocation(parentId, zoneId)
         # updateRequiredFields calls announceGenerate
         return  distObj
 
@@ -818,10 +819,6 @@ class ClientRepository(ConnectionRepository):
     def waitForNextHeartBeat(self):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
                               "heartBeat")
-
-    def sendUpdate(self, do, fieldName, args, sendToId = None):
-        dg = do.dclass.clientFormatUpdate(fieldName, sendToId or do.doId, args)
-        self.send(dg)
 
     def sendUpdateZone(self, obj, zoneId):
         # This method is only used in conjunction with the CMU LAN
