@@ -258,7 +258,11 @@ class DistributedObject(PandaObject):
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):
         if self.cr:
-            self.cr.sendUpdate(self, fieldName, args, sendToId)
+            dg = self.dclass.clientFormatUpdate(
+                fieldName, sendToId or self.doId, args)
+            self.cr.send(dg)
+        else:
+            self.notify.warning("sendUpdate failed, because self.cr is not set")
 
     def sendDisableMsg(self):
         self.cr.sendDisableMsg(self.doId)
