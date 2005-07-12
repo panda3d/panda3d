@@ -1509,8 +1509,8 @@ reset() {
   }
 
   _max_texture_stages = d3d_caps.MaxSimultaneousTextures;
-  _max_lights = d3d_caps.MaxActiveLights;
-  _max_clip_planes = d3d_caps.MaxUserClipPlanes;
+  _max_lights = (int)d3d_caps.MaxActiveLights;
+  _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
@@ -2294,24 +2294,6 @@ do_issue_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::slot_new_light
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular light id will be used for the first time.
-//               It is intended to allow the derived class to reserve
-//               any additional resources, if required, for the new
-//               light; and also to indicate whether the hardware
-//               supports this many simultaneous lights.
-//
-//               The return value should be true if the additional
-//               light is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian8::
-slot_new_light(int light_id) {
-  return ((unsigned int)light_id < _max_lights);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -2359,25 +2341,6 @@ enable_light(int light_id, bool enable) {
       << "Could not enable light " << light_id << ": "
       << D3DERRORSTRING(hr) << "\n";
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::slot_new_clip_plane
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular clip plane id will be used for the first
-//               time.  It is intended to allow the derived class to
-//               reserve any additional resources, if required, for
-//               the new clip plane; and also to indicate whether the
-//               hardware supports this many simultaneous clipping
-//               planes.
-//
-//               The return value should be true if the additional
-//               plane is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian8::
-slot_new_clip_plane(int plane_id) {
-  return ((unsigned int)plane_id < _max_clip_planes);
 }
 
 ////////////////////////////////////////////////////////////////////

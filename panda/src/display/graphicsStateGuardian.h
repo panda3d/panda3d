@@ -94,6 +94,9 @@ PUBLISHED:
   INLINE int get_max_3d_texture_dimension() const;
   INLINE int get_max_cube_map_dimension() const;
 
+  INLINE int get_max_lights() const;
+  INLINE int get_max_clip_planes() const;
+
   INLINE int get_max_vertex_transforms() const;
   INLINE int get_max_vertex_transform_indices() const;
 
@@ -225,7 +228,6 @@ protected:
   virtual void do_issue_texture();
 
   INLINE NodePath get_light(int light_id) const;
-  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
@@ -233,7 +235,6 @@ protected:
   virtual void end_bind_lights();
 
   INLINE NodePath get_clip_plane(int plane_id) const;
-  virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_planes(bool enable);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
@@ -360,6 +361,9 @@ protected:
   int _max_texture_dimension;
   int _max_3d_texture_dimension;
   int _max_cube_map_dimension;
+
+  int _max_lights;
+  int _max_clip_planes;
 
   int _max_vertex_transforms;
   int _max_vertex_transform_indices;

@@ -53,6 +53,8 @@ PUBLISHED:
   
   INLINE const LPoint3f &get_point() const;
   INLINE void set_point(const LPoint3f &point);
+
+  virtual int get_class_priority() const;
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,

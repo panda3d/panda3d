@@ -170,14 +170,12 @@ protected:
   bool is_at_least_version(int major_version, int minor_version, int release_version = 0) const;
   virtual void *get_extension_func(const char *prefix, const char *name);
 
-  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
 
-  virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
@@ -283,9 +281,6 @@ protected:
 
   bool _dithering_enabled;
   bool _texgen_forced_normal;
-
-  int _max_lights;
-  int _max_clip_planes;
 
   LMatrix4f _projection_mat;
   int _viewport_width;

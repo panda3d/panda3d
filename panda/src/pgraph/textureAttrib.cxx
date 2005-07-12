@@ -30,7 +30,7 @@ TypeHandle TextureAttrib::_type_handle;
 
 // This STL Function object is used in filter_to_max(), below, to sort
 // a list of TextureStages in reverse order by priority and, within
-// prioirty, in order by sort.
+// priority, in order by sort.
 class CompareTextureStagePriorities {
 public:
   bool operator ()(const TextureStage *a, const TextureStage *b) const {
@@ -778,7 +778,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //     Function: TextureAttrib::sort_on_stages
 //       Access: Private
 //  Description: Sorts the list of stages so that they are listed in
-//               render order.
+//               render order.  Also clears the _filtered map.
 ////////////////////////////////////////////////////////////////////
 void TextureAttrib::
 sort_on_stages() {

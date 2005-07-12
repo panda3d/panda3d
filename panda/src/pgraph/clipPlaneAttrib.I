@@ -133,3 +133,20 @@ INLINE bool ClipPlaneAttrib::
 is_identity() const {
   return _on_planes.empty() && _off_planes.empty() && !_off_all_planes;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::check_filtered
+//       Access: Private
+//  Description: Confirms whether the _filtered table is still valid.
+//               It may become invalid if someone calls
+//               PlaneNode::set_priority().
+//
+//               If the table is invalid, transparently empties it
+//               before returning.
+////////////////////////////////////////////////////////////////////
+INLINE void ClipPlaneAttrib::
+check_filtered() const {
+  if (_sort_seq != PlaneNode::get_sort_seq()) {
+    ((ClipPlaneAttrib *)this)->sort_on_planes();
+  }
+}

@@ -234,6 +234,38 @@ get_max_cube_map_dimension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_lights
+//       Access: Published
+//  Description: Returns the maximum number of simultaneous lights
+//               that may be rendered on geometry, or -1 if there is
+//               no particular limit.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_lights() const {
+  return _max_lights;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_clip_planes
+//       Access: Published
+//  Description: Returns the maximum number of simultaneous clip planes
+//               that may be applied to geometry, or -1 if there is
+//               no particular limit.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_clip_planes() const {
+  return _max_clip_planes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_vertex_transforms
 //       Access: Published
 //  Description: Returns the maximum number of transform matrices that

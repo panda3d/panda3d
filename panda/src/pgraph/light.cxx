@@ -22,6 +22,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+UpdateSeq Light::_sort_seq;
+
 TypeHandle Light::_type_handle;
 
 
@@ -128,6 +130,7 @@ fill_viz_geom(GeomNode *) {
 void Light::
 write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
+  dg.add_int32(_priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,4 +143,5 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void Light::
 fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_cdata(scan, _cycler);
+  _priority = scan.get_int32();
 }

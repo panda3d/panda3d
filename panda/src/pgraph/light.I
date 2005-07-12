@@ -48,7 +48,9 @@ CData(const Light::CData &copy) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Light::
-Light() {
+Light() :
+  _priority(0)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,6 +60,7 @@ Light() {
 ////////////////////////////////////////////////////////////////////
 INLINE Light::
 Light(const Light &copy) :
+  _priority(copy._priority),
   _cycler(copy._cycler)
 {
 }
@@ -86,8 +89,57 @@ set_color(const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Light::set_priority
+//       Access: Published
+//  Description: Changes the relative importance of this light
+//               relative to the other lights that are applied
+//               simultaneously.
+//
+//               The priority number is used to decide which of the
+//               requested lights are to be selected for rendering
+//               when more lights are requested than the hardware will
+//               support.  The highest-priority n lights are selected
+//               for rendering.
+//
+//               This is similar to TextureStage::set_priority().
+////////////////////////////////////////////////////////////////////
+INLINE void Light::
+set_priority(int priority) {
+  _priority = priority;
+
+  // Update the global flag to indicate that all LightAttribs in the
+  // world must now re-sort their lists.
+  _sort_seq++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_priority
+//       Access: Published
+//  Description: Returns the priority associated with this light.  See
+//               set_priority().
+////////////////////////////////////////////////////////////////////
+INLINE int Light::
+get_priority() const {
+  return _priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_sort_seq
+//       Access: Public, Static
+//  Description: Returns a global sequence number that is incremented
+//               any time any Light in the world changes sort
+//               or priority.  This is used by LightAttrib to
+//               determine when it is necessary to re-sort its
+//               internal array of stages.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq Light::
+get_sort_seq() {
+  return _sort_seq;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Light::mark_viz_stale
-//       Access: Public
+//       Access: Protected
 //  Description: Indicates that the internal visualization object will
 //               need to be updated.
 ////////////////////////////////////////////////////////////////////

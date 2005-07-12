@@ -213,6 +213,21 @@ make_spot(int pixel_width, float full_radius, Colorf &fg, Colorf &bg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Spotlight::get_class_priority
+//       Access: Published, Virtual
+//  Description: Returns the relative priority associated with all
+//               lights of this class.  This priority is used to order
+//               lights whose instance priority (get_priority()) is
+//               the same--the idea is that other things being equal,
+//               AmbientLights (for instance) are less important than
+//               DirectionalLights.
+////////////////////////////////////////////////////////////////////
+int Spotlight::
+get_class_priority() const {
+  return (int)CP_spot_priority;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Spotlight::bind
 //       Access: Public, Virtual
 //  Description:

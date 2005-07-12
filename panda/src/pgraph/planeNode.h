@@ -23,6 +23,7 @@
 
 #include "plane.h"
 #include "pandaNode.h"
+#include "updateSeq.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PlaneNode
@@ -48,7 +49,19 @@ PUBLISHED:
   INLINE void set_plane(const Planef &plane);
   INLINE const Planef &get_plane() const;
 
+  INLINE void set_priority(int priority);
+  INLINE int get_priority() const;
+
+public:
+  INLINE static UpdateSeq get_sort_seq();
+  
 private:
+  // The priority is not cycled, because there's no real reason to do
+  // so, and cycling it makes it difficult to synchronize with the
+  // ClipPlaneAttribs.
+  int _priority;
+  static UpdateSeq _sort_seq;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:

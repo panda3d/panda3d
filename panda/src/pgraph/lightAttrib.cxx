@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lightAttrib.h"
+#include "ambientLight.h"
 #include "pandaNode.h"
 #include "nodePath.h"
 #include "graphicsStateGuardianBase.h"
@@ -29,6 +30,24 @@
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;
 TypeHandle LightAttrib::_type_handle;
+
+// This STL Function object is used in filter_to_max(), below, to sort
+// a list of Lights in reverse order by priority.  In the case of two
+// lights with equal priority, the class priority is compared.
+class CompareLightPriorities {
+public:
+  bool operator ()(const NodePath &a, const NodePath &b) const {
+    nassertr(!a.is_empty() && !b.is_empty(), a < b);
+    Light *la = a.node()->as_light();
+    Light *lb = b.node()->as_light();
+    nassertr(la != (Light *)NULL && lb != (Light *)NULL, a < b);
+             
+    if (la->get_priority() != lb->get_priority()) {
+      return la->get_priority() > lb->get_priority();
+    }
+    return la->get_class_priority() > lb->get_class_priority();
+  }
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::make
@@ -449,6 +468,83 @@ remove_off_light(const NodePath &light) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::filter_to_max
+//       Access: Public
+//  Description: Returns a new LightAttrib, very much like this one,
+//               but with the number of on_lights reduced to be no
+//               more than max_lights.  The number of off_lights in
+//               the new LightAttrib is undefined.
+//
+//               The number of AmbientLights is not included in the
+//               count.  All AmbientLights in the original attrib are
+//               always included in the result, regardless of the
+//               value of max_lights.
+////////////////////////////////////////////////////////////////////
+CPT(LightAttrib) LightAttrib::
+filter_to_max(int max_lights) const {
+  if (max_lights < 0 || (int)_on_lights.size() <= max_lights) {
+    // Trivial case: this LightAttrib qualifies.
+    return this;
+  }
+
+  // Since check_filtered() will clear the _filtered list if we are out
+  // of date, we should call it first.
+  check_filtered();
+
+  Filtered::const_iterator fi;
+  fi = _filtered.find(max_lights);
+  if (fi != _filtered.end()) {
+    // Easy case: we have already computed this for this particular
+    // LightAttrib.
+    return (*fi).second;
+  }
+
+  // Harder case: we have to compute it now.  We must choose the n
+  // lights with the highest priority in our list of lights.
+  Lights priority_lights, ambient_lights;
+
+  // Separate the list of lights into ambient lights and other lights.
+  Lights::const_iterator li;
+  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+    const NodePath &np = (*li);
+    nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, this);
+    if (np.node()->is_exact_type(AmbientLight::get_class_type())) {
+      ambient_lights.push_back(np);
+    } else {
+      priority_lights.push_back(np);
+    }
+  }
+
+  // This sort function uses the STL function object defined above.
+  sort(priority_lights.begin(), priority_lights.end(), 
+       CompareLightPriorities());
+
+  // Now lop off all of the lights after the first max_lights.
+  priority_lights.erase(priority_lights.begin() + max_lights,
+                        priority_lights.end());
+
+  // Put the ambient lights back into the list.
+  for (li = ambient_lights.begin(); li != ambient_lights.end(); ++li) {
+    priority_lights.push_back(*li);
+  }
+
+  // And re-sort the ov_set into its proper order.
+  priority_lights.sort();
+
+  // Now create a new attrib reflecting these lights.
+  PT(LightAttrib) attrib = new LightAttrib;
+  attrib->_on_lights.swap(priority_lights);
+
+  CPT(RenderAttrib) new_attrib = return_new(attrib);
+
+  // Finally, record this newly-created attrib in the map for next
+  // time.
+  CPT(LightAttrib) light_attrib = (const LightAttrib *)new_attrib.p();
+  ((LightAttrib *)this)->_filtered[max_lights] = light_attrib;
+  return light_attrib;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::issue
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the indicated GSG
@@ -748,6 +844,20 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *LightAttrib::
 make_default_impl() const {
   return new LightAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::sort_on_lights
+//       Access: Private
+//  Description: This is patterned after
+//               TextureAttrib::sort_on_stages(), but since lights
+//               don't actually require sorting, this only empties the
+//               _filtered map.
+////////////////////////////////////////////////////////////////////
+void LightAttrib::
+sort_on_lights() {
+  _sort_seq = Light::get_sort_seq();
+  _filtered.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

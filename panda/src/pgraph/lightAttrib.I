@@ -133,3 +133,20 @@ INLINE bool LightAttrib::
 is_identity() const {
   return _on_lights.empty() && _off_lights.empty() && !_off_all_lights;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::check_filtered
+//       Access: Private
+//  Description: Confirms whether the _filtered table is still valid.
+//               It may become invalid if someone calls
+//               Light::set_priority().
+//
+//               If the table is invalid, transparently empties it
+//               before returning.
+////////////////////////////////////////////////////////////////////
+INLINE void LightAttrib::
+check_filtered() const {
+  if (_sort_seq != Light::get_sort_seq()) {
+    ((LightAttrib *)this)->sort_on_lights();
+  }
+}

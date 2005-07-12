@@ -23,8 +23,9 @@
 
 #include "light.h"
 #include "renderAttrib.h"
-#include "ordered_vector.h"
 #include "nodePath.h"
+#include "ordered_vector.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LightAttrib
@@ -90,6 +91,8 @@ PUBLISHED:
   CPT(RenderAttrib) add_off_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
 
+  CPT(LightAttrib) filter_to_max(int max_lights) const;
+
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
@@ -101,9 +104,18 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
+  INLINE void check_filtered() const;
+  void sort_on_lights();
+
+private:
   typedef ov_set<NodePath> Lights;
   Lights _on_lights, _off_lights;
   bool _off_all_lights;
+
+  typedef pmap< int, CPT(LightAttrib) > Filtered;
+  Filtered _filtered;
+
+  UpdateSeq _sort_seq;
 
   static CPT(RenderAttrib) _empty_attrib;
   static CPT(RenderAttrib) _all_off_attrib;

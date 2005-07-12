@@ -158,6 +158,8 @@ PUBLISHED:
   void output(ostream &out) const;
 
   INLINE static TextureStage *get_default();
+
+public:
   INLINE static UpdateSeq get_sort_seq();
 
 private:

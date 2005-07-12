@@ -121,12 +121,10 @@ protected:
   virtual void do_issue_material();
   virtual void do_issue_texture();
 
-  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
 
-  virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
 
@@ -222,9 +220,6 @@ protected:
 
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
-
-  unsigned int _max_lights;
-  unsigned int _max_clip_planes;
 
   bool _color_material_enabled;
   bool _texturing_enabled;

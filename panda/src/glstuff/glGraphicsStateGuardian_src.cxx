@@ -3796,24 +3796,6 @@ get_light_color(Light *light) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::slot_new_light
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular light id will be used for the first time.
-//               It is intended to allow the derived class to reserve
-//               any additional resources, if required, for the new
-//               light; and also to indicate whether the hardware
-//               supports this many simultaneous lights.
-//
-//               The return value should be true if the additional
-//               light is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-slot_new_light(int light_id) {
-  return (light_id < _max_lights);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -3906,25 +3888,6 @@ void CLP(GraphicsStateGuardian)::
 end_bind_lights() {
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PopMatrix)();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::slot_new_clip_plane
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular clip plane id will be used for the first
-//               time.  It is intended to allow the derived class to
-//               reserve any additional resources, if required, for
-//               the new clip plane; and also to indicate whether the
-//               hardware supports this many simultaneous clipping
-//               planes.
-//
-//               The return value should be true if the additional
-//               plane is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-slot_new_clip_plane(int plane_id) {
-  return (plane_id < _max_clip_planes);
 }
 
 ////////////////////////////////////////////////////////////////////

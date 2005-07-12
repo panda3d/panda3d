@@ -120,6 +120,10 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _max_3d_texture_dimension = 0;
   _max_cube_map_dimension = 0;
 
+  // Assume no limits on number of lights or clip planes.
+  _max_lights = -1;
+  _max_clip_planes = -1;
+
   // Assume no vertex blending capability.
   _max_vertex_transforms = 0;
   _max_vertex_transform_indices = 0;
@@ -1163,23 +1167,25 @@ issue_texture(const TextureAttrib *attrib) {
 //     Function: GraphicsStateGuardian::issue_clip_plane
 //       Access: Public, Virtual
 //  Description: This is fundametically similar to issue_light(), with
-//               calls to slot_new_clip_plane(), apply_clip_plane(),
-//               and enable_clip_planes(), as appropriate.
+//               calls to apply_clip_plane() and enable_clip_planes(),
+//               as appropriate.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_clip_plane(const ClipPlaneAttrib *attrib) {
   int i;
-  int max_planes = (int)_clip_plane_info.size();
-  for (i = 0; i < max_planes; i++) {
+  int cur_max_planes = (int)_clip_plane_info.size();
+  for (i = 0; i < cur_max_planes; i++) {
     _clip_plane_info[i]._next_enabled = false;
   }
+
+  CPT(ClipPlaneAttrib) new_attrib = attrib->filter_to_max(_max_clip_planes);
 
   bool any_bound = false;
 
   int num_enabled = 0;
-  int num_on_planes = attrib->get_num_on_planes();
+  int num_on_planes = new_attrib->get_num_on_planes();
   for (int li = 0; li < num_on_planes; li++) {
-    NodePath plane = attrib->get_on_plane(li);
+    NodePath plane = new_attrib->get_on_plane(li);
     nassertv(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()));
 
     num_enabled++;
@@ -1191,7 +1197,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
 
     // Check to see if this plane has already been bound to an id
     int cur_plane_id = -1;
-    for (i = 0; i < max_planes; i++) {
+    for (i = 0; i < cur_max_planes; i++) {
       if (_clip_plane_info[i]._plane == plane) {
         // Plane has already been bound to an id, we only need to
         // enable the plane, not reapply it.
@@ -1205,7 +1211,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
         
     // See if there are any unbound plane ids
     if (cur_plane_id == -1) {
-      for (i = 0; i < max_planes; i++) {
+      for (i = 0; i < cur_max_planes; i++) {
         if (_clip_plane_info[i]._plane.is_empty()) {
           _clip_plane_info[i]._plane = plane;
           cur_plane_id = i;
@@ -1217,8 +1223,8 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
     // If there were no unbound plane ids, see if we can replace
     // a currently unused but previously bound id
     if (cur_plane_id == -1) {
-      for (i = 0; i < max_planes; i++) {
-        if (!attrib->has_on_plane(_clip_plane_info[i]._plane)) {
+      for (i = 0; i < cur_max_planes; i++) {
+        if (!new_attrib->has_on_plane(_clip_plane_info[i]._plane)) {
           _clip_plane_info[i]._plane = plane;
           cur_plane_id = i;
           break;
@@ -1228,11 +1234,11 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
 
     // If we *still* don't have a plane id, slot a new one.
     if (cur_plane_id == -1) {
-      if (slot_new_clip_plane(max_planes)) {
-        cur_plane_id = max_planes;
+      if (_max_clip_planes < 0 || cur_max_planes < _max_clip_planes) {
+        cur_plane_id = cur_max_planes;
         _clip_plane_info.push_back(ClipPlaneInfo());
-        max_planes++;
-        nassertv(max_planes == (int)_clip_plane_info.size());
+        cur_max_planes++;
+        nassertv(cur_max_planes == (int)_clip_plane_info.size());
       }
     }
         
@@ -1257,7 +1263,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
   }
 
   // Disable all unused planes
-  for (i = 0; i < max_planes; i++) {
+  for (i = 0; i < cur_max_planes; i++) {
     if (!_clip_plane_info[i]._next_enabled) {
       enable_clip_plane(i, false);
       _clip_plane_info[i]._enabled = false;
@@ -1321,8 +1327,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 //               light associated with the same id where possible, but
 //               reusing id's when necessary.  When it is no longer
 //               possible to reuse existing id's (e.g. all id's are in
-//               use), slot_new_light() is called to prepare the next
-//               sequential light id.
+//               use), the next sequential id is assigned (if
+//               available).
 //
 //               It will call apply_light() each time a light is
 //               assigned to a particular id for the first time in a
@@ -1337,8 +1343,8 @@ do_issue_light() {
   // light list
   Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
   int i;
-  int max_lights = (int)_light_info.size();
-  for (i = 0; i < max_lights; i++) {
+  int cur_max_lights = (int)_light_info.size();
+  for (i = 0; i < cur_max_lights; i++) {
     _light_info[i]._next_enabled = false;
   }
 
@@ -1346,9 +1352,11 @@ do_issue_light() {
 
   int num_enabled = 0;
   if (_pending_light != (LightAttrib *)NULL) {
-    int num_on_lights = _pending_light->get_num_on_lights();
+    CPT(LightAttrib) new_light = _pending_light->filter_to_max(_max_lights);
+
+    int num_on_lights = new_light->get_num_on_lights();
     for (int li = 0; li < num_on_lights; li++) {
-      NodePath light = _pending_light->get_on_light(li);
+      NodePath light = new_light->get_on_light(li);
       nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
       Light *light_obj = light.node()->as_light();
       
@@ -1367,7 +1375,7 @@ do_issue_light() {
       } else {
         // Check to see if this light has already been bound to an id
         int cur_light_id = -1;
-        for (i = 0; i < max_lights; i++) {
+        for (i = 0; i < cur_max_lights; i++) {
           if (_light_info[i]._light == light) {
             // Light has already been bound to an id; reuse the same id.
             cur_light_id = -2;
@@ -1386,7 +1394,7 @@ do_issue_light() {
         
         // See if there are any unbound light ids
         if (cur_light_id == -1) {
-          for (i = 0; i < max_lights; i++) {
+          for (i = 0; i < cur_max_lights; i++) {
             if (_light_info[i]._light.is_empty()) {
               _light_info[i]._light = light;
               cur_light_id = i;
@@ -1398,8 +1406,8 @@ do_issue_light() {
         // If there were no unbound light ids, see if we can replace
         // a currently unused but previously bound id
         if (cur_light_id == -1) {
-          for (i = 0; i < max_lights; i++) {
-            if (!_pending_light->has_on_light(_light_info[i]._light)) {
+          for (i = 0; i < cur_max_lights; i++) {
+            if (!new_light->has_on_light(_light_info[i]._light)) {
               _light_info[i]._light = light;
               cur_light_id = i;
               break;
@@ -1409,11 +1417,11 @@ do_issue_light() {
         
         // If we *still* don't have a light id, slot a new one.
         if (cur_light_id == -1) {
-          if (slot_new_light(max_lights)) {
-            cur_light_id = max_lights;
+          if (_max_lights < 0 || cur_max_lights < _max_lights) {
+            cur_light_id = cur_max_lights;
             _light_info.push_back(LightInfo());
-            max_lights++;
-            nassertv(max_lights == (int)_light_info.size());
+            cur_max_lights++;
+            nassertv(cur_max_lights == (int)_light_info.size());
           }
         }
         
@@ -1440,7 +1448,7 @@ do_issue_light() {
   }
     
   // Disable all unused lights
-  for (i = 0; i < max_lights; i++) {
+  for (i = 0; i < cur_max_lights; i++) {
     if (!_light_info[i]._next_enabled) {
       enable_light(i, false);
       _light_info[i]._enabled = false;
@@ -1489,24 +1497,6 @@ do_issue_material() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 do_issue_texture() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::slot_new_light
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular light id will be used for the first time.
-//               It is intended to allow the derived class to reserve
-//               any additional resources, if required, for the new
-//               light; and also to indicate whether the hardware
-//               supports this many simultaneous lights.
-//
-//               The return value should be true if the additional
-//               light is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-slot_new_light(int light_id) {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1571,25 +1561,6 @@ begin_bind_lights() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_bind_lights() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::slot_new_clip_plane
-//       Access: Protected, Virtual
-//  Description: This will be called by the base class before a
-//               particular clip plane id will be used for the first
-//               time.  It is intended to allow the derived class to
-//               reserve any additional resources, if required, for
-//               the new clip plane; and also to indicate whether the
-//               hardware supports this many simultaneous clipping
-//               planes.
-//
-//               The return value should be true if the additional
-//               plane is supported, or false if it is not.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-slot_new_clip_plane(int plane_id) {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

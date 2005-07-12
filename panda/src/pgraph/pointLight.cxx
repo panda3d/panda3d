@@ -160,6 +160,21 @@ get_vector_to_light(LVector3f &result, const LPoint3f &from_object_point,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointLight::get_class_priority
+//       Access: Published, Virtual
+//  Description: Returns the relative priority associated with all
+//               lights of this class.  This priority is used to order
+//               lights whose instance priority (get_priority()) is
+//               the same--the idea is that other things being equal,
+//               AmbientLights (for instance) are less important than
+//               DirectionalLights.
+////////////////////////////////////////////////////////////////////
+int PointLight::
+get_class_priority() const {
+  return (int)CP_point_priority;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointLight::bind
 //       Access: Public, Virtual
 //  Description:

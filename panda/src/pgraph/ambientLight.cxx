@@ -49,6 +49,21 @@ AmbientLight(const AmbientLight &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AmbientLight::get_class_priority
+//       Access: Published, Virtual
+//  Description: Returns the relative priority associated with all
+//               lights of this class.  This priority is used to order
+//               lights whose instance priority (get_priority()) is
+//               the same--the idea is that other things being equal,
+//               AmbientLights (for instance) are less important than
+//               DirectionalLights.
+////////////////////////////////////////////////////////////////////
+int AmbientLight::
+get_class_priority() const {
+  return (int)CP_ambient_priority;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AmbientLight::make_copy
 //       Access: Public, Virtual
 //  Description: Returns a newly-allocated PandaNode that is a shallow

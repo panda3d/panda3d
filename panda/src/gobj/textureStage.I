@@ -617,7 +617,7 @@ get_default() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_sort_seq
-//       Access: Published, Static
+//       Access: Public, Static
 //  Description: Returns a global sequence number that is incremented
 //               any time any TextureStage in the world changes sort
 //               or priority.  This is used by TextureAttrib to

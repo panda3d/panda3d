@@ -29,6 +29,20 @@ CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
 TypeHandle ClipPlaneAttrib::_type_handle;
 
+// This STL Function object is used in filter_to_max(), below, to sort
+// a list of PlaneNodes in reverse order by priority.
+class ComparePlaneNodePriorities {
+public:
+  bool operator ()(const NodePath &a, const NodePath &b) const {
+    nassertr(!a.is_empty() && !b.is_empty(), a < b);
+    PlaneNode *pa = DCAST(PlaneNode, a.node());
+    PlaneNode *pb = DCAST(PlaneNode, b.node());
+    nassertr(pa != (PlaneNode *)NULL && pb != (PlaneNode *)NULL, a < b);
+             
+    return pa->get_priority() > pb->get_priority();
+  }
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::make
 //       Access: Published, Static
@@ -448,6 +462,61 @@ remove_off_plane(const NodePath &plane) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::filter_to_max
+//       Access: Public
+//  Description: Returns a new ClipPlaneAttrib, very much like this one,
+//               but with the number of on_planes reduced to be no
+//               more than max_clip_planes.  The number of off_planes in
+//               the new ClipPlaneAttrib is undefined.
+////////////////////////////////////////////////////////////////////
+CPT(ClipPlaneAttrib) ClipPlaneAttrib::
+filter_to_max(int max_clip_planes) const {
+  if (max_clip_planes < 0 || (int)_on_planes.size() <= max_clip_planes) {
+    // Trivial case: this ClipPlaneAttrib qualifies.
+    return this;
+  }
+
+  // Since check_filtered() will clear the _filtered list if we are out
+  // of date, we should call it first.
+  check_filtered();
+
+  Filtered::const_iterator fi;
+  fi = _filtered.find(max_clip_planes);
+  if (fi != _filtered.end()) {
+    // Easy case: we have already computed this for this particular
+    // ClipPlaneAttrib.
+    return (*fi).second;
+  }
+
+  // Harder case: we have to compute it now.  We must choose the n
+  // planeNodes with the highest priority in our list of planeNodes.
+  Planes priority_planes = _on_planes;
+
+  // This sort function uses the STL function object defined above.
+  sort(priority_planes.begin(), priority_planes.end(), 
+       ComparePlaneNodePriorities());
+
+  // Now lop off all of the planeNodes after the first max_clip_planes.
+  priority_planes.erase(priority_planes.begin() + max_clip_planes,
+                        priority_planes.end());
+
+  // And re-sort the ov_set into its proper order.
+  priority_planes.sort();
+
+  // Now create a new attrib reflecting these planeNodes.
+  PT(ClipPlaneAttrib) attrib = new ClipPlaneAttrib;
+  attrib->_on_planes.swap(priority_planes);
+
+  CPT(RenderAttrib) new_attrib = return_new(attrib);
+
+  // Finally, record this newly-created attrib in the map for next
+  // time.
+  CPT(ClipPlaneAttrib) planeNode_attrib = (const ClipPlaneAttrib *)new_attrib.p();
+  ((ClipPlaneAttrib *)this)->_filtered[max_clip_planes] = planeNode_attrib;
+  return planeNode_attrib;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::issue
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the indicated GSG
@@ -747,6 +816,20 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *ClipPlaneAttrib::
 make_default_impl() const {
   return new ClipPlaneAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::sort_on_planes
+//       Access: Private
+//  Description: This is patterned after
+//               TextureAttrib::sort_on_stages(), but since planeNodes
+//               don't actually require sorting, this only empties the
+//               _filtered map.
+////////////////////////////////////////////////////////////////////
+void ClipPlaneAttrib::
+sort_on_planes() {
+  _sort_seq = PlaneNode::get_sort_seq();
+  _filtered.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

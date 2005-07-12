@@ -40,6 +40,9 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void write(ostream &out, int indent_level) const;
+
+PUBLISHED:
+  virtual int get_class_priority() const;
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,

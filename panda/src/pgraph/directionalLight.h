@@ -53,6 +53,8 @@ PUBLISHED:
   
   INLINE const LVector3f &get_direction() const;
   INLINE void set_direction(const LVector3f &direction);
+
+  virtual int get_class_priority() const;
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,

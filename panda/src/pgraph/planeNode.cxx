@@ -23,6 +23,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+UpdateSeq PlaneNode::_sort_seq;
+
 TypeHandle PlaneNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +67,8 @@ fillin(DatagramIterator &scan, BamReader *) {
 ////////////////////////////////////////////////////////////////////
 PlaneNode::
 PlaneNode(const string &name) :
-  PandaNode(name)
+  PandaNode(name),
+  _priority(0)
 {
 }
 
@@ -77,6 +80,7 @@ PlaneNode(const string &name) :
 PlaneNode::
 PlaneNode(const PlaneNode &copy) :
   PandaNode(copy),
+  _priority(copy._priority),
   _cycler(copy._cycler)
 {
 }
@@ -151,6 +155,7 @@ void PlaneNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
+  dg.add_int32(_priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,4 +189,5 @@ void PlaneNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
+  _priority = scan.get_int32();
 }

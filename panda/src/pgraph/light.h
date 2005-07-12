@@ -27,6 +27,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
+#include "updateSeq.h"
 #include "geomNode.h"
 
 class NodePath;
@@ -56,6 +57,10 @@ PUBLISHED:
   INLINE const Colorf &get_color() const;
   INLINE void set_color(const Colorf &color);
 
+  INLINE void set_priority(int priority);
+  INLINE int get_priority() const;
+  virtual int get_class_priority() const=0;
+
 public:
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level) const=0;
@@ -68,11 +73,31 @@ public:
 
   GeomNode *get_viz();
 
+  INLINE static UpdateSeq get_sort_seq();
+
 protected:
   virtual void fill_viz_geom(GeomNode *viz_geom);
   INLINE void mark_viz_stale();
+  
+  // This enumerated class defines the relative class priority of
+  // different kinds of lights.  This hierarchy is only used to
+  // resolve multiple lights of the same priority specified by
+  // set_priority().  In general, the first items in this list have a
+  // lesser priority than later items.
+  enum ClassPriority {
+    CP_ambient_priority,
+    CP_point_priority,
+    CP_directional_priority,
+    CP_spot_priority,
+  };
 
 private:
+  // The priority is not cycled, because there's no real reason to do
+  // so, and cycling it makes it difficult to synchronize with the
+  // LightAttribs.
+  int _priority;
+  static UpdateSeq _sort_seq;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
