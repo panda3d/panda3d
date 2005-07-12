@@ -1271,10 +1271,11 @@ def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
             if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /RTCs /GS"
-            if (OPTIMIZE==2): cmd = cmd + " /Zc:forScope /MD /Zi "
-            if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
-            if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING /GL /DNDEBUG "
+            if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
+            if (OPTIMIZE==1): cmd = cmd + " /MD /Zi /RTCs /GS"
+            if (OPTIMIZE==2): cmd = cmd + " /MD /Zi "
+            if (OPTIMIZE==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
+            if (OPTIMIZE==4): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING /GL /DNDEBUG "
             cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
             building = buildingwhat(opts)
             if (building): cmd = cmd + " /DBUILDING_" + building
@@ -1459,7 +1460,7 @@ def CompileLIB(lib=0, obj=[], opts=[]):
 ##
 ########################################################################
 
-def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
+def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
     if (dll==0): sys.exit("Syntax error in CompileLink directive")
 
     if (COMPILER=="MSVC7"):
@@ -1485,7 +1486,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (OPTIMIZE==3): cmd = cmd + " /MAP:NUL "
             if (OPTIMIZE==4): cmd = cmd + " /MAP:NUL /LTCG"
             cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-            if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/maxEgg.def'
+            if (ldef!=0): cmd = cmd + ' /DEF:"' + ldef + '"'
             cmd = cmd + ' /OUT:' + dll + ' /IMPLIB:' + lib
             if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
             for x in wobj: cmd = cmd + ' ' + x
@@ -3759,6 +3760,16 @@ CompileLink(dll='egg2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'libdtool.dll',
              'libpystub.dll',
 ])
+CompileC(ipath=IPATH, opts=OPTS, src='eggImport.cxx', obj='eggImport_eggImport.obj')
+CompileLink(dll='eggImport.exe', opts=['ADVAPI', 'NSPR'], obj=[
+             'eggImport_eggImport.obj',
+             'libpandaegg.dll',
+             'libpanda.dll',
+             'libpandaexpress.dll',
+             'libdtoolconfig.dll',
+             'libdtool.dll',
+             'libpystub.dll',
+])
 
 #
 # DIRECTORY: pandatool/src/flt/
@@ -4012,10 +4023,11 @@ for VER in ["5","6","65"]:
 for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
-    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MAXEGGDEF"]
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER"]
+    CopyAllHeaders(IPATH[0], skip="ALL")
     CopyFile(PREFIX+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
     CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
-    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', obj=[
+    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', ldef="pandatool/src/maxegg/maxEgg.def", obj=[
                 'maxegg'+VER+'_composite1.obj',
                 'maxEgg.obj',
                 'libeggbase.lib',
@@ -4029,6 +4041,30 @@ for VER in ["5", "6", "7"]:
                 'libdtool.dll',
                 'libpystub.dll'
                ])
+
+
+#
+# DIRECTORY: pandatool/src/maxeggimport/
+#
+
+for VER in ["7"]:
+  if (OMIT.count("MAX"+VER)==0):
+    IPATH=['pandatool/src/maxeggimport']
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+    CopyAllHeaders(IPATH[0], skip="ALL")
+    CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxeggimport/maxImportRes.obj")
+    CompileC(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxeggimport'+VER+'_maxeggimport.obj')
+    CompileLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxeggimport/maxEggImport.def", obj=[
+                'maxeggimport'+VER+'_maxeggimport.obj',
+                'maxImportRes.obj',
+                'libpandaegg.dll',
+                'libpanda.dll',
+                'libpandaexpress.dll',
+                'libdtoolconfig.dll',
+                'libdtool.dll',
+                'libpystub.dll'
+               ])
+
 
 #
 # DIRECTORY: pandatool/src/vrml/
