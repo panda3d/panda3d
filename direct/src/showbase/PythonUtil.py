@@ -1202,7 +1202,7 @@ class POD:
                     raise "object '%s' doesn't have value '%s'" % (other, name)
                 else:
                     setattr(self, name, self.getDefaultValue(name))
-        # support 'p = POD.POD().copyFrom(other)'
+        # support 'p = POD.POD().copyFrom(other)' syntax
         return self
     def makeCopy(self):
         # returns a duplicate of this object
@@ -1729,6 +1729,11 @@ class Enum:
 
     def __len__(self):
         return len(self._stringTable)
+
+    def copyTo(self, obj):
+        # copies all members onto obj
+        for name, value in self._stringTable:
+            setattr(obj, name, value)
 
     if __debug__:
         def _checkExistingMembers(self, items):
