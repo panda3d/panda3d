@@ -165,6 +165,7 @@ class DistributedObjectAI(DirectObject):
         of its required fields filled in. Overwrite when needed.
         """
         self.__generated = True
+        messenger.send(self.uniqueName("generate"), [self])
 
     if wantOtpServer:
         def addInterest(self, zoneId, note="", event=None):
@@ -364,16 +365,59 @@ class DistributedObjectAI(DirectObject):
             self.announceGenerate()
 
     if wantOtpServer:
-        def generateGlobalObject(self, parentId, zoneId, doId):
-            assert self.notify.debugStateCall(self)
-            self.doId = doId
-            # Put the new DO in the dictionaries
-            self.air.addDOToTables(self, location=(parentId,zoneId))
+        ## def generateGlobalObject(self, doId, dcname):
+            ## # Look up the dclass
+            ## dclass = self.dclassesByName[dcname]
+            ## # Create a new distributed object, and put it in the dictionary
+            ## #distObj = self.generateWithRequiredFields(dclass, doId, di)
+    
+            ## # Construct a new one
+            ## classDef = dclass.getClassDef()
+            ## if classDef == None:
+                ## self.notify.error("Could not create an undefined %s object."%(
+                    ## dclass.getName()))
+            ## distObj = classDef(self)
+            ## distObj.dclass = dclass
+            ## # Assign it an Id
+            ## distObj.doId = doId
+            ## # Put the new do in the dictionary
+            ## self.doId2do[doId] = distObj
+            ## # Update the required fields
+            ## distObj.generateInit()  # Only called when constructed
+            ## distObj.generate()
+            ## if wantOtpServer:
+                ## # TODO: ROGER: where should we get parentId and zoneId?
+                ## parentId = None
+                ## zoneId = None
+                ## distObj.setLocation(parentId, zoneId)
+            ## # updateRequiredFields calls announceGenerate
+            ## return  distObj
 
-            assert not hasattr(self, 'parentId')
-            self.parentId = parentId
-            self.zoneId = zoneId
-            self.generate()
+        ## def generateGlobalObject(self, doId, dcname, parentId=None, zoneId=None):
+            ## assert self.notify.debugStateCall(self)
+            ## # Look up the dclass
+            ## dclass = self.dclassesByName[dcname]
+            ## # Construct a new one
+            ## classDef = dclass.getClassDef()
+            ## if classDef == None:
+                ## self.notify.error("Could not create an undefined %s object."%(
+                    ## dclass.getName()))
+            ## distObj = classDef(self)
+            ## distObj.dclass = dclass
+            
+            ## assert not hasattr(self, 'parentId')
+            ## self.doId = doId
+            ## self.parentId = parentId
+            ## self.zoneId = zoneId
+            ## # Put the new DO in the dictionaries
+            ## self.air.addDOToTables(self, location=(parentId,zoneId))
+
+            ## assert not hasattr(self, 'parentId')
+            ## self.parentId = parentId
+            ## self.zoneId = zoneId
+            ## distObj.generateInit()  # Only called when constructed
+            ## self.generate()
+            ## return  distObj
 
         def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
             assert self.notify.debugStateCall(self)
