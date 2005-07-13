@@ -18,6 +18,8 @@
 
 #include "py_panda.h"
 
+#ifdef HAVE_PYTHON
+
 PyMemberDef standard_type_members[] = {
 	{"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
 	{"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
@@ -477,3 +479,5 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         return  1;
     return 0;   
 }
+
+#endif  // HAVE_PYTHON

@@ -1601,6 +1601,7 @@ bool TypeManager::IsLocal(CPPType *in_type)
 
     return false;
 
+    /*
 
     if (base_type->get_subtype() == CPPDeclaration::ST_struct) 
     {
@@ -1658,4 +1659,5 @@ bool TypeManager::IsLocal(CPPType *in_type)
       return true; 
 
  return false;
+ */
 };

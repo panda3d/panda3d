@@ -40,6 +40,8 @@
 
 #endif
 
+#ifdef HAVE_PYTHON
+
 #ifdef HAVE_LONG_LONG
 #undef HAVE_LONG_LONG
 #endif 
@@ -459,6 +461,9 @@ EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2);
 EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 
 EXPCL_DTOOLCONFIG extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
+
+#endif  // HAVE_PYTHON
+
 
 #endif // PY_PANDA_H_ 
 

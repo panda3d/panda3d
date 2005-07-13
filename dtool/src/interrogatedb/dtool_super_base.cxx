@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "py_panda.h"
+
+#ifdef HAVE_PYTHON
   
 class EmptyClass
 {
@@ -93,3 +95,5 @@ int  Dtool_Init_DTOOL_SUPPER_BASE(PyObject *self, PyObject *args, PyObject *kwds
        PyErr_SetString(PyExc_TypeError, "Error Can Not Init SUPPER BASE");
        return -1;
 }
+
+#endif  // HAVE_PYTHON

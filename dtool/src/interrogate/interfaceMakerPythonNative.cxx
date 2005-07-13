@@ -366,6 +366,7 @@ std::string make_safe_name(const std::string & name)
 {
     return InterrogateBuilder::clean_identifier(name);
 
+    /*
     static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 	std::string result = name;
 
@@ -377,6 +378,7 @@ std::string make_safe_name(const std::string & name)
 	}
 
 	return result;
+	*/
 }
 
 bool isInplaceFunction(const std::string &cppName)
@@ -1228,7 +1230,8 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
             << "};\n\n";
 
         int num_derivations = obj->_itype.number_of_derivations();
-        for (int di = 0; di < num_derivations; di++) 
+	int di;
+        for (di = 0; di < num_derivations; di++) 
         {
              TypeIndex d_type_Index = obj->_itype.get_derivation(di);
              if(!interrogate_type_is_unpublished(d_type_Index))
@@ -1247,7 +1250,7 @@ void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj)
         }
 
         std::vector< std::string >  bases;
-        for (int di = 0; di < num_derivations; di++) 
+        for (di = 0; di < num_derivations; di++) 
         {
              TypeIndex d_type_Index = obj->_itype.get_derivation(di);
              if(!interrogate_type_is_unpublished(d_type_Index))
