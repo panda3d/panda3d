@@ -80,11 +80,9 @@ class ConnectionRepository(
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
-            ## if wantOtpServer:
-                ## # TODO: ROGER: where should we get parentId and zoneId?
-                ## parentId = None
-                ## zoneId = None
-                ## distObj.setLocation(parentId, zoneId)
+            distObj.announceGenerate()
+            distObj.parentId = 0
+            distObj.zoneId = 0
             # updateRequiredFields calls announceGenerate
             return  distObj
 
