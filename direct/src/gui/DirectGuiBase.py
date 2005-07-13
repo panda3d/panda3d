@@ -924,7 +924,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Convert None, and string arguments
         if relief == None:
             relief = PGFrameStyle.TNone
-        elif type(relief) == types.StringType:
+        elif isinstance(relief, types.StringTypes):
             # Convert string to frame style int
             relief = FrameStyleDict[relief]
         # Set style

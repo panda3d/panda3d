@@ -44,13 +44,14 @@ class DirectFrame(DirectGuiWidget):
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
             textList = (None,) * self['numStates']
-        elif type(self['text']) == types.StringType:
+        elif isinstance(self['text'], types.StringTypes):
             # If just passing in a single string, make a tuple out of it
             textList = (self['text'],) * self['numStates']
         else:
             # Otherwise, hope that the user has passed in a tuple/list
             textList = self['text']
         # Create/destroy components
+        print "textList = %s" % (textList,)
         for i in range(self['numStates']):
             component = 'text' + `i`
             # If fewer items specified than numStates,
@@ -125,14 +126,14 @@ class DirectFrame(DirectGuiWidget):
             imageList = (None,) * self['numStates']
         elif isinstance(arg, NodePath):
             imageList = (arg,) * self['numStates']
-        elif type(arg) == types.StringType:
+        elif isinstance(arg, types.StringTypes):
             # Passed in a single node path, make a tuple out of it
             imageList = (arg,) * self['numStates']
         else:
             # Otherwise, hope that the user has passed in a tuple/list
             if ((len(arg) == 2) and
-                (type(arg[0]) == types.StringType) and
-                (type(arg[1]) == types.StringType)):
+                isinstance(arg[0], types.StringTypes) and
+                isinstance(arg[1], types.StringTypes)):
                 # Its a model/node pair of strings
                 imageList = (arg,) * self['numStates']
             else:
