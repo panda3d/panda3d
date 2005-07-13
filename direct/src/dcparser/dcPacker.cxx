@@ -878,7 +878,7 @@ unpack_object() {
       while (more_nested_fields()) {
         PyObject *element = unpack_object();
         PyList_Append(object, element);
-        Py_DECREF(element);
+        Py_XDECREF(element);
       }
       pop();
 
