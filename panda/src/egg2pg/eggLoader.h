@@ -28,6 +28,7 @@
 #include "eggGroup.h"
 #include "eggMaterial.h"
 #include "pt_EggMaterial.h"
+#include "eggVertexPool.h"
 #include "texture.h"
 #include "pandaNode.h"
 #include "pointerTo.h"

@@ -28,6 +28,7 @@
 #include "nodePath.h"
 #include "luse.h"
 #include "pointerTo.h"
+#include "audioSound.h"
 #include "textNode.h"
 
 #include "pmap.h"

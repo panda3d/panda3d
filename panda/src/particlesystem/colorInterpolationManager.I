@@ -270,10 +270,11 @@ get_segment(const int seg_id) {
 INLINE string ColorInterpolationManager::
 get_segment_id_list(void) {
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
-  stringstream output;
+  ostringstream output;
 
   for(iter = _i_segs.begin();iter != _i_segs.end();++iter)
     output << (*iter)->get_id() << " ";
 
-  return output.str().substr(0,output.str().length()-1);
+  string str = output.str();
+  return str.substr(0, str.length()-1);
 }
