@@ -83,9 +83,9 @@ typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
 typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
 typedef  void   ( *FreeFunction  )(PyObject *);
 typedef  void   ( *PyModuleClassInit)(PyObject *module);
-inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
+//inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 inline void     Dtool_Deallocate_General(PyObject * self);
-inline int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
+//inline int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 //
 ////////////////////////////////////////////////////////////////////////
 // THIS IS THE INSTANCE CONTAINER FOR ALL panda py objects....
@@ -277,17 +277,8 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 ////////////////////////////////////////////////////////////////////////
 /// Simple Recognition Functions..
 ////////////////////////////////////////////////////////////////////////
-inline bool DtoolCanThisBeAPandaInstance(PyObject *self)
-{
-    // simple sanity check for the class type..size.. will stop basic foobars..
-    if(self->ob_type->tp_basicsize >= (int)sizeof(Dtool_PyInstDef))
-    {
-        Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-        if(pyself->_signiture == PY_PANDA_SIGNITURE)
-            return true;
-    }
-    return false;
-}
+EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
+
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTOOL_Call_ExtractThisPointerForType
 //
@@ -295,43 +286,12 @@ inline bool DtoolCanThisBeAPandaInstance(PyObject *self)
 //      needed by the Dtool py interface.. Be very carefull if you muck with these
 //      as the generated code depends on how this is set up..
 ////////////////////////////////////////////////////////////////////////
-inline void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer)
-{
-    if(DtoolCanThisBeAPandaInstance(self))
-        *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
-    else
-        answer = NULL;
-};
+EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
 
 
-inline void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef)
-{
-  if(self != NULL)
-  {
-      if(DtoolCanThisBeAPandaInstance(self))
-        return ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
-      else
-         PyErr_SetString(PyExc_TypeError, "Failed Dtool Type Check .."); 
-  }
-  else
-        PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
+EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef);
 
-  return NULL;
-};
-
-inline void * DTOOL_Call_GetPointerThis(PyObject *self)
-{
-  if(self != NULL)
-  {
-      if(DtoolCanThisBeAPandaInstance(self))
-      {
-        Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-        return pyself->_ptr_to_object;
-      }
-  }
-
-  return NULL;
-};
+EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
 
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
@@ -339,84 +299,14 @@ inline void * DTOOL_Call_GetPointerThis(PyObject *self)
 // this function relies on the behavior of typed objects in the panda system. 
 //
 ////////////////////////////////////////////////////////////////////////
-inline  PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, int RunTimeType)
-{     
-    if(local_this_in == NULL )
-    {
-        // Lets don't be stupid..
-        PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
-        return NULL;
-    }
-   /////////////////////////////////////////////////////
-   // IF the calss is posibly a run time typed object
-   /////////////////////////////////////////////////////
-    if(RunTimeType > 0)
-    {
-       /////////////////////////////////////////////////////
-       // get best fit class...
-       /////////////////////////////////////////////////////
-        Dtool_PyTypedObject * target_class = Dtool_RuntimeTypeDtoolType(RunTimeType);
-        if(target_class != NULL)
-        {
-           /////////////////////////////////////////////////////
-           // cast to the type...
-           //////////////////////////////////////////////////////
-            void * new_local_this = target_class->_Dtool_DowncastInterface(local_this_in,&known_class_type);
-            if(new_local_this != NULL)
-            {
-                /////////////////////////////////////////////
-                // ask class to allocate a instance..
-                /////////////////////////////////////////////
-                Dtool_PyInstDef * self = (Dtool_PyInstDef *) target_class->As_PyTypeObject().tp_new(&target_class->As_PyTypeObject(), NULL,NULL);
-                if(self != NULL)
-                {
-                    self->_ptr_to_object = new_local_this;
-                    self->_memory_rules = memory_rules;
-                    self->_signiture = PY_PANDA_SIGNITURE;
-                    self->_My_Type = target_class;    
-                    return (PyObject *)self;
-                }             
-            }
-        }
-    }
-
-    /////////////////////////////////////////////////////
-    // if we get this far .. just wrap the thing in the known type ??
-    //    better than aborting...I guess....
-    /////////////////////////////////////////////////////
-	Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
-    if(self != NULL)
-    {
-        self->_ptr_to_object = local_this_in;
-        self->_memory_rules = memory_rules;
-        self->_signiture = PY_PANDA_SIGNITURE;
-        self->_My_Type = &known_class_type;    
-    }
-    return (PyObject *)self;
-};
+EXPCL_DTOOLCONFIG  PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, int RunTimeType);
 
 ////////////////////////////////////////////////////////////////////////
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a general 
 //    dtool py instance..
 ////////////////////////////////////////////////////////////////////////
-inline  PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules)
-{    
-    if(local_this == NULL)
-    {
-        PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this' ");
-        return NULL;
-    }
+EXPCL_DTOOLCONFIG  PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules);
 
-    Dtool_PyTypedObject * classdef = &in_classdef;
-	Dtool_PyInstDef * self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL,NULL);
-    if(self != NULL)
-    {
-        self->_ptr_to_object = local_this;
-        self->_memory_rules = memory_rules;
-        self->_My_Type = classdef;    
-    } 
-    return (PyObject *)self;
-};
 ///////////////////////////////////////////////////////////////////////////////
 //  Macro(s) class definition .. Used to allocate storage and 
 //     init some values for a Dtool Py Type object.
@@ -465,16 +355,7 @@ Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 ///////////////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..
 ///////////////////////////////////////////////////////////////////////////////
-inline int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules)
-{
-    // lets put some code in here that checks to see the memory is properly configured..
-    // prior to my call ..
-
-    ((Dtool_PyInstDef *)self)->_My_Type = type;
-    ((Dtool_PyInstDef *)self)->_ptr_to_object = This;
-    ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
-    return 0;
-}
+EXPCL_DTOOLCONFIG int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A heler function to glu methed definition together .. that can not be done at 
@@ -483,16 +364,7 @@ inline int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObj
 ///////////////////////////////////////////////////////////////////////////////
 typedef std::map<std::string, PyMethodDef *  > MethodDefmap;
 
-inline void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap)
-{
-    for(; in->ml_name != NULL; in++)
-    {
-        if(themap.find(in->ml_name) == themap.end())
-        {
-            themap[in->ml_name] = in;
-        }
-    }
-}   
+EXPCL_DTOOLCONFIG void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap);
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ** HACK ** allert..
@@ -502,32 +374,12 @@ inline void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-inline void RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id)
-{
-    if(class_id > 0)
-    {
-        GetRunTimeDictionary()[class_id] = otype;
-        GetRunTimeTypeList().insert(class_id);
-        otype->_Dtool_IsRunTimeCapable = true;
-    }
-};
+EXPCL_DTOOLCONFIG void RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-inline Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type)
-{
-    RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
-    if(di != GetRunTimeDictionary().end())
-        return di->second;
-    else
-    {
-        int  type2 = get_best_parent_from_Set(type,GetRunTimeTypeList());
-        di = GetRunTimeDictionary().find(type2);
-        if(di != GetRunTimeDictionary().end())
-            return di->second;
-    }
-    return NULL;    
-};
+EXPCL_DTOOLCONFIG Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
+
 ///////////////////////////////////////////////////////////////////////////////
 //// We need a way to runtime merge compile units into a python "Module" .. this is done with the 
 /// fallowing structors and code.. along with the support of interigate_module 
@@ -540,38 +392,9 @@ struct LibrayDef
     ConstantFunction        _constants;
 };
 ///////////////////////////////////////////////////////////////////////////////
-inline void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename)
-{
-    // the module level function inits....
-    MethodDefmap  functions;
-    for(int xx = 0; defs[xx] != NULL; xx++)
-        Dtool_Accum_MethDefs(defs[xx]->_methods,functions);
 
-    PyMethodDef  *newdef = new PyMethodDef[functions.size()+1];
-    MethodDefmap::iterator mi;
-    int     offset = 0;
-    for(mi = functions.begin(); mi != functions.end(); mi++, offset++)
-        newdef[offset] = *mi->second;
-    newdef[offset].ml_doc = NULL;
-    newdef[offset].ml_name = NULL;
-    newdef[offset].ml_meth = NULL;
-    newdef[offset].ml_flags = 0;
+EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename);
 
-    PyObject * module = Py_InitModule(modulename,newdef);   
-
-    if(module == NULL)
-    {
-         PyErr_SetString(PyExc_TypeError, "Py_InitModule Returned NULL ???"); 
-         return;
-    }
-
-
-    // the constant inits... enums, classes ...
-    for(int y = 0; defs[y] != NULL; y++)
-        defs[y]->_constants(module);
-
-    PyModule_AddIntConstant(module,"Dtool_PyNavtiveInterface",1);
-}
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 
 //
@@ -580,56 +403,16 @@ inline void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename)
 //      Required to support fom historical inharatence in the for of "is this instance of"..
 //
 ///////////////////////////////////////////////////////////////////////////////
-inline PyObject * Dtool_BarrowThisRefrence(PyObject * self, PyObject * args )
-{
-    PyObject *from_in = NULL;
-    PyObject *to_in = NULL;
-    if(PyArg_ParseTuple(args, "OO", &to_in, &from_in)) 
-    {
+EXPCL_DTOOLCONFIG PyObject * Dtool_BarrowThisRefrence(PyObject * self, PyObject * args );
 
-        if(DtoolCanThisBeAPandaInstance(from_in) && DtoolCanThisBeAPandaInstance(to_in))
-        {
-            Dtool_PyInstDef * from = (Dtool_PyInstDef *) from_in;
-            Dtool_PyInstDef * to = (Dtool_PyInstDef *) to_in;
-            if(from->_My_Type == to->_My_Type)
-            {
-                to->_memory_rules = false;
-                to->_ptr_to_object = from->_ptr_to_object;
-                return Py_BuildValue("");
-            }
-            PyErr_SetString(PyExc_TypeError, "Must Be Same Type??"); 
-        }
-        else
-            PyErr_SetString(PyExc_TypeError, "One of thesee does not appear to be DTOOL Instance ??"); 
-    }
-    return (PyObject *) NULL;
-}
 //////////////////////////////////////////////////////////////////////////////////////////////
 // We do expose a dictionay for dtool classes .. this should be removed at some point..
 //////////////////////////////////////////////////////////////////////////////////////////////
-inline PyObject * Dtool_AddToDictionary(PyObject * self1, PyObject * args )
-{
+EXPCL_DTOOLCONFIG PyObject * Dtool_AddToDictionary(PyObject * self1, PyObject * args );
 
-    PyObject  *     self;
-    PyObject  *     subject;
-    PyObject  *     key;
-    if(PyArg_ParseTuple(args, "OSO", &self, &key, &subject))
-    {
-        PyObject * dict = ((PyTypeObject *)self)->tp_dict;
-        if(dict == NULL && !PyDict_Check(dict))
-            PyErr_SetString(PyExc_TypeError, "No dictionary On Object");
-        else
-            PyDict_SetItem(dict,key,subject);
-
-    }   
-    if(PyErr_Occurred())
-        return (PyObject *)NULL;
-    return Py_BuildValue("");
-
-}
 ///////////////////////////////////////////////////////////////////////////////////
 /*
-inline long  DTool_HashKey(PyObject * inst)
+EXPCL_DTOOLCONFIG long  DTool_HashKey(PyObject * inst)
 {
     long   outcome = (long)inst;
     PyObject * func = PyObject_GetAttrString(inst, "__hash__");
@@ -671,114 +454,9 @@ inline long  DTool_HashKey(PyObject * inst)
    XXX of error.
 */
 
-inline int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
-{
-    // if we are related..
-    if(PyType_IsSubtype(v1->ob_type, v2->ob_type)) 
-    {
-        void * v1_this = DTOOL_Call_GetPointerThis(v1);
-        void * v2_this = DTOOL_Call_GetPointerThis(v2);
-        if(v1_this != NULL && v2_this != NULL) // both are our types...
-        {
-            PyObject * func = PyObject_GetAttrString(v1, "compareTo");
-            if (func == NULL)
-            {
-                PyErr_Clear();
-            }
-            else
-            {
-                PyObject * res = NULL;
-                PyObject * args = Py_BuildValue("(O)", v2);
-                if (args != NULL)
-                {
-                    res = PyObject_Call(func, args, NULL);
-                    Py_DECREF(args);
-                }
-                Py_DECREF(func);
-              	PyErr_Clear(); // just in case the function threw an error
-                // only use if the cuntion  return an INT... hmm
-                if(res != NULL && PyInt_Check(res))
-                {
-                    int answer = PyInt_AsLong(res);
-                    Py_DECREF(res);
-                    return  answer;
-                }
-                if(res != NULL)
-                    Py_DECREF(res);
+EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2);
 
-            };
-            // CompareTo Failed some how :(
-            // do a this compare  .. if Posible...
-            if(v1_this < v2_this)
-                return -1;
-
-            if(v1_this > v2_this)
-                return 1;
-            return 0;
-        }
-        // ok drop to a basic object compare hmmmmmm
-    }
-    if(v1 < v2)
-        return  -1;
-    if(v1 > v2)
-        return  1;
-    return 0;   
-}
-
-
-
-
-inline int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
-{
-    //  First try compare to function..
-    PyObject * func = PyObject_GetAttrString(v1, "compareTo");
-    if (func == NULL)
-    {
-        PyErr_Clear();
-    }
-    else
-    {
-        PyObject * res = NULL;
-        PyObject * args = Py_BuildValue("(O)", v2);
-        if (args != NULL)
-        {
-            res = PyObject_Call(func, args, NULL);
-            Py_DECREF(args);
-        }
-        Py_DECREF(func);
-        PyErr_Clear(); // just in case the function threw an error
-        // only use if the cuntion  return an INT... hmm
-        if(res != NULL && PyInt_Check(res))
-        {
-            int answer = PyInt_AsLong(res);
-            Py_DECREF(res);
-            return  answer;
-        }
-        if(res != NULL)
-            Py_DECREF(res);
-
-    };
-
-    // try this compare
-    void * v1_this = DTOOL_Call_GetPointerThis(v1);
-    void * v2_this = DTOOL_Call_GetPointerThis(v2);
-    if(v1_this != NULL && v2_this != NULL) // both are our types...
-    {
-        if(v1_this < v2_this)
-            return -1;
-
-        if(v1_this > v2_this)
-            return 1;
-        return 0;
-    }
-
-    // ok self compare...
-    if(v1 < v2)
-        return  -1;
-    if(v1 > v2)
-        return  1;
-    return 0;   
-}
+EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 
 EXPCL_DTOOLCONFIG extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
 
