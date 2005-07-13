@@ -7,7 +7,7 @@
     express:c pnmimage:c pnmimagetypes:c \
     event:c mathutil:c \
     pandaegg:m panda:m pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS m
   
   #define SOURCES \

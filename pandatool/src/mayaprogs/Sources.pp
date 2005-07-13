@@ -40,7 +40,7 @@
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
@@ -61,7 +61,7 @@
     egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
@@ -83,7 +83,7 @@
     framework:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define BUILDING_DLL BUILDING_MISC
 

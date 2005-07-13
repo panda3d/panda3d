@@ -6,7 +6,7 @@
     egg:c pandaegg:m \
     linmath:c pnmimagetypes:c pnmimage:c putil:c mathutil:c event:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     vrmlToEgg.cxx vrmlToEgg.h
@@ -20,7 +20,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     vrmlTrans.cxx vrmlTrans.h

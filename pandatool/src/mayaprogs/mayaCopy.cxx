@@ -197,7 +197,8 @@ copy_maya_file(const Filename &source, const Filename &dest,
     }
   }
 
-  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+  unsigned int ref_index;
+  for (ref_index = 0; ref_index < num_refs; ref_index++) {
     // one thing we need to do is rename the path to the base file
     // that it is referencing to. This will guarantee that the
     // refencing will stay in the copied directory. Only way I could
@@ -238,7 +239,7 @@ copy_maya_file(const Filename &source, const Filename &dest,
     return false;
   }
   
-  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+  for (ref_index = 0; ref_index < num_refs; ref_index++) {
     //maya_cat.info() << "refs filename: " << refs[ref_index].asChar() << "\n";
     //maya_cat.info() << "os_specific filename: " << Filename::from_os_specific(refs[ref_index].asChar()) << "\n";
     Filename filename = 
