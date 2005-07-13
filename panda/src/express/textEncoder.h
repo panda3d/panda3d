@@ -87,9 +87,8 @@ PUBLISHED:
   INLINE static string lower(const string &source);
   INLINE static string lower(const string &source, Encoding encoding);
 
-public:
-  // Direct support for wide-character strings.  Not publishable for
-  // now (until we add support for wstring to interrogate).
+  // Direct support for wide-character strings.  Now publishable with
+  // the new wstring support in interrogate.
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
   INLINE void append_wtext(const wstring &text);

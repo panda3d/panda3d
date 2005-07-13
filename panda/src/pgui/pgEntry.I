@@ -425,7 +425,7 @@ get_erase_event() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::set_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Changes the text currently displayed within the
 //               entry.
 ////////////////////////////////////////////////////////////////////
@@ -439,7 +439,7 @@ set_wtext(const wstring &wtext) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Returns the text currently displayed within the
 //               entry.
 ////////////////////////////////////////////////////////////////////

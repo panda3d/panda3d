@@ -1911,6 +1911,7 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
+  if (name == "wchar_t") return KW_WCHAR_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
   if (name == "delete") return KW_DELETE;

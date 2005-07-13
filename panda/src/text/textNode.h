@@ -193,6 +193,13 @@ PUBLISHED:
   float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
 
+  // Direct support for wide-character strings.
+  INLINE void set_wtext(const wstring &wtext);
+  INLINE void append_wtext(const wstring &text);
+
+  INLINE wstring get_wordwrapped_wtext() const;
+  float calc_width(const wstring &line) const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -215,13 +222,6 @@ PUBLISHED:
   INLINE void force_update();
 
 public:
-  // Direct support for wide-character strings.
-  INLINE void set_wtext(const wstring &wtext);
-  INLINE void append_wtext(const wstring &text);
-
-  INLINE wstring get_wordwrapped_wtext() const;
-  float calc_width(const wstring &line) const;
-
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,

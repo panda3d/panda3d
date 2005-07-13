@@ -120,7 +120,6 @@ PUBLISHED:
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
 
-public:
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
 

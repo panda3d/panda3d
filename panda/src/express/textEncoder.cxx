@@ -62,7 +62,7 @@ make_lower() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::get_wtext_as_ascii
-//       Access: Public
+//       Access: Published
 //  Description: Returns the text associated with the node, converted
 //               as nearly as possible to a fully-ASCII
 //               representation.  This means replacing accented
@@ -105,7 +105,7 @@ get_wtext_as_ascii() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::encode_wchar
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Encodes a single wide char into a one-, two-, or
 //               three-byte string, according to the given encoding
 //               system.
@@ -161,7 +161,7 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::encode_wtext
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Encodes a wide-text string into a single-char string,
 //               according to the given encoding.
 ////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::decode_text
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the given wstring decoded to a single-byte
 //               string, via the given encoding system.
 ////////////////////////////////////////////////////////////////////

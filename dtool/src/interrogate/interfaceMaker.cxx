@@ -283,12 +283,19 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     // convert basic_string<char>'s to atomic strings.
 
     if (struct_type == (CPPType *)NULL ||
-        !TypeManager::is_basic_string_char(struct_type)) {
+        !(TypeManager::is_basic_string_char(struct_type) || 
+          TypeManager::is_basic_string_wchar(struct_type))) {
       if (TypeManager::is_basic_string_char(param_type)) {
         return new ParameterRemapBasicStringToString(param_type);
 
       } else if (TypeManager::is_const_ref_to_basic_string_char(param_type)) {
         return new ParameterRemapBasicStringRefToString(param_type);
+
+      } else if (TypeManager::is_basic_string_wchar(param_type)) {
+        return new ParameterRemapBasicWStringToWString(param_type);
+
+      } else if (TypeManager::is_const_ref_to_basic_string_wchar(param_type)) {
+        return new ParameterRemapBasicWStringRefToWString(param_type);
       }
     }
   }

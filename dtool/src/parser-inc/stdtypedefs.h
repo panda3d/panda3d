@@ -35,7 +35,6 @@ namespace std {
 }
 #endif
 typedef int ptrdiff_t;
-typedef int wchar_t;
 
 typedef unsigned int uint;
 typedef unsigned long ulong;

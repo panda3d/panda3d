@@ -91,9 +91,9 @@ is_assignable(CPPType *type) {
     // don't get setters synthesized for them.  If you want a setter,
     // write it yourself.
 
-    // We'll make an exception for basic_string<char>, however, since
-    // this is nearly an atomic type.
-    if (is_basic_string_char(type)) {
+    // We'll make an exception for the string types, however, since
+    // these are nearly an atomic type.
+    if (is_basic_string_char(type) || is_basic_string_wchar(type)) {
       return true;
     }
 
@@ -473,6 +473,84 @@ is_const_ref_to_basic_string_char(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_basic_string_wchar
+//       Access: Public, Static
+//  Description: Returns true if the type is basic_string<wchar_t>.  This
+//               is the standard C++ wide string class.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_basic_string_wchar(CPPType *type) {
+  CPPType *string_type = get_basic_string_wchar_type();
+  if (string_type != (CPPType *)NULL &&
+      string_type->get_local_name(&parser) == type->get_local_name(&parser)) {
+    return true;
+  }
+
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_basic_string_wchar(type->as_const_type()->_wrapped_around);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_basic_string_wchar
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const wrapper
+//               around basic_string<wchar_t>.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_basic_string_wchar(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_basic_string_wchar(type->as_const_type()->_wrapped_around);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_ref_to_basic_string_wchar
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const
+//               reference to basic_string<wchar_t>.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_ref_to_basic_string_wchar(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_reference:
+    return is_const_basic_string_wchar(type->as_reference_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_wstring
+//       Access: Public, Static
+//  Description: Returns true if the type is basic_string<wchar_t>, or
+//               a const reference to it.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_wstring(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_reference:
+    return is_const_basic_string_wchar(type->as_reference_type()->_pointing_at);
+
+  default:
+    break;
+  }
+
+  return is_basic_string_wchar(type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_bool
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is bool, or some
@@ -524,6 +602,7 @@ is_integer(CPPType *type) {
         return
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
+           simple_type->_type == CPPSimpleType::T_wchar_t ||
            simple_type->_type == CPPSimpleType::T_int);
       }
     }
@@ -555,6 +634,7 @@ is_unsigned_integer(CPPType *type) {
         return
           ((simple_type->_type == CPPSimpleType::T_bool ||
             simple_type->_type == CPPSimpleType::T_char ||
+            simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
            (simple_type->_flags & CPPSimpleType::F_unsigned) != 0);
       }
@@ -1212,6 +1292,23 @@ get_basic_string_char_type() {
   static CPPType *type = (CPPType *)NULL;
   if (!got_type) {
     type = parser.parse_type("basic_string<char>");
+    got_type = true;
+  }
+  return type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::get_basic_string_wchar_type
+//       Access: Public, Static
+//  Description: Returns a CPPType that represents basic_string<wchar_t>,
+//               or NULL if the type is unknown.
+////////////////////////////////////////////////////////////////////
+CPPType *TypeManager::
+get_basic_string_wchar_type() {
+  static bool got_type = false;
+  static CPPType *type = (CPPType *)NULL;
+  if (!got_type) {
+    type = parser.parse_type("basic_string<wchar_t>");
     got_type = true;
   }
   return type;

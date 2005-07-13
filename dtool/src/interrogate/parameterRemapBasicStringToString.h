@@ -38,4 +38,19 @@ public:
   virtual string get_return_expr(const string &expression);
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : ParameterRemapBasicWStringToWString
+// Description : Maps a concrete basic_string<wchar_t> to an atomic
+//               string.
+////////////////////////////////////////////////////////////////////
+class ParameterRemapBasicWStringToWString : public ParameterRemapToString {
+public:
+  ParameterRemapBasicWStringToWString(CPPType *orig_type);
+
+  virtual void pass_parameter(ostream &out, const string &variable_name);
+  virtual string prepare_return_expr(ostream &out, int indent_level,
+                                     const string &expression);
+  virtual string get_return_expr(const string &expression);
+};
+
 #endif

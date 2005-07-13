@@ -111,6 +111,10 @@ output(ostream &out, int, CPPScope *, bool) const {
     out << "char";
     break;
 
+  case T_wchar_t:
+    out << "wchar_t";
+    break;
+
   case T_int:
     out << "int";
     break;

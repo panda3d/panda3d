@@ -147,6 +147,26 @@ calc_width(int character) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::calc_width
+//       Access: Published
+//  Description: Returns the width of a line of text of arbitrary
+//               characters.  The line should not include the newline
+//               character or any embedded control characters like \1
+//               or \3.
+////////////////////////////////////////////////////////////////////
+float TextNode::
+calc_width(const wstring &line) const {
+  float width = 0.0f;
+
+  wstring::const_iterator si;
+  for (si = line.begin(); si != line.end(); ++si) {
+    width += calc_width(*si);
+  }
+
+  return width;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::output
 //       Access: Public, Virtual
 //  Description: 
@@ -344,26 +364,6 @@ generate() {
   }
 
   return root;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Public
-//  Description: Returns the width of a line of text of arbitrary
-//               characters.  The line should not include the newline
-//               character or any embedded control characters like \1
-//               or \3.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-calc_width(const wstring &line) const {
-  float width = 0.0f;
-
-  wstring::const_iterator si;
-  for (si = line.begin(); si != line.end(); ++si) {
-    width += calc_width(*si);
-  }
-
-  return width;
 }
 
 ////////////////////////////////////////////////////////////////////

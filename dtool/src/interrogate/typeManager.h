@@ -68,6 +68,10 @@ public:
   static bool is_basic_string_char(CPPType *type);
   static bool is_const_basic_string_char(CPPType *type);
   static bool is_const_ref_to_basic_string_char(CPPType *type);
+  static bool is_basic_string_wchar(CPPType *type);
+  static bool is_const_basic_string_wchar(CPPType *type);
+  static bool is_const_ref_to_basic_string_wchar(CPPType *type);
+  static bool is_wstring(CPPType *type);
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
   static bool is_unsigned_integer(CPPType *type);
@@ -101,6 +105,7 @@ public:
   static CPPType *wrap_const_reference(CPPType *type);
 
   static CPPType *get_basic_string_char_type();
+  static CPPType *get_basic_string_wchar_type();
   static CPPType *get_reference_count_type();
   static CPPType *get_void_type();
   static CPPType *get_int_type();

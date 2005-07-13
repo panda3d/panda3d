@@ -56,9 +56,6 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  wstring wordwrap_to(const wstring &text, float wordwrap_width,
-                     bool preserve_trailing_whitespace);
-
   virtual bool get_glyph(int character, const TextGlyph *&glyph)=0;
 
 protected:

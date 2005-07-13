@@ -473,7 +473,7 @@ lower(const string &source, TextEncoder::Encoding encoding) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::set_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Changes the text that is stored in the encoder.
 //               Subsequent calls to get_wtext() will return this same
 //               string, while get_text() will return the encoded
@@ -489,7 +489,7 @@ set_wtext(const wstring &wtext) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::get_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Returns the text associated with the TextEncoder, as
 //               a wide-character string.
 ////////////////////////////////////////////////////////////////////
@@ -504,7 +504,7 @@ get_wtext() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::append_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Appends the indicates string to the end of the stored
 //               wide-character text.
 ////////////////////////////////////////////////////////////////////
@@ -516,7 +516,7 @@ append_wtext(const wstring &wtext) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::encode_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Encodes a wide-text string into a single-char string,
 //               according to the current encoding.
 ////////////////////////////////////////////////////////////////////
@@ -527,7 +527,7 @@ encode_wtext(const wstring &wtext) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::decode_text
-//       Access: Public
+//       Access: Published
 //  Description: Returns the given wstring decoded to a single-byte
 //               string, via the current encoding system.
 ////////////////////////////////////////////////////////////////////

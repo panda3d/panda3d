@@ -1203,6 +1203,46 @@ calc_width(const string &line) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_wtext
+//       Access: Published
+//  Description: Changes the text that is displayed under the
+//               TextNode, with a wide text.  This automatically sets
+//               the string reported by get_text() to the 8-bit
+//               encoded version of the same string.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_wtext(const wstring &wtext) {
+  TextEncoder::set_wtext(wtext);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::append_wtext
+//       Access: Published
+//  Description: Appends the indicates string to the end of the stored
+//               wide-character text.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+append_wtext(const wstring &wtext) {
+  TextEncoder::append_wtext(wtext);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_wordwrapped_wtext
+//       Access: Published
+//  Description: Returns a wstring that represents the contents of the
+//               text, as it has been formatted by wordwrap rules.
+//               This will not contain any embedded special characters
+//               like \1 or \3.
+////////////////////////////////////////////////////////////////////
+INLINE wstring TextNode::
+get_wordwrapped_wtext() const {
+  check_measure();
+  return _assembler.get_wordwrapped_wtext();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_left
 //       Access: Published
 //  Description: Returns the leftmost extent of the text in local 2-d
@@ -1343,46 +1383,6 @@ INLINE void TextNode::
 force_update() {
   invalidate_with_measure();
   check_rebuild();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_wtext
-//       Access: Public
-//  Description: Changes the text that is displayed under the
-//               TextNode, with a wide text.  This automatically sets
-//               the string reported by get_text() to the 8-bit
-//               encoded version of the same string.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_wtext(const wstring &wtext) {
-  TextEncoder::set_wtext(wtext);
-  invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::append_wtext
-//       Access: Public
-//  Description: Appends the indicates string to the end of the stored
-//               wide-character text.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-append_wtext(const wstring &wtext) {
-  TextEncoder::append_wtext(wtext);
-  invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_wordwrapped_wtext
-//       Access: Public
-//  Description: Returns a wstring that represents the contents of the
-//               text, as it has been formatted by wordwrap rules.
-//               This will not contain any embedded special characters
-//               like \1 or \3.
-////////////////////////////////////////////////////////////////////
-INLINE wstring TextNode::
-get_wordwrapped_wtext() const {
-  check_measure();
-  return _assembler.get_wordwrapped_wtext();
 }
 
 ////////////////////////////////////////////////////////////////////

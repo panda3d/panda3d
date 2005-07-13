@@ -239,6 +239,7 @@ pop_struct() {
 %token KW_BOOL
 %token KW_CATCH
 %token KW_CHAR
+%token KW_WCHAR_T
 %token KW_CLASS 
 %token KW_CONST 
 %token KW_DELETE
@@ -346,7 +347,7 @@ pop_struct() {
 
 /* Precedence rules. */
 
-%left IDENTIFIER TYPENAME_IDENTIFIER TYPEDEFNAME KW_ENUM ELLIPSIS KW_OPERATOR KW_TYPENAME KW_INT KW_SHORT KW_UNSIGNED KW_SIGNED KW_LONG KW_FLOAT KW_DOUBLE KW_CHAR KW_BOOL
+%left IDENTIFIER TYPENAME_IDENTIFIER TYPEDEFNAME KW_ENUM ELLIPSIS KW_OPERATOR KW_TYPENAME KW_INT KW_SHORT KW_UNSIGNED KW_SIGNED KW_LONG KW_FLOAT KW_DOUBLE KW_CHAR KW_WCHAR_T KW_BOOL
 
 %left '{' ',' ';'
 
@@ -1909,6 +1910,10 @@ simple_int_type:
 {
   $$ = new CPPSimpleType(CPPSimpleType::T_char);
 }
+        | KW_WCHAR_T
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_wchar_t);
+}
         | KW_SHORT
 {
   $$ = new CPPSimpleType(CPPSimpleType::T_int,
@@ -2046,7 +2051,7 @@ element:
         | SCOPE | PLUSPLUS | MINUSMINUS 
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
-        | KW_BOOL | KW_CATCH | KW_CHAR | KW_CLASS | KW_CONST
+        | KW_BOOL | KW_CATCH | KW_CHAR | KW_WCHAR_T | KW_CLASS | KW_CONST
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
         | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO 
@@ -2272,6 +2277,12 @@ const_expr:
 {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char));
+  $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
+}
+        | KW_WCHAR_T '(' optional_const_expr_comma ')'
+{
+  CPPType *type = 
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_wchar_t));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_BOOL '(' optional_const_expr_comma ')'

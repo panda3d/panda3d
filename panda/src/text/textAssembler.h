@@ -19,7 +19,7 @@
 #ifndef TEXTASSEMBLER_H
 #define TEXTASSEMBLER_H
 
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
+#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring iterators.
 
 #include "pandabase.h"
 

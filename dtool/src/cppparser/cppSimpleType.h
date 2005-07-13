@@ -32,6 +32,7 @@ public:
   enum Type {
     T_bool,
     T_char,
+    T_wchar_t,  // Not strictly a builtin type, but we pretend.
     T_int,
     T_float,
     T_double,

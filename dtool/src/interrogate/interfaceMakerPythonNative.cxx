@@ -1826,7 +1826,8 @@ int     GetParnetDepth(CPPType  *type)
     int answer = 0;
 //    printf("    %s\n",type->get_local_name().c_str());
 
-    if (TypeManager::is_basic_string_char(type))  {
+    if (TypeManager::is_basic_string_char(type)) {
+    } else if (TypeManager::is_basic_string_wchar(type)) {
     } else if (TypeManager::is_bool(type)) {
     } else if (TypeManager::is_unsigned_longlong(type)) {
     } else if (TypeManager::is_longlong(type)) {
@@ -2011,9 +2012,18 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         indent(out,indent_level+4)<< "char *" << param_name;
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
-      }
-      else 
-      {
+
+      } else if (TypeManager::is_wstring(orig_type)) {
+        indent(out,indent_level+4) << "Py_UNICODE *" << param_name
+            << "_str; int " << param_name << "_len";
+        format_specifiers += "u#";
+        parameter_list += ", &" + param_name
+          + "_str, &" + param_name + "_len";
+        pexpr_string = "basic_string<wchar_t>(" +
+          param_name + "_str, " +
+          param_name + "_len)";
+
+      } else {
         indent(out,indent_level+4) << "char *" << param_name
             << "_str; int " << param_name << "_len";
         format_specifiers += "s#";
@@ -2283,6 +2293,11 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
     if (TypeManager::is_char_pointer(orig_type)) {
       indent(out, indent_level)
         << "return PyString_FromString(" << return_expr << ");\n";
+
+    } else if (TypeManager::is_wstring(orig_type)) {
+      indent(out, indent_level)
+        << "return PyUnicode_FromWideChar("
+        << return_expr << ".data(), (int)" << return_expr << ".length());\n";
 
     } else {
       indent(out, indent_level)
@@ -2666,6 +2681,10 @@ bool InterfaceMakerPythonNative::isCppTypeLegal(CPPType *in_ctype)
     //CPPType *type =  ctype;
 
     if(TypeManager::is_basic_string_char(type))
+    {
+        return true;
+    }
+    else if(TypeManager::is_basic_string_wchar(type))
     {
         return true;
     }

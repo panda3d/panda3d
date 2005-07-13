@@ -1737,6 +1737,7 @@ get_type(CPPType *type, bool global) {
     if (global) {
       itype._flags |= InterrogateType::F_global;
     }
+
     InterrogateDatabase::get_ptr()->add_type(index, itype);
   }
 
@@ -1838,6 +1839,10 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
 
   case CPPSimpleType::T_char:
     itype._atomic_token = AT_char;
+    break;
+
+  case CPPSimpleType::T_wchar_t:
+    itype._atomic_token = AT_int;
     break;
 
   case CPPSimpleType::T_int:
