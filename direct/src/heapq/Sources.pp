@@ -6,6 +6,11 @@
 
 #define DIR_TYPE metalib
 
+// This directory strictly contains a Python utility; therefore, only
+// build it if we actually have Python.
+#define BUILD_DIRECTORY $[HAVE_PYTHON]
+
+
 #define OTHER_LIBS \
   pandaexpress:m \
   dconfig:c dtoolconfig:m \
