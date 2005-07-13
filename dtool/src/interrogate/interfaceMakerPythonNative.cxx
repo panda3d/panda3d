@@ -2019,7 +2019,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         format_specifiers += "u#";
         parameter_list += ", &" + param_name
           + "_str, &" + param_name + "_len";
-        pexpr_string = "basic_string<wchar_t>(" +
+        pexpr_string = "basic_string<wchar_t>((wchar_t *)" +
           param_name + "_str, " +
           param_name + "_len)";
 
