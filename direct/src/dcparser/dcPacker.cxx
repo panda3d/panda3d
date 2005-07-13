@@ -863,10 +863,17 @@ unpack_object() {
           // valid constructor, create the class object instead of
           // just a tuple.
           object = unpack_class_object(dclass);
-          break;
+          if (object == (PyObject *)NULL) {
+            cerr << "Unable to construct object of class "
+                 << dclass->get_name() << "\n";
+          } else {
+            break;
+          }
         }
       }
     }
+    // Fall through (if no constructor)
+
     // If we don't know what kind of class object it is, or it doesn't
     // have a constructor, fall through and make a tuple.
   default:
@@ -878,7 +885,7 @@ unpack_object() {
       while (more_nested_fields()) {
         PyObject *element = unpack_object();
         PyList_Append(object, element);
-        Py_XDECREF(element);
+        Py_DECREF(element);
       }
       pop();
 
@@ -893,6 +900,7 @@ unpack_object() {
     break;
   }
 
+  nassertr(object != (PyObject *)NULL, Py_None);
   return object;
 }
 #endif  // HAVE_PYTHON
