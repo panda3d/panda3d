@@ -23,8 +23,7 @@
 
 #include "pandaNode.h"
 #include "coordinateSystem.h"
-
-class EggData;
+#include "eggData.h"
 
 BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
