@@ -63,6 +63,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyTuple_New(...);
   EXPCL_DTOOLCONFIG int PyType_IsSubtype(...);
   EXPCL_DTOOLCONFIG int PyUnicode_Type(...);
+  EXPCL_DTOOLCONFIG int PyUnicodeUCS2_FromWideChar(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyCFunction_New(...);
@@ -137,6 +138,7 @@ int PyTuple_GetItem(...) { return 0; }
 int PyTuple_New(...) { return 0; }
 int PyType_IsSubtype(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
+int PyUnicodeUCS2_FromWideChar(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
