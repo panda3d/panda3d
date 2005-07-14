@@ -320,7 +320,8 @@ appear before they are referenced.
   <Scalar> blenda { alpha-value }
 
     Specifies a four-component color that is applied with the color in
-    case the envtype, above, is "blend".
+    case the envtype, above, is "blend", or one of the combine-sources
+    is "constant".
 
   <Scalar> uv-name { name }
 

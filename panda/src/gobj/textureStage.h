@@ -239,6 +239,7 @@ PUBLISHED:
   INLINE const TextureStage *get_combine_alpha_source2_stage() const;
   INLINE CombineOperand get_combine_alpha_operand2() const;
 
+  INLINE bool uses_color() const;
   INLINE bool involves_color_scale() const;
 
   void write(ostream &out) const;
@@ -250,7 +251,7 @@ public:
   INLINE static UpdateSeq get_sort_seq();
 
 private:
-  INLINE void set_involves_color_scale();
+  INLINE void update_color_flags();
 
   static void write_operand(ostream &out, int operand_index, 
                             CombineSource source, 
@@ -269,6 +270,7 @@ private:
   Colorf _color;
   int _rgb_scale;
   int _alpha_scale;
+  bool _uses_color;
   bool _involves_color_scale;
 
   CombineMode _combine_rgb_mode;

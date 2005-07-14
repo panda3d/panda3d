@@ -175,7 +175,7 @@ set_mode(TextureStage::Mode mode) {
     _num_combine_rgb_operands = 0;
     _num_combine_alpha_operands = 0;
   }
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -307,7 +307,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,7 +335,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,7 +364,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -393,7 +393,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,7 +423,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,7 +452,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -482,7 +482,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -512,7 +512,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -542,7 +542,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2_stage = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -573,7 +573,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2_stage = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -604,7 +604,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2_stage = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -635,7 +635,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2 = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -667,7 +667,7 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source2_stage = source2;
   _combine_rgb_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -819,7 +819,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -845,7 +845,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -873,7 +873,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -902,7 +902,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -931,7 +931,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -961,7 +961,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -990,7 +990,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1020,7 +1020,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1050,7 +1050,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1080,7 +1080,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2_stage = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1111,7 +1111,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2_stage = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1142,7 +1142,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2_stage = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1173,7 +1173,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2 = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1205,7 +1205,7 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source2_stage = source2;
   _combine_alpha_operand2 = operand2;
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1336,6 +1336,18 @@ get_combine_alpha_operand2() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::uses_color
+//       Access: Published
+//  Description: Returns true if the TextureStage makes use of
+//               whatever color is specified in set_color(), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+uses_color() const {
+  return _uses_color;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::involves_color_scale
 //       Access: Published
 //  Description: Returns true if the TextureStage is affected by the
@@ -1378,20 +1390,33 @@ get_sort_seq() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_involves_color_scale
+//     Function: TextureStage::update_color_flags
 //       Access: Private
-//  Description: Updates _involves_color_scale appropriately.
+//  Description: Updates _uses_color and _involves_color_scale
+//               appropriately.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureStage::
-set_involves_color_scale() {
-  _involves_color_scale = (_mode == M_blend_color_scale ||
-      (_mode == M_combine &&
-       (_combine_rgb_source0 == CS_constant_color_scale ||
-        _combine_rgb_source1 == CS_constant_color_scale ||
-        _combine_rgb_source2 == CS_constant_color_scale ||
-        _combine_alpha_source0 == CS_constant_color_scale ||
-        _combine_alpha_source1 == CS_constant_color_scale ||
-        _combine_alpha_source2 == CS_constant_color_scale)));
+update_color_flags() {
+  _involves_color_scale = 
+    (_mode == M_blend_color_scale ||
+     (_mode == M_combine &&
+      (_combine_rgb_source0 == CS_constant_color_scale ||
+       _combine_rgb_source1 == CS_constant_color_scale ||
+       _combine_rgb_source2 == CS_constant_color_scale ||
+       _combine_alpha_source0 == CS_constant_color_scale ||
+       _combine_alpha_source1 == CS_constant_color_scale ||
+       _combine_alpha_source2 == CS_constant_color_scale)));
+  
+  _uses_color = 
+    (_involves_color_scale || 
+     _mode == M_blend ||
+     (_mode == M_combine &&
+      (_combine_rgb_source0 == CS_constant ||
+       _combine_rgb_source1 == CS_constant ||
+       _combine_rgb_source2 == CS_constant ||
+       _combine_alpha_source0 == CS_constant ||
+       _combine_alpha_source1 == CS_constant ||
+       _combine_alpha_source2 == CS_constant)));
 }
 
 INLINE ostream &

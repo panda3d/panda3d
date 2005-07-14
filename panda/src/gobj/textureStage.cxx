@@ -56,6 +56,7 @@ TextureStage(const string &name) {
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
 
+  _uses_color = false;
   _involves_color_scale = false;
 }
 
@@ -90,6 +91,7 @@ operator = (const TextureStage &other) {
   _combine_alpha_source2 = other._combine_alpha_source2;
   _combine_alpha_operand2 = other._combine_alpha_operand2;
 
+  _uses_color = other._uses_color;
   _involves_color_scale = other._involves_color_scale;
 }
 
@@ -346,7 +348,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
   }
 
-  set_involves_color_scale();
+  update_color_flags();
 }
 
 ////////////////////////////////////////////////////////////////////

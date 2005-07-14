@@ -178,7 +178,10 @@ protected:
 
   static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type);
   static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
-  static D3DTEXTUREOP get_tex_color_op1(TextureStage::Mode mode);
+  static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
+  static DWORD get_texture_argument(TextureStage::CombineSource source,
+                                    TextureStage::CombineOperand operand);
+  static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
 
 protected:
   DXScreenData *_screen;

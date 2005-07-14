@@ -115,6 +115,10 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
     Geom::GR_point_perspective | Geom::GR_point_sprite |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
+
+  _supports_texture_combine = true;
+  _supports_texture_crossbar = false;
+  _supports_texture_dot3 = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,8 +128,9 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian8::
 ~DXGraphicsStateGuardian8() {
-  if (IS_VALID_PTR(_d3d_device))
+  if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
+  }
   free_nondx_resources();
 }
 
@@ -145,7 +150,7 @@ DXGraphicsStateGuardian8::
 TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
   DXTextureContext8 *dtc = new DXTextureContext8(tex);
-  if (dtc->create_texture(*_screen) == NULL) {
+  if (dtc->create_texture(*_screen) == (IDirect3DTexture8 *)NULL) {
     delete dtc;
     return NULL;
   }
@@ -161,7 +166,7 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 apply_texture(int i, TextureContext *tc) {
-  if (tc == NULL) {
+  if (tc == (TextureContext *)NULL) {
     // The texture wasn't bound properly or something, so ensure
     // texturing is disabled and just return.
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -190,7 +195,7 @@ apply_texture(int i, TextureContext *tc) {
           << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
       }
 
-      if (dtc->create_texture(*_screen) == NULL) {
+      if (dtc->create_texture(*_screen) == (IDirect3DTexture8 *)NULL) {
         // Oops, we can't re-create the texture for some reason.
         dxgsg8_cat.error()
           << "Unable to re-create texture " << *dtc->_texture << endl;
@@ -2760,12 +2765,11 @@ void DXGraphicsStateGuardian8::
 set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
   case TextureStage::M_modulate:
-    // emulates GL_MODULATE glTexEnv mode
-    // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
+    // emulates GL_MODULATE glTexEnv mode 
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
+    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
@@ -2776,7 +2780,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1);
+    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
     break;
 
@@ -2784,7 +2788,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1);
+    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     break;
 
@@ -2793,7 +2797,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
+    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
@@ -2801,38 +2805,113 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   case TextureStage::M_blend:
   case TextureStage::M_blend_color_scale:
     {
-      // DX only supports one TEXTUREFACTOR color for the whole
-      // pipeline, so you can't reliably have two different blends in
-      // effect with different colors on the same object.  Oh well.
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_LERP);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-
-      D3DCOLOR texture_factor;
-      if (stage->involves_color_scale() && _color_scale_enabled) {
-        Colorf color = stage->get_color();
-        color.set(color[0] * _current_color_scale[0],
-                  color[1] * _current_color_scale[1],
-                  color[2] * _current_color_scale[2],
-                  color[3] * _current_color_scale[3]);
-        _texture_involves_color_scale = true;
-        texture_factor = Colorf_to_D3DCOLOR(color);
-      } else {
-        texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
-      }
-      _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, texture_factor);
       
-      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP,   D3DTOP_MODULATE);
+      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     }
     break;
 
+  case TextureStage::M_combine:
+    // M_combine mode begins a collection of more sophisticated modes,
+    // which match up more closely with DirectX's built-in modes.
+    _d3d_device->SetTextureStageState
+      (i, D3DTSS_COLOROP, 
+       get_texture_operation(stage->get_combine_rgb_mode(),
+                             stage->get_rgb_scale()));
+
+    switch (stage->get_num_combine_rgb_operands()) {
+    case 3:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_COLORARG0, 
+         get_texture_argument(stage->get_combine_rgb_source2(),
+                              stage->get_combine_rgb_operand2()));
+      // fall through
+      
+    case 2:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_COLORARG2, 
+         get_texture_argument(stage->get_combine_rgb_source1(),
+                              stage->get_combine_rgb_operand1()));
+      // fall through
+
+    case 1:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_COLORARG1, 
+         get_texture_argument(stage->get_combine_rgb_source0(),
+                              stage->get_combine_rgb_operand0()));
+      // fall through
+      
+    default:
+      break;
+    }
+
+    _d3d_device->SetTextureStageState
+      (i, D3DTSS_ALPHAOP, 
+       get_texture_operation(stage->get_combine_alpha_mode(),
+                             stage->get_alpha_scale()));
+
+    switch (stage->get_num_combine_alpha_operands()) {
+    case 3:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_ALPHAARG0, 
+         get_texture_argument(stage->get_combine_alpha_source2(),
+                              stage->get_combine_alpha_operand2()));
+      // fall through
+      
+    case 2:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_ALPHAARG2, 
+         get_texture_argument(stage->get_combine_alpha_source1(),
+                              stage->get_combine_alpha_operand1()));
+      // fall through
+
+    case 1:
+      _d3d_device->SetTextureStageState
+        (i, D3DTSS_ALPHAARG1, 
+         get_texture_argument(stage->get_combine_alpha_source0(),
+                              stage->get_combine_alpha_operand0()));
+      // fall through
+      
+    default:
+      break;
+    }
+    break;
+
   default:
     dxgsg8_cat.error()
-      << "Unknown texture blend mode " << (int)stage->get_mode() << endl;
+      << "Unknown texture mode " << (int)stage->get_mode() << endl;
     break;
+  }
+
+  if (stage->uses_color()) {
+    // Set up the constant color for this stage.
+
+    // Actually, DX8 doesn't support a per-stage constant color, but
+    // it does support one TEXTUREFACTOR color for the whole pipeline.
+    // This does mean you can't have two different blends in effect
+    // with different colors on the same object.  However, DX9 does
+    // support a per-stage constant color with the D3DTA_CONSTANT
+    // argument--so we should implement that when this code gets
+    // ported to DX9.
+
+    D3DCOLOR texture_factor;
+    if (stage->involves_color_scale() && _color_scale_enabled) {
+      Colorf color = stage->get_color();
+      color.set(color[0] * _current_color_scale[0],
+                color[1] * _current_color_scale[1],
+                color[2] * _current_color_scale[2],
+                color[3] * _current_color_scale[3]);
+      _texture_involves_color_scale = true;
+      texture_factor = Colorf_to_D3DCOLOR(color);
+    } else {
+      texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
+    }
+    _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, texture_factor);
   }
 }
 
@@ -3148,30 +3227,113 @@ get_d3d_mip_type(Texture::FilterType filter_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::get_tex_color_op1
+//     Function: DXGraphicsStateGuardian8::get_texture_operation
 //       Access: Public, Static
-//  Description:
+//  Description: Returns the D3DTEXTUREOP value corresponding to the
+//               indicated TextureStage::CombineMode enumerated type.
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREOP DXGraphicsStateGuardian8::
-get_tex_color_op1(TextureStage::Mode mode) {
+get_texture_operation(TextureStage::CombineMode mode, int scale) {
   switch (mode) {
-  case TextureStage::M_modulate:
-    return D3DTOP_MODULATE;
-
-  case TextureStage::M_decal:
-    return D3DTOP_BLENDTEXTUREALPHA;
-
-  case TextureStage::M_blend:
-    return D3DTOP_MODULATE;
-
-  case TextureStage::M_replace:
+  case TextureStage::CM_undefined:
+  case TextureStage::CM_replace:
     return D3DTOP_SELECTARG1;
 
-  case TextureStage::M_add:
+  case TextureStage::CM_modulate:
+    if (scale < 2) {
+      return D3DTOP_MODULATE;
+    } else if (scale < 4) {
+      return D3DTOP_MODULATE2X;
+    } else {
+      return D3DTOP_MODULATE4X;
+    }
+
+  case TextureStage::CM_add:
     return D3DTOP_ADD;
+
+  case TextureStage::CM_add_signed:
+    if (scale < 2) {
+      return D3DTOP_ADDSIGNED;
+    } else {
+      return D3DTOP_ADDSIGNED2X;
+    }
+
+  case TextureStage::CM_interpolate:
+    return D3DTOP_LERP;
+
+  case TextureStage::CM_subtract:
+    return D3DTOP_SUBTRACT;
+
+  case TextureStage::CM_dot3_rgb:
+  case TextureStage::CM_dot3_rgba:
+    return D3DTOP_DOTPRODUCT3;
   }
 
   dxgsg8_cat.error()
-    << "Invalid TextureStage::Mode value (" << (int)mode << ")\n";
-  return D3DTOP_MODULATE;
+    << "Invalid TextureStage::CombineMode value (" << (int)mode << ")\n";
+  return D3DTOP_DISABLE;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_texture_argument
+//       Access: Public, Static
+//  Description: Returns the D3DTA value corresponding to the
+//               indicated TextureStage::CombineSource and
+//               TextureStage::CombineOperand enumerated types.
+////////////////////////////////////////////////////////////////////
+DWORD DXGraphicsStateGuardian8::
+get_texture_argument(TextureStage::CombineSource source,
+                     TextureStage::CombineOperand operand) {
+  switch (source) {
+  case TextureStage::CS_undefined:
+  case TextureStage::CS_texture:
+    return D3DTA_TEXTURE | get_texture_argument_modifier(operand);
+
+  case TextureStage::CS_constant:
+  case TextureStage::CS_constant_color_scale:
+    return D3DTA_TFACTOR | get_texture_argument_modifier(operand);
+
+  case TextureStage::CS_primary_color:
+    return D3DTA_DIFFUSE | get_texture_argument_modifier(operand);
+
+  case TextureStage::CS_previous:
+    return D3DTA_CURRENT | get_texture_argument_modifier(operand);
+
+  case TextureStage::CS_crossbar_stage:
+    break;
+  }
+  dxgsg8_cat.error()
+    << "Invalid TextureStage::CombineSource value (" << (int)source << ")\n";
+  return D3DTA_CURRENT;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_texture_argument_modifier
+//       Access: Public, Static
+//  Description: Returns the extra bits that modify the D3DTA
+//               argument, according to the indicated
+//               TextureStage::CombineOperand enumerated type.
+////////////////////////////////////////////////////////////////////
+DWORD DXGraphicsStateGuardian8::
+get_texture_argument_modifier(TextureStage::CombineOperand operand) {
+  switch (operand) {
+  case TextureStage::CO_src_color:
+    return 0;
+
+  case TextureStage::CO_one_minus_src_color:
+    return D3DTA_COMPLEMENT;
+
+  case TextureStage::CO_src_alpha:
+    return D3DTA_ALPHAREPLICATE;
+
+  case TextureStage::CO_one_minus_src_alpha:
+    return D3DTA_ALPHAREPLICATE | D3DTA_COMPLEMENT;
+
+  case TextureStage::CO_undefined:
+    break;
+  }
+  dxgsg8_cat.error()
+    << "Invalid TextureStage::CombineOperand value (" << (int)operand << ")\n";
+  return 0;
+}
+
