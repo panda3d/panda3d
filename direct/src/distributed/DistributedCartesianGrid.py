@@ -41,6 +41,8 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         
     def delete(self):
         DistributedNode.DistributedNode.delete(self)
+        # TODO: when teleporting off an island...
+        taskMgr.remove(self.taskName("processVisibility"))
 
     def isGridParent(self):
         # If this distributed object is a DistributedGrid return 1.  0 by default
