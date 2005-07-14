@@ -383,7 +383,7 @@ class ClientRepository(ConnectionRepository):
             # Look up the object
             distObj = self.doId2do[doId]
             # remove the object from the dictionary
-            del(self.doId2do[doId])
+            del self.doId2do[doId]
 
             # Only cache the object if it is a "cacheable" type
             # object; this way we don't clutter up the caches with
@@ -422,7 +422,7 @@ class ClientRepository(ConnectionRepository):
             # If it is in the dictionary, remove it.
             obj = self.doId2do[doId]
             # Remove it from the dictionary
-            del(self.doId2do[doId])
+            del self.doId2do[doId]
             # Disable, announce, and delete the object itself...
             # unless delayDelete is on...
             obj.deleteOrDelay()

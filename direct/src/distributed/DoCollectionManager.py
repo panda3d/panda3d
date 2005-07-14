@@ -235,7 +235,7 @@ class DoCollectionManager:
                     if len(self.zoneId2doIds[location]) == 0:
                         del self.zoneId2doIds[location]
 
-            del(self.doId2do[do.doId])
+            del self.doId2do[do.doId]
     else:
         def removeDOFromTables(self, do):
             assert self.notify.debugStateCall(self)
@@ -251,7 +251,7 @@ class DoCollectionManager:
                     if len(self.zoneId2doIds[do.zoneId]) == 0:
                         del self.zoneId2doIds[do.zoneId]
 
-            del(self.doId2do[do.doId])
+            del self.doId2do[do.doId]
         
     if wantOtpServer:
         def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
