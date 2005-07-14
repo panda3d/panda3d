@@ -571,7 +571,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OZero'),
                               self.setRendererGeomColorBlendFbufferOperand)
-        self.getVariable('Geom Renderer','Fbuffer Op.').set('OOne')
+        self.getVariable('Geom Renderer','Fbuffer Op.').set('OOneMinusIncomingAlpha')
         p.pack(fill = X)
         p = Frame(rendererGeomInterpolationPage)
         p.pack(fill = X)
@@ -664,54 +664,63 @@ class ParticlePanel(AppShell):
         rendererSpriteBlendPage = rendererSpriteNotebook.add('Blend')
         rendererSpriteInterpolationPage = rendererSpriteNotebook.add('Interpolate')
 
-        p = Frame(rendererSpriteTexturePage)        
-        p.pack(fill = X)
-        Label(p, width = 12, text = 'Texture Type:').pack(side = LEFT)
-        self.rendererSpriteSourceType = IntVar()
-        self.rendererSpriteSourceType.set(SpriteParticleRenderer.STTexture)
-        self.rendererSpriteSTTexture = self.createRadiobutton(
-            p, 'left',
-            'Sprite Renderer', 'Texture Type',
-            'Sprite particle renderer created from texture file',
-            self.rendererSpriteSourceType, SpriteParticleRenderer.STTexture,
-            self.setSpriteSourceType)
-        self.rendererSpriteSTTexture = self.createRadiobutton(
-            p, 'left',
-            'Sprite Renderer', 'NodePath Type',
-            'Sprite particle renderer created from node path',
-            self.rendererSpriteSourceType, SpriteParticleRenderer.STFromNode,
-            self.setSpriteSourceType)
-        self.rendererSpriteSTTexture.pack(side = LEFT, expand = 1, fill = X)
+#        p = Frame(rendererSpriteTexturePage)        
+#        p.pack(fill = X)
+#        Label(p, width = 12, text = 'Texture Type:').pack(side = LEFT)
+#        self.rendererSpriteSourceType = IntVar()
+#        self.rendererSpriteSourceType.set(0)
+#        self.rendererSpriteSTTexture = self.createRadiobutton(
+#            p, 'left',
+#            'Sprite Renderer', 'Texture Type',
+#            'Sprite particle renderer created from texture file',
+#            self.rendererSpriteSourceType, 0,
+#            self.setSpriteSourceType)
+#        self.rendererSpriteSTTexture = self.createRadiobutton(
+#            p, 'left',
+#            'Sprite Renderer', 'NodePath Type',
+#            'Sprite particle renderer created from node path',
+#            self.rendererSpriteSourceType, 1,
+#            self.setSpriteSourceType)
+#        self.rendererSpriteSTTexture.pack(side = LEFT, expand = 1, fill = X)
+##################################################################################
         p = Frame(rendererSpriteTexturePage)
-        Label(p, width = 6, text = 'Texture:').pack(side = LEFT)
-        p.pack(fill = X)
+        p.pack(fill = BOTH, expand = 1)
+
+        bp = Frame(p)
+        bp.pack(expand = 0, side = TOP)
+
+        bbp = Frame(bp)
+        bbp.pack()
+        self.createCheckbutton(
+            bbp, 'Sprite Renderer', 'Enable Animation',
+            ("On: Multitexture node will be animated; " +
+             "Off: Only the first frame of a node is rendered"),
+            self.setRendererSpriteAnimationEnable, 0, side = LEFT)
+        self.createFloater(bbp, 'Sprite Renderer', 'Frame Rate', 'Animation frame rate',
+                           resolution=0.25,
+                           command = self.setRendererSpriteAnimationFrameRate).pack(side = LEFT)
+        
+        bbp = Frame(bp)
+        bbp.pack(pady=3)
+        Button(bbp, text = 'Add Texture',
+               command = self.addRendererSpriteAnimationTexture).pack(pady = 3, padx = 15, side = LEFT)
+        Button(bbp, text = 'Add Animation',
+               command = self.addRendererSpriteAnimationFromNode).pack(pady = 3, padx = 15, side = LEFT)
+        
+        pp = Frame(p)
+        pp.pack(fill = BOTH, expand = 1, pady = 3)
+        sf = Pmw.ScrolledFrame(pp, horizflex = 'elastic')
+        sf.pack(fill = BOTH, expand = 1)
+
+        self.rendererSpriteAnimationFrame = sf.interior()
+        self.rendererSpriteAnimationFrame.pack(fill = BOTH, expand = 1)
+        self.rendererSpriteAnimationWidgetList = []
+
         self.rendererSpriteTexture = StringVar()
-#        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourcetexturename)
-        self.rendererSpriteTextureEntry = Entry(
-            p, width = 12,
-            textvariable = self.rendererSpriteTexture)
-        self.rendererSpriteTextureEntry.pack(side = LEFT, expand = 1, fill = X)
-        p = Frame(rendererSpriteTexturePage)
-        p.pack(fill = X)
-        Label(p, width = 6, text = 'file:').pack(side = LEFT)
         self.rendererSpriteFile = StringVar()
-#        self.rendererspritefile.set(spriteparticlerenderer.sourcefilename)
-        self.rendererSpriteFileEntry = Entry(
-            p, width = 12,
-            textvariable = self.rendererSpriteFile)
-        self.rendererSpriteFileEntry.pack(side = LEFT, expand = 1, fill = X)
-        Label(p, width = 6, text = 'Node:').pack(side = LEFT)
         self.rendererSpriteNode = StringVar()
-#        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
-        self.rendererSpriteNodeEntry = Entry(
-            p, width = 6,
-            textvariable = self.rendererSpriteNode)
-        self.rendererSpriteNodeEntry.pack(side = LEFT, expand = 1, fill = X)
-        # Init entries
-        self.setSpriteSourceType()
-        self.setTextureButton = Button(rendererSpriteTexturePage, text = 'Set Texture',
-                                       command = self.setRendererSpriteTexture)
-        self.setTextureButton.pack(fill = X, pady = 3)
+
+##################################################################################
         p = Frame(rendererSpriteScalePage)
         p.pack(fill = X)
         self.createCheckbutton(
@@ -787,7 +796,7 @@ class ParticlePanel(AppShell):
                                'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                                'OZero'),
                               self.setRendererSpriteColorBlendFbufferOperand)
-        self.getVariable('Sprite Renderer','Fbuffer Op.').set('OOne')
+        self.getVariable('Sprite Renderer','Fbuffer Op.').set('OOneMinusIncomingAlpha')
         p = Frame(rendererSpriteInterpolationPage)
         p.pack(fill = BOTH, expand = 1)
         addSegmentButton = Menubutton(p, text = 'Add Segment',
@@ -1643,20 +1652,10 @@ class ParticlePanel(AppShell):
                 lScale = "SP_SCALE"
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
         elif isinstance(renderer, SpriteParticleRenderer):
-            color = renderer.getColor() * 255.0
-            # Update widgets to reflect current default values
-            # Texture
-            textureName = renderer.getSourceTextureName()
-            if textureName != None:
-                self.rendererSpriteTexture.set(textureName)
-            # File
-            fileName = renderer.getSourceFileName()
-            if fileName != None:
-                self.rendererSpriteFile.set(fileName)
-            # Node
-            nodeName = renderer.getSourceNodeName()
-            if nodeName != None:
-                self.rendererSpriteNode.set(nodeName)
+            self.getWidget('Sprite Renderer','Frame Rate').set(renderer.getAnimateFramesRate(),0)
+            self.getVariable('Sprite Renderer','Enable Animation').set(
+                renderer.getAnimateFramesEnable())
+            self.readSpriteRendererAnimations() # Updates widgets with renderer data.
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
             self.getVariable('Sprite Renderer', 'Y Scale').set(
@@ -1790,7 +1789,7 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setLifeScale(lScale)
     # Sprite #
     def setSpriteSourceType(self):
-        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
+        if self.rendererSpriteSourceType.get() == 0:
             self.rendererSpriteTextureEntry['state'] = 'normal'
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
@@ -1804,12 +1803,54 @@ class ParticlePanel(AppShell):
             self.rendererSpriteTextureEntry['background'] = '#C0C0C0'
             self.rendererSpriteFileEntry['background'] = '#FFFFFF'
             self.rendererSpriteNodeEntry['background'] = '#FFFFFF'
-    def setRendererSpriteTexture(self):
-        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
-            self.particles.renderer.setTextureFromFile(self.rendererSpriteTexture.get())
-        else:
-            self.particles.renderer.setTextureFromNode(
-                self.rendererSpriteFile.get(), self.rendererSpriteNode.get())
+    def addConstantInterpolationSegment(self):
+        print 'adding constant'
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(cim.addConstant())
+
+        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+            parent = self.rendererSpriteSegmentFrame
+            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Constant'
+            self.rendererSpriteSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent,segName,seg))
+        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+            parent = self.rendererGeomSegmentFrame
+            segName = `len(self.rendererGeomSegmentWidgetList)`+':Constant'
+            self.rendererGeomSegmentWidgetList.append(
+                self.createConstantInterpolationSegmentWidget(parent,segName,seg))
+        parent.pack(fill=BOTH, expand=1)
+
+    def setRendererSpriteAnimationFrameRate(self,rate):
+        self.particles.renderer.setAnimateFramesRate(rate)
+    def setRendererSpriteAnimationEnable(self):
+        self.particles.renderer.setAnimateFramesEnable(
+            self.getVariable('Sprite Renderer','Enable Animation').get())
+    def addRendererSpriteAnimationTexture(self):
+        print 'adding texture'
+        ren = self.particles.getRenderer()
+        parent = self.rendererSpriteAnimationFrame
+
+        ren.addTextureFromFile()
+        animId = len(self.rendererSpriteAnimationWidgetList)
+        anim = ren.getAnim(animId)
+        
+        self.rendererSpriteAnimationWidgetList.append(
+            self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
+        parent.pack(fill=BOTH, expand=1)
+    def addRendererSpriteAnimationFromNode(self):
+        print 'adding animation'
+        ren = self.particles.getRenderer()
+        parent = self.rendererSpriteAnimationFrame
+
+        ren.addTextureFromNode()
+        animId = len(self.rendererSpriteAnimationWidgetList)
+        anim = ren.getAnim(animId)
+            
+        self.rendererSpriteAnimationWidgetList.append(
+            self.createSpriteAnimationNodeWidget(parent,anim,`animId`))
+        parent.pack(fill=BOTH, expand=1)
+        
     def toggleRendererSpriteXScale(self):
         self.particles.renderer.setXScaleFlag(
             self.getVariable('Sprite Renderer', 'X Scale').get())
@@ -2145,12 +2186,126 @@ class ParticlePanel(AppShell):
         f.pack(fill = X)
         return frame
 
-#    def updateRendererSpriteSegments(self):
-#        ren = self.particles.getRenderer()
-#        cim = ren.getColorInterpolationManager()
-#        seg = cim.getSegment(cim.addConstant())
+    def createSpriteAnimationFrame(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        pass
+        frame = Frame(parent, relief = RAISED, borderwidth = 2)
+        frame.pack(pady = 1, fill = X, expand = 0)
 
+        lFrame = Frame(frame, relief = FLAT)
+        lFrame.pack(fill = X, expand = 1)
+
+        def delete(s = self, fr = frame):
+#            import pdb; pdb.set_trace()
+            i = s.rendererSpriteAnimationWidgetList.index(fr)
+            s.rendererSpriteAnimationWidgetList[i] = None
+            fr.pack_forget()
+            fr.destroy()
+            s.writeSpriteRendererAnimations()
+            s.readSpriteRendererAnimations()
+
+        Button(lFrame, text = 'X', foreground = 'Red', font = ('MSSansSerif', 8, 'bold'),
+               command = delete).pack(side = RIGHT, expand = 0)
+        if(anim.getSourceType()==SpriteAnim.STTexture):
+            type = 'Texture'
+        else:
+            type = 'From Node'
+        Label(lFrame, text = animName+': '+type,
+              foreground = 'Blue',
+              font = ('MSSansSerif', 12, 'bold'),
+              ).pack(fill = X, expand = 1)
         
+        frame.animSourceType = anim.getSourceType()
+        return frame
+    
+    def createSpriteAnimationTextureWidget(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        frame = self.createSpriteAnimationFrame(parent,anim,animName)
+        f = Frame(frame)
+        f.pack(fill=X)
+
+        Label(f, text = 'Texture: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
+        strVar = StringVar()
+        entry = Entry(f,textvariable = strVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
+        strVar.set(anim.getTexSource())
+        Button(f, text = 'Update',
+               command = self.writeSpriteRendererAnimations).pack(side=LEFT)
+        self.variableDict['Sprite Renderer-'+animName+' Anim Texture'] = strVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Texture'] = entry
+
+        return frame
+
+    def createSpriteAnimationNodeWidget(self, parent, anim, animName):
+        ren = self.particles.getRenderer()
+        frame = self.createSpriteAnimationFrame(parent,anim, animName)
+        f = Frame(frame)
+        f.pack(fill=X)
+
+        lf = Frame(f)
+        lf.pack(fill=X, expand=1)
+        Label(lf, text = 'Model: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
+        strVar = StringVar()
+        entry = Entry(lf,textvariable = strVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
+        strVar.set(anim.getModelSource())
+        Button(lf, text = 'Update',
+               command = self.writeSpriteRendererAnimations).pack(side=LEFT)
+        
+        self.variableDict['Sprite Renderer-'+animName+' Anim Model'] = strVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Model'] = entry
+
+        lf = Frame(f)
+        lf.pack(fill=X, expand=1)
+        Label(lf, text = 'Node: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
+        strVar = StringVar()
+        entry = Entry(lf,textvariable = strVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
+        strVar.set(anim.getNodeSource())
+        Button(lf, text = 'Update',
+               command = self.writeSpriteRendererAnimations).pack(side=LEFT)
+        
+        self.variableDict['Sprite Renderer-'+animName+' Anim Node'] = strVar
+        self.widgetDict['Sprite Renderer-'+animName+' Anim Node'] = entry
+
+        return frame
+
+    def readSpriteRendererAnimations(self):
+        ren = self.particles.getRenderer()
+
+        for widget in self.rendererSpriteAnimationWidgetList:
+            if(widget):
+                widget.pack_forget()
+                widget.destroy()
+
+        self.rendererSpriteAnimationWidgetList = []
+#        import pdb; pdb.set_trace()
+        for anim in [ren.getAnim(x) for x in range(ren.getNumAnims())]:
+            if(anim.getSourceType() == SpriteAnim.STTexture):
+                w = self.createSpriteAnimationTextureWidget(self.rendererSpriteAnimationFrame,anim,`len(self.rendererSpriteAnimationWidgetList)`)
+            else:
+                w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame,anim,`len(self.rendererSpriteAnimationWidgetList)`)
+            self.rendererSpriteAnimationWidgetList.append(w)
+        
+    def writeSpriteRendererAnimations(self):
+        ren = self.particles.getRenderer()
+
+        for x in range(ren.getNumAnims()):
+            ren.removeAnimation(0)
+
+        for x in range(len(self.rendererSpriteAnimationWidgetList)):
+            if(self.rendererSpriteAnimationWidgetList[x]):
+                if(self.rendererSpriteAnimationWidgetList[x].animSourceType == SpriteAnim.STTexture):
+                    texSource = self.getVariable('Sprite Renderer', `x` + ' Anim Texture').get()
+                    if(x == 0):
+                        ren.setTextureFromFile(texSource)
+                    else:
+                        ren.addTextureFromFile(texSource)
+                else:
+                    modelSource = self.getVariable('Sprite Renderer', `x` + ' Anim Model').get()
+                    nodeSource = self.getVariable('Sprite Renderer', `x` + ' Anim Node').get()
+                    if(x == 0):
+                        ren.setTextureFromNode(modelSource,nodeSource)
+                    else:
+                        ren.addTextureFromNode(modelSource,nodeSource)
+    
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page

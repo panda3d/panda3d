@@ -140,15 +140,7 @@ class Particles(ParticleSystem):
             self.renderer = SparkleParticleRenderer()
         elif (type == "SpriteParticleRenderer"):
             self.renderer = SpriteParticleRendererExt.SpriteParticleRendererExt()
-            if (self.renderer.getSourceType() ==
-                SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
-                # Use current default texture 
-                # See sourceTextureName SpriteParticleRenderer-extensions.py
-                self.renderer.setTextureFromFile()
-            else:
-                # Use current default model file and node
-                # See sourceFileName and sourceNodeName in SpriteParticleRenderer-extensions.py
-                self.renderer.setTextureFromNode()
+            self.renderer.setTextureFromFile()
         else:
             print "unknown renderer type: %s" % type
             return None
@@ -390,14 +382,18 @@ class Particles(ParticleSystem):
             file.write(targ + '.renderer.setLifeScale(SparkleParticleRenderer.' + lScale + ')\n')
         elif (self.rendererType == "SpriteParticleRenderer"):
             file.write('# Sprite parameters\n')
-#            if (self.renderer.getSourceType() == 0):
-            if (self.renderer.getSourceType() == SpriteParticleRendererExt.SpriteParticleRendererExt.STTexture):
-                tex = self.renderer.getTexture()
-                file.write(targ + '.renderer.setTexture(loader.loadTexture(\'' + tex.getName() + '\'))\n')
-            else:
-                modelName = self.renderer.getSourceFileName()
-                nodeName = self.renderer.getSourceNodeName()
-                file.write(targ + '.renderer.setTextureFromNode("%s", "%s")\n' % (modelName, nodeName))
+            if (self.renderer.getAnimateFramesEnable()):
+                file.write(targ + '.renderer.setAnimateFramesEnable(True)\n')
+                rate = self.renderer.getAnimateFramesRate()
+                if(rate):
+                    file.write(targ + '.renderer.setAnimationFrameRate(%.3f)\n'%rate)
+            animCount = self.renderer.getNumAnims()
+            for x in range(animCount):
+                anim = self.renderer.getAnim(x)
+                if(anim.getSourceType() == SpriteAnim.STTexture):
+                    file.write(targ + '.renderer.%sTexture(loader.loadTexture(\'%s\'))\n' % ((x>0 and 'add' or 'set',)[0], anim.getTexSource()))
+                else:
+                    file.write(targ + '.renderer.%sTextureFromNode(\'%s\',\'%s\')\n' % ((x>0 and 'add' or 'set',)[0], anim.getModelSource(), anim.getNodeSource()))
             sColor = self.renderer.getColor()
             file.write((targ + '.renderer.setColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
             file.write(targ + '.renderer.setXScaleFlag(%d)\n' % self.renderer.getXScaleFlag())
