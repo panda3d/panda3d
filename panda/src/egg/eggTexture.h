@@ -119,6 +119,7 @@ PUBLISHED:
     CS_primary_color,
     CS_previous,
     CS_constant_color_scale,
+    CS_last_saved_result,
   };
   enum CombineOperand {
     CO_unspecified,
@@ -179,6 +180,9 @@ PUBLISHED:
   INLINE CombineSource get_combine_source(CombineChannel channel, int n) const;
   INLINE void set_combine_operand(CombineChannel channel, int n, CombineOperand co);
   INLINE CombineOperand get_combine_operand(CombineChannel channel, int n) const;
+
+  INLINE void set_saved_result(bool saved_result);
+  INLINE bool get_saved_result() const;
 
   INLINE void set_tex_gen(TexGen tex_gen);
   INLINE TexGen get_tex_gen() const;
@@ -270,6 +274,7 @@ private:
   FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
   EnvType _env_type;
+  bool _saved_result;
   TexGen _tex_gen;
   string _stage_name;
   int _priority;

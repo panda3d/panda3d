@@ -35,7 +35,8 @@ static const unsigned short _bam_major_ver = 5;
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 // Bumped to major version 5 on 5/6/05 for new Geom implementation.
 
-static const unsigned short _bam_minor_ver = 0;
+static const unsigned short _bam_minor_ver = 1;
+// Bumped to minor version 1 on 7/14/05 to add TextureStage::_saved_result.
 
 
 #endif

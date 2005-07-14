@@ -59,17 +59,17 @@ PUBLISHED:
 
   enum CombineMode {
     CM_undefined,
-    CM_replace,      // 1 operand
-    CM_modulate,     // 2 operands
-    CM_add,          // 2 operands
-    CM_add_signed,   // 2 operands
-    CM_interpolate,  // 3 operands
-    CM_subtract,     // 2 operands
+    CM_replace,
+    CM_modulate,
+    CM_add,
+    CM_add_signed,
+    CM_interpolate,
+    CM_subtract,
 
     // The following are valid only for combine_rgb, not
     // combine_alpha.
-    CM_dot3_rgb,     // 2 operands
-    CM_dot3_rgba,    // 2 operands
+    CM_dot3_rgb,
+    CM_dot3_rgba,
   };
 
   enum CombineSource {
@@ -79,7 +79,7 @@ PUBLISHED:
     CS_primary_color,
     CS_previous,
     CS_constant_color_scale,
-    CS_crossbar_stage,
+    CS_last_saved_result,
   };
 
   enum CombineOperand {
@@ -117,126 +117,43 @@ PUBLISHED:
   INLINE void set_alpha_scale(int alpha_scale);
   INLINE int get_alpha_scale() const;
 
+  INLINE void set_saved_result(bool saved_result);
+  INLINE bool get_saved_result() const;
+
   INLINE void set_combine_rgb(CombineMode mode, 
                               CombineSource source0, CombineOperand operand0);
   INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0);
-  INLINE void set_combine_rgb(CombineMode mode, 
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1);
   INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              CombineSource source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1);
-  INLINE void set_combine_rgb(CombineMode mode, 
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1,
                               CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              CombineSource source1, CombineOperand operand1,
-                              CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              CombineSource source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1,
-                              CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              CombineSource source0, CombineOperand operand0,
-                              CombineSource source1, CombineOperand operand1,
-                              const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              CombineSource source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1,
-                              const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              CombineSource source1, CombineOperand operand1,
-                              const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1,
-                              CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_rgb(CombineMode mode, 
-                              const TextureStage *source0, CombineOperand operand0,
-                              const TextureStage *source1, CombineOperand operand1,
-                              const TextureStage *source2, CombineOperand operand2);
-
   INLINE CombineMode get_combine_rgb_mode() const;
   INLINE int get_num_combine_rgb_operands() const;
   INLINE CombineSource get_combine_rgb_source0() const;
-  INLINE const TextureStage *get_combine_rgb_source0_stage() const;
   INLINE CombineOperand get_combine_rgb_operand0() const;
   INLINE CombineSource get_combine_rgb_source1() const;
-  INLINE const TextureStage *get_combine_rgb_source1_stage() const;
   INLINE CombineOperand get_combine_rgb_operand1() const;
   INLINE CombineSource get_combine_rgb_source2() const;
-  INLINE const TextureStage *get_combine_rgb_source2_stage() const;
   INLINE CombineOperand get_combine_rgb_operand2() const;
 
   INLINE void set_combine_alpha(CombineMode mode, 
                                 CombineSource source0, CombineOperand operand0);
   INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0);
-  INLINE void set_combine_alpha(CombineMode mode, 
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1);
   INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                CombineSource source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1);
-  INLINE void set_combine_alpha(CombineMode mode, 
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1,
                                 CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                CombineSource source1, CombineOperand operand1,
-                                CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                CombineSource source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1,
-                                CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                CombineSource source0, CombineOperand operand0,
-                                CombineSource source1, CombineOperand operand1,
-                                const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                CombineSource source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1,
-                                const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                CombineSource source1, CombineOperand operand1,
-                                const TextureStage *source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1,
-                                CombineSource source2, CombineOperand operand2);
-  INLINE void set_combine_alpha(CombineMode mode, 
-                                const TextureStage *source0, CombineOperand operand0,
-                                const TextureStage *source1, CombineOperand operand1,
-                                const TextureStage *source2, CombineOperand operand2);
-  
   INLINE CombineMode get_combine_alpha_mode() const;
   INLINE int get_num_combine_alpha_operands() const;
   INLINE CombineSource get_combine_alpha_source0() const;
-  INLINE const TextureStage *get_combine_alpha_source0_stage() const;
   INLINE CombineOperand get_combine_alpha_operand0() const;
   INLINE CombineSource get_combine_alpha_source1() const;
-  INLINE const TextureStage *get_combine_alpha_source1_stage() const;
   INLINE CombineOperand get_combine_alpha_operand1() const;
   INLINE CombineSource get_combine_alpha_source2() const;
-  INLINE const TextureStage *get_combine_alpha_source2_stage() const;
   INLINE CombineOperand get_combine_alpha_operand2() const;
 
   INLINE bool uses_color() const;
@@ -253,11 +170,6 @@ public:
 private:
   INLINE void update_color_flags();
 
-  static void write_operand(ostream &out, int operand_index, 
-                            CombineSource source, 
-                            const TextureStage *source_stage,
-                            CombineOperand operand);
-
   static int get_expected_num_combine_operands(CombineMode cm);
   static bool operand_valid_for_rgb(CombineOperand co);
   static bool operand_valid_for_alpha(CombineOperand co);
@@ -270,31 +182,26 @@ private:
   Colorf _color;
   int _rgb_scale;
   int _alpha_scale;
+  bool _saved_result;
   bool _uses_color;
   bool _involves_color_scale;
 
   CombineMode _combine_rgb_mode;
   int _num_combine_rgb_operands;
   CombineSource _combine_rgb_source0;
-  CPT(TextureStage) _combine_rgb_source0_stage;
   CombineOperand _combine_rgb_operand0;
   CombineSource _combine_rgb_source1;
-  CPT(TextureStage) _combine_rgb_source1_stage;
   CombineOperand _combine_rgb_operand1;
   CombineSource _combine_rgb_source2;
-  CPT(TextureStage) _combine_rgb_source2_stage;
   CombineOperand _combine_rgb_operand2;
 
   CombineMode _combine_alpha_mode;
   int _num_combine_alpha_operands;
   CombineSource _combine_alpha_source0;
-  CPT(TextureStage) _combine_alpha_source0_stage;
   CombineOperand _combine_alpha_operand0;
   CombineSource _combine_alpha_source1;
-  CPT(TextureStage) _combine_alpha_source1_stage;
   CombineOperand _combine_alpha_operand1;
   CombineSource _combine_alpha_source2;
-  CPT(TextureStage) _combine_alpha_source2_stage;
   CombineOperand _combine_alpha_operand2;
 
   static PT(TextureStage) _default_stage;

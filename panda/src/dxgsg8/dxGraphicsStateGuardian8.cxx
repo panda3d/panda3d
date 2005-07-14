@@ -115,10 +115,6 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
     Geom::GR_point_perspective | Geom::GR_point_sprite |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
-
-  _supports_texture_combine = true;
-  _supports_texture_crossbar = false;
-  _supports_texture_dot3 = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1519,6 +1515,10 @@ reset() {
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
+  _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
+  _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
+  _supports_texture_dot3 = true;
+
   ZeroMemory(&_lmodel_ambient, sizeof(Colorf));
   _d3d_device->SetRenderState(D3DRS_AMBIENT, 0x0);
 
@@ -2243,6 +2243,7 @@ do_issue_texture() {
     bool any_point_sprite = false;
     switch (mode) {
     case TexGenAttrib::M_off:
+    case TexGenAttrib::M_light_vector:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
       
@@ -2888,6 +2889,12 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     break;
   }
 
+  if (stage->get_saved_result()) {
+    _d3d_device->SetTextureStageState(i, D3DTSS_RESULTARG, D3DTA_TEMP);
+  } else {
+    _d3d_device->SetTextureStageState(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
+  }
+
   if (stage->uses_color()) {
     // Set up the constant color for this stage.
 
@@ -3299,8 +3306,8 @@ get_texture_argument(TextureStage::CombineSource source,
   case TextureStage::CS_previous:
     return D3DTA_CURRENT | get_texture_argument_modifier(operand);
 
-  case TextureStage::CS_crossbar_stage:
-    break;
+  case TextureStage::CS_last_saved_result:
+    return D3DTA_TEMP | get_texture_argument_modifier(operand);
   }
   dxgsg8_cat.error()
     << "Invalid TextureStage::CombineSource value (" << (int)source << ")\n";

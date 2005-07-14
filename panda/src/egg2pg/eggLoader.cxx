@@ -1198,6 +1198,8 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_alpha_scale(egg_tex->get_alpha_scale());
   }
 
+  stage->set_saved_result(egg_tex->get_saved_result());
+
   stage->set_sort(egg_tex->get_multitexture_sort() * 10);
 
   if (egg_tex->has_priority()) {
@@ -3155,6 +3157,9 @@ get_combine_source(const EggTexture *egg_tex,
 
   case EggTexture::CS_constant_color_scale:
     return TextureStage::CS_constant_color_scale;
+
+  case EggTexture::CS_last_saved_result:
+    return TextureStage::CS_last_saved_result;
   };
 
   return TextureStage::CS_undefined;

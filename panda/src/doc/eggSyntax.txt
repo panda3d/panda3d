@@ -257,6 +257,7 @@ appear before they are referenced.
       PRIMARY-COLOR
       PREVIOUS
       CONSTANT_COLOR_SCALE
+      LAST_SAVED_RESULT
 
     combine-operand may be one of:
 
@@ -525,7 +526,7 @@ appear before they are referenced.
     (1 1 1 1).  The morph-list is an optional list of <DRGBA> entries.
 
 
-    <UV> [name] { u v [morph-list] }
+    <UV> [name] { u v [tangent] [binormal] [morph-list] }
 
     This gives the texture coordinates of the vertex.  This must be
     specified if a texture is to be mapped onto this geometry.  As
@@ -535,6 +536,16 @@ appear before they are referenced.
     of UV's on each vertex, each with a unique name; this provides
     support for multitexturing.  The name may be omitted to specify
     the default UV's.
+
+    The UV's also support an optional tangent and binormal.  These
+    values are based on the vertex normal and the UV coordinates of
+    connected vertices, and are used to render normal maps and similar
+    lighting effects.  They are defined within the <UV> entry because
+    there may be a different set of tangents and binormals for each
+    different UV coordinate set.  If present, they have the expected
+    syntax:
+
+    <UV> [name] { u v <Tangent> { x y z } <Binormal> { x y z } }
 
 
 <DynamicVertexPool> name { vertices }

@@ -224,8 +224,8 @@ protected:
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
   GLint get_texture_src_type(TextureStage::CombineSource cs,
-                             const TextureStage *source_stage, 
-                             const TextureAttrib *attrib, int this_stage) const;
+                             int last_stage, int last_saved_result, 
+                             int this_stage) const;
   static GLint get_texture_operand_type(TextureStage::CombineOperand co);
   static GLenum get_fog_mode_type(Fog::Mode m);
   static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);

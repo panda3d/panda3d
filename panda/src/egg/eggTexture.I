@@ -307,6 +307,41 @@ get_combine_operand(CombineChannel channel, int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_saved_result
+//       Access: Published
+//  Description: Sets the saved_result flag.  When this is true, the
+//               output of this stage is not part of the normal
+//               pipeline--that is, it will not be supplied as the
+//               "previous" source for the next texture stage--but it
+//               will instead be supplied as the "last_saved_result"
+//               source for any future stages, until the next
+//               TextureStage with a saved_result set true is
+//               encountered.
+//
+//               This can be used to reuse the results of this texture
+//               stage as input to more than one stage later in the
+//               pipeline.
+//
+//               The last texture in the pipeline (the one with the
+//               highest sort value) should not have this flag set.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_saved_result(bool saved_result) {
+  _saved_result = saved_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_saved_result
+//       Access: Published
+//  Description: Returns the current setting of the saved_result flag.
+//               See set_saved_result().
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+get_saved_result() const {
+  return _saved_result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_tex_gen
 //       Access: Published
 //  Description:

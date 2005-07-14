@@ -43,6 +43,7 @@ EggTexture(const string &tref_name, const string &filename)
   _magfilter = FT_unspecified;
   _anisotropic_degree = 0;
   _env_type = ET_unspecified;
+  _saved_result = false;
   _tex_gen = TG_unspecified;
   _priority = 0;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -82,6 +83,7 @@ operator = (const EggTexture &copy) {
   _magfilter = copy._magfilter;
   _anisotropic_degree = copy._anisotropic_degree;
   _env_type = copy._env_type;
+  _saved_result = copy._saved_result;
   _tex_gen = copy._tex_gen;
   _stage_name = copy._stage_name;
   _priority = copy._priority;
@@ -194,6 +196,11 @@ write(ostream &out, int indent_level) const {
           << " { " << get_combine_operand(channel, i) << " }\n";
       }
     }
+  }
+
+  if (get_saved_result()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> saved-result { 1 }\n";
   }
 
   if (get_tex_gen() != TG_unspecified) {
@@ -763,6 +770,9 @@ string_combine_source(const string &string) {
   } else if (cmp_nocase_uh(string, "constant_color_scale") == 0) {
     return CS_constant_color_scale;
 
+  } else if (cmp_nocase_uh(string, "last_saved_result") == 0) {
+    return CS_last_saved_result;
+
   } else {
     return CS_unspecified;
   }
@@ -1097,6 +1107,9 @@ operator << (ostream &out, EggTexture::CombineSource cs) {
 
   case EggTexture::CS_constant_color_scale:
     return out << "constant_color_scale";
+
+  case EggTexture::CS_last_saved_result:
+    return out << "last_saved_result";
   }
 
   return out << "**invalid CombineSource(" << (int)cs << ")**";

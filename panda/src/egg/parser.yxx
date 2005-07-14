@@ -515,6 +515,9 @@ texture_body:
       texture->set_combine_operand(EggTexture::CC_alpha, 2, co);
     }
 
+  } else if (cmp_nocase_uh(name, "saved_result") == 0) {
+    texture->set_saved_result(((int)value) != 0);
+
   } else if (cmp_nocase_uh(name, "tex_gen") == 0) {
     EggTexture::TexGen tex_gen = EggTexture::string_tex_gen(strval);
     if (tex_gen == EggTexture::TG_unspecified) {

@@ -249,19 +249,16 @@ get_supports_texture_combine() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supports_texture_crossbar
+//     Function: GraphicsStateGuardian::get_supports_texture_saved_result
 //       Access: Published
 //  Description: Returns true if this GSG can use the
-//               TextureStage::CS_crossbar_stage blend source, which
-//               allows you to specify an arbitrary TextureStage as a
-//               source parameter to set_combine_rgb() or
-//               set_combine_alpha().  If this is false, you must use
-//               choose from one of the available enumerated values
-//               for the source of each operand.
+//               TextureStage::CS_last_saved_result source, which
+//               allows you to save the result of a TextureStage and
+//               re-use it for multiple inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsStateGuardian::
-get_supports_texture_crossbar() const {
-  return _supports_texture_crossbar;
+get_supports_texture_saved_result() const {
+  return _supports_texture_saved_result;
 }
 
 ////////////////////////////////////////////////////////////////////

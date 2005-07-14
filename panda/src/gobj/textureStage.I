@@ -260,6 +260,41 @@ get_alpha_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::set_saved_result
+//       Access: Published
+//  Description: Sets the saved_result flag.  When this is true, the
+//               output of this stage is not part of the normal
+//               pipeline--that is, it will not be supplied as the
+//               "previous" source for the next texture stage--but it
+//               will instead be supplied as the "last_saved_result"
+//               source for any future stages, until the next
+//               TextureStage with a saved_result set true is
+//               encountered.
+//
+//               This can be used to reuse the results of this texture
+//               stage as input to more than one stage later in the
+//               pipeline.
+//
+//               The last texture in the pipeline (the one with the
+//               highest sort value) should not have this flag set.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStage::
+set_saved_result(bool saved_result) {
+  _saved_result = saved_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_saved_result
+//       Access: Published
+//  Description: Returns the current setting of the saved_result flag.
+//               See set_saved_result().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+get_saved_result() const {
+  return _saved_result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::set_combine_rgb
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
@@ -288,32 +323,6 @@ set_combine_rgb(CombineMode mode,
 //     Function: TextureStage::set_combine_rgb
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_replace only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0) {
-  nassertv(get_expected_num_combine_operands(mode) == 1);
-  nassertv(operand_valid_for_rgb(operand0));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 1;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_undefined;
-  _combine_rgb_operand1 = CO_undefined;
-  _combine_rgb_source2 = CS_undefined;
-  _combine_rgb_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
 //               represent a two-parameter operation.  Specifically,
 //               this is everything except for CM_replace and
 //               CM_interpolate.
@@ -342,94 +351,6 @@ set_combine_rgb(CombineMode mode,
 //     Function: TextureStage::set_combine_rgb
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                CombineSource source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 2;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_undefined;
-  _combine_rgb_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                CombineSource source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 2;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_undefined;
-  _combine_rgb_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 2;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_undefined;
-  _combine_rgb_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
 //               represent a one-parameter operation.  Specifically,
 //               this is CM_interpolate only.
 ////////////////////////////////////////////////////////////////////
@@ -450,221 +371,6 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_source1 = source1;
   _combine_rgb_operand1 = operand1;
   _combine_rgb_source2 = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                CombineSource source1, CombineOperand operand1,
-                CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                CombineSource source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1,
-                CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                CombineSource source0, CombineOperand operand0,
-                CombineSource source1, CombineOperand operand1,
-                const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_crossbar_stage;
-  _combine_rgb_source2_stage = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                CombineSource source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1,
-                const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_crossbar_stage;
-  _combine_rgb_source2_stage = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                CombineSource source1, CombineOperand operand1,
-                const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_crossbar_stage;
-  _combine_rgb_source2_stage = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1,
-                CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = source2;
-  _combine_rgb_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_rgb
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_rgb(CombineMode mode, 
-                const TextureStage *source0, CombineOperand operand0,
-                const TextureStage *source1, CombineOperand operand1,
-                const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_rgb(operand0));
-  nassertv(operand_valid_for_rgb(operand1));
-  nassertv(operand_valid_for_rgb(operand2));
-  _mode = M_combine;
-  _num_combine_rgb_operands = 3;
-  _combine_rgb_mode = mode;
-  _combine_rgb_source0 = CS_crossbar_stage;
-  _combine_rgb_source0_stage = source0;
-  _combine_rgb_operand0 = operand0;
-  _combine_rgb_source1 = CS_crossbar_stage;
-  _combine_rgb_source1_stage = source1;
-  _combine_rgb_operand1 = operand1;
-  _combine_rgb_source2 = CS_crossbar_stage;
-  _combine_rgb_source2_stage = source2;
   _combine_rgb_operand2 = operand2;
 
   update_color_flags();
@@ -703,21 +409,6 @@ get_combine_rgb_source0() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_rgb_source0_stage
-//       Access: Published
-//  Description: Get the TextureStage for source0 of combine_rgb_mode.
-//               This is valid only when get_combine_rgb_source0()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_rgb_source0_stage() const {
-  return _combine_rgb_source0_stage;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_combine_rgb_operand0
 //       Access: Published
 //  Description: Get operand0 of combine_rgb_mode
@@ -738,21 +429,6 @@ get_combine_rgb_source1() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_rgb_source1_stage
-//       Access: Published
-//  Description: Get the TextureStage for source1 of combine_rgb_mode.
-//               This is valid only when get_combine_rgb_source1()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_rgb_source1_stage() const {
-  return _combine_rgb_source1_stage;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_combine_rgb_operand1
 //       Access: Published
 //  Description: Get operand1 of combine_rgb_mode
@@ -770,21 +446,6 @@ get_combine_rgb_operand1() const {
 INLINE TextureStage::CombineSource TextureStage::
 get_combine_rgb_source2() const {
   return _combine_rgb_source2;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_rgb_source2_stage
-//       Access: Published
-//  Description: Get the TextureStage for source2 of combine_rgb_mode.
-//               This is valid only when get_combine_rgb_source2()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_rgb_source2_stage() const {
-  return _combine_rgb_source2_stage;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -826,32 +487,6 @@ set_combine_alpha(CombineMode mode,
 //     Function: TextureStage::set_combine_alpha
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_replace only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0) {
-  nassertv(get_expected_num_combine_operands(mode) == 1);
-  nassertv(operand_valid_for_alpha(operand0));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 1;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_undefined;
-  _combine_alpha_operand1 = CO_undefined;
-  _combine_alpha_source2 = CS_undefined;
-  _combine_alpha_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
 //               represent a two-parameter operation.  Specifically,
 //               this is everything except for CM_replace and
 //               CM_interpolate.
@@ -880,94 +515,6 @@ set_combine_alpha(CombineMode mode,
 //     Function: TextureStage::set_combine_alpha
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  CombineSource source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 2;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_undefined;
-  _combine_alpha_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  CombineSource source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 2;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_undefined;
-  _combine_alpha_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a two-parameter operation.  Specifically,
-//               this is everything except for CM_replace and
-//               CM_interpolate.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1) {
-  nassertv(get_expected_num_combine_operands(mode) == 2);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 2;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_undefined;
-  _combine_alpha_operand2 = CO_undefined;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
 //               represent a one-parameter operation.  Specifically,
 //               this is CM_interpolate only.
 ////////////////////////////////////////////////////////////////////
@@ -988,221 +535,6 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_source1 = source1;
   _combine_alpha_operand1 = operand1;
   _combine_alpha_source2 = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  CombineSource source1, CombineOperand operand1,
-                  CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  CombineSource source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1,
-                  CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  CombineSource source0, CombineOperand operand0,
-                  CombineSource source1, CombineOperand operand1,
-                  const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_crossbar_stage;
-  _combine_alpha_source2_stage = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  CombineSource source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1,
-                  const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_crossbar_stage;
-  _combine_alpha_source2_stage = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  CombineSource source1, CombineOperand operand1,
-                  const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_crossbar_stage;
-  _combine_alpha_source2_stage = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1,
-                  CombineSource source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = source2;
-  _combine_alpha_operand2 = operand2;
-
-  update_color_flags();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::set_combine_alpha
-//       Access: Published
-//  Description: Specifies any of the CombineMode values that
-//               represent a one-parameter operation.  Specifically,
-//               this is CM_interpolate only.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureStage::
-set_combine_alpha(CombineMode mode, 
-                  const TextureStage *source0, CombineOperand operand0,
-                  const TextureStage *source1, CombineOperand operand1,
-                  const TextureStage *source2, CombineOperand operand2) {
-  nassertv(get_expected_num_combine_operands(mode) == 3);
-  nassertv(operand_valid_for_alpha(operand0));
-  nassertv(operand_valid_for_alpha(operand1));
-  nassertv(operand_valid_for_alpha(operand2));
-  _mode = M_combine;
-  _num_combine_alpha_operands = 3;
-  _combine_alpha_mode = mode;
-  _combine_alpha_source0 = CS_crossbar_stage;
-  _combine_alpha_source0_stage = source0;
-  _combine_alpha_operand0 = operand0;
-  _combine_alpha_source1 = CS_crossbar_stage;
-  _combine_alpha_source1_stage = source1;
-  _combine_alpha_operand1 = operand1;
-  _combine_alpha_source2 = CS_crossbar_stage;
-  _combine_alpha_source2_stage = source2;
   _combine_alpha_operand2 = operand2;
 
   update_color_flags();
@@ -1241,21 +573,6 @@ get_combine_alpha_source0() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_alpha_source0_stage
-//       Access: Published
-//  Description: Get the TextureStage for source0 of combine_alpha_mode.
-//               This is valid only when get_combine_alpha_source0()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_alpha_source0_stage() const {
-  return _combine_alpha_source0_stage;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_combine_alpha_operand0
 //       Access: Published
 //  Description: Get operand0 of combine_alpha_mode
@@ -1276,21 +593,6 @@ get_combine_alpha_source1() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_alpha_source1_stage
-//       Access: Published
-//  Description: Get the TextureStage for source1 of combine_alpha_mode.
-//               This is valid only when get_combine_alpha_source1()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_alpha_source1_stage() const {
-  return _combine_alpha_source1_stage;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_combine_alpha_operand1
 //       Access: Published
 //  Description: Get operand1 of combine_alpha_mode
@@ -1308,21 +610,6 @@ get_combine_alpha_operand1() const {
 INLINE TextureStage::CombineSource TextureStage::
 get_combine_alpha_source2() const {
   return _combine_alpha_source2;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_combine_alpha_source2_stage
-//       Access: Published
-//  Description: Get the TextureStage for source2 of combine_alpha_mode.
-//               This is valid only when get_combine_alpha_source2()
-//               returns CS_crossbar_stage, indicating that the source
-//               is from a particular TextureStage (which may or may
-//               not be the immediately preceding stage in the
-//               pipeline).
-////////////////////////////////////////////////////////////////////
-INLINE const TextureStage *TextureStage::
-get_combine_alpha_source2_stage() const {
-  return _combine_alpha_source2_stage;
 }
 
 ////////////////////////////////////////////////////////////////////

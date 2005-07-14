@@ -39,6 +39,7 @@ TextureStage(const string &name) {
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _rgb_scale = 1;
   _alpha_scale = 1;
+  _saved_result = false;
   _combine_rgb_mode = CM_undefined;
   _num_combine_rgb_operands = 0;
   _combine_rgb_source0 = CS_undefined;
@@ -75,6 +76,7 @@ operator = (const TextureStage &other) {
   _color = other._color;
   _rgb_scale = other._rgb_scale;
   _alpha_scale = other._alpha_scale;
+  _saved_result = other._saved_result;
 
   _combine_rgb_mode = other._combine_rgb_mode;
   _combine_rgb_source0 = other._combine_rgb_source0;
@@ -114,71 +116,47 @@ write(ostream &out) const {
   out << "TextureStage " << get_name() << ", sort = " << get_sort() << ", priority = " << get_priority() << "\n"
       << "  texcoords = " << get_texcoord_name()->get_name()
       << ", mode = " << get_mode() << ", color = " << get_color()
-      << ", scale = " << get_rgb_scale() << ", " << get_alpha_scale() << "\n";
+      << ", scale = " << get_rgb_scale() << ", " << get_alpha_scale()
+      << ", saved_result = " << get_saved_result() << "\n";
 
   if (get_mode() == M_combine) {
     out << "  RGB combine mode =  " << get_combine_rgb_mode() << "\n";
     if (get_num_combine_rgb_operands() >= 1) {
-      write_operand(out, 0, get_combine_rgb_source0(), 
-                    get_combine_rgb_source0_stage(), 
-                    get_combine_rgb_operand0());
+      out << "    0: " << get_combine_rgb_source0() << ", "
+          << get_combine_rgb_operand0() << "\n";
     }
     if (get_num_combine_rgb_operands() >= 2) {
-      write_operand(out, 1, get_combine_rgb_source1(), 
-                    get_combine_rgb_source1_stage(), 
-                    get_combine_rgb_operand1());
+      out << "    1: " << get_combine_rgb_source1() << ", "
+          << get_combine_rgb_operand1() << "\n";
     }
     if (get_num_combine_rgb_operands() >= 3) {
-      write_operand(out, 2, get_combine_rgb_source2(), 
-                    get_combine_rgb_source2_stage(), 
-                    get_combine_rgb_operand2());
+      out << "    2: " << get_combine_rgb_source2() << ", "
+          << get_combine_rgb_operand2() << "\n";
     }
     out << "  alpha combine mode =  " << get_combine_alpha_mode() << "\n";
     if (get_num_combine_alpha_operands() >= 1) {
-      write_operand(out, 0, get_combine_alpha_source0(), 
-                    get_combine_alpha_source0_stage(), 
-                    get_combine_alpha_operand0());
+      out << "    0: " << get_combine_alpha_source0() << ", "
+          << get_combine_alpha_operand0() << "\n";
     }
     if (get_num_combine_alpha_operands() >= 2) {
-      write_operand(out, 1, get_combine_alpha_source1(), 
-                    get_combine_alpha_source1_stage(), 
-                    get_combine_alpha_operand1());
+      out << "    1: " << get_combine_alpha_source1() << ", "
+          << get_combine_alpha_operand1() << "\n";
     }
     if (get_num_combine_alpha_operands() >= 3) {
-      write_operand(out, 2, get_combine_alpha_source2(), 
-                    get_combine_alpha_source2_stage(), 
-                    get_combine_alpha_operand2());
+      out << "    2: " << get_combine_alpha_source2() << ", "
+          << get_combine_alpha_operand2() << "\n";
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::output
+//     Function: TextureStage::Destructor
 //       Access: Published
 //  Description: Just a single line output
 ////////////////////////////////////////////////////////////////////
 void TextureStage::
 output(ostream &out) const {
   out << "TextureStage " << get_name();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::write_operand
-//       Access: Private, Static
-//  Description: Used by write() to simply describe a single operand
-//               of the CM_combine mode (one of up to 3 defined by the
-//               stage).
-////////////////////////////////////////////////////////////////////
-void TextureStage::
-write_operand(ostream &out, int operand_index, CombineSource source, 
-              const TextureStage *source_stage, CombineOperand operand) {
-  if (source == CS_crossbar_stage) {
-    out << "    " << operand_index << ": " 
-        << *source_stage << ", " << operand << "\n";
-  } else {
-    out << "    " << operand_index << ": " 
-        << source << ", " << operand << "\n";
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,7 +286,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _rgb_scale = scan.get_uint8();
   _alpha_scale = scan.get_uint8();
-  
+  _saved_result = false;
+  if (manager->get_file_minor_ver() >= 1) {
+    _saved_result = scan.get_bool();
+  }
+
   _combine_rgb_mode = (TextureStage::CombineMode) scan.get_uint8();
   _num_combine_rgb_operands = scan.get_uint8();
   _combine_rgb_source0 = (TextureStage::CombineSource) scan.get_uint8();
@@ -327,27 +309,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _combine_alpha_source2 = (TextureStage::CombineSource) scan.get_uint8();
   _combine_alpha_operand2 = (TextureStage::CombineOperand) scan.get_uint8();
 
-  // We only read these pointers if the source types indicate they are
-  // defined.
-  if (_combine_rgb_source0 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-  if (_combine_rgb_source1 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-  if (_combine_rgb_source2 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-  if (_combine_alpha_source0 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-  if (_combine_alpha_source1 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-  if (_combine_alpha_source2 == CS_crossbar_stage) {
-    manager->read_pointer(scan);
-  }
-
   update_color_flags();
 }
 
@@ -363,27 +324,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
   _texcoord_name = DCAST(InternalName, p_list[pi++]);
-
-  // We only read these pointers if the source types indicate they are
-  // defined.
-  if (_combine_rgb_source0 == CS_crossbar_stage) {
-    _combine_rgb_source0_stage = DCAST(TextureStage, p_list[pi++]);
-  }
-  if (_combine_rgb_source1 == CS_crossbar_stage) {
-    _combine_rgb_source1_stage = DCAST(TextureStage, p_list[pi++]);
-  }
-  if (_combine_rgb_source2 == CS_crossbar_stage) {
-    _combine_rgb_source2_stage = DCAST(TextureStage, p_list[pi++]);
-  }
-  if (_combine_alpha_source0 == CS_crossbar_stage) {
-    _combine_alpha_source0_stage = DCAST(TextureStage, p_list[pi++]);
-  }
-  if (_combine_alpha_source1 == CS_crossbar_stage) {
-    _combine_alpha_source1_stage = DCAST(TextureStage, p_list[pi++]);
-  }
-  if (_combine_alpha_source2 == CS_crossbar_stage) {
-    _combine_alpha_source2_stage = DCAST(TextureStage, p_list[pi++]);
-  }
 
   return pi;
 }
@@ -411,6 +351,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     _color.write_datagram(me);
     me.add_uint8(_rgb_scale);
     me.add_uint8(_alpha_scale);
+    me.add_bool(_saved_result);
     
     me.add_uint8(_combine_rgb_mode);
     me.add_uint8(_num_combine_rgb_operands);
@@ -429,27 +370,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint8(_combine_alpha_operand1);
     me.add_uint8(_combine_alpha_source2);
     me.add_uint8(_combine_alpha_operand2);
-
-    // We only write these pointers if the source types indicate they
-    // are defined.
-    if (_combine_rgb_source0 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_rgb_source0_stage);
-    }
-    if (_combine_rgb_source1 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_rgb_source1_stage);
-    }
-    if (_combine_rgb_source2 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_rgb_source2_stage);
-    }
-    if (_combine_alpha_source0 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_alpha_source0_stage);
-    }
-    if (_combine_alpha_source1 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_alpha_source1_stage);
-    }
-    if (_combine_alpha_source2 == CS_crossbar_stage) {
-      manager->write_pointer(me, _combine_alpha_source2_stage);
-    }
   }
 }
 
@@ -536,8 +456,8 @@ operator << (ostream &out, TextureStage::CombineSource cs) {
   case TextureStage::CS_constant_color_scale:
     return out << "constant_color_scale";
 
-  case TextureStage::CS_crossbar_stage:
-    return out << "crossbar_stage";
+  case TextureStage::CS_last_saved_result:
+    return out << "last_saved_result";
   }
 
   return out << "**invalid CombineSource(" << (int)cs << ")**";

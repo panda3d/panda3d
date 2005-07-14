@@ -518,7 +518,7 @@ reset() {
 
   _supports_texture_combine = 
     has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
-  _supports_texture_crossbar =
+  _supports_texture_saved_result =
     has_extension("GL_ARB_texture_env_crossbar") || is_at_least_version(1, 4);
   _supports_texture_dot3 =
     has_extension("GL_ARB_texture_env_dot3") || is_at_least_version(1, 3);
@@ -3556,40 +3556,40 @@ get_texture_combine_type(TextureStage::CombineMode cm) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_src_type(TextureStage::CombineSource cs,
-                     const TextureStage *source_stage, 
-                     const TextureAttrib *attrib, int this_stage) const {
+                     int last_stage, int last_saved_result, 
+                     int this_stage) const {
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
   case TextureStage::CS_texture: return GL_TEXTURE;
   case TextureStage::CS_constant: return GL_CONSTANT;
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
-  case TextureStage::CS_previous: return GL_PREVIOUS;
   case TextureStage::CS_constant_color_scale: return GL_CONSTANT;
 
-  case TextureStage::CS_crossbar_stage:
-    {
-      int n = attrib->find_on_stage(source_stage);
-      if (n >= 0) {
-        if (_supports_texture_crossbar) {
-          return GL_TEXTURE0 + n;
-
-        } else if (n == this_stage) {
-          return GL_TEXTURE;
-
-        } else if (n == this_stage - 1) {
-          return GL_PREVIOUS;
-
-        } else {
-          GLCAT.warning()
-            << "Crossbar blending not supported\n";
-          return GL_PRIMARY_COLOR;
-        }
-      }
-      GLCAT.warning()
-        << "TextureStage " << *attrib->get_on_stage(this_stage)
-        << " sources unused stage: " << *source_stage << "\n";
+  case TextureStage::CS_previous: 
+    if (last_stage == this_stage - 1) {
+      return GL_PREVIOUS;
+    } else if (last_stage == -1) {
       return GL_PRIMARY_COLOR;
-    } 
+    } else if (_supports_texture_saved_result) {
+      return GL_TEXTURE0 + last_stage;
+    } else {
+      GLCAT.warning()
+        << "Current OpenGL driver does not support texture crossbar blending.\n";
+      return GL_PRIMARY_COLOR;
+    }
+      
+  case TextureStage::CS_last_saved_result: 
+    if (last_saved_result == this_stage - 1) {
+      return GL_PREVIOUS;
+    } else if (last_saved_result == -1) {
+      return GL_PRIMARY_COLOR;
+    } else if (_supports_texture_saved_result) {
+      return GL_TEXTURE0 + last_saved_result;
+    } else {
+      GLCAT.warning()
+        << "Current OpenGL driver does not support texture crossbar blending.\n";
+      return GL_PRIMARY_COLOR;
+    }
   }
 
   GLCAT.error()
@@ -4488,6 +4488,8 @@ do_issue_texture() {
 
   _texture_involves_color_scale = false;
 
+  int last_saved_result = -1;
+  int last_stage = -1;
   int i;
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = new_texture->get_on_stage(i);
@@ -4573,8 +4575,7 @@ do_issue_texture() {
           case 3:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
                          get_texture_src_type(stage->get_combine_rgb_source2(),
-                                              stage->get_combine_rgb_source2_stage(), 
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
                          get_texture_operand_type(stage->get_combine_rgb_operand2()));
             // fall through
@@ -4582,8 +4583,7 @@ do_issue_texture() {
           case 2:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
                          get_texture_src_type(stage->get_combine_rgb_source1(),
-                                              stage->get_combine_rgb_source1_stage(),
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
                          get_texture_operand_type(stage->get_combine_rgb_operand1()));
             // fall through
@@ -4591,8 +4591,7 @@ do_issue_texture() {
           case 1:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
                          get_texture_src_type(stage->get_combine_rgb_source0(),
-                                              stage->get_combine_rgb_source0_stage(),
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
                          get_texture_operand_type(stage->get_combine_rgb_operand0()));
             // fall through
@@ -4607,8 +4606,7 @@ do_issue_texture() {
           case 3:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
                          get_texture_src_type(stage->get_combine_alpha_source2(),
-                                              stage->get_combine_alpha_source2_stage(),
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
                          get_texture_operand_type(stage->get_combine_alpha_operand2()));
             // fall through
@@ -4616,8 +4614,7 @@ do_issue_texture() {
           case 2:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
                          get_texture_src_type(stage->get_combine_alpha_source1(),
-                                              stage->get_combine_alpha_source1_stage(),
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
                          get_texture_operand_type(stage->get_combine_alpha_operand1()));
             // fall through
@@ -4625,8 +4622,7 @@ do_issue_texture() {
           case 1:
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
                          get_texture_src_type(stage->get_combine_alpha_source0(),
-                                              stage->get_combine_alpha_source0_stage(),
-                                              new_texture, i));
+                                              last_stage, last_saved_result, i));
             GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
                          get_texture_operand_type(stage->get_combine_alpha_operand0()));
             // fall through
@@ -4646,6 +4642,16 @@ do_issue_texture() {
       } else {
         GLP(LoadIdentity)();
       }
+    }
+    
+    if (stage->get_saved_result()) {
+      // This texture's result will be "saved" for a future stage's
+      // input.
+      last_saved_result = i;
+    } else {
+      // This is a regular texture stage; it will be the "previous"
+      // input for the next stage.
+      last_stage = i;
     }
   }
     

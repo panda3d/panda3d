@@ -123,7 +123,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   // Assume we don't support these fairly advanced texture combiner
   // modes.
   _supports_texture_combine = false;
-  _supports_texture_crossbar = false;
+  _supports_texture_saved_result = false;
   _supports_texture_dot3 = false;
 
   // Assume no limits on number of lights or clip planes.

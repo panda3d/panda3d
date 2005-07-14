@@ -95,7 +95,7 @@ PUBLISHED:
   INLINE int get_max_cube_map_dimension() const;
 
   INLINE bool get_supports_texture_combine() const;
-  INLINE bool get_supports_texture_crossbar() const;
+  INLINE bool get_supports_texture_saved_result() const;
   INLINE bool get_supports_texture_dot3() const;
 
   INLINE int get_max_lights() const;
@@ -367,7 +367,7 @@ protected:
   int _max_cube_map_dimension;
 
   bool _supports_texture_combine;
-  bool _supports_texture_crossbar;
+  bool _supports_texture_saved_result;
   bool _supports_texture_dot3;
 
   int _max_lights;
