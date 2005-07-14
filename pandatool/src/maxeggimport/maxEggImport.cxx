@@ -34,6 +34,7 @@ static FILE *lgfile;
 
 class MaxEggMesh;
 class MaxEggJoint;
+class MaxEggTex;
 class BoneFunctions;
 
 class MaxEggImporter : public SceneImport 
@@ -66,18 +67,23 @@ public:
   // Import-related methods:
   void  TraverseEggData(EggData *data);
   void  TraverseEggNode(EggNode *node, EggGroup *context);
-  MaxEggMesh *GetMesh(EggVertexPool *pool);
+  MaxEggMesh  *GetMesh(EggVertexPool *pool);
   MaxEggJoint *FindJoint(EggGroup *joint);
   MaxEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
-  
+  MaxEggTex   *GetTex(const string &fn);
+
 public:
   // Import-related fields:
   typedef phash_map<EggVertexPool *, MaxEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
   typedef phash_map<EggGroup *, MaxEggJoint *> JointTable;
   typedef second_of_pair_iterator<JointTable::const_iterator> JointIterator;
-  MeshTable _mesh_tab;
+  typedef phash_map<string, MaxEggTex *> TexTable;
+  typedef second_of_pair_iterator<TexTable::const_iterator> TexIterator;
+  MeshTable  _mesh_tab;
   JointTable _joint_tab;
+  TexTable   _tex_tab;
+  int        _next_tex;
 };
 
 Interface     *MaxEggImporter::_ip;
@@ -230,6 +236,30 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+// MaxEggTex
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class MaxEggTex
+{
+public:
+  string path;
+  int    id;
+};
+
+MaxEggTex *MaxEggImporter::GetTex(const string &fn)
+{
+  if (_tex_tab.count(fn))
+    return _tex_tab[fn];
+  MaxEggTex *res = new MaxEggTex;
+  res->path = fn;
+  res->id = _next_tex ++;
+  _tex_tab[fn] = res;
+  return res;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // MaxEggMesh
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +286,7 @@ public:
   int GetVert(Vertexd pos, Normald norm, EggGroup *context);
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
-  int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2);
+  int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
 };
 
 int MaxEggMesh::GetVert(Vertexd pos, Normald norm, EggGroup *context)
@@ -326,7 +356,7 @@ MaxEggMesh *MaxEggImporter::GetMesh(EggVertexPool *pool)
   return result;
 }
 
-int MaxEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2)
+int MaxEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex)
 {
   static int dump = 0;
   if (_face_count == _mesh->numFaces) {
@@ -340,6 +370,7 @@ int MaxEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int c
   _mesh->faces[idx].setVerts(v0,v1,v2);
   _mesh->faces[idx].smGroup = 1;
   _mesh->faces[idx].flags = EDGE_ALL | HAS_TVERTS;
+  _mesh->faces[idx].setMatID(tex);
   _mesh->tvFace[idx].setTVerts(tv0,tv1,tv2);
   _mesh->vcFace[idx].setTVerts(cv0,cv1,cv2);
   return idx;
@@ -515,6 +546,17 @@ void MaxEggImporter::TraverseEggNode(EggNode *node, EggGroup *context)
   if (node->is_of_type(EggPolygon::get_class_type())) {
     EggPolygon *poly = DCAST(EggPolygon, node);
 
+    int texid;
+    LMatrix3d uvtrans = LMatrix3d::ident_mat();
+    if (poly->has_texture()) {
+      EggTexture *tex = poly->get_texture(0);
+      texid = GetTex(tex->get_fullpath().to_os_specific())->id;
+      if (tex->has_transform())
+        uvtrans = tex->get_transform();
+    } else {
+      texid = GetTex("")->id;
+    }
+    
     EggPolygon::const_iterator ci;
     MaxEggMesh *mesh = GetMesh(poly->get_pool());
     vertIndices.clear();
@@ -523,14 +565,16 @@ void MaxEggImporter::TraverseEggNode(EggNode *node, EggGroup *context)
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
+      TexCoordd uv = vtx->get_uv();
       vertIndices.push_back(mesh->GetVert(vtx->get_pos3(), vtx->get_normal(), context));
-      tvertIndices.push_back(mesh->GetTVert(vtx->get_uv()));
+      tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));
     }
     for (int i=1; i<vertIndices.size()-1; i++)
       mesh->AddFace(vertIndices[0], vertIndices[i], vertIndices[i+1],
                     tvertIndices[0], tvertIndices[i], tvertIndices[i+1],
-                    cvertIndices[0], cvertIndices[i], cvertIndices[i+1]);
+                    cvertIndices[0], cvertIndices[i], cvertIndices[i+1],
+                    texid);
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group = DCAST(EggGroupNode, node);
     if (node->is_of_type(EggGroup::get_class_type())) {
@@ -549,15 +593,18 @@ void MaxEggImporter::TraverseEggNode(EggNode *node, EggGroup *context)
 
 void MaxEggImporter::TraverseEggData(EggData *data)
 {
+  MeshIterator ci;
+  JointIterator ji;
+  TexIterator ti;
   lgfile = fopen("MaxEggImporter.log","w");
 
   SuspendAnimate();
   SuspendSetKeyMode();
   AnimateOff();
+  _next_tex = 0;
 
   TraverseEggNode(data, NULL);
 
-  MeshIterator ci;
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MaxEggMesh *mesh = (*ci);
     mesh->_mesh->setNumVerts(mesh->_vert_count, TRUE);
@@ -572,7 +619,6 @@ void MaxEggImporter::TraverseEggData(EggData *data)
   }
 
   double thickness = 0.0;
-  JointIterator ji;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     double dfo = ((*ji)->_pos).Length();
     if (dfo > thickness) thickness = dfo;
@@ -584,9 +630,42 @@ void MaxEggImporter::TraverseEggData(EggData *data)
     joint->CreateMaxBone();
   }
   
+  if (_next_tex) {
+    BitmapTex *bmt = 0;
+    MultiMtl *mtl = NewDefaultMultiMtl();
+    mtl->SetNumSubMtls(_next_tex);
+    for (ti = _tex_tab.begin(); ti != _tex_tab.end(); ++ti) {
+      MaxEggTex *tex = *ti;
+      BitmapTex *bmt = NewDefaultBitmapTex();
+      bmt->SetMapName((TCHAR*)(tex->path.c_str()));
+      StdMat *mat = NewDefaultStdMat();
+      mat->SetSubTexmap(ID_DI, bmt);
+      mat->SetTexmapAmt(ID_DI, 1.0, 0);
+      mat->EnableMap(ID_DI, TRUE);
+      mat->SetActiveTexmap(bmt);
+      _ip->ActivateTexture(bmt, mat);
+      TSTR name;
+      mtl->SetSubMtlAndName(tex->id, mat, name);
+    }
+    for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
+      MaxEggMesh *mesh = *ci;
+      mesh->_node->SetMtl(mtl);
+    }
+  }
+
   ResumeSetKeyMode();
   ResumeAnimate();
-
+  
+  for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
+    delete *ci;
+  }
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
+    delete *ji;
+  }
+  for (ti = _tex_tab.begin(); ti != _tex_tab.end(); ++ti) {
+    delete *ti;
+  }
+  
   if (lgfile) fclose(lgfile);
 }
 
