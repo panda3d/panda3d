@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PointParticle : public BaseParticle {
 public:
-  PointParticle(int lifespan = 0, bool alive = false);
+  PointParticle(float lifespan = 0.0f, bool alive = false);
   PointParticle(const PointParticle &copy);
   virtual ~PointParticle();
 
