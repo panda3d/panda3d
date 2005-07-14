@@ -70,6 +70,7 @@ populate_particle(BaseParticle *bp) {
   bp->set_active(false);
   bp->set_alive(false);
   bp->set_age(0.0f);
+  bp->set_index(0);
 
   populate_child_particle(bp);
 }
