@@ -51,7 +51,6 @@ class DirectFrame(DirectGuiWidget):
             # Otherwise, hope that the user has passed in a tuple/list
             textList = self['text']
         # Create/destroy components
-        print "textList = %s" % (textList,)
         for i in range(self['numStates']):
             component = 'text' + `i`
             # If fewer items specified than numStates,
