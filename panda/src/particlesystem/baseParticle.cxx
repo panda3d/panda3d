@@ -24,8 +24,8 @@
 // Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
-BaseParticle(int lifespan, bool alive) :
-  _age(0.0f), _lifespan(lifespan), _alive(alive) {
+BaseParticle(float lifespan, bool alive) :
+  _age(0.0f), _lifespan(lifespan), _alive(alive), _index(0){
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,10 +34,11 @@ BaseParticle(int lifespan, bool alive) :
 // Description : Copy Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
-BaseParticle(const BaseParticle &copy) {
-  _age = copy._age;
-  _lifespan = copy._lifespan;
-  _alive = copy._alive;
+BaseParticle(const BaseParticle &copy) :
+  _age(copy._age),
+  _lifespan(copy._lifespan),
+  _alive(copy._alive),
+  _index(copy._index) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +86,7 @@ write(ostream &out, int indent) const {
   out.width(indent+2); out<<""; out<<"_age "<<_age<<"\n";
   out.width(indent+2); out<<""; out<<"_lifespan "<<_lifespan<<"\n";
   out.width(indent+2); out<<""; out<<"_alive "<<_alive<<"\n";
+  out.width(indent+2); out<<""; out<<"_index "<<_index<<"\n";
   out.width(indent+2); out<<""; out<<"_last_position "<<_last_position<<"\n";
   PhysicsObject::write(out, indent+2);
   #endif //] NDEBUG

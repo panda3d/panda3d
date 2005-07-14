@@ -28,6 +28,10 @@ INLINE void BaseParticle::set_alive(bool alive) {
   _alive = alive;
 }
 
+INLINE void BaseParticle::set_index(int index) {
+  _index = index;
+}
+
 INLINE float BaseParticle::get_age() const {
   return _age;
 }
@@ -38,6 +42,10 @@ INLINE float BaseParticle::get_lifespan() const {
 
 INLINE bool BaseParticle::get_alive() const {
   return _alive;
+}
+
+INLINE int BaseParticle::get_index() const {
+  return _index;
 }
 
 INLINE float BaseParticle::get_parameterized_age() const {

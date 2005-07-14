@@ -33,10 +33,13 @@ public:
   INLINE void set_age(float age);
   INLINE void set_lifespan(float lifespan);
   INLINE void set_alive(bool alive);
+  INLINE void set_index(int index);
+
 
   INLINE float get_age() const;
   INLINE float get_lifespan() const;
   INLINE bool get_alive() const;
+  INLINE int get_index() const; 
 
   INLINE float get_parameterized_age() const;
   INLINE float get_parameterized_vel() const;
@@ -56,7 +59,7 @@ public:
   virtual void write(ostream &out, int indent=0) const;
 
 protected:
-  BaseParticle(int lifespan = 1, bool alive = false);
+  BaseParticle(float lifespan = 1.0f, bool alive = false);
   BaseParticle(const BaseParticle &copy);
   virtual ~BaseParticle();
 
@@ -65,6 +68,7 @@ private:
   float _age;
   float _lifespan;
   bool _alive;
+  int _index;
 
   LPoint3f _last_position;
 };
