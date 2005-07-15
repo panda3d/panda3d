@@ -350,22 +350,31 @@ class Particles(ParticleSystem):
                     typ = type(fun).__name__
                     if typ == 'ColorInterpolationFunctionConstant':
                         c_a = fun.getColorA()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'))\n')
                     elif typ == 'ColorInterpolationFunctionLinear':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'))\n')
                     elif typ == 'ColorInterpolationFunctionStepwave':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         w_a = fun.getWidthA()
                         w_b = fun.getWidthB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
+                                   `w_a`+','+`w_b`+')\n')            
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         per = fun.getPeriod()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
+                                   `per`+')\n')
 
         elif (self.rendererType == "SparkleParticleRenderer"):
             file.write('# Sparkle parameters\n')
@@ -443,22 +452,31 @@ class Particles(ParticleSystem):
                     typ = type(fun).__name__
                     if typ == 'ColorInterpolationFunctionConstant':
                         c_a = fun.getColorA()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+`c_a`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'))\n')
                     elif typ == 'ColorInterpolationFunctionLinear':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'))\n')
                     elif typ == 'ColorInterpolationFunctionStepwave':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         w_a = fun.getWidthA()
                         w_b = fun.getWidthB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`w_a`+','+`w_b`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
+                                   `w_a`+','+`w_b`+')\n')            
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         per = fun.getPeriod()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+`c_a`+','+`c_b`+','+`per`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+`t_b`+','+`t_e`+','+ \
+                                   'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
+                                   'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
+                                   `per`+')\n')
 
         file.write('# Emitter parameters\n')
         emissionType = self.emitter.getEmissionType()
