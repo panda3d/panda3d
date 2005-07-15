@@ -50,7 +50,19 @@ def indent(stream, numIndents, str):
     stream.write('    ' * numIndents + str)
 
 
-
+def nonRepeatingRandomList(vals,max):
+    random.seed(time.time())
+    #first generate a set of random values
+    valueList=range(max)
+    finalVals=[]
+    for i in range(vals):
+        index=int(random.random()*len(valueList))
+        finalVals.append(valueList[index])
+        valueList.remove(valueList[index])
+    return finalVals
+
+
+
 def writeFsmTree(instance, indent = 0):
     if hasattr(instance, 'parentFSM'):
         writeFsmTree(instance.parentFSM, indent-2)
@@ -62,7 +74,7 @@ def writeFsmTree(instance, indent = 0):
 
 
 
-
+
 if __debug__:
     class StackTrace:
         def __init__(self, label="", start=0, limit=None):
