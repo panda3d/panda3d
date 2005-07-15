@@ -950,7 +950,7 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
 //     Function: MouseWatcher::consider_keyboard_suppress
 //       Access: Private
 //  Description: If we send any keyboard events to a region that has
-//               the SF_any_button suppress flag set, that means we
+//               the SF_other_button suppress flag set, that means we
 //               should not send the keyboard event along the data
 //               graph.  
 //
@@ -960,8 +960,8 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 consider_keyboard_suppress(const MouseWatcherRegion *region) {
-  if ((region->get_suppress_flags() & MouseWatcherRegion::SF_any_button) != 0) {
-    _external_suppress |= MouseWatcherRegion::SF_any_button;
+  if ((region->get_suppress_flags() & MouseWatcherRegion::SF_other_button) != 0) {
+    _external_suppress |= MouseWatcherRegion::SF_other_button;
   }
 }
 
