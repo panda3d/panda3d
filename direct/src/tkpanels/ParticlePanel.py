@@ -697,7 +697,6 @@ class ParticlePanel(AppShell):
              "Off: Only the first frame of a node is rendered"),
             self.setRendererSpriteAnimationEnable, 0, side = LEFT)
         self.createFloater(bbp, 'Sprite Renderer', 'Frame Rate', 'Animation frame rate',
-                           resolution=0.25,
                            command = self.setRendererSpriteAnimationFrameRate).pack(side = LEFT)
         
         bbp = Frame(bp)
@@ -1804,7 +1803,6 @@ class ParticlePanel(AppShell):
             self.rendererSpriteFileEntry['background'] = '#FFFFFF'
             self.rendererSpriteNodeEntry['background'] = '#FFFFFF'
     def addConstantInterpolationSegment(self):
-        print 'adding constant'
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
         seg = cim.getSegment(cim.addConstant())
@@ -1827,7 +1825,6 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setAnimateFramesEnable(
             self.getVariable('Sprite Renderer','Enable Animation').get())
     def addRendererSpriteAnimationTexture(self):
-        print 'adding texture'
         ren = self.particles.getRenderer()
         parent = self.rendererSpriteAnimationFrame
 
@@ -1839,7 +1836,6 @@ class ParticlePanel(AppShell):
             self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
         parent.pack(fill=BOTH, expand=1)
     def addRendererSpriteAnimationFromNode(self):
-        print 'adding animation'
         ren = self.particles.getRenderer()
         parent = self.rendererSpriteAnimationFrame
 
@@ -1876,7 +1872,6 @@ class ParticlePanel(AppShell):
     def setRendererSpriteNonAnimatedTheta(self, theta):
         self.particles.renderer.setNonanimatedTheta(theta)
     def setRendererSpriteBlendMethod(self, blendMethod):
-        print blendMethod
         if blendMethod == 'PP_NO_BLEND':
             bMethod = BaseParticleRenderer.PPNOBLEND
         elif blendMethod == 'PP_BLEND_LINEAR':
@@ -1902,50 +1897,42 @@ class ParticlePanel(AppShell):
 
         self.updateRendererWidgets()
     def setRendererSpriteColorBlendMethod(self, blendMethod):
-        print blendMethod
-        
         blendMethodStr = blendMethod
         incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
         fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
     def setRendererSpriteColorBlendIncomingOperand(self, operand):
-        print 'incoming operand->'+operand
         blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
         incomingOperandStr = operand
         fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
     def setRendererSpriteColorBlendFbufferOperand(self, operand):
-        print 'fbuffer operand->'+operand
         blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
         incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
 
         self.setRendererColorBlendAttrib('Sprite Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
     def setRendererGeomColorBlendMethod(self, blendMethod):
-        print blendMethod
         blendMethodStr = blendMethod
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
         fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
     def setRendererGeomColorBlendIncomingOperand(self, operand):
-        print 'incoming operand->'+operand
         blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
         incomingOperandStr = operand
         fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
     def setRendererGeomColorBlendFbufferOperand(self, operand):
-        print 'fbuffer operand->'+operand
         blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
         self.setRendererColorBlendAttrib('Geom Renderer',blendMethodStr,incomingOperandStr,fbufferOperandStr)
 
     def addConstantInterpolationSegment(self):
-        print 'adding constant'
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
         seg = cim.getSegment(cim.addConstant())
@@ -1963,7 +1950,6 @@ class ParticlePanel(AppShell):
         parent.pack(fill=BOTH, expand=1)
 
     def addLinearInterpolationSegment(self):
-        print 'adding linear'
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
         seg = cim.getSegment(cim.addLinear())
@@ -1981,7 +1967,6 @@ class ParticlePanel(AppShell):
         parent.pack(fill=BOTH, expand=1)
 
     def addStepwaveInterpolationSegment(self):
-        print 'adding stepwave'
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
         seg = cim.getSegment(cim.addStepwave())
@@ -1999,7 +1984,6 @@ class ParticlePanel(AppShell):
         parent.pack(fill=BOTH, expand=1)
 
     def addSinusoidInterpolationSegment(self):
-        print 'adding sinusoid'
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
         seg = cim.getSegment(cim.addSinusoid())
