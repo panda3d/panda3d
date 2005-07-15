@@ -35,6 +35,13 @@
 
 class NodePath;
 
+////////////////////////////////////////////////////////////////////
+//       Class : SpriteWriter
+// Description : Helper class used by SpriteParticleRenderer to
+//               keep track of the various GeomVertexWriters
+//               associated with each geom created in 
+//               SpriteParticleRenderer::init_geoms().
+////////////////////////////////////////////////////////////////////
 class SpriteWriter {
 public:
   SpriteWriter(GeomVertexWriter v,
@@ -64,6 +71,12 @@ public:
   GeomVertexWriter aspect_ratio;
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : SpriteAnim
+// Description : Helper class used by SpriteParticleRenderer to
+//               keep track of its textures and their respective UVs
+//               and source types.  
+////////////////////////////////////////////////////////////////////
 class SpriteAnim : public ReferenceCount{
 PUBLISHED:
   enum SourceType {
@@ -265,7 +278,6 @@ private:
   pvector<int> _anim_size;   // Holds the number of frames in each animation.
   pvector<int*> _ttl_count;  // _ttl_count[i][j] holds the number of particles attached to animation 'i' at frame 'j'.
   pvector<int> _birth_list;  // Holds the list of particles that need a new random animation to start on.
-
 };
 
 #include "spriteParticleRenderer.I"

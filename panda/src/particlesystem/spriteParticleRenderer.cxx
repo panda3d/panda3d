@@ -189,189 +189,118 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::set_from_node
 //      Access : public
-// Description : Sets the properties on this render from the geometry
+// Description : If the source type is important, use this one.
+//
+//               model and node should lead to node_path like this:
+//               node_path = loader.loadModel(model).find(node)
+//
+//               This will remove all previously add textures and 
+//               resize the renderer to match the new geometry.
+////////////////////////////////////////////////////////////////////
+void SpriteParticleRenderer::
+set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels) {
+  // Clear all texture information
+  _anims.clear();
+  add_from_node(node_path,model,node,size_from_texels,true);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::set_from_node
+//      Access : public
+// Description : Sets the properties on this renderer from the geometry
 //               referenced by the indicated NodePath.  This should be
 //               a reference to a GeomNode or a SequenceNode; it
 //               extracts out the texture and UV range from the node.
 //
-//               If node_path references a SequenceNode with multiple
-//               GeomNodes beneath it, the size data will correspond
-//               to the first GeomNode found with a valid texture, and
-//               the texture and UV information will be stored for each
-//               individual node.
+//               This will remove all previously added textures and
+//               animations.  It will also resize the renderer to match
+//               this new geometry.
+//
+//               If node_path refers to a GeomNode(or has one beneath it)
+//               the texture, its size, and UV data will be extracted
+//               from that.
+//
+//               If node_path references a SequenceNode(or has one 
+//               beneath it) with multiple GeomNodes beneath it, 
+//               the size data will correspond only to the first 
+//               GeomNode found with a valid texture, while the texture
+//               and UV information will be stored for each individual
+//               node.
 //
 //               If size_from_texels is true, the particle size is
 //               based on the number of texels in the source image;
 //               otherwise, it is based on the size of the first 
 //               polygon found in the node.
+//
+//               model and node are the two items used to construct
+//               node_path.  If the source type is important, use
+//               set_from_node(NodePath,string,string,bool) instead.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels) {
-  set_from_node(node_path,size_from_texels);
-  get_last_anim()->set_source_info(model,node);
-}
-
-void SpriteParticleRenderer::
 set_from_node(const NodePath &node_path, bool size_from_texels) {
-  nassertv(!node_path.is_empty());
-
-  NodePathCollection np_col;
-  TextureCollection tex_col;
-  pvector< TexCoordf > ll,ur;
-  GeomNode *gnode = NULL;
-  const Geom *geom;
-  const GeomPrimitive *primitive;
-  bool got_texcoord,got_vertex;
-
   // Clear all texture information
   _anims.clear();
-  
-  // Load the found textures into the renderer.
-  if (extract_textures_from_node(node_path,np_col,tex_col)) {    
-    for (int i = 0; i < np_col.get_num_paths(); ++i) {
-      // Get the node from which we'll extract the geometry information.
-      gnode = DCAST(GeomNode, np_col[i].node()); 
-    
-      // Now examine the UV's of the first Geom within the GeomNode.
-      nassertv(gnode->get_num_geoms() > 0);
-      geom = gnode->get_geom(0);
-    
-      got_texcoord = false;
-      TexCoordf min_uv(0.0f, 0.0f);
-      TexCoordf max_uv(0.0f, 0.0f);
-      
-      GeomVertexReader texcoord(geom->get_vertex_data(),
-                                InternalName::get_texcoord());
-      if (texcoord.has_column()) {
-        for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
-          primitive = geom->get_primitive(pi);
-          for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
-            int vert = primitive->get_vertex(vi);
-            texcoord.set_row(vert);
-            
-            if (!got_texcoord) {
-              min_uv = max_uv = texcoord.get_data2f();
-              got_texcoord = true;
-              
-            } else {
-              const LVecBase2f &uv = texcoord.get_data2f();
-              
-              min_uv[0] = min(min_uv[0], uv[0]);
-              max_uv[0] = max(max_uv[0], uv[0]);
-              min_uv[1] = min(min_uv[1], uv[1]);
-              max_uv[1] = max(max_uv[1], uv[1]);
-            }
-          }
-        }
-      }
-    
-      if (got_texcoord) {
-        // We don't really pay attention to orientation of UV's here; a
-        // minor flaw.  We assume the minimum is in the lower-left, and
-        // the maximum is in the upper-right.
-        ll.push_back(min_uv);
-        ur.push_back(max_uv);
-        //        set_ll_uv(min_uv);
-        //        set_ur_uv(max_uv);
-      }
-    }
-
-    _anims.push_back(new SpriteAnim(tex_col,ll,ur));
-
-    gnode = DCAST(GeomNode, np_col[0].node());
-    geom = gnode->get_geom(0);
-
-    got_vertex = false;
-    Vertexf min_xyz(0.0f, 0.0f, 0.0f);
-    Vertexf max_xyz(0.0f, 0.0f, 0.0f);
-    
-    GeomVertexReader vertex(geom->get_vertex_data(),
-                            InternalName::get_vertex());
-    if (vertex.has_column()) {
-      for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
-        const GeomPrimitive *primitive = geom->get_primitive(pi);
-        for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
-          int vert = primitive->get_vertex(vi);
-          vertex.set_row(vert);
-          
-          if (!got_vertex) {
-            min_xyz = max_xyz = vertex.get_data3f();
-            got_vertex = true;
-            
-          } else {
-            const LVecBase3f &xyz = vertex.get_data3f();
-            
-            min_xyz[0] = min(min_xyz[0], xyz[0]);
-            max_xyz[0] = max(max_xyz[0], xyz[0]);
-            min_xyz[1] = min(min_xyz[1], xyz[1]);
-            max_xyz[1] = max(max_xyz[1], xyz[1]);
-            min_xyz[2] = min(min_xyz[2], xyz[2]);
-            max_xyz[2] = max(max_xyz[2], xyz[2]);
-          }
-        }
-      }
-    }
-    
-    if (got_vertex) {
-      float width = max_xyz[0] - min_xyz[0];
-      float height = max(max_xyz[1] - min_xyz[1],
-                         max_xyz[2] - min_xyz[2]);
-      
-      if (size_from_texels && got_texcoord) {
-        // If size_from_texels is true, we get the particle size from the
-        // number of texels in the source image.
-        float y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
-        set_size(y_texels * width / height, y_texels);
-        
-      } else {
-        // If size_from_texels is false, we get the particle size from
-        // the size of the polygon.
-        set_size(width, height);
-      }
-      
-    } else {
-      // With no vertices, just punt.
-      set_size(1.0f, 1.0f);
-    }
-    
-    init_geoms();
-  }
+  add_from_node(node_path,size_from_texels,true);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::add_from_node
 //      Access : public
-// Description : Sets the properties on this render from the geometry
-//               referenced by the indicated NodePath.  This should be
-//               a reference to a GeomNode; it extracts out the
-//               Texture and UV range from the GeomNode.
+// Description : This will allow the renderer to randomly choose
+//               from more than one texture or sequence at particle
+//               birth.
 //
-//               If size_from_texels is true, the particle size is
-//               based on the number of texels in the source image;
-//               otherwise, it is based on the size of the polygon
-//               found in the GeomNode.
+//               If the source type is important, use this one.
+//
+//               model and node should lead to node_path like this:
+//               node_path = loader.loadModel(model).find(node)
+//
+//               If resize is true, or if there are no textures 
+//               currently on the renderer, it will force the 
+//               renderer to use the size information from this 
+//               node from now on. (Default is false)
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
 add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels, bool resize) {
+  int anim_count = _anims.size();
+  if (anim_count == 0)
+    resize = true;
   add_from_node(node_path,size_from_texels,resize);
-  get_last_anim()->set_source_info(model,node);
+  if (anim_count < _anims.size()) {
+    get_last_anim()->set_source_info(model,node);
+  }
 }
 
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::add_from_node
+//      Access : public
+// Description : This will allow the renderer to randomly choose
+//               from more than one texture or sequence at particle
+//               birth.
+//
+//               If resize is true, or if there are no textures 
+//               currently on the renderer, it will force the 
+//               renderer to use the size information from this 
+//               node from now on. (Default is false)
+////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
 add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
   nassertv(!node_path.is_empty());
 
-  pvector< TexCoordf > ll,ur;
-  GeomNode *gnode = NULL;
   NodePathCollection np_col;
   TextureCollection tex_col;
-  const Geom *geom;
-  const GeomPrimitive *primitive;
-  bool got_texcoord,got_vertex;
+
+  if (_anims.empty())
+    resize = true;
 
   // Load the found textures into the renderer.
   if (extract_textures_from_node(node_path,np_col,tex_col)) {
+    pvector< TexCoordf > ll,ur;
+    GeomNode *gnode = NULL;
+    const Geom *geom;
+    const GeomPrimitive *primitive;
+    bool got_texcoord;
+
     for (int i = 0; i < np_col.get_num_paths(); ++i) {
       // Get the node from which we'll extract the geometry information.
       gnode = DCAST(GeomNode, np_col[i].node()); 
@@ -424,7 +353,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       gnode = DCAST(GeomNode, np_col[0].node());
       geom = gnode->get_geom(0);
 
-      got_vertex = false;
+      bool got_vertex = false;
       Vertexf min_xyz(0.0f, 0.0f, 0.0f);
       Vertexf max_xyz(0.0f, 0.0f, 0.0f);
       
@@ -432,7 +361,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
                               InternalName::get_vertex());
       if (vertex.has_column()) {
         for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
-          const GeomPrimitive *primitive = geom->get_primitive(pi);
+          primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
             vertex.set_row(vert);
@@ -477,9 +406,8 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
         set_size(1.0f, 1.0f);
       }
     }
-
     init_geoms();
-    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -661,6 +589,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         // This is an experimental age offset so that the animations don't appear synchronized.
         // If we are using animations, try to vary the frame flipping a bit for particles in the same litter.
         // A similar effect might be a achieved by using a small lifespan spread value on the factory.
+
+        // Perhaps we should look into other methods. The age offset doesn't seem to be cutting it.
         if (_animate_frames) {
           cur_particle->set_age(cur_particle->get_age()+i/10.0*cur_particle->get_lifespan());
         }
@@ -762,7 +692,6 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     }
     
     // Send the data on its way...
-    //    if(anim_index>_anims.size() || frame > _sprite_writer[anim_index].size()) 
     _sprite_writer[anim_index][frame].vertex.add_data3f(position);
     _sprite_writer[anim_index][frame].color.add_data4f(c);
     
