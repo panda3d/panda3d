@@ -1393,6 +1393,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     }
   }
 
+  report_my_gl_errors();
   return true;
 }
 
@@ -1675,6 +1676,7 @@ end_draw_primitives() {
   }
 
   GraphicsStateGuardian::end_draw_primitives();
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2133,6 +2135,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                         xo, yo, w, h, 0);
   }
 
+  report_my_gl_errors();
+
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
 }
@@ -2372,6 +2376,7 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
       csc->bind(this);// Bind the new shader
     }
   }
+  report_my_gl_errors();
 }
 #endif
 
@@ -4521,7 +4526,7 @@ do_issue_texture() {
         break;
       }
       GLP(Enable)(target);
-      
+
       TextureContext *tc = texture->prepare_now(_prepared_objects, this);
       apply_texture(tc);
 
