@@ -1866,6 +1866,16 @@ release_vertex_buffer(VertexBufferContext *vbc) {
     GLCAT.debug()
       << "deleting vertex buffer " << gvbc->_index << "\n";
   }
+
+  // Make sure the buffer is unbound before we delete it.  Not
+  // strictly necessary according to the OpenGL spec, but it might
+  // help out a flaky driver, and we need to keep our internal state
+  // consistent anyway.
+  if (_current_vbuffer_index == gvbc->_index) {
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    _current_vbuffer_index = 0;
+  }
+
   _glDeleteBuffers(1, &gvbc->_index);
   report_my_gl_errors();
 
@@ -2011,6 +2021,16 @@ release_index_buffer(IndexBufferContext *ibc) {
     GLCAT.debug()
       << "deleting index buffer " << gibc->_index << "\n";
   }
+
+  // Make sure the buffer is unbound before we delete it.  Not
+  // strictly necessary according to the OpenGL spec, but it might
+  // help out a flaky driver, and we need to keep our internal state
+  // consistent anyway.
+  if (_current_ibuffer_index == gibc->_index) {
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    _current_ibuffer_index = 0;
+  }
+
   _glDeleteBuffers(1, &gibc->_index);
   report_my_gl_errors();
 
