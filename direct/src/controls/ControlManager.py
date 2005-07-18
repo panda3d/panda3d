@@ -19,6 +19,7 @@ class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsDebug = base.config.GetBool('want-avatar-physics-debug', 0)
+    wantWASD = base.config.GetBool('want-WASD', 0)
 
     def __init__(self):
         assert self.notify.debugCall(id(self))
@@ -85,6 +86,35 @@ class ControlManager:
         #inputState.watch("slideRight", "alt-arrow_right", "alt-arrow_right-up")
         #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
         #inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
+
+        if self.wantWASD:
+            inputState.watch("forward", "w", "w-up")
+            inputState.watch("forward", "control-w", "w-up")
+            inputState.watch("forward", "shift-control-w", "w-up")
+            inputState.watch("forward", "alt-w", "w-up")
+            inputState.watch("forward", "control-alt-w", "w-up")
+            inputState.watch("forward", "shift-w", "w-up")
+
+            inputState.watch("reverse", "s", "s-up")
+            inputState.watch("reverse", "control-s", "s-up")
+            inputState.watch("reverse", "shift-control-s", "s-up")
+            inputState.watch("reverse", "alt-s", "s-up")
+            inputState.watch("reverse", "control-alt-s", "s-up")
+            inputState.watch("reverse", "shift-s", "s-up")
+
+            inputState.watch("turnLeft", "a", "a-up")
+            inputState.watch("turnLeft", "control-a", "a-up")
+            inputState.watch("turnLeft", "shift-control-a", "a-up")
+            inputState.watch("turnLeft", "alt-a", "alt-a-up")
+            inputState.watch("turnLeft", "control-alt-a", "alt-a-up")
+            inputState.watch("turnLeft", "shift-a", "a-up")
+
+            inputState.watch("turnRight", "d", "d-up")
+            inputState.watch("turnRight", "control-d", "d-up")
+            inputState.watch("turnRight", "shift-control-d", "d-up")
+            inputState.watch("turnRight", "alt-d", "d-up")
+            inputState.watch("turnRight", "control-alt-d", "d-up")
+            inputState.watch("turnRight", "shift-d", "d-up")
 
     def add(self, controls, name="basic"):
         """
