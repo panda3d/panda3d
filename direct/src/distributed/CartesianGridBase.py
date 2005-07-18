@@ -31,6 +31,7 @@ class CartesianGridBase:
         # larger than the trigger sphere that loads the grid.  This gives us some
         # room to start setting interest to the grid before we expect to see any objects
         # on it.
+        sphereRadius = max(sphereRadius, gridRadius*cellWidth)
         return 2 * (sphereRadius // cellWidth)
         
     def getZoneCellOrigin(self, zoneId):
