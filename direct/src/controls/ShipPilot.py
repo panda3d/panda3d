@@ -662,7 +662,13 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.currentTurning = self.ship.maxTurn
         elif self.currentTurning < -self.ship.maxTurn:
             self.currentTurning = -self.ship.maxTurn
-        self.currentTurning *= 0.9
+        if turnLeft or turnRight:
+            mult = .9
+        elif forward or reverse:
+            mult = .82
+        else:
+            mult = .8
+        self.currentTurning *= mult
         self.__rotationSpeed = self.currentTurning
 
 
