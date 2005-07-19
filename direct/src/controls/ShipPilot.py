@@ -301,7 +301,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.nodes.append(fnp)
             self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
             self.avatarViscosity.setCoef(0.5)
-            self.avatarViscosity.setAmplitude(4)
+            self.avatarViscosity.setAmplitude(2)
             fn.addForce(self.avatarViscosity)
             self.phys.addLinearForce(self.avatarViscosity)
 
@@ -610,8 +610,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        
-        if 1:
+
+        # this was causing the boat to get stuck moving forward or back
+        if 0:
             if not hasattr(self, "sailsDeployed"):
                 self.sailsDeployed = 0.0
             if forward and reverse:
