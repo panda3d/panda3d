@@ -450,9 +450,9 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
   if (components_ok) {
     // Verify that the transform was computed correctly.
-    if (!flt_node->get_transform().almost_equal(egg_transform->get_transform())) {
+    if (!flt_node->get_transform().almost_equal(egg_transform->get_transform3d())) {
       nout << "Incorrect transform!  Expected:\n";
-      egg_transform->get_transform().write(nout, 2);
+      egg_transform->get_transform3d().write(nout, 2);
       nout << "Computed:\n";
       flt_node->get_transform().write(nout, 2);
       nout << "\n";
@@ -462,7 +462,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
   if (!components_ok) {
     // Just store the overall transform.
-    flt_node->set_transform(egg_transform->get_transform());
+    flt_node->set_transform(egg_transform->get_transform3d());
   }
 }
 

@@ -253,7 +253,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
       // it to single-precision.
       LMatrix4d matd;
       if (egg_group->has_transform()) {
-        matd = egg_group->get_transform();
+        matd = egg_group->get_transform3d();
       } else {
         matd = LMatrix4d::ident_mat();
       }

@@ -36,7 +36,7 @@ make_egg() {
     // If we have a nonzero pivot point, that's a translation
     // transform.
     LPoint3d translate = LCAST(double, _layer->_pivot);
-    _egg_group->set_transform(LMatrix4d::translate_mat(translate));
+    _egg_group->set_transform3d(LMatrix4d::translate_mat(translate));
     _egg_group->set_group_type(EggGroup::GT_instance);
   }
 }

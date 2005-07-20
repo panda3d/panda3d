@@ -94,7 +94,7 @@ create_hierarchy(XFileToEggConverter *converter) {
     EggGroup *joint = (*ti).second._joint;
     if (anim_table->empty() && joint != (EggGroup *)NULL) {
       // If there's no animation data, assign the rest transform.
-      anim_table->add_data(joint->get_transform());
+      anim_table->add_data(joint->get_transform3d());
     }
     anim_table->optimize();
   }

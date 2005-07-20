@@ -323,7 +323,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     }
 
     if (has_transform() && other.has_transform()) {
-      if (!get_transform().almost_equal(other.get_transform(), 0.0001)) {
+      if (!get_transform3d().almost_equal(other.get_transform3d(), 0.0001)) {
         return false;
       }
     }
@@ -399,7 +399,7 @@ sorts_less_than(const EggTexture &other, int eq) const {
     }
 
     if (has_transform() && other.has_transform()) {
-      int compare = get_transform().compare_to(other.get_transform());
+      int compare = get_transform3d().compare_to(other.get_transform3d());
       if (compare != 0) {
         return compare < 0;
       }

@@ -487,7 +487,7 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
                   matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
                   matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
     if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-      egg_group->set_transform(m4d);
+      egg_group->set_transform3d(m4d);
       softegg_cat.spam() << "set transform in egg_group\n";
     }
   }

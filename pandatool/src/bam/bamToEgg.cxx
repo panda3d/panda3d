@@ -441,7 +441,7 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node) {
     } else if (transform->has_mat()) {
       // Otherwise, we store the raw matrix.
       const LMatrix4f &mat = transform->get_mat();
-      egg_group->set_transform(LCAST(double, mat));
+      egg_group->set_transform3d(LCAST(double, mat));
     }
     any_applied = true;
   }

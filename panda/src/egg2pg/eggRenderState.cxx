@@ -171,7 +171,7 @@ fill_state(EggPrimitive *egg_prim) {
         // with a different transform, it will increase
         // tex_mats[uv_name].size() to at least 2, indicating we can't
         // bake in the texture matrix.
-        tex_mats[uv_name][egg_tex->get_transform()].push_back(&def);
+        tex_mats[uv_name][egg_tex->get_transform3d()].push_back(&def);
       }
     }
   }

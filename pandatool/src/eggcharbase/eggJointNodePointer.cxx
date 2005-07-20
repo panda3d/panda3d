@@ -39,7 +39,7 @@ EggJointNodePointer(EggObject *object) {
     // Quietly insist that the joint has a transform, for neatness.  If
     // it does not, give it the identity transform.
     if (!_joint->has_transform()) {
-      _joint->set_transform(LMatrix4d::ident_mat());
+      _joint->set_transform3d(LMatrix4d::ident_mat());
     }
   }
 }
@@ -74,7 +74,7 @@ get_num_frames() const {
 LMatrix4d EggJointNodePointer::
 get_frame(int n) const {
   nassertr(n == 0, LMatrix4d::ident_mat());
-  return _joint->get_transform();
+  return _joint->get_transform3d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ get_frame(int n) const {
 void EggJointNodePointer::
 set_frame(int n, const LMatrix4d &mat) {
   nassertv(n == 0);
-  _joint->set_transform(mat);
+  _joint->set_transform3d(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ do_rebuild() {
     return false;
   }
 
-  _joint->set_transform(_rebuild_frames[0]);
+  _joint->set_transform3d(_rebuild_frames[0]);
   _rebuild_frames.clear();
   return true;
 }

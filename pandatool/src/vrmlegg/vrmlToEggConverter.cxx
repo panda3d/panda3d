@@ -377,7 +377,7 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
   }
 
   if (any_transform) {
-    group->set_transform(local_transform);
+    group->set_transform3d(local_transform);
   }
 
   LMatrix4d next_transform = local_transform * net_transform;

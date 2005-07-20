@@ -2040,7 +2040,7 @@ make_vertex_data(const EggRenderState *render_state,
       BakeInUVs::const_iterator buv = render_state->_bake_in_uvs.find(iname);
       if (buv != render_state->_bake_in_uvs.end()) {
         // If we are to bake in a texture matrix, do so now.
-        uvw = uvw * (*buv).second->get_transform();
+        uvw = uvw * (*buv).second->get_transform3d();
       }
 
       gvw.set_data3f(LCAST(float, uvw));
@@ -2055,7 +2055,7 @@ make_vertex_data(const EggRenderState *render_state,
           TexCoord3d duvw = morph.get_offset();
           if (buv != render_state->_bake_in_uvs.end()) {
             TexCoord3d new_uvw = orig_uvw + duvw;
-            duvw = (new_uvw * (*buv).second->get_transform()) - uvw;
+            duvw = (new_uvw * (*buv).second->get_transform3d()) - uvw;
           }
           
           gvw.add_data3f(LCAST(float, duvw));

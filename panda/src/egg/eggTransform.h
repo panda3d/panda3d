@@ -57,11 +57,12 @@ PUBLISHED:
   INLINE void add_matrix4(const LMatrix4d &mat);
 
   INLINE bool has_transform() const;
-  INLINE bool is_transform_2d() const;
-  INLINE void set_transform_2d(const LMatrix3d &mat);
-  INLINE void set_transform(const LMatrix4d &mat);
-  INLINE LMatrix3d get_transform_2d() const;
-  INLINE const LMatrix4d &get_transform() const;
+  INLINE bool has_transform2d() const;
+  INLINE void set_transform2d(const LMatrix3d &mat);
+  INLINE bool has_transform3d() const;
+  INLINE void set_transform3d(const LMatrix4d &mat);
+  INLINE LMatrix3d get_transform2d() const;
+  INLINE const LMatrix4d &get_transform3d() const;
   INLINE bool transform_is_identity() const;
 
   enum ComponentType {

@@ -160,7 +160,7 @@ add_group(EggGroup *egg_group, XFileNode *x_parent) {
 
     // Set the transform on the frame, if we have one.
     if (egg_group->has_transform()) {
-      x_frame->add_FrameTransformMatrix(egg_group->get_transform());
+      x_frame->add_FrameTransformMatrix(egg_group->get_transform3d());
     }
 
     if (!recurse_nodes(egg_group, x_frame)) {

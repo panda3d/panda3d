@@ -240,7 +240,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
     }
 
     if (!componentwise_ok) {
-      egg_group->set_transform(flt_bead->get_transform());
+      egg_group->set_transform3d(flt_bead->get_transform());
     }
   }
 }

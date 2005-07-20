@@ -437,7 +437,7 @@ convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent) {
 
   if (egg_parent->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_parent);
-    egg_group->set_transform(mat);
+    egg_group->set_transform3d(mat);
 
   } else {
     xfile_cat.error()

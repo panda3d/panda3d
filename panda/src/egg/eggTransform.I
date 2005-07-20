@@ -160,7 +160,8 @@ add_matrix4(const LMatrix4d &mat) {
 //       Access: Public
 //  Description: Returns true if the transform is nonempty, false if
 //               it is empty (no transform components have been
-//               added).
+//               added).  This is true for either a 2-d or a 3-d
+//               transform.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTransform::
 has_transform() const {
@@ -168,57 +169,74 @@ has_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::is_transform_2d
+//     Function: EggTransform::has_transform2d
 //       Access: Public
 //  Description: Returns true if the transform is specified as a 2-d
 //               transform, e.g. with a 3x3 matrix, or false if it is
-//               specified as a 3-d transform, with a 4x4 matrix.
+//               specified as a 3-d transform (with a 4x4 matrix), or
+//               not specified at all.
 //
 //               Normally, EggTextures have a 2-d matrix (but
 //               occasionally they use a 3-d matrix), and EggGroups
 //               always have a 3-d matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTransform::
-is_transform_2d() const {
-  return _is_transform_2d;
+has_transform2d() const {
+  return has_transform() && _is_transform_2d;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::set_transform_2d
+//     Function: EggTransform::set_transform2d
 //       Access: Public
 //  Description: Sets the overall transform as a 3x3 matrix.  This
 //               completely replaces whatever componentwise transform
 //               may have been defined.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTransform::
-set_transform_2d(const LMatrix3d &mat) {
+set_transform2d(const LMatrix3d &mat) {
   internal_set_transform(mat);
   transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::set_transform
+//     Function: EggTransform::has_transform3d
+//       Access: Public
+//  Description: Returns true if the transform is specified as a 3-d
+//               transform, e.g. with a 4x4 matrix, or false if it is
+//               specified as a 2-d transform (with a 2x2 matrix), or
+//               not specified at all.
+//
+//               Normally, EggTextures have a 3-d matrix (but
+//               occasionally they use a 3-d matrix), and EggGroups
+//               always have a 3-d matrix.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTransform::
+has_transform3d() const {
+  return has_transform() && !_is_transform_2d;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform::set_transform3d
 //       Access: Public
 //  Description: Sets the overall transform as a 4x4 matrix.  This
 //               completely replaces whatever componentwise transform
 //               may have been defined.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTransform::
-set_transform(const LMatrix4d &mat) {
+set_transform3d(const LMatrix4d &mat) {
   internal_set_transform(mat);
   transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::get_transform_2d
+//     Function: EggTransform::get_transform2d
 //       Access: Public
 //  Description: Returns the overall transform as a 3x3 matrix.  It is
-//               only valid to call this if is_transform_2d() has
-//               returned true.
+//               an error to call this if has_transform3d() is true.
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix3d EggTransform::
-get_transform_2d() const {
-  nassertr(is_transform_2d(), LMatrix3d::ident_mat());
+get_transform2d() const {
+  nassertr(!has_transform3d(), LMatrix3d::ident_mat());
   const LMatrix4d &t = _transform;
   return LMatrix3d(t(0, 0), t(0, 1), t(0, 3),
                    t(1, 0), t(1, 1), t(1, 3),
@@ -226,12 +244,15 @@ get_transform_2d() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::get_transform
+//     Function: EggTransform::get_transform3d
 //       Access: Public
-//  Description: Returns the overall transform as a 4x4 matrix.
+//  Description: Returns the overall transform as a 4x4 matrix.  It is
+//               valid to call this even if has_transform2d() is true;
+//               in this case, the 3x3 transform will be expanded to a
+//               4x4 matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggTransform::
-get_transform() const {
+get_transform3d() const {
   return _transform;
 }
 

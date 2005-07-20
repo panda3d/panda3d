@@ -60,8 +60,8 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
     if (egg_prim->has_texture()) {
       // Check if there's a texture matrix on the texture.
       EggTexture *egg_tex = egg_prim->get_texture();
-      if (egg_tex->has_transform() && egg_tex->is_transform_2d()) {
-        uv = uv * egg_tex->get_transform_2d();
+      if (egg_tex->has_transform2d()) {
+        uv = uv * egg_tex->get_transform2d();
       }
     }
 

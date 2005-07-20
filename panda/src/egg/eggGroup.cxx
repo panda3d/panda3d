@@ -1113,7 +1113,7 @@ adjust_under() {
 
     // Our own transform also affects our node frame.
     _node_frame =
-      new MatrixFrame(get_transform() * get_node_frame());
+      new MatrixFrame(get_transform3d() * get_node_frame());
     _node_frame_inv =
       new MatrixFrame(invert(get_node_frame()));
     _vertex_to_node =
@@ -1175,7 +1175,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
     mat1.set_row(3, LVector3d(0.0, 0.0, 0.0));
     inv1.set_row(3, LVector3d(0.0, 0.0, 0.0));
 
-    internal_set_transform(inv1 * get_transform() * mat);
+    internal_set_transform(inv1 * get_transform3d() * mat);
 
     EggGroupNode::r_transform(mat1, inv1, to_cs);
   } else {

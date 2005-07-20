@@ -679,7 +679,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
         }
         get_joint_transform(node_desc->get_dag_path(), tgroup);
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
-        if (!anim->add_data(tgroup->get_transform())) {
+        if (!anim->add_data(tgroup->get_transform3d())) {
           mayaegg_cat.error()
             << "Invalid transform on " << node_desc->get_name()
             << " frame " << frame.value() << ".\n";
@@ -1055,7 +1055,7 @@ get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   ident_mat.setToIdentity();
 
   if (!mat.isEquivalent(ident_mat, 0.0001)) {
-    egg_group->set_transform
+    egg_group->set_transform3d
       (LMatrix4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
                  mat[1][0], mat[1][1], mat[1][2], mat[1][3],
                  mat[2][0], mat[2][1], mat[2][2], mat[2][3],
@@ -2430,7 +2430,7 @@ apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
   
   LMatrix3d mat = color_def.compute_texture_matrix();
   if (!mat.almost_equal(LMatrix3d::ident_mat())) {
-    tex.set_transform_2d(mat);
+    tex.set_transform2d(mat);
   }
 }
 
@@ -2470,7 +2470,7 @@ compare_texture_properties(EggTexture &tex,
                  m(1, 0), m(1, 1), 0.0, m(1, 2),
                  0.0, 0.0, 1.0, 0.0,
                  m(2, 0), m(2, 1), 0.0, m(2, 2));
-  if (!mat4.almost_equal(tex.get_transform())) {
+  if (!mat4.almost_equal(tex.get_transform3d())) {
     okflag = false;
   }
 
