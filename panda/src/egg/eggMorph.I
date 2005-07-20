@@ -105,40 +105,17 @@ compare_to(const EggMorph<Parameter> &other) const {
   return _offset.compare_to(other._offset);
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMorphVertex output operator
-//  Description:
+//     Function: EggMorph::output
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ostream &operator << (ostream &out, const EggMorphVertex &m) {
-  return out << "<Dxyz> " << m.get_name() << " { " << m.get_offset() << " }";
-}
-
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorphNormal output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ostream &operator << (ostream &out, const EggMorphNormal &m) {
-  return out << "<DNormal> " << m.get_name() << " { " << m.get_offset() << " }";
-}
-*/
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorphTexCoord output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ostream &operator << (ostream &out, const EggMorphTexCoord &m) {
-  return out << "<Duv> " << m.get_name() << " { " << m.get_offset() << " }";
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorphColor output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ostream &operator << (ostream &out, const EggMorphColor &m) {
-  return out << "<Drgba> " << m.get_name() << " { " << m.get_offset() << " }";
+template<class Parameter>
+INLINE void EggMorph<Parameter>::
+output(ostream &out, const string &tag, int num_dimensions) const {
+  out << tag << " " << get_name() << " {";
+  for (int i = 0; i < num_dimensions; ++i) {
+    out << " " << MAYBE_ZERO(_offset[i]);
+  }
+  out << " }";
 }

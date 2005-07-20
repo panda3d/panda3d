@@ -18,23 +18,91 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::set_name
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertexUV::
+set_name(const string &name) {
+  if (name == "default") {
+    clear_name();
+  } else {
+    Namable::set_name(name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::get_num_dimensions
+//       Access: Published
+//  Description: Returns the number of components of the texture
+//               coordinate set.  This is either 2 (the normal case)
+//               or 3 (for a 3-d texture coordinate).
+////////////////////////////////////////////////////////////////////
+INLINE int EggVertexUV::
+get_num_dimensions() const {
+  return has_w() ? 3 : 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::has_w
+//       Access: Published
+//  Description: Returns true if the texture coordinate has a third, w
+//               component, false if it is just a normal 2-d texture
+//               coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertexUV::
+has_w() const {
+  return (_flags & F_has_w) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::get_uv
 //       Access: Published
-//  Description: Returns the texture coordinate pair.
+//  Description: Returns the texture coordinate pair, if
+//               get_num_dimensions() is 2.
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoordd &EggVertexUV::
+INLINE TexCoordd EggVertexUV::
 get_uv() const {
-  return _uv;
+  nassertr(!has_w(), TexCoordd::zero());
+  return TexCoordd(_uvw[0], _uvw[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::get_uvw
+//       Access: Published
+//  Description: Returns the texture coordinate triple, if
+//               get_num_dimensions() is 3.  This is also legal to
+//               call if get_num_dimensions() is 2 (but the last
+//               dimension will be zero).
+////////////////////////////////////////////////////////////////////
+INLINE const TexCoord3d &EggVertexUV::
+get_uvw() const {
+  return _uvw;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::set_uv
 //       Access: Published
-//  Description: Sets the texture coordinate pair.
+//  Description: Sets the texture coordinate pair.  This makes the
+//               texture coordinate a 2-d texture coordinate, which is
+//               the usual case.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
 set_uv(const TexCoordd &uv) {
-  _uv = uv;
+  _uvw.set(uv[0], uv[1], 0.0);
+  _flags &= ~F_has_w;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::set_uvw
+//       Access: Published
+//  Description: Sets the texture coordinate triple.  This makes the
+//               texture coordinate a 3-d texture coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertexUV::
+set_uvw(const TexCoord3d &uvw) {
+  _uvw = uvw;
+  _flags |= F_has_w;
 }
 
 ////////////////////////////////////////////////////////////////////

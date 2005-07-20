@@ -231,11 +231,14 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 void EggMorphList<MorphType>::
-write(ostream &out, int indent_level) const {
+write(ostream &out, int indent_level, const string &tag, 
+      int num_dimensions) const {
   const_iterator i;
 
   for (i = begin(); i != end(); ++i) {
-    indent(out, indent_level) << *i << "\n";
+    indent(out, indent_level);
+    i->output(out, tag, num_dimensions);
+    out << "\n";
   }
 }
 

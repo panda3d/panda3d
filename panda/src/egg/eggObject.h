@@ -25,6 +25,8 @@
 #include "pointerTo.h"
 #include "pmap.h"
 
+class EggTransform;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : EggObject
 // Description : The highest-level base class in the egg directory.
@@ -45,6 +47,9 @@ PUBLISHED:
   bool has_user_data(TypeHandle type) const;
   void clear_user_data();
   void clear_user_data(TypeHandle type);
+
+public:
+  virtual EggTransform *as_transform();
 
 private:
   typedef pmap<TypeHandle, PT(EggUserData) > UserData;

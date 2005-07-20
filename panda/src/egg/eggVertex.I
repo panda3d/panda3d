@@ -211,7 +211,7 @@ has_uv() const {
 //               multitexturing; see get_uv(name) for the interface
 //               that supports multitexturing.
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoordd &EggVertex::
+INLINE TexCoordd EggVertex::
 get_uv() const {
   nassertr(has_uv(), TexCoordd::zero());
   return get_uv("");

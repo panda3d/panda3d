@@ -36,12 +36,19 @@
 class EXPCL_PANDAEGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
   EggVertexUV(const string &name, const TexCoordd &uv);
+  EggVertexUV(const string &name, const TexCoord3d &uvw);
   EggVertexUV(const EggVertexUV &copy);
   EggVertexUV &operator = (const EggVertexUV &copy);
   virtual ~EggVertexUV();
 
-  INLINE const TexCoordd &get_uv() const;
+  INLINE void set_name(const string &name);
+
+  INLINE int get_num_dimensions() const;
+  INLINE bool has_w() const;
+  INLINE TexCoordd get_uv() const;
+  INLINE const TexCoord3d &get_uvw() const;
   INLINE void set_uv(const TexCoordd &texCoord);
+  INLINE void set_uvw(const TexCoord3d &texCoord);
 
   INLINE bool has_tangent() const;
   INLINE const Normald &get_tangent() const;
@@ -64,12 +71,13 @@ private:
   enum Flags {
     F_has_tangent   = 0x001,
     F_has_binormal  = 0x002,
+    F_has_w         = 0x004,
   };
 
   int _flags;
   Normald _tangent;
   Normald _binormal;
-  TexCoordd _uv;
+  TexCoord3d _uvw;
 
 public:
   static TypeHandle get_class_type() {

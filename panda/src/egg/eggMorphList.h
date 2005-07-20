@@ -62,7 +62,8 @@ public:
   pair<iterator, bool> insert(const MorphType &value);
   INLINE void clear();
 
-  void write(ostream &out, int indent_level) const;
+  void write(ostream &out, int indent_level,
+             const string &tag, int num_dimensions) const;
 
 private:
   Morphs _morphs;

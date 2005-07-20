@@ -48,7 +48,6 @@ EggTexture(const string &tref_name, const string &filename)
   _priority = 0;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _flags = 0;
-  _transform = LMatrix3d::ident_mat();
   _alpha_file_channel = 0;
   _multitexture_sort = 0;
 }
@@ -74,6 +73,7 @@ operator = (const EggTexture &copy) {
 
   EggFilenameNode::operator = (copy);
   EggRenderMode::operator = (copy);
+  EggTransform::operator = (copy);
 
   _format = copy._format;
   _wrap_mode = copy._wrap_mode;
@@ -92,7 +92,6 @@ operator = (const EggTexture &copy) {
   _rgb_scale = 1;
   _alpha_scale = 1;
   _flags = copy._flags;
-  _transform = copy._transform;
   _alpha_filename = copy._alpha_filename;
   _alpha_fullpath = copy._alpha_fullpath;
   _alpha_file_channel = copy._alpha_file_channel;
@@ -247,7 +246,7 @@ write(ostream &out, int indent_level) const {
   EggRenderMode::write(out, indent_level + 2);
 
   if (has_transform()) {
-    write_transform(out, _transform, indent_level + 2);
+    EggTransform::write(out, indent_level + 2);
   }
 
   indent(out, indent_level) << "}\n";
@@ -324,7 +323,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     }
 
     if (has_transform() && other.has_transform()) {
-      if (!_transform.almost_equal(other._transform, 0.0001)) {
+      if (!get_transform().almost_equal(other.get_transform(), 0.0001)) {
         return false;
       }
     }
@@ -400,9 +399,9 @@ sorts_less_than(const EggTexture &other, int eq) const {
     }
 
     if (has_transform() && other.has_transform()) {
-      int compare = _transform.compare_to(other._transform);
+      int compare = get_transform().compare_to(other.get_transform());
       if (compare != 0) {
-    return compare < 0;
+        return compare < 0;
       }
     }
   }

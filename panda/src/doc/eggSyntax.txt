@@ -372,36 +372,49 @@ appear before they are referenced.
 
   <Transform> { transform-definition }
 
-    This specifies a 2-d transformation that is applied to the UV's of
-    a surface to generate the texture coordinates.
+    This specifies a 2-d or 3-d transformation that is applied to the
+    UV's of a surface to generate the texture coordinates.
 
-    The transform syntax is similar to that for groups, except it
-    defines a 2-d 3x3 matrix.  The definition may be any sequence of
-    zero or more of the following.  Transformations are post
-    multiplied in the order they are encountered to produce a net
-    transformation matrix.  Rotations are counterclockwise about the
-    origin in degrees.  Matrices, when specified explicitly, are
-    row-major.
+    The transform syntax is similar to that for groups, except it may
+    define either a 2-d 3x3 matrix or a 3-d 4x4 matrix.  (You should
+    use the two-dimensional forms if the UV's are two-dimensional, and
+    the three-dimensional forms if the UV's are three-dimensional.)
 
-    <Translate> { x y }
-    <Rotate> { degrees }
-    <Scale> { x y }
-    <Scale> { s }
+    A two-dimensional transform may be any sequence of zero or more of
+    the following.  Transformations are post multiplied in the order
+    they are encountered to produce a net transformation matrix.
+    Rotations are counterclockwise about the origin in degrees.
+    Matrices, when specified explicitly, are row-major.
 
-    <Matrix3> {
-      00 01 02
-      10 11 12
-      20 21 22
-    }
+      <Translate> { x y }
+      <Rotate> { degrees }
+      <Scale> { x y }
+      <Scale> { s }
 
-    The transform definition might also include the following scalar:
+      <Matrix3> {
+        00 01 02
+        10 11 12
+        20 21 22
+      }
 
-    <Scalar> animated { 1 }
+    A three-dimensional transform may be any sequence of zero or more
+    of the following.  See the description under <Group>, below, for
+    more information.
 
-    If this is set, it indicates the matrix may be animated by a
-    matrix channel, like a joint.  At present, this flag is not used;
-    eventually, it may be used to define an arbitrary texture
-    coordinate animation.
+      <Translate> { x y z }
+      <RotX> { degrees }
+      <RotY> { degrees }
+      <RotZ> { degrees }
+      <Rotate> { degrees x y z }
+      <Scale> { x y z }
+      <Scale> { s }
+
+      <Matrix4> {
+        00 01 02 03
+        10 11 12 13
+        20 21 22 23
+        30 31 32 33
+      }
 
 
 <Material> name { [scalars] }
@@ -525,11 +538,18 @@ appear before they are referenced.
     (1 1 1 1).  The morph-list is an optional list of <DRGBA> entries.
 
 
-    <UV> [name] { u v [tangent] [binormal] [morph-list] }
+    <UV> [name] { u v [w] [tangent] [binormal] [morph-list] }
 
     This gives the texture coordinates of the vertex.  This must be
-    specified if a texture is to be mapped onto this geometry.  As
-    before, morph-list is an optional list of <DUV> entries.
+    specified if a texture is to be mapped onto this geometry.  
+
+    The texture coordinates are usually two-dimensional, with two
+    component values (u v), but they may also be three-dimensional,
+    with three component values (u v w).  (Arguably, it should be
+    called <UVW> instead of <UV> in the three-dimensional case, but
+    it's not.)
+
+    As before, morph-list is an optional list of <DUV> entries.
 
     Unlike the other kinds of attributes, there may be multiple sets
     of UV's on each vertex, each with a unique name; this provides
@@ -544,7 +564,7 @@ appear before they are referenced.
     different UV coordinate set.  If present, they have the expected
     syntax:
 
-    <UV> [name] { u v <Tangent> { x y z } <Binormal> { x y z } }
+    <UV> [name] { u v [w] <Tangent> { x y z } <Binormal> { x y z } }
 
 
 <DynamicVertexPool> name { vertices }
@@ -1000,12 +1020,13 @@ corresponding attribute entries:
   normalized to unit length.
 
 
-<DUV> target { u v }
+<DUV> target { u v [w] }
 
   A texture-coordinate delta, valid within a <UV> entry (within a
-  <Vertex> entry).  The given 2-valued offset vector, scaled by the
-  morph target's value, is added to the vertex's texture coordinates
-  each frame.
+  <Vertex> entry).  The offset vector should be 2-valued if the
+  enclosing UV is 2-valued, or 3-valued if the enclosing UV is
+  3-valued.  The given offset vector, scaled by the morph target's
+  value, is added to the vertex's texture coordinates each frame.
 
 
 <DRGBA> target { r g b a }
@@ -1366,25 +1387,25 @@ GROUPING ENTRIES
     a particular axis, either implicit (about the x, y, or z axis), or
     arbitrary.  Matrices, when specified explicitly, are row-major.
 
-    <Translate> { x y z }
-    <RotX> { degrees }
-    <RotY> { degrees }
-    <RotZ> { degrees }
-    <Rotate> { degrees x y z }
-    <Scale> { x y z }
-    <Scale> { s }
+      <Translate> { x y z }
+      <RotX> { degrees }
+      <RotY> { degrees }
+      <RotZ> { degrees }
+      <Rotate> { degrees x y z }
+      <Scale> { x y z }
+      <Scale> { s }
 
-    <Matrix4> {
-      00 01 02 03
-      10 11 12 13
-      20 21 22 23
-      30 31 32 33
-    }
+      <Matrix4> {
+        00 01 02 03
+        10 11 12 13
+        20 21 22 23
+        30 31 32 33
+      }
 
-    Note that the <Transform> block defines a 3-d transform when it
-    appears within the context of a node, while it defines a 2-d
-    transform (and has correspondingly different entries) when it
-    appears within the context of a texture.
+    Note that the <Transform> block should always define a 3-d
+    transform when it appears within the body of a <Group>, while it
+    may define either a 2-d or a 3-d transform when it appears within
+    the body of a <Texture>.  See <Texture>, above.
 
 
   <VertexRef> { indices <Ref> { pool-name } }

@@ -536,24 +536,7 @@ CPT(RenderAttrib) EggRenderState::
 apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
               TextureStage *stage, const EggTexture *egg_tex) {
   if (egg_tex->has_transform()) {
-    const LMatrix3d &tex_mat = egg_tex->get_transform();
-    LMatrix4f mat4(tex_mat(0, 0), tex_mat(0, 1), 0.0f, tex_mat(0, 2),
-                   tex_mat(1, 0), tex_mat(1, 1), 0.0f, tex_mat(1, 2),
-                   0.0f, 0.0f, 1.0f, 0.0f,
-                   tex_mat(2, 0), tex_mat(2, 1), 0.0f, tex_mat(2, 2));
-    CPT(TransformState) transform;
-
-    LVecBase3f scale, shear, hpr, translate;
-    if (decompose_matrix(mat4, scale, shear, hpr, translate)) {
-      // If the texture matrix can be represented componentwise, do
-      // so.
-      transform = TransformState::make_pos_hpr_scale_shear
-        (translate, hpr, scale, shear);
-
-    } else {
-      // Otherwise, make a matrix transform.
-      transform = TransformState::make_mat(mat4);
-    }
+    CPT(TransformState) transform = EggLoader::make_transform(egg_tex);
   
     if (tex_mat_attrib == (const RenderAttrib *)NULL) {
       tex_mat_attrib = TexMatrixAttrib::make();

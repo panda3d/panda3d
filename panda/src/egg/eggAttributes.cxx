@@ -85,8 +85,8 @@ write(ostream &out, int indent_level) const {
         << "<Normal> { " << get_normal() << " }\n";
     } else {
       indent(out, indent_level) << "<Normal> {\n";
-      indent(out, indent_level+2) << get_normal() << "\n";
-      _dnormals.write(out, indent_level+2);
+      indent(out, indent_level + 2) << get_normal() << "\n";
+      _dnormals.write(out, indent_level + 2, "<DNormal>", 3);
       indent(out, indent_level) << "}\n";
     }
   }
@@ -96,8 +96,8 @@ write(ostream &out, int indent_level) const {
         << "<RGBA> { " << get_color() << " }\n";
     } else {
       indent(out, indent_level) << "<RGBA> {\n";
-      indent(out, indent_level+2) << get_color() << "\n";
-      _drgbas.write(out, indent_level+2);
+      indent(out, indent_level + 2) << get_color() << "\n";
+      _drgbas.write(out, indent_level + 2, "<DRBGA>", 4);
       indent(out, indent_level) << "}\n";
     }
   }

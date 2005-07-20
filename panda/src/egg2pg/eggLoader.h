@@ -38,7 +38,7 @@
 #include "textureStage.h"
 #include "texGenAttrib.h"
 #include "colorBlendAttrib.h"
-#include "eggTransform3d.h"
+#include "eggTransform.h"
 #include "geomVertexData.h"
 #include "geomPrimitive.h"
 
@@ -79,6 +79,8 @@ public:
   void make_polyset(EggBin *egg_bin, PandaNode *parent, 
                     const LMatrix4d *transform, bool is_dynamic,
                     CharacterMaker *character_maker);
+
+  static CPT(TransformState) make_transform(const EggTransform *egg_transform);
 
 private:
   class TextureDef {
@@ -184,8 +186,6 @@ private:
   bool do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
                              const pvector<string> &expanded_history,
                              const string &object_type);
-
-  CPT(TransformState) make_transform(const EggTransform3d *egg_transform);
 
   static TextureStage::CombineMode 
   get_combine_mode(const EggTexture *egg_tex, 

@@ -622,7 +622,7 @@ texture_body:
     eggyywarning("Unsupported texture scalar: " + name);
   }
 }
-        | texture_body transform_2d
+        | texture_body transform
         ;
 
 /*
@@ -956,6 +956,10 @@ vertex_uv_body:
 {
   DCAST(EggVertexUV, egg_stack.back())->set_uv(TexCoordd($1, $2));
 }
+        | real real real
+{
+  DCAST(EggVertexUV, egg_stack.back())->set_uvw(LVecBase3d($1, $2, $3));
+}
         | vertex_uv_body TANGENT '{' real real real '}'
 {
   if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
@@ -975,15 +979,31 @@ vertex_uv_body:
         | vertex_uv_body DUV string '{' real real '}'
 {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
-    insert(EggMorphTexCoord($3, LVector2d($5, $6))).second;
+    insert(EggMorphTexCoord($3, LVector3d($5, $6, 0.0))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-       | vertex_uv_body DUV '{' string real real '}'
+        | vertex_uv_body DUV string '{' real real real '}'
 {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
-    insert(EggMorphTexCoord($4, LVector2d($5, $6))).second;
+    insert(EggMorphTexCoord($3, LVector3d($5, $6, $7))).second;
+  if (!inserted) {
+    eggyywarning("Ignoring repeated morph name " + $3);
+  }
+}
+        | vertex_uv_body DUV '{' string real real '}'
+{
+  bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
+    insert(EggMorphTexCoord($4, LVector3d($5, $6, 0.0))).second;
+  if (!inserted) {
+    eggyywarning("Ignoring repeated morph name " + $4);
+  }
+}
+        | vertex_uv_body DUV '{' string real real real '}'
+{
+  bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
+    insert(EggMorphTexCoord($4, LVector3d($5, $6, $7))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $4);
   }
@@ -1343,7 +1363,7 @@ group_body:
   int value = (int)$4;
   group->set_texlist_flag(value!=0);
 }
-        | group_body transform_3d
+        | group_body transform
         | group_body group_vertex_ref
         | group_body switchcondition
         | group_body node
@@ -1406,163 +1426,148 @@ collide_flags:
         ;
 
 /*
- * transform_3d
+ * transform
  *
- * enter: TOS is EggGroup.
- * exit: group's transform matrix has been set.
+ * enter: TOS is some kind of EggTransform.
+ * exit: transform matrix has been set.
  *
  */
-transform_3d:
+transform:
         TRANSFORM
 {
-  DCAST(EggGroup, egg_stack.back())->clear_transform();
+  egg_stack.back()->as_transform()->clear_transform();
 }
-        '{' transform_3d_body '}'
+        '{' transform_body '}'
         ;
 
 
 /*
- * transform_3d_body
+ * transform_body
  *
- * enter: matrix_3d contains some sensible value.
- * exit: matrix_3d has been transformed by the parsed transformation.
+ * enter: TOS is some kind of EggTransform.
+ * exit: transform has been filled in.
  *
  */
-transform_3d_body:
+transform_body:
           empty
-        | transform_3d_body translate_3d
-        | transform_3d_body rotx_3d
-        | transform_3d_body roty_3d
-        | transform_3d_body rotz_3d
-        | transform_3d_body rotate_3d
-        | transform_3d_body scale_3d
-        | transform_3d_body matrix4_3d
+        | transform_body translate2d
+        | transform_body translate3d
+        | transform_body rotate2d
+        | transform_body rotx
+        | transform_body roty
+        | transform_body rotz
+        | transform_body rotate3d
+        | transform_body scale2d
+        | transform_body scale3d
+        | transform_body uniform_scale
+        | transform_body matrix3
+        | transform_body matrix4
         ;
 
-translate_3d: TRANSLATE '{' real real real '}'
+translate2d:
+        TRANSLATE '{' real real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_translate(LVector3d($3, $4, $5));
+  egg_stack.back()->as_transform()->add_translate2d(LVector2d($3, $4));
 }
         ;
 
-rotx_3d: ROTX '{' real '}'
+translate3d:
+        TRANSLATE '{' real real real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_rotx($3);
+  egg_stack.back()->as_transform()->add_translate3d(LVector3d($3, $4, $5));
 }
         ;
 
-roty_3d: ROTY '{' real '}'
+rotate2d:
+        ROTATE '{' real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_roty($3);
+  egg_stack.back()->as_transform()->add_rotate2d($3);
 }
         ;
 
-rotz_3d: ROTZ '{' real '}'
+rotx:
+        ROTX '{' real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_rotz($3);
+  egg_stack.back()->as_transform()->add_rotx($3);
 }
         ;
 
-rotate_3d: ROTATE '{' real real real real '}'
+roty:
+        ROTY '{' real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_rotate($3, LVector3d($4, $5, $6));
+  egg_stack.back()->as_transform()->add_roty($3);
 }
         ;
 
-scale_3d: SCALE '{' real real real '}'
+rotz:
+        ROTZ '{' real '}'
 {
-  DCAST(EggGroup, egg_stack.back())->add_scale(LVecBase3d($3, $4, $5));
-}
-	| SCALE '{' real '}'
-{
-  DCAST(EggGroup, egg_stack.back())->add_uniform_scale($3);
+  egg_stack.back()->as_transform()->add_rotz($3);
 }
         ;
 
-matrix4_3d:
-        MATRIX4 '{' matrix4_3d_body '}'
+rotate3d:
+	ROTATE '{' real real real real '}'
+{
+  egg_stack.back()->as_transform()->add_rotate3d($3, LVector3d($4, $5, $6));
+}
         ;
 
-matrix4_3d_body: 
+scale2d:
+        SCALE '{' real real '}'
+{
+  egg_stack.back()->as_transform()->add_scale2d(LVecBase2d($3, $4));
+}
+        ;
+
+scale3d:
+	SCALE '{' real real real '}'
+{
+  egg_stack.back()->as_transform()->add_scale3d(LVecBase3d($3, $4, $5));
+}
+	;
+
+uniform_scale:
+	SCALE '{' real '}'
+{
+  egg_stack.back()->as_transform()->add_uniform_scale($3);
+}
+        ;
+
+matrix3:
+        MATRIX3 '{' matrix3_body '}'
+        ;
+
+matrix3_body: 
           empty
         | real real real real
           real real real real 
           real real real real 
           real real real real 
 {
-  DCAST(EggGroup, egg_stack.back())->add_matrix
+  egg_stack.back()->as_transform()->add_matrix3
+    (LMatrix3d($1, $2, $3,
+               $4, $5, $6,
+               $7, $8, $9));
+}
+        ;
+
+matrix4:
+        MATRIX4 '{' matrix4_body '}'
+        ;
+
+matrix4_body: 
+          empty
+        | real real real real
+          real real real real 
+          real real real real 
+          real real real real 
+{
+  egg_stack.back()->as_transform()->add_matrix4
     (LMatrix4d($1, $2, $3, $4,
                $5, $6, $7, $8,
                $9, $10, $11, $12,
                $13, $14, $15, $16));
-}
-        ;
-
-
-/*
- * transform_2d
- *
- * enter: TOS is EggTexture.
- * exit: texture's transform matrix has been set.
- *
- */
-transform_2d:
-        TRANSFORM
-{
-  matrix_2d = LMatrix3d::ident_mat();
-}
-        '{' transform_2d_body '}'
-{
-  DCAST(EggTexture, egg_stack.back())->set_transform(matrix_2d);
-}
-        ;
-
-
-/*
- * transform_2d_body
- *
- * enter: matrix contains some sensible value.
- * exit: matrix has been transformed by the parsed transformation.
- *
- */
-transform_2d_body:
-          empty
-        | transform_2d_body matrix3_2d
-        | transform_2d_body translate_2d
-        | transform_2d_body rotate_2d
-        | transform_2d_body scale_2d
-        ;
-
-translate_2d: TRANSLATE '{' real real '}'
-{
-  matrix_2d *= LMatrix3d::translate_mat($3, $4);
-}
-        ;
-
-rotate_2d: ROTATE '{' real '}'
-{
-  matrix_2d *= LMatrix3d::rotate_mat($3);
-}
-        ;
-
-scale_2d: SCALE '{' real real '}'
-{
-  matrix_2d *= LMatrix3d::scale_mat($3, $4);
-}
-        ;
-
-matrix3_2d: MATRIX3 '{' matrix3_2d_body '}'
-        ;
-
-matrix3_2d_body: 
-          empty
-        | real real real
-          real real real
-          real real real
-{
-  matrix_2d *= LMatrix3d($1, $2, $3,
-                         $4, $5, $6,
-                         $7, $8, $9);
 }
         ;
 

@@ -175,3 +175,15 @@ clear_user_data(TypeHandle type) {
     _user_data.erase(ui);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::as_transform
+//       Access: Public, Virtual
+//  Description: Returns this object cross-cast to an EggTransform
+//               pointer, if it inherits from EggTransform, or NULL if
+//               it does not.
+////////////////////////////////////////////////////////////////////
+EggTransform *EggObject::
+as_transform() {
+  return NULL;
+}

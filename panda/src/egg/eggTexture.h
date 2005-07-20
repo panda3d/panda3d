@@ -23,6 +23,7 @@
 
 #include "eggRenderMode.h"
 #include "eggFilenameNode.h"
+#include "eggTransform.h"
 
 #include "pset.h"
 #include "luse.h"
@@ -33,7 +34,7 @@
 // Description : Defines a texture map that may be applied to
 //               geometry.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode {
+class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   EggTexture(const string &tref_name, const string &filename);
   EggTexture(const EggTexture &copy);
@@ -216,12 +217,6 @@ PUBLISHED:
   INLINE bool has_alpha_scale() const;
   INLINE int get_alpha_scale() const;
 
-  INLINE void set_transform(const LMatrix3d &transform);
-  INLINE void clear_transform();
-  INLINE bool has_transform() const;
-  INLINE const LMatrix3d &get_transform() const;
-  INLINE bool transform_is_identity() const;
-
   INLINE void set_alpha_filename(const Filename &filename);
   INLINE void clear_alpha_filename();
   INLINE bool has_alpha_filename() const;
@@ -256,7 +251,6 @@ private:
   bool r_min_multitexture_sort(int sort, MultiTextures &cycle_detector);
 
   enum Flags {
-    F_has_transform          = 0x0001,
     F_has_alpha_filename     = 0x0002,
     F_has_anisotropic_degree = 0x0004,
     F_has_alpha_file_channel = 0x0008,
@@ -282,7 +276,6 @@ private:
   int _rgb_scale;
   int _alpha_scale;
   int _flags;
-  LMatrix3d _transform;
   Filename _alpha_filename;
   Filename _alpha_fullpath;
   int _alpha_file_channel;

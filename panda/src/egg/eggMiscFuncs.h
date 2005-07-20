@@ -55,6 +55,14 @@ enquote_string(ostream &out, const string &str,
 void
 write_transform(ostream &out, const LMatrix3d &mat, int indent_level);
 
+////////////////////////////////////////////////////////////////////
+//     Function: write_transform
+//  Description: A helper function to write out a 4x4 transform
+//               matrix.
+////////////////////////////////////////////////////////////////////
+void
+write_transform(ostream &out, const LMatrix4d &mat, int indent_level);
+
 
 #include "eggMiscFuncs.I"
 

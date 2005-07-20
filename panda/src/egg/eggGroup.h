@@ -23,7 +23,7 @@
 
 #include "eggGroupNode.h"
 #include "eggRenderMode.h"
-#include "eggTransform3d.h"
+#include "eggTransform.h"
 #include "eggVertex.h"
 #include "eggSwitchCondition.h"
 #include "pt_EggVertex.h"
@@ -37,7 +37,7 @@
 // Description : The main glue of the egg hierarchy, this corresponds
 //               to the <Group>, <Instance>, and <Joint> type nodes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform3d {
+class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
   typedef pmap<string, string> TagData;
@@ -296,6 +296,9 @@ PUBLISHED:
   static CollideFlags string_collide_flags(const string &strval);
   static BlendMode string_blend_mode(const string &strval);
   static BlendOperand string_blend_operand(const string &strval);
+
+public:
+  virtual EggTransform *as_transform();
 
 protected:
   void write_vertex_ref(ostream &out, int indent_level) const;

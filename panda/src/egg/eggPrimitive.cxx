@@ -1037,7 +1037,7 @@ r_apply_texmats(EggTextureCollection &textures) {
 
       // We've got a texture with a matrix applied.  Save the matrix,
       // and get a new texture without the matrix.
-      LMatrix3d mat = texture->get_transform();
+      LMatrix4d mat = texture->get_transform();
       EggTexture new_texture(*texture);
       new_texture.clear_transform();
       EggTexture *unique = textures.create_unique_texture(new_texture, ~0);
@@ -1055,7 +1055,12 @@ r_apply_texmats(EggTextureCollection &textures) {
         if (uv_obj != (EggVertexUV *)NULL) {
           EggVertex new_vertex(*vertex);
           PT(EggVertexUV) new_uv_obj = new EggVertexUV(*uv_obj);
-          new_uv_obj->set_uv(uv_obj->get_uv() * mat);
+          TexCoord3d uvw = uv_obj->get_uvw() * mat;
+          if (uv_obj->has_w() || !texture->is_transform_2d()) {
+            new_uv_obj->set_uvw(uvw);
+          } else {
+            new_uv_obj->set_uv(TexCoordd(uvw[0], uvw[1]));
+          }
           new_vertex.set_uv_obj(new_uv_obj);
           
           EggVertexPool *pool = vertex->get_pool();

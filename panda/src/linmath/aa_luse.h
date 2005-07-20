@@ -53,12 +53,14 @@
 typedef LPoint3f Vertexf;
 typedef LVector3f Normalf;
 typedef LPoint2f TexCoordf;
+typedef LPoint3f TexCoord3f;
 typedef LVecBase4f Colorf;
 typedef LVecBase3f RGBColorf;
 
 typedef LPoint3d Vertexd;
 typedef LVector3d Normald;
 typedef LPoint2d TexCoordd;
+typedef LPoint3d TexCoord3d;
 typedef LVecBase4d Colord;
 typedef LVecBase3d RGBColord;
 

@@ -63,7 +63,7 @@ EggGroup(const EggGroup &copy) {
 ////////////////////////////////////////////////////////////////////
 EggGroup &EggGroup::
 operator = (const EggGroup &copy) {
-  EggTransform3d::operator = (copy);
+  EggTransform::operator = (copy);
   _flags = copy._flags;
   _flags2 = copy._flags2;
   _collide_mask = copy._collide_mask;
@@ -215,7 +215,7 @@ write(ostream &out, int indent_level) const {
   write_switch_flags(out, indent_level + 2);
 
   if (has_transform()) {
-    EggTransform3d::write(out, indent_level + 2);
+    EggTransform::write(out, indent_level + 2);
   }
 
   write_object_types(out, indent_level + 2);
@@ -995,6 +995,17 @@ string_blend_operand(const string &strval) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::as_transform
+//       Access: Public, Virtual
+//  Description: Returns this object cross-cast to an EggTransform
+//               pointer, if it inherits from EggTransform, or NULL if
+//               it does not.
+////////////////////////////////////////////////////////////////////
+EggTransform *EggGroup::
+as_transform() {
+  return this;
+}
 
 
 ////////////////////////////////////////////////////////////////////

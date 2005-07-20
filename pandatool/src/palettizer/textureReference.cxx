@@ -86,8 +86,8 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _egg_data = data;
   _tref_name = egg_tex->get_name();
 
-  if (_egg_tex->has_transform()) {
-    _tex_mat = _egg_tex->get_transform();
+  if (_egg_tex->has_transform() && egg_tex->is_transform_2d()) {
+    _tex_mat = _egg_tex->get_transform_2d();
     if (!_inv_tex_mat.invert_from(_tex_mat)) {
       _inv_tex_mat = LMatrix3d::ident_mat();
     }

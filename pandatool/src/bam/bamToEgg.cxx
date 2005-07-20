@@ -429,13 +429,13 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node) {
       const LQuaternionf &quat = transform->get_quat();
       const LVecBase3f &pos = transform->get_pos();
       if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
-        egg_group->add_scale(LCAST(double, scale));
+        egg_group->add_scale3d(LCAST(double, scale));
       }
       if (!quat.is_identity()) {
-        egg_group->add_rotate(LCAST(double, quat));
+        egg_group->add_rotate3d(LCAST(double, quat));
       }
       if (!pos.almost_equal(LVecBase3f::zero())) {
-        egg_group->add_translate(LCAST(double, pos));
+        egg_group->add_translate3d(LCAST(double, pos));
       }
 
     } else if (transform->has_mat()) {

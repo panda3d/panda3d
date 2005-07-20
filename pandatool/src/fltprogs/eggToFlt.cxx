@@ -317,43 +317,33 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
 //               flt bead.
 ////////////////////////////////////////////////////////////////////
 void EggToFlt::
-apply_transform(EggTransform3d *egg_transform, FltBead *flt_node) {
+apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
   flt_node->clear_transform();
 
   bool components_ok = true;
   int num_components = egg_transform->get_num_components();
   for (int i = num_components - 1; i >= 0 && components_ok; i--) {
     switch (egg_transform->get_component_type(i)) {
-    case EggTransform3d::CT_translate:
+    case EggTransform::CT_translate2d:
       {
         FltTransformTranslate *translate = 
           new FltTransformTranslate(_flt_header);
-        translate->set(LPoint3d::zero(), egg_transform->get_component_vector(i));
+        LVector2d v2 = egg_transform->get_component_vec2(i);
+        translate->set(LPoint3d::zero(), LVector3d(v2[0], v2[1], 0.0));
         flt_node->add_transform_step(translate);
       }
       break;
 
-    case EggTransform3d::CT_rotx:
+    case EggTransform::CT_translate3d:
       {
-        FltTransformRotateAboutEdge *rotate = 
-          new FltTransformRotateAboutEdge(_flt_header);
-        rotate->set(LPoint3d::zero(), LPoint3d(1.0, 0.0, 0.0),
-                    egg_transform->get_component_number(i));
-        flt_node->add_transform_step(rotate);
+        FltTransformTranslate *translate = 
+          new FltTransformTranslate(_flt_header);
+        translate->set(LPoint3d::zero(), egg_transform->get_component_vec3(i));
+        flt_node->add_transform_step(translate);
       }
       break;
 
-    case EggTransform3d::CT_roty:
-      {
-        FltTransformRotateAboutEdge *rotate = 
-          new FltTransformRotateAboutEdge(_flt_header);
-        rotate->set(LPoint3d::zero(), LPoint3d(0.0, 1.0, 0.0),
-                    egg_transform->get_component_number(i));
-        flt_node->add_transform_step(rotate);
-      }
-      break;
-
-    case EggTransform3d::CT_rotz:
+    case EggTransform::CT_rotate2d:
       {
         FltTransformRotateAboutEdge *rotate = 
           new FltTransformRotateAboutEdge(_flt_header);
@@ -363,25 +353,64 @@ apply_transform(EggTransform3d *egg_transform, FltBead *flt_node) {
       }
       break;
 
-    case EggTransform3d::CT_rotate:
+    case EggTransform::CT_rotx:
       {
         FltTransformRotateAboutEdge *rotate = 
           new FltTransformRotateAboutEdge(_flt_header);
-        rotate->set(LPoint3d::zero(), egg_transform->get_component_vector(i),
+        rotate->set(LPoint3d::zero(), LPoint3d(1.0, 0.0, 0.0),
                     egg_transform->get_component_number(i));
         flt_node->add_transform_step(rotate);
       }
       break;
 
-    case EggTransform3d::CT_scale:
+    case EggTransform::CT_roty:
+      {
+        FltTransformRotateAboutEdge *rotate = 
+          new FltTransformRotateAboutEdge(_flt_header);
+        rotate->set(LPoint3d::zero(), LPoint3d(0.0, 1.0, 0.0),
+                    egg_transform->get_component_number(i));
+        flt_node->add_transform_step(rotate);
+      }
+      break;
+
+    case EggTransform::CT_rotz:
+      {
+        FltTransformRotateAboutEdge *rotate = 
+          new FltTransformRotateAboutEdge(_flt_header);
+        rotate->set(LPoint3d::zero(), LPoint3d(0.0, 0.0, 1.0),
+                    egg_transform->get_component_number(i));
+        flt_node->add_transform_step(rotate);
+      }
+      break;
+
+    case EggTransform::CT_rotate3d:
+      {
+        FltTransformRotateAboutEdge *rotate = 
+          new FltTransformRotateAboutEdge(_flt_header);
+        rotate->set(LPoint3d::zero(), egg_transform->get_component_vec3(i),
+                    egg_transform->get_component_number(i));
+        flt_node->add_transform_step(rotate);
+      }
+      break;
+
+    case EggTransform::CT_scale2d:
       {
         FltTransformScale *scale = new FltTransformScale(_flt_header);
-        scale->set(LPoint3d::zero(), LCAST(float, egg_transform->get_component_vector(i)));
+        LVector2d v2 = egg_transform->get_component_vec2(i);
+        scale->set(LPoint3d::zero(), LVector3f(v2[0], v2[1], 1.0f));
         flt_node->add_transform_step(scale);
       }
       break;
 
-    case EggTransform3d::CT_uniform_scale:
+    case EggTransform::CT_scale3d:
+      {
+        FltTransformScale *scale = new FltTransformScale(_flt_header);
+        scale->set(LPoint3d::zero(), LCAST(float, egg_transform->get_component_vec3(i)));
+        flt_node->add_transform_step(scale);
+      }
+      break;
+
+    case EggTransform::CT_uniform_scale:
       {
         FltTransformScale *scale = new FltTransformScale(_flt_header);
         float factor = (float)egg_transform->get_component_number(i);
@@ -390,11 +419,25 @@ apply_transform(EggTransform3d *egg_transform, FltBead *flt_node) {
       }
       break;
 
-    case EggTransform3d::CT_matrix:
+    case EggTransform::CT_matrix3:
       {
         FltTransformGeneralMatrix *matrix = 
           new FltTransformGeneralMatrix(_flt_header);
-        matrix->set_matrix(egg_transform->get_component_matrix(i));
+        const LMatrix3d &m = egg_transform->get_component_mat3(i);
+        LMatrix4d mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
+                       m(1, 0), m(1, 1), 0.0, m(1, 2),
+                       0.0, 0.0, 1.0, 0.0,
+                       m(2, 0), m(2, 1), 0.0, m(2, 2));
+        matrix->set_matrix(mat4);
+        flt_node->add_transform_step(matrix);
+      }
+      break;
+
+    case EggTransform::CT_matrix4:
+      {
+        FltTransformGeneralMatrix *matrix = 
+          new FltTransformGeneralMatrix(_flt_header);
+        matrix->set_matrix(egg_transform->get_component_mat4(i));
         flt_node->add_transform_step(matrix);
       }
       break;

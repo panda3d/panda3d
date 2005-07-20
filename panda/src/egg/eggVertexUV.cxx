@@ -32,8 +32,27 @@ EggVertexUV::
 EggVertexUV(const string &name, const TexCoordd &uv) :
   EggNamedObject(name),
   _flags(0),
-  _uv(uv)
+  _uvw(uv[0], uv[1], 0.0)
 {
+  if (get_name() == "default") {
+    clear_name();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggVertexUV::
+EggVertexUV(const string &name, const TexCoord3d &uvw) :
+  EggNamedObject(name),
+  _flags(F_has_w),
+  _uvw(uvw)
+{
+  if (get_name() == "default") {
+    clear_name();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +67,7 @@ EggVertexUV(const EggVertexUV &copy) :
   _flags(copy._flags),
   _tangent(copy._tangent),
   _binormal(copy._binormal),
-  _uv(copy._uv)
+  _uvw(copy._uvw)
 {
 }
 
@@ -64,7 +83,7 @@ operator = (const EggVertexUV &copy) {
   _flags = copy._flags;
   _tangent = copy._tangent;
   _binormal = copy._binormal;
-  _uv = copy._uv;
+  _uvw = copy._uvw;
 
   return (*this);
 }
@@ -109,12 +128,21 @@ write(ostream &out, int indent_level) const {
     inline_name += ' ';
   }
 
-  if (_duvs.empty() && _flags == 0) {
-    indent(out, indent_level)
-      << "<UV> " << inline_name << "{ " << get_uv() << " }\n";
+  if (_duvs.empty() && (_flags & ~F_has_w) == 0) {
+    if (has_w()) {
+      indent(out, indent_level)
+        << "<UV> " << inline_name << "{ " << get_uvw() << " }\n";
+    } else {
+      indent(out, indent_level)
+        << "<UV> " << inline_name << "{ " << get_uv() << " }\n";
+    }
   } else {
     indent(out, indent_level) << "<UV> " << inline_name << "{\n";
-    indent(out, indent_level+2) << get_uv() << "\n";
+    if (has_w()) {
+      indent(out, indent_level+2) << get_uvw() << "\n";
+    } else {
+      indent(out, indent_level+2) << get_uv() << "\n";
+    }
     if (has_tangent()) {
       indent(out, indent_level + 2)
         << "<Tangent> { " << get_tangent() << " }\n";
@@ -123,7 +151,7 @@ write(ostream &out, int indent_level) const {
       indent(out, indent_level + 2)
         << "<Binormal> { " << get_binormal() << " }\n";
     }
-    _duvs.write(out, indent_level+2);
+    _duvs.write(out, indent_level + 2, "<Duv>", get_num_dimensions());
     indent(out, indent_level) << "}\n";
   }
 }
@@ -141,7 +169,7 @@ compare_to(const EggVertexUV &other) const {
     return _flags - other._flags;
   }
   int compare;
-  compare = _uv.compare_to(other._uv, egg_parameters->_uv_threshold);
+  compare = _uvw.compare_to(other._uvw, egg_parameters->_uv_threshold);
   if (compare != 0) {
     return compare;
   }

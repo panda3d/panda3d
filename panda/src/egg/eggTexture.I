@@ -522,8 +522,12 @@ get_color() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_uv_name(const string &uv_name) {
-  _uv_name = uv_name;
-  _flags |= F_has_uv_name;
+  if (uv_name == "default" || uv_name.empty()) {
+    clear_uv_name();
+  } else {
+    _uv_name = uv_name;
+    _flags |= F_has_uv_name;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -661,65 +665,6 @@ has_alpha_scale() const {
 INLINE int EggTexture::
 get_alpha_scale() const {
   return _alpha_scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::set_transform
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void EggTexture::
-set_transform(const LMatrix3d &transform) {
-  _transform = transform;
-  _flags |= F_has_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::clear_transform
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void EggTexture::
-clear_transform() {
-  _transform = LMatrix3d::ident_mat();
-  _flags &= ~F_has_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::has_transform
-//       Access: Published
-//  Description: Returns true if a texture matrix transform has been
-//               specified for the texture (even if the transform is
-//               identity).
-////////////////////////////////////////////////////////////////////
-INLINE bool EggTexture::
-has_transform() const {
-  return (_flags & F_has_transform) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::get_transform
-//       Access: Published
-//  Description: Returns the texture matrix transform if one has been
-//               specified, or identity matrix otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix3d &EggTexture::
-get_transform() const {
-  return _transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::transform_is_identity()
-//       Access: Published
-//  Description: Returns true if no texture matrix transform has been
-//               specified, or if the one specified is the identity
-//               transform.  Returns false only if a nonidentity
-//               transform has been applied.
-////////////////////////////////////////////////////////////////////
-INLINE bool EggTexture::
-transform_is_identity() const {
-  return (!has_transform() ||
-          _transform.almost_equal(LMatrix3d::ident_mat(), 0.0001));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -77,7 +77,7 @@ private:
   EggLoader &_loader;
 
   typedef pvector<const TextureDef *> TexMatTextures;
-  typedef pmap<LMatrix3d, TexMatTextures> TexMatTransforms;
+  typedef pmap<LMatrix4d, TexMatTextures> TexMatTransforms;
   typedef pmap<CPT(InternalName), TexMatTransforms> TexMats;
 };
 

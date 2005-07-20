@@ -295,14 +295,17 @@ has_uvs() const {
 //     Function: EggVertexPool::get_uv_names
 //       Access: Public
 //  Description: Returns the list of UV names that are defined by any
-//               vertices in the pool.  Also returns the subset of UV
-//               names that define the tangent and binormal.  It is
-//               the user's responsibility to clear both vectors
-//               before calling this method.
+//               vertices in the pool, as well as the subset of UV
+//               names that actually define 3-d texture coordinates
+//               ("uvw_names").  Also returns the subset of UV/UVW
+//               names that define a tangent and binormal.  It is the
+//               user's responsibility to clear both vectors before
+//               calling this method.
 ////////////////////////////////////////////////////////////////////
 void EggVertexPool::
-get_uv_names(vector_string &uv_names, vector_string &tbn_names) const {
-  pset<string> uv_names_set, tbn_names_set;
+get_uv_names(vector_string &uv_names, vector_string &uvw_names, 
+             vector_string &tbn_names) const {
+  pset<string> uv_names_set, uvw_names_set, tbn_names_set;
   IndexVertices::const_iterator ivi;
   for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
     EggVertex *vertex = (*ivi).second;
@@ -310,6 +313,9 @@ get_uv_names(vector_string &uv_names, vector_string &tbn_names) const {
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
       EggVertexUV *uv_obj = (*uvi);
       uv_names_set.insert(uv_obj->get_name());
+      if (uv_obj->has_w()) {
+        uvw_names_set.insert(uv_obj->get_name());
+      }
       if (uv_obj->has_tangent() && uv_obj->has_binormal()) {
         tbn_names_set.insert(uv_obj->get_name());
       }
@@ -319,6 +325,9 @@ get_uv_names(vector_string &uv_names, vector_string &tbn_names) const {
   pset<string>::const_iterator si;
   for (si = uv_names_set.begin(); si != uv_names_set.end(); ++si) {
     uv_names.push_back(*si);
+  }
+  for (si = uvw_names_set.begin(); si != uvw_names_set.end(); ++si) {
+    uvw_names.push_back(*si);
   }
   for (si = tbn_names_set.begin(); si != tbn_names_set.end(); ++si) {
     tbn_names.push_back(*si);

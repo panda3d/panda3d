@@ -117,12 +117,34 @@ EggVertex::
 //     Function: EggVertex::has_uv
 //       Access: Published
 //  Description: Returns true if the vertex has the named UV
-//               coordinate pair, false otherwise.
+//               coordinate pair, and the named UV coordinate pair is
+//               2-d, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool EggVertex::
 has_uv(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(name);
-  return (ui != _uv_map.end());
+  if (ui != _uv_map.end()) {
+    EggVertexUV *uv_obj = (*ui).second;
+    return !uv_obj->has_w();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_uvw
+//       Access: Published
+//  Description: Returns true if the vertex has the named UV
+//               coordinate triple, and the named UV coordinate triple is
+//               3-d, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggVertex::
+has_uvw(const string &name) const {
+  UVMap::const_iterator ui = _uv_map.find(name);
+  if (ui != _uv_map.end()) {
+    EggVertexUV *uv_obj = (*ui).second;
+    return uv_obj->has_w();
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,11 +154,25 @@ has_uv(const string &name) const {
 //               vertex.  It is an error to call this if has_uv(name)
 //               returned false.
 ////////////////////////////////////////////////////////////////////
-const TexCoordd &EggVertex::
+TexCoordd EggVertex::
 get_uv(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(name);
   nassertr(ui != _uv_map.end(), TexCoordd::zero());
   return (*ui).second->get_uv();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_uvw
+//       Access: Published
+//  Description: Returns the named UV coordinate triple on the vertex.
+//               vertex.  It is an error to call this if has_uvw(name)
+//               returned false.
+////////////////////////////////////////////////////////////////////
+const TexCoord3d &EggVertex::
+get_uvw(const string &name) const {
+  UVMap::const_iterator ui = _uv_map.find(name);
+  nassertr(ui != _uv_map.end(), TexCoord3d::zero());
+  return (*ui).second->get_uvw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,6 +194,28 @@ set_uv(const string &name, const TexCoordd &uv) {
   }
 
   nassertv(get_uv(name) == uv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_uvw
+//       Access: Published
+//  Description: Sets the indicated UV coordinate triple on the vertex.
+//               This replaces any UV coordinate pair or triple with
+//               the same name already on the vertex, but preserves UV
+//               morphs.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+set_uvw(const string &name, const TexCoord3d &uvw) {
+  PT(EggVertexUV) &uv_obj = _uv_map[name];
+
+  if (uv_obj.is_null()) {
+    uv_obj = new EggVertexUV(name, uvw);
+  } else {
+    uv_obj = new EggVertexUV(*uv_obj);
+    uv_obj->set_uvw(uvw);
+  }
+
+  nassertv(get_uvw(name) == uvw);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,7 +315,7 @@ write(ostream &out, int indent_level) const {
 
   EggAttributes::write(out, indent_level+2);
 
-  _dxyzs.write(out, indent_level+2);
+  _dxyzs.write(out, indent_level + 2, "<Dxyz>", 3);
 
   // If the vertex is referenced by one or more groups, write that as
   // a helpful comment.

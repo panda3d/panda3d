@@ -32,7 +32,7 @@ class EggGroup;
 class EggVertex;
 class EggPrimitive;
 class EggTexture;
-class EggTransform3d;
+class EggTransform;
 class FltVertex;
 class FltBead;
 class FltTexture;
@@ -56,7 +56,7 @@ private:
                          FltGeometry::BillboardType billboard);
   void convert_group(EggGroup *egg_group, FltBead *flt_node,
                      FltGeometry::BillboardType billboard);
-  void apply_transform(EggTransform3d *egg_transform, FltBead *flt_node);
+  void apply_transform(EggTransform *egg_transform, FltBead *flt_node);
   void apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record);
   FltVertex *get_flt_vertex(EggVertex *egg_vertex, EggNode *context);
   FltTexture *get_flt_texture(EggTexture *egg_texture);

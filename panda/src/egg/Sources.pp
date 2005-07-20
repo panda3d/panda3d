@@ -41,7 +41,7 @@
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
      eggTriangleFan.I eggTriangleFan.h \
      eggTriangleStrip.I eggTriangleStrip.h \
-     eggTransform3d.I eggTransform3d.h \
+     eggTransform.I eggTransform.h \
      eggUserData.I eggUserData.h \
      eggUtilities.I eggUtilities.h \
      eggVertex.I eggVertex.h eggVertexPool.I eggVertexPool.h \
@@ -72,7 +72,7 @@
      eggPoolUniquifier.cxx eggPrimitive.cxx eggRenderMode.cxx  \
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
-     eggTransform3d.cxx \
+     eggTransform.cxx \
      eggTriangleFan.cxx \
      eggTriangleStrip.cxx \
      eggUserData.cxx \
@@ -104,7 +104,7 @@
     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h \
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \
-    eggTransform3d.I eggTransform3d.h \
+    eggTransform.I eggTransform.h \
     eggTriangleFan.I eggTriangleFan.h \
     eggTriangleStrip.I eggTriangleStrip.h \
     eggUserData.I eggUserData.h \

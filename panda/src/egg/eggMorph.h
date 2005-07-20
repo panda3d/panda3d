@@ -46,27 +46,20 @@ public:
 
   INLINE int compare_to(const EggMorph<Parameter> &other) const;
 
+  INLINE void output(ostream &out, const string &tag,
+                     int num_dimensions) const;
+
 private:
   Parameter _offset;
 };
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector3d>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector2d>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4f>);
 
 typedef EggMorph<LVector3d> EggMorphVertex;
 typedef EggMorph<LVector3d> EggMorphNormal;
-typedef EggMorph<LVector2d> EggMorphTexCoord;
+typedef EggMorph<LVector3d> EggMorphTexCoord;
 typedef EggMorph<LVector4f> EggMorphColor;
-
-INLINE ostream &operator << (ostream &out, const EggMorphVertex &m);
-INLINE ostream &operator << (ostream &out, const EggMorphTexCoord &m);
-INLINE ostream &operator << (ostream &out, const EggMorphColor &m);
-
-// EggMorphNormal is, by virtue of equivalent typedefs, another name
-// for EggMorphVertex.  Therefore we shouldn't define its output
-// operator again.
-//INLINE ostream &operator << (ostream &out, const EggMorphNormal &m);
 
 #include "eggMorph.I"
 

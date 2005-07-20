@@ -392,6 +392,126 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_transform
+//       Access: Public, Static
+//  Description: Creates a TransformState object corresponding to the
+//               indicated EggTransform.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) EggLoader::
+make_transform(const EggTransform *egg_transform) {
+  // We'll build up the transform componentwise, so we preserve any
+  // componentwise properties of the egg transform.
+
+  CPT(TransformState) ts = TransformState::make_identity();
+  int num_components = egg_transform->get_num_components();
+  for (int i = 0; i < num_components; i++) {
+    switch (egg_transform->get_component_type(i)) {
+    case EggTransform::CT_translate2d:
+      {
+        LVecBase2f trans2d(LCAST(float, egg_transform->get_component_vec2(i)));
+        LVecBase3f trans3d(trans2d[0], trans2d[1], 0.0f);
+        ts = TransformState::make_pos(trans3d)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_translate3d:
+      {
+        LVecBase3f trans3d(LCAST(float, egg_transform->get_component_vec3(i)));
+        ts = TransformState::make_pos(trans3d)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotate2d:
+      {
+        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotx:
+      {
+        LRotationf rot(LVector3f(1.0f, 0.0f, 0.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_roty:
+      {
+        LRotationf rot(LVector3f(0.0f, 1.0f, 0.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotz:
+      {
+        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotate3d:
+      {
+        LRotationf rot(LCAST(float, egg_transform->get_component_vec3(i)),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_scale2d:
+      {
+        LVecBase2f scale2d(LCAST(float, egg_transform->get_component_vec2(i)));
+        LVecBase3f scale3d(scale2d[0], scale2d[1], 1.0f);
+        ts = TransformState::make_scale(scale3d)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_scale3d:
+      {
+        LVecBase3f scale3d(LCAST(float, egg_transform->get_component_vec3(i)));
+        ts = TransformState::make_scale(scale3d)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_uniform_scale:
+      {
+        float scale = (float)egg_transform->get_component_number(i);
+        ts = TransformState::make_scale(scale)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_matrix3:
+      {
+        LMatrix3f m(LCAST(float, egg_transform->get_component_mat3(i)));
+        LMatrix4f mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
+                       m(1, 0), m(1, 1), 0.0, m(1, 2),
+                       0.0, 0.0, 1.0, 0.0,
+                       m(2, 0), m(2, 1), 0.0, m(2, 2));
+
+        ts = TransformState::make_mat(mat4)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_matrix4:
+      {
+        LMatrix4f mat4(LCAST(float, egg_transform->get_component_mat4(i)));
+        ts = TransformState::make_mat(mat4)->compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_invalid:
+      nassertr(false, ts);
+      break;
+    }
+  }
+
+  return ts;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::show_normals
 //       Access: Private
 //  Description: In the presence of egg-show-normals, generate some
@@ -1183,8 +1303,7 @@ make_texture_stage(const EggTexture *egg_tex) {
   }
 
 
-  if (egg_tex->has_uv_name() && !egg_tex->get_uv_name().empty() &&
-      egg_tex->get_uv_name() != string("default")) {
+  if (egg_tex->has_uv_name()) {
     CPT(InternalName) name = 
       InternalName::get_texcoord_name(egg_tex->get_uv_name());
     stage->set_texcoord_name(name);
@@ -1725,23 +1844,26 @@ make_vertex_data(const EggRenderState *render_state,
        Geom::NT_packed_dabc, Geom::C_color);
   }
 
-  vector_string uv_names, tbn_names;
-  vertex_pool->get_uv_names(uv_names, tbn_names);
+  vector_string uv_names, uvw_names, tbn_names;
+  vertex_pool->get_uv_names(uv_names, uvw_names, tbn_names);
   vector_string::const_iterator ni;
   for (ni = uv_names.begin(); ni != uv_names.end(); ++ni) {
     string name = (*ni);
-    if (name == "default") {
-      name = string();
-    }
+
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
-    array_format->add_column
-      (iname, 2, Geom::NT_float32, Geom::C_texcoord);
+
+    if (find(uvw_names.begin(), uvw_names.end(), name) != uvw_names.end()) {
+      // This one actually represents 3-d texture coordinates.
+      array_format->add_column
+        (iname, 3, Geom::NT_float32, Geom::C_texcoord);
+    } else {
+      array_format->add_column
+        (iname, 2, Geom::NT_float32, Geom::C_texcoord);
+    }
   }
   for (ni = tbn_names.begin(); ni != tbn_names.end(); ++ni) {
     string name = (*ni);
-    if (name == "default") {
-      name = string();
-    }
+
     PT(InternalName) iname = InternalName::get_tangent_name(name);
     array_format->add_column
       (iname, 3, Geom::NT_float32, Geom::C_vector);
@@ -1807,16 +1929,14 @@ make_vertex_data(const EggRenderState *render_state,
       for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
         EggVertexUV *egg_uv = (*uvi);
         string name = egg_uv->get_name();
-        if (name == "default") {
-          name = string();
-        }
+        bool has_w = (find(uvw_names.begin(), uvw_names.end(), name) != uvw_names.end());
         PT(InternalName) iname = InternalName::get_texcoord_name(name);
 
         EggMorphTexCoordList::const_iterator mti;
         for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
           slider_names.insert((*mti).get_name());
           record_morph(anim_array_format, character_maker, (*mti).get_name(),
-                       iname, 2);
+                       iname, has_w ? 3 : 2);
         }
       }
     }
@@ -1910,23 +2030,20 @@ make_vertex_data(const EggRenderState *render_state,
     EggVertex::const_uv_iterator uvi;
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
       EggVertexUV *egg_uv = (*uvi);
-      TexCoordd orig_uv = egg_uv->get_uv();
-      TexCoordd uv = egg_uv->get_uv();
+      TexCoord3d orig_uvw = egg_uv->get_uvw();
+      TexCoord3d uvw = egg_uv->get_uvw();
 
       string name = egg_uv->get_name();
-      if (name == "default") {
-        name = string();
-      }
       PT(InternalName) iname = InternalName::get_texcoord_name(name);
       gvw.set_column(iname);
 
       BakeInUVs::const_iterator buv = render_state->_bake_in_uvs.find(iname);
       if (buv != render_state->_bake_in_uvs.end()) {
         // If we are to bake in a texture matrix, do so now.
-        uv = uv * (*buv).second->get_transform();
+        uvw = uvw * (*buv).second->get_transform();
       }
 
-      gvw.set_data2f(LCAST(float, uv));
+      gvw.set_data3f(LCAST(float, uvw));
 
       if (is_dynamic) {
         EggMorphTexCoordList::const_iterator mti;
@@ -1935,13 +2052,13 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(iname, morph.get_name());
           gvw.set_column(delta_name);
-          TexCoordd duv = morph.get_offset();
+          TexCoord3d duvw = morph.get_offset();
           if (buv != render_state->_bake_in_uvs.end()) {
-            TexCoordd new_uv = orig_uv + duv;
-            duv = (new_uv * (*buv).second->get_transform()) - uv;
+            TexCoord3d new_uvw = orig_uvw + duvw;
+            duvw = (new_uvw * (*buv).second->get_transform()) - uvw;
           }
           
-          gvw.add_data2f(LCAST(float, duv));
+          gvw.add_data3f(LCAST(float, duvw));
         }
       }
 
@@ -2992,91 +3109,6 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_transform
-//       Access: Private
-//  Description: Walks back over the tree and applies the
-//               DeferredNodeProperties that were saved up along the
-//               way.
-////////////////////////////////////////////////////////////////////
-CPT(TransformState) EggLoader::
-make_transform(const EggTransform3d *egg_transform) {
-  // We'll build up the transform componentwise, so we preserve any
-  // componentwise properties of the egg transform.
-
-  CPT(TransformState) ts = TransformState::make_identity();
-  int num_components = egg_transform->get_num_components();
-  for (int i = 0; i < num_components; i++) {
-    switch (egg_transform->get_component_type(i)) {
-    case EggTransform3d::CT_translate:
-      {
-        LVector3f trans(LCAST(float, egg_transform->get_component_vector(i)));
-        ts = TransformState::make_pos(trans)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_rotx:
-      {
-        LRotationf rot(LVector3f(1.0f, 0.0f, 0.0f),
-                       (float)egg_transform->get_component_number(i));
-        ts = TransformState::make_quat(rot)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_roty:
-      {
-        LRotationf rot(LVector3f(0.0f, 1.0f, 0.0f),
-                       (float)egg_transform->get_component_number(i));
-        ts = TransformState::make_quat(rot)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_rotz:
-      {
-        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
-                       (float)egg_transform->get_component_number(i));
-        ts = TransformState::make_quat(rot)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_rotate:
-      {
-        LRotationf rot(LCAST(float, egg_transform->get_component_vector(i)),
-                       (float)egg_transform->get_component_number(i));
-        ts = TransformState::make_quat(rot)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_scale:
-      {
-        LVecBase3f scale(LCAST(float, egg_transform->get_component_vector(i)));
-        ts = TransformState::make_scale(scale)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_uniform_scale:
-      {
-        float scale = (float)egg_transform->get_component_number(i);
-        ts = TransformState::make_scale(scale)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_matrix:
-      {
-        LMatrix4f mat(LCAST(float, egg_transform->get_component_matrix(i)));
-        ts = TransformState::make_mat(mat)->compose(ts);
-      }
-      break;
-
-    case EggTransform3d::CT_invalid:
-      nassertr(false, ts);
-      break;
-    }
-  }
-
-  return ts;
 }
 
 ////////////////////////////////////////////////////////////////////

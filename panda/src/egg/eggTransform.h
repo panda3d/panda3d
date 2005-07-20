@@ -1,4 +1,4 @@
-// Filename: eggTransform3d.h
+// Filename: eggTransform.h
 // Created by:  drose (21Jun02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,67 +16,85 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGTRANSFORM3D_H
-#define EGGTRANSFORM3D_H
+#ifndef EGGTRANSFORM_H
+#define EGGTRANSFORM_H
 
 #include "pandabase.h"
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggTransform3d
+//       Class : EggTransform
 // Description : This represents the <Transform> entry of a group
-//               node: a list of component transform operations,
-//               applied in order, that describe a net transform
-//               matrix.  This is a 3-d transform, and therefore
-//               computes a 4x4 matrix.
+//               or texture node: a list of component transform
+//               operations, applied in order, that describe a net
+//               transform matrix.  
+//
+//               This may be either a 3-d transform, and therefore
+//               described by a 4x4 matrix, or a 2-d transform,
+//               described by a 3x3 matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggTransform3d {
+class EXPCL_PANDAEGG EggTransform {
 PUBLISHED:
-  EggTransform3d();
-  EggTransform3d(const EggTransform3d &copy);
-  EggTransform3d &operator = (const EggTransform3d &copy);
-  virtual ~EggTransform3d();
+  EggTransform();
+  EggTransform(const EggTransform &copy);
+  EggTransform &operator = (const EggTransform &copy);
+  virtual ~EggTransform();
 
   INLINE void clear_transform();
 
-  void add_translate(const LVector3d &translate);
+  void add_translate2d(const LVector2d &translate);
+  void add_translate3d(const LVector3d &translate);
+  void add_rotate2d(double angle);
   void add_rotx(double angle); 
   void add_roty(double angle); 
   void add_rotz(double angle); 
-  void add_rotate(double angle, const LVector3d &axis);
-  void add_rotate(const LQuaterniond &quat);
-  void add_scale(const LVecBase3d &scale);
+  void add_rotate3d(double angle, const LVector3d &axis);
+  void add_rotate3d(const LQuaterniond &quat);
+  void add_scale2d(const LVecBase2d &scale);
+  void add_scale3d(const LVecBase3d &scale);
   void add_uniform_scale(double scale);
-  INLINE void add_matrix(const LMatrix4d &mat);
+  INLINE void add_matrix3(const LMatrix3d &mat);
+  INLINE void add_matrix4(const LMatrix4d &mat);
 
   INLINE bool has_transform() const;
+  INLINE bool is_transform_2d() const;
+  INLINE void set_transform_2d(const LMatrix3d &mat);
   INLINE void set_transform(const LMatrix4d &mat);
+  INLINE LMatrix3d get_transform_2d() const;
   INLINE const LMatrix4d &get_transform() const;
   INLINE bool transform_is_identity() const;
 
   enum ComponentType {
     CT_invalid,
-    CT_translate,
+    CT_translate2d,
+    CT_translate3d,
+    CT_rotate2d,
     CT_rotx,
     CT_roty,
     CT_rotz,
-    CT_rotate,
-    CT_scale,
+    CT_rotate3d,
+    CT_scale2d,
+    CT_scale3d,
     CT_uniform_scale,
-    CT_matrix
+    CT_matrix3,
+    CT_matrix4
   };
 
   INLINE int get_num_components() const;
   INLINE ComponentType get_component_type(int n) const;
   INLINE double get_component_number(int n) const;
-  INLINE const LVector3d &get_component_vector(int n) const;
-  INLINE const LMatrix4d &get_component_matrix(int n) const;
+  INLINE const LVecBase2d &get_component_vec2(int n) const;
+  INLINE const LVecBase3d &get_component_vec3(int n) const;
+  INLINE const LMatrix3d &get_component_mat3(int n) const;
+  INLINE const LMatrix4d &get_component_mat4(int n) const;
 
   void write(ostream &out, int indent_level) const;
 
 protected:
   void internal_clear_transform();
+  void internal_add_matrix(const LMatrix3d &mat);
   void internal_add_matrix(const LMatrix4d &mat);
+  INLINE void internal_set_transform(const LMatrix3d &mat);
   INLINE void internal_set_transform(const LMatrix4d &mat);
 
   virtual void transform_changed();
@@ -91,15 +109,18 @@ private:
 
     ComponentType _type;
     double _number;
-    LVector3d *_vector;
-    LMatrix4d *_matrix;
+    LVecBase2d *_vec2;
+    LVecBase3d *_vec3;
+    LMatrix3d *_mat3;
+    LMatrix4d *_mat4;
   };
 
+  bool _is_transform_2d;
   typedef pvector<Component> Components;
   Components _components;
   LMatrix4d _transform;
 };
 
-#include "eggTransform3d.I"
+#include "eggTransform.I"
 
 #endif

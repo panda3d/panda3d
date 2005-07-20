@@ -94,3 +94,25 @@ write_transform(ostream &out, const LMatrix3d &mat, int indent_level) {
   indent(out, indent_level+2) << "}\n";
   indent(out, indent_level) << "}\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: write_transform
+//  Description: A helper function to write out a 4x4 transform
+//               matrix.
+////////////////////////////////////////////////////////////////////
+void
+write_transform(ostream &out, const LMatrix4d &mat, int indent_level) {
+  indent(out, indent_level) << "<Transform> {\n";
+
+  indent(out, indent_level+2) << "<Matrix4> {\n";
+
+  for (int r = 0; r < 4; r++) {
+    indent(out, indent_level+3);
+    for (int c = 0; c < 4; c++) {
+      out << " " << mat(r, c);
+    }
+    out << "\n";
+  }
+  indent(out, indent_level+2) << "}\n";
+  indent(out, indent_level) << "}\n";
+}

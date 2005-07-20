@@ -82,12 +82,15 @@ PUBLISHED:
   INLINE LPoint4d get_pos4() const;
 
   INLINE bool has_uv() const;
-  INLINE const TexCoordd &get_uv() const;
+  INLINE TexCoordd get_uv() const;
   INLINE void set_uv(const TexCoordd &texCoord);
   INLINE void clear_uv();
   bool has_uv(const string &name) const;
-  const TexCoordd &get_uv(const string &name) const;
+  bool has_uvw(const string &name) const;
+  TexCoordd get_uv(const string &name) const;
+  const TexCoord3d &get_uvw(const string &name) const;
   void set_uv(const string &name, const TexCoordd &texCoord);
+  void set_uvw(const string &name, const TexCoord3d &texCoord);
   EggVertexUV *get_uv_obj(const string &name) const;
   void set_uv_obj(EggVertexUV *vertex_uv);
   void clear_uv(const string &name);
