@@ -122,7 +122,7 @@ make_context() {
   // reset() requires having a current context.)
   glxgsg->reset_if_new();
 
-  return true;
+  return glxgsg->is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////

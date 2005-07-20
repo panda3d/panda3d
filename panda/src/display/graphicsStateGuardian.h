@@ -190,6 +190,7 @@ public:
   INLINE bool reset_if_new();
   INLINE void mark_new();
   virtual void reset();
+  INLINE bool is_valid() const;
 
   INLINE void modify_state(const RenderState *state);
   INLINE void set_state(const RenderState *state);
@@ -362,6 +363,7 @@ protected:
   int _last_max_stage_index;
 
   bool _needs_reset;
+  bool _is_valid;
   bool _closing_gsg;
   bool _active;
 

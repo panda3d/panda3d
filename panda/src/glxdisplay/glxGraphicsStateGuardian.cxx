@@ -33,6 +33,7 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(const FrameBufferProperties &properties,
                          glxGraphicsStateGuardian *share_with,
+                         int want_hardware,
                          GLXContext context, XVisualInfo *visual, 
                          Display *display, int screen
 #ifdef HAVE_GLXFBCONFIG
@@ -40,6 +41,7 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties,
 #endif  // HAVE_GLXFBCONFIG
                          ) :
   GLGraphicsStateGuardian(properties),
+  _want_hardware(want_hardware),
   _context(context),
   _visual(visual),
   _display(display),
@@ -102,6 +104,51 @@ reset() {
     // that supports it.
     _glXSwapIntervalSGI(sync_video ? 1 : 0);
   }
+
+  // Finally, check that the context is the right kind of context:
+  // hardware or software.  This really means examining the
+  // _gl_renderer string for "Mesa" (see the comment in
+  // glxGraphicsPipe).
+
+  bool hardware = ((_want_hardware & FrameBufferProperties::FM_hardware) != 0);
+  bool software = ((_want_hardware & FrameBufferProperties::FM_software) != 0);
+  // If the user specified neither hardware nor software frame buffer,
+  // he gets either one.
+  if (!hardware && !software) {
+    hardware = true;
+    software = true;
+  }
+
+  FrameBufferProperties properties = get_properties();
+  int frame_buffer_mode = properties.get_frame_buffer_mode();
+
+  if (_gl_renderer.find("Mesa") != string::npos) {
+    // It's Mesa, therefore probably a software context.
+    if (!software) {
+      glxdisplay_cat.error()
+        << "Using GL renderer " << _gl_renderer << "; it is probably a software renderer.\n";
+      glxdisplay_cat.error()
+        << "To allow use of this display add FM_software to your frame buffer mode.\n";
+      _is_valid = false;
+    }
+    frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_software) & ~FrameBufferProperties::FM_hardware;
+
+  } else {
+    // It's some other renderer, therefore probably a hardware context.
+    if (!hardware) {
+      glxdisplay_cat.error()
+        << "Using GL renderer " << _gl_renderer << "; it is probably hardware-accelerated.\n";
+      glxdisplay_cat.error()
+        << "To allow use of this display add FM_hardware to your frame buffer mode.\n";
+      _is_valid = false;
+    }
+    frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_hardware) & ~FrameBufferProperties::FM_software;
+  }
+
+  // Update the GSG's record to indicate whether we believe it is a
+  // hardware or software renderer.
+  properties.set_frame_buffer_mode(frame_buffer_mode);
+  set_properties(properties);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,13 +169,13 @@ glx_is_at_least_version(int major_version, int minor_version) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_gl_version
+//     Function: glxGraphicsStateGuardian::query_gl_version
 //       Access: Protected, Virtual
 //  Description: Queries the runtime version of OpenGL in use.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
-get_gl_version() {
-  GLGraphicsStateGuardian::get_gl_version();
+query_gl_version() {
+  GLGraphicsStateGuardian::query_gl_version();
 
   show_glx_client_string("GLX_VENDOR", GLX_VENDOR);
   show_glx_client_string("GLX_VERSION", GLX_VERSION);

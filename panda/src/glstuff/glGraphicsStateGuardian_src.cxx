@@ -304,7 +304,7 @@ reset() {
   GraphicsStateGuardian::reset();
 
   // Output the vendor and version strings.
-  get_gl_version();
+  query_gl_version();
 
   // Save the extensions tokens.
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
@@ -2932,31 +2932,37 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
 //     Function: GLGraphicsStateGuardian::show_gl_string
 //       Access: Protected
 //  Description: Outputs the result of glGetString() on the indicated
-//               tag.
+//               tag.  The output string is returned.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+string CLP(GraphicsStateGuardian)::
 show_gl_string(const string &name, GLenum id) {
-  if (GLCAT.is_debug()) {
-    const GLubyte *text = GLP(GetString)(id);
-    if (text == (const GLubyte *)NULL) {
+  string result;
+
+  const GLubyte *text = GLP(GetString)(id);
+
+  if (text == (const GLubyte *)NULL) {
+    GLCAT.warning()
+      << "Unable to query " << name << "\n";
+  } else {
+    result = (const char *)text;
+    if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "Unable to query " << name << "\n";
-    } else {
-      GLCAT.debug()
-        << name << " = " << (const char *)text << "\n";
+        << name << " = " << result << "\n";
     }
   }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_version
+//     Function: GLGraphicsStateGuardian::query_gl_version
 //       Access: Protected, Virtual
 //  Description: Queries the runtime version of OpenGL in use.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-get_gl_version() {
-  show_gl_string("GL_VENDOR", GL_VENDOR);
-  show_gl_string("GL_RENDERER", GL_RENDERER);
+query_gl_version() {
+  _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
+  _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
@@ -4359,6 +4365,9 @@ finish_modify_state() {
         nassertv(_supports_point_sprite);
         GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
         got_point_sprites = true;
+        break;
+
+      case TexGenAttrib::M_unused:
         break;
       }
     }

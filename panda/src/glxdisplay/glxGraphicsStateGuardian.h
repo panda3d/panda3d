@@ -56,18 +56,15 @@ typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
+  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                           glxGraphicsStateGuardian *share_with,
+                           int want_hardware,
+                           GLXContext context, XVisualInfo *visual,
+                           Display *display, int screen
 #ifdef HAVE_GLXFBCONFIG
-  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
-                           glxGraphicsStateGuardian *share_with,
-                           GLXContext context, XVisualInfo *visual,
-                           Display *display, int screen,
-                           GLXFBConfig fbconfig);
-#else
-  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
-                           glxGraphicsStateGuardian *share_with,
-                           GLXContext context, XVisualInfo *visual,
-                           Display *display, int screen);
+                           , GLXFBConfig fbconfig
 #endif  // HAVE_GLXFBCONFIG
+                           );
 
   virtual ~glxGraphicsStateGuardian();
 
@@ -75,6 +72,7 @@ public:
 
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
+  int _want_hardware;
   GLXContext _context;
   XVisualInfo *_visual;
   Display *_display;
@@ -89,7 +87,7 @@ public:
   PFNGLXSWAPINTERVALSGIPROC _glXSwapIntervalSGI;
 
 protected:
-  virtual void get_gl_version();
+  virtual void query_gl_version();
   virtual void get_extra_extensions();
   virtual void *get_extension_func(const char *prefix, const char *name);
 

@@ -83,6 +83,59 @@ report_my_errors(int line, const char *source_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_vendor
+//       Access: Public
+//  Description: Returns the GL vendor string reported by the driver.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CLP(GraphicsStateGuardian)::
+get_gl_vendor() const {
+  return _gl_vendor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_renderer
+//       Access: Public
+//  Description: Returns the GL renderer string reported by the driver.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CLP(GraphicsStateGuardian)::
+get_gl_renderer() const {
+  return _gl_renderer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_version_major
+//       Access: Public
+//  Description: Returns the major part of the reported GL version
+//               number.
+////////////////////////////////////////////////////////////////////
+INLINE int CLP(GraphicsStateGuardian)::
+get_gl_version_major() const {
+  return _gl_version_major;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_version_minor
+//       Access: Public
+//  Description: Returns the minor part of the reported GL version
+//               number.
+////////////////////////////////////////////////////////////////////
+INLINE int CLP(GraphicsStateGuardian)::
+get_gl_version_minor() const {
+  return _gl_version_minor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_version_release
+//       Access: Public
+//  Description: Returns the release part of the reported GL version
+//               number.
+////////////////////////////////////////////////////////////////////
+INLINE int CLP(GraphicsStateGuardian)::
+get_gl_version_release() const {
+  return _gl_version_release;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::enable_multisample_antialias
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for

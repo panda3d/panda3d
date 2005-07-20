@@ -158,11 +158,17 @@ public:
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
 
+  INLINE const string &get_gl_vendor() const;
+  INLINE const string &get_gl_renderer() const;
+  INLINE int get_gl_version_major() const;
+  INLINE int get_gl_version_minor() const;
+  INLINE int get_gl_version_release() const;
+
 protected:
   static bool report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code, int &error_count);
-  void show_gl_string(const string &name, GLenum id);
-  virtual void get_gl_version();
+  string show_gl_string(const string &name, GLenum id);
+  virtual void query_gl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
@@ -310,6 +316,8 @@ protected:
   
   int _error_count;
 
+  string _gl_vendor;
+  string _gl_renderer;
   int _gl_version_major, _gl_version_minor, _gl_version_release;
   pset<string> _extensions;
 

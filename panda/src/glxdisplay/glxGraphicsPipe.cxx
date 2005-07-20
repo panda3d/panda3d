@@ -191,51 +191,26 @@ make_gsg(const FrameBufferProperties &properties,
     share_context = share_gsg->_context;
   }
 
-  int frame_buffer_mode = properties.get_frame_buffer_mode();
-  bool hardware = ((frame_buffer_mode & FrameBufferProperties::FM_hardware) != 0);
-  bool software = ((frame_buffer_mode & FrameBufferProperties::FM_software) != 0);
-  // If the user specified neither hardware nor software frame buffer,
-  // he gets either one.
-  if (!hardware && !software) {
-    hardware = true;
-    software = true;
-  }
-
   // There's no interface in GLX to query whether we have a software
   // or a hardware rendering context.  Fortunately, there seems to be
   // only one likely software GLX context, and that's Mesa; we will
   // assume that any Mesa GLX context is software-based, and any other
   // context is hardware-based.
 
-  // To determine whether we are using Mesa, we should strictly create
-  // a GL context, bind it to a window, and then examine the
-  // GL_RENDERER string, but as a cheesy shortcut to all of that hard
-  // work, we'll just check the X server's GLX_VERSION string to see
-  // if it contains "Mesa".
+  // Unforunately, to determine whether we are using Mesa, we need to
+  // create a GL context, bind it to a window, and then examine the
+  // GL_RENDERER string to see if it contains "Mesa".  So we must
+  // create the GSG and its window first, and wait until the GSG has
+  // been reset, before we can ask this question.  Therefore we don't
+  // deal with hardware/software at this point, but rather in
+  // glxGraphicsStateGuardian::reset().
 
-  const char *glx_version = glXQueryServerString(_display, _screen, GLX_VERSION);
-  if (glx_version != NULL) {
-    if (strstr(glx_version, "Mesa") != NULL) {
-      // It's Mesa, therefore probably a software context.
-      if (!software) {
-        glxdisplay_cat.error()
-          << "Using GLX version " << glx_version << "; it is probably a software renderer.\n";
-        glxdisplay_cat.error()
-          << "To allow use of this display add FM_software to your frame buffer mode.\n";
-        return NULL;
-      }
-    } else {
-      // It's some other server, therefore probably a hardware context.
-      if (!hardware) {
-        glxdisplay_cat.error()
-          << "Using GLX version " << glx_version << "; it is probably hardware-accelerated.\n";
-        glxdisplay_cat.error()
-          << "To allow use of this display add FM_hardware to your frame buffer mode.\n";
-        return NULL;
-      }
-    }
-  }
-        
+  // We do, however, need to determine ahead of time whether the user
+  // would prefer a hardware or software context.
+  int frame_buffer_mode = properties.get_frame_buffer_mode();
+  int want_hardware = (frame_buffer_mode & (FrameBufferProperties::FM_hardware | 
+                                            FrameBufferProperties::FM_software));
+
   FrameBufferProperties new_properties = properties;
   GLXContext context = NULL;
   XVisualInfo *visual = NULL;
@@ -278,13 +253,13 @@ make_gsg(const FrameBufferProperties &properties,
 
   // Now we can make a GSG.
   PT(glxGraphicsStateGuardian) gsg = 
-    new glxGraphicsStateGuardian(new_properties, share_gsg, context, 
-                                 visual, _display, _screen, fbconfig);
+    new glxGraphicsStateGuardian(new_properties, share_gsg, want_hardware,
+                                 context, visual, _display, _screen, fbconfig);
 
 #else
   PT(glxGraphicsStateGuardian) gsg = 
-    new glxGraphicsStateGuardian(new_properties, share_gsg, context, 
-                                 visual, _display, _screen);
+    new glxGraphicsStateGuardian(new_properties, share_gsg, want_hardware,
+                                 context, visual, _display, _screen);
 #endif  // HAVE_GLXFBCONFIG
 
   return gsg.p();

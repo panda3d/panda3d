@@ -105,6 +105,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
   _needs_reset = true;
+  _is_valid = false;
   _closing_gsg = false;
   _active = true;
   _prepared_objects = new PreparedGraphicsObjects;
@@ -207,6 +208,7 @@ get_supported_geom_rendering() const {
 void GraphicsStateGuardian::
 reset() {
   _needs_reset = false;
+  _is_valid = false;
 
   _display_region_stack_level = 0;
   _frame_buffer_stack_level = 0;
@@ -261,6 +263,8 @@ reset() {
   _needs_tex_gen = false;
   _tex_gen_modifies_mat = false;
   _last_max_stage_index = 0;
+
+  _is_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
