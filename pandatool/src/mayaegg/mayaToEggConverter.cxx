@@ -2430,7 +2430,7 @@ apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
   
   LMatrix3d mat = color_def.compute_texture_matrix();
   if (!mat.almost_equal(LMatrix3d::ident_mat())) {
-    tex.set_transform(mat);
+    tex.set_transform_2d(mat);
   }
 }
 
