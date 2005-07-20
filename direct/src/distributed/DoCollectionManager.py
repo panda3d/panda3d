@@ -200,10 +200,15 @@ class DoCollectionManager:
             assert do.doId not in self.doId2do
             self.doId2do[do.doId]=do
 
-            if location is not None:
+            if self.isValidLocationTuple(location):
                 assert do.doId not in self.zoneId2doIds.get(location,{})
                 self.zoneId2doIds.setdefault(location, {})
                 self.zoneId2doIds[location][do.doId]=do
+
+        def isValidLocationTuple(self, location):
+            return (location is not None
+                and location != (0xffffffff, 0xffffffff)
+                and location != (0, 0))
     else:
         # NON OTP
         def addDOToTables(self, do, zoneId=None):
@@ -259,7 +264,7 @@ class DoCollectionManager:
             newLocation = (newParentId, newZoneId)
             # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
             # zoneId2doIds table
-            if oldLocation != (BAD_DO_ID, BAD_ZONE_ID):
+            if self.isValidLocationTuple(oldLocation):
                 assert self.notify.debugStateCall(self)
                 assert oldLocation in self.zoneId2doIds
                 assert do.doId in self.zoneId2doIds[oldLocation]
@@ -268,9 +273,10 @@ class DoCollectionManager:
                 del(self.zoneId2doIds[oldLocation][do.doId])
                 if len(self.zoneId2doIds[oldLocation]) == 0:
                     del self.zoneId2doIds[oldLocation]
-            # add to new zone
-            self.zoneId2doIds.setdefault(newLocation, {})
-            self.zoneId2doIds[newLocation][do.doId]=do
+            if self.isValidLocationTuple(newLocation):
+                # add to new zone
+                self.zoneId2doIds.setdefault(newLocation, {})
+                self.zoneId2doIds[newLocation][do.doId]=do
 
         def getObjectsInZone(self, location):
             """ call this to get a dict of doId:distObj for a zone.
