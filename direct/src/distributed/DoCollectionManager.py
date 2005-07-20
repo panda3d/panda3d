@@ -227,7 +227,7 @@ class DoCollectionManager:
     if wantOtpServer:
         def removeDOFromTables(self, do):
             assert self.notify.debugStateCall(self)
-            assert do.doId in self.doId2do
+            #assert do.doId in self.doId2do
             location = do.getLocation()
             if location is not None:
                 if location not in self.zoneId2doIds:
@@ -239,8 +239,8 @@ class DoCollectionManager:
                     del(self.zoneId2doIds[location][do.doId])
                     if len(self.zoneId2doIds[location]) == 0:
                         del self.zoneId2doIds[location]
-
-            del self.doId2do[do.doId]
+            if do.doId in self.doId2do:
+                del self.doId2do[do.doId]
     else:
         def removeDOFromTables(self, do):
             assert self.notify.debugStateCall(self)
