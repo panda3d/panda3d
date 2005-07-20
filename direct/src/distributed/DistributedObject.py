@@ -411,7 +411,7 @@ class DistributedObject(PandaObject):
             
         def getLocation(self):
             try:
-                if self.parentId <= 0 and self.zoneId <= 0:
+                if self.parentId == 0 and self.zoneId == 0:
                     return None
                 # This is a -1 stuffed into a uint32
                 if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
