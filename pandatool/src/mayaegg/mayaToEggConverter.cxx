@@ -985,7 +985,7 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   // it.
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
+    egg_group->add_matrix4(m4d);
   }
   return;
 }
@@ -2043,7 +2043,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   // Now convert the locator point into the group's space.
   p3d = p3d * egg_group->get_node_frame_inv();
 
-  egg_group->add_translate(p3d);
+  egg_group->add_translate3d(p3d);
 }
 
 
@@ -2465,8 +2465,12 @@ compare_texture_properties(EggTexture &tex,
     okflag = false;
   }
   
-  LMatrix3d mat = color_def.compute_texture_matrix();
-  if (!mat.almost_equal(tex.get_transform())) {
+  LMatrix3d m = color_def.compute_texture_matrix();
+  LMatrix4d mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
+                 m(1, 0), m(1, 1), 0.0, m(1, 2),
+                 0.0, 0.0, 1.0, 0.0,
+                 m(2, 0), m(2, 1), 0.0, m(2, 2));
+  if (!mat4.almost_equal(tex.get_transform())) {
     okflag = false;
   }
 
