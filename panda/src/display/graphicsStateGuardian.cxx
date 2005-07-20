@@ -126,6 +126,9 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_texture_saved_result = false;
   _supports_texture_dot3 = false;
 
+  _supports_3d_texture = false;
+  _supports_cube_map = false;
+
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
   _max_clip_planes = -1;
@@ -946,12 +949,17 @@ set_coordinate_system(CoordinateSystem cs) {
   if (_internal_coordinate_system == CS_default ||
       _internal_coordinate_system == _coordinate_system) {
     _cs_transform = TransformState::make_identity();
+    _inv_cs_transform = TransformState::make_identity();
 
   } else {
     _cs_transform = 
       TransformState::make_mat
       (LMatrix4f::convert_mat(_coordinate_system,
                               _internal_coordinate_system));
+    _inv_cs_transform = 
+      TransformState::make_mat
+      (LMatrix4f::convert_mat(_internal_coordinate_system,
+                              _coordinate_system));
   }
   _internal_transform = _cs_transform->compose(_external_transform);
 }

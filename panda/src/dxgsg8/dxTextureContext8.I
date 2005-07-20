@@ -32,9 +32,42 @@ has_mipmaps() const {
 //     Function: DXTextureContext8::get_d3d_texture
 //       Access: Public
 //  Description: Returns the Direct3D object that represents the
-//               texture.
+//               texture, whatever kind of texture it is.
 ////////////////////////////////////////////////////////////////////
-INLINE IDirect3DTexture8 *DXTextureContext8::
+INLINE IDirect3DBaseTexture8 *DXTextureContext8::
 get_d3d_texture() const {
   return _d3d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::get_d3d_2d_texture
+//       Access: Public
+//  Description: Returns the Direct3D object that represents the
+//               texture, in the case of a 1-d or 2-d texture.
+////////////////////////////////////////////////////////////////////
+INLINE IDirect3DTexture8 *DXTextureContext8::
+get_d3d_2d_texture() const {
+  return _d3d_2d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::get_d3d_volume_texture
+//       Access: Public
+//  Description: Returns the Direct3D object that represents the
+//               texture, in the case of a 3-d texture.
+////////////////////////////////////////////////////////////////////
+INLINE IDirect3DVolumeTexture8 *DXTextureContext8::
+get_d3d_volume_texture() const {
+  return _d3d_volume_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::get_d3d_cube_texture
+//       Access: Public
+//  Description: Returns the Direct3D object that represents the
+//               texture, in the case of a cube map texture.
+////////////////////////////////////////////////////////////////////
+INLINE IDirect3DCubeTexture8 *DXTextureContext8::
+get_d3d_cube_texture() const {
+  return _d3d_cube_texture;
 }

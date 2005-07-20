@@ -146,7 +146,7 @@ DXGraphicsStateGuardian8::
 TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
   DXTextureContext8 *dtc = new DXTextureContext8(tex);
-  if (dtc->create_texture(*_screen) == (IDirect3DTexture8 *)NULL) {
+  if (!dtc->create_texture(*_screen)) {
     delete dtc;
     return NULL;
   }
@@ -191,7 +191,7 @@ apply_texture(int i, TextureContext *tc) {
           << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
       }
 
-      if (dtc->create_texture(*_screen) == (IDirect3DTexture8 *)NULL) {
+      if (!dtc->create_texture(*_screen)) {
         // Oops, we can't re-create the texture for some reason.
         dxgsg8_cat.error()
           << "Unable to re-create texture " << *dtc->_texture << endl;
@@ -1320,8 +1320,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
   }
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
+  nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+  nassertv(dtc->get_d3d_2d_texture() != NULL);
+
   IDirect3DSurface8 *tex_level_0, *render_target;
-  hr = dtc->get_d3d_texture()->GetSurfaceLevel(0, &tex_level_0);
+  hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     return;
@@ -1518,6 +1521,9 @@ reset() {
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
+
+  _supports_3d_texture = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_VOLUMEMAP) != 0);
+  _supports_cube_map = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0);
 
   ZeroMemory(&_lmodel_ambient, sizeof(Colorf));
   _d3d_device->SetRenderState(D3DRS_AMBIENT, 0x0);
@@ -2225,26 +2231,22 @@ do_issue_texture() {
     apply_texture(i, tc);
     set_texture_blend_mode(i, stage);
 
-    bool has_tex_mat = false;
-    LMatrix4f tex_mat;
-    
+    bool texcoords_3d = false;
+
+    CPT(TransformState) tex_mat = TransformState::make_identity();
     if (_current_tex_mat->has_stage(stage)) {
-      // We have to reorder the elements of the matrix for some reason.
-      const LMatrix4f &m = _current_tex_mat->get_mat(stage);
-      tex_mat.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
-                  m(1, 0), m(1, 1), m(1, 3), 0.0f,
-                  m(3, 0), m(3, 1), m(3, 3), 0.0f,
-                  0.0f, 0.0f, 0.0f, 1.0f);
-      has_tex_mat = true;
+      tex_mat = _current_tex_mat->get_transform(stage);
     }
     
     // Issue the texgen mode.
     TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
+
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      texcoords_3d = false;
       break;
       
     case TexGenAttrib::M_eye_sphere_map:
@@ -2254,19 +2256,74 @@ do_issue_texture() {
         // This texture matrix, applied on top of the texcoord
         // computed by D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR,
         // approximates the effect produced by OpenGL's GL_SPHERE_MAP.
-        static const LMatrix4f sphere_map
-          (0.33f, 0.0f, 0.0f, 0.0f,
-           0.0f, 0.33f, 0.0f, 0.0f,
-           0.0f, 0.0f, 1.0f, 0.0f,
-           0.5f, 0.5f, 0.0f, 1.0f);
-
-        if (has_tex_mat) {
-          tex_mat = sphere_map * tex_mat;
-        } else {
-          tex_mat = sphere_map;
-          has_tex_mat = true;
-        }
+        static CPT(TransformState) sphere_map =
+          TransformState::make_mat(LMatrix4f(0.33f, 0.0f, 0.0f, 0.0f,
+                                             0.0f, 0.33f, 0.0f, 0.0f,
+                                             0.0f, 0.0f, 1.0f, 0.0f,
+                                             0.5f, 0.5f, 0.0f, 1.0f));
+        tex_mat = tex_mat->compose(sphere_map);
+        texcoords_3d = true;
       }
+      break;
+
+    case TexGenAttrib::M_world_cube_map:
+      // To achieve world reflection vector, we must transform camera
+      // coordinates to world coordinates; i.e. apply the camera
+      // transform.  In the case of a vector, we should not apply the
+      // pos component of the transform.
+      {
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                          texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+        texcoords_3d = true;
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
+      }
+      break;
+
+    case TexGenAttrib::M_eye_cube_map:
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                        texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+      texcoords_3d = true;
+      break;
+
+    case TexGenAttrib::M_world_normal:
+      // To achieve world normal, we must transform camera coordinates
+      // to world coordinates; i.e. apply the camera transform.  In
+      // the case of a normal, we should not apply the pos component
+      // of the transform.
+      {
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                          texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
+        texcoords_3d = true;
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
+      }
+      break;
+
+    case TexGenAttrib::M_eye_normal:
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                        texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
+      texcoords_3d = true;
+      break;
+
+    case TexGenAttrib::M_world_position:
+      // To achieve world position, we must transform camera
+      // coordinates to world coordinates; i.e. apply the
+      // inverse root_transform.
+      {
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                          texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
+        texcoords_3d = true;
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        tex_mat = tex_mat->compose(camera_transform);
+      }
+      break;
+
+    case TexGenAttrib::M_eye_position:
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                        texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
+      texcoords_3d = true;
+      tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
       
     case TexGenAttrib::M_point_sprite:
@@ -2277,8 +2334,17 @@ do_issue_texture() {
     
     _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
-    if (has_tex_mat) {
-      _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)tex_mat.get_data());
+    if (!tex_mat->is_identity()) {
+      LMatrix4f m = tex_mat->get_mat();
+      if (!texcoords_3d) {
+        // For 2-d texture coordinates, we have to reorder the matrix.
+        m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
+              m(1, 0), m(1, 1), m(1, 3), 0.0f,
+              m(3, 0), m(3, 1), m(3, 3), 0.0f,
+              0.0f, 0.0f, 0.0f, 1.0f);
+      }
+
+      _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                         D3DTTFF_COUNT2);
     } else {
@@ -2964,10 +3030,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   assert(IS_VALID_PTR(_screen->_d3d8));
   assert(IS_VALID_PTR(_d3d_device));
 
-  // It is not clear whether we need to call this or not.  Calling
-  // this forces all of the textures and vbuffers to be regenerated,
-  // but it doesn't appear to be necessary.
-  //release_all();
+  // Calling this forces all of the textures and vbuffers to be
+  // regenerated.  It appears to be necessary on some cards but not
+  // on others.
+  release_all();
 
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed

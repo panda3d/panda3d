@@ -836,9 +836,6 @@ string_tex_gen(const string &string) {
   } else if (cmp_nocase_uh(string, "world_position") == 0) {
     return TG_world_position;
 
-  } else if (cmp_nocase_uh(string, "object_position") == 0) {
-    return TG_object_position;
-
   } else if (cmp_nocase_uh(string, "eye_position") == 0) {
     return TG_eye_position;
 
@@ -1160,9 +1157,6 @@ operator << (ostream &out, EggTexture::TexGen tex_gen) {
 
   case EggTexture::TG_world_position:
     return out << "world_position";
-
-  case EggTexture::TG_object_position:
-    return out << "object_position";
 
   case EggTexture::TG_eye_position:
     return out << "eye_position";

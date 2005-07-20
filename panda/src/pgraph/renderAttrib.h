@@ -99,8 +99,7 @@ PUBLISHED:
     M_off,
 
     // In the types below, "eye" means the coordinate space of the
-    // observing camera, "object" means the local coordinate space of
-    // the object, and "world" means world coordinates, e.g. the
+    // observing camera, and "world" means world coordinates, e.g. the
     // coordinate space of the root of the graph.
 
     // Sphere maps are classic static reflection maps.  They are
@@ -114,9 +113,8 @@ PUBLISHED:
     // texture images.  They can also be generated dynamically for
     // real-time reflections (see GraphicsOutput::make_cube_map()).
     // Typically, a statically-generated cube map will be in eye
-    // space, while a dynamically-generated map will be in world space
-    // or object space (depending on where the camera rig that
-    // generates the map is parented).
+    // space, while a dynamically-generated map will be in world
+    // space.
 
     // Cube mapping is not supported on all hardware.
     M_world_cube_map,
@@ -131,7 +129,7 @@ PUBLISHED:
     // coordinates.  This is particularly useful for implementing
     // projective texturing (see NodePath::project_texture()).
     M_world_position,
-    M_object_position,
+    M_unused,  // formerly M_object_position, now deprecated.
     M_eye_position,
 
     // With M_point_sprite, texture coordinates will be generated for

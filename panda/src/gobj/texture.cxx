@@ -1008,7 +1008,11 @@ release(PreparedGraphicsObjects *prepared_objects) {
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
     TextureContext *tc = (*ci).second;
-    prepared_objects->release_texture(tc);
+    if (tc != (TextureContext *)NULL) {
+      prepared_objects->release_texture(tc);
+    } else {
+      _contexts.erase(ci);
+    }
     return true;
   }
 
@@ -1036,12 +1040,14 @@ release_all() {
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
     PreparedGraphicsObjects *prepared_objects = (*ci).first;
     TextureContext *tc = (*ci).second;
-    prepared_objects->release_texture(tc);
+    if (tc != (TextureContext *)NULL) {
+      prepared_objects->release_texture(tc);
+    }
   }
 
-  // Now that we've called release_texture() on every known context,
-  // the _contexts list should have completely emptied itself.
-  nassertr(_contexts.empty(), num_freed);
+  // There might still be some outstanding contexts in the map, if
+  // there were any NULL pointers there.  Eliminate them.
+  _contexts.clear();
 
   return num_freed;
 }
@@ -1163,9 +1169,9 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   TextureContext *tc = prepared_objects->prepare_texture_now(this, gsg);
-  if (tc != (TextureContext *)NULL) {
-    _contexts[prepared_objects] = tc;
+  _contexts[prepared_objects] = tc;
 
+  if (tc != (TextureContext *)NULL) {
     // Now that we have a new TextureContext with zero dirty flags, our
     // intersection of all dirty flags must be zero.  This doesn't mean
     // that some other contexts aren't still dirty, but at least one
@@ -1213,7 +1219,10 @@ mark_dirty(int flags_to_set) {
   // Otherwise, iterate through the contexts and mark them all dirty.
   Contexts::iterator ci;
   for (ci = _contexts.begin(); ci != _contexts.end(); ++ci) {
-    (*ci).second->mark_dirty(flags_to_set);
+    TextureContext *tc = (*ci).second;
+    if (tc != (TextureContext *)NULL) {
+      tc->mark_dirty(flags_to_set);
+    }
   }
 
   _all_dirty_flags |= flags_to_set;

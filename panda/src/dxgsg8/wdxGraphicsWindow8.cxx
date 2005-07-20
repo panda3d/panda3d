@@ -1114,7 +1114,7 @@ search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
-  assert((new_xsize > 0) && (new_ysize > 0));
+  nassertr((new_xsize > 0) && (new_ysize > 0), false);
   bool retval = true;
 
   DXScreenData *screen = NULL;

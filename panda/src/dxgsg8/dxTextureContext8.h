@@ -32,23 +32,29 @@ public:
   DXTextureContext8(Texture *tex);
   virtual ~DXTextureContext8();
 
-  IDirect3DTexture8 *create_texture(DXScreenData &scrn);
+  bool create_texture(DXScreenData &scrn);
   void delete_texture();
 
   INLINE bool has_mipmaps() const;
-  INLINE IDirect3DTexture8 *get_d3d_texture() const;
+  INLINE IDirect3DBaseTexture8 *get_d3d_texture() const;
+  INLINE IDirect3DTexture8 *get_d3d_2d_texture() const;
+  INLINE IDirect3DVolumeTexture8 *get_d3d_volume_texture() const;
+  INLINE IDirect3DCubeTexture8 *get_d3d_cube_texture() const;
 
   static HRESULT d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result);
 
 private:
   HRESULT fill_d3d_texture_pixels();
+  HRESULT fill_d3d_volume_texture_pixels();
   static int down_to_power_2(int value);
   unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 private:
-  Texture *_tex;            // ptr to parent, primarily for access to namestr
   D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
-  IDirect3DTexture8  *_d3d_texture;
+  IDirect3DBaseTexture8 *_d3d_texture;
+  IDirect3DTexture8 *_d3d_2d_texture;
+  IDirect3DVolumeTexture8 *_d3d_volume_texture;
+  IDirect3DCubeTexture8 *_d3d_cube_texture;
 
   bool _has_mipmaps;
 

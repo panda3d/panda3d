@@ -4300,23 +4300,6 @@ finish_modify_state() {
         }
         break;
 
-      case TexGenAttrib::M_object_position:
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-        GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-        
-        GLP(TexGenfv)(GL_S, GL_OBJECT_PLANE, s_data);
-        GLP(TexGenfv)(GL_T, GL_OBJECT_PLANE, t_data);
-        GLP(TexGenfv)(GL_R, GL_OBJECT_PLANE, r_data);
-        GLP(TexGenfv)(GL_Q, GL_OBJECT_PLANE, q_data);
-        
-        GLP(Enable)(GL_TEXTURE_GEN_S);
-        GLP(Enable)(GL_TEXTURE_GEN_T);
-        GLP(Enable)(GL_TEXTURE_GEN_R);
-        GLP(Enable)(GL_TEXTURE_GEN_Q);
-        break;
-
       case TexGenAttrib::M_eye_position:
         // To represent eye position correctly, we need to temporarily
         // load the coordinate-system transform.

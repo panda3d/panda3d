@@ -274,6 +274,27 @@ get_supports_texture_dot3() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_3d_texture
+//       Access: Published
+//  Description: Returns true if this GSG can render 3-d (volumetric)
+//               textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_3d_texture() const {
+  return _supports_3d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_cube_map
+//       Access: Published
+//  Description: Returns true if this GSG can render cube map textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_cube_map() const {
+  return _supports_cube_map;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_lights
 //       Access: Published
 //  Description: Returns the maximum number of simultaneous lights
@@ -688,6 +709,17 @@ get_coordinate_system() const {
 INLINE const TransformState *GraphicsStateGuardian::
 get_cs_transform() const {
   return _cs_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_inv_cs_transform
+//       Access: Public
+//  Description: Returns the inverse of the transform returned by
+//               get_cs_transform().
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *GraphicsStateGuardian::
+get_inv_cs_transform() const {
+  return _inv_cs_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -330,11 +330,8 @@ public:
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
 
-  bool _supports_3d_texture;
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
-
-  bool _supports_cube_map;
 
   bool _supports_bgr;
   bool _supports_rescale_normal;

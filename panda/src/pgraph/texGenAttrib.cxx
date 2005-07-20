@@ -283,9 +283,6 @@ output(ostream &out) const {
     case M_world_position:
       out << "world_position";
       break;
-    case M_object_position:
-      out << "object_position";
-      break;
     case M_eye_position:
       out << "eye_position";
       break;
@@ -297,6 +294,9 @@ output(ostream &out) const {
     case M_light_vector:
       out << "light_vector: \"" << mode_def._source_name << "\", "
           << mode_def._light;
+      break;
+
+    case M_unused:
       break;
     }
     out << ")";

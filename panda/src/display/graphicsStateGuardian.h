@@ -98,6 +98,9 @@ PUBLISHED:
   INLINE bool get_supports_texture_saved_result() const;
   INLINE bool get_supports_texture_dot3() const;
 
+  INLINE bool get_supports_3d_texture() const;
+  INLINE bool get_supports_cube_map() const;
+
   INLINE int get_max_lights() const;
   INLINE int get_max_clip_planes() const;
 
@@ -205,6 +208,7 @@ public:
   virtual CoordinateSystem get_internal_coordinate_system() const;
 
   INLINE const TransformState *get_cs_transform() const;
+  INLINE const TransformState *get_inv_cs_transform() const;
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
@@ -317,6 +321,7 @@ protected:
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;
+  CPT(TransformState) _inv_cs_transform;
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
@@ -369,6 +374,9 @@ protected:
   bool _supports_texture_combine;
   bool _supports_texture_saved_result;
   bool _supports_texture_dot3;
+
+  bool _supports_3d_texture;
+  bool _supports_cube_map;
 
   int _max_lights;
   int _max_clip_planes;

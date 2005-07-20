@@ -515,9 +515,6 @@ get_tex_gen(const EggTexture *egg_tex) {
   case EggTexture::TG_world_position:
     return TexGenAttrib::M_world_position;
 
-  case EggTexture::TG_object_position:
-    return TexGenAttrib::M_object_position;
-
   case EggTexture::TG_eye_position:
     return TexGenAttrib::M_eye_position;
 

@@ -116,7 +116,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     int num_stages = _texture->get_num_on_stages();
     for (int i = 0; i < num_stages; ++i) {
       TextureStage *stage = _texture->get_on_stage(i);
-      
+
       const InternalName *name = stage->get_texcoord_name();
       if (used_stages.insert(name).second) {
         // This is the first time we've encountered this texcoord name.

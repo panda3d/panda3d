@@ -140,7 +140,6 @@ PUBLISHED:
     TG_eye_normal,
 
     TG_world_position,
-    TG_object_position,
     TG_eye_position,
 
     TG_point_sprite,

@@ -295,7 +295,6 @@ appear before they are referenced.
       WORLD_NORMAL
       EYE_NORMAL
       WORLD_POSITION
-      OBJECT_POSITION
       EYE_POSITION
       POINT_SPRITE
 
