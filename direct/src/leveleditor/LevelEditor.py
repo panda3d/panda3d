@@ -1123,7 +1123,11 @@ class LevelEditor(NodePath, PandaObject):
                     del(self.point2edgeDict[pointOrCell])
                 elif (type == 'battleCellMarker'):
                     # Get parent vis group
-                    visGroupNP, visGroupDNA = self.findParentVisGroup(nodePath)
+                    try:
+                        visGroupNP, visGroupDNA = self.findParentVisGroup(
+                            nodePath)
+                    except TypeError:
+                        visGroupNP, visGroupDNA = None, None
                     print 'Battle Cell:', pointOrCell
                     # Remove cell from vis group
                     if visGroupNP and visGroupDNA:
@@ -2320,7 +2324,7 @@ class LevelEditor(NodePath, PandaObject):
         else:
             return 1
 
-    def autoPositionGrid(self):
+    def autoPositionGrid(self, fLerp = 1):
         taskMgr.remove('autoPositionGrid')
         # Move grid to prepare for placement of next object
         selectedNode = direct.selected.last
@@ -2347,17 +2351,20 @@ class LevelEditor(NodePath, PandaObject):
                 elif objectCode[-2:-1] == 'C':
                     deltaPos.setX(20.0)
 
-            # Position grid for placing next object
-            # Eventually we need to setHpr too
-            t = direct.grid.lerpPosHpr(
-                deltaPos, deltaHpr, 0.25,
-                other = selectedNode,
-                blendType = 'easeInOut',
-                task = 'autoPositionGrid')
-            t.deltaPos = deltaPos
-            t.deltaHpr = deltaHpr
-            t.selectedNode = selectedNode
-            t.uponDeath = self.autoPositionCleanup
+            if fLerp:
+                # Position grid for placing next object
+                # Eventually we need to setHpr too
+                t = direct.grid.lerpPosHpr(
+                    deltaPos, deltaHpr, 0.25,
+                    other = selectedNode,
+                    blendType = 'easeInOut',
+                    task = 'autoPositionGrid')
+                t.deltaPos = deltaPos
+                t.deltaHpr = deltaHpr
+                t.selectedNode = selectedNode
+                t.uponDeath = self.autoPositionCleanup
+            else:
+                direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
             
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
@@ -2369,6 +2376,7 @@ class LevelEditor(NodePath, PandaObject):
             direct.cameraControl.centerCamIn(0.5)
 
     def autoPositionCleanup(self,state):
+        print state.deltaPos
         direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
                               state.deltaHpr)
         if direct.grid.getHprSnap():
@@ -3336,6 +3344,54 @@ class LevelEditor(NodePath, PandaObject):
     
     def pdbBreak(self):
         pdb.set_trace()
+
+    def reparentStreetBuildings(self, nodePath):
+        dnaNode = self.findDNANode(nodePath)
+        if dnaNode:
+            if (DNAClassEqual(dnaNode, DNA_FLAT_BUILDING) or
+                DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING)):
+                direct.reparent(nodePath, fWrt = 1)
+        children = nodePath.getChildrenAsList()
+        for child in children:
+            self.reparentStreetBuildings(child)
+
+    def consolidateStreetBuildings(self):
+        self.addGroup(self.NPToplevel)
+        newGroup = self.NPParent
+        newGroup.setName('LongStreet')
+        self.setName(newGroup, 'LongStreet')
+        direct.setActiveParent(newGroup)
+        self.reparentStreetBuildings(self.NPToplevel)
+        return newGroup
+
+    def adjustPropChildren(self, nodePath, maxPropOffset = -4):
+        for np in nodePath.getChildrenAsList():
+            dnaNode = self.findDNANode(np)
+            if dnaNode:
+                if DNAClassEqual(dnaNode, DNA_PROP):
+                    if np.getY() < maxPropOffset:
+                        np.setY(maxPropOffset)
+                        self.updateSelectedPose([np])
+
+    def makeLongStreet(self):
+        bldgGroup = self.consolidateStreetBuildings()
+        bldgs = bldgGroup.getChildrenAsList()
+        numBldgs = len(bldgs)
+        ref = None
+        direct.grid.fXyzSnap = 0
+        for i in range(numBldgs):
+            bldg = bldgs[i]
+            if ref == None:
+                bldg.iPosHpr()
+            elif i == (numBldgs/2):
+                bldg.setPosHpr(direct.grid, 0, -40, 0, 180, 0, 0)
+            else:
+                ref.select()
+                self.autoPositionGrid(fLerp = 0)
+                bldg.iPosHpr(direct.grid)
+            ref = bldg
+            self.updateSelectedPose([bldg])
+            self.adjustPropChildren(bldg)
 
 
 class LevelStyleManager:
@@ -4653,6 +4709,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             'Reset level',
                             label = 'Reset level',
                             command = self.levelEditor.reset)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Make Long Street',
+                            label = 'Make Long Street',
+                            command = self.levelEditor.makeLongStreet)
         menuBar.addmenuitem('Level Editor', 'command',
                             'Exit Level Editor Panel',
                             label = 'Exit',
@@ -5984,3 +6044,4 @@ class VisGroupsEditor(Pmw.MegaToplevel):
         
 l = LevelEditor()
 run()
+
