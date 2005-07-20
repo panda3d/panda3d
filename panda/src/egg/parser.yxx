@@ -1540,10 +1540,9 @@ matrix3:
 
 matrix3_body: 
           empty
-        | real real real real
-          real real real real 
-          real real real real 
-          real real real real 
+        | real real real
+          real real real
+          real real real
 {
   egg_stack.back()->as_transform()->add_matrix3
     (LMatrix3d($1, $2, $3,
