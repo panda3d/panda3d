@@ -243,6 +243,9 @@ PUBLISHED:
   static CombineOperand string_combine_operand(const string &string);
   static TexGen string_tex_gen(const string &string);
 
+public:
+  virtual EggTransform *as_transform();
+
 protected:
   virtual bool egg_start_parse_body();
 

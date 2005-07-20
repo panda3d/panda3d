@@ -89,12 +89,6 @@ private:
 #define NAME vector_LVector4f
 #include "vector_src.h"
 
-// Now export each EggMorphList.
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<LVector3d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<LVector2d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<LVector4f>)
-
 typedef EggMorphList<EggMorphVertex> EggMorphVertexList;
 typedef EggMorphList<EggMorphNormal> EggMorphNormalList;
 typedef EggMorphList<EggMorphTexCoord> EggMorphTexCoordList;

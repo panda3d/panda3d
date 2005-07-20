@@ -847,6 +847,18 @@ string_tex_gen(const string &string) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::as_transform
+//       Access: Public, Virtual
+//  Description: Returns this object cross-cast to an EggTransform
+//               pointer, if it inherits from EggTransform, or NULL if
+//               it does not.
+////////////////////////////////////////////////////////////////////
+EggTransform *EggTexture::
+as_transform() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::egg_start_parse_body
 //       Access: Protected, Virtual
 //  Description: This function is called within parse_egg().  It
