@@ -53,7 +53,7 @@ class DistributedObjectAI(DirectObject):
     if __debug__:
         def status(self, indent=0):
             """
-            print out "doId(parentId,zoneId) className
+            print out doId(parentId,zoneId) className
                 and conditionally show generated, disabled, neverDisable,
                 or cachable
             """
@@ -134,7 +134,7 @@ class DistributedObjectAI(DirectObject):
     def isDeleted(self):
         """
         Returns true if the object has been deleted,
-        or if it is brand new and hasn't yet been generated.
+        or if it is brand new and hasnt yet been generated.
         """
         return self.air == None
 
@@ -206,6 +206,9 @@ class DistributedObjectAI(DirectObject):
         def getLocation(self):
             try:
                 if self.parentId <= 0 and self.zoneId <= 0:
+                    return None
+                # This is a -1 stuffed into a uint32
+                if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
                     return None
                 return (self.parentId, self.zoneId)
             except AttributeError:

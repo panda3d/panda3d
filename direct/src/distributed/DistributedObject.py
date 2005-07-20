@@ -413,6 +413,9 @@ class DistributedObject(PandaObject):
             try:
                 if self.parentId <= 0 and self.zoneId <= 0:
                     return None
+                # This is a -1 stuffed into a uint32
+                if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
+                    return None
                 return (self.parentId, self.zoneId)
             except AttributeError:
                 return None

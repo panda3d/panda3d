@@ -119,7 +119,7 @@ class DoCollectionManager:
 
         # the zoneId2doIds table should be empty now
         if len(self.zoneId2doIds) > 0:
-            AIRepository.notify.warning(
+            self.notify.warning(
                 'zoneId2doIds table not empty: %s' % self.zoneId2doIds)
             self.zoneId2doIds = {}
 
@@ -231,7 +231,7 @@ class DoCollectionManager:
             location = do.getLocation()
             if location is not None:
                 if location not in self.zoneId2doIds:
-                    AIRepository.notify.warning(
+                    self.notify.warning(
                         'dobj %s (%s) has invalid location: %s' %
                         (do, do.doId, location))
                 else:
@@ -247,7 +247,7 @@ class DoCollectionManager:
             assert do.doId in self.doId2do
             if do.zoneId is not None:
                 if do.zoneId not in self.zoneId2doIds:
-                    AIRepository.notify.warning(
+                    self.notify.warning(
                             'dobj %s (%s) has invalid zoneId: %s' %
                             (do, do.doId, do.zoneId))
                 else:
