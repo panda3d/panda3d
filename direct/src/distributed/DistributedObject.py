@@ -410,7 +410,12 @@ class DistributedObject(PandaObject):
                     parentObj.handleChildArrive(self, zoneId)
             
         def getLocation(self):
-            return (self.parentId, self.zoneId)
+            try:
+                if self.parentId <= 0 and self.zoneId <= 0:
+                    return None
+                return (self.parentId, self.zoneId)
+            except AttributeError:
+                return None
 
         def handleChildArrive(self, childObj, zoneId):
             self.notify.debugCall()

@@ -204,7 +204,12 @@ class DistributedObjectAI(DirectObject):
             self.zoneId=zoneId
             
         def getLocation(self):
-            return (self.parentId, self.zoneId)
+            try:
+                if self.parentId <= 0 and self.zoneId <= 0:
+                    return None
+                return (self.parentId, self.zoneId)
+            except AttributeError:
+                return None
 
     else:
         # NON OTP
