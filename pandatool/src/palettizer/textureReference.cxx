@@ -474,7 +474,7 @@ update_egg() {
 
   // Compose the new texture matrix with whatever matrix was already
   // there, if any.
-  _egg_tex->set_transform(_tex_mat * new_tex_mat);
+  _egg_tex->set_transform_2d(_tex_mat * new_tex_mat);
 
   // Finally, go back and actually adjust the UV's to match what we
   // claimed they could be.
