@@ -1123,11 +1123,8 @@ class LevelEditor(NodePath, PandaObject):
                     del(self.point2edgeDict[pointOrCell])
                 elif (type == 'battleCellMarker'):
                     # Get parent vis group
-                    try:
-                        visGroupNP, visGroupDNA = self.findParentVisGroup(
-                            nodePath)
-                    except TypeError:
-                        visGroupNP, visGroupDNA = None, None
+                    visGroupNP, visGroupDNA = self.findParentVisGroup(
+                        nodePath)
                     print 'Battle Cell:', pointOrCell
                     # Remove cell from vis group
                     if visGroupNP and visGroupDNA:
@@ -2228,7 +2225,7 @@ class LevelEditor(NodePath, PandaObject):
         elif nodePath.hasParent():
             return self.findParentVisGroup(nodePath.getParent())
         else:
-            return None
+            return None, None
     
     def showGrid(self,flag):
         """ toggle direct grid """
@@ -3355,6 +3352,17 @@ class LevelEditor(NodePath, PandaObject):
             self.reparentStreetBuildings(child)
 
     def consolidateStreetBuildings(self):
+        # First put everything under the ATR group so the leftover
+        # can be easily deleted
+        originalChildren = self.NPToplevel.getChildrenAsList()
+        self.addGroup(self.NPToplevel)
+        atrGroup = self.NPParent
+        atrGroup.setName('ATR')
+        self.setName(atrGroup, 'ATR')
+        direct.setActiveParent(atrGroup)
+        for child in originalChildren:
+            direct.reparent(child)
+        # Now create a new group with just the buildings
         self.addGroup(self.NPToplevel)
         newGroup = self.NPParent
         newGroup.setName('LongStreet')
