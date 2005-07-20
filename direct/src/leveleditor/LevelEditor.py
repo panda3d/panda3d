@@ -2376,7 +2376,6 @@ class LevelEditor(NodePath, PandaObject):
             direct.cameraControl.centerCamIn(0.5)
 
     def autoPositionCleanup(self,state):
-        print state.deltaPos
         direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
                               state.deltaHpr)
         if direct.grid.getHprSnap():
@@ -3373,25 +3372,56 @@ class LevelEditor(NodePath, PandaObject):
                         np.setY(maxPropOffset)
                         self.updateSelectedPose([np])
 
+    def getBuildingLength(self, dnaNode):
+        bldgLength = 0
+        if DNAClassEqual(dnaNode, DNA_FLAT_BUILDING):
+            bldgLength = dnaNode.getWidth()
+        elif DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING):
+            objectCode = dnaNode.getCode()
+            if objectCode[-2:-1] == 'A':
+                bldgLength = 25.0
+            elif objectCode[-2:-1] == 'B':
+                bldgLength = 15.0
+            elif objectCode[-2:-1] == 'C':
+                bldgLength = 20.0
+        return bldgLength
+
+    def calcLongStreetLength(self, bldgs):
+        streetLength = 0
+        for bldg in bldgs:
+            dnaNode = self.findDNANode(bldg)
+            streetLength += self.getBuildingLength(dnaNode)
+        return streetLength
+
+    def addStreetUnits(self, streetLength):
+        direct.grid.setPosHpr(0,-40,0,0,0,0)
+        currLength = 0
+        while (currLength < streetLength):
+            self.addStreet('street_80x40')
+            currLength += 80
+
     def makeLongStreet(self):
         bldgGroup = self.consolidateStreetBuildings()
         bldgs = bldgGroup.getChildrenAsList()
         numBldgs = len(bldgs)
+        streetLength = self.calcLongStreetLength(bldgs)/2.0
         ref = None
         direct.grid.fXyzSnap = 0
+        currLength = 0
         for i in range(numBldgs):
             bldg = bldgs[i]
             if ref == None:
-                bldg.iPosHpr()
-            elif i == (numBldgs/2):
-                bldg.setPosHpr(direct.grid, 0, -40, 0, 180, 0, 0)
+                direct.grid.iPosHpr(bldgGroup)
             else:
                 ref.select()
                 self.autoPositionGrid(fLerp = 0)
-                bldg.iPosHpr(direct.grid)
-            ref = bldg
+            if direct.grid.getX() >= streetLength:
+                direct.grid.setPosHpr(direct.grid, 0, -40, 0, 180, 0, 0)
+            bldg.iPosHpr(direct.grid)
             self.updateSelectedPose([bldg])
             self.adjustPropChildren(bldg)
+            ref = bldg
+        self.addStreetUnits(streetLength)
 
 
 class LevelStyleManager:
