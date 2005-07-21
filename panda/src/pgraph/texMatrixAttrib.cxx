@@ -57,28 +57,17 @@ make() {
 //     Function: TexMatrixAttrib::make
 //       Access: Published, Static
 //  Description: Constructs a TexMatrixAttrib that applies the
-//               indicated matrix to the default texture stage.
+//               indicated matrix to the default texture stage.  This
+//               interface is deprecated.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
 make(const LMatrix4f &mat) {
+  pgraph_cat.warning()
+    << "Using deprecated TexMatrixAttrib interface.\n";
   if (mat == LMatrix4f::ident_mat()) {
     return make();
   }
   CPT(TransformState) transform = TransformState::make_mat(mat);
-  return make(TextureStage::get_default(), transform);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexMatrixAttrib that applies the
-//               indicated transform to the default texture stage.
-////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) TexMatrixAttrib::
-make(const TransformState *transform) {
-  if (transform->is_identity()) {
-    return make();
-  }
   return make(TextureStage::get_default(), transform);
 }
 

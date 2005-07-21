@@ -2242,21 +2242,6 @@ do_issue_texture() {
     TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
-    // These transforms are used in the below to invert certain
-    // computed component values in various modes, to emulate the
-    // behavior of OpenGL, so we get a consistent behavior between the
-    // two of them.
-    static CPT(TransformState) invert_z =
-      TransformState::make_mat(LMatrix4f(1.0f, 0.0f, 0.0f, 0.0f,
-                                         0.0f, 1.0f, 0.0f, 0.0f,
-                                         0.0f, 0.0f, -1.0f, 0.0f,
-                                         0.0f, 0.0f, 0.0f, 1.0f));
-    static CPT(TransformState) invert_y =
-      TransformState::make_mat(LMatrix4f(1.0f, 0.0f, 0.0f, 0.0f,
-                                         0.0f, -1.0f, 0.0f, 0.0f,
-                                         0.0f, 0.0f, 1.0f, 0.0f,
-                                         0.0f, 0.0f, 0.0f, 1.0f));
-
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
@@ -2352,18 +2337,19 @@ do_issue_texture() {
     _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
-      LMatrix4f m = tex_mat->get_mat();
-      _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-
-      if (!texcoords_3d) {
+      if (tex_mat->is_2d() && !texcoords_3d) {
         // For 2-d texture coordinates, we have to reorder the matrix.
+        LMatrix4f m = tex_mat->get_mat();
         m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
               m(1, 0), m(1, 1), m(1, 3), 0.0f,
               m(3, 0), m(3, 1), m(3, 3), 0.0f,
               0.0f, 0.0f, 0.0f, 1.0f);
+        _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           D3DTTFF_COUNT2);
       } else {
+        LMatrix4f m = tex_mat->get_mat();
+        _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           D3DTTFF_COUNT3);
       }

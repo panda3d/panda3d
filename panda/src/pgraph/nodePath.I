@@ -1314,7 +1314,7 @@ INLINE void NodePath::
 set_tex_offset(TextureStage *stage, float u, float v) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
-                    get_tex_transform(stage)->set_pos(LVecBase3f(u, v, 0.0f)));
+                    get_tex_transform(stage)->set_pos2d(LVecBase2f(u, v)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1328,7 +1328,7 @@ INLINE void NodePath::
 set_tex_rotate(TextureStage *stage, float r) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
-                    get_tex_transform(stage)->set_hpr(LVecBase3f(r, 0.0f, 0.0f)));
+                    get_tex_transform(stage)->set_rotate2d(r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1352,7 +1352,7 @@ INLINE void NodePath::
 set_tex_scale(TextureStage *stage, float su, float sv) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
-                    get_tex_transform(stage)->set_scale(LVecBase3f(su, sv, 1.0f)));
+                    get_tex_transform(stage)->set_scale2d(LVecBase2f(su, sv)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1364,8 +1364,7 @@ set_tex_scale(TextureStage *stage, float su, float sv) {
 INLINE LVecBase2f NodePath::
 get_tex_offset(TextureStage *stage) const {
   nassertr_always(!is_empty(), LVecBase2f::zero());
-  const LVecBase3f &pos = get_tex_transform(stage)->get_pos();
-  return LVecBase2f(pos[0], pos[1]);
+  return get_tex_transform(stage)->get_pos2d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1377,7 +1376,7 @@ get_tex_offset(TextureStage *stage) const {
 INLINE float NodePath::
 get_tex_rotate(TextureStage *stage) const {
   nassertr_always(!is_empty(), 0.0f);
-  return get_tex_transform(stage)->get_hpr()[0];
+  return get_tex_transform(stage)->get_rotate2d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1389,8 +1388,7 @@ get_tex_rotate(TextureStage *stage) const {
 INLINE LVecBase2f NodePath::
 get_tex_scale(TextureStage *stage) const {
   nassertr_always(!is_empty(), LVecBase2f(1.0f, 1.0f));
-  const LVecBase3f &scale = get_tex_transform(stage)->get_scale();
-  return LVecBase2f(scale[0], scale[1]);
+  return get_tex_transform(stage)->get_scale2d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1414,7 +1412,7 @@ INLINE void NodePath::
 set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
-                    get_tex_transform(other, stage)->set_pos(LVecBase3f(u, v, 0.0f)));
+                    get_tex_transform(other, stage)->set_pos2d(LVecBase2f(u, v)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1428,7 +1426,7 @@ INLINE void NodePath::
 set_tex_rotate(const NodePath &other, TextureStage *stage, float r) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
-                    get_tex_transform(other, stage)->set_hpr(LVecBase3f(r, 0.0f, 0.0f)));
+                    get_tex_transform(other, stage)->set_rotate2d(r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1452,7 +1450,7 @@ INLINE void NodePath::
 set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
-                    get_tex_transform(stage)->set_scale(LVecBase3f(su, sv, 1.0f)));
+                    get_tex_transform(stage)->set_scale2d(LVecBase2f(su, sv)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1464,8 +1462,7 @@ set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
 INLINE LVecBase2f NodePath::
 get_tex_offset(const NodePath &other, TextureStage *stage) const {
   nassertr_always(!is_empty(), LVecBase2f::zero());
-  const LVecBase3f &pos = get_tex_transform(other, stage)->get_pos();
-  return LVecBase2f(pos[0], pos[1]);
+  return get_tex_transform(other, stage)->get_pos2d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1477,7 +1474,7 @@ get_tex_offset(const NodePath &other, TextureStage *stage) const {
 INLINE float NodePath::
 get_tex_rotate(const NodePath &other, TextureStage *stage) const {
   nassertr_always(!is_empty(), 0.0f);
-  return get_tex_transform(other, stage)->get_hpr()[0];
+  return get_tex_transform(other, stage)->get_rotate2d();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1489,8 +1486,7 @@ get_tex_rotate(const NodePath &other, TextureStage *stage) const {
 INLINE LVecBase2f NodePath::
 get_tex_scale(const NodePath &other, TextureStage *stage) const {
   nassertr_always(!is_empty(), LVecBase2f(1.0f, 1.0f));
-  const LVecBase3f &scale = get_tex_transform(other, stage)->get_scale();
-  return LVecBase2f(scale[0], scale[1]);
+  return get_tex_transform(other, stage)->get_scale2d();
 }
 
 ////////////////////////////////////////////////////////////////////

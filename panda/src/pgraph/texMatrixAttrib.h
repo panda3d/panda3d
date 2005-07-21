@@ -45,7 +45,6 @@ public:
 PUBLISHED:
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make(const LMatrix4f &mat);
-  static CPT(RenderAttrib) make(const TransformState *transform);
   static CPT(RenderAttrib) make(TextureStage *stage, const TransformState *transform);
 
   CPT(RenderAttrib) add_stage(TextureStage *stage, const TransformState *transform) const;

@@ -76,9 +76,9 @@ make_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
 make_scale(float scale) {
-  return make_pos_hpr_scale(LVecBase3f(0.0f, 0.0f, 0.0f),
-                            LVecBase3f(0.0f, 0.0f, 0.0f),
-                            LVecBase3f(scale, scale, scale));
+  // We actually map this 3-d uniform make_scale() to the 2-d
+  // version--might as well call it a 2-d scale.
+  return make_scale2d(scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,6 +133,88 @@ make_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_pos2d(const LVecBase2f &pos) {
+  return make_pos_rotate_scale2d(pos, 0.0f, LVecBase2f(1.0f, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_rotate2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_rotate2d(float rotate) {
+  return make_pos_rotate_scale2d(LVecBase2f(0.0f, 0.0f), rotate, 
+                                 LVecBase2f(1.0f, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_rotate2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_pos_rotate2d(const LVecBase2f &pos, float rotate) {
+  return make_pos_rotate_scale2d(pos, rotate,
+                                 LVecBase2f(1.0, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_scale2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_scale2d(float scale) {
+  return make_pos_rotate_scale2d(LVecBase2f(0.0f, 0.0f), 0.0f,
+                                 LVecBase2f(scale, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_scale2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_scale2d(const LVecBase2f &scale) {
+  return make_pos_rotate_scale2d(LVecBase2f(0.0f, 0.0f), 0.0f, scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_shear2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_shear2d(float shear) {
+  return make_pos_rotate_scale_shear2d(LVecBase2f(0.0f, 0.0f), 0.0f, 
+                                       LVecBase2f(1.0f, 1.0f), shear);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_rotate_scale2d
+//       Access: Published, Static
+//  Description: Makes a new 2-d TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_pos_rotate_scale2d(const LVecBase2f &pos, float rotate, 
+                        const LVecBase2f &scale) {
+  return make_pos_rotate_scale_shear2d(pos, rotate, scale, 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::is_identity
 //       Access: Published
 //  Description: Returns true if the transform represents the identity
@@ -166,6 +248,19 @@ INLINE bool TransformState::
 is_singular() const {
   check_singular();
   return ((_flags & F_is_singular) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::is_2d
+//       Access: Published
+//  Description: Returns true if the transform has been constructed
+//               entirely using the 2-d transform operations,
+//               e.g. make_pos2d(), and therefore operates strictly in
+//               two-dimensional space on X and Y only.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+is_2d() const {
+  return ((_flags & F_is_2d) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,6 +542,89 @@ get_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_pos2d
+//       Access: Published
+//  Description: Returns the pos component of the 2-d transform.  It
+//               is an error to call this if has_pos() or is_2d()
+//               returned false.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2f TransformState::
+get_pos2d() const {
+  check_components();
+  nassertr(has_pos() && is_2d(), LVecBase2f::zero());
+  return LVecBase2f(_pos[0], _pos[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_rotate2d
+//       Access: Published
+//  Description: Returns the rotation component of the 2-d transform
+//               as an angle in degrees clockwise about the origin.
+//               It is an error to call this if has_components() or
+//               is_2d() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE float TransformState::
+get_rotate2d() const {
+  check_hpr();
+  nassertr(!is_invalid() && is_2d(), 0);
+  switch (get_default_coordinate_system()) {
+  default:
+  case CS_zup_right:
+    return _hpr[0];
+  case CS_zup_left:
+    return -_hpr[0];
+  case CS_yup_right:
+    return -_hpr[2];
+  case CS_yup_left:
+    return _hpr[2];
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_scale2d
+//       Access: Published
+//  Description: Returns the scale component of the 2-d transform.  It
+//               is an error to call this if has_components() or
+//               is_2d() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2f TransformState::
+get_scale2d() const {
+  check_components();
+  nassertr(!is_invalid() && is_2d(), LVecBase2f::zero());
+  return LVecBase2f(_scale[0], _scale[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_shear2d
+//       Access: Published
+//  Description: Returns the shear component of the 2-d transform.  It
+//               is an error to call this if has_components() or
+//               is_2d() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE float TransformState::
+get_shear2d() const {
+  check_components();
+  nassertr(!is_invalid() && is_2d(), 0.0f);
+  return _shear[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_mat3
+//       Access: Published
+//  Description: Returns the 3x3 matrix that describes the 2-d
+//               transform.  It is an error to call this if is_2d()
+//               returned false.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix3f TransformState::
+get_mat3() const {
+  nassertr(has_mat() && is_2d(), LMatrix3f::ident_mat());
+  check_mat();
+  return LMatrix3f(_mat(0, 0), _mat(0, 1), _mat(0, 3),
+                   _mat(1, 0), _mat(1, 1), _mat(1, 3),
+                   _mat(3, 0), _mat(3, 1), _mat(3, 3));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_geom_rendering
 //       Access: Published
 //  Description: Returns the union of the Geom::GeomRendering bits
@@ -620,6 +798,29 @@ INLINE void TransformState::
 check_uniform_scale() {
   if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) && 
       IS_NEARLY_EQUAL(_scale[0], _scale[2])) {
+    _flags |= F_uniform_scale;
+    if (IS_NEARLY_EQUAL(_scale[0], 1.0f)) {
+      _flags |= F_identity_scale;
+    }
+  }
+
+  if (!_shear.almost_equal(LVecBase3f::zero())) {
+    _flags |= F_has_nonzero_shear;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_uniform_scale2d
+//       Access: Private
+//  Description: Should be called immediately after _scale (and
+//               F_has_components) is set, for a known 2-d scale, this
+//               checks for a identity and/or uniform scale (as well
+//               as a non-zero shear) and sets the bit appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_uniform_scale2d() {
+  if (IS_NEARLY_EQUAL(_scale[0], _scale[1])) {
+    _scale[2] = _scale[0];
     _flags |= F_uniform_scale;
     if (IS_NEARLY_EQUAL(_scale[0], 1.0f)) {
       _flags |= F_identity_scale;

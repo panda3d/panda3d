@@ -79,7 +79,7 @@ PUBLISHED:
                                                  const LVecBase3f &hpr);
   INLINE static CPT(TransformState) make_scale(float scale);
   INLINE static CPT(TransformState) make_scale(const LVecBase3f &scale);
-  INLINE static CPT(TransformState) make_shear(const LVecBase3f &scale);
+  INLINE static CPT(TransformState) make_shear(const LVecBase3f &shear);
   INLINE static CPT(TransformState) make_pos_hpr_scale(const LVecBase3f &pos,
                                                        const LVecBase3f &hpr, 
                                                        const LVecBase3f &scale);
@@ -96,9 +96,29 @@ PUBLISHED:
                                                        const LVecBase3f &shear);
   static CPT(TransformState) make_mat(const LMatrix4f &mat);
 
+
+  INLINE static CPT(TransformState) make_pos2d(const LVecBase2f &pos);
+  INLINE static CPT(TransformState) make_rotate2d(float rotate);
+  INLINE static CPT(TransformState) make_pos_rotate2d(const LVecBase2f &pos,
+                                                      float rotate);
+  INLINE static CPT(TransformState) make_scale2d(float scale);
+  INLINE static CPT(TransformState) make_scale2d(const LVecBase2f &scale);
+  INLINE static CPT(TransformState) make_shear2d(float shear);
+  INLINE static CPT(TransformState) make_pos_rotate_scale2d(const LVecBase2f &pos,
+                                                            float rotate, 
+                                                            const LVecBase2f &scale);
+  static CPT(TransformState) make_pos_rotate_scale_shear2d(const LVecBase2f &pos,
+                                                           float rotate,
+                                                           const LVecBase2f &scale,
+                                                           float shear);
+  static CPT(TransformState) make_mat3(const LMatrix3f &mat);
+
+
   INLINE bool is_identity() const;
   INLINE bool is_invalid() const;
   INLINE bool is_singular() const;
+  INLINE bool is_2d() const;
+
   INLINE bool has_components() const;
   INLINE bool components_given() const;
   INLINE bool hpr_given() const;
@@ -112,6 +132,7 @@ PUBLISHED:
   INLINE bool has_shear() const;
   INLINE bool has_nonzero_shear() const;
   INLINE bool has_mat() const;
+
   INLINE const LVecBase3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LQuaternionf &get_quat() const;
@@ -120,11 +141,22 @@ PUBLISHED:
   INLINE const LVecBase3f &get_shear() const;
   INLINE const LMatrix4f &get_mat() const;
 
+  INLINE LVecBase2f get_pos2d() const;
+  INLINE float get_rotate2d() const;
+  INLINE LVecBase2f get_scale2d() const;
+  INLINE float get_shear2d() const;
+  INLINE LMatrix3f get_mat3() const;
+
   CPT(TransformState) set_pos(const LVecBase3f &pos) const;
   CPT(TransformState) set_hpr(const LVecBase3f &hpr) const;
   CPT(TransformState) set_quat(const LQuaternionf &quat) const;
   CPT(TransformState) set_scale(const LVecBase3f &scale) const;
   CPT(TransformState) set_shear(const LVecBase3f &shear) const;
+
+  CPT(TransformState) set_pos2d(const LVecBase2f &pos) const;
+  CPT(TransformState) set_rotate2d(float rotate) const;
+  CPT(TransformState) set_scale2d(const LVecBase2f &scale) const;
+  CPT(TransformState) set_shear2d(float shear) const;
 
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
@@ -229,6 +261,7 @@ private:
   void calc_mat();
 
   INLINE void check_uniform_scale();
+  INLINE void check_uniform_scale2d();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -237,29 +270,30 @@ private:
   static void update_pstats(int old_referenced_bits, int new_referenced_bits);
 
   enum Flags {
-    F_is_identity        = 0x0001,
-    F_is_singular        = 0x0002,
-    F_singular_known     = 0x0004,  // set if we know F_is_singular
-    F_components_given   = 0x0008,
-    F_components_known   = 0x0010,  // set if we know F_has_components
-    F_has_components     = 0x0020,
-    F_mat_known          = 0x0040,  // set if _mat is defined
-    F_is_invalid         = 0x0080,
-    F_quat_given         = 0x0100,
-    F_quat_known         = 0x0200,  // set if _quat is defined
-    F_hpr_given          = 0x0400,
-    F_hpr_known          = 0x0800,  // set if _hpr is defined
-    F_uniform_scale      = 0x1000,
-    F_identity_scale     = 0x2000,
-    F_has_nonzero_shear  = 0x4000,
-    F_is_destructing     = 0x8000,
+    F_is_identity        = 0x00000001,
+    F_is_singular        = 0x00000002,
+    F_singular_known     = 0x00000004,  // set if we know F_is_singular
+    F_components_given   = 0x00000008,
+    F_components_known   = 0x00000010,  // set if we know F_has_components
+    F_has_components     = 0x00000020,
+    F_mat_known          = 0x00000040,  // set if _mat is defined
+    F_is_invalid         = 0x00000080,
+    F_quat_given         = 0x00000100,
+    F_quat_known         = 0x00000200,  // set if _quat is defined
+    F_hpr_given          = 0x00000400,
+    F_hpr_known          = 0x00000800,  // set if _hpr is defined
+    F_uniform_scale      = 0x00001000,
+    F_identity_scale     = 0x00002000,
+    F_has_nonzero_shear  = 0x00004000,
+    F_is_destructing     = 0x00008000,
+    F_is_2d              = 0x00010000,
   };
   LVecBase3f _pos, _hpr, _scale, _shear;
   LQuaternionf _quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;
   
-  unsigned short _flags;
+  unsigned int _flags;
 
 public:
   static void register_with_read_factory();

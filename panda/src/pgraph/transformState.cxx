@@ -55,7 +55,7 @@ TransformState() {
     _states = new States;
   }
   _saved_entry = _states->end();
-  _flags = F_is_identity | F_singular_known;
+  _flags = F_is_identity | F_singular_known | F_is_2d;
   _inv_mat = (LMatrix4f *)NULL;
 }
 
@@ -120,7 +120,7 @@ TransformState::
 bool TransformState::
 operator < (const TransformState &other) const {
   static const int significant_flags = 
-    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given);
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
   int other_flags = (other._flags & significant_flags);
@@ -185,7 +185,7 @@ get_hash() const {
   size_t hash = 0;
 
   static const int significant_flags = 
-    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given);
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
   hash = int_hash::add_hash(hash, flags);
@@ -327,6 +327,74 @@ make_mat(const LMatrix4f &mat) {
   return return_new(state);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_rotate_scale_shear2d
+//       Access: Published, Static
+//  Description: Makes a new two-dimensional TransformState with the
+//               specified components.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+make_pos_rotate_scale_shear2d(const LVecBase2f &pos, float rotate,
+                              const LVecBase2f &scale,
+                              float shear) {
+  nassertr(!(pos.is_nan() || cnan(rotate) || scale.is_nan() || cnan(shear)) , make_invalid());
+  // Make a special-case check for the identity transform.
+  if (pos == LVecBase2f(0.0f, 0.0f) &&
+      rotate == 0.0f &&
+      scale == LVecBase2f(1.0f, 1.0f) &&
+      shear == 0.0f) {
+    return make_identity();
+  }
+
+  TransformState *state = new TransformState;
+  state->_pos.set(pos[0], pos[1], 0.0f);
+  switch (get_default_coordinate_system()) {
+  default:
+  case CS_zup_right:
+    state->_hpr.set(rotate, 0.0f, 0.0f);
+    break;
+  case CS_zup_left:
+    state->_hpr.set(-rotate, 0.0f, 0.0f);
+    break;
+  case CS_yup_right:
+    state->_hpr.set(0.0f, 0.0f, -rotate);
+    break;
+  case CS_yup_left:
+    state->_hpr.set(0.0, 0.0f, rotate);
+    break;
+  }
+  state->_scale.set(scale[0], scale[1], 1.0f);
+  state->_shear.set(shear, 0.0f, 0.0f);
+  state->_flags = F_components_given | F_hpr_given | F_components_known | F_hpr_known | F_has_components | F_is_2d;
+  state->check_uniform_scale2d();
+  return return_new(state);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_mat3
+//       Access: Published, Static
+//  Description: Makes a new two-dimensional TransformState with the
+//               specified 3x3 transformation matrix.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+make_mat3(const LMatrix3f &mat) {
+  nassertr(!mat.is_nan(), make_invalid());
+  // Make a special-case check for the identity matrix.
+  if (mat == LMatrix3f::ident_mat()) {
+    return make_identity();
+  }
+
+  TransformState *state = new TransformState;
+  state->_mat.set(mat(0, 0), mat(0, 1), 0.0f, mat(0, 2),
+                  mat(1, 0), mat(1, 1), 0.0f, mat(1, 2),
+                  0.0f, 0.0f, 1.0f, 0.0f,
+                  mat(2, 0), mat(2, 1), 0.0f, mat(2, 2));
+  state->_flags = F_mat_known | F_is_2d;
+  return return_new(state);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::set_pos
 //       Access: Published
@@ -421,6 +489,102 @@ set_shear(const LVecBase3f &shear) const {
   } else {
     return make_pos_hpr_scale_shear(get_pos(), get_hpr(), get_scale(), shear);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_pos2d
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original 2-d TransformState with its pos component
+//               replaced with the indicated value.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_pos2d(const LVecBase2f &pos) const {
+  nassertr(!pos.is_nan(), this);
+  nassertr(!is_invalid(), this);
+  if (!is_2d()) {
+    return set_pos(LVecBase3f(pos[0], pos[1], 0.0f));
+  }
+
+  if (is_identity() || components_given()) {
+    // If we started with a componentwise transform, we keep it that
+    // way.
+    return make_pos_rotate_scale_shear2d(pos, get_rotate2d(), get_scale2d(),
+                                         get_shear2d());
+
+  } else {
+    // Otherwise, we have a matrix transform, and we keep it that way.
+    LMatrix3f mat = get_mat3();
+    mat.set_row(2, pos);
+    return make_mat3(mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_rotate2d
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original 2-d TransformState with its rotation component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_rotate2d(float rotate) const {
+  nassertr(!cnan(rotate), this);
+  nassertr(!is_invalid(), this);
+
+  if (!is_2d()) {
+    switch (get_default_coordinate_system()) {
+    default:
+    case CS_zup_right:
+      return set_hpr(LVecBase3f(rotate, 0.0f, 0.0f));
+    case CS_zup_left:
+      return set_hpr(LVecBase3f(-rotate, 0.0f, 0.0f));
+    case CS_yup_right:
+      return set_hpr(LVecBase3f(0.0f, 0.0f, -rotate));
+    case CS_yup_left:
+      return set_hpr(LVecBase3f(0.0f, 0.0f, rotate));
+    }
+  }
+
+  return make_pos_rotate_scale_shear2d(get_pos2d(), rotate, get_scale2d(), 
+                                       get_shear2d());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_scale2d
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original 2-d TransformState with its scale component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_scale2d(const LVecBase2f &scale) const {
+  nassertr(!scale.is_nan(), this);
+  nassertr(!is_invalid(), this);
+
+  if (!is_2d()) {
+    return set_scale(LVecBase3f(scale[0], scale[1], 1.0f));
+  }
+  return make_pos_rotate_scale_shear2d(get_pos2d(), get_rotate2d(),
+                                       scale, get_shear2d());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_shear2d
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original 2-d TransformState with its shear component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_shear2d(float shear) const {
+  nassertr(!cnan(shear), this);
+  nassertr(!is_invalid(), this);
+  if (!is_2d()) {
+    return set_shear(LVecBase3f(shear, 0.0f, 0.0f));
+  }
+  return make_pos_rotate_scale_shear2d(get_pos2d(), get_rotate2d(),
+                                       get_scale2d(), shear);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -672,26 +836,50 @@ output(ostream &out) const {
     }
 
     char lead = '(';
-    if (!get_pos().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
-      out << lead << "pos " << get_pos();
-      lead = ' ';
-    }
-    if (output_hpr) {
-      out << lead << "hpr " << get_hpr();
-      lead = ' ';
-    }
-    if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
-      if (has_uniform_scale()) {
-        out << lead << "scale " << get_uniform_scale();
-        lead = ' ';
-      } else {
-        out << lead << "scale " << get_scale();
+    if (is_2d()) {
+      if (!get_pos2d().almost_equal(LVecBase2f(0.0f, 0.0f))) {
+        out << lead << "pos " << get_pos2d();
         lead = ' ';
       }
-    }
-    if (has_nonzero_shear()) {
-      out << lead << "shear " << get_shear();
-      lead = ' ';
+      if (output_hpr) {
+        out << lead << "rotate " << get_rotate2d();
+        lead = ' ';
+      }
+      if (!get_scale2d().almost_equal(LVecBase2f(1.0f, 1.0f))) {
+        if (has_uniform_scale()) {
+          out << lead << "scale " << get_uniform_scale();
+          lead = ' ';
+        } else {
+          out << lead << "scale " << get_scale2d();
+          lead = ' ';
+        }
+      }
+      if (has_nonzero_shear()) {
+        out << lead << "shear " << get_shear2d();
+        lead = ' ';
+      }
+    } else {
+      if (!get_pos().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+        out << lead << "pos " << get_pos();
+        lead = ' ';
+      }
+      if (output_hpr) {
+        out << lead << "hpr " << get_hpr();
+        lead = ' ';
+      }
+      if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+        if (has_uniform_scale()) {
+          out << lead << "scale " << get_uniform_scale();
+          lead = ' ';
+        } else {
+          out << lead << "scale " << get_scale();
+          lead = ' ';
+        }
+      }
+      if (has_nonzero_shear()) {
+        out << lead << "shear " << get_shear();
+        lead = ' ';
+      }
     }
     if (lead == '(') {
       out << "(almost identity)";
@@ -700,7 +888,11 @@ output(ostream &out) const {
     }
 
   } else {
-    out << get_mat();
+    if (is_2d()) {
+      out << get_mat3();
+    } else {
+      out << get_mat();
+    }
   }
 }
 
@@ -1082,18 +1274,36 @@ do_compose(const TransformState *other) const {
     // was given componentwise (and there is no non-uniform scale in
     // the way).
 
-    LVecBase3f pos = get_pos();
-    LQuaternionf quat = get_quat();
-    float scale = get_uniform_scale();
+    CPT(TransformState) result;
+    if (is_2d() && other->is_2d()) {
+      // Do a 2-d compose.
+      LVecBase2f pos = get_pos2d();
+      float rotate = get_rotate2d();
+      LQuaternionf quat = get_quat();
+      float scale = get_uniform_scale();
 
-    pos += quat.xform(other->get_pos()) * scale;
-    quat = other->get_quat() * quat;
-    quat.normalize();
-    LVecBase3f new_scale = other->get_scale() * scale;
+      LPoint3f op = quat.xform(other->get_pos());
+      pos += LVecBase2f(op[0], op[1]) * scale;
 
-    CPT(TransformState) result =
-      make_pos_quat_scale(pos, quat, new_scale);
+      rotate += other->get_rotate2d();
+      LVecBase2f new_scale = other->get_scale2d() * scale;
+      
+      result = make_pos_rotate_scale2d(pos, rotate, new_scale);
 
+    } else {
+      // A normal 3-d compose.
+      LVecBase3f pos = get_pos();
+      LQuaternionf quat = get_quat();
+      float scale = get_uniform_scale();
+      
+      pos += quat.xform(other->get_pos()) * scale;
+      quat = other->get_quat() * quat;
+      quat.normalize();
+      LVecBase3f new_scale = other->get_scale() * scale;
+      
+      result = make_pos_quat_scale(pos, quat, new_scale);
+    }
+      
 #ifndef NDEBUG
     if (paranoid_compose) {
       // Now verify against the matrix.
@@ -1113,8 +1323,13 @@ do_compose(const TransformState *other) const {
   }
 
   // Do the operation with matrices.
-  LMatrix4f new_mat = other->get_mat() * get_mat();
-  return make_mat(new_mat);
+  if (is_2d()) {
+    LMatrix3f new_mat = other->get_mat3() * get_mat3();
+    return make_mat3(new_mat);
+  } else {
+    LMatrix4f new_mat = other->get_mat() * get_mat();
+    return make_mat(new_mat);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1138,30 +1353,63 @@ do_invert_compose(const TransformState *other) const {
     // was given componentwise (and there is no non-uniform scale in
     // the way).
 
-    LVecBase3f pos = get_pos();
-    LQuaternionf quat = get_quat();
-    float scale = get_uniform_scale();
+    CPT(TransformState) result;
+    if (is_2d() && other->is_2d()) {
+      // Do a 2-d invert compose.
+      LVecBase2f pos = get_pos2d();
+      float rotate = get_rotate2d();
+      LQuaternionf quat = get_quat();
+      float scale = get_uniform_scale();
+      
+      // First, invert our own transform.
+      if (scale == 0.0f) {
+        ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
+        return make_invalid();
+      }
+      scale = 1.0f / scale;
+      quat.invert_in_place();
+      rotate = -rotate;
+      LVecBase3f mp = quat.xform(-LVecBase3f(pos[0], pos[1], 0.0f));
+      pos = LVecBase2f(mp[0], mp[1]) * scale;
+      LVecBase2f new_scale(scale, scale);
+      
+      // Now compose the inverted transform with the other transform.
+      if (!other->is_identity()) {
+        LPoint3f op = quat.xform(other->get_pos());
+        pos += LVecBase2f(op[0], op[1]) * scale;
 
-    // First, invert our own transform.
-    if (scale == 0.0f) {
-      ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
-      return make_invalid();
+        rotate += other->get_rotate2d();
+        new_scale = other->get_scale2d() * scale;
+      }
+
+      result = make_pos_rotate_scale2d(pos, rotate, new_scale);
+
+    } else {
+      // Do a normal, 3-d invert compose.
+      LVecBase3f pos = get_pos();
+      LQuaternionf quat = get_quat();
+      float scale = get_uniform_scale();
+      
+      // First, invert our own transform.
+      if (scale == 0.0f) {
+        ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
+        return make_invalid();
+      }
+      scale = 1.0f / scale;
+      quat.invert_in_place();
+      pos = quat.xform(-pos) * scale;
+      LVecBase3f new_scale(scale, scale, scale);
+      
+      // Now compose the inverted transform with the other transform.
+      if (!other->is_identity()) {
+        pos += quat.xform(other->get_pos()) * scale;
+        quat = other->get_quat() * quat;
+        quat.normalize();
+        new_scale = other->get_scale() * scale;
+      }
+
+      result = make_pos_quat_scale(pos, quat, new_scale);
     }
-    scale = 1.0f / scale;
-    quat.invert_in_place();
-    pos = quat.xform(-pos) * scale;
-    LVecBase3f new_scale(scale, scale, scale);
-
-    // Now compose the inverted transform with the other transform.
-    if (!other->is_identity()) {
-      pos += quat.xform(other->get_pos()) * scale;
-      quat = other->get_quat() * quat;
-      quat.normalize();
-      new_scale = other->get_scale() * scale;
-    }
-
-    CPT(TransformState) result =
-      make_pos_quat_scale(pos, quat, new_scale);
 
 #ifndef NDEBUG
     if (paranoid_compose) {
@@ -1195,10 +1443,22 @@ do_invert_compose(const TransformState *other) const {
   // _inv_mat has been allocated and filled in.
   nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
 
-  if (other->is_identity()) {
-    return make_mat(*_inv_mat);
+  if (is_2d()) {
+    const LMatrix4f &i = *_inv_mat;
+    LMatrix3f inv3(i(0, 0), i(0, 1), i(0, 3),
+                   i(1, 0), i(1, 1), i(1, 3),
+                   i(3, 0), i(3, 1), i(3, 3));
+    if (other->is_identity()) {
+      return make_mat3(inv3);
+    } else {
+      return make_mat3(other->get_mat3() * inv3);
+    }
   } else {
-    return make_mat(other->get_mat() * (*_inv_mat));
+    if (other->is_identity()) {
+      return make_mat(*_inv_mat);
+    } else {
+      return make_mat(other->get_mat() * (*_inv_mat));
+    }
   }
 }
 
@@ -1547,24 +1807,25 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   if ((_flags & F_is_identity) != 0) {
     // Identity, nothing much to that.
-    int flags = F_is_identity | F_singular_known;
-    dg.add_uint16(flags);
+    int flags = F_is_identity | F_singular_known | F_is_2d;
+    dg.add_uint32(flags);
 
   } else if ((_flags & F_is_invalid) != 0) {
     // Invalid, nothing much to that either.
     int flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
-    dg.add_uint16(flags);
+    dg.add_uint32(flags);
 
   } else if ((_flags & F_components_given) != 0) {
     // A component-based transform.
     int flags = F_components_given | F_components_known | F_has_components;
+    flags |= (_flags & F_is_2d);
     if ((_flags & F_quat_given) != 0) {
       flags |= (F_quat_given | F_quat_known);
     } else if ((_flags & F_hpr_given) != 0) {
       flags |= (F_hpr_given | F_hpr_known);
     }
 
-    dg.add_uint16(flags);
+    dg.add_uint32(flags);
 
     _pos.write_datagram(dg);
     if ((_flags & F_quat_given) != 0) {
@@ -1579,7 +1840,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     // A general matrix.
     nassertv((_flags & F_mat_known) != 0);
     int flags = F_mat_known;
-    dg.add_uint16(flags);
+    flags |= (_flags & F_is_2d);
+    dg.add_uint32(flags);
     _mat.write_datagram(dg);
   }
 }
@@ -1668,7 +1930,11 @@ void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
-  _flags = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 2) {
+    _flags = scan.get_uint16();
+  } else {
+    _flags = scan.get_uint32();
+  }
 
   if ((_flags & F_components_given) != 0) {
     // Componentwise transform.
@@ -1677,9 +1943,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _quat.read_datagram(scan);
     } else {
       _hpr.read_datagram(scan);
-      // Holdover support for bams 4.0 or older: add these bits that
-      // should have been added when the bam was written.
-      _flags |= (F_hpr_given | F_hpr_known);
     }
     _scale.read_datagram(scan);
     _shear.read_datagram(scan);
