@@ -176,6 +176,7 @@ protected:
   bool _flip_ready;
   bool _needs_context;
   int _cube_map_index;
+  DisplayRegion *_cube_map_dr;
 
 private:
   DisplayRegion *add_display_region(DisplayRegion *display_region);

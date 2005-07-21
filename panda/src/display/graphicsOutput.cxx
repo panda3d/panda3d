@@ -80,6 +80,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _flip_ready = false;
   _needs_context = true;
   _cube_map_index = -1;
+  _cube_map_dr = NULL;
   _sort = 0;
   _internal_sort_index = 0;
   _active = true;
@@ -590,6 +591,18 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   return NULL;
 }
 
+struct ShowBuffersCubeMapRegions {
+  float l, r, b, t;
+};
+static ShowBuffersCubeMapRegions cube_map_regions[6] = {
+  { 0.0, 0.3333, 0.5, 1.0 },
+  { 0.0, 0.3333, 0.0, 0.5 },
+  { 0.3333, 0.6667, 0.5, 1.0 },
+  { 0.3333, 0.6667, 0.0, 0.5 },
+  { 0.6667, 1.0, 0.5, 1.0 },
+  { 0.6667, 1.0, 0.0, 0.5 },
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_cube_map
 //       Access: Published
@@ -641,7 +654,20 @@ make_cube_map(const string &name, int size, bool to_ram,
   tex->setup_cube_map();
   tex->set_wrap_u(Texture::WM_clamp);
   tex->set_wrap_v(Texture::WM_clamp);
-  GraphicsOutput *buffer = make_texture_buffer(name, size, size, tex, to_ram);
+  GraphicsOutput *buffer;
+  if (show_buffers) {
+    // If show_buffers is true, we'd like to create a window with the
+    // six buffers spread out and all visible at once, for the user's
+    // convenience.
+    buffer = make_texture_buffer(name, size * 3, size * 2, tex, to_ram);
+    tex->set_x_size(size);
+    tex->set_y_size(size);
+
+  } else {
+    // In the normal case, the six buffers are stacked on top of each
+    // other like pancakes.
+    buffer = make_texture_buffer(name, size, size, tex, to_ram);
+  }
 
   // We don't need to clear the overall buffer; instead, we'll clear
   // each display region.
@@ -658,7 +684,13 @@ make_cube_map(const string &name, int size, bool to_ram,
     NodePath camera_np = camera_rig.attach_new_node(camera);
     camera_np.look_at(cube_faces[i]._look_at, cube_faces[i]._up);
     
-    DisplayRegion *dr = buffer->make_display_region();
+    DisplayRegion *dr;
+    if (show_buffers) {
+      const ShowBuffersCubeMapRegions &r = cube_map_regions[i];
+      dr = buffer->make_display_region(r.l, r.r, r.b, r.t);
+    } else {
+      dr = buffer->make_display_region();
+    }
     dr->set_cube_map_index(i);
     dr->copy_clear_settings(*this);
     dr->set_camera(camera_np);
@@ -765,6 +797,7 @@ begin_frame() {
   }
 
   _cube_map_index = -1;
+  _cube_map_dr = NULL;
 
   return _gsg->begin_frame();
 }
@@ -844,12 +877,13 @@ end_frame() {
           << "cube_map_index = " << _cube_map_index << "\n";
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+      nassertv(_cube_map_dr != (DisplayRegion *)NULL);
       if (_rtm_mode == RTM_copy_ram) {
         _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
-                                      _default_display_region, buffer);
+                                      _cube_map_dr, buffer);
       } else {
         _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
-                                          _default_display_region, buffer);
+                                          _cube_map_dr, buffer);
       }
     }
   }
@@ -891,6 +925,7 @@ end_frame() {
   }
 
   _cube_map_index = -1;
+  _cube_map_dr = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -908,7 +943,9 @@ change_scenes(DisplayRegion *new_dr) {
   if (new_cube_map_index != -1 &&
       new_cube_map_index != _cube_map_index) {
     int old_cube_map_index = _cube_map_index;
+    DisplayRegion *old_cube_map_dr = _cube_map_dr;
     _cube_map_index = new_cube_map_index;
+    _cube_map_dr = new_dr;
 
     if (_rtm_mode != RTM_none) {
       if (_rtm_mode == RTM_bind_texture) {
@@ -921,6 +958,7 @@ change_scenes(DisplayRegion *new_dr) {
       } else if (old_cube_map_index != -1) {
         // In copy-to-texture mode, copy the just-rendered framebuffer
         // to the old cube map face.
+        nassertv(old_cube_map_dr != (DisplayRegion *)NULL);
         if (display_cat.is_debug()) {
           display_cat.debug()
             << "Copying texture for " << get_name() << " at scene change.\n";
@@ -930,10 +968,10 @@ change_scenes(DisplayRegion *new_dr) {
         RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
         if (_rtm_mode == RTM_copy_ram) {
           _gsg->framebuffer_copy_to_ram(get_texture(), old_cube_map_index, 
-                                        _default_display_region, buffer);
+                                        old_cube_map_dr, buffer);
         } else {
           _gsg->framebuffer_copy_to_texture(get_texture(), old_cube_map_index, 
-                                            _default_display_region, buffer);
+                                            old_cube_map_dr, buffer);
         }
       }
     }
