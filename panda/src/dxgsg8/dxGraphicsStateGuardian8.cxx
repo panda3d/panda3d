@@ -2242,6 +2242,21 @@ do_issue_texture() {
     TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
+    // These transforms are used in the below to invert certain
+    // computed component values in various modes, to emulate the
+    // behavior of OpenGL, so we get a consistent behavior between the
+    // two of them.
+    static CPT(TransformState) invert_z =
+      TransformState::make_mat(LMatrix4f(1.0f, 0.0f, 0.0f, 0.0f,
+                                         0.0f, 1.0f, 0.0f, 0.0f,
+                                         0.0f, 0.0f, -1.0f, 0.0f,
+                                         0.0f, 0.0f, 0.0f, 1.0f));
+    static CPT(TransformState) invert_y =
+      TransformState::make_mat(LMatrix4f(1.0f, 0.0f, 0.0f, 0.0f,
+                                         0.0f, -1.0f, 0.0f, 0.0f,
+                                         0.0f, 0.0f, 1.0f, 0.0f,
+                                         0.0f, 0.0f, 0.0f, 1.0f));
+
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
@@ -2275,14 +2290,16 @@ do_issue_texture() {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         texcoords_3d = true;
-        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
+        CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
+        CPT(TransformState) rotate_transform = invert_z->compose(camera_transform);
+        tex_mat = tex_mat->compose(rotate_transform->set_pos(LVecBase3f::zero()));
       }
       break;
 
     case TexGenAttrib::M_eye_cube_map:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+      tex_mat = tex_mat->compose(invert_z);
       texcoords_3d = true;
       break;
 
@@ -2295,14 +2312,16 @@ do_issue_texture() {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
         texcoords_3d = true;
-        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
+        CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
+        CPT(TransformState) rotate_transform = invert_z->compose(camera_transform);
+        tex_mat = tex_mat->compose(rotate_transform->set_pos(LVecBase3f::zero()));
       }
       break;
 
     case TexGenAttrib::M_eye_normal:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
+      tex_mat = tex_mat->compose(invert_z);
       texcoords_3d = true;
       break;
 
@@ -2336,17 +2355,21 @@ do_issue_texture() {
 
     if (!tex_mat->is_identity()) {
       LMatrix4f m = tex_mat->get_mat();
+      _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
+
       if (!texcoords_3d) {
         // For 2-d texture coordinates, we have to reorder the matrix.
         m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
               m(1, 0), m(1, 1), m(1, 3), 0.0f,
               m(3, 0), m(3, 1), m(3, 3), 0.0f,
               0.0f, 0.0f, 0.0f, 1.0f);
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+                                          D3DTTFF_COUNT2);
+      } else {
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+                                          D3DTTFF_COUNT3);
       }
 
-      _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
-                                        D3DTTFF_COUNT2);
     } else {
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                         D3DTTFF_DISABLE);

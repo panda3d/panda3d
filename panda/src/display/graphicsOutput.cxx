@@ -39,21 +39,20 @@ PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
 PStatCollector GraphicsOutput::_copy_texture_pcollector("Draw:Copy texture");
 
 struct CubeFaceDef {
-  CubeFaceDef(const char *name, const LPoint3f &look_at, const LVector3f &up) :
-    _name(name), _look_at(look_at), _up(up) { }
+  CubeFaceDef(const char *name, float h, float p, float r) :
+    _name(name), _hpr(h, p, r) { }
 
   const char *_name;
-  LPoint3f _look_at;
-  LVector3f _up;
+  LVecBase3f _hpr;
 };
 
 static CubeFaceDef cube_faces[6] = {
-  CubeFaceDef("positive_x", LPoint3f(1, 0, 0), LVector3f(0, -1, 0)),
-  CubeFaceDef("negative_x", LPoint3f(-1, 0, 0), LVector3f(0, -1, 0)),
-  CubeFaceDef("positive_y", LPoint3f(0, 1, 0), LVector3f(0, 0, 1)),
-  CubeFaceDef("negative_y", LPoint3f(0, -1, 0), LVector3f(0, 0, -1)),
-  CubeFaceDef("positive_z", LPoint3f(0, 0, 1), LVector3f(0, -1, 0)),
-  CubeFaceDef("negative_z", LPoint3f(0, 0, -1), LVector3f(0, -1, 0))
+  CubeFaceDef("positive_x", -90, 0, -180),
+  CubeFaceDef("negative_x", 90, 0, -180),
+  CubeFaceDef("positive_y", 0, 90, 0),
+  CubeFaceDef("negative_y", 0, -90, 0),
+  CubeFaceDef("positive_z", 180, 0, -180),
+  CubeFaceDef("negative_z", 0, 0, -180),
 };
   
 ////////////////////////////////////////////////////////////////////
@@ -656,7 +655,7 @@ make_cube_map(const string &name, int size, bool to_ram,
     camera->set_lens(lens);
     camera->set_camera_mask(camera_mask);
     NodePath camera_np = camera_rig.attach_new_node(camera);
-    camera_np.look_at(cube_faces[i]._look_at, cube_faces[i]._up);
+    camera_np.set_hpr(cube_faces[i]._hpr);
     
     DisplayRegion *dr = buffer->make_display_region();
     dr->set_cube_map_index(i);

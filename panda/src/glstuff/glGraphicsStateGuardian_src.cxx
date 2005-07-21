@@ -4250,10 +4250,8 @@ finish_modify_state() {
             // tempting to try, we can't safely convert to object
             // space, since this method doesn't get called with each
             // different object.
-            CPT(TransformState) transform = 
-              _cs_transform->compose(_scene_setup->get_world_transform());
-            transform = transform->invert_compose(TransformState::make_identity());
-            LMatrix4f mat = transform->get_mat();
+            CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
+            LMatrix4f mat = camera_transform->get_mat();
             mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
             GLP(MatrixMode)(GL_TEXTURE);
             GLP(MultMatrixf)(mat.get_data());
