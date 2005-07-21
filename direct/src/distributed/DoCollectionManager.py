@@ -236,7 +236,7 @@ class DoCollectionManager:
                         (do, do.doId, location))
                 else:
                     assert do.doId in self.zoneId2doIds[location]
-                    del(self.zoneId2doIds[location][do.doId])
+                    del self.zoneId2doIds[location][do.doId]
                     if len(self.zoneId2doIds[location]) == 0:
                         del self.zoneId2doIds[location]
             if do.doId in self.doId2do:
