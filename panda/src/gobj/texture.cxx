@@ -413,6 +413,22 @@ read_pages(const Filename &fullpath_template, int z_size) {
 
   clear_ram_image();
 
+  if (z_size == 0) {
+    switch (_texture_type) {
+    case TT_1d_texture:
+    case TT_2d_texture:
+      z_size = 1;
+      break;
+
+    case TT_cube_map:
+      z_size = 6;
+      break;
+
+    default:
+      break;
+    }
+  }
+
   if (z_size != 0) {
     set_z_size(z_size);
     for (int z = 0; z < z_size; z++) {

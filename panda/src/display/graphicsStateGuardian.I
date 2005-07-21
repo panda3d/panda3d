@@ -432,6 +432,19 @@ get_color_scale_via_lighting() const {
   return _color_scale_via_lighting;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_coordinate_system
+//       Access: Published
+//  Description: Returns the coordinate system in effect on this
+//               particular gsg.  Normally, this will be the default
+//               coordinate system, but it might be set differently at
+//               runtime.
+////////////////////////////////////////////////////////////////////
+INLINE CoordinateSystem GraphicsStateGuardian::
+get_coordinate_system() const {
+  return _coordinate_system;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
@@ -694,19 +707,6 @@ pop_display_region(DisplayRegionStack &node) {
   nassertv(node._stack_level == _display_region_stack_level);
   _current_display_region = node._display_region;
   node._stack_level = -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_coordinate_system
-//       Access: Public
-//  Description: Returns the coordinate system in effect on this
-//               particular gsg.  Normally, this will be the default
-//               coordinate system, but it might be set differently at
-//               runtime.
-////////////////////////////////////////////////////////////////////
-INLINE CoordinateSystem GraphicsStateGuardian::
-get_coordinate_system() const {
-  return _coordinate_system;
 }
 
 ////////////////////////////////////////////////////////////////////

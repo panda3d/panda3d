@@ -4241,25 +4241,47 @@ finish_modify_state() {
         break;
         
       case TexGenAttrib::M_eye_cube_map:
+        if (_supports_cube_map) {
+          // We need to rotate the normals out of GL's coordinate
+          // system and into the user's coordinate system.  We do this
+          // by composing a transform onto the texture matrix.
+          LMatrix4f mat = _inv_cs_transform->get_mat();
+          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+          GLP(MatrixMode)(GL_TEXTURE);
+          GLP(MultMatrixf)(mat.get_data());
+          
+          // Now we need to reset the texture matrix next time
+          // around to undo this.
+          _tex_gen_modifies_mat = true;
+
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          force_normal = true;
+        }
+        break;
+
       case TexGenAttrib::M_world_cube_map:
         if (_supports_cube_map) {
-          if (mode != TexGenAttrib::M_eye_cube_map) {
-            // We dynamically transform normals from eye space to
-            // world space by applying the appropriate rotation
-            // transform to the current texture matrix.  Although it's
-            // tempting to try, we can't safely convert to object
-            // space, since this method doesn't get called with each
-            // different object.
-            CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
-            LMatrix4f mat = camera_transform->get_mat();
-            mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-            GLP(MatrixMode)(GL_TEXTURE);
-            GLP(MultMatrixf)(mat.get_data());
+          // We dynamically transform normals from eye space to world
+          // space by applying the appropriate rotation transform to
+          // the current texture matrix.  Unlike M_world_position, we
+          // can't achieve this effect by monkeying with the modelview
+          // transform, since the current modelview doesn't affect
+          // GL_REFLECTION_MAP.
+          CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
 
-            // Now we need to reset the texture matrix next time
-            // around to undo this.
-            _tex_gen_modifies_mat = true;
-          }
+          LMatrix4f mat = camera_transform->get_mat();
+          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+          GLP(MatrixMode)(GL_TEXTURE);
+          GLP(MultMatrixf)(mat.get_data());
+          
+          // Now we need to reset the texture matrix next time
+          // around to undo this.
+          _tex_gen_modifies_mat = true;
 
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
           GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
@@ -4272,27 +4294,47 @@ finish_modify_state() {
         break;
         
       case TexGenAttrib::M_eye_normal:
+        if (_supports_cube_map) {
+          // We need to rotate the normals out of GL's coordinate
+          // system and into the user's coordinate system.  We do this
+          // by composing a transform onto the texture matrix.
+          LMatrix4f mat = _inv_cs_transform->get_mat();
+          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+          GLP(MatrixMode)(GL_TEXTURE);
+          GLP(MultMatrixf)(mat.get_data());
+          
+          // Now we need to reset the texture matrix next time
+          // around to undo this.
+          _tex_gen_modifies_mat = true;
+
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          force_normal = true;
+        }
+        break;
+
       case TexGenAttrib::M_world_normal:
         if (_supports_cube_map) {
-          if (mode != TexGenAttrib::M_eye_normal) {
-            // We dynamically transform normals from eye space to
-            // world space by applying the appropriate rotation
-            // transform to the current texture matrix.  Although it's
-            // tempting to try, we can't safely convert to object
-            // space, since this method doesn't get called with each
-            // different object.
-            CPT(TransformState) transform = 
-              _cs_transform->compose(_scene_setup->get_world_transform());
-            transform = transform->invert_compose(TransformState::make_identity());
-            LMatrix4f mat = transform->get_mat();
-            mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-            GLP(MatrixMode)(GL_TEXTURE);
-            GLP(MultMatrixf)(mat.get_data());
+          // We dynamically transform normals from eye space to world
+          // space by applying the appropriate rotation transform to
+          // the current texture matrix.  Unlike M_world_position, we
+          // can't achieve this effect by monkeying with the modelview
+          // transform, since the current modelview doesn't affect
+          // GL_NORMAL_MAP.
+          CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
 
-            // Now we need to reset the texture matrix next time
-            // around to undo this.
-            _tex_gen_modifies_mat = true;
-          }
+          LMatrix4f mat = camera_transform->get_mat();
+          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+          GLP(MatrixMode)(GL_TEXTURE);
+          GLP(MultMatrixf)(mat.get_data());
+          
+          // Now we need to reset the texture matrix next time
+          // around to undo this.
+          _tex_gen_modifies_mat = true;
 
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
           GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);

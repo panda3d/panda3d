@@ -2290,16 +2290,15 @@ do_issue_texture() {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         texcoords_3d = true;
-        CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
-        CPT(TransformState) rotate_transform = invert_z->compose(camera_transform);
-        tex_mat = tex_mat->compose(rotate_transform->set_pos(LVecBase3f::zero()));
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
       }
       break;
 
     case TexGenAttrib::M_eye_cube_map:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
-      tex_mat = tex_mat->compose(invert_z);
+      tex_mat = tex_mat->compose(_inv_cs_transform);
       texcoords_3d = true;
       break;
 
@@ -2312,23 +2311,22 @@ do_issue_texture() {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
         texcoords_3d = true;
-        CPT(TransformState) camera_transform = _cs_transform->compose(_scene_setup->get_camera_transform())->compose(_inv_cs_transform);
-        CPT(TransformState) rotate_transform = invert_z->compose(camera_transform);
-        tex_mat = tex_mat->compose(rotate_transform->set_pos(LVecBase3f::zero()));
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
       }
       break;
 
     case TexGenAttrib::M_eye_normal:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
-      tex_mat = tex_mat->compose(invert_z);
       texcoords_3d = true;
+      tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
 
     case TexGenAttrib::M_world_position:
       // To achieve world position, we must transform camera
       // coordinates to world coordinates; i.e. apply the
-      // inverse root_transform.
+      // camera transform.
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);

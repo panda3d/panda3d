@@ -28,6 +28,7 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 #include "configVariableFilename.h"
+#include "coordinateSystem.h"
 #include "dconfig.h"
 
 #include "pvector.h"
@@ -83,7 +84,6 @@ extern EXPCL_PANDA ConfigVariableInt multisamples;
 
 extern EXPCL_PANDA ConfigVariableDouble background_color;
 extern EXPCL_PANDA ConfigVariableBool sync_video;
-
 
 extern EXPCL_PANDA void init_libdisplay();
 

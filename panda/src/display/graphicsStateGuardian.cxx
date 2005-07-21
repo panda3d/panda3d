@@ -100,6 +100,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _coordinate_system = CS_invalid;
   _external_transform = TransformState::make_identity();
   _internal_transform = TransformState::make_identity();
+  
   set_coordinate_system(get_default_coordinate_system());
 
   _current_display_region = (DisplayRegion*)0L;
@@ -197,6 +198,58 @@ get_supports_multisample() const {
 int GraphicsStateGuardian::
 get_supported_geom_rendering() const {
   return _supported_geom_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_coordinate_system
+//       Access: Published
+//  Description: Changes the coordinate system in effect on this
+//               particular gsg.  This is also called the "external"
+//               coordinate system, since it is the coordinate system
+//               used by the scene graph, external to to GSG.
+//
+//               Normally, this will be the default coordinate system,
+//               but it might be set differently at runtime.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_coordinate_system(CoordinateSystem cs) {
+  _coordinate_system = cs;
+
+  // Changing the external coordinate system changes the cs_transform.
+  if (_internal_coordinate_system == CS_default ||
+      _internal_coordinate_system == _coordinate_system) {
+    _cs_transform = TransformState::make_identity();
+    _inv_cs_transform = TransformState::make_identity();
+
+  } else {
+    _cs_transform = 
+      TransformState::make_mat
+      (LMatrix4f::convert_mat(_coordinate_system,
+                              _internal_coordinate_system));
+    _inv_cs_transform = 
+      TransformState::make_mat
+      (LMatrix4f::convert_mat(_internal_coordinate_system,
+                              _coordinate_system));
+  }
+  _internal_transform = _cs_transform->compose(_external_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_internal_coordinate_system
+//       Access: Published, Virtual
+//  Description: Returns the coordinate system used internally by the
+//               GSG.  This may be the same as the external coordinate
+//               system reported by get_coordinate_system(), or it may
+//               be something different.
+//
+//               In any case, vertices that have been transformed
+//               before being handed to the GSG (that is, vertices
+//               with a contents value of C_clip_point) will be
+//               expected to be in this coordinate system.
+////////////////////////////////////////////////////////////////////
+CoordinateSystem GraphicsStateGuardian::
+get_internal_coordinate_system() const {
+  return _internal_coordinate_system;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -932,58 +985,6 @@ framebuffer_bind_to_texture(GraphicsOutput *, Texture *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 framebuffer_release_texture(GraphicsOutput *, Texture *) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_coordinate_system
-//       Access: Public
-//  Description: Changes the coordinate system in effect on this
-//               particular gsg.  This is also called the "external"
-//               coordinate system, since it is the coordinate system
-//               used by the scene graph, external to to GSG.
-//
-//               Normally, this will be the default coordinate system,
-//               but it might be set differently at runtime.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_coordinate_system(CoordinateSystem cs) {
-  _coordinate_system = cs;
-
-  // Changing the external coordinate system changes the cs_transform.
-  if (_internal_coordinate_system == CS_default ||
-      _internal_coordinate_system == _coordinate_system) {
-    _cs_transform = TransformState::make_identity();
-    _inv_cs_transform = TransformState::make_identity();
-
-  } else {
-    _cs_transform = 
-      TransformState::make_mat
-      (LMatrix4f::convert_mat(_coordinate_system,
-                              _internal_coordinate_system));
-    _inv_cs_transform = 
-      TransformState::make_mat
-      (LMatrix4f::convert_mat(_internal_coordinate_system,
-                              _coordinate_system));
-  }
-  _internal_transform = _cs_transform->compose(_external_transform);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_internal_coordinate_system
-//       Access: Public, Virtual
-//  Description: Returns the coordinate system used internally by the
-//               GSG.  This may be the same as the external coordinate
-//               system reported by get_coordinate_system(), or it may
-//               be something different.
-//
-//               In any case, vertices that have been transformed
-//               before being handed to the GSG (that is, vertices
-//               with a contents value of C_clip_point) will be
-//               expected to be in this coordinate system.
-////////////////////////////////////////////////////////////////////
-CoordinateSystem GraphicsStateGuardian::
-get_internal_coordinate_system() const {
-  return _internal_coordinate_system;
 }
 
 ////////////////////////////////////////////////////////////////////

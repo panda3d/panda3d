@@ -28,8 +28,9 @@
 
 static ConfigVariableEnum<CoordinateSystem> default_cs
 ("coordinate-system", CS_zup_right,
- "The default coordinate system to use throughout Panda for rendering, "
- "user input, and matrix operations, unless specified otherwise.");
+ PRC_DESC("The default coordinate system to use throughout Panda for "
+          "rendering, user input, and matrix operations, unless specified "
+          "otherwise."));
 
 
 CoordinateSystem

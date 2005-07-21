@@ -260,7 +260,6 @@ ConfigVariableBool sync_video
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay
 //  Description: Initializes the library.  This must be called at

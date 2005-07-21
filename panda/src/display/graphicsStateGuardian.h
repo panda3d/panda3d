@@ -116,6 +116,10 @@ PUBLISHED:
 
   INLINE bool get_color_scale_via_lighting() const;
 
+  void set_coordinate_system(CoordinateSystem cs);
+  INLINE CoordinateSystem get_coordinate_system() const;
+  virtual CoordinateSystem get_internal_coordinate_system() const;
+
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
@@ -203,10 +207,6 @@ public:
 
   INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);
   INLINE void pop_display_region(DisplayRegionStack &node);
-
-  void set_coordinate_system(CoordinateSystem cs);
-  INLINE CoordinateSystem get_coordinate_system() const;
-  virtual CoordinateSystem get_internal_coordinate_system() const;
 
   INLINE const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
