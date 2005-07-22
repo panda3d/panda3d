@@ -4041,10 +4041,12 @@ for VER in ["7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxeggimport']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    CopyAllHeaders(IPATH[0], skip="ALL")
+    CopyAllHeaders(IPATH[0])
     CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxeggimport/maxImportRes.obj")
+    CompileC(ipath=IPATH, opts=OPTS, src='maxEggLoader.cxx',obj='maxeggimport'+VER+'_maxeggloader.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxeggimport'+VER+'_maxeggimport.obj')
     CompileLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxeggimport/maxEggImport.def", obj=[
+                'maxeggimport'+VER+'_maxeggloader.obj',
                 'maxeggimport'+VER+'_maxeggimport.obj',
                 'maxImportRes.obj',
                 'libpandaegg.dll',
