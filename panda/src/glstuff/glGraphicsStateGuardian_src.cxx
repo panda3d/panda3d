@@ -1694,6 +1694,28 @@ end_draw_primitives() {
 ////////////////////////////////////////////////////////////////////
 TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
+  // Make sure we'll support this texture when it's rendered.  Don't
+  // bother to prepare it if we won't.
+  switch (tex->get_texture_type()) {
+  case Texture::TT_3d_texture:
+    if (!_supports_3d_texture) {
+      GLCAT.warning()
+        << "3-D textures are not supported by this OpenGL driver.\n";
+      return NULL;
+    }
+    break;
+
+  case Texture::TT_cube_map:
+    if (!_supports_cube_map) {
+      GLCAT.warning()
+        << "Cube map textures are not supported by this OpenGL driver.\n";
+      return NULL;
+    }
+
+  default:
+    break;
+  }
+
   CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
   GLP(GenTextures)(1, &gtc->_index);
   report_my_gl_errors();
@@ -2215,7 +2237,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       tex->get_format() != format ||
       tex->get_texture_type() != texture_type) {
     // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, 1, component_type, format);
+    tex->setup_texture(texture_type, w, h, tex->get_z_size(), 
+                       component_type, format);
   }
 
   GLenum external_format = get_external_image_format(format);
@@ -4560,8 +4583,6 @@ do_issue_texture() {
       // Stage i has changed.  Issue the texture on this stage.
       _glActiveTexture(GL_TEXTURE0 + i);
 
-      GLenum target = get_texture_target(texture->get_texture_type());
-
       // First, turn off the previous texture mode.
       GLP(Disable)(GL_TEXTURE_1D);
       GLP(Disable)(GL_TEXTURE_2D);
@@ -4572,14 +4593,20 @@ do_issue_texture() {
         GLP(Disable)(GL_TEXTURE_CUBE_MAP);
       }
 
+      TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+      if (tc == (TextureContext *)NULL) {
+        // Something wrong with this texture; skip it.
+        break;
+      }
+
       // Then, turn on the current texture mode.
+      GLenum target = get_texture_target(texture->get_texture_type());
       if (target == GL_NONE) {
         // Unsupported texture mode.
         break;
       }
       GLP(Enable)(target);
 
-      TextureContext *tc = texture->prepare_now(_prepared_objects, this);
       apply_texture(tc);
 
       if (stage->involves_color_scale() && _color_scale_enabled) {

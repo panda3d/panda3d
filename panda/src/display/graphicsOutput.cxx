@@ -634,8 +634,10 @@ make_cube_map(const string &name, int size, bool to_ram,
     // irrelevant.)
     GraphicsStateGuardian *gsg = get_gsg();
     int max_dimension = gsg->get_max_cube_map_dimension();
-    if (max_dimension == 0) {
+    if (max_dimension == 0 || !gsg->get_supports_cube_map()) {
       // The GSG doesn't support cube mapping; too bad for you.
+      display_cat.warning()
+        << "Cannot make dynamic cube map; GSG does not support cube maps.\n";
       return NULL;
     }
     if (max_dimension > 0) {
