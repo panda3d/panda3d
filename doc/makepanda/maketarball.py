@@ -19,7 +19,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle;
+import sys,os,time,stat,string,re,getopt,cPickle
 
 def oscmd(cmd):
   print cmd
@@ -30,10 +30,10 @@ def writefile(dest,desiredcontents):
   print "Generating file: "+dest
   sys.stdout.flush()
   try:
-    wfile = open(dest, 'wb');
-    wfile.write(desiredcontents);
+    wfile = open(dest, 'wb')
+    wfile.write(desiredcontents)
     wfile.close();
-  except: sys.exit("Cannot write to "+dest);
+  except: sys.exit("Cannot write to "+dest)
 
 ########################################################################
 #
@@ -92,7 +92,7 @@ elif (len(sys.argv)==1):
         f = file("dtool/PandaVersion.pp","r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
-            match = pattern.match(line,0);
+            match = pattern.match(line,0)
             if (match):
                 VERSION = match.group(1)+"."+match.group(2)+"."+match.group(3)
                 break
