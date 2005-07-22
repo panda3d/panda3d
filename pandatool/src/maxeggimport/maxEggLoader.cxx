@@ -68,6 +68,7 @@ public:
   MaxEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
   MaxEggTex   *GetTex(const string &fn);
   void         CreateSkinModifier(MaxEggMesh *M);
+  Point3       ConvertCoordSys(LVector3d vec);
 
   typedef phash_map<EggVertexPool *, MaxEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
@@ -76,13 +77,21 @@ public:
   typedef phash_map<string, MaxEggTex *> TexTable;
   typedef second_of_pair_iterator<TexTable::const_iterator> TexIterator;
 
-  MeshTable  _mesh_tab;
-  JointTable _joint_tab;
-  TexTable   _tex_tab;
-  int        _next_tex;
+  MeshTable        _mesh_tab;
+  JointTable       _joint_tab;
+  TexTable         _tex_tab;
+  int              _next_tex;
+  CoordinateSystem _coord_sys;
 };
 
-static FILE *lgfile;
+Point3 ConvertCoordSys(CoordinateSystem sys, LVector3d vec)
+{
+  if (sys == CS_yup_right) {
+    return Point3(vec[0], -vec[2], vec[1]);
+  } else {
+    return Point3(vec[0], vec[1], vec[2]);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -132,10 +141,9 @@ MaxEggTex *MaxEggLoader::GetTex(const string &fn)
 class MaxEggJoint
 {
 public:
-  Point3         _xv,_yv,_zv;
-  Point3         _pos;
-  Point3         _endpos;
-  Point3         _zaxis;
+  LMatrix4d      _trans;
+  LVector3d      _endpos;
+  LVector3d      _perp;
   double         _thickness;
   bool           _inskin;
   SimpleObject2 *_bone;
@@ -145,9 +153,13 @@ public:
   vector <MaxEggJoint *> _children;
 
 public:
-  MaxEggJoint *ChooseBestChild(Point3 dir);
+  LVector3d GetXV(void) { return _trans.get_row3(0); }
+  LVector3d GetYV(void) { return _trans.get_row3(1); }
+  LVector3d GetZV(void) { return _trans.get_row3(2); }
+  LVector3d GetPos(void) { return _trans.get_row3(3); }
+  MaxEggJoint *ChooseBestChild(LVector3d dir);
   void ChooseEndPos(double thickness);
-  void CreateMaxBone(void);
+  void CreateMaxBone(CoordinateSystem sys);
 };
 
 MaxEggJoint *MaxEggLoader::FindJoint(EggGroup *joint)
@@ -162,18 +174,12 @@ MaxEggJoint *MaxEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
   MaxEggJoint *result = new MaxEggJoint;
   LMatrix4d t = joint->get_transform();
   if (parent) {
-    result->_xv  = parent->_xv*((float)t(0,0)) + parent->_yv*((float)t(0,1)) + parent->_zv*((float)t(0,2));
-    result->_yv  = parent->_xv*((float)t(1,0)) + parent->_yv*((float)t(1,1)) + parent->_zv*((float)t(1,2));
-    result->_zv  = parent->_xv*((float)t(2,0)) + parent->_yv*((float)t(2,1)) + parent->_zv*((float)t(2,2));
-    result->_pos = parent->_xv*((float)t(3,0)) + parent->_yv*((float)t(3,1)) + parent->_zv*((float)t(3,2)) + parent->_pos;
+    result->_trans = t * parent->_trans;
   } else {
-    result->_xv  = Point3(((float)t(0,0)), ((float)t(0,1)), ((float)t(0,2)));
-    result->_yv  = Point3(((float)t(1,0)), ((float)t(1,1)), ((float)t(1,2)));
-    result->_zv  = Point3(((float)t(2,0)), ((float)t(2,1)), ((float)t(2,2)));
-    result->_pos = Point3(((float)t(3,0)), ((float)t(3,1)), ((float)t(3,2)));
+    result->_trans = t;
   }
-  result->_endpos = Point3(0,0,0);
-  result->_zaxis = Point3(0,0,0);
+  result->_endpos = LVector3d(0,0,0);
+  result->_perp = LVector3d(0,0,0);
   result->_thickness = 0.0;
   result->_inskin = false;
   result->_bone = 0;
@@ -185,24 +191,25 @@ MaxEggJoint *MaxEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
   return result;
 }
 
-MaxEggJoint *MaxEggJoint::ChooseBestChild(Point3 dir)
+MaxEggJoint *MaxEggJoint::ChooseBestChild(LVector3d dir)
 {
-  if (dir.Length() < 0.001) return 0;
-  dir = dir.Normalize();
+  if (dir.length() < 0.001) return 0;
+  dir.normalize();
   double firstbest = -1000;
   MaxEggJoint *firstchild = 0;
-  Point3 firstpos = _pos;
+  LVector3d firstpos = GetPos();
   double secondbest = 0;
   for (int i=0; i<_children.size(); i++) {
     MaxEggJoint *child = _children[i];
-    Point3 tryfwd = child->_pos - _pos;
-    if ((child->_pos != firstpos) && (tryfwd.Length() > 0.001)) {
-      Point3 trydir = tryfwd.Normalize();
-      double quality = trydir % dir;
+    LVector3d tryfwd = child->GetPos() - GetPos();
+    if ((child->GetPos() != firstpos) && (tryfwd.length() > 0.001)) {
+      LVector3d trydir = tryfwd;
+      trydir.normalize();
+      double quality = trydir.dot(dir);
       if (quality > firstbest) {
         secondbest = firstbest;
         firstbest = quality;
-        firstpos = child->_pos;
+        firstpos = child->GetPos();
         firstchild = child;
       } else if (quality > secondbest) {
         secondbest = quality;
@@ -216,47 +223,55 @@ MaxEggJoint *MaxEggJoint::ChooseBestChild(Point3 dir)
 
 void MaxEggJoint::ChooseEndPos(double thickness)
 {
-  Point3 parentpos(0,0,0);
-  Point3 parentendpos(0,0,1);
+  LVector3d parentpos(0,0,0);
+  LVector3d parentendpos(0,0,1);
   if (_parent) {
-    parentpos = _parent->_pos;
+    parentpos = _parent->GetPos();
     parentendpos = _parent->_endpos;
   }
-  Point3 fwd = _pos - parentpos;
-  if (fwd.Length() < 0.001) {
+  LVector3d fwd = GetPos() - parentpos;
+  if (fwd.length() < 0.001) {
     fwd = parentendpos - parentpos;
   }
-  fwd = fwd.Normalize();
+  fwd.normalize();
   MaxEggJoint *child = ChooseBestChild(fwd);
   if (child == 0) {
-    _endpos = fwd * ((float)(thickness * 0.8)) + _pos;
+    _endpos = fwd * thickness * 0.8 + GetPos();
     _thickness = thickness * 0.8;
   } else {
-    _endpos = child->_pos;
-    _thickness = (_endpos - _pos).Length();
+    _endpos = child->GetPos();
+    _thickness = (_endpos - GetPos()).length();
     if (_thickness > thickness) _thickness = thickness;
   }
-  Point3 orient = (_endpos - _pos).Normalize();
-  Point3 altaxis = orient ^ Point3(0,-1,0);
-  if (altaxis.Length() < 0.001) altaxis = orient ^ Point3(0,0,1);
-  _zaxis = (altaxis ^ orient).Normalize();
+  LVector3d orient = _endpos - GetPos();
+  orient.normalize();
+  LVector3d altaxis = orient.cross(LVector3d(0,-1,0));
+  if (altaxis.length() < 0.001) altaxis = orient.cross(LVector3d(0,0,1));
+  _perp = altaxis.cross(orient);
+  _perp.normalize();
 }
 
-void MaxEggJoint::CreateMaxBone(void)
+void MaxEggJoint::CreateMaxBone(CoordinateSystem sys)
 {
-  Point3 fwd = _endpos - _pos;
+  Point3 xv(ConvertCoordSys(sys, GetXV()));
+  Point3 yv(ConvertCoordSys(sys, GetYV()));
+  Point3 zv(ConvertCoordSys(sys, GetZV()));
+  Point3 pos(ConvertCoordSys(sys, GetPos()));
+  Point3 endpos(ConvertCoordSys(sys, _endpos));
+  Point3 tzv(ConvertCoordSys(sys, _perp));
+  
+  Point3 fwd = endpos - pos;
   double len = fwd.Length();
   Point3 txv = fwd * ((float)(1.0/len));
-  Point3 tzv = _zaxis;
   Point3 tyv = tzv ^ txv;
-  Point3 row1 = Point3(txv % _xv, txv % _yv, txv % _zv);
-  Point3 row2 = Point3(tyv % _xv, tyv % _yv, tyv % _zv);
-  Point3 row3 = Point3(tzv % _xv, tzv % _yv, tzv % _zv);
+  Point3 row1 = Point3(txv % xv, txv % yv, txv % zv);
+  Point3 row2 = Point3(tyv % xv, tyv % yv, tyv % zv);
+  Point3 row3 = Point3(tzv % xv, tzv % yv, tzv % zv);
   Matrix3 oomat(row1,row2,row3,Point3(0,0,0));
   Quat ooquat(oomat);
   _bone = (SimpleObject2*)CreateInstance(GEOMOBJECT_CLASS_ID, BONE_OBJ_CLASSID);
   _node = GetCOREInterface()->CreateObjectNode(_bone);
-  _node->SetNodeTM(0, Matrix3(_xv, _yv, _zv, _pos));
+  _node->SetNodeTM(0, Matrix3(xv, yv, zv, pos));
   IParamBlock2 *blk = _bone->pblock2;
   for (int i=0; i<blk->NumParams(); i++) {
     TSTR n = blk->GetLocalName(i);
@@ -347,7 +362,7 @@ public:
   TVertTable _tvert_tab;
   CVertTable _cvert_tab;
   
-  int GetVert(EggVertex *vert, EggGroup *context);
+  int GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys);
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
@@ -356,7 +371,7 @@ public:
 
 #define CTRLJOINT_DEFORM ((EggGroup*)((char*)(-1)))
 
-int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context)
+int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys)
 {
   MaxEggVertex vtx;
   vtx._pos = vert->get_pos3();
@@ -384,7 +399,7 @@ int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context)
   }
   vtx._index = _vert_count++;
   _vert_tab.insert(vtx);
-  _mesh->setVert(vtx._index, vtx._pos.get_x(), vtx._pos.get_y(), vtx._pos.get_z());
+  _mesh->setVert(vtx._index, ConvertCoordSys(sys, vtx._pos));
   return vtx._index;
 }
 
@@ -574,7 +589,7 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
       TexCoordd uv = vtx->get_uv();
-      vertIndices.push_back(mesh->GetVert(vtx, context));
+      vertIndices.push_back(mesh->GetVert(vtx, context, _coord_sys));
       tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));
     }
@@ -614,12 +629,12 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   MeshIterator ci;
   JointIterator ji;
   TexIterator ti;
-  lgfile = fopen("MaxEggLoader.log","w");
 
   SuspendAnimate();
   SuspendSetKeyMode();
   AnimateOff();
   _next_tex = 0;
+  _coord_sys = data->get_coordinate_system();
   
   TraverseEggNode(data, NULL);
 
@@ -638,14 +653,14 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   
   double thickness = 0.0;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
-    double dfo = ((*ji)->_pos).Length();
+    double dfo = ((*ji)->GetPos()).length();
     if (dfo > thickness) thickness = dfo;
   }
   thickness = thickness * 0.025;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MaxEggJoint *joint = *ji;
     joint->ChooseEndPos(thickness);
-    joint->CreateMaxBone();
+    joint->CreateMaxBone(_coord_sys);
   }
   
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
@@ -672,8 +687,6 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete *ji;
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete *ti;
   
-  if (lgfile) fclose(lgfile);
-
   ResumeSetKeyMode();
   ResumeAnimate();
   
