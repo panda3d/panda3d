@@ -119,9 +119,11 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
                                          (self.doId, zoneId))
                 self.cr.alterInterest(self.visContext, self.getDoId(), self.visZone)
                 # If the visAvatar is parented to this grid, also do a setLocation
-                parentId, oldZoneId = self.visAvatar.getLocation()
-                assert self.notify.debug("processVisibility: %s: parentId: %s oldZoneId: %s" %
-                                         (self.doId, parentId, oldZoneId))
+                parentId = self.visAvatar.parentId
+                oldZoneId = self.visAvatar.zoneId
+                assert self.notify.debug(
+                    "processVisibility: %s: parentId: %s oldZoneId: %s" %
+                    (self.doId, parentId, oldZoneId))
                 if parentId == self.doId:
                     assert self.notify.debug("processVisibility: %s: changing location" % (self.doId))
                     self.handleAvatarZoneChange(self.visAvatar, zoneId)
