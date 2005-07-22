@@ -1513,17 +1513,26 @@ reset() {
   }
 
   _max_texture_stages = d3d_caps.MaxSimultaneousTextures;
-  _max_lights = (int)d3d_caps.MaxActiveLights;
-  _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
-  _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
-  _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
+
+  _max_texture_dimension = min(d3d_caps.MaxTextureWidth, d3d_caps.MaxTextureHeight);
 
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
 
   _supports_3d_texture = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_VOLUMEMAP) != 0);
+  if (_supports_3d_texture) {
+    _max_3d_texture_dimension = d3d_caps.MaxVolumeExtent;
+  }
   _supports_cube_map = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0);
+  if (_supports_cube_map) {
+    _max_cube_map_dimension = _max_texture_dimension;
+  }
+
+  _max_lights = (int)d3d_caps.MaxActiveLights;
+  _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
+  _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
+  _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
   ZeroMemory(&_lmodel_ambient, sizeof(Colorf));
   _d3d_device->SetRenderState(D3DRS_AMBIENT, 0x0);
