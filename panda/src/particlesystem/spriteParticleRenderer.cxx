@@ -266,7 +266,7 @@ add_from_node(const NodePath &node_path, const string &model, const string &node
   if (anim_count == 0)
     resize = true;
   add_from_node(node_path,size_from_texels,resize);
-  if (anim_count < _anims.size()) {
+  if (anim_count < (int)_anims.size()) {
     get_last_anim()->set_source_info(model,node);
   }
 }
@@ -519,18 +519,14 @@ init_geoms() {
         state = state->add_attrib(TextureAttrib::make(anim->get_frame(j)));
         state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
         
-        // Build a matrix to convert the texture coordinates to the ll, ur
-        // space.
+        // Build a transform to convert the texture coordinates to the
+        // ll, ur space.
         LPoint2f ul(anim->get_ur(j)[0], anim->get_ur(j)[1]);
         LPoint2f lr(anim->get_ll(j)[0], anim->get_ll(j)[1]);
         LVector2f sc = lr - ul;
-        
-        LMatrix4f mat
-          (sc[0], 0.0f, 0.0f, 0.0f,
-           0.0f, sc[1], 0.0f, 0.0f,
-           0.0f, 0.0f,  1.0f, 0.0f,
-           ul[0], ul[1], 0.0f, 1.0f);
-        state = state->add_attrib(TexMatrixAttrib::make(mat));
+
+        CPT(TransformState) ts = TransformState::make_pos_rotate_scale2d(ul, 0.0f, sc);
+        state = state->add_attrib(TexMatrixAttrib::make(TextureStage::get_default(), ts));
         
         render_node->add_geom(_sprite_primitive[i][j], state);
       }
