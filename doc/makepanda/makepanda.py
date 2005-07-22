@@ -4059,6 +4059,27 @@ for VER in ["7"]:
 
 
 #
+# DIRECTORY: pandatool/src/mayaeggimport/
+#
+
+for VER in ["6"]:
+  if (OMIT.count("MAYA"+VER)==0):
+    IPATH=['pandatool/src/mayaeggimport']
+    OPTS=['MAYA'+VER, 'NSPR', 'BUILDING_MISC']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx',obj='mayaeggimport'+VER+'_mayaeggimport.obj')
+    CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
+                'mayaeggimport'+VER+'_mayaeggimport.obj',
+                'libpandaegg.dll',
+                'libpanda.dll',
+                'libpandaexpress.dll',
+                'libdtoolconfig.dll',
+                'libdtool.dll',
+                'libpystub.dll'
+               ])
+
+
+#
 # DIRECTORY: pandatool/src/vrml/
 #
 
