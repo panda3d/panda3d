@@ -1,3 +1,30 @@
+// Filename: mayaEggImport.cxx
+// Created by:  jyelon (20Jul05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+//
+// This is the wrapper code for the maya importer plugin.
+// It includes:
+//
+//   - user interface dialogs and popups
+//   - plugin initialization/registration
+//
+// It does not include the actual code to traverse the EggData.
+//
+////////////////////////////////////////////////////////////////////
 
 #include <string.h> 
 #include <sys/types.h>
@@ -53,9 +80,9 @@ public:
                            const MString& optionsString,
                            FileAccessMode mode );
   
-  bool            haveReadMethod () const;
-  bool            haveWriteMethod () const;
-  MString         defaultExtension () const;
+  bool            haveReadMethod () const { return true; }
+  bool            haveWriteMethod () const { return false; }
+  MString         defaultExtension () const { return "egg"; }
   MFileKind       identifyFile ( const MFileObject& fileName,
                                  const char* buffer,
                                  short size) const;
@@ -71,7 +98,7 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
                                 const MString& options,
                                 FileAccessMode mode)
 {
-  fprintf(stderr, "MayaEggImporter::reader called in error\n");
+  fprintf(stderr, "MayaEggImporter::reader not really implemented\n");
   return MS::kFailure;
 }
 
@@ -82,21 +109,6 @@ MStatus MayaEggImporter::writer ( const MFileObject& file,
 {
   fprintf(stderr, "MayaEggImporter::writer called in error\n");
   return MS::kFailure;
-}
-
-bool MayaEggImporter::haveReadMethod () const
-{
-  return false;
-}
-
-bool MayaEggImporter::haveWriteMethod () const
-{
-  return false;
-}
-
-MString MayaEggImporter::defaultExtension () const
-{
-  return "egg";
 }
 
 MPxFileTranslator::MFileKind MayaEggImporter::identifyFile (
@@ -122,7 +134,7 @@ EXPCL_MISC MStatus initializePlugin( MObject obj )
                                         MayaEggImporter::creator,
                                         
                                         "eggImportOptions",
-                                        "merge=1;model=1;anim=1;");
+                                        "merge=1;model=1;anim=0;");
 }
 
 EXPCL_MISC MStatus uninitializePlugin( MObject obj )
