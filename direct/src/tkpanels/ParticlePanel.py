@@ -157,7 +157,7 @@ class ParticlePanel(AppShell):
         self.particlesLabel.pack(side = LEFT, fill = 'x', expand = 1)
         self.bind(self.particlesLabel,
                   ('Select particles object to configure ' +
-                   'or add new particles object to current effect' ))
+                   'or add new particles object to current effect'))
         self.particlesLabelMenu.add_command(label = 'Create New Particles',
                                             command = self.createNewParticles)
         self.particlesEnableMenu = Menu(self.particlesLabelMenu, tearoff = 0)

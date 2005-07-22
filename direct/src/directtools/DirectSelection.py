@@ -280,8 +280,8 @@ class DirectBoundingBox:
         # Create a line segments object for the bbox
         lines = LineNodePath(hidden)
         lines.node().setName('bboxLines')
-        lines.setColor( VBase4( 1., 0., 0., 1. ) )
-        lines.setThickness( 0.5 )
+        lines.setColor(VBase4(1., 0., 0., 1.))
+        lines.setThickness(0.5)
 
         minX = self.min[0]
         minY = self.min[1]
@@ -291,26 +291,26 @@ class DirectBoundingBox:
         maxZ = self.max[2]
         
         # Bottom face
-        lines.moveTo( minX, minY, minZ )
-        lines.drawTo( maxX, minY, minZ )
-        lines.drawTo( maxX, maxY, minZ )
-        lines.drawTo( minX, maxY, minZ )
-        lines.drawTo( minX, minY, minZ )
+        lines.moveTo(minX, minY, minZ)
+        lines.drawTo(maxX, minY, minZ)
+        lines.drawTo(maxX, maxY, minZ)
+        lines.drawTo(minX, maxY, minZ)
+        lines.drawTo(minX, minY, minZ)
 
         # Front Edge/Top face
-        lines.drawTo( minX, minY, maxZ )
-        lines.drawTo( maxX, minY, maxZ )
-        lines.drawTo( maxX, maxY, maxZ )
-        lines.drawTo( minX, maxY, maxZ )
-        lines.drawTo( minX, minY, maxZ )
+        lines.drawTo(minX, minY, maxZ)
+        lines.drawTo(maxX, minY, maxZ)
+        lines.drawTo(maxX, maxY, maxZ)
+        lines.drawTo(minX, maxY, maxZ)
+        lines.drawTo(minX, minY, maxZ)
 
         # Three remaining edges
-        lines.moveTo( maxX, minY, minZ )
-        lines.drawTo( maxX, minY, maxZ )
-        lines.moveTo( maxX, maxY, minZ )
-        lines.drawTo( maxX, maxY, maxZ )
-        lines.moveTo( minX, maxY, minZ )
-        lines.drawTo( minX, maxY, maxZ )
+        lines.moveTo(maxX, minY, minZ)
+        lines.drawTo(maxX, minY, maxZ)
+        lines.moveTo(maxX, maxY, minZ)
+        lines.drawTo(maxX, maxY, maxZ)
+        lines.moveTo(minX, maxY, minZ)
+        lines.drawTo(minX, maxY, maxZ)
 
         # Create and return bbox lines
         lines.create()
@@ -331,26 +331,26 @@ class DirectBoundingBox:
         maxZ = self.max[2]
         
         # Bottom face
-        ls.setVertex( 0, minX, minY, minZ )
-        ls.setVertex( 1, maxX, minY, minZ )
-        ls.setVertex( 2, maxX, maxY, minZ )
-        ls.setVertex( 3, minX, maxY, minZ )
-        ls.setVertex( 4, minX, minY, minZ )
+        ls.setVertex(0, minX, minY, minZ)
+        ls.setVertex(1, maxX, minY, minZ)
+        ls.setVertex(2, maxX, maxY, minZ)
+        ls.setVertex(3, minX, maxY, minZ)
+        ls.setVertex(4, minX, minY, minZ)
 
         # Front Edge/Top face
-        ls.setVertex( 5, minX, minY, maxZ )
-        ls.setVertex( 6, maxX, minY, maxZ )
-        ls.setVertex( 7, maxX, maxY, maxZ )
-        ls.setVertex( 8, minX, maxY, maxZ )
-        ls.setVertex( 9, minX, minY, maxZ )
+        ls.setVertex(5, minX, minY, maxZ)
+        ls.setVertex(6, maxX, minY, maxZ)
+        ls.setVertex(7, maxX, maxY, maxZ)
+        ls.setVertex(8, minX, maxY, maxZ)
+        ls.setVertex(9, minX, minY, maxZ)
 
         # Three remaining edges
-        ls.setVertex( 10, maxX, minY, minZ )
-        ls.setVertex( 11, maxX, minY, maxZ )
-        ls.setVertex( 12, maxX, maxY, minZ )
-        ls.setVertex( 13, maxX, maxY, maxZ )
-        ls.setVertex( 14, minX, maxY, minZ )
-        ls.setVertex( 15, minX, maxY, maxZ )
+        ls.setVertex(10, maxX, minY, minZ)
+        ls.setVertex(11, maxX, minY, maxZ)
+        ls.setVertex(12, maxX, maxY, minZ)
+        ls.setVertex(13, maxX, maxY, maxZ)
+        ls.setVertex(14, minX, maxY, minZ)
+        ls.setVertex(15, minX, maxY, maxZ)
 
     def getBounds(self):
         # Get a node path's bounds
@@ -388,7 +388,7 @@ class DirectBoundingBox:
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
                 'Center:\t\t%s\n' % self.vecAsString(self.center) +
                 'Radius:\t\t%.2f' % self.radius
-                )
+               )
 
 
 class SelectionQueue(CollisionHandlerQueue):
@@ -424,7 +424,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # Record collision object
         self.collider = collider
         # Add the collider to the collision Node
-        self.collisionNode.addSolid( self.collider )
+        self.collisionNode.addSolid(self.collider)
 
     def collideWithBitMask(self, bitMask):
         # The into collide mask is the bit pattern colliders look at
@@ -554,8 +554,8 @@ class SelectionRay(SelectionQueue):
                 return
             mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
-        self.collider.setFromLens( base.camNode, mx, my )
-        self.ct.traverse( targetNodePath )
+        self.collider.setFromLens(base.camNode, mx, my)
+        self.ct.traverse(targetNodePath)
         self.sortEntries()
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
@@ -581,9 +581,9 @@ class SelectionRay(SelectionQueue):
 
     def pick3D(self, targetNodePath, origin, dir):
         # Determine ray direction based upon the mouse coordinates
-        self.collider.setOrigin( origin )
-        self.collider.setDirection( dir )
-        self.ct.traverse( targetNodePath )
+        self.collider.setOrigin(origin)
+        self.collider.setDirection(dir)
+        self.ct.traverse(targetNodePath)
         self.sortEntries()
         
     def pickGeom3D(self, targetNodePath = render,
@@ -619,7 +619,7 @@ class SelectionSegment(SelectionQueue):
         # Record new collision object
         self.colliders.append(collider)
         # Add the collider to the collision Node
-        self.collisionNode.addSolid( collider )
+        self.collisionNode.addSolid(collider)
         self.numColliders += 1
 
     def pickGeom(self, targetNodePath = render, endPointList = [],
@@ -628,9 +628,9 @@ class SelectionSegment(SelectionQueue):
         for i in range(min(len(endPointList), self.numColliders)):
             pointA, pointB = endPointList[i]
             collider = self.colliders[i]
-            collider.setPointA( pointA )
-            collider.setPointB( pointB )
-        self.ct.traverse( targetNodePath )
+            collider.setPointA(pointA)
+            collider.setPointB(pointB)
+        self.ct.traverse(targetNodePath)
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
@@ -641,9 +641,9 @@ class SelectionSegment(SelectionQueue):
         for i in range(min(len(endPointList), self.numColliders)):
             pointA, pointB = endPointList[i]
             collider = self.colliders[i]
-            collider.setPointA( pointA )
-            collider.setPointB( pointB )
-        self.ct.traverse( targetNodePath )
+            collider.setPointA(pointA)
+            collider.setPointB(pointB)
+        self.ct.traverse(targetNodePath)
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
@@ -662,7 +662,7 @@ class SelectionSphere(SelectionQueue):
         # Record new collision object
         self.colliders.append(collider)
         # Add the collider to the collision Node
-        self.collisionNode.addSolid( collider )
+        self.collisionNode.addSolid(collider)
         self.numColliders += 1
     
     def setCenter(self, i, center):
@@ -695,7 +695,7 @@ class SelectionSphere(SelectionQueue):
         return v.dot(n) >= 0
 
     def pick(self, targetNodePath, skipFlags):
-        self.ct.traverse( targetNodePath )
+        self.ct.traverse(targetNodePath)
         self.sortEntries()
         return self.findCollisionEntry(skipFlags)
 

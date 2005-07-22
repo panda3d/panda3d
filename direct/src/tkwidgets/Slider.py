@@ -328,7 +328,7 @@ class SliderWidget(Pmw.MegaWidget):
         # Get width of label
         minW = self._minLabel.winfo_width()
         # Width of canvas to adjust for
-        cw = (self._getMarkerX() - self.left ) + self.xPad
+        cw = (self._getMarkerX() - self.left) + self.xPad
         popupOffset = bd + minW + cw
         ch =  self._widget.winfo_height()
         sh = self.winfo_screenheight()

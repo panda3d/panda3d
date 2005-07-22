@@ -209,7 +209,7 @@ class VectorEntry(Pmw.MegaWidget):
         self.action()
 
     def _refreshEntry(self,index):
-        self.variableList[index].set( self.entryFormat % self._value[index] )
+        self.variableList[index].set(self.entryFormat % self._value[index])
         self.entryList[index].checkentry()
 
     def _refreshFloaters(self):

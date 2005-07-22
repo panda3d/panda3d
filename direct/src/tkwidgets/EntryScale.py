@@ -223,7 +223,7 @@ class EntryScale(Pmw.MegaWidget):
         sd = self['numDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
         # And reset value to reflect change
-        self.entryValue.set( self.entryFormat % self.value )
+        self.entryValue.set( self.entryFormat % self.value)
 
     def get(self):
         return self.value

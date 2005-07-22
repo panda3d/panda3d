@@ -301,7 +301,7 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.cTrav = collisionTraverser
 
-        self.setupRay(self.floorBitmask, floorOffset, reach )
+        self.setupRay(self.floorBitmask, floorOffset, reach)
         self.setupWallSphere(self.wallBitmask, avatarRadius)
         self.setupEventSphere(self.wallBitmask, avatarRadius)
         if self.wantFloorSphere:
