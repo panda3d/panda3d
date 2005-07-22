@@ -879,13 +879,22 @@ end_frame() {
           << "cube_map_index = " << _cube_map_index << "\n";
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-      nassertv(_cube_map_dr != (DisplayRegion *)NULL);
-      if (_rtm_mode == RTM_copy_ram) {
-        _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
-                                      _cube_map_dr, buffer);
+      if (_cube_map_dr != (DisplayRegion *)NULL) {
+        if (_rtm_mode == RTM_copy_ram) {
+          _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
+                                        _cube_map_dr, buffer);
+        } else {
+          _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
+                                            _cube_map_dr, buffer);
+        }
       } else {
-        _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
-                                          _cube_map_dr, buffer);
+        if (_rtm_mode == RTM_copy_ram) {
+          _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
+                                        _default_display_region, buffer);
+        } else {
+          _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
+                                            _default_display_region, buffer);
+        }
       }
     }
   }
