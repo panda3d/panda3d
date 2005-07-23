@@ -2183,13 +2183,19 @@ do_issue_material() {
     }
   }
 
-  _d3d_device->SetMaterial(&cur_material);
+  if (material->has_specular()) {
+    _d3d_device->SetRenderState(D3DRS_SPECULARENABLE, TRUE);
+  } else {
+    _d3d_device->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+  }
 
   if (material->get_local()) {
     _d3d_device->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
   } else {
     _d3d_device->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
   }
+
+  _d3d_device->SetMaterial(&cur_material);
 }
 
 ////////////////////////////////////////////////////////////////////
