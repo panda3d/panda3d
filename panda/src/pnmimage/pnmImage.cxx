@@ -394,10 +394,10 @@ make_grayscale(double rc, double gc, double bc) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 set_maxval(xelval maxval) {
-  nassertv(maxval > 0.0);
+  nassertv(maxval > 0);
 
   if (maxval != _maxval) {
-    double ratio = maxval / _maxval;
+    double ratio = (double)maxval / (double)_maxval;
 
     if (is_grayscale()) {
       for (int y = 0; y < get_y_size(); y++) {

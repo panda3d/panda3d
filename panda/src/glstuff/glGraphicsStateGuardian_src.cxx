@@ -880,22 +880,22 @@ do_clear(const RenderBuffer &buffer) {
     mask |= GL_ACCUM_BUFFER_BIT;
   }
 
-#ifdef GSG_VERBOSE
-  GLCAT.spam() << "glClear(";
-  if (mask & GL_COLOR_BUFFER_BIT) {
-    GLCAT.spam(false) << "GL_COLOR_BUFFER_BIT|";
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "glClear(";
+    if (mask & GL_COLOR_BUFFER_BIT) {
+      GLCAT.spam(false) << "GL_COLOR_BUFFER_BIT|";
+    }
+    if (mask & GL_DEPTH_BUFFER_BIT) {
+      GLCAT.spam(false) << "GL_DEPTH_BUFFER_BIT|";
+    }
+    if (mask & GL_STENCIL_BUFFER_BIT) {
+      GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
+    }
+    if (mask & GL_ACCUM_BUFFER_BIT) {
+      GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
+    }
+    GLCAT.spam(false) << ")" << endl;
   }
-  if (mask & GL_DEPTH_BUFFER_BIT) {
-    GLCAT.spam(false) << "GL_DEPTH_BUFFER_BIT|";
-  }
-  if (mask & GL_STENCIL_BUFFER_BIT) {
-    GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
-  }
-  if (mask & GL_ACCUM_BUFFER_BIT) {
-    GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
-  }
-  GLCAT.spam(false) << ")" << endl;
-#endif
 
   modify_state(state);
 
@@ -981,10 +981,10 @@ prepare_lens() {
     _projection_mat *= invert_mat;
   }
 
-#ifdef GSG_VERBOSE
-  GLCAT.spam()
-    << "glMatrixMode(GL_PROJECTION): " << _projection_mat << endl;
-#endif
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glMatrixMode(GL_PROJECTION): " << _projection_mat << endl;
+  }
   GLP(MatrixMode)(GL_PROJECTION);
   GLP(LoadMatrixf)(_projection_mat.get_data());
   report_my_gl_errors();
@@ -2135,12 +2135,22 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   tex->set_y_size(h);
 
   if (tex->get_match_framebuffer_format()) {
-    FrameBufferProperties properties = get_properties();
+    const FrameBufferProperties &properties = get_properties();
     int mode = properties.get_frame_buffer_mode();
-    if (mode & FrameBufferProperties::FM_alpha) {
-      tex->set_format(Texture::F_rgba);
-    } else {
-      tex->set_format(Texture::F_rgb);
+
+    switch (tex->get_format()) {
+    case Texture::F_depth_component:
+    case Texture::F_stencil_index:
+      // If the texture is one of these special formats, we don't want
+      // to adapt it to the framebuffer's color format.
+      break;
+
+    default:
+      if (mode & FrameBufferProperties::FM_alpha) {
+        tex->set_format(Texture::F_rgba);
+      } else {
+        tex->set_format(Texture::F_rgb);
+      }
     }
   }
 
@@ -2210,19 +2220,41 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   dr->get_region_pixels(xo, yo, w, h);
 
   const FrameBufferProperties &properties = get_properties();
+  int mode = properties.get_frame_buffer_mode();
 
-  Texture::ComponentType component_type;
-  if (properties.get_color_bits() <= 24) {
-    component_type = Texture::T_unsigned_byte;
-  } else {
-    component_type = Texture::T_unsigned_short;
-  }
+  Texture::Format format = tex->get_format();
+  Texture::ComponentType component_type = tex->get_component_type();
+  bool color_mode = false;
 
-  Texture::Format format;
-  if (properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
-    format = Texture::F_rgba;
-  } else {
-    format = Texture::F_rgb;
+  switch (format) {
+  case Texture::F_depth_component:
+    if (properties.get_depth_bits() <= 8) {
+      component_type = Texture::T_unsigned_byte;
+    } else {
+      component_type = Texture::T_unsigned_short;
+    }
+    break;
+
+  case Texture::F_stencil_index:
+    if (properties.get_stencil_bits() <= 8) {
+      component_type = Texture::T_unsigned_byte;
+    } else {
+      component_type = Texture::T_unsigned_short;
+    }
+    break;
+
+  default:
+    color_mode = true;
+    if (mode & FrameBufferProperties::FM_alpha) {
+      format = Texture::F_rgba;
+    } else {
+      format = Texture::F_rgb;
+    }
+    if (properties.get_color_bits() <= 24) {
+      component_type = Texture::T_unsigned_byte;
+    } else {
+      component_type = Texture::T_unsigned_short;
+    }
   }
 
   Texture::TextureType texture_type;
@@ -2243,46 +2275,46 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   GLenum external_format = get_external_image_format(format);
 
-#ifdef GSG_VERBOSE
-  GLCAT.debug()
-    << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
-  switch (external_format) {
-  case GL_DEPTH_COMPONENT:
-    GLCAT.debug(false) << "GL_DEPTH_COMPONENT, ";
-    break;
-  case GL_RGB:
-    GLCAT.debug(false) << "GL_RGB, ";
-    break;
-  case GL_RGBA:
-    GLCAT.debug(false) << "GL_RGBA, ";
-    break;
-  case GL_BGR:
-    GLCAT.debug(false) << "GL_BGR, ";
-    break;
-  case GL_BGRA:
-    GLCAT.debug(false) << "GL_BGRA, ";
-    break;
-  default:
-    GLCAT.debug(false) << "unknown, ";
-    break;
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
+    switch (external_format) {
+    case GL_DEPTH_COMPONENT:
+      GLCAT.spam(false) << "GL_DEPTH_COMPONENT, ";
+      break;
+    case GL_RGB:
+      GLCAT.spam(false) << "GL_RGB, ";
+      break;
+    case GL_RGBA:
+      GLCAT.spam(false) << "GL_RGBA, ";
+      break;
+    case GL_BGR:
+      GLCAT.spam(false) << "GL_BGR, ";
+      break;
+    case GL_BGRA:
+      GLCAT.spam(false) << "GL_BGRA, ";
+      break;
+    default:
+      GLCAT.spam(false) << "unknown, ";
+      break;
+    }
+    switch (get_component_type(component_type)) {
+    case GL_UNSIGNED_BYTE:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE, ";
+      break;
+    case GL_UNSIGNED_SHORT:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT, ";
+      break;
+    case GL_FLOAT:
+      GLCAT.spam(false) << "GL_FLOAT, ";
+      break;
+    default:
+      GLCAT.spam(false) << "unknown, ";
+      break;
+    }
+    GLCAT.spam(false)
+      << ")" << endl;
   }
-  switch (get_component_type(component_type)) {
-  case GL_UNSIGNED_BYTE:
-    GLCAT.debug(false) << "GL_UNSIGNED_BYTE, ";
-    break;
-  case GL_UNSIGNED_SHORT:
-    GLCAT.debug(false) << "GL_UNSIGNED_SHORT, ";
-    break;
-  case GL_FLOAT:
-    GLCAT.debug(false) << "GL_FLOAT, ";
-    break;
-  default:
-    GLCAT.debug(false) << "unknown, ";
-    break;
-  }
-  GLCAT.debug(false)
-    << ")" << endl;
-#endif
 
   unsigned char *image = tex->modify_ram_image();
   if (z >= 0) {
@@ -2298,7 +2330,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // didn't do it for us.  This assumes we render out the six faces of
   // a cube map in ascending order, since we can't do this until we
   // have rendered the last face.
-  if (!_supports_bgr && (z == -1 || z == 5)) {
+  if (color_mode && !_supports_bgr && (z == -1 || z == 5)) {
     tex->set_ram_image(fix_component_ordering(tex->get_ram_image(), 
                                               external_format, tex));
   }
@@ -2343,10 +2375,11 @@ apply_fog(Fog *fog) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 issue_transform(const TransformState *transform) {
-#ifdef GSG_VERBOSE
-  GLCAT.spam()
-    << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
-#endif
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
+  }
+
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(LoadMatrixf)(transform->get_mat().get_data());
@@ -3401,6 +3434,7 @@ get_external_image_format(Texture::Format format) const {
     return GL_STENCIL_INDEX;
   case Texture::F_depth_component:
     return GL_DEPTH_COMPONENT;
+
   case Texture::F_red:
     return GL_RED;
   case Texture::F_green:
@@ -3443,6 +3477,13 @@ get_external_image_format(Texture::Format format) const {
 GLint CLP(GraphicsStateGuardian)::
 get_internal_image_format(Texture::Format format) {
   switch (format) {
+  case Texture::F_color_index:
+    return GL_COLOR_INDEX;
+  case Texture::F_stencil_index:
+    return GL_STENCIL_INDEX;
+  case Texture::F_depth_component:
+    return GL_DEPTH_COMPONENT;
+
   case Texture::F_rgba:
   case Texture::F_rgbm:
     return GL_RGBA;

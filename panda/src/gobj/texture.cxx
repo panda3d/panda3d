@@ -720,6 +720,7 @@ load(const PNMImage &pnmimage, int z) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 store(PNMImage &pnmimage, int z) const {
+  nassertr(has_ram_image(), false);
   nassertr(z >= 0 && z < _z_size, false);
 
   if (_component_type == T_unsigned_byte) {
@@ -1070,7 +1071,7 @@ release_all() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_format
-//       Access: Public
+//       Access: Published
 //  Description: Changes the format value for the texture components.
 //               This implicitly sets num_components as well.
 ////////////////////////////////////////////////////////////////////
@@ -1116,7 +1117,7 @@ set_format(Texture::Format format) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_component_type
-//       Access: Public
+//       Access: Published
 //  Description: Changes the data value for the texture components.
 //               This implicitly sets component_width as well.
 ////////////////////////////////////////////////////////////////////

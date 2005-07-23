@@ -22,6 +22,7 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "perspectiveLens.h"
 #include "geomNode.h"
 
 TypeHandle LensNode::_type_handle;
@@ -33,7 +34,8 @@ TypeHandle LensNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LensNode::
 LensNode(const string &name) :
-  PandaNode(name)
+  PandaNode(name),
+  _lens(new PerspectiveLens())
 {
 }
 

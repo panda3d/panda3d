@@ -218,9 +218,9 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-public:
-  // These are public, but in general, you shouldn't be mucking with
-  // these values; they are set automatically when a texture is
+PUBLISHED:
+  // These are published, but in general, you shouldn't be mucking
+  // with these values; they are set automatically when a texture is
   // loaded.
   INLINE void set_filename(const Filename &filename);
   INLINE void clear_filename();

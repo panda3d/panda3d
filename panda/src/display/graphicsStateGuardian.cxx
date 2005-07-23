@@ -641,13 +641,16 @@ begin_frame() {
   // For Pstats to track our current texture memory usage, we have to
   // reset the set of current textures each frame.
   init_frame_pstats();
-
-  // But since we don't get sent a new issue_texture() unless our
-  // texture state has changed, we have to be sure to clear the
-  // current texture state now.  A bit unfortunate, but probably not
-  // measurably expensive.
-  modify_state(get_untextured_state());
 #endif
+
+  // We should reset the state to the default at the beginning of
+  // every frame.  Although this will incur additional overhead,
+  // particularly in a simple scene, it helps ensure that states that
+  // have changed properties since last time without changing
+  // attribute pointers--like textures, lighting, or fog--will still
+  // be accurately updated.
+  set_state(RenderState::make_empty());
+
   return true;
 }
 

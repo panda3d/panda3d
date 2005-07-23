@@ -3701,24 +3701,15 @@ find_all_texture_stages(const string &name) const {
 //  Description: Sets the geometry at this level and below to render
 //               using the indicated material.
 //
-//               This operation copies the given material pointer.  If
-//               the material structure is changed later, it must be
-//               reapplied via another call to set_material().
+//               Previously, this operation made a copy of the
+//               material structure, but nowadays it assigns the
+//               pointer directly.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_material(Material *mat, int priority) {
   nassertv_always(!is_empty());
   nassertv(mat != NULL);
-
-  // We create a temporary Material pointer, a copy of the one we are
-  // given, to allow the user to monkey with the material and set it
-  // again later, with the desired effect.  If we stored the user's
-  // pointer directly, it would be bad if the user later modified the
-  // values within the Material.
-  PT(Material) temp = new Material(*mat);
-  const Material *mp = MaterialPool::get_material(temp);
-
-  node()->set_attrib(MaterialAttrib::make(mp), priority);
+  node()->set_attrib(MaterialAttrib::make(mat), priority);
 }
 
 ////////////////////////////////////////////////////////////////////

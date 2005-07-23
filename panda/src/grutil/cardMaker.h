@@ -47,6 +47,8 @@ PUBLISHED:
   INLINE void set_color(float r, float g, float b, float a);
   INLINE void set_color(const Colorf &color);
 
+  INLINE void set_has_normals(bool flag);
+
   INLINE void set_source_geometry(PandaNode *node, const LVecBase4f &frame);
   INLINE void clear_source_geometry();
 
@@ -61,6 +63,8 @@ private:
 
   bool _has_color;
   Colorf _color;
+
+  bool _has_normals;
 
   PT(PandaNode) _source_geometry;
   LVecBase4f _source_frame;

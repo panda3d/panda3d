@@ -104,6 +104,22 @@ set_color(const LVecBase4f &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_has_normals
+//       Access: Public
+//  Description: Sets the flag indicating whether vertices will be
+//               generated with normals or not.  Normals are required
+//               if you intend to enable lighting on the card, but are
+//               just wasted space and bandwidth otherwise, so there
+//               is a (slight) optimization for disabling them.  If
+//               enabled, the normals will be generated perpendicular
+//               to the card's face.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_has_normals(bool flag) {
+  _has_normals = flag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::set_source_geometry
 //       Access: Published
 //  Description: Sets a node that will be copied (and scaled and

@@ -529,7 +529,7 @@ get_keep_ram_image() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_filename
-//       Access: Public
+//       Access: Published
 //  Description: Sets the name of the file that contains the image's
 //               contents.  Normally, this is set automatically when
 //               the image is loaded, for instance via
@@ -547,7 +547,7 @@ set_filename(const Filename &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_filename
-//       Access: Public
+//       Access: Published
 //  Description: Removes the alpha filename, if it was previously set.
 //               See set_filename().
 ////////////////////////////////////////////////////////////////////
@@ -558,7 +558,7 @@ clear_filename() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_alpha_filename
-//       Access: Public
+//       Access: Published
 //  Description: Sets the name of the file that contains the image's
 //               alpha channel contents.  Normally, this is set
 //               automatically when the image is loaded, for instance
@@ -579,7 +579,7 @@ set_alpha_filename(const Filename &alpha_filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_alpha_filename
-//       Access: Public
+//       Access: Published
 //  Description: Removes the alpha filename, if it was previously set.
 //               See set_alpha_filename().
 ////////////////////////////////////////////////////////////////////
@@ -590,7 +590,7 @@ clear_alpha_filename() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Sets the full pathname to the file that contains the
 //               image's contents, as found along the search path.
 //               Normally, this is set automatically when the image is
@@ -603,7 +603,7 @@ set_fullpath(const Filename &fullpath) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Removes the alpha fullpath, if it was previously set.
 //               See set_fullpath().
 ////////////////////////////////////////////////////////////////////
@@ -614,7 +614,7 @@ clear_fullpath() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_alpha_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Sets the full pathname to the file that contains the
 //               image's alpha channel contents, as found along the
 //               search path.  Normally, this is set automatically
@@ -628,7 +628,7 @@ set_alpha_fullpath(const Filename &alpha_fullpath) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_alpha_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Removes the alpha fullpath, if it was previously set.
 //               See set_alpha_fullpath().
 ////////////////////////////////////////////////////////////////////
@@ -639,7 +639,7 @@ clear_alpha_fullpath() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_x_size
-//       Access: Public
+//       Access: Published
 //  Description: Changes the x size indicated for the texture.  This
 //               also implicitly unloads the texture if it has already
 //               been loaded.
@@ -654,7 +654,7 @@ set_x_size(int x_size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_y_size
-//       Access: Public
+//       Access: Published
 //  Description: Changes the y size indicated for the texture.  This
 //               also implicitly unloads the texture if it has already
 //               been loaded.
@@ -670,7 +670,7 @@ set_y_size(int y_size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_z_size
-//       Access: Public
+//       Access: Published
 //  Description: Changes the z size indicated for the texture.  This
 //               also implicitly unloads the texture if it has already
 //               been loaded.
@@ -688,7 +688,7 @@ set_z_size(int z_size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_loaded_from_disk
-//       Access: Public
+//       Access: Published
 //  Description: Sets the flag that indicates the texture has been
 //               loaded from a disk file.  You should also ensure the
 //               filename has been set correctly.  When this flag is

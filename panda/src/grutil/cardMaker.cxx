@@ -39,6 +39,7 @@ reset() {
   _frame.set(0.0f, 1.0f, 0.0f, 1.0f);
   _has_color = false;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _has_normals = true;
   _source_geometry = (PandaNode *)NULL;
   _source_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -64,10 +65,18 @@ generate() {
   float top = _frame[3];
 
   CPT(GeomVertexFormat) format;
-  if (_has_uvs) {
-    format = GeomVertexFormat::get_v3cpt2();
+  if (_has_normals) {
+    if (_has_uvs) {
+      format = GeomVertexFormat::get_v3n3cpt2();
+    } else {
+      format = GeomVertexFormat::get_v3n3cp();
+    }
   } else {
-    format = GeomVertexFormat::get_v3cp();
+    if (_has_uvs) {
+      format = GeomVertexFormat::get_v3cpt2();
+    } else {
+      format = GeomVertexFormat::get_v3cp();
+    }
   }
   
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -93,7 +102,16 @@ generate() {
     texcoord.add_data2f(_ur[0], _ll[1]);
   }
   
+  if (_has_normals) {
+    GeomVertexWriter normal(vdata, InternalName::get_normal());
+    normal.add_data3f(LVector3f::back());
+    normal.add_data3f(LVector3f::back());
+    normal.add_data3f(LVector3f::back());
+    normal.add_data3f(LVector3f::back());
+  }
+  
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+  strip->set_shade_model(Geom::SM_uniform);
   strip->add_next_vertices(4);
   strip->close_primitive();
   
