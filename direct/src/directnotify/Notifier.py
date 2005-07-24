@@ -10,6 +10,12 @@ import types
 class Notifier:
     serverDelta = 0
 
+    # If this object is set to something, it is used to print output
+    # messages instead of writing them to the console.  This is
+    # particularly useful for integrating the Python notify system
+    # with the C++ notify system.
+    streamWriter = None
+
     def __init__(self, name, logger=None):
         """
         name is a string
@@ -201,11 +207,12 @@ class Notifier:
 
     def __print(self, string):
         """
-        Prints the string to standard output followed by a newline.
-        If we ever need to do something else than Python print, you
-        could put it here.
+        Prints the string to output followed by a newline.
         """
-        print string
+        if self.streamWriter:
+            self.streamWriter.appendData(string + '\n')
+        else:
+            print string
         
     def debugStateCall(self, obj=None, fsmMemberName='fsm',
             secondaryFsm='secondaryFSM'):
