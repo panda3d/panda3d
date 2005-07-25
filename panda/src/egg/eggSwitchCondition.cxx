@@ -79,4 +79,10 @@ write(ostream &out, int indent_level) const {
 void EggSwitchConditionDistance::
 transform(const LMatrix4d &mat) {
   _center = _center * mat;
+
+  LVector3d in = LVector3d(_switch_in, 0.0, 0.0) * mat;
+  LVector3d out = LVector3d(_switch_out, 0.0, 0.0) * mat;
+
+  _switch_in = in.length();
+  _switch_out = out.length();
 }
