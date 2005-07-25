@@ -49,8 +49,6 @@ PortalNode(const string &name) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
-  _cell_in = NULL;
-  _cell_out = NULL;
   _visible = true;
 }
 
@@ -72,8 +70,6 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
   add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
   add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]+1.0*scale));
 
-  _cell_in = NULL;
-  _cell_out = NULL;
   _visible = true;
 }
 
@@ -87,11 +83,12 @@ PortalNode(const PortalNode &copy) :
   PandaNode(copy),
   _from_portal_mask(copy._from_portal_mask),
   _into_portal_mask(copy._into_portal_mask),
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _vertices(copy._vertices),
+  _cell_in(copy._cell_in),
+  _cell_out(copy._cell_out),
+  _visible(copy._visible)
 {
-  _cell_in = copy._cell_in;
-  _cell_out = copy._cell_in;
-  _visible = copy._visible;
 }
 
 ////////////////////////////////////////////////////////////////////
