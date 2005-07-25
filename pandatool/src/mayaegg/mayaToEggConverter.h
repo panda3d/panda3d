@@ -46,6 +46,7 @@ class EggPrimitive;
 class EggXfmSAnim;
 class MayaShaderColorDef;
 
+class MObject;
 class MDagPath;
 class MFnDagNode;
 class MFnNurbsSurface;
@@ -111,6 +112,7 @@ private:
   void get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                      EggGroup *egg_group);
   void get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group);
+  void apply_lod_attributes(EggGroup *egg_group, MFnDagNode &lod_group);
 
   // I ran into core dumps trying to pass around a MFnMesh object by
   // value.  From now on, all MFn* objects will be passed around by

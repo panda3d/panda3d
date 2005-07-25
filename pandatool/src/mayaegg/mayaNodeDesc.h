@@ -76,6 +76,7 @@ private:
   void check_pseudo_joints(bool joint_above);
   void check_blend_shapes(const MFnDagNode &node, 
                           const string &attrib_name);
+  void check_lods();
 
   MDagPath *_dag_path;
 
@@ -94,6 +95,9 @@ private:
     JT_joint_parent, // A parent or ancestor of a joint or pseudo joint.
   };
   JointType _joint_type;
+
+  bool _is_lod;
+  double _switch_in, _switch_out;
 
   bool _tagged;
 

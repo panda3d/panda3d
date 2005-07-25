@@ -62,6 +62,7 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   _egg_table = (EggTable *)NULL;
   _anim = (EggXfmSAnim *)NULL;
   _joint_type = JT_none;
+  _is_lod = false;
   _tagged = false;
 
   // Add ourselves to our parent.
@@ -431,5 +432,88 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
     }
 
     it.next();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::check_lods
+//       Access: Private
+//  Description: Walks through the hierarchy again and checks for LOD
+//               specifications.  Any such specifications found are
+//               recorded on the child nodes of the lodGroups
+//               themselves: the nodes that actually switch in and
+//               out.  (This is the way they are recorded in an egg
+//               file.)
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+check_lods() {
+  // Walk through the children first.  This makes it easier in the
+  // below (we only have to return in the event of an error).
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    MayaNodeDesc *child = (*ci);
+    child->check_lods();
+  }
+
+  // Now consider whether this node is an lodGroup.
+  if (_dag_path != (MDagPath *)NULL &&
+      _dag_path->hasFn(MFn::kLodGroup)) {
+    // This node is a parent lodGroup; its children, therefore, are
+    // LOD's.
+    MStatus status;
+    MFnDagNode dag_node(*_dag_path, &status);
+    if (!status) {
+      status.perror("Couldn't get node from dag path for lodGroup");
+      return;
+    }
+
+    MPlug plug = dag_node.findPlug("threshold", &status);
+    if (!status) {
+      status.perror("Couldn't get threshold attributes on lodGroup");
+      return;
+    }
+
+    // There ought to be the one fewer elements in the array than
+    // there are children of the node.
+    unsigned int num_elements = plug.numElements();
+    if (num_elements + 1 != _children.size()) {
+      mayaegg_cat.warning()
+        << "Node " << get_name() << " has " << plug.numElements()
+        << " LOD entries, but " << _children.size()
+        << " children.  Ignoring LOD specification.\n";
+      return;
+    }
+
+    // Should we also consider cameraMatrix, to transform the LOD's
+    // origin?  It's not clear precisely what this transform matrix
+    // means in Maya, so we'll wait until we have a sample file that
+    // demonstrates its use.
+
+    double switch_out = 0.0;
+    for (unsigned int i = 0; i < num_elements; ++i) {
+      MPlug element = plug.elementByLogicalIndex(i);
+      MayaNodeDesc *child = _children[i];
+
+      double switch_in;
+      status = element.getValue(switch_in);
+      if (!status) {
+        status.perror("Couldn't get double value from threshold.");
+        return;
+      }
+
+      child->_is_lod = true;
+      child->_switch_in = switch_in;
+      child->_switch_out = switch_out;
+
+      switch_out = switch_in;
+    }
+
+    // Also set the last child.  Maya wants this to switch in at
+    // infinity, but Panda doesn't have such a concept; we'll settle
+    // for four times the switch_out distance.
+    MayaNodeDesc *child = _children[num_elements];
+    child->_is_lod = true;
+    child->_switch_in = switch_out * 4.0;
+    child->_switch_out = switch_out;
   }
 }

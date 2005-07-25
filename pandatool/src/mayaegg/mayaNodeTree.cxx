@@ -27,6 +27,7 @@
 #include "eggXfmSAnim.h"
 #include "eggSAnimData.h"
 #include "eggData.h"
+#include "eggSwitchCondition.h"
 #include "dcast.h"
 
 #include "pre_maya_include.h"
@@ -105,6 +106,7 @@ build_hierarchy() {
 
   if (all_ok) {
     _root->check_pseudo_joints(false);
+    _root->check_lods();
   }
   
   return all_ok;
@@ -383,6 +385,13 @@ get_egg_group(MayaNodeDesc *node_desc) {
         user_data->_double_sided = true;
       }
       egg_group->set_user_data(user_data);
+    }
+
+    if (node_desc->_is_lod) {
+      // Create an LOD specification.
+      egg_group->set_lod(EggSwitchConditionDistance(node_desc->_switch_in,
+                                                    node_desc->_switch_out,
+                                                    LPoint3d::zero()));
     }
 
     node_desc->_egg_group = egg_group;
