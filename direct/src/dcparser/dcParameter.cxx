@@ -232,7 +232,7 @@ write_instance(ostream &out, bool brief, int indent_level,
                const string &postname) const {
   indent(out, indent_level);
   output_instance(out, brief, prename, name, postname);
-  output_flags(out);
+  output_keywords(out);
   out << ";";
   if (!brief && _number >= 0) {
     out << "  // field " << _number;
@@ -270,7 +270,7 @@ write_typedef_name(ostream &out, bool brief, int indent_level,
   if (!prename.empty() || !name.empty() || !postname.empty()) {
     out << " " << prename << name << postname;
   }
-  output_flags(out);
+  output_keywords(out);
   out << ";";
   if (!brief && _number >= 0) {
     out << "  // field " << _number;
@@ -289,7 +289,7 @@ generate_hash(HashGenerator &hashgen) const {
   // We specifically don't call up to DCField::generate_hash(), since
   // the parameter name is not actually significant to the hash.
 
-  if (get_flags() != 0) {
-    hashgen.add_int(get_flags());
+  if (get_num_keywords() != 0) {
+    DCKeywordList::generate_hash(hashgen);
   }
 }

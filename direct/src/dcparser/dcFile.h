@@ -20,12 +20,14 @@
 #define DCFILE_H
 
 #include "dcbase.h"
+#include "dcKeywordList.h"
 
 class DCClass;
 class DCSwitch;
 class DCField;
 class HashGenerator;
 class DCTypedef;
+class DCKeyword;
 class DCDeclaration;
 
 ////////////////////////////////////////////////////////////////////
@@ -68,6 +70,10 @@ PUBLISHED:
   DCTypedef *get_typedef(int n) const;
   DCTypedef *get_typedef_by_name(const string &name) const;
 
+  int get_num_keywords() const;
+  const DCKeyword *get_keyword(int n) const;
+  const DCKeyword *get_keyword_by_name(const string &name) const;
+
   unsigned long get_hash() const;
 
 public:
@@ -77,11 +83,14 @@ public:
   void add_import_module(const string &import_module);
   void add_import_symbol(const string &import_symbol);
   bool add_typedef(DCTypedef *dtypedef);
+  bool add_keyword(const string &name);
   void add_thing_to_delete(DCDeclaration *decl);
 
   void set_new_index_number(DCField *field);
 
 private:
+  void setup_default_keywords();
+
   typedef pvector<DCClass *> Classes;
   Classes _classes;
 
@@ -103,6 +112,9 @@ private:
 
   typedef pmap<string, DCTypedef *> TypedefsByName;
   TypedefsByName _typedefs_by_name;
+
+  DCKeywordList _keywords;
+  DCKeywordList _default_keywords;
 
   typedef pvector<DCDeclaration *> Declarations;
   Declarations _declarations;

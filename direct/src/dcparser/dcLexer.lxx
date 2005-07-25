@@ -9,6 +9,7 @@
 #include "dcLexerDefs.h"
 #include "dcParserDefs.h"
 #include "dcParser.h"
+#include "dcFile.h"
 #include "dcindent.h"
 
 
@@ -464,6 +465,11 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_IMPORT;
 }
 
+"keyword" {
+  accept();
+  return KW_KEYWORD;
+}
+
 "typedef" {
   accept();
   return KW_TYPEDEF;
@@ -587,51 +593,6 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "char" {
   accept();
   return KW_CHAR;
-}
-
-"required" {
-  accept();
-  return KW_REQUIRED;
-}
-
-"broadcast" {
-  accept();
-  return KW_BROADCAST;
-}
-
-"p2p" {
-  accept();
-  return KW_P2P;
-}
-
-"ram" {
-  accept();
-  return KW_RAM;
-}
-
-"db" {
-  accept();
-  return KW_DB;
-}
-
-"clsend" {
-  accept();
-  return KW_CLSEND;
-}
-
-"clrecv" {
-  accept();
-  return KW_CLRECV;
-}
-
-"ownsend" {
-  accept();
-  return KW_OWNSEND;
-}
-
-"airecv" {
-  accept();
-  return KW_AIRECV;
 }
 
 {UNSIGNED_INTEGERNUM} { 
@@ -760,9 +721,17 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 }
 
 [A-Za-z_][A-Za-z_0-9]* { 
-  // Identifier.
+  // Identifier or keyword.
   accept();
   dcyylval.str = dcyytext;
+
+  if (dc_file != (DCFile *)NULL) {
+    const DCKeyword *keyword = dc_file->get_keyword_by_name(dcyylval.str);
+    if (keyword != (DCKeyword *)NULL) {
+      dcyylval.u.keyword = keyword;
+      return KEYWORD;
+    }
+  }
   return IDENTIFIER;
 }
 

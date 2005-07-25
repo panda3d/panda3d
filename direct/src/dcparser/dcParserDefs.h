@@ -28,6 +28,7 @@ class DCSwitch;
 class DCField;
 class DCAtomicField;
 class DCParameter;
+class DCKeyword;
 class DCPacker;
 
 void dc_init_parser(istream &in, const string &filename, DCFile &file);
@@ -38,6 +39,8 @@ void dc_init_parser_parameter_description(istream &in, const string &filename,
 DCField *dc_get_parameter_description();
 void dc_cleanup_parser();
 int dcyyparse();
+
+extern DCFile *dc_file;
 
 // This structure holds the return value for each token.
 // Traditionally, this is a union, and is declared with the %union
@@ -61,6 +64,7 @@ public:
     DCAtomicField *atomic;
     DCSubatomicType subatomic;
     DCParameter *parameter;
+    const DCKeyword *keyword;
   } u;
   string str;
 };

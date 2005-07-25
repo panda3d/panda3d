@@ -95,7 +95,7 @@ get_atomic(int n) const {
 void DCMolecularField::
 add_atomic(DCAtomicField *atomic) {
   if (_fields.empty()) {
-    set_flags(atomic->get_flags());
+    copy_keywords(*atomic);
   }
   _fields.push_back(atomic);
 

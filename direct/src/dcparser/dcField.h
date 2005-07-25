@@ -21,6 +21,7 @@
 
 #include "dcbase.h"
 #include "dcPackerInterface.h"
+#include "dcKeywordList.h"
 #include "dcPython.h"
 
 #ifdef WITHIN_PANDA
@@ -40,7 +41,7 @@ class HashGenerator;
 // Description : A single field of a Distributed Class, either atomic
 //               or molecular.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCField : public DCPackerInterface {
+class EXPCL_DIRECT DCField : public DCPackerInterface, public DCKeywordList {
 public:
   DCField();
   DCField(const string &name, DCClass *dclass);
@@ -76,8 +77,6 @@ PUBLISHED:
   bool is_ownsend() const;
   bool is_airecv() const;
 
-  bool compare_flags(const DCField &other) const;
-
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -101,31 +100,8 @@ public:
   void set_number(int number);
   void set_default_value(const string &default_value);
 
-  enum Flags {
-    F_required        = 0x0001,
-    F_broadcast       = 0x0002,
-    F_p2p             = 0x0004,
-    F_ram             = 0x0008,
-    F_db              = 0x0010,
-    F_clsend          = 0x0020,
-    F_clrecv          = 0x0040,
-    F_ownsend         = 0x0080,
-    F_airecv          = 0x0100,
-
-    // These are reserved for client code use; they are not set or
-    // cleared by any code in this module.
-    F_user_1          = 0x1000,
-    F_user_2          = 0x2000,
-    F_user_3          = 0x4000,
-    F_user_4          = 0x8000,
-  };
-  void add_flag(enum Flags flag);
-  void set_flags(int flags);
-  int get_flags() const;
-
 protected:
   void refresh_default_value();
-  void output_flags(ostream &out) const;
 
 protected:
   int _number;
@@ -133,8 +109,6 @@ protected:
   bool _has_default_value;
 
 private:
-  int _flags;  // A bitmask union of any of the above values.
-
   string _default_value;
 
 #ifdef WITHIN_PANDA

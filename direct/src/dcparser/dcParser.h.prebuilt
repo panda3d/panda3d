@@ -1,55 +1,128 @@
-#ifndef BISON_Y_TAB_H
-# define BISON_Y_TAB_H
+/* A Bison parser, made by GNU Bison 2.0.  */
 
-# define	UNSIGNED_INTEGER	257
-# define	SIGNED_INTEGER	258
-# define	REAL	259
-# define	STRING	260
-# define	HEX_STRING	261
-# define	IDENTIFIER	262
-# define	KW_DCLASS	263
-# define	KW_STRUCT	264
-# define	KW_FROM	265
-# define	KW_IMPORT	266
-# define	KW_TYPEDEF	267
-# define	KW_SWITCH	268
-# define	KW_CASE	269
-# define	KW_DEFAULT	270
-# define	KW_BREAK	271
-# define	KW_INT8	272
-# define	KW_INT16	273
-# define	KW_INT32	274
-# define	KW_INT64	275
-# define	KW_UINT8	276
-# define	KW_UINT16	277
-# define	KW_UINT32	278
-# define	KW_UINT64	279
-# define	KW_FLOAT64	280
-# define	KW_STRING	281
-# define	KW_BLOB	282
-# define	KW_BLOB32	283
-# define	KW_INT8ARRAY	284
-# define	KW_INT16ARRAY	285
-# define	KW_INT32ARRAY	286
-# define	KW_UINT8ARRAY	287
-# define	KW_UINT16ARRAY	288
-# define	KW_UINT32ARRAY	289
-# define	KW_UINT32UINT8ARRAY	290
-# define	KW_CHAR	291
-# define	KW_REQUIRED	292
-# define	KW_BROADCAST	293
-# define	KW_P2P	294
-# define	KW_RAM	295
-# define	KW_DB	296
-# define	KW_CLSEND	297
-# define	KW_CLRECV	298
-# define	KW_OWNSEND	299
-# define	KW_AIRECV	300
-# define	START_DC	301
-# define	START_PARAMETER_VALUE	302
-# define	START_PARAMETER_DESCRIPTION	303
+/* Skeleton parser for Yacc-like parsing with Bison,
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
+
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
+
+/* Tokens.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     UNSIGNED_INTEGER = 258,
+     SIGNED_INTEGER = 259,
+     REAL = 260,
+     STRING = 261,
+     HEX_STRING = 262,
+     IDENTIFIER = 263,
+     KEYWORD = 264,
+     KW_DCLASS = 265,
+     KW_STRUCT = 266,
+     KW_FROM = 267,
+     KW_IMPORT = 268,
+     KW_TYPEDEF = 269,
+     KW_KEYWORD = 270,
+     KW_SWITCH = 271,
+     KW_CASE = 272,
+     KW_DEFAULT = 273,
+     KW_BREAK = 274,
+     KW_INT8 = 275,
+     KW_INT16 = 276,
+     KW_INT32 = 277,
+     KW_INT64 = 278,
+     KW_UINT8 = 279,
+     KW_UINT16 = 280,
+     KW_UINT32 = 281,
+     KW_UINT64 = 282,
+     KW_FLOAT64 = 283,
+     KW_STRING = 284,
+     KW_BLOB = 285,
+     KW_BLOB32 = 286,
+     KW_INT8ARRAY = 287,
+     KW_INT16ARRAY = 288,
+     KW_INT32ARRAY = 289,
+     KW_UINT8ARRAY = 290,
+     KW_UINT16ARRAY = 291,
+     KW_UINT32ARRAY = 292,
+     KW_UINT32UINT8ARRAY = 293,
+     KW_CHAR = 294,
+     START_DC = 295,
+     START_PARAMETER_VALUE = 296,
+     START_PARAMETER_DESCRIPTION = 297
+   };
+#endif
+#define UNSIGNED_INTEGER 258
+#define SIGNED_INTEGER 259
+#define REAL 260
+#define STRING 261
+#define HEX_STRING 262
+#define IDENTIFIER 263
+#define KEYWORD 264
+#define KW_DCLASS 265
+#define KW_STRUCT 266
+#define KW_FROM 267
+#define KW_IMPORT 268
+#define KW_TYPEDEF 269
+#define KW_KEYWORD 270
+#define KW_SWITCH 271
+#define KW_CASE 272
+#define KW_DEFAULT 273
+#define KW_BREAK 274
+#define KW_INT8 275
+#define KW_INT16 276
+#define KW_INT32 277
+#define KW_INT64 278
+#define KW_UINT8 279
+#define KW_UINT16 280
+#define KW_UINT32 281
+#define KW_UINT64 282
+#define KW_FLOAT64 283
+#define KW_STRING 284
+#define KW_BLOB 285
+#define KW_BLOB32 286
+#define KW_INT8ARRAY 287
+#define KW_INT16ARRAY 288
+#define KW_INT32ARRAY 289
+#define KW_UINT8ARRAY 290
+#define KW_UINT16ARRAY 291
+#define KW_UINT32ARRAY 292
+#define KW_UINT32UINT8ARRAY 293
+#define KW_CHAR 294
+#define START_DC 295
+#define START_PARAMETER_VALUE 296
+#define START_PARAMETER_DESCRIPTION 297
+
+
+
+
+#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+typedef int YYSTYPE;
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
+# define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
+#endif
 
 extern YYSTYPE dcyylval;
 
-#endif /* not BISON_Y_TAB_H */
+
+

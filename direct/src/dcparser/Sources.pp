@@ -18,7 +18,9 @@
   #define SOURCES \
      dcAtomicField.h dcClass.h dcClass.I \
      dcDeclaration.h \
-     dcField.h dcFile.h dcLexer.lxx  \
+     dcField.h dcFile.h \
+     dcKeyword.h dcKeywordList.h \
+     dcLexer.lxx  \
      dcLexerDefs.h dcMolecularField.h dcParser.yxx dcParserDefs.h  \
      dcSubatomicType.h \
      dcPackData.h dcPackData.I \
@@ -38,6 +40,7 @@
      dcAtomicField.cxx dcClass.cxx \
      dcDeclaration.cxx \
      dcField.cxx dcFile.cxx \
+     dcKeyword.cxx dcKeywordList.cxx \
      dcMolecularField.cxx dcSubatomicType.cxx \
      dcPackData.cxx \
      dcPacker.cxx \

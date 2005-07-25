@@ -202,7 +202,7 @@ output(ostream &out, bool brief) const {
   }
   out << ")";
 
-  output_flags(out);
+  output_keywords(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,7 +237,8 @@ generate_hash(HashGenerator &hashgen) const {
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     (*ei)->generate_hash(hashgen);
   }
-  hashgen.add_int(get_flags());
+
+  DCKeywordList::generate_hash(hashgen);
 }
 
 ////////////////////////////////////////////////////////////////////

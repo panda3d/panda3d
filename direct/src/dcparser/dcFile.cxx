@@ -22,6 +22,7 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 #include "dcTypedef.h"
+#include "dcKeyword.h"
 #include "hashGenerator.h"
 
 #ifdef WITHIN_PANDA
@@ -41,6 +42,8 @@
 DCFile::
 DCFile() {
   _all_objects_valid = true;
+
+  setup_default_keywords();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,8 +77,10 @@ clear() {
   _things_by_name.clear();
   _typedefs.clear();
   _typedefs_by_name.clear();
+  _keywords.clear_keywords();
   _declarations.clear();
   _things_to_delete.clear();
+  setup_default_keywords();
 
   _all_objects_valid = true;
 }
@@ -440,6 +445,48 @@ get_typedef_by_name(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_num_keywords
+//       Access: Published
+//  Description: Returns the number of keywords read from the .dc
+//               file(s).
+////////////////////////////////////////////////////////////////////
+int DCFile::
+get_num_keywords() const {
+  return _keywords.get_num_keywords();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_keyword
+//       Access: Published
+//  Description: Returns the nth keyword read from the .dc file(s).
+////////////////////////////////////////////////////////////////////
+const DCKeyword *DCFile::
+get_keyword(int n) const {
+  return _keywords.get_keyword(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_keyword_by_name
+//       Access: Published
+//  Description: Returns the keyword that has the indicated name, or
+//               NULL if there is no such keyword name.
+////////////////////////////////////////////////////////////////////
+const DCKeyword *DCFile::
+get_keyword_by_name(const string &name) const {
+  const DCKeyword *keyword = _keywords.get_keyword_by_name(name);
+  if (keyword == (const DCKeyword *)NULL) {
+    keyword = _default_keywords.get_keyword_by_name(name);
+    if (keyword != (const DCKeyword *)NULL) {
+      // One of the historical default keywords was used, but wasn't
+      // defined.  Define it implicitly right now.
+      ((DCFile *)this)->_keywords.add_keyword(keyword);
+    }
+  }
+
+  return keyword;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_hash
 //       Access: Published
 //  Description: Returns a 32-bit hash index associated with this
@@ -598,6 +645,28 @@ add_typedef(DCTypedef *dtypedef) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_keyword
+//       Access: Public
+//  Description: Adds the indicated keyword string to the list of
+//               keywords known to the DCFile.  These keywords may
+//               then be added to DCFields.  It is not an error to add
+//               a particular keyword more than once.
+////////////////////////////////////////////////////////////////////
+bool DCFile::
+add_keyword(const string &name) {
+  DCKeyword *keyword = new DCKeyword(name);
+  bool added = _keywords.add_keyword(keyword);
+
+  if (added) {
+    _declarations.push_back(keyword);
+  } else {
+    delete keyword;
+  }
+
+  return added;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCFile::add_thing_to_delete
 //       Access: Public
 //  Description: Adds the indicated declaration to the list of
@@ -623,4 +692,40 @@ void DCFile::
 set_new_index_number(DCField *field) {
   field->set_number((int)_fields_by_index.size());
   _fields_by_index.push_back(field);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::setup_default_keywords
+//       Access: Public
+//  Description: Adds an entry for each of the default keywords that
+//               are defined for every DCFile for legacy reasons.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+setup_default_keywords() {
+  struct KeywordDef {
+    const char *name;
+    int flag;
+  };
+  static KeywordDef default_keywords[] = {
+    { "required", 0x0001 },
+    { "broadcast", 0x0002 },
+    { "p2p", 0x0004 },
+    { "ram", 0x0008 },
+    { "db", 0x0010 },
+    { "clsend", 0x0020 },
+    { "clrecv", 0x0040 },
+    { "ownsend", 0x0080 },
+    { "airecv", 0x0100 },
+    { NULL, 0 }
+  };
+
+  _default_keywords.clear_keywords();
+  for (int i = 0; default_keywords[i].name != NULL; ++i) {
+    DCKeyword *keyword = 
+      new DCKeyword(default_keywords[i].name, 
+                    default_keywords[i].flag);
+    
+    _default_keywords.add_keyword(keyword);
+    _things_to_delete.push_back(keyword);
+  }
 }

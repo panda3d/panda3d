@@ -16,6 +16,7 @@
 #include "dcArrayParameter.h"
 #include "dcSimpleParameter.h"
 #include "dcTypedef.h"
+#include "dcKeyword.h"
 #include "dcPacker.h"
 #include "dcNumericRange.h"
 
@@ -27,12 +28,13 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
-static DCFile *dc_file = (DCFile *)NULL;
+DCFile *dc_file = (DCFile *)NULL;
 static DCClass *current_class = (DCClass *)NULL;
 static DCSwitch *current_switch = (DCSwitch *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
 static DCParameter *current_parameter = (DCParameter *)NULL;
+static DCKeywordList current_keyword_list;
 static DCPacker default_packer;
 static DCPacker *current_packer;
 static DCDoubleRange double_range;
@@ -83,12 +85,14 @@ dc_cleanup_parser() {
 %token <u.int64> SIGNED_INTEGER
 %token <u.real> REAL
 %token <str> STRING HEX_STRING IDENTIFIER
+%token <u.keyword> KEYWORD
 
 %token KW_DCLASS 
 %token KW_STRUCT 
 %token KW_FROM 
 %token KW_IMPORT 
 %token KW_TYPEDEF 
+%token KW_KEYWORD 
 %token KW_SWITCH
 %token KW_CASE
 %token KW_DEFAULT
@@ -115,16 +119,6 @@ dc_cleanup_parser() {
 %token KW_UINT32UINT8ARRAY
 %token KW_CHAR
 
-%token KW_REQUIRED
-%token KW_BROADCAST
-%token KW_P2P
-%token KW_RAM
-%token KW_DB
-%token KW_CLSEND
-%token KW_CLRECV
-%token KW_OWNSEND
-%token KW_AIRECV
-
 /* These special tokens are used to set the starting state of the
    parser.  The lexer places the appropriate one of these on the head
    of the input stream. */
@@ -133,8 +127,6 @@ dc_cleanup_parser() {
 %token START_PARAMETER_DESCRIPTION
 
 %type <u.atomic> atomic_name
-%type <u.s_int> server_flags
-%type <u.s_int> no_server_flags
 %type <u.dclass> dclass_or_struct
 %type <u.dclass> dclass_name
 %type <u.dclass> dclass
@@ -203,6 +195,7 @@ dc:
 }
         | dc import
         | dc typedef_decl
+        | dc keyword_decl
         ;
 
 slash_identifier:
@@ -267,6 +260,21 @@ typedef_decl:
       }
     }
   }
+}
+	;
+
+keyword_decl:
+        KW_KEYWORD IDENTIFIER
+{
+  dc_file->add_keyword($2);
+}
+        | KW_KEYWORD KEYWORD
+{
+  // This keyword has already been defined.  But since we are now
+  // explicitly defining it, clear its bitmask, so that we will have a
+  // new hash code--doing this will allow us to phase out the
+  // historical hash code support later.
+  ((DCKeyword *)$2)->clear_historical_flag();
 }
 	;
 
@@ -339,7 +347,7 @@ dclass_base_list:
 dclass_fields:
         empty
         | dclass_fields ';'
-        | dclass_fields dclass_field
+        | dclass_fields dclass_field ';'
 {
   if ($2 == (DCField *)NULL) {
     // Pass this error up.
@@ -352,29 +360,29 @@ dclass_fields:
         ;
 
 dclass_field:
-	atomic_field server_flags
+	atomic_field keyword_list
 {
   if ($1 != (DCField *)NULL) {
     if ($1->get_name().empty()) {
       yyerror("Field name required.");
     }
-    $1->set_flags($2);
+    $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
 }
-	| molecular_field no_server_flags
-	| unnamed_parameter_with_default server_flags ';'
+	| molecular_field no_keyword_list
+	| unnamed_parameter_with_default keyword_list ';'
 {
   yyerror("Unnamed parameters are not allowed on a dclass");
   if ($1 != (DCField *)NULL) {
-    $1->set_flags($2);
+    $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
 }
-	| named_parameter_with_default server_flags
+	| named_parameter_with_default keyword_list
 {
   if ($1 != (DCField *)NULL) {
-    $1->set_flags($2);
+    $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
 }
@@ -439,7 +447,7 @@ struct_base_list:
 struct_fields:
         empty
         | struct_fields ';'
-        | struct_fields struct_field
+        | struct_fields struct_field ';'
 {
   if ($2 == (DCField *)NULL) {
     // Pass this error up.
@@ -450,19 +458,19 @@ struct_fields:
         ;
 
 struct_field:
-	atomic_field no_server_flags
+	atomic_field no_keyword_list
 {
   if ($1->get_name().empty()) {
     yyerror("Field name required.");
   }
   $$ = $1;
 }
-	| molecular_field no_server_flags
-	| unnamed_parameter_with_default no_server_flags ';'
+	| molecular_field no_keyword_list
+	| unnamed_parameter_with_default no_keyword_list ';'
 {
   $$ = $1;
 }
-	| named_parameter_with_default no_server_flags
+	| named_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
@@ -603,15 +611,15 @@ parameter_or_atomic:
 	;
 
 parameter_description:
-	atomic_field no_server_flags
+	atomic_field no_keyword_list
 {
   $$ = $1;
 }
-	| unnamed_parameter_with_default no_server_flags
+	| unnamed_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
-	| named_parameter_with_default no_server_flags
+	| named_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
@@ -1140,56 +1148,23 @@ type_token:
 }
         ;
 
-server_flags:
+keyword_list:
         empty
 {
-  $$ = 0;
+  current_keyword_list.clear_keywords();
 }
-        | server_flags KW_REQUIRED
+        | keyword_list KEYWORD
 {
-  $$ = $1 | DCAtomicField::F_required;
+  current_keyword_list.add_keyword($2);
 }
-        | server_flags KW_BROADCAST
-{
-  $$ = $1 | DCAtomicField::F_broadcast;
-}
-        | server_flags KW_P2P
-{
-  $$ = $1 | DCAtomicField::F_p2p;
-}
-        | server_flags KW_RAM
-{
-  $$ = $1 | DCAtomicField::F_ram;
-}
-        | server_flags KW_DB
-{
-  $$ = $1 | DCAtomicField::F_db;
-}
-        | server_flags KW_CLSEND
-{
-  $$ = $1 | DCAtomicField::F_clsend;
-}
-        | server_flags KW_CLRECV
-{
-  $$ = $1 | DCAtomicField::F_clrecv;
-}
-        | server_flags KW_OWNSEND
-{
-  $$ = $1 | DCAtomicField::F_ownsend;
-}
-        | server_flags KW_AIRECV
-{
-  $$ = $1 | DCAtomicField::F_airecv;
-}
-        ;
+	;
 
-no_server_flags:
-        server_flags
+no_keyword_list:
+        keyword_list
 {
-  if ($1 != 0) {
-    yyerror("Server flags are not allowed here.");
+  if (current_keyword_list.get_num_keywords() != 0) {
+    yyerror("Communication keywords are not allowed here.");
   }
-  $$ = $1;
 }
 	;
 
@@ -1231,8 +1206,8 @@ molecular_atom_list:
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->add_atomic($3);
-    if (!current_molecular->compare_flags(*$3)) {
-      yyerror("Mismatched flags in molecule between " + 
+    if (!current_molecular->compare_keywords(*$3)) {
+      yyerror("Mismatched keywords in molecule between " + 
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());
     }

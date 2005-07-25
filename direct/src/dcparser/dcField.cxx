@@ -38,7 +38,6 @@ DCField()
 #endif
 {
   _number = -1;
-  _flags = 0;
   _has_default_value = false;
   _default_value_stale = true;
 
@@ -65,7 +64,6 @@ DCField(const string &name, DCClass *dclass) :
 #endif
 {
   _number = -1;
-  _flags = 0;
   _has_default_value = false;
   _default_value_stale = true;
 
@@ -288,7 +286,7 @@ get_default_value() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_required() const {
-  return (_flags & F_required) != 0;
+  return has_keyword("required");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,7 +297,7 @@ is_required() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_broadcast() const {
-  return (_flags & F_broadcast) != 0;
+  return has_keyword("broadcast");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,7 +308,7 @@ is_broadcast() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_p2p() const {
-  return (_flags & F_p2p) != 0;
+  return has_keyword("p2p");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,7 +319,7 @@ is_p2p() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_ram() const {
-  return (_flags & F_ram) != 0;
+  return has_keyword("ram");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,7 +330,7 @@ is_ram() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_db() const {
-  return (_flags & F_db) != 0;
+  return has_keyword("db");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +341,7 @@ is_db() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_clsend() const {
-  return (_flags & F_clsend) != 0;
+  return has_keyword("clsend");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -354,7 +352,7 @@ is_clsend() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_clrecv() const {
-  return (_flags & F_clrecv) != 0;
+  return has_keyword("clrecv");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,7 +363,7 @@ is_clrecv() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_ownsend() const {
-  return (_flags & F_ownsend) != 0;
+  return has_keyword("ownsend");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -376,19 +374,7 @@ is_ownsend() const {
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 is_airecv() const {
-  return (_flags & F_airecv) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::compare_flags
-//       Access: Published
-//  Description: Returns true if this field has the same flags
-//               settings as the other field, false if some flags
-//               differ.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-compare_flags(const DCField &other) const {
-  return _flags == other._flags;
+  return has_keyword("airecv");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -721,36 +707,6 @@ set_default_value(const string &default_value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::add_flag
-//       Access: Public
-//  Description: Adds a new flag to the field.
-////////////////////////////////////////////////////////////////////
-void DCField::
-add_flag(enum Flags flag) {
-  _flags |= flag;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::set_flags
-//       Access: Public
-//  Description: Resets the flag bitmask to the indicated value.
-////////////////////////////////////////////////////////////////////
-void DCField::
-set_flags(int flags) {
-  _flags = flags;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::get_flags
-//       Access: Public
-//  Description: Returns the complete flag bitmask.
-////////////////////////////////////////////////////////////////////
-int DCField::
-get_flags() const {
-  return _flags;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCField::refresh_default_value
 //       Access: Protected
 //  Description: Recomputes the default value of the field by
@@ -767,40 +723,4 @@ refresh_default_value() {
     _default_value.assign(packer.get_data(), packer.get_length());
   }
   _default_value_stale = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::output_flags
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DCField::
-output_flags(ostream &out) const {
-  if ((_flags & F_required) != 0) {
-    out << " required";
-  }
-  if ((_flags & F_broadcast) != 0) {
-    out << " broadcast";
-  }
-  if ((_flags & F_p2p) != 0) {
-    out << " p2p";
-  }
-  if ((_flags & F_ram) != 0) {
-    out << " ram";
-  }
-  if ((_flags & F_db) != 0) {
-    out << " db";
-  }
-  if ((_flags & F_clsend) != 0) {
-    out << " clsend";
-  }
-  if ((_flags & F_clrecv) != 0) {
-    out << " clrecv";
-  }
-  if ((_flags & F_ownsend) != 0) {
-    out << " ownsend";
-  }
-  if ((_flags & F_airecv) != 0) {
-    out << " airecv";
-  }
 }

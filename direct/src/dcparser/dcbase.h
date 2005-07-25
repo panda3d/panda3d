@@ -36,6 +36,7 @@
 #include "numeric_types.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "pset.h"
 
 #else  // WITHIN_PANDA
 
@@ -100,8 +101,10 @@ typedef string Filename;
 
 #include <vector>
 #include <map>
+#include <set>
 #define pvector vector
 #define pmap map
+#define pset set
 
 #ifdef WIN32
 typedef __int64 PN_int64;
