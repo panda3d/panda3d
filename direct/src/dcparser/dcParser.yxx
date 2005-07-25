@@ -371,7 +371,7 @@ dclass_field:
   $$ = $1;
 }
 	| molecular_field no_keyword_list
-	| unnamed_parameter_with_default keyword_list ';'
+	| unnamed_parameter_with_default keyword_list
 {
   yyerror("Unnamed parameters are not allowed on a dclass");
   if ($1 != (DCField *)NULL) {
@@ -466,7 +466,7 @@ struct_field:
   $$ = $1;
 }
 	| molecular_field no_keyword_list
-	| unnamed_parameter_with_default no_keyword_list ';'
+	| unnamed_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
@@ -1242,8 +1242,8 @@ switch_fields:
         | switch_fields ';'
         | switch_fields switch_case
         | switch_fields switch_default
-        | switch_fields switch_break
-        | switch_fields switch_field
+        | switch_fields switch_break ';'
+        | switch_fields switch_field ';'
 {
   if (!current_switch->is_field_valid()) {
     yyerror("case declaration required before first element");
@@ -1286,14 +1286,14 @@ switch_default:
 	;
 
 switch_break:
-	KW_BREAK ';'
+	KW_BREAK
 {
   current_switch->add_break();
 }
 	;
 
 switch_field:
-	unnamed_parameter_with_default ';'
+	unnamed_parameter_with_default
 {
   $$ = $1;
 }
