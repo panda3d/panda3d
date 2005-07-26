@@ -2958,7 +2958,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='parser.cxx', obj='egg_parser.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='lexer.cxx', obj='egg_lexer.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libegg.in', outc='libegg_igate.cxx',
             src='panda/src/egg',  module='pandaegg', library='libegg',
-            skip=[], also=["egg_composite1.cxx","egg_composite2.cxx"])
+            skip=["parser.h"], also=["egg_composite1.cxx","egg_composite2.cxx"])
 CompileC(ipath=IPATH, opts=OPTS, src='libegg_igate.cxx', obj='libegg_igate.obj')
 
 #
@@ -4057,7 +4057,6 @@ for VER in ["7"]:
                 'libpystub.dll'
                ])
 
-
 #
 # DIRECTORY: pandatool/src/mayaeggimport/
 #
@@ -4068,8 +4067,10 @@ for VER in ["6"]:
     OPTS=['MAYA'+VER, 'NSPR', 'BUILDING_MISC']
     CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx',obj='mayaeggimport'+VER+'_mayaeggimport.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx',obj='mayaeggimport'+VER+'_mayaeggloader.obj')
     CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
                 'mayaeggimport'+VER+'_mayaeggimport.obj',
+                'mayaeggimport'+VER+'_mayaeggloader.obj',
                 'libpandaegg.dll',
                 'libpanda.dll',
                 'libpandaexpress.dll',
@@ -4077,7 +4078,6 @@ for VER in ["6"]:
                 'libdtool.dll',
                 'libpystub.dll'
                ])
-
 
 #
 # DIRECTORY: pandatool/src/vrml/
