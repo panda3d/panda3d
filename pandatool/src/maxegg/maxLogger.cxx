@@ -338,7 +338,7 @@ void Logger::WriteToPipe( char *textToPipe )
 	case PIPE_TO_FILE:
 		if ( myFileOutputLog.is_open() )
 		{
-			for ( int i = 0; i < myHierarchyLevel; ++i )
+			for (unsigned int i = 0; i < myHierarchyLevel; ++i )
 				myFileOutputLog << "  ";
 			myFileOutputLog << textToPipe << endl;
 			myFileOutputLog.flush();

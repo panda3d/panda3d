@@ -172,7 +172,7 @@ MaxEggJoint *MaxEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
 {
   MaxEggJoint *parent = FindJoint(context);
   MaxEggJoint *result = new MaxEggJoint;
-  LMatrix4d t = joint->get_transform();
+  LMatrix4d t = joint->get_transform3d();
   if (parent) {
     result->_trans = t * parent->_trans;
   } else {
@@ -575,7 +575,7 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
       EggTexture *tex = poly->get_texture(0);
       texid = GetTex(tex->get_fullpath().to_os_specific())->_id;
       if (tex->has_transform())
-        uvtrans = tex->get_transform();
+        uvtrans = tex->get_transform2d();
     } else {
       texid = GetTex("")->_id;
     }

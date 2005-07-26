@@ -413,7 +413,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 	      }
         
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
-        if (!anim->add_data(tgroup->get_transform())) {
+        if (!anim->add_data(tgroup->get_transform3d())) {
 	        // *** log an error
 	      }
 	      delete tgroup;
@@ -781,7 +781,7 @@ get_transform(INode *max_node, EggGroup *egg_group) {
   // node's parent
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
+    egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
 		 "Non-identity matrix applied to node!" );
   } else {
@@ -877,7 +877,7 @@ get_joint_transform(INode *max_node, EggGroup *egg_group) {
   // node's parent
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
+    egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
 		 "Non-identity matrix applied to node!" );
   } else {
@@ -953,7 +953,7 @@ if (parent_node) {
   m4d = m4d * pi_m4d;
 }
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
+    egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
 		 "Non-identity matrix applied to node!" );
   } else {

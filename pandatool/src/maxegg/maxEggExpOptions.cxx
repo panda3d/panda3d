@@ -643,7 +643,6 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
   char *apcParameters[64];
   char pszSF[10], pszEF[10];
   char acOutputFilename[MAX_PATH];
-  char curFilename[MAX_PATH];
   int iParameterCount=0;
 
   //Initialize our global error logger
