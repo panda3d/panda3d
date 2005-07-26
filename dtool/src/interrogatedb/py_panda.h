@@ -61,7 +61,7 @@ using namespace std;
 // this is tempory .. untill this is glued better into the panda build system
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(LINK_ALL_STATIC)
 #define EXPORT_THIS  __declspec(dllexport) 
 #define IMPORT_THIS  extern __declspec(dllimport) 
 #else
