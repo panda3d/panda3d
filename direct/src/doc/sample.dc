@@ -73,7 +73,7 @@ dclass DistributedObjectHolder : DistributedObject {
 
   // In addition to fixed-length arrays and unbounded arrays, you can
   // specify a range for the valid size of the array:
-  setRelatedObjects(AvatarObject relatedObjects[0, 3 - 5] = [])
+  setRelatedObjects(AvatarObject relatedObjects[0, 3 - 5] = []);
 };
 
 // You can specify a default initial value on the typedef, if you
