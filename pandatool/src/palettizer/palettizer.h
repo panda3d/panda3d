@@ -112,6 +112,7 @@ public:
   Colord _background;
   int _margin;
   bool _omit_solitary;
+  bool _omit_everything;
   double _coverage_threshold;
   bool _force_power_2;
   bool _aggressively_clean_mapdir;

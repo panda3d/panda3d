@@ -336,7 +336,13 @@ determine_size() {
     force_replace();
     _omit_reason = OR_size;
 
+  } else if (pal->_omit_everything) {
+    // If we're omitting everything, omit everything.
+    force_replace();
+    _omit_reason = OR_default_omit;
+
   } else if (_omit_reason == OR_omitted ||
+             _omit_reason == OR_default_omit ||
              _omit_reason == OR_size ||
              _omit_reason == OR_coverage ||
              _omit_reason == OR_unknown) {

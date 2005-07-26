@@ -41,13 +41,14 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 13;
+int Palettizer::_pi_version = 14;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
 // Updated to version 11 on 4/30/03 to add TextureReference::_tref_name.
 // Updated to version 12 on 9/11/03 to add _generated_image_pattern.
 // Updated to version 13 on 9/13/03 to add _keep_format and _background.
+// Updated to version 14 on 7/26/06 to add _omit_everything.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -109,6 +110,7 @@ Palettizer() {
   _shadow_dirname = "shadow";
   _margin = 2;
   _omit_solitary = false;
+  _omit_everything = false;
   _coverage_threshold = 2.5;
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
@@ -199,6 +201,7 @@ report_pi() const {
     << "  force textures to power of 2: " << yesno(_force_power_2) << "\n"
     << "  aggressively clean the map directory: "
     << yesno(_aggressively_clean_mapdir) << "\n"
+    << "  omit everything: " << yesno(_omit_everything) << "\n"
     << "  round UV area: " << yesno(_round_uvs) << "\n";
   if (_round_uvs) {
     cout << "  round UV area to nearest " << _round_unit << " with fuzz "
@@ -996,6 +999,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_float64(_background[3]);
   datagram.add_int32(_margin);
   datagram.add_bool(_omit_solitary);
+  datagram.add_bool(_omit_everything);
   datagram.add_float64(_coverage_threshold);
   datagram.add_bool(_force_power_2);
   datagram.add_bool(_aggressively_clean_mapdir);
@@ -1144,6 +1148,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
   _margin = scan.get_int32();
   _omit_solitary = scan.get_bool();
+  if (_read_pi_version >= 14) {
+    _omit_everything = scan.get_bool();
+  }
   _coverage_threshold = scan.get_float64();
   _force_power_2 = scan.get_bool();
   _aggressively_clean_mapdir = scan.get_bool();

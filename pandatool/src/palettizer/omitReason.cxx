@@ -44,6 +44,9 @@ operator << (ostream &out, OmitReason omit) {
 
   case OR_unused:
     return out << "unused";
+
+  case OR_default_omit:
+    return out << "default_omit";
   }
 
   return out << "**invalid**(" << (int)omit << ")";

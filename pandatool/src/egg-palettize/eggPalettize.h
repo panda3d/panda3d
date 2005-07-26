@@ -66,6 +66,7 @@ private:
   bool _report_statistics;
   bool _all_textures;
   bool _optimal;
+  bool _omitall;
   bool _redo_all;
   bool _redo_eggs;
   bool _dont_lock_txa;

@@ -53,6 +53,9 @@ enum OmitReason {
   OR_unused,
   // The texture is no longer used by any of the egg files that
   // formerly referenced it.
+
+  OR_default_omit,
+  // The texture is omitted because _omit_everything is set true.
 };
 
 ostream &operator << (ostream &out, OmitReason omit);

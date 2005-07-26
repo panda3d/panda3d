@@ -191,6 +191,16 @@ EggPalettize() : EggMultiFilter(true) {
      "to be rebuilt if necessary to optimize the packing, but this "
      "may invalidate other egg files which share this palette.",
      &EggPalettize::dispatch_none, &_optimal);
+  add_option
+    ("omitall", "", 0,
+     "Re-enables the flag to omit all textures.  This flag is normally on "
+     "by default, causing nothing actually to be palettized, until the "
+     "first time egg-palettize is run with the -opt flag, which turns off "
+     "the omitall flag and thenceforth allows textures to be combined "
+     "into palettes.  Specifying this flag restores the original behavior "
+     "of keeping every texture as a separate image (which is convenient for "
+     "development).",
+     &EggPalettize::dispatch_none, &_omitall);
 
   // This isn't even implemented yet.  Presently, we never lock anyway.
   // Dangerous, but hard to implement reliable file locking across
@@ -600,6 +610,9 @@ run() {
          << " does not exist; starting palettization from scratch.\n";
     pal = new Palettizer;
 
+    // By default, the -omitall flag is true from the beginning.
+    pal->_omit_everything = true;
+
   } else {
     // Read the Palettizer object from the Bam file written
     // previously.  This will recover all of the state saved from the
@@ -715,6 +728,12 @@ run() {
   // files by changing a texture from solitary to nonsolitary state or
   // vice-versa.
   pal->_omit_solitary = _optimal;
+
+  if (_omitall) {
+    pal->_omit_everything = true;
+  } else if (_optimal) {
+    pal->_omit_everything = false;
+  }
 
   pal->all_params_set();
 
