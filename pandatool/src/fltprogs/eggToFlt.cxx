@@ -35,7 +35,7 @@
 #include "eggGroup.h"
 #include "eggGroupNode.h"
 #include "eggTexture.h"
-#include "eggTransform3d.h"
+#include "eggTransform.h"
 #include "dcast.h"
 #include "string_utils.h"
 #include "vector_string.h"
