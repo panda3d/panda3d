@@ -597,6 +597,7 @@ load(const PNMImage &pnmimage, int z) {
   } else {
     if (_x_size != pnmimage.get_x_size() ||
         _y_size != pnmimage.get_y_size() ||
+        _num_components != num_components ||
         _component_type != component_type) {
       gobj_cat.error()
         << "Texture properties have changed for texture " << get_name()
@@ -922,9 +923,10 @@ get_ram_image() {
 
     make_ram_image();
     if (has_alpha_fullpath()) {
-      read(get_fullpath(), get_alpha_fullpath());
+      read(get_fullpath(), get_alpha_fullpath(),
+           0, _primary_file_num_channels, _alpha_file_channel);
     } else {
-      read(get_fullpath());
+      read(get_fullpath(), 0, _primary_file_num_channels);
     }
   }
 
