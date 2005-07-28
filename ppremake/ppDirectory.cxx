@@ -504,7 +504,8 @@ scan_extra_depends(const string &cache_filename) {
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     string filename = (*fi);
 
-    if (!filename.empty() && filename[0] != '.' &&
+    if (!filename.empty() && filename[0] != '.' && 
+	filename != string("CVS") &&
         filename != cache_filename) {
       get_dependable_file(filename, true);
     }
