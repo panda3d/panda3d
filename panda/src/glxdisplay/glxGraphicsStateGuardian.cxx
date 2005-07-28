@@ -122,7 +122,11 @@ reset() {
   FrameBufferProperties properties = get_properties();
   int frame_buffer_mode = properties.get_frame_buffer_mode();
 
-  if (_gl_renderer.find("Mesa") != string::npos) {
+  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
+  // found, it's actually a Mesa-based OpenGL layer running over a
+  // hardware driver.
+  if (_gl_renderer.find("Mesa") != string::npos &&
+      _gl_renderer.find("Mesa DRI") == string::npos) {
     // It's Mesa, therefore probably a software context.
     if (!software) {
       glxdisplay_cat.error()
