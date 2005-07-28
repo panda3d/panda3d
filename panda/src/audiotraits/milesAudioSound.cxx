@@ -161,7 +161,19 @@ namespace {
         break;
       case AIL_QUICK_DIGITAL_TYPE:
       case AIL_QUICK_MPEG_DIGITAL_TYPE:
-        return AIL_sample_playback_rate((HSAMPLE)audio->handle);
+        if (AIL_quick_status(audio) == QSTAT_PLAYING) {
+          return AIL_sample_playback_rate((HSAMPLE)audio->handle);
+        } else {
+          //HACK: The play rate is returning 0 unless it's playing
+          if (AIL_quick_play(audio, 1)) {
+            S32 rate = AIL_sample_playback_rate((HSAMPLE)audio->handle);
+            AIL_quick_halt(audio);
+            return rate;
+          }
+        }
+        break;
+      default:
+        audio_debug("Get_playback_rate unknown audio type");
         break;
       }
     }
@@ -459,7 +471,7 @@ set_play_rate(float play_rate) {
     case AIL_QUICK_DIGITAL_TYPE:
     case AIL_QUICK_MPEG_DIGITAL_TYPE:
       // wave and mp3 use sample rate (e.g. 44100)
-      _audio->speed = S32(play_rate*_original_playback_rate);
+      _audio->speed = S32(play_rate*float(_original_playback_rate));
       if ((_audio->speed != -1) && (AIL_quick_status(_audio) == QSTAT_PLAYING)) {
         AIL_set_sample_playback_rate((HSAMPLE)_audio->handle, _audio->speed);
       }
