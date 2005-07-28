@@ -81,6 +81,8 @@ INLINE ostream &operator << (ostream &out, const EventParameter &param);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA EventStoreValueBase : public TypedWritableReferenceCount {
 public:
+  INLINE EventStoreValueBase();
+  INLINE ~EventStoreValueBase();
   virtual void output(ostream &out) const=0;
 
 public:
