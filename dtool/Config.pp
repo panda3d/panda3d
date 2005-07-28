@@ -264,6 +264,8 @@
 #define PYTHON_IPATH /usr/include/python2.4
 #define PYTHON_LPATH
 #define PYTHON_FPATH
+#define PYTHON_COMMAND python
+#defer PYTHON_DEBUG_COMMAND $[PYTHON_COMMAND]$[if $[WINDOWS_PLATFORM],_d]
 #define PYTHON_FRAMEWORK
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 

@@ -463,6 +463,8 @@
 #defun get_libs
   #define alt_libs $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_libs] $[nspr_libs] $[python_libs]]
 
+  #define alt_libs $[alt_libs] $[EXTRA_LIBS]
+
   #if $[WINDOWS_PLATFORM]
     #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_libs] $[transitive_link]]
   #elif $[OSX_PLATFORM]
