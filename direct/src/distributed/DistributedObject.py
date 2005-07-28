@@ -75,7 +75,7 @@ class DistributedObject(PandaObject):
             """
             print out "doId(parentId,zoneId) className
                 and conditionally show generated, disabled, neverDisable,
-                or cachable
+                or cachable"
             """
             spaces=' '*(indent+2)
             try:
