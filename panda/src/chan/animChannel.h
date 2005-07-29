@@ -38,11 +38,11 @@ protected:
   // you must first create an AnimBundle, and use that to create any
   // subsequent children.
   INLINE AnimChannel(const string &name = "");
-
 public:
   typedef TYPENAME SwitchType::ValueType ValueType;
 
   INLINE AnimChannel(AnimGroup *parent, const string &name);
+  INLINE ~AnimChannel();
 
 PUBLISHED:
   virtual void get_value(int frame, ValueType &value)=0;

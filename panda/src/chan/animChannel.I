@@ -38,7 +38,6 @@ AnimChannel(const string &name)
   : AnimChannelBase(name) {
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannel::Constructor
 //       Access: Public
@@ -50,6 +49,16 @@ template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
 AnimChannel(AnimGroup *parent, const string &name)
   : AnimChannelBase(parent, name) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+INLINE AnimChannel<SwitchType>::
+~AnimChannel() {
 }
 
 #ifdef WIN32_VC
