@@ -145,14 +145,14 @@ for package in packages:
         packageDir = deCygwinify(packageDir)
         etcDir = os.path.join(packageDir, 'etc')
         try:
-            inFiles = glob.glob(os.path.join(etcDir, '*.in'))
+            inFiles = glob.glob(os.path.join(etcDir, 'built', '*.in'))
         except:
             inFiles = []
         if inFiles:
             DoGenPyCode.etcPath.append(etcDir)
 
         if package not in ['WINTOOLS', 'DTOOL', 'DIRECT', 'PANDA']:
-            libDir = os.path.join(packageDir, 'lib')
+            libDir = os.path.join(packageDir, 'built', 'lib')
             try:
                 files = os.listdir(libDir)
             except:
