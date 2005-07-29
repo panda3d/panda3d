@@ -1,5 +1,5 @@
-require "$tool/include/ctvspec.pl" ;
-require "$tool/include/ctquery.pl" ;
+require "$tool/built/include/ctvspec.pl" ;
+require "$tool/built/include/ctquery.pl" ;
 
 # given a spec line, do the 'correct' setup for it
 # input is in:
@@ -11,7 +11,7 @@ sub CTCMSetup {
     if ( $type eq "vroot" ) {
 	&CTUDebug( "running setup for an atria tree\n" ) ;
 	if ( $ENV{"HAVE_ATRIA"} eq "yes" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    &CTAttachCCSetup( $_[0], $_[1], $_[2] ) ;
 	} else {
 	    &CTUDebug( "don't HAVE_ATRIA!\n" ) ;
@@ -19,7 +19,7 @@ sub CTCMSetup {
 	# if we don't have atria, and it's a vroot, well..
     } elsif ( $type eq "croot" ) {
 	&CTUDebug( "running setup for CVS\n" ) ;
-	require "$tool/include/ctcvs.pl" ;
+	require "$tool/built/include/ctcvs.pl" ;
 	local( $serve ) = &CTCvsServerLine( $_[0], $_[1] ) ;
 	local( $thing ) = &CTCvsLogin( $serve ) ;
 	if ( ! $thing ) {
@@ -72,13 +72,13 @@ sub CTCMMkdir {
 	    # now switch off on how to actually do it
 	    local( $type ) = &CTSpecType( $_[2] ) ;
 	    if ( $type eq "vroot" ) {
-		require "$tool/include/ctccase.pl" ;
+		require "$tool/built/include/ctccase.pl" ;
 		$ret = &CTCcaseMkdir( $_[0], $pwd, $_[3] ) ;
 	    } elsif ( $type eq "root" ) {
-		require "$tool/include/ctntool.pl" ;
+		require "$tool/built/include/ctntool.pl" ;
 		$ret = &CTNtoolMkdir( $_[0], $pwd, $_[3] ) ;
 	    } elsif ( $type eq "croot" ) {
-		require "$tool/include/ctcvs.pl" ;
+		require "$tool/built/include/ctcvs.pl" ;
 		$ret = &CTCvsMkdir( $_[0], $_[1], $_[2], $_[3] ) ;
 	    } else {
 		print STDERR "CTCMMkdir::error! got invalid spec type '" .
@@ -141,13 +141,13 @@ sub CTCMMkelem {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseMkelem( $_[0], $pwd, $_[3], $_[4] ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolMkelem( $_[0], $pwd, $_[3], $_[4] ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsMkelem( $_[0], $_[1], $_[2], $_[3] ) ;
 	} else {
 	    print STDERR "CTCMMkelem::error! got invalid spec type '" .
@@ -198,13 +198,13 @@ sub CTCMDelta {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseDelta( $_[0] ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolDelta( $_[0] ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsDelta( $_[0], $_[1], $_[2] ) ;
 	} else {
 	    print STDERR "CTCMDelta::error! got invalid spec type '" . $type .
@@ -258,13 +258,13 @@ sub CTCMCheckout {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseCheckout( $_[0], $_[3] ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolCheckout( $_[0], $_[3] ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsCheckout( $_[0], $_[1], $_[2], $_[3] ) ;
 	} else {
 	    print STDERR "CTCMCheckout::error! got invalid spec type '" .
@@ -316,13 +316,13 @@ sub CTCMCheckin {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseCheckin( $_[0], $_[3] ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolCheckin( $_[0], $_[3] ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsCheckin( $_[0], $_[1], $_[2], $_[3] ) ;
 	} else {
 	    print STDERR "CTCMCheckin::error! got invalid spec type '" .
@@ -373,13 +373,13 @@ sub CTCMUncheckout {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseUncheckout( $_[0] ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolUncheckout( $_[0] ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsUncheckout( $_[0], $_[1], $_[2] ) ;
 	} else {
 	    print STDERR "CTCMUncheckout::error! got invalid spec type '" .
@@ -403,13 +403,13 @@ sub CTCMIHave {
     local( $ret ) = "" ;
     local( $type ) = &CTSpecType( $_[2] ) ;
     if ( $type eq "vroot" ) {
-	require "$tool/include/ctccase.pl" ;
+	require "$tool/built/include/ctccase.pl" ;
 	$ret = &CTCcaseIHave( $_[0], $_[1], $_[2] ) ;
     } elsif ( $type eq "root" ) {
-	require "$tool/include/ctntool.pl" ;
+	require "$tool/built/include/ctntool.pl" ;
 	$ret = &CTNtoolIHave( $_[0], $_[1], $_[2] ) ;
     } elsif ( $type eq "croot" ) {
-	require "$tool/include/ctcvs.pl" ;
+	require "$tool/built/include/ctcvs.pl" ;
 	$ret = &CTCvsIHave( $_[0], $_[1], $_[2] ) ;
     } else {
 	print STDERR "CTCMIHave::error! got invalid spec type '" . $type .
@@ -459,13 +459,13 @@ sub CTCMRmElem {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[2] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseRnElem( $_[0], $pwd ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolRmElem( $_[0], $pwd ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsRmElem( $_[0], $_[1], $_[2] ) ;
 	} else {
 	    print STDERR "CTCMRmElem::error! got invalid spec type '" .
@@ -529,13 +529,13 @@ sub CTCMMv {
 	# now switch off on how to actually do the work
 	local( $type ) = &CTSpecType( $_[3] ) ;
 	if ( $type eq "vroot" ) {
-	    require "$tool/include/ctccase.pl" ;
+	    require "$tool/built/include/ctccase.pl" ;
 	    $ret = &CTCcaseMv( $_[0], $_[1], $pwd ) ;
 	} elsif ( $type eq "root" ) {
-	    require "$tool/include/ctntool.pl" ;
+	    require "$tool/built/include/ctntool.pl" ;
 	    $ret = &CTNtoolMv( $_[0], $_[1], $pwd ) ;
 	} elsif ( $type eq "croot" ) {
-	    require "$tool/include/ctcvs.pl" ;
+	    require "$tool/built/include/ctcvs.pl" ;
 	    $ret = &CTCvsMv( $_[0], $_[1], $_[2], $_[3] ) ;
 	} else {
 	    print STDERR "CTCMMv::error! got invalid spec type '" .
@@ -560,13 +560,13 @@ sub CTCMMake {
     # now switch off on how to actually do the work
     local( $type ) = &CTSpecType( $_[2] ) ;
     if ( $type eq "vroot" ) {
-	require "$tool/include/ctccase.pl" ;
+	require "$tool/built/include/ctccase.pl" ;
 	$ret = &CTCcaseMake( $_[0] ) ;
     } elsif ( $type eq "root" ) {
-	require "$tool/include/ctntool.pl" ;
+	require "$tool/built/include/ctntool.pl" ;
 	$ret = &CTNtoolMake( $_[0] ) ;
     } elsif ( $type eq "croot" ) {
-	require "$tool/include/ctcvs.pl" ;
+	require "$tool/built/include/ctcvs.pl" ;
 	$ret = &CTCvsMake( $_[0] ) ;
     } else {
 	print STDERR "CTCMMake::error! got invalid spec type '" . $type .

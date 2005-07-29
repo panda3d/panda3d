@@ -36,18 +36,15 @@
 
 // Where should we install DIRECT?
 #if $[DIRECT_INSTALL]
-  #define DIRECT_INSTALL $[DIRECT_INSTALL]
-  #define DIRECT_INSTALL_OTHER $(DIRECT_INSTALL)
+  #define DIRECT_INSTALL $[unixfilename $[DIRECT_INSTALL]]
 #elif $[or $[CTPROJS],$[DIRECT]]
   #set DIRECT $[unixfilename $[DIRECT]]
-  #define DIRECT_INSTALL $[DIRECT]
-  #define DIRECT_INSTALL_OTHER $(DIRECT)
+  #define DIRECT_INSTALL $[DIRECT]/built
   #if $[eq $[DIRECT],]
     #error You seem to be attached to some trees, but not DIRECT!
   #endif
 #else
   #defer DIRECT_INSTALL $[unixfilename $[INSTALL_DIR]]
-  #defer DIRECT_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 // Also get the PANDA Package file and everything that includes.

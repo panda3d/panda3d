@@ -1,5 +1,5 @@
-require "$tool/include/ctutils.pl" ;
-require "$tool/include/ctdelta.pl" ;
+require "$tool/built/include/ctutils.pl" ;
+require "$tool/built/include/ctdelta.pl" ;
 
 # Remove a branch for an element if needed
 # input is in:

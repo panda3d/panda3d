@@ -1,4 +1,4 @@
-require "$tool/include/ctutils.pl" ;
+require "$tool/built/include/ctutils.pl" ;
 
 # get list of all projects
 sub CTAttachListProj {
@@ -490,7 +490,7 @@ sub CTAttachAddToSet {
 $docnt = 0 ;
 @attachqueue = () ;
 
-require "$tool/include/ctquery.pl" ;
+require "$tool/built/include/ctquery.pl" ;
 
 # given the project and flavor, build the lists of variables to set/modify
 # input is in:

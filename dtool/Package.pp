@@ -32,9 +32,7 @@
 
 // Where should we install DTOOL, specifically?
 #if $[DTOOL_INSTALL]
-  #set DTOOL $[unixfilename $[DTOOL_INSTALL]]
-  #define DTOOL_INSTALL $[DTOOL]
-  #define DTOOL_INSTALL_OTHER $(DTOOL)
+  #define DTOOL_INSTALL $[unixfilename $[DTOOL_INSTALL]]
 #elif $[or $[CTPROJS],$[DTOOL]]
   // If we are presently attached, use the environment variable.
   // We define two variables: one for ourselves, which burns in the
@@ -46,8 +44,7 @@
   // they will read from the right tree no matter which DTOOL they're
   // attached to.
   #set DTOOL $[unixfilename $[DTOOL]]
-  #define DTOOL_INSTALL $[DTOOL]
-  #define DTOOL_INSTALL_OTHER $(DTOOL)
+  #define DTOOL_INSTALL $[DTOOL]/built
   #if $[eq $[DTOOL],]
     #error You seem to be attached to some trees, but not DTOOL!
   #endif
@@ -55,7 +52,6 @@
   // Otherwise, if we are not attached, install in the standard place
   // (unless the user specifies otherwise).
   #defer DTOOL_INSTALL $[unixfilename $[INSTALL_DIR]]
-  #defer DTOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 

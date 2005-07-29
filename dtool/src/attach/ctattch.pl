@@ -1,4 +1,4 @@
-require "$tool/include/ctutils.pl" ;
+require "$tool/built/include/ctutils.pl" ;
 
 $shell_type = "csh" ;
 if ( $ENV{"SHELL_TYPE"} ne "" ) {
@@ -10,7 +10,7 @@ if ( $ENV{"SHELL_TYPE"} ne "" ) {
 $docnt = 0 ;
 @attachqueue = () ;
 
-require "$tool/include/ctquery.pl" ;
+require "$tool/built/include/ctquery.pl" ;
 
 # force set a variable in the 'new' environment
 # input is in:
@@ -147,7 +147,7 @@ sub CTAttachMod {
     }
 }
 
-require "$tool/include/ctcm.pl" ;
+require "$tool/built/include/ctcm.pl" ;
 
 # given the project and flavor, build the lists of variables to set/modify
 # input is in:
@@ -224,7 +224,7 @@ sub CTAttachCompute {
 
       # we scan the .init file first because if there are needed sub-attaches
       # they must happen before the rest of our work
-      local( $init ) = "$root/etc/$_[0].init" ;
+      local( $init ) = "$root/built/etc/$_[0].init" ;
       local( %localmod );
       local( %localset );
       local( %localsep );
@@ -365,12 +365,12 @@ sub CTAttachCompute {
       # in the normal sense.
       if ( ! ( $proj =~ /MODELS$/ ) ) {
 
-          $item = $root . "/bin" ;
+          $item = $root . "/built/bin" ;
           #if ( -e $item ) {
       &CTAttachMod( "PATH", $item, $root, $proj ) ;
           #}
 
-          $item = $root . "/lib" ;
+          $item = $root . "/built/lib" ;
           #if ( -e $item ) {
       if ( $ENV{"PENV"} eq "WIN32" ) {
           &CTAttachMod( "PATH", $item, $root, $proj ) ;
@@ -378,17 +378,12 @@ sub CTAttachCompute {
       &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
           #}
 
-          #$item = $root . "/src" ;
-          #if ( -e $item ) {
-      #&CTAttachMod( "CDPATH", $item, $root, $proj ) ;
-          #}
-
-          $item = $root . "/include" ;
+          $item = $root . "/built/include" ;
           #if ( -e $item ) {
       &CTAttachMod( "CT_INCLUDE_PATH", $item, $root, $proj ) ;
           #}
 
-          $item = $root . "/etc" ;
+          $item = $root . "/built/etc" ;
           #if ( -e $item ) {
       &CTAttachMod( "ETC_PATH", $item, $root, $proj ) ;
           #}

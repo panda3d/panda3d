@@ -78,11 +78,11 @@ def getPaths():
                 parents.append(parent)
 
 
-            # We also put tree/lib on sys.path by hand, because we
+            # We also put tree/built/lib on sys.path by hand, because we
             # will need to load up the generated C++ modules that got
             # put there.  Also, we will find the output of genPyCode
-            # in $DIRECT/lib/pandac.
-            libdir = os.path.join(tree, 'lib')
+            # in $DIRECT/built/lib/pandac.
+            libdir = os.path.join(tree, 'built', 'lib')
             if os.path.isdir(libdir):
                 if libdir not in sys.path:
                     sys.path.append(libdir)

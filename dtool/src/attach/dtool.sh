@@ -73,7 +73,7 @@ fi
 export PENV
 
 if [ -z "$1" ]; then
-  source `$DTOOL/bin/ctattach.drv dtool default`
+  source `$DTOOL/built/bin/ctattach.drv dtool default`
 else
-  source `$DTOOL/bin/ctattach.drv dtool $1`
+  source `$DTOOL/built/bin/ctattach.drv dtool $1`
 fi

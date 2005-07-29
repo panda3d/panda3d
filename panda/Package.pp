@@ -36,18 +36,15 @@
 
 // Where should we install PANDA?
 #if $[PANDA_INSTALL]
-  #define PANDA_INSTALL $[PANDA_INSTALL]
-  #define PANDA_INSTALL_OTHER $(PANDA_INSTALL)
+  #define PANDA_INSTALL $[unixfilename $[PANDA_INSTALL]]
 #elif $[or $[CTPROJS],$[PANDA]]
   #set PANDA $[unixfilename $[PANDA]]
-  #define PANDA_INSTALL $[PANDA]
-  #define PANDA_INSTALL_OTHER $(PANDA)
+  #define PANDA_INSTALL $[PANDA]/built
   #if $[eq $[PANDA],]
     #error You seem to be attached to some trees, but not PANDA!
   #endif
 #else
   #defer PANDA_INSTALL $[unixfilename $[INSTALL_DIR]]
-  #defer PANDA_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 // Also get the DTOOL Package file and everything that includes.

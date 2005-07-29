@@ -1,4 +1,4 @@
-require "$tool/include/ctutils.pl" ;
+require "$tool/built/include/ctutils.pl" ;
 
 # return the root of the given project.
 sub CTProjRoot {

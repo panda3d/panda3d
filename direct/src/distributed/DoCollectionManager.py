@@ -197,7 +197,11 @@ class DoCollectionManager:
             if location is None:
                 location = (do.parentId, do.zoneId)
 
-            assert do.doId not in self.doId2do
+            #assert do.doId not in self.doId2do
+            if do.doId in self.doId2do:
+                print "ignoring repeated object %s" % (do.doId)
+                return
+            
             self.doId2do[do.doId]=do
 
             if self.isValidLocationTuple(location):

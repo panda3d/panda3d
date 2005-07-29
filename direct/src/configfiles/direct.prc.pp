@@ -10,8 +10,8 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
-model-path      $DMODELS
-sound-path      $DMODELS
+model-path      $DMODELS/built
+sound-path      $DMODELS/built
 
 # Define a new egg object type.  See the comments in _panda.prc about this.
 

@@ -127,7 +127,7 @@ FFIConstants.wantTypeChecking = 0
 # Actually, the user is expected to be using ctattach, so never mind
 # on the baked-in stuff--replace it with the dynamic settings from
 # ctattach.
-DoGenPyCode.outputDir = os.path.join(directDir, 'lib', 'pandac')
+DoGenPyCode.outputDir = os.path.join(directDir, 'built', 'lib', 'pandac')
 DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
 

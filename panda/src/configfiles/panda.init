@@ -1,5 +1,5 @@
 SETABS PANDA_VER 0.8
-MODREL ETC_PATH etc
+MODREL ETC_PATH built/etc
 DOCSH if ( ! $?CONFIG_CONFIG ) then
 DOCSH   setenv CONFIG_CONFIG :configpath=CFG_PATH:configpath=ETC_PATH
 DOCSH   setenv CFG_PATH ~

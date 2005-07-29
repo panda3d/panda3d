@@ -1,9 +1,9 @@
-MODREL ETC_PATH etc
-DOCSH source $DTOOL/etc/dtool.alias
+MODREL ETC_PATH built/etc
+DOCSH source $DTOOL/built/etc/dtool.alias
 DOCSH unsetenv LASTLOGIN
 DOCSH setenv OS_VER `uname -r`
 DOCSH ctshowprojs
-DOSH source $DTOOL/etc/dtool.alias-sh
+DOSH source $DTOOL/built/etc/dtool.alias-sh
 DOSH LASTLOGIN=
 DOSH export LASTLOGIN
 DOSH OS_VER=`uname -r`

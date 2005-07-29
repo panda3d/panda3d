@@ -1,7 +1,4 @@
-/bin/
+/built/
 /dtool_config.h
-/etc/
-/include/
-/lib/
 Makefile
 pp.dep

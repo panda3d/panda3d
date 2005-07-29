@@ -17,11 +17,11 @@ if ( $tool eq "" ) {
    die "Environment not configured for CTtools" ;
 }
 
-require "$tool/include/ctutils.pl" ;
-require "$tool/include/ctvspec.pl" ;
-require "$tool/include/ctquery.pl" ;
-require "$tool/include/ctproj.pl" ;
-require "$tool/include/ctcm.pl" ;
+require "$tool/built/include/ctutils.pl" ;
+require "$tool/built/include/ctvspec.pl" ;
+require "$tool/built/include/ctquery.pl" ;
+require "$tool/built/include/ctproj.pl" ;
+require "$tool/built/include/ctcm.pl" ;
 
 $comment = "" ;
 

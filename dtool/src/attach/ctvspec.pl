@@ -1,4 +1,4 @@
-require "$tool/include/ctutils.pl" ;
+require "$tool/built/include/ctutils.pl" ;
 
 # read a .vspec file into a map
 # $_[0] = project

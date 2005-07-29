@@ -1,4 +1,4 @@
-require "$tool/include/ctquery.pl" ;
+require "$tool/built/include/ctquery.pl" ;
 
 $shell_type = "csh" ;
 if ( $ENV{"SHELL_TYPE"} ne "" ) {
@@ -85,33 +85,33 @@ sub CTUnattachCompute {
       # if we scan the .init file first or not.  So we won't.
       &CTUDebug( "extending paths\n" ) ;
 
-      $item = $root . "/bin" ;
+      $item = $root . "/built/bin" ;
       &CTUnattachMod( "PATH", $item ) ;
-      $item = $root . "/lib" ;
+      $item = $root . "/built/lib" ;
       if ( $ENV{"PENV"} eq "WIN32" ) {
 	  &CTUnattachMod( "PATH", $item ) ;
       }
       &CTUnattachMod( "LD_LIBRARY_PATH", $item ) ;
       #$item = $root . "/src/all" ;
       #&CTUnattachMod( "CDPATH", $item ) ;
-      $item = $root . "/include" ;
+      $item = $root . "/built/include" ;
       &CTUnattachMod( "CT_INCLUDE_PATH", $item ) ;
-      $item = $root . "/etc" ;
+      $item = $root . "/built/etc" ;
       &CTUnattachMod( "ETC_PATH", $item ) ;
       $item = $proj . ":" . $flav ;
       &CTUnattachMod( "CTPROJS", $item ) ;
       push( @unset, $proj ) ;
 
-      if ( -e "$root/etc/$_[0].init" ) {
+      if ( -e "$root/built/etc/$_[0].init" ) {
 	 &CTUDebug( "scanning $_[0].init file\n" ) ;
 	 local( @linesplit ) ;
 	 local( $linetmp ) ;
 	 local( $loop );
 	 local( *INITFILE ) ;
-	 if ( -x "$root/etc/$_[0].init" ) {
-	    open( INITFILE, "$root/etc/$_[0].init $_[0] $_[1] $root |" ) ;
+	 if ( -x "$root/built/etc/$_[0].init" ) {
+	    open( INITFILE, "$root/built/etc/$_[0].init $_[0] $_[1] $root |" ) ;
 	 } else {
-	    open( INITFILE, "< $root/etc/$_[0].init" ) ;
+	    open( INITFILE, "< $root/built/etc/$_[0].init" ) ;
 	 }
 	 while ( <INITFILE> ) {
 	    s/\n$// ;

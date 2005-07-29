@@ -1,7 +1,3 @@
-/bin/
-/etc/
-/include/
-/lib/
-/shared/
+/built/
 Makefile
 pp.dep

@@ -80,14 +80,14 @@ endif
 
 if ( ! $?DTOOL ) setenv DTOOL /beta/player/bootstrap/dtool
 if ( $#argv == 0 ) then
-   setenv SETUP_SCRIPT `$DTOOL/bin/ctattach.drv dtool default`
+   setenv SETUP_SCRIPT `$DTOOL/built/bin/ctattach.drv dtool default`
 else
-   setenv SETUP_SCRIPT `$DTOOL/bin/ctattach.drv dtool $argv[1]`
+   setenv SETUP_SCRIPT `$DTOOL/built/bin/ctattach.drv dtool $argv[1]`
 endif
 
 if($SETUP_SCRIPT == "") then
   echo "error: ctattach.drv returned NULL string for setup_script filename!"
-  echo "       'dtool/bin/ctattach.drv' probably doesnt exist, need to make install on dtool to copy it from dtool\src\attach"
+  echo "       'dtool/built/bin/ctattach.drv' probably doesnt exist, need to make install on dtool to copy it from dtool\src\attach"
   exit
 endif
 

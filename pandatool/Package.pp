@@ -37,14 +37,12 @@
 // Where should we install PANDATOOL?
 #if $[or $[CTPROJS],$[PANDATOOL]]
   #set PANDATOOL $[unixfilename $[PANDATOOL]]
-  #define PANDATOOL_INSTALL $[PANDATOOL]
-  #define PANDATOOL_INSTALL_OTHER $(PANDATOOL)
+  #define PANDATOOL_INSTALL $[PANDATOOL]/built
   #if $[eq $[PANDATOOL],]
     #error You seem to be attached to some trees, but not PANDATOOL!
   #endif
 #else
   #defer PANDATOOL_INSTALL $[unixfilename $[INSTALL_DIR]]
-  #defer PANDATOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 // Also get the PANDA Package file and everything that includes.

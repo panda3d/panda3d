@@ -12,9 +12,9 @@ sub CTUnattachUsage {
 
 $tool = $ENV{"DTOOL"} ;
 
-require "$tool/include/ctattch.pl" ;
-require "$tool/include/ctunattach.pl" ;
-require "$tool/include/ctquery.pl" ;
+require "$tool/built/include/ctattch.pl" ;
+require "$tool/built/include/ctunattach.pl" ;
+require "$tool/built/include/ctquery.pl" ;
 
 $tmpname = "/tmp/script.$$" ;
 
