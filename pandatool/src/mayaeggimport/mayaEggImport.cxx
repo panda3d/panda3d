@@ -38,30 +38,14 @@
 #include <maya/MStringArray.h>
 #include <maya/MArgList.h>
 #include <maya/MGlobal.h>
-#include <maya/MSelectionList.h>
-#include <maya/MItSelectionList.h>
-#include <maya/MPoint.h>
-#include <maya/MPointArray.h>
-#include <maya/MDagPath.h>
-#include <maya/MDagPathArray.h>
 #include <maya/MFnPlugin.h>
-#include <maya/MFnMesh.h>
-#include <maya/MFnSet.h>
-#include <maya/MItMeshPolygon.h>
-#include <maya/MItMeshVertex.h>
-#include <maya/MItMeshEdge.h>
-#include <maya/MFloatVector.h>
-#include <maya/MFloatVectorArray.h>
-#include <maya/MFloatArray.h>
-#include <maya/MObjectArray.h>
 #include <maya/MObject.h>
 #include <maya/MPlug.h>
 #include <maya/MPxFileTranslator.h>
-#include <maya/MFnDagNode.h>
-#include <maya/MItDag.h>
-#include <maya/MDistance.h>
-#include <maya/MIntArray.h>
 #include "post_maya_include.h"
+
+#include "mayaEggLoader.h"
+#include "notifyCategoryProxy.h"
 
 //////////////////////////////////////////////////////////////
 
@@ -98,8 +82,51 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
                                 const MString& options,
                                 FileAccessMode mode)
 {
-  fprintf(stderr, "MayaEggImporter::reader not really implemented\n");
-  return MS::kFailure;
+  MString fileName = file.fullName();
+  bool model=false;
+  bool anim=false;
+
+  if (options.length() > 0) {
+    const MString flagModel("model");
+    const MString flagAnim("anim");
+
+    //	Start parsing.
+    //
+    MStringArray optionList;
+    MStringArray theOption;
+    options.split(';', optionList);
+
+    unsigned nOptions = optionList.length();
+    for (unsigned i = 0; i < nOptions; i++) {
+
+      theOption.clear();
+      optionList[i].split('=', theOption);
+      if (theOption.length() < 1) {
+        continue;
+      }
+      
+      if (theOption[0] == flagModel && theOption.length() > 1) {
+        model = atoi(theOption[1].asChar()) ? true:false;
+      } else if (theOption[0] == flagAnim && theOption.length() > 1) {
+        anim = atoi(theOption[1].asChar()) ? true:false;
+      } 
+    }
+  }
+  
+  if ((mode != kImportAccessMode)&&(mode != kOpenAccessMode))
+    return MS::kFailure;
+
+  bool merge = (mode == kImportAccessMode);
+  std::ostringstream log;
+  Notify::ptr()->set_ostream_ptr(&log, false);
+  bool ok = MayaLoadEggFile(fileName.asChar(), merge, model, anim);
+  string txt = log.str();
+  if (txt != "") {
+    MGlobal::displayError(txt.c_str());
+  } else {
+    if (!ok) MGlobal::displayError("Cannot import Egg file, unknown reason");
+  }
+  return ok ? MS::kSuccess : MS::kFailure;
 }
 
 MStatus MayaEggImporter::writer ( const MFileObject& file,

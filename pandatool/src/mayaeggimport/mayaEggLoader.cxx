@@ -34,6 +34,30 @@
 #include "eggPolysetMaker.h"
 #include "eggBin.h"
 
+#include "pre_maya_include.h"
+#include <maya/MStatus.h>
+#include <maya/MPxCommand.h>
+#include <maya/MString.h>
+#include <maya/MStringArray.h>
+#include <maya/MArgList.h>
+#include <maya/MGlobal.h>
+#include <maya/MObject.h>
+#include <maya/MFloatPoint.h>
+#include <maya/MFloatPointArray.h>
+#include <maya/MFloatArray.h>
+#include <maya/MFnMesh.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MFnTransform.h>
+#include <maya/MFnLambertShader.h>
+#include <maya/MPlug.h>
+#include <maya/MFnSet.h>
+#include <maya/MDGModifier.h>
+#include <maya/MSelectionList.h>
+#include <maya/MDagPath.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MPlugArray.h>
+#include "post_maya_include.h"
+
 #include "mayaEggLoader.h"
 
 class MayaEggMesh;
@@ -50,12 +74,12 @@ public:
   bool ConvertEggFile(const char *name, bool merge, bool model, bool anim);
   
 public:
-  void         TraverseEggNode(EggNode *node, EggGroup *context);
+  void          TraverseEggNode(EggNode *node, EggGroup *context);
   MayaEggMesh  *GetMesh(EggVertexPool *pool);
   MayaEggJoint *FindJoint(EggGroup *joint);
   MayaEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
-  MayaEggTex   *GetTex(const string &fn);
-  void         CreateSkinModifier(MayaEggMesh *M);
+  MayaEggTex   *GetTex(const string &name, const string &fn);
+  void          CreateSkinModifier(MayaEggMesh *M);
 
   typedef phash_map<EggVertexPool *, MayaEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
@@ -67,10 +91,17 @@ public:
   MeshTable        _mesh_tab;
   JointTable       _joint_tab;
   TexTable         _tex_tab;
-  int              _next_tex;
   CoordinateSystem _coord_sys;
 };
 
+MFloatPoint ConvertCoordSys(CoordinateSystem sys, LVector3d vec)
+{
+  if (sys == CS_zup_right) {
+    return MFloatPoint(vec[0], vec[2], -vec[1]);
+  } else {
+    return MFloatPoint(vec[0], vec[1], vec[2]);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -81,32 +112,55 @@ public:
 class MayaEggTex
 {
 public:
-  string     _path;
-  int        _id;
-  //  StdMat    *_mat;
-  //  BitmapTex *_bmt;
+  string  _path;
+  MObject _file_texture;
+  MObject _shader;
+  MObject _shading_group;
+  
+  MFnSingleIndexedComponent _component;
 };
 
-MayaEggTex *MayaEggLoader::GetTex(const string &fn)
+MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
 {
   if (_tex_tab.count(fn))
     return _tex_tab[fn];
 
-  //  BitmapTex *bmt = NewDefaultBitmapTex();
-  //  bmt->SetMapName((TCHAR*)(fn.c_str()));
-  //  StdMat *mat = NewDefaultStdMat();
-  //  mat->SetSubTexmap(ID_DI, bmt);
-  //  mat->SetTexmapAmt(ID_DI, 1.0, 0);
-  //  mat->EnableMap(ID_DI, TRUE);
-  //  mat->SetActiveTexmap(bmt);
-  //  GetCOREInterface()->ActivateTexture(bmt, mat);
-  
+  MStatus status;
+  MFnLambertShader shader;
+  MFnDependencyNode filetex;
+  MFnSet sgroup;
+  MPlugArray oldplugs;
+  MDGModifier dgmod;
+
+  shader.create(true,&status);
+  shader.setName(MString(name.c_str())+"Shader");
+  sgroup.create(MSelectionList(), MFnSet::kRenderableOnly, &status);
+  sgroup.setName(MString(name.c_str()));
+  MPlug surfplug = sgroup.findPlug("surfaceShader");
+  if (surfplug.connectedTo(oldplugs,true,false)) {
+    for (int i=0; i<oldplugs.length(); i++) {
+      MPlug src = oldplugs[i];
+      status = dgmod.disconnect(src, surfplug);
+      if (status != MStatus::kSuccess) status.perror("Disconnecting old shader");
+    }
+  }
+  status = dgmod.connect(shader.findPlug("outColor"),surfplug);
+  if (status != MStatus::kSuccess) status.perror("Connecting shader");
+  if (fn != "") {
+    filetex.create("file",&status);
+    filetex.setName(MString(name.c_str())+"File");
+    filetex.findPlug("fileTextureName").setValue(MString(fn.c_str()));
+    dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
+  }
+  status = dgmod.doIt();
+  if (status != MStatus::kSuccess) status.perror("DGMod doIt");
+
   MayaEggTex *res = new MayaEggTex;
   res->_path = fn;
-  res->_id = _next_tex ++;
-  //  res->_bmt = bmt;
-  //  res->_mat = mat;
-
+  res->_file_texture = filetex.object();
+  res->_shader = shader.object();
+  res->_shading_group = sgroup.object();
+  
   _tex_tab[fn] = res;
   return res;
 }
@@ -151,7 +205,7 @@ MayaEggJoint *MayaEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
 {
   MayaEggJoint *parent = FindJoint(context);
   MayaEggJoint *result = new MayaEggJoint;
-  LMatrix4d t = joint->get_transform();
+  LMatrix4d t = joint->get_transform3d();
   if (parent) {
     result->_trans = t * parent->_trans;
   } else {
@@ -317,25 +371,28 @@ struct MEV_Compare: public stl_hash_compare<MayaEggVertex>
 };
 
 typedef phash_set<MayaEggVertex, MEV_Compare> VertTable;
-typedef phash_map<TexCoordd, int>            TVertTable;
-typedef phash_map<Colorf, int>               CVertTable;
+typedef phash_map<TexCoordd, int>             TVertTable;
+typedef phash_map<Colorf, int>                CVertTable;
 
 class MayaEggMesh
 {
 public:
   
-  string           _name;
-  //  TriObject       *_obj;
-  //  Mesh            *_mesh;
-  //  INode           *_node;
-  //  IDerivedObject  *_dobj;
-  //  Modifier        *_skin_mod;
-  //  ISkin           *_iskin;
-  //  ISkinImportData *_iskin_import;
-  int              _vert_count;
-  int              _tvert_count;
-  int              _cvert_count;
-  int              _face_count;
+  string              _name;
+  MFloatPointArray    _vertexArray;
+  MIntArray           _polygonCounts;
+  MIntArray           _polygonConnects;
+  MFloatArray         _uarray;
+  MFloatArray         _varray;
+  MIntArray           _uvIds;
+  MObject             _transNode;
+  MObject             _shapeNode;
+  MDagPath            _shape_dag_path;
+  int                 _vert_count;
+  int                 _tvert_count;
+  int                 _cvert_count;
+  int                 _face_count;
+  vector<MayaEggTex*> _face_tex;
   
   VertTable  _vert_tab;
   TVertTable _tvert_tab;
@@ -344,8 +401,9 @@ public:
   int GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys);
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
-  int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
+  int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, MayaEggTex *tex);
   EggGroup *GetControlJoint(void);
+  void ConnectTextures(void);
 };
 
 #define CTRLJOINT_DEFORM ((EggGroup*)((char*)(-1)))
@@ -372,13 +430,9 @@ int MayaEggMesh::GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sy
   if (vti != _vert_tab.end())
     return vti->_index;
   
-  //  if (_vert_count == _mesh->numVerts) {
-  //    int nsize = _vert_count*2 + 100;
-  //    _mesh->setNumVerts(nsize, _vert_count?TRUE:FALSE);
-  //  }
-  //  vtx._index = _vert_count++;
-  //  _vert_tab.insert(vtx);
-  //  _mesh->setVert(vtx._index, ConvertCoordSys(sys, vtx._pos));
+  vtx._index = _vert_count++;
+  _vertexArray.append(ConvertCoordSys(sys, vtx._pos));
+  _vert_tab.insert(vtx);
   return vtx._index;
 }
 
@@ -386,28 +440,26 @@ int MayaEggMesh::GetTVert(TexCoordd uv)
 {
   if (_tvert_tab.count(uv))
     return _tvert_tab[uv];
-  //  if (_tvert_count == _mesh->numTVerts) {
-  //    int nsize = _tvert_count*2 + 100;
-  //    _mesh->setNumTVerts(nsize, _tvert_count?TRUE:FALSE);
-  //  }
   int idx = _tvert_count++;
-  //  _mesh->setTVert(idx, uv.get_x(), uv.get_y(), 0.0);
+  _uarray.append(uv.get_x());
+  _varray.append(uv.get_y());
   _tvert_tab[uv] = idx;
   return idx;
 }
 
 int MayaEggMesh::GetCVert(Colorf col)
 {
-  if (_cvert_tab.count(col))
-    return _cvert_tab[col];
+  //  if (_cvert_tab.count(col))
+  //    return _cvert_tab[col];
   //  if (_cvert_count == _mesh->numCVerts) {
   //    int nsize = _cvert_count*2 + 100;
   //    _mesh->setNumVertCol(nsize, _cvert_count?TRUE:FALSE);
   //  }
-  int idx = _cvert_count++;
+  //  int idx = _cvert_count++;
   //  _mesh->vertCol[idx] = Point3(col.get_x(), col.get_y(), col.get_z());
-  _cvert_tab[col] = idx;
-  return idx;
+  //  _cvert_tab[col] = idx;
+  //  return idx;
+  return 0;
 }
 
 MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool)
@@ -420,42 +472,54 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool)
       name.resize(nsize-6);
     result = new MayaEggMesh;
     result->_name = name;
-    //    result->_obj  = CreateNewTriObject();
-    //    result->_mesh = &result->_obj->GetMesh();
-    //    result->_mesh->setMapSupport(0, TRUE);
-    //    result->_node = GetCOREInterface()->CreateObjectNode(result->_obj);
-    //    result->_dobj = 0;
-    //    result->_skin_mod = 0;
-    //    result->_iskin = 0;
-    //    result->_iskin_import = 0;
     result->_vert_count = 0;
     result->_tvert_count = 0;
     result->_cvert_count = 0;
     result->_face_count = 0;
-    //    result->_node->SetName((TCHAR*)(name.c_str()));
     _mesh_tab[pool] = result;
   }
   return result;
 }
 
-int MayaEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex)
+int MayaEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, MayaEggTex *tex)
 {
-  static int dump = 0;
-  //  if (_face_count == _mesh->numFaces) {
-  //    int nsize = _face_count*2 + 100;
-  //    BOOL keep = _mesh->numFaces ? TRUE:FALSE;
-  //    _mesh->setNumFaces(nsize, keep);
-  //    _mesh->setNumTVFaces(nsize, keep, _face_count);
-  //    _mesh->setNumVCFaces(nsize, keep, _face_count);
-  //  }
   int idx = _face_count++;
-  //  _mesh->faces[idx].setVerts(v0,v1,v2);
-  //  _mesh->faces[idx].smGroup = 1;
-  //  _mesh->faces[idx].flags = EDGE_ALL | HAS_TVERTS;
-  //  _mesh->faces[idx].setMatID(tex);
-  //  _mesh->tvFace[idx].setTVerts(tv0,tv1,tv2);
-  //  _mesh->vcFace[idx].setTVerts(cv0,cv1,cv2);
+  _polygonCounts.append(3);
+  _polygonConnects.append(v0);
+  _polygonConnects.append(v1);
+  _polygonConnects.append(v2);
+  _uvIds.append(tv0);
+  _uvIds.append(tv1);
+  _uvIds.append(tv2);
+  _face_tex.push_back(tex);
   return idx;
+}
+
+void MayaEggMesh::ConnectTextures(void)
+{
+  bool subtex = false;
+  for (int i=1; i<_face_count; i++)
+    if (_face_tex[i] != _face_tex[0])
+      subtex = true;
+  if (!subtex) {
+    MFnSet sg(_face_tex[0]->_shading_group);
+    sg.addMember(_shapeNode);
+    return;
+  }
+  for (int i=0; i<_face_count; i++) {
+    MayaEggTex *tex = _face_tex[i];
+    if (tex->_component.object()==MObject::kNullObj)
+      tex->_component.create(MFn::kMeshPolygonComponent);
+    tex->_component.addElement(i);
+  }
+  for (int i=0; i<_face_count; i++) {
+    MayaEggTex *tex = _face_tex[i];
+    if (tex->_component.object()!=MObject::kNullObj) {
+      MFnSet sg(tex->_shading_group);
+      sg.addMember(_shape_dag_path, tex->_component.object());
+      tex->_component.setObject(MObject::kNullObj);
+    }
+  }
 }
 
 EggGroup *MayaEggMesh::GetControlJoint(void)
@@ -548,15 +612,16 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
   if (node->is_of_type(EggPolygon::get_class_type())) {
     EggPolygon *poly = DCAST(EggPolygon, node);
 
-    int texid;
+    MayaEggTex *tex = 0;
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
+ 
     if (poly->has_texture()) {
-      EggTexture *tex = poly->get_texture(0);
-      texid = GetTex(tex->get_fullpath().to_os_specific())->_id;
-      if (tex->has_transform())
-        uvtrans = tex->get_transform();
+      EggTexture *etex = poly->get_texture(0);
+      tex = GetTex(etex->get_name(), etex->get_fullpath().to_os_specific());
+      if (etex->has_transform())
+        uvtrans = etex->get_transform2d();
     } else {
-      texid = GetTex("")->_id;
+      tex = GetTex("","");
     }
     
     EggPolygon::const_iterator ci;
@@ -576,7 +641,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
       mesh->AddFace(vertIndices[0], vertIndices[i], vertIndices[i+1],
                     tvertIndices[0], tvertIndices[i], tvertIndices[i+1],
                     cvertIndices[0], cvertIndices[i], cvertIndices[i+1],
-                    texid);
+                    tex);
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group = DCAST(EggGroupNode, node);
     if (node->is_of_type(EggGroup::get_class_type())) {
@@ -609,25 +674,32 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   JointIterator ji;
   TexIterator ti;
 
-  //  SuspendAnimate();
-  //  SuspendSetKeyMode();
-  //  AnimateOff();
-  _next_tex = 0;
   _coord_sys = data->get_coordinate_system();
-  
+
   TraverseEggNode(data, NULL);
 
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci);
-    //    mesh->_mesh->setNumVerts(mesh->_vert_count, TRUE);
-    //    mesh->_mesh->setNumTVerts(mesh->_tvert_count, TRUE);
-    //    mesh->_mesh->setNumVertCol(mesh->_cvert_count, TRUE);
-    //    mesh->_mesh->setNumFaces(mesh->_face_count, TRUE);
-    //    mesh->_mesh->setNumTVFaces(mesh->_face_count, TRUE, mesh->_face_count);
-    //    mesh->_mesh->setNumVCFaces(mesh->_face_count, TRUE, mesh->_face_count);
-    //    mesh->_mesh->InvalidateTopologyCache();
-    //    mesh->_mesh->InvalidateGeomCache();
-    //    mesh->_mesh->buildNormals();
+    if (mesh->_face_count==0) continue;
+
+    MStatus status;
+    MFnMesh mfn;
+    MString cset;
+    
+    mfn.setName(mesh->_name.c_str());
+    mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
+                                  mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
+                                  //                             mesh->_uarray, mesh->_varray,
+                                  MObject::kNullObj, &status);
+    mesh->_shapeNode = mfn.object();
+    MFnDependencyNode mdn(mesh->_transNode);
+    mfn.getPath(mesh->_shape_dag_path);
+    mfn.setName(MString(mesh->_name.c_str())+"Shape");
+    mdn.setName(MString(mesh->_name.c_str()));
+    mesh->ConnectTextures();
+    
+    //    mfn.getCurrentUVSetName(cset);
+    //    mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset); 
   }
   
   double thickness = 0.0;
@@ -648,20 +720,6 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     if (joint) CreateSkinModifier(mesh);
   }
   
-  if (_next_tex) {
-    //    TSTR name;
-    //    MultiMtl *mtl = NewDefaultMultiMtl();
-    //    mtl->SetNumSubMtls(_next_tex);
-    //    for (ti = _tex_tab.begin(); ti != _tex_tab.end(); ++ti) {
-    //      MayaEggTex *tex = *ti;
-    //      mtl->SetSubMtlAndName(tex->_id, tex->_mat, name);
-    //    }
-    //    for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
-    //      MayaEggMesh *mesh = *ci;
-    //      mesh->_node->SetMtl(mtl);
-    //    }
-  }
-
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) delete *ci;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete *ji;
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete *ti;
