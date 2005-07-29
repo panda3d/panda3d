@@ -261,7 +261,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
 
     get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
-
+    
     get_bool_attribute(color, "mirror", _mirror);
     get_bool_attribute(color, "stagger", _stagger);
     get_bool_attribute(color, "wrapU", _wrap_u);
@@ -335,6 +335,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
         if (pla_name.find("outAlpha") != string::npos) {
           maya_cat.debug() << pl.name() << " ignoring: " << pla_name << endl;
+          // In this case the artist is wanting to retain alpha at the result
+          // So make sure that this alpha is not thrown out by the egg file
+          _alpha_is_luminance = true;
           continue;
         }
         if (!first) {
