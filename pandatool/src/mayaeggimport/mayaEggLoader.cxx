@@ -689,7 +689,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     mfn.setName(mesh->_name.c_str());
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
-                                  //                             mesh->_uarray, mesh->_varray,
+                                  mesh->_uarray, mesh->_varray,
                                   MObject::kNullObj, &status);
     mesh->_shapeNode = mfn.object();
     MFnDependencyNode mdn(mesh->_transNode);
@@ -697,9 +697,8 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     mfn.setName(MString(mesh->_name.c_str())+"Shape");
     mdn.setName(MString(mesh->_name.c_str()));
     mesh->ConnectTextures();
-    
-    //    mfn.getCurrentUVSetName(cset);
-    //    mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset); 
+    mfn.getCurrentUVSetName(cset);
+    mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset); 
   }
   
   double thickness = 0.0;
