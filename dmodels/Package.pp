@@ -36,17 +36,14 @@
 
 // Where should we install DMODELS?
 #if $[DMODELS_INSTALL]
-  #define DMODELS_INSTALL $[DMODELS_INSTALL]
-  #define DMODELS_INSTALL_OTHER $[DMODELS_INSTALL]
+  #define DMODELS_INSTALL $[unixfilename $[DMODELS_INSTALL]]
 #elif $[or $[CTPROJS],$[DMODELS]]
-  #define DMODELS_INSTALL $[DMODELS]
-  #define DMODELS_INSTALL_OTHER $(DMODELS)
+  #define DMODELS_INSTALL $[DMODELS]/built
   #if $[eq $[DMODELS],]
     #error You seem to be attached to some trees, but not DMODELS!
   #endif
 #else
   #defer DMODELS_INSTALL $[INSTALL_DIR]
-  #defer DMODELS_INSTALL_OTHER $[INSTALL_DIR]
 #endif
 
 

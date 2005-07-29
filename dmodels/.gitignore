@@ -1,5 +1,6 @@
 *.egg
 *.pt
+/built/
 Makefile
 bams/
 optchar/
