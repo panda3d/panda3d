@@ -1220,7 +1220,8 @@ class LevelEditor(NodePath, PandaObject):
                                         snapPos[0], snapPos[1], zheight)
                     # Angle snap
                     h = direct.grid.computeSnapAngle(selectedNode.getH())
-                    selectedNode.setH(h)
+                    if direct.grid.getHprSnap():
+                        selectedNode.setH(h)
                     if selectedNode == direct.selected.last:
                         self.setLastAngle(h)
                     # Update DNA
@@ -1465,6 +1466,7 @@ class LevelEditor(NodePath, PandaObject):
             self.snapList = self.getSnapPoint(dnaNode.getCode())
         # Select the instance
         direct.select(newNodePath)
+        self.lastNodePath = newNodePath
         # Update grid to get ready for the next object
         self.autoPositionGrid()
 
@@ -2224,8 +2226,8 @@ class LevelEditor(NodePath, PandaObject):
                 return nodePath, dnaNode
         elif nodePath.hasParent():
             return self.findParentVisGroup(nodePath.getParent())
-        else:
-            return None, None
+        # Fall through
+        return None, None
     
     def showGrid(self,flag):
         """ toggle direct grid """
@@ -3380,25 +3382,25 @@ class LevelEditor(NodePath, PandaObject):
                         np.setY(maxPropOffset)
                         self.updateSelectedPose([np])
 
-    def getBuildingLength(self, dnaNode):
-        bldgLength = 0
+    def getBuildingWidth(self, bldg):
+        dnaNode = self.findDNANode(bldg)
+        bldgWidth = 0
         if DNAClassEqual(dnaNode, DNA_FLAT_BUILDING):
-            bldgLength = dnaNode.getWidth()
+            bldgWidth = dnaNode.getWidth()
         elif DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING):
             objectCode = dnaNode.getCode()
             if objectCode[-2:-1] == 'A':
-                bldgLength = 25.0
+                bldgWidth = 25.0
             elif objectCode[-2:-1] == 'B':
-                bldgLength = 15.0
+                bldgWidth = 15.0
             elif objectCode[-2:-1] == 'C':
-                bldgLength = 20.0
-        return bldgLength
+                bldgWidth = 20.0
+        return bldgWidth
 
     def calcLongStreetLength(self, bldgs):
         streetLength = 0
         for bldg in bldgs:
-            dnaNode = self.findDNANode(bldg)
-            streetLength += self.getBuildingLength(dnaNode)
+            streetLength += self.getBuildingWidth(bldg)
         return streetLength
 
     def addStreetUnits(self, streetLength):
@@ -3431,6 +3433,112 @@ class LevelEditor(NodePath, PandaObject):
             ref = bldg
         self.addStreetUnits(streetLength)
 
+    def loadStreetCurve(self):
+        path = '.'
+        streetCurveFilename = askopenfilename(
+            defaultextension = '.egg',
+            filetypes = (('Egg files', '*.egg'),
+                         ('Bam files', '*.bam'),
+                         ('Maya files', '*.mb'),
+                         ('All files', '*')),
+            initialdir = path,
+            title = 'Load Curve File',
+            parent = self.panel.component('hull'))
+        if streetCurveFilename:
+            modelFile = loader.loadModel(Filename.fromOsSpecific(streetCurveFilename))
+            curve = modelFile.find('**/+ClassicNurbsCurve')
+            if not curve.isEmpty():
+                return curve.node()
+            else:
+                return None
+        else:
+            return None
+
+    def duplicateFlatBuilding(self, oldDNANode):
+        # Yes, make a new copy of the dnaNode
+        dnaNode = oldDNANode.__class__(oldDNANode)
+        dnaNode.setWidth(oldDNANode.getWidth())
+        # Add the DNA to the active parent
+        self.DNAParent.add(dnaNode)
+        # And create the geometry
+        newNodePath = dnaNode.traverse(self.NPParent, DNASTORE, 1)
+        return newNodePath
+
+    def makeStreetAlongCurve(self):
+        curve = self.loadStreetCurve()
+        if curve == None:
+            return
+        direct.grid.fXyzSnap = 0
+        direct.grid.fHprSnap = 0
+        self.panel.fPlaneSnap.set(0)
+        bldgGroup = self.consolidateStreetBuildings()
+        bldgs = bldgGroup.getChildrenAsList()
+        currT = 0
+        endT = curve.getMaxT()
+        currPoint = Point3(0)
+        bldgIndex = 0
+        numBldgs = len(bldgs)
+        while currT < endT:
+            if bldgIndex < numBldgs:
+                # Use original
+                bldg = bldgs[bldgIndex]
+                bldgIndex += 1
+            else:
+                # Make a copy
+                oldBldg = bldgs[bldgIndex % numBldgs]
+                bldgIndex += 1
+                oldBldg.select()
+                oldDNANode = self.findDNANode(oldBldg)
+                nodeClass = DNAGetClassType(oldDNANode)
+                if nodeClass.eq(DNA_LANDMARK_BUILDING):
+                    self.addLandmark(oldDNANode.getCode(), oldDNANode.getBuildingType())
+                    bldg = self.lastNodePath
+                else:
+                    bldg = self.duplicateFlatBuilding(oldDNANode)
+            curve.getPoint(currT, currPoint)
+            bldg.setPos(currPoint)
+            bldgWidth = self.getBuildingWidth(bldg)
+            # Adjust grid orientation based upon next point along curve
+            print bldgIndex, currT
+            currT, currPoint = self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, rd = 0)
+            bldg.lookAt(currPoint)
+            bldg.setH(bldg, 90)
+            self.updateSelectedPose([bldg])
+            self.adjustPropChildren(bldg)
+
+    def findBldgEndPoint(self, bldgWidth, curve, currT, currPoint,
+                         startT = None, endT = None, tolerance = 0.1, rd = 0):
+        if startT == None:
+            startT = currT
+        if endT == None:
+            endT = curve.getMaxT()
+        if rd > 100:
+            import pdb
+            pdb.set_trace()
+        midT = (startT + endT)/2.0
+        midPoint = Point3(0)
+        curve.getPoint(midT, midPoint)
+        separation = Vec3(midPoint - currPoint).length()
+        error = separation - bldgWidth
+        #print error, startT, midT
+        if abs(error) < tolerance:
+            return midT, midPoint
+        elif error > 0:
+            # Mid point was beyond building end point, focus on first half
+            return self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, startT = startT, endT = midT,
+                                         rd = rd + 1)
+        else:
+            # End point beyond Mid point, focus on second half
+            # But make sure buildind end point is not beyond curve end point
+            endPoint = Point3(0)
+            curve.getPoint(endT, endPoint)
+            separation = Vec3(endPoint - currPoint).length()
+            if bldgWidth > separation:
+                # Must have reached end of the curve
+                return endT, endPoint
+            else:
+                return self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, startT = midT, endT = endT,
+                                             rd = rd + 1)
 
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
@@ -4751,6 +4859,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             'Make Long Street',
                             label = 'Make Long Street',
                             command = self.levelEditor.makeLongStreet)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Make Street Along Curve',
+                            label = 'Make Street Along Curve',
+                            command = self.levelEditor.makeStreetAlongCurve)
         menuBar.addmenuitem('Level Editor', 'command',
                             'Exit Level Editor Panel',
                             label = 'Exit',
