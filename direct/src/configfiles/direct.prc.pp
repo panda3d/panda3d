@@ -10,8 +10,16 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
+#if $[CTPROJS]
+// If we are using the ctattach tools, append "built"--this is a VR
+// Studio convention.
 model-path      $DMODELS/built
 sound-path      $DMODELS/built
+#else
+// Most people outside the VR Studio just see this.
+model-path      $DMODELS
+sound-path      $DMODELS
+#endif
 
 # Define a new egg object type.  See the comments in _panda.prc about this.
 
