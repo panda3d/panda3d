@@ -68,7 +68,6 @@ public:
   MaxEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
   MaxEggTex   *GetTex(const string &fn);
   void         CreateSkinModifier(MaxEggMesh *M);
-  Point3       ConvertCoordSys(LVector3d vec);
 
   typedef phash_map<EggVertexPool *, MaxEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;

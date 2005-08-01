@@ -193,8 +193,8 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
   std::ostringstream log;
   Notify::ptr()->set_ostream_ptr(&log, false);
   bool ok = MaxLoadEggFile(name, _merge ? true:false, _importmodel ? true:false, _importanim ? true:false);
-  const char *txt = log.str().c_str();
-  if (txt[0]) MessageBox(NULL, txt, "Panda3D Importer", MB_OK);
+  string txt = log.str();
+  if (txt != "") MessageBox(NULL, txt.c_str(), "Panda3D Importer", MB_OK);
   else {
     if (!ok) MessageBox(NULL, "Import Failed, unknown reason\n", "Panda3D Importer", MB_OK);
   }
