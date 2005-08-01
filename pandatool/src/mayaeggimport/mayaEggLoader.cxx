@@ -59,6 +59,7 @@
 #include <maya/MMatrix.h>
 #include <maya/MTransformationMatrix.h>
 #include <maya/MFnIkJoint.h>
+#include <maya/MFnSkinCluster.h>
 #include "post_maya_include.h"
 
 #include "mayaEggLoader.h"
@@ -82,7 +83,7 @@ public:
   MayaEggJoint *FindJoint(EggGroup *joint);
   MayaEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
   MayaEggTex   *GetTex(const string &name, const string &fn);
-  void          CreateSkinModifier(MayaEggMesh *M);
+  void          CreateSkinCluster(MayaEggMesh *M);
 
   typedef phash_map<EggVertexPool *, MayaEggMesh *> MeshTable;
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
@@ -205,6 +206,9 @@ public:
   double         _thickness;
   MObject        _joint;
   MMatrix        _joint_abs;
+  MDagPath       _joint_dag_path;
+  bool           _inskin;
+  int            _index;
   EggGroup       *_egg_joint;
   MayaEggJoint   *_parent;
   vector <MayaEggJoint *> _children;
@@ -249,6 +253,8 @@ MayaEggJoint *MayaEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
   result->_egg_joint = joint;
   result->_parent = parent;
   result->_joint = MObject::kNullObj;
+  result->_inskin = false;
+  result->_index = -1;
   if (parent) parent->_children.push_back(result);
   _joint_tab[joint] = result;
   return result;
@@ -337,6 +343,7 @@ void MayaEggJoint::CreateMayaBone(CoordinateSystem sys)
   else ikj.create();
   ikj.set(mtm);
   _joint = ikj.object();
+  ikj.getPath(_joint_dag_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -568,54 +575,81 @@ EggGroup *MayaEggMesh::GetControlJoint(void)
   }
 }
 
-void MayaEggLoader::CreateSkinModifier(MayaEggMesh *M)
+void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
 {
-  //  vector <MayaEggJoint *> joints;
-  //
-  //  M->_dobj = CreateDerivedObject(M->_obj);
-  //  M->_node->SetObjectRef(M->_dobj);
-  //  M->_skin_mod = (Modifier*)CreateInstance(OSM_CLASS_ID, SKIN_CLASSID);
-  //  M->_iskin = (ISkin*)M->_skin_mod->GetInterface(I_SKIN);
-  //  M->_iskin_import = (ISkinImportData*)M->_skin_mod->GetInterface(I_SKINIMPORTDATA);
-  //  M->_dobj->SetAFlag(A_LOCK_TARGET);
-  //  M->_dobj->AddModifier(M->_skin_mod);
-  //  M->_dobj->ClearAFlag(A_LOCK_TARGET);
-  //  GetCOREInterface()->ForceCompleteRedraw();
-  //
-  //  VertTable::const_iterator vert;
-  //  for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
-  //    for (int i=0; i<vert->_weights.size(); i++) {
-  //      double strength = vert->_weights[i].first;
-  //      MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
-  //      if (!joint->_inskin) {
-  //        joint->_inskin = true;
-  //        joints.push_back(joint);
-  //      }
-  //    }
-  //  }
-  //  for (int i=0; i<joints.size(); i++) {
-  //    BOOL last = (i == (joints.size()-1)) ? TRUE : FALSE;
-  //    M->_iskin_import->AddBoneEx(joints[i]->_node, last);
-  //    joints[i]->_inskin = false;
-  //  }
-  //
-  //  GetCOREInterface()->SetCommandPanelTaskMode(TASK_MODE_MODIFY);
-  //  GetCOREInterface()->SelectNode(M->_node);
-  //  GetCOREInterface()->ForceCompleteRedraw();
-  //
-  //  for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
-  //    Tab<INode*> mayaJoints;
-  //    Tab<float> mayaWeights;
-  //    mayaJoints.ZeroCount();
-  //    mayaWeights.ZeroCount();
-  //    for (int i=0; i<vert->_weights.size(); i++) {
-  //      float strength = (float)(vert->_weights[i].first);
-  //      MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
-  //      mayaWeights.Append(1,&strength);
-  //      mayaJoints.Append(1,&(joint->_node));
-  //    }
-  //    M->_iskin_import->AddWeights(M->_node, vert->_index, mayaJoints, mayaWeights);
-  //  }
+  MString cmd("skinCluster -mi ");
+  vector <MayaEggJoint *> joints;
+
+  VertTable::const_iterator vert;
+  int maxInfluences = 0;
+  for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
+    if ((int)(vert->_weights.size()) > maxInfluences)
+      maxInfluences = vert->_weights.size();
+    for (unsigned int i=0; i<vert->_weights.size(); i++) {
+      double strength = vert->_weights[i].first;
+      MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
+      if (!joint->_inskin) {
+        joint->_inskin = true;
+        joint->_index = joints.size();
+        joints.push_back(joint);
+      }
+    }
+  }
+  cmd += maxInfluences;
+  
+  for (unsigned int i=0; i<joints.size(); i++) {
+    MFnDependencyNode joint(joints[i]->_joint);
+    cmd = cmd + " ";
+    cmd = cmd + joint.name();
+  }
+  
+  MFnDependencyNode shape(M->_shapeNode);
+  cmd = cmd + " ";
+  cmd = cmd + shape.name();
+  
+  MStatus status;
+  MDGModifier dgmod;
+  status = dgmod.commandToExecute(cmd);
+  if (status != MStatus::kSuccess) { perror("skinCluster commandToExecute"); return; }
+  status = dgmod.doIt();
+  if (status != MStatus::kSuccess) { perror("skinCluster doIt"); return; }
+  
+  MPlugArray oldplugs;
+  MPlug inPlug = shape.findPlug("inMesh");
+  if ((!inPlug.connectedTo(oldplugs,true,false))||(oldplugs.length() != 1)) {
+    cerr << "skinCluster command failed";
+    return;
+  }
+  MFnSkinCluster skinCluster(oldplugs[0].node());
+  MIntArray influenceIndices;
+  MFnSingleIndexedComponent component;
+  component.create(MFn::kMeshVertComponent);
+  component.setCompleteData(M->_vert_count);
+  
+  for (unsigned int i=0; i<joints.size(); i++) {
+    unsigned int index = skinCluster.indexForInfluenceObject(joints[i]->_joint_dag_path, &status);
+    if (status != MStatus::kSuccess) { perror("skinCluster index"); return; }
+    influenceIndices.append((int)index);
+  }
+
+  MFloatArray values, oldvalues;
+  int tot = M->_vert_count * joints.size();
+  values.setLength(tot);
+  oldvalues.setLength(tot);
+  for (int i=0; i<tot; i++) values[i] = 0.0;
+  for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
+    for (unsigned int i=0; i<vert->_weights.size(); i++) {
+      double strength = vert->_weights[i].first;
+      MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
+      values[vert->_index * joints.size() + joint->_index] = (float)strength;
+    }
+  }
+  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, &oldvalues);
+
+  for (unsigned int i=0; i<joints.size(); i++) {
+    joints[i]->_inskin = false;
+    joints[i]->_index = -1;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -736,7 +770,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci);
     EggGroup *joint = mesh->GetControlJoint();
-    if (joint) CreateSkinModifier(mesh);
+    if (joint) CreateSkinCluster(mesh);
   }
   
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) (*ci)->AssignNames();
