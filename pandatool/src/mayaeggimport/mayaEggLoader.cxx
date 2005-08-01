@@ -56,6 +56,9 @@
 #include <maya/MDagPath.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MPlugArray.h>
+#include <maya/MMatrix.h>
+#include <maya/MTransformationMatrix.h>
+#include <maya/MFnIkJoint.h>
 #include "post_maya_include.h"
 
 #include "mayaEggLoader.h"
@@ -112,13 +115,27 @@ MFloatPoint ConvertCoordSys(CoordinateSystem sys, LVector3d vec)
 class MayaEggTex
 {
 public:
+  string  _name;
   string  _path;
   MObject _file_texture;
   MObject _shader;
   MObject _shading_group;
   
   MFnSingleIndexedComponent _component;
+  void AssignNames(void);
 };
+
+void MayaEggTex::AssignNames(void)
+{
+  if (_name == "") return;
+  MFnDependencyNode shader(_shader);
+  MFnDependencyNode sgroup(_shading_group);
+  MFnDependencyNode filetex(_file_texture);
+  shader.setName(MString(_name.c_str())+"Shader");
+  sgroup.setName(MString(_name.c_str()));
+  if (_file_texture != MObject::kNullObj)
+    filetex.setName(MString(_name.c_str())+"File");
+}
 
 MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
 {
@@ -129,33 +146,41 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
   MFnLambertShader shader;
   MFnDependencyNode filetex;
   MFnSet sgroup;
-  MPlugArray oldplugs;
-  MDGModifier dgmod;
 
-  shader.create(true,&status);
-  shader.setName(MString(name.c_str())+"Shader");
-  sgroup.create(MSelectionList(), MFnSet::kRenderableOnly, &status);
-  sgroup.setName(MString(name.c_str()));
-  MPlug surfplug = sgroup.findPlug("surfaceShader");
-  if (surfplug.connectedTo(oldplugs,true,false)) {
-    for (int i=0; i<oldplugs.length(); i++) {
-      MPlug src = oldplugs[i];
-      status = dgmod.disconnect(src, surfplug);
-      if (status != MStatus::kSuccess) status.perror("Disconnecting old shader");
+  if (fn=="") {
+    MSelectionList selection;
+    MObject initGroup;
+    selection.clear();
+    MGlobal::getSelectionListByName("initialShadingGroup",selection);
+    selection.getDependNode(0, initGroup);
+    sgroup.setObject(initGroup);
+  } else {
+    MPlugArray oldplugs;
+    MDGModifier dgmod;
+    
+    shader.create(true,&status);
+    sgroup.create(MSelectionList(), MFnSet::kRenderableOnly, &status);
+    MPlug surfplug = sgroup.findPlug("surfaceShader");
+    if (surfplug.connectedTo(oldplugs,true,false)) {
+      for (unsigned int i=0; i<oldplugs.length(); i++) {
+        MPlug src = oldplugs[i];
+        status = dgmod.disconnect(src, surfplug);
+        if (status != MStatus::kSuccess) status.perror("Disconnecting old shader");
+      }
     }
+    status = dgmod.connect(shader.findPlug("outColor"),surfplug);
+    if (status != MStatus::kSuccess) status.perror("Connecting shader");
+    if (fn != "") {
+      filetex.create("file",&status);
+      filetex.findPlug("fileTextureName").setValue(MString(fn.c_str()));
+      dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
+    }
+    status = dgmod.doIt();
+    if (status != MStatus::kSuccess) status.perror("DGMod doIt");
   }
-  status = dgmod.connect(shader.findPlug("outColor"),surfplug);
-  if (status != MStatus::kSuccess) status.perror("Connecting shader");
-  if (fn != "") {
-    filetex.create("file",&status);
-    filetex.setName(MString(name.c_str())+"File");
-    filetex.findPlug("fileTextureName").setValue(MString(fn.c_str()));
-    dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
-  }
-  status = dgmod.doIt();
-  if (status != MStatus::kSuccess) status.perror("DGMod doIt");
 
   MayaEggTex *res = new MayaEggTex;
+  res->_name = name;
   res->_path = fn;
   res->_file_texture = filetex.object();
   res->_shader = shader.object();
@@ -178,10 +203,9 @@ public:
   LVector3d      _endpos;
   LVector3d      _perp;
   double         _thickness;
-  //  bool           _inskin;
-  //  SimpleObject2 *_bone;
-  //  INode         *_node;
-  EggGroup      *_egg_joint;
+  MObject        _joint;
+  MMatrix        _joint_abs;
+  EggGroup       *_egg_joint;
   MayaEggJoint   *_parent;
   vector <MayaEggJoint *> _children;
 
@@ -193,7 +217,15 @@ public:
   MayaEggJoint *ChooseBestChild(LVector3d dir);
   void ChooseEndPos(double thickness);
   void CreateMayaBone(CoordinateSystem sys);
+  void AssignNames(void);
 };
+
+void MayaEggJoint::AssignNames(void)
+{
+  string name = _egg_joint->get_name();
+  MFnDependencyNode joint(_joint);
+  joint.setName(name.c_str());
+}
 
 MayaEggJoint *MayaEggLoader::FindJoint(EggGroup *joint)
 {
@@ -214,11 +246,9 @@ MayaEggJoint *MayaEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
   result->_endpos = LVector3d(0,0,0);
   result->_perp = LVector3d(0,0,0);
   result->_thickness = 0.0;
-  //  result->_inskin = false;
-  //  result->_bone = 0;
-  //  result->_node = 0;
   result->_egg_joint = joint;
   result->_parent = parent;
+  result->_joint = MObject::kNullObj;
   if (parent) parent->_children.push_back(result);
   _joint_tab[joint] = result;
   return result;
@@ -286,42 +316,27 @@ void MayaEggJoint::ChooseEndPos(double thickness)
 
 void MayaEggJoint::CreateMayaBone(CoordinateSystem sys)
 {
-  //  Point3 xv(ConvertCoordSys(sys, GetXV()));
-  //  Point3 yv(ConvertCoordSys(sys, GetYV()));
-  //  Point3 zv(ConvertCoordSys(sys, GetZV()));
-  //  Point3 pos(ConvertCoordSys(sys, GetPos()));
-  //  Point3 endpos(ConvertCoordSys(sys, _endpos));
-  //  Point3 tzv(ConvertCoordSys(sys, _perp));
-  //  
-  //  Point3 fwd = endpos - pos;
-  //  double len = fwd.Length();
-  //  Point3 txv = fwd * ((float)(1.0/len));
-  //  Point3 tyv = tzv ^ txv;
-  //  Point3 row1 = Point3(txv % xv, txv % yv, txv % zv);
-  //  Point3 row2 = Point3(tyv % xv, tyv % yv, tyv % zv);
-  //  Point3 row3 = Point3(tzv % xv, tzv % yv, tzv % zv);
-  //  Matrix3 oomat(row1,row2,row3,Point3(0,0,0));
-  //  Quat ooquat(oomat);
-  //  _bone = (SimpleObject2*)CreateInstance(GEOMOBJECT_CLASS_ID, BONE_OBJ_CLASSID);
-  //  _node = GetCOREInterface()->CreateObjectNode(_bone);
-  //  _node->SetNodeTM(0, Matrix3(xv, yv, zv, pos));
-  //  IParamBlock2 *blk = _bone->pblock2;
-  //  for (int i=0; i<blk->NumParams(); i++) {
-  //    TSTR n = blk->GetLocalName(i);
-  //    if      (strcmp(n, "Length")==0) blk->SetValue(i,0,(float)len); 
-  //    else if (strcmp(n, "Width")==0)  blk->SetValue(i,0,(float)_thickness);
-  //    else if (strcmp(n, "Height")==0) blk->SetValue(i,0,(float)_thickness);
-  //  }
-  //  Point3 boneColor = GetUIColor(COLOR_BONES);
-  //  _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
-  //  _node->SetBoneNodeOnOff(TRUE, 0);
-  //  _node->SetRenderable(FALSE);
-  //  _node->SetName((TCHAR*)(_egg_joint->get_name().c_str()));
-  //  _node->SetObjOffsetRot(ooquat);
-  //  if (_parent) {
-  //    _node->Detach(0, 1);
-  //    _parent->_node->AttachChild(_node, 1);
-  //  }
+  MFloatPoint xv(ConvertCoordSys(sys, GetXV()));
+  MFloatPoint yv(ConvertCoordSys(sys, GetYV()));
+  MFloatPoint zv(ConvertCoordSys(sys, GetZV()));
+  MFloatPoint pos(ConvertCoordSys(sys, GetPos()));
+  MFloatPoint endpos(ConvertCoordSys(sys, _endpos));
+  MFloatPoint tzv(ConvertCoordSys(sys, _perp));
+  
+  double m[4][4];
+  m[0][0]=xv.x;  m[0][1]=xv.y;  m[0][2]=xv.z;  m[0][3]=0;
+  m[1][0]=yv.x;  m[1][1]=yv.y;  m[1][2]=yv.z;  m[1][3]=0;
+  m[2][0]=zv.x;  m[2][1]=zv.y;  m[2][2]=zv.z;  m[2][3]=0;
+  m[3][0]=pos.x; m[3][1]=pos.y; m[3][2]=pos.z; m[3][3]=1;
+  MMatrix trans(m);
+  _joint_abs = trans;
+  if (_parent) trans = trans * _parent->_joint_abs.inverse();
+  MTransformationMatrix mtm(trans);
+  MFnIkJoint ikj;
+  if (_parent) ikj.create(_parent->_joint);
+  else ikj.create();
+  ikj.set(mtm);
+  _joint = ikj.object();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +393,7 @@ class MayaEggMesh
 {
 public:
   
-  string              _name;
+  EggVertexPool      *_pool;
   MFloatPointArray    _vertexArray;
   MIntArray           _polygonCounts;
   MIntArray           _polygonConnects;
@@ -404,6 +419,7 @@ public:
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, MayaEggTex *tex);
   EggGroup *GetControlJoint(void);
   void ConnectTextures(void);
+  void AssignNames(void);
 };
 
 #define CTRLJOINT_DEFORM ((EggGroup*)((char*)(-1)))
@@ -462,16 +478,24 @@ int MayaEggMesh::GetCVert(Colorf col)
   return 0;
 }
 
+void MayaEggMesh::AssignNames(void)
+{
+  string name = _pool->get_name();
+  int nsize = name.size();
+  if ((nsize > 6) && (name.rfind(".verts")==(nsize-6)))
+    name.resize(nsize-6);
+  MFnDependencyNode dnshape(_shapeNode);
+  MFnDependencyNode dntrans(_transNode);
+  dnshape.setName(MString(name.c_str())+"Shape");
+  dntrans.setName(MString(name.c_str()));
+}
+
 MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool)
 {
   MayaEggMesh *result = _mesh_tab[pool];
   if (result == 0) {
-    string name = pool->get_name();
-    int nsize = name.size();
-    if ((nsize > 6) && (name.rfind(".verts")==(nsize-6)))
-      name.resize(nsize-6);
     result = new MayaEggMesh;
-    result->_name = name;
+    result->_pool = pool;
     result->_vert_count = 0;
     result->_tvert_count = 0;
     result->_cvert_count = 0;
@@ -686,16 +710,12 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     MFnMesh mfn;
     MString cset;
     
-    mfn.setName(mesh->_name.c_str());
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
                                   mesh->_uarray, mesh->_varray,
                                   MObject::kNullObj, &status);
     mesh->_shapeNode = mfn.object();
-    MFnDependencyNode mdn(mesh->_transNode);
     mfn.getPath(mesh->_shape_dag_path);
-    mfn.setName(MString(mesh->_name.c_str())+"Shape");
-    mdn.setName(MString(mesh->_name.c_str()));
     mesh->ConnectTextures();
     mfn.getCurrentUVSetName(cset);
     mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset); 
@@ -719,6 +739,10 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     if (joint) CreateSkinModifier(mesh);
   }
   
+  for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) (*ci)->AssignNames();
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) (*ji)->AssignNames();
+  for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) (*ti)->AssignNames();
+
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) delete *ci;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete *ji;
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete *ti;
