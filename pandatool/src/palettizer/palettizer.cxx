@@ -41,14 +41,15 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 14;
+int Palettizer::_pi_version = 15;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
 // Updated to version 11 on 4/30/03 to add TextureReference::_tref_name.
 // Updated to version 12 on 9/11/03 to add _generated_image_pattern.
 // Updated to version 13 on 9/13/03 to add _keep_format and _background.
-// Updated to version 14 on 7/26/06 to add _omit_everything.
+// Updated to version 14 on 7/26/05 to add _omit_everything.
+// Updated to version 15 on 8/01/05 to make TextureImages be case-insensitive.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -1088,12 +1089,67 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     TextureImage *texture;
     DCAST_INTO_R(texture, p_list[index], index);
 
-    _textures.insert(Textures::value_type(texture->get_name(), texture));
+    string name = downcase(texture->get_name());
+    pair<Textures::iterator, bool> result = _textures.insert(Textures::value_type(name, texture));
+    if (!result.second) {
+      // Two textures mapped to the same slot--probably a case error
+      // (since we just changed this rule).
+      _texture_conflicts.push_back(texture);
+    }
     index++;
   }
 
   return index;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+finalize(BamReader *manager) {
+  // Walk through the list of texture names that were in conflict.
+  // These can only happen if there were two different names that
+  // different only in case, which means the textures.boo file was
+  // created before we introduced the rule that case is insignificant.
+  TextureConflicts::iterator ci;
+  for (ci = _texture_conflicts.begin(); 
+       ci != _texture_conflicts.end(); 
+       ++ci) {
+    TextureImage *texture_b = (*ci);
+    string name = downcase(texture_b->get_name());
+
+    Textures::iterator ti = _textures.find(name);
+    nassertv(ti != _textures.end());
+    TextureImage *texture_a = (*ti).second;
+    _textures.erase(ti);
+
+    if (!texture_b->is_used() || !texture_a->is_used()) {
+      // If either texture is not used, there's not really a
+      // conflict--the other one wins.
+      if (texture_a->is_used()) {
+        bool inserted1 = _textures.insert(Textures::value_type(texture_a->get_name(), texture_a)).second;
+        nassertd(inserted1) { }
+
+      } else if (texture_b->is_used()) {
+        bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
+        nassertd(inserted2) { }
+      }
+
+    } else {
+      // If both textures are used, there *is* a conflict.
+      nout << "Texture name conflict: \"" << texture_a->get_name()
+           << "\" vs. \"" << texture_b->get_name() << "\"\n";
+      bool inserted1 = _textures.insert(Textures::value_type(texture_a->get_name(), texture_a)).second;
+      bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
+      nassertd(inserted1 && inserted2) { }
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::make_Palettizer
@@ -1111,6 +1167,8 @@ make_Palettizer(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   me->fillin(scan, manager);
+  manager->register_finalize(me);
+
   return me;
 }
 
@@ -1174,4 +1232,3 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_textures = scan.get_int32();
   manager->read_pointers(scan, _num_textures);
 }
-

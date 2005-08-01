@@ -144,6 +144,8 @@ private:
 
   typedef pmap<string, TextureImage *> Textures;
   Textures _textures;
+  typedef pvector<TextureImage *> TextureConflicts;
+  TextureConflicts _texture_conflicts;
 
 
   // The TypedWritable interface follows.
@@ -152,6 +154,8 @@ public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
   virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_Palettizer(const FactoryParams &params);

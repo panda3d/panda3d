@@ -83,7 +83,9 @@ parse(const string &line) {
     // deemed a texture pattern and will only be tested against
     // textures.
     if (word.length() > 4 && word.substr(word.length() - 4) == ".egg") {
-      _egg_patterns.push_back(GlobPattern(word));
+      GlobPattern pattern(word);
+      pattern.set_case_sensitive(false);
+      _egg_patterns.push_back(pattern);
 
     } else {
       // However, the filename extension, if any, is stripped off
@@ -92,7 +94,9 @@ parse(const string &line) {
       if (dot != string::npos) {
         word = word.substr(0, dot);
       }
-      _texture_patterns.push_back(GlobPattern(word));
+      GlobPattern pattern(word);
+      pattern.set_case_sensitive(false);
+      _texture_patterns.push_back(pattern);
     }
   }
 
