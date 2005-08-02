@@ -644,14 +644,15 @@ class ClientRepository(ConnectionRepository):
         # send the message
         self.send(datagram)
 
-    def sendSetShardMsg(self, shardId):
-        datagram = PyDatagram()
-        # Add message type
-        datagram.addUint16(CLIENT_SET_SHARD)
-        # Add shard id
-        datagram.addUint32(shardId)
-        # send the message
-        self.send(datagram)
+    if not wantOtpServer:
+        def sendSetShardMsg(self, shardId):
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_SET_SHARD)
+            # Add shard id
+            datagram.addUint32(shardId)
+            # send the message
+            self.send(datagram)
 
     def getObjectsOfClass(self, objClass):
         """ returns dict of doId:object, containing all objects

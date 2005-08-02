@@ -30,7 +30,8 @@ CLIENT_OBJECT_DELETE_RESP =                  27
 if not wantOtpServer:        
     CLIENT_SET_ZONE =                            29
 CLIENT_REMOVE_ZONE =                         30
-CLIENT_SET_SHARD =                           31
+if not wantOtpServer:
+    CLIENT_SET_SHARD =                           31
 CLIENT_SET_AVATAR =                          32
 CLIENT_CREATE_OBJECT_REQUIRED =              34
 CLIENT_CREATE_OBJECT_REQUIRED_RESP =         34
