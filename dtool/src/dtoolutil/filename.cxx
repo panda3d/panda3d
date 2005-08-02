@@ -1726,7 +1726,7 @@ make_dir() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::locate_basename
-//       Access: Private
+//       Access: Protected
 //  Description: After the string has been reassigned, search for the
 //               slash marking the beginning of the basename, and set
 //               _dirname_end and _basename_start correctly.
@@ -1778,7 +1778,7 @@ locate_basename() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::locate_extension
-//       Access: Private
+//       Access: Protected
 //  Description: Once the end of the directory prefix has been found,
 //               and _dirname_end and _basename_start are set
 //               correctly, search for the dot marking the beginning
@@ -1819,7 +1819,7 @@ locate_extension() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_common_prefix
-//       Access: Private
+//       Access: Protected
 //  Description: Returns the length of the longest common initial
 //               substring of this string and the other one that ends
 //               in a slash.  This is the lowest directory common to
@@ -1845,7 +1845,7 @@ get_common_prefix(const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::count_slashes
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Returns the number of non-consecutive slashes in the
 //               indicated string, not counting a terminal slash.
 ////////////////////////////////////////////////////////////////////
@@ -1880,7 +1880,7 @@ count_slashes(const string &str) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::r_make_canonical
-//       Access: Private
+//       Access: Protected
 //  Description: The recursive implementation of make_canonical().
 ////////////////////////////////////////////////////////////////////
 bool Filename::

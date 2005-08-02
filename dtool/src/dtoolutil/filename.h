@@ -94,6 +94,8 @@ PUBLISHED:
   INLINE size_t length() const;
   INLINE char operator [] (int n) const;
 
+  INLINE string substr(size_t begin, size_t end = string::npos) const;
+
   // Or, you can use any of these.
   INLINE string get_fullpath() const;
   INLINE string get_dirname() const;
@@ -171,7 +173,7 @@ PUBLISHED:
 
   INLINE void output(ostream &out) const;
 
-private:
+protected:
   void locate_basename();
   void locate_extension();
   size_t get_common_prefix(const string &other) const;
