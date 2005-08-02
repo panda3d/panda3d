@@ -67,6 +67,7 @@ protected:
   NormalsMode _normals_mode;
   double _normals_threshold;
   vector_string _tbn_names;
+  bool _got_tbnall;
 
   bool _got_transform;
   LMatrix4d _transform;

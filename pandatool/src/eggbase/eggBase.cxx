@@ -91,14 +91,18 @@ add_normals_options() {
   add_option
     ("tbn", "name", 48,
      "Compute tangent and binormal for the named texture coordinate "
-     "set(s).  The name may include wildcard characters such as * and ?; "
-     "use \"*\" to recompute tangent and binormal for all texture coordinate "
-     "sets.  "
+     "set(s).  The name may include wildcard characters such as * and ?.  "
      "The normal must already exist or have been computed via one of the "
      "above options.  The tangent and binormal are used to implement "
      "bump mapping and related texture-based lighting effects.  This option "
      "may be repeated as necessary to name multiple texture coordinate sets.",
      &EggBase::dispatch_vector_string, NULL, &_tbn_names);
+
+  add_option
+    ("tbnall", "", 48,
+     "Compute tangent and binormal for all texture coordinate "
+     "set(s).  This is equivalent to -tbn \"*\".",
+     &EggBase::dispatch_none, &_got_tbnall);
 }
 
 ////////////////////////////////////////////////////////////////////

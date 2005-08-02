@@ -163,12 +163,18 @@ post_process_egg_file() {
     break;
   }
 
-  for (vector_string::const_iterator si = _tbn_names.begin();
-       si != _tbn_names.end();
-       ++si) {
-    GlobPattern uv_name(*si);
-    nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
-    _data->recompute_tangent_binormal(uv_name);
+  if (_got_tbnall) {
+    nout << "Computing tangent and binormal for all UV sets.\n";
+    _data->recompute_tangent_binormal(GlobPattern("*"));
+
+  } else {
+    for (vector_string::const_iterator si = _tbn_names.begin();
+	 si != _tbn_names.end();
+	 ++si) {
+      GlobPattern uv_name(*si);
+      nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
+      _data->recompute_tangent_binormal(uv_name);
+    }
   }
 }
 
