@@ -476,12 +476,11 @@ check_lods() {
     // There ought to be the one fewer elements in the array than
     // there are children of the node.
     unsigned int num_elements = plug.numElements();
-    if (num_elements + 1 != _children.size()) {
+    unsigned int num_children = _children.size();
+    if (num_elements + 1 != num_children) {
       mayaegg_cat.warning()
-        << "Node " << get_name() << " has " << plug.numElements()
-        << " LOD entries, but " << _children.size()
-        << " children.  Ignoring LOD specification.\n";
-      return;
+        << "Node " << get_name() << " has " << num_elements
+        << " LOD entries, but " << num_children << " children.\n";
     }
 
     // Should we also consider cameraMatrix, to transform the LOD's
@@ -490,7 +489,8 @@ check_lods() {
     // demonstrates its use.
 
     double switch_out = 0.0;
-    for (unsigned int i = 0; i < num_elements; ++i) {
+    unsigned int i = 0;
+    while (i < num_elements && i < num_children) {
       MPlug element = plug.elementByLogicalIndex(i);
       MayaNodeDesc *child = _children[i];
 
@@ -506,14 +506,19 @@ check_lods() {
       child->_switch_out = switch_out;
 
       switch_out = switch_in;
+      ++i;
     }
 
-    // Also set the last child.  Maya wants this to switch in at
-    // infinity, but Panda doesn't have such a concept; we'll settle
-    // for four times the switch_out distance.
-    MayaNodeDesc *child = _children[num_elements];
-    child->_is_lod = true;
-    child->_switch_in = switch_out * 4.0;
-    child->_switch_out = switch_out;
+    while (i < num_children) {
+      // Also set the last child(ren).  Maya wants this to switch in
+      // at infinity, but Panda doesn't have such a concept; we'll
+      // settle for four times the switch_out distance.
+      MayaNodeDesc *child = _children[i];
+      child->_is_lod = true;
+      child->_switch_in = switch_out * 4.0;
+      child->_switch_out = switch_out;
+      
+      ++i;
+    }
   }
 }
