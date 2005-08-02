@@ -1,0 +1,12 @@
+Panda includes a program, 'packpanda', that packages up
+a panda game into a convenient redistributable.  If you are
+not using 'packpanda,' you can delete the NSIS subdirectory.
+
+NSIS is the "Netscape Scriptable Install System."  It is
+a general-purpose tool for building executable windows
+installers.  "Packpanda" is built on top of NSIS.  Again,
+if you're not using packpanda, you don't need NSIS.
+
+Note that this is a stripped-down version of NSIS, containing
+only the files that panda needs.  You can get a much more
+featureful version of NSIS from http://nsis.sourceforge.net
