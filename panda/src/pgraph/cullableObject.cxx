@@ -82,7 +82,19 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       }
       munge_points_to_quads(traverser);
     }
+
+    bool cpu_animated = false;
+
     if (unsupported_bits & Geom::GR_texcoord_light_vector) {
+      // If we have to compute the light vector, we have to animate
+      // the vertices in the CPU--and we have to do it before we call
+      // munge_geom(), which might lose the tangent and binormal.
+      CPT(GeomVertexData) animated_vertices = 
+	_munged_data->animate_vertices();
+      if (animated_vertices != _munged_data) {
+	cpu_animated = true;
+	_munged_data = animated_vertices;
+      }
       munge_texcoord_light_vector(traverser);
     }
 
@@ -93,13 +105,23 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     StateMunger *state_munger;
     DCAST_INTO_V(state_munger, munger);
     _state = state_munger->munge_state(_state);
-    
-    CPT(GeomVertexData) animated_vertices = 
-      _munged_data->animate_vertices();
+
+    if (!cpu_animated) {
+      // If there is any animation left in the vertex data after it
+      // has been munged--that is, we couldn't arrange to handle the
+      // animation in hardware--then we have to calculate that
+      // animation now.
+      CPT(GeomVertexData) animated_vertices = 
+	_munged_data->animate_vertices();
+      if (animated_vertices != _munged_data) {
+	cpu_animated = true;
+	_munged_data = animated_vertices;
+      }
+    }
+
 #ifndef NDEBUG
     if (show_vertex_animation) {
-      bool cpu_animated = (animated_vertices != _munged_data);
-      bool hardware_animated = (animated_vertices->get_format()->get_animation().get_animation_type() == Geom::AT_hardware);
+      bool hardware_animated = (_munged_data->get_format()->get_animation().get_animation_type() == Geom::AT_hardware);
       if (cpu_animated || hardware_animated) {
         // These vertices were animated, so flash them red or blue.
         static const double flash_rate = 1.0;  // 1 state change per second
@@ -110,7 +132,6 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       }
     }
 #endif
-    _munged_data = animated_vertices;
   }
   if (_next != (CullableObject *)NULL) {
     if (_next->_state != (RenderState *)NULL) {
@@ -190,8 +211,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
   PT(GeomVertexArrayFormat) new_array_format =
     new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
-                                Geom::NT_float32,
-                                Geom::C_clip_point);
+			      Geom::NT_float32,
+			      Geom::C_clip_point);
   if (has_normal) {
     const GeomVertexColumn *c = normal.get_column();
     new_array_format->add_column
