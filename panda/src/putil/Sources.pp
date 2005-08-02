@@ -31,6 +31,7 @@
     firstOfPairCompare.I firstOfPairCompare.h \
     firstOfPairLess.I firstOfPairLess.h \
     globalPointerRegistry.I globalPointerRegistry.h \
+    hashFilename.I hashFilename.h \
     indirectCompareNames.I indirectCompareNames.h \
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
@@ -70,7 +71,9 @@
     datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
-    globalPointerRegistry.cxx ioPtaDatagramFloat.cxx \
+    globalPointerRegistry.cxx \
+    hashFilename.cxx \
+    ioPtaDatagramFloat.cxx \
     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
     load_prc_file.cxx \
@@ -113,6 +116,7 @@
     firstOfPairCompare.I firstOfPairCompare.h \
     firstOfPairLess.I firstOfPairLess.h \
     globalPointerRegistry.I globalPointerRegistry.h \
+    hashFilename.I hashFilename.h \
     indirectCompareNames.I indirectCompareNames.h \
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \

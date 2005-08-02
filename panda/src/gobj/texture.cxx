@@ -29,6 +29,7 @@
 #include "preparedGraphicsObjects.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
+#include "hashFilename.h"
 
 #include <stddef.h>
 
@@ -393,23 +394,12 @@ write(const Filename &name, int z) const {
 //               corresponding number of digits.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read_pages(const Filename &fullpath_template, int z_size) {
-  string fp = fullpath_template.get_fullpath();
-  size_t hash = fp.rfind('#');
-  if (hash == string::npos) {
+read_pages(const HashFilename &fullpath_template, int z_size) {
+  if (!fullpath_template.has_hash()) {
     gobj_cat.error()
       << "Template " << fullpath_template << " contains no hash marks.\n";
     return false;
   }
-
-  // Count the number of hash marks.
-  size_t num_hash = 1;
-  while (hash >= num_hash && fp[hash - num_hash] == '#') {
-    num_hash++;
-  }
-
-  string prefix = fp.substr(0, hash - num_hash + 1);
-  string suffix = fp.substr(hash + 1);
 
   clear_ram_image();
 
@@ -432,29 +422,23 @@ read_pages(const Filename &fullpath_template, int z_size) {
   if (z_size != 0) {
     set_z_size(z_size);
     for (int z = 0; z < z_size; z++) {
-      ostringstream strm;
-      strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
-      if (!read(strm.str(), z)) {
+      if (!read(fullpath_template.get_filename_index(z), z)) {
         return false;
       }
     }
   } else {
     set_z_size(0);
     int z = 0;
-    ostringstream strm;
-    strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
-    Filename file(strm.str());
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
+    Filename file = fullpath_template.get_filename_index(z);
     while (vfs->exists(file)) {
       if (!read(file, z)) {
         return false;
       }
       ++z;
 
-      ostringstream strm;
-      strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
-      file = Filename(strm.str());
+      file = fullpath_template.get_filename_index(z);
     }
   }
 
@@ -475,28 +459,15 @@ read_pages(const Filename &fullpath_template, int z_size) {
 //               corresponding number of digits.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-write_pages(const Filename &fullpath_template) {
-  string fp = fullpath_template.get_fullpath();
-  size_t hash = fp.rfind('#');
-  if (hash == string::npos) {
+write_pages(const HashFilename &fullpath_template) {
+  if (!fullpath_template.has_hash()) {
     gobj_cat.error()
       << "Template " << fullpath_template << " contains no hash marks.\n";
     return false;
   }
 
-  // Count the number of hash marks.
-  size_t num_hash = 1;
-  while (hash >= num_hash && fp[hash - num_hash] == '#') {
-    num_hash++;
-  }
-
-  string prefix = fp.substr(0, hash - num_hash + 1);
-  string suffix = fp.substr(hash + 1);
-
   for (int z = 0; z < _z_size; z++) {
-    ostringstream strm;
-    strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
-    if (!write(strm.str(), z)) {
+    if (!write(fullpath_template.get_filename_index(z), z)) {
       return false;
     }
   }

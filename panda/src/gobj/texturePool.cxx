@@ -93,11 +93,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
     << "Loading texture " << filename << "\n";
   PT(Texture) tex = new Texture;
   if (!tex->read(filename, 0, primary_file_num_channels)) {
-    // This texture was not found.
-    gobj_cat.error()
-      << "Unable to read texture \"" << filename << "\""
-      << " on texture_path " << texture_path
-      << " or model_path " << model_path <<"\n";
+    // This texture was not found or could not be read.
+    report_texture_unreadable(filename);
     return NULL;
   }
 
@@ -145,8 +142,8 @@ ns_load_texture(const Filename &orig_filename,
   PT(Texture) tex = new Texture;
   if (!tex->read(filename, alpha_filename, 0, primary_file_num_channels,
                  alpha_file_channel)) {
-    // This texture was not found.
-    gobj_cat.error() << "Unable to read texture " << filename << "\n";
+    // This texture was not found or could not be read.
+    report_texture_unreadable(filename);
     return NULL;
   }
 
@@ -156,6 +153,114 @@ ns_load_texture(const Filename &orig_filename,
 
   _textures[filename] = tex;
   return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_load_3d_texture
+//       Access: Private
+//  Description: The nonstatic implementation of load_3d_texture().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_load_3d_texture(const HashFilename &filename_template) {
+  // Look up filename 0 on the model path.
+  Filename filename = filename_template.get_filename_index(0);
+  if (!_fake_texture_image.empty()) {
+    filename = _fake_texture_image;
+  }
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_texture_path()) ||
+    vfs->resolve_filename(filename, get_model_path());
+
+  // Then, replace everything before the hash code with the directory
+  // we've found.
+  string hash = filename_template.get_hash_to_end();
+  HashFilename hash_filename(filename.substr(0, filename.length() - hash.length()) + hash);
+
+  Textures::const_iterator ti;
+  ti = _textures.find(hash_filename);
+  if (ti != _textures.end()) {
+    // This texture was previously loaded.
+    return (*ti).second;
+  }
+
+  gobj_cat.info()
+    << "Loading 3-d texture " << hash_filename << "\n";
+  PT(Texture) tex = new Texture;
+  tex->setup_3d_texture();
+  if (!tex->read_pages(hash_filename)) {
+    // This texture was not found or could not be read.
+    report_texture_unreadable(filename);
+  }
+
+  // Set the original filename, before we searched along the path.
+  tex->set_filename(filename_template);
+
+  _textures[hash_filename] = tex;
+  return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_load_cube_map
+//       Access: Private
+//  Description: The nonstatic implementation of load_cube_map().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_load_cube_map(const HashFilename &filename_template) {
+  // Look up filename 0 on the model path.
+  Filename filename = filename_template.get_filename_index(0);
+  if (!_fake_texture_image.empty()) {
+    filename = _fake_texture_image;
+  }
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_texture_path()) ||
+    vfs->resolve_filename(filename, get_model_path());
+
+  // Then, replace everything before the hash code with the directory
+  // we've found.
+  string hash = filename_template.get_hash_to_end();
+  HashFilename hash_filename(filename.substr(0, filename.length() - hash.length()) + hash);
+
+  Textures::const_iterator ti;
+  ti = _textures.find(hash_filename);
+  if (ti != _textures.end()) {
+    // This texture was previously loaded.
+    return (*ti).second;
+  }
+
+  gobj_cat.info()
+    << "Loading cube map texture " << hash_filename << "\n";
+  PT(Texture) tex = new Texture;
+  tex->setup_cube_map();
+  if (!tex->read_pages(hash_filename)) {
+    // This texture was not found or could not be read.
+    report_texture_unreadable(filename);
+  }
+
+  // Set the original filename, before we searched along the path.
+  tex->set_filename(filename_template);
+
+  _textures[hash_filename] = tex;
+  return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_get_normalization_cube_map
+//       Access: Private
+//  Description: The nonstatic implementation of get_normalization_cube_map().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_get_normalization_cube_map(int size) {
+  if (_normalization_cube_map == (Texture *)NULL) {
+    _normalization_cube_map = new Texture("normalization_cube_map");
+  }
+  if (_normalization_cube_map->get_x_size() < size ||
+      _normalization_cube_map->get_texture_type() != Texture::TT_cube_map) {
+    _normalization_cube_map->generate_normalization_cube_map(size);
+  }
+
+  return _normalization_cube_map;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,6 +302,7 @@ ns_release_texture(Texture *tex) {
 void TexturePool::
 ns_release_all_textures() {
   _textures.clear();
+  _normalization_cube_map = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,6 +330,16 @@ ns_garbage_collect() {
   }
 
   _textures.swap(new_set);
+
+  if (_normalization_cube_map->get_ref_count() == 1) {
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+	<< "Releasing normalization cube map\n";
+    }
+    ++num_released;
+    _normalization_cube_map = NULL;
+  }
+
   return num_released;
 }
 
@@ -241,6 +357,38 @@ ns_list_contents(ostream &out) const {
     out << "  " << (*ti).first
         << " (count = " << texture->get_ref_count() << ", ram = "
         << texture->get_ram_image_size() / 1024 << " Kb)\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::report_texture_unreadable
+//       Access: Private
+//  Description: Prints a suitable error message when a texture could
+//               not be loaded.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+report_texture_unreadable(const Filename &filename) const {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->exists(filename)) {
+    if (filename.is_local()) {
+      // The file doesn't exist, and it wasn't
+      // fully-qualified--therefore, it wasn't found along either
+      // search path.
+      gobj_cat.error()
+	<< "Unable to find texture \"" << filename << "\""
+	<< " on texture_path " << texture_path
+	<< " or model_path " << model_path <<"\n";
+    } else {
+      // A fully-specified filename is not searched along the path, so
+      // don't mislead the user with the error message.
+      gobj_cat.error()
+	<< "Texture \"" << filename << "\" does not exist.\n";
+    }
+
+  } else {
+    // The file exists, but it couldn't be read for some reason.
+    gobj_cat.error()
+      << "Texture \"" << filename << "\" exists but cannot be read.\n";
   }
 }
 

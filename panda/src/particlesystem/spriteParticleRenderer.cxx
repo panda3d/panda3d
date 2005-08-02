@@ -74,6 +74,7 @@ SpriteParticleRenderer(Texture *tex) :
 SpriteParticleRenderer::
 SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
   BaseParticleRenderer(copy), 
+  _anims(copy._anims),
   _color(copy._color),
   _height(copy._height),
   _width(copy._width),
@@ -95,7 +96,6 @@ SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
   _blend_method(copy._blend_method),
   _color_interpolation_manager(copy._color_interpolation_manager),
   _pool_size(0),
-  _anims(copy._anims),
   _birth_list(copy._birth_list) {
   init_geoms();
 }
@@ -299,7 +299,6 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
     GeomNode *gnode = NULL;
     const Geom *geom;
     const GeomPrimitive *primitive;
-    bool got_texcoord;
 
     for (int i = 0; i < np_col.get_num_paths(); ++i) {
       // Get the node from which we'll extract the geometry information.
@@ -309,7 +308,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       nassertv(gnode->get_num_geoms() > 0);
       geom = gnode->get_geom(0);
       
-      got_texcoord = false;
+      bool got_texcoord = false;
       TexCoordf min_uv(0.0f, 0.0f);
       TexCoordf max_uv(0.0f, 0.0f);
       
@@ -389,7 +388,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
         float height = max(max_xyz[1] - min_xyz[1],
                            max_xyz[2] - min_xyz[2]);
       
-        if (size_from_texels && got_texcoord) {
+        if (size_from_texels) {
           // If size_from_texels is true, we get the particle size from the
           // number of texels in the source image.
           float y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
@@ -601,7 +600,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       // Set the particle per frame counts to 0.
-      memset(_ttl_count[i],NULL,_anim_size[i]*sizeof(int));
+      memset(_ttl_count[i], 0, _anim_size[i]*sizeof(int));
       
       _sprite_writer[i][j].vertex = GeomVertexWriter(_vdata[i][j], InternalName::get_vertex());
       _sprite_writer[i][j].color = GeomVertexWriter(_vdata[i][j], InternalName::get_color());

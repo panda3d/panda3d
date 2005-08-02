@@ -75,6 +75,50 @@ load_texture(const string &filename, const string &alpha_filename,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::load_3d_texture
+//       Access: Published, Static
+//  Description: Loads a 3-D texture that is specified with a series
+//               of n pages, all numbered in sequence, and beginning
+//               with index 0.  The filename should include a sequence
+//               of one or more hash characters ("#") which will be
+//               filled in with the index number of each level.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+load_3d_texture(const string &filename_template) {
+  return get_ptr()->ns_load_3d_texture(filename_template);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::load_cube_map
+//       Access: Published, Static
+//  Description: Loads a cube map texture that is specified with a
+//               series of 6 pages, numbered 0 through 5.  The
+//               filename should include a sequence of one or more
+//               hash characters ("#") which will be filled in with
+//               the index number of each pagee.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+load_cube_map(const string &filename_template) {
+  return get_ptr()->ns_load_cube_map(filename_template);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::get_normalization_cube_map
+//       Access: Published, Static
+//  Description: Returns a standard Texture object that has been
+//               created with
+//               Texture::generate_normalization_cube_map().  This
+//               Texture may be shared by any application code
+//               requiring a normalization cube map.  It will be at
+//               least as large as the specified size, though it may
+//               be larger.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+get_normalization_cube_map(int size) {
+  return get_ptr()->ns_get_normalization_cube_map(size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::add_texture
 //       Access: Published, Static
 //  Description: Adds the indicated already-loaded texture to the
