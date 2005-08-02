@@ -16,7 +16,7 @@
 !define PSOURCE ..
 
 ; Use the Modern UI
-!include "MUI.nsh"
+!include "PandaMUI.nsh"
 ; Windows system messaging support
 !include "${NSISDIR}\Include\WinMessages.nsh"
 
