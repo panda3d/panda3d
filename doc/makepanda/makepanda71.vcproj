@@ -17,8 +17,8 @@
 			ConfigurationType="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd .. &amp; makepanda\makepanda --everything --no-helix --optimize 1 &amp; copy built\plugins\mayaeggimport6.mll c:\maya6.0\bin\plug-ins"
-				Output="..\..\Maya6.0\bin\maya.exe"/>
+				BuildCommandLine="cd .. &amp; makepanda\makepanda --everything --installer"
+				Output="..\built\bin\ppython.exe"/>
 		</Configuration>
 	</Configurations>
 	<References>
