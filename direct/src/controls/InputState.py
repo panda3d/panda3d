@@ -43,7 +43,14 @@ class InputState(DirectObject.DirectObject):
         self.accept(eventOn, self.set, [name, 1])
         self.accept(eventOff, self.set, [name, 0])
         self.state[name] = default
-        self.watching[name] = (eventOn, eventOff)
+        # self.watching is a dict of the form:
+        #   {name : [(eventOn, eventOff), (eventOn, eventOff)...]}
+        eventList = self.watching.get(name)
+        if eventList:
+            eventList.append((eventOn, eventOff))
+        else:
+            # Start a new list
+            self.watching[name] = [(eventOn, eventOff)]
     
     def force(self, name, value):
         """
@@ -64,9 +71,10 @@ class InputState(DirectObject.DirectObject):
         The opposite of watch(name, ...)
         See Also: watch()
         """
-        eventOn, eventOff = self.watching[name]
-        DirectObject.DirectObject.ignore(self, eventOn)
-        DirectObject.DirectObject.ignore(self, eventOff)
+        for event in self.watching[name]:
+            eventOn, eventOff = event
+            DirectObject.DirectObject.ignore(self, eventOn)
+            DirectObject.DirectObject.ignore(self, eventOff)
         del self.watching[name]
         del self.state[name]
     
