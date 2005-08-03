@@ -206,7 +206,6 @@ COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
 GENMAN=0
-PPGAME=0
 THIRDPARTY="thirdparty"
 VERSION="0.0.0"
 VERBOSE=1
@@ -488,7 +487,6 @@ def usage(problem):
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --thirdparty X    (directory containing third-party software)"
     print "  --installer       (build an installer)"
-    print "  --ppgame X        (build a prepackaged game - see manual)"
     print "  --v1 X            (set the major version number)"
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
@@ -512,10 +510,10 @@ def usage(problem):
 
 def parseopts(args):
     global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,GENMAN
-    global PPGAME,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
+    global VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
-        "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
+        "optimize=","everything","nothing","installer","quiet","verbose",
         "version=","lzma","no-python"]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
@@ -534,7 +532,6 @@ def parseopts(args):
             elif (option=="--verbose"): VERBOSE+=1
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--genman"): GENMAN=1
-            elif (option=="--ppgame"): PPGAME=value
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
             elif (option=="--version"):
@@ -897,8 +894,6 @@ def printStatus(header,warnings):
         if (sys.platform == "win32"):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
-            if PPGAME!=0:  print "Makepanda: Build pprepackaged game ",PPGAME,"using",COMPRESSOR
-            else        :  print "Makepanda: Don't build pprepackaged game"
         print "Makepanda: Version ID: "+VERSION
         for x in warnings: print "Makepanda: "+x
         print "-------------------------------------------------------------------"
@@ -1990,7 +1985,7 @@ ConditionalWriteFile(PREFIX+'/include/ctl3d.h', '/* dummy file to make MAX happy
 
 ########################################################################
 ##
-## Compile the 'ppython' executable and 'genpycode' executables
+## Compile the 'ppython', 'genpycode', and 'packpanda' executables
 ##
 ########################################################################
 
@@ -1998,9 +1993,10 @@ if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/directbase']
     CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
     CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
-    IPATH=['direct/src/directbase']
     CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
     CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
+    CompileC(ipath=IPATH, opts=['BUILDING_PACKPANDA'], src='ppython.cxx', obj='packpanda.obj')
+    CompileLink(opts=['WINUSER'], dll='packpanda.exe', obj=['packpanda.obj'])
 
 ########################################################################
 #
@@ -4699,7 +4695,7 @@ if (icache!=0):
 #
 ##########################################################################################
 
-def MakeInstallerNSIS(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
+def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     if (older(file, ALLTARGETS)):
         print "Building "+fullname+" installer. This can take up to an hour."
         if (COMPRESSOR != "lzma"):
@@ -4711,12 +4707,14 @@ def MakeInstallerNSIS(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
         def0 = '/DCOMPRESSOR="'   + COMPRESSOR   + '" '
         def1 = '/DFULLNAME="'     + fullname     + '" '
         def2 = '/DSMDIRECTORY="'  + smdirectory  + '" '
-        def3 = '/DUNINSTALLKEY="' + uninstallkey + '" '
-        def4 = '/DINSTALLDIR="'   + installdir   + '" '
-        def5 = ''
-        if (ppgame): def5 = '/DPPGAME="' + ppgame + '" '
-        oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" makepanda/panda.nsi")
+        def3 = '/DINSTALLDIR="'   + installdir   + '" '
+        def4 = '/DPANDA="..\\..\\..\\'    + PREFIX       + '" '
+        def5 = '/DPSOURCE="..\\..\\.." '
+        def6 = '/DPYEXTRAS="..\\..\\..\\thirdparty\\win-extras" '
+        def7 = '/DOUTFILE="..\\..\\..\\nsis-output.exe" '
+        oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+def6+def7+" direct/src/directscripts/packpanda.nsi")
         os.rename("nsis-output.exe", file)
+
 
 def MakeInstallerDPKG(file):
     if (older(file,ALLTARGETS)):
@@ -4780,25 +4778,11 @@ Description: The panda3D free 3D engine
 
 if (INSTALLER != 0):
     if (sys.platform == "win32"):
-        MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION,
-                          "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION, 0)
+        MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2") and (os.path.isfile("/usr/bin/dpkg-deb")):
         MakeInstallerDPKG("panda3d_"+VERSION+"_i386.deb")
     else:
         sys.exit("Do not know how to make an installer for this platform")
-
-
-if (PPGAME!=0):
-    if (os.path.isdir(PPGAME)==0):
-        sys.exit("No such directory "+PPGAME)
-    if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
-        sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
-    if (sys.platform == "win32"):
-        MakeInstallerNSIS(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME+" "+VERSION,
-                          PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
-    else:
-        sys.exit("Do not know how to make a prepackaged game for this platform")
-
 
 ##########################################################################################
 #
