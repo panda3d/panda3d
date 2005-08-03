@@ -131,8 +131,10 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS ${PANDA}\epydoc\*
             SetOutPath $INSTDIR
             File /r /x CVS ${PANDA}\ReleaseNotes
+            !ifdef PYEXTRAS
             SetOutPath $INSTDIR\python\lib
             File /nonfatal /r ${PYEXTRAS}\*
+            !endif
             SetOutPath $INSTDIR\models
             File /r /x CVS ${PANDA}\models\*
             SetOutPath $INSTDIR\samples
