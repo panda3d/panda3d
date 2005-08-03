@@ -100,6 +100,28 @@ class AsyncRequest(DirectObject):
                 return
         self.finish()
 
+    def askForObjectField(
+            self, dclassName, fieldName, doId, key=None, context=None):
+        """
+        Request an already created object, i.e. read from database.
+        """
+        assert self.notify.debugCall()
+        if key is None:
+            # default the dictionary key to the fieldName
+            key = fieldName
+        assert doId
+        ## object = self.air.doId2do.get(doId)
+        ## self.neededObjects[key]=object
+        if 0 and object is not None:
+            self._checkCompletion(key, None, object)
+        else:
+            if context is None:
+                context=self.air.allocateContext()
+            self.acceptOnce(
+                "doFieldResponse-%s"%(context,), 
+                self._checkCompletion, [key])
+            self.air.queryObjectField(dclassName, fieldName, doId, context)
+
     def askForObject(self, doId, context=None):
         """
         Request an already created object, i.e. read from database.
@@ -113,10 +135,47 @@ class AsyncRequest(DirectObject):
         else:
             if context is None:
                 context=self.air.allocateContext()
-            self.accept(
+            self.acceptOnce(
                 "doRequestResponse-%s"%(context,), 
                 self._checkCompletion, [None])
             self.air.queryObjectAll(doId, context)
+
+    ## def askForObjectAIReceive(self, doId, context=None):
+        ## """
+        ## Request an already created object, i.e. read from database.
+        ## """
+        ## assert self.notify.debugCall()
+        ## assert doId
+        ## object = self.air.doId2do.get(doId)
+        ## self.neededObjects[doId]=object
+        ## if object is not None:
+            ## self._checkCompletion(None, context, object)
+        ## else:
+            ## if context is None:
+                ## context=self.air.allocateContext()
+            ## self.accept(
+                ## "doRequestResponse-%s"%(context,), 
+                ## self._checkCompletion, [None])
+            ## self.air.queryObjectAIReceive(doId, context)
+
+    #def addInterestInObject(self, doId, context=None):
+    #    """
+    #    Request an already created object, i.e. read from database
+    #    and claim a long term interest in the object (get updates, etc.).
+    #    """
+    #    assert self.notify.debugCall()
+    #    assert doId
+    #    object = self.air.doId2do.get(doId)
+    #    self.neededObjects[doId]=object
+    #    if object is not None:
+    #        self._checkCompletion(None, context, object)
+    #    else:
+    #        if context is None:
+    #            context=self.air.allocateContext()
+    #        self.accept(
+    #            "doRequestResponse-%s"%(context,), 
+    #            self._checkCompletion, [None])
+    #        self.air.queryObject(doId, context)
 
     def createObject(self, name, className, context=None, values=None):
         """
