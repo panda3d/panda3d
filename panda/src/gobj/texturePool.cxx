@@ -331,7 +331,8 @@ ns_garbage_collect() {
 
   _textures.swap(new_set);
 
-  if (_normalization_cube_map->get_ref_count() == 1) {
+  if (_normalization_cube_map != (Texture *)NULL &&
+      _normalization_cube_map->get_ref_count() == 1) {
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
 	<< "Releasing normalization cube map\n";
