@@ -1320,6 +1320,11 @@ class Actor(PandaObject, NodePath):
                     # delete the anim control
                     animControlPair = self.__animControlDict[lodName][partName][animName]
                     if animControlPair[1] != None:
+                        # Try to clear any control effects before we let
+                        # our handle on them go. This is especially
+                        # important if the anim control was blending
+                        # animations.
+                        animControlPair[1].getPart().clearControlEffects()
                         del(animControlPair[1])
                         animControlPair.append(None)
     
