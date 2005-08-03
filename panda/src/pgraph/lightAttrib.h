@@ -92,6 +92,7 @@ PUBLISHED:
   CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
 
   CPT(LightAttrib) filter_to_max(int max_lights) const;
+  NodePath get_most_important_light() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;

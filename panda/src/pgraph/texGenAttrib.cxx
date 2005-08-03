@@ -93,20 +93,19 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
 
   case M_light_vector:
     {
-      Light *light_obj = NULL;
       if (!light.is_empty()) {
-        light_obj = light.node()->as_light();
+	Light *light_obj = light.node()->as_light();
+	if (light_obj == (Light *)NULL) {
+	  ostringstream strm;
+	  strm << "Not a light: " << light;
+	  nassert_raise(strm.str());
+	  mode_def._light = NodePath();
+	}
       }
-      if (light_obj == (Light *)NULL) {
-        ostringstream strm;
-        strm << "Not a light: " << light;
-        nassert_raise(strm.str());
-
-      } else {
-        attrib->_light_vectors.insert(stage);
-        attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
-        attrib->_num_light_vectors++;
-      }
+	  
+      attrib->_light_vectors.insert(stage);
+      attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
+      attrib->_num_light_vectors++;
     }
     break;
 

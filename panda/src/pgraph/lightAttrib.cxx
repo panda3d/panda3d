@@ -545,6 +545,34 @@ filter_to_max(int max_lights) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::get_most_important_light
+//       Access: Public
+//  Description: Returns the most important light (that is, the light
+//               with the highest priority) in the LightAttrib,
+//               excluding any ambient lights.  Returns an empty
+//               NodePath if no non-ambient lights are found.
+////////////////////////////////////////////////////////////////////
+NodePath LightAttrib::
+get_most_important_light() const {
+  NodePath best;
+
+  CompareLightPriorities compare;
+
+  Lights::const_iterator li;
+  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+    const NodePath &np = (*li);
+    nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, NodePath());
+    if (!np.node()->is_exact_type(AmbientLight::get_class_type())) {
+      if (best.is_empty() || compare(np, best)) {
+	best = np;
+      }
+    }
+  }
+
+  return best;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::issue
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the indicated GSG

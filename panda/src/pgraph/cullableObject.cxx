@@ -501,50 +501,67 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
        ++lvi) {
     TextureStage *stage = (*lvi);
     NodePath light = tex_gen->get_light(stage);
-    nassertv(!light.is_empty());
-    string source_name = tex_gen->get_source_name(stage);
-    Light *light_obj = light.node()->as_light();
-    nassertv(light_obj != (Light *)NULL);
-
-    // Determine the names of the tangent and binormal columns
-    // associated with the stage's texcoord name.
-    CPT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
-    CPT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
-
-    CPT(InternalName) texcoord_name = stage->get_texcoord_name();
-
-    if (_munged_data->has_column(tangent_name) &&
-        _munged_data->has_column(binormal_name)) {
-      // Create a new column for the new texcoords.
-      PT(GeomVertexData) new_data = _munged_data->replace_column
-        (texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
-      _munged_data = new_data;
-
-      // Remove this TexGen stage from the state, since we're handling
-      // it now.
-      _state = _state->add_attrib(tex_gen->remove_stage(stage));
+    if (light.is_empty()) {
+      // If a particular light isn't specified in the TexGenAttrib,
+      // use the most important light in the current state.
+      CPT(RenderAttrib) attrib = _state->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (RenderAttrib *)NULL) {
+	CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
+	light = la->get_most_important_light();
+	/*
+	if (!light.is_empty()) {
+	  // Remove that light, now that we're accounting for it in
+	  // the normal map.
+	  _state->set_attrib(la->remove_on_light(light));
+	}
+	*/
+      }
+    }
+    if (!light.is_empty()) {
+      string source_name = tex_gen->get_source_name(stage);
+      Light *light_obj = light.node()->as_light();
+      nassertv(light_obj != (Light *)NULL);
       
-      // Get the transform from the light to the object.
-      CPT(TransformState) light_transform =
-        net_transform->invert_compose(light.get_net_transform());
-      const LMatrix4f &light_mat = light_transform->get_mat();
-
-      GeomVertexWriter texcoord(new_data, texcoord_name);
-      GeomVertexReader vertex(new_data, InternalName::get_vertex());
-      GeomVertexReader tangent(new_data, tangent_name);
-      GeomVertexReader binormal(new_data, binormal_name);
-      GeomVertexReader normal(new_data, InternalName::get_normal());
+      // Determine the names of the tangent and binormal columns
+      // associated with the stage's texcoord name.
+      CPT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
+      CPT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
       
-      while (!vertex.is_at_end()) {
-        LPoint3f p = vertex.get_data3f();
-        LVector3f t = tangent.get_data3f();
-        LVector3f b = binormal.get_data3f();
-        LVector3f n = normal.get_data3f();
-
-        LVector3f lv;
-        if (light_obj->get_vector_to_light(lv, p, light_mat)) {
-          texcoord.add_data3f(lv.dot(t), lv.dot(b), lv.dot(n));
-        }
+      CPT(InternalName) texcoord_name = stage->get_texcoord_name();
+      
+      if (_munged_data->has_column(tangent_name) &&
+	  _munged_data->has_column(binormal_name)) {
+	// Create a new column for the new texcoords.
+	PT(GeomVertexData) new_data = _munged_data->replace_column
+	  (texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
+	_munged_data = new_data;
+	
+	// Remove this TexGen stage from the state, since we're handling
+	// it now.
+	_state = _state->add_attrib(tex_gen->remove_stage(stage));
+	
+	// Get the transform from the light to the object.
+	CPT(TransformState) light_transform =
+	  net_transform->invert_compose(light.get_net_transform());
+	const LMatrix4f &light_mat = light_transform->get_mat();
+	
+	GeomVertexWriter texcoord(new_data, texcoord_name);
+	GeomVertexReader vertex(new_data, InternalName::get_vertex());
+	GeomVertexReader tangent(new_data, tangent_name);
+	GeomVertexReader binormal(new_data, binormal_name);
+	GeomVertexReader normal(new_data, InternalName::get_normal());
+	
+	while (!vertex.is_at_end()) {
+	  LPoint3f p = vertex.get_data3f();
+	  LVector3f t = tangent.get_data3f();
+	  LVector3f b = binormal.get_data3f();
+	  LVector3f n = normal.get_data3f();
+	  
+	  LVector3f lv;
+	  if (light_obj->get_vector_to_light(lv, p, light_mat)) {
+	    texcoord.add_data3f(lv.dot(t), lv.dot(b), lv.dot(n));
+	  }
+	}
       }
     }
   }

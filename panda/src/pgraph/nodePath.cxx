@@ -43,6 +43,7 @@
 #include "transparencyAttrib.h"
 #include "antialiasAttrib.h"
 #include "texProjectorEffect.h"
+#include "texturePool.h"
 #include "planeNode.h"
 #include "lensNode.h"
 #include "materialPool.h"
@@ -3527,6 +3528,82 @@ project_texture(TextureStage *stage, Texture *tex, const NodePath &projector) {
   set_texture(stage, tex);
   set_tex_gen(stage, TexGenAttrib::M_world_position);
   set_tex_projector(stage, NodePath(), projector);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_normal_map
+//       Access: Published
+//  Description: A convenience function to set up a normal map on this
+//               geometry.  This uses the single highest-priority
+//               light on the object only.  It also requires
+//               multitexture, and consumes at least two texture
+//               stages, in addition to what may already be in use.
+//
+//               The normal_map parameter is the texture that contains
+//               the normal map information (with a 3-d delta vector
+//               encoded into the r,g,b of each texel).  texcoord_name is
+//               the name of the texture coordinate set that contains
+//               the tangent and binormal we wish to use.
+//
+//               Only one normal map may be in effect through this
+//               interface at any given time.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_normal_map(Texture *normal_map, const string &texcoord_name) {
+  clear_normal_map();
+
+  // First, we apply the normal map itself, to the bottom layer.
+  PT(TextureStage) normal_map_ts = new TextureStage("normal_map");
+  normal_map_ts->set_texcoord_name(texcoord_name);
+  normal_map_ts->set_sort(-20);
+  normal_map_ts->set_mode(TextureStage::M_replace);
+  set_texture(normal_map_ts, normal_map);
+
+  // Then, we apply a normalization map, to normalize, per-pixel, the
+  // vector to the light.
+  PT(Texture) normalization_map = TexturePool::get_normalization_cube_map(32);
+  PT(TextureStage) normalization_map_ts = new TextureStage("normalization_map");
+  normalization_map_ts->set_combine_rgb
+    (TextureStage::CM_dot3_rgb, 
+     TextureStage::CS_texture, TextureStage::CO_src_color,
+     TextureStage::CS_previous, TextureStage::CO_src_color);
+  normalization_map_ts->set_texcoord_name("light_vector");
+  normalization_map_ts->set_sort(-15);
+  set_texture(normalization_map_ts, normalization_map);
+
+  // Finally, we enable M_light_vector texture coordinate generation.
+  set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector, 
+	      texcoord_name, NodePath());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_normal_map
+//       Access: Published
+//  Description: Undoes the effect of a previous call to
+//               set_normal_map().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_normal_map() {
+  // Scan through the TextureStages, and if we find any whose name
+  // matches one of the stages that would have been left by
+  // set_normal_map(), remove it from the state.
+
+  CPT(RenderAttrib) attrib =
+    get_state()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    for (int i = 0; i < ta->get_num_on_stages(); i++) {
+      TextureStage *stage = ta->get_on_stage(i);
+      if (stage->get_name() == "normal_map") {
+	clear_texture(stage);
+
+      } else if (stage->get_name() == "normalization_map") {
+	clear_texture(stage);
+	clear_tex_gen(stage);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
