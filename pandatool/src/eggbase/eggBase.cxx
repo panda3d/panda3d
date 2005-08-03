@@ -101,7 +101,7 @@ add_normals_options() {
   add_option
     ("tbnall", "", 48,
      "Compute tangent and binormal for all texture coordinate "
-     "set(s).  This is equivalent to -tbn \"*\".",
+     "sets.  This is equivalent to -tbn \"*\".",
      &EggBase::dispatch_none, &_got_tbnall);
 }
 
