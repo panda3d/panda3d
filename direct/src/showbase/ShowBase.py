@@ -272,9 +272,12 @@ class ShowBase(DirectObject.DirectObject):
         """
         if self.config.GetBool('want-env-debug-info', 0):
            print "\n\nEnvironment Debug Info {"
-           print "* model path:", getModelPath()
-           print "* texture path:", getTexturePath()
-           print "* sound path:", getSoundPath()
+           print "* model path:"
+           print getModelPath()
+           print "* texture path:"
+           print getTexturePath()
+           print "* sound path:"
+           print getSoundPath()
            print "}"
 
     def exitfunc(self):
