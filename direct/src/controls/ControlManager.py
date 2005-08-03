@@ -207,6 +207,19 @@ class ControlManager:
         self.disable()
         del self.controls
         del self.currentControls
+
+        inputState.ignore("forward")
+        inputState.ignore("reverse")
+        inputState.ignore("turnLeft")
+        inputState.ignore("turnRight")
+        inputState.ignore("jump")
+        inputState.ignore("slideLeft")
+        inputState.ignore("slideRight")
+        inputState.ignore("levitateUp")
+        inputState.ignore("levitateDown")
+        inputState.ignore("run")
+        inputState.ignore("slide")
+        
         #self.monitorTask.remove()
     
     def getSpeeds(self):
