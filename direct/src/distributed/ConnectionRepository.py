@@ -408,7 +408,7 @@ class ConnectionRepository(
         pass
 
     def send(self, datagram):
-        if self.notify.getDebug():
+        if ConnectionRepository.notify.getDebug():
             print "ConnectionRepository sending datagram:"
             datagram.dumpHex(ostream)
 

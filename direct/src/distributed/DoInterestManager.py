@@ -29,19 +29,19 @@ class DoInterestManager(DirectObject.DirectObject):
         _debug_currentInterests = []
 
     def __init__(self):
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         DirectObject.DirectObject.__init__(self)
 
     def addInterest(self, parentId, zoneIdList, description, event=None):
         """
         Look into a zone.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         DoInterestManager._interestIdAssign += 1
         contextId = DoInterestManager._interestIdAssign
         scopeId = 0
         if event is not None:
-            DoInterestManager._interestIdScopes  += 1
+            DoInterestManager._interestIdScopes += 1
             scopeId = DoInterestManager._interestIdScopes
             
         DoInterestManager._interests[contextId] = [description, scopeId, event, "Active"]
@@ -53,7 +53,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Stop looking in a zone
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
             if event is not None:
@@ -69,7 +69,7 @@ class DoInterestManager(DirectObject.DirectObject):
                 del DoInterestManager._interests[contextId]
             answer = 1
         else:
-            self.notify.warning("removeInterest: contextId not found: %s" % (contextId))
+            DoInterestManager.notify.warning("removeInterest: contextId not found: %s" % (contextId))
         assert self.printInterestsIfDebug()
         return answer
 
@@ -77,7 +77,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Removes old interests and adds new interests.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
             if description is not None:
@@ -94,7 +94,7 @@ class DoInterestManager(DirectObject.DirectObject):
             answer = 1
             assert self.printInterestsIfDebug()
         else:
-            self.notify.warning("alterInterest: contextId not found: %s" % (contextId))
+            DoInterestManager.notify.warning("alterInterest: contextId not found: %s" % (contextId))
         return answer
 
 
@@ -103,12 +103,12 @@ class DoInterestManager(DirectObject.DirectObject):
         Part of the new otp-server code.
              Return a ScopeId Id for an Interest
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         answer = 0
         if  DoInterestManager._interests.has_key(contextId):
             answer = DoInterestManager._interests[contextId][1]
         else:
-            self.notify.warning("GetInterestScopeID: contextId not found: %s" % (contextId))
+            DoInterestManager.notify.warning("GetInterestScopeID: contextId not found: %s" % (contextId))
         return answer
 
 
@@ -116,35 +116,36 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         returns an event for an interest.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         answer = None
         if  DoInterestManager._interests.has_key(contextId):
             answer = DoInterestManager._interests[contextId][2]
         else:
-            self.notify.warning("GetInterestScopeEvent: contextId not found: %s" % (contextId))
+            DoInterestManager.notify.warning("GetInterestScopeEvent: contextId not found: %s" % (contextId))
         return answer
 
     def _ponderRemoveFlaggedInterest(self, handle):
         """
         Consider whether we should cull the interest set.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         if  DoInterestManager._interests.has_key(handle):
                 if DoInterestManager._interests[handle][3] == "PendingDel":
                     del DoInterestManager._interests[handle]
 
     if __debug__:
         def printInterestsIfDebug(self):
-            if self.notify.getDebug():
+            if DoInterestManager.notify.getDebug():
                 self.printInterests()
             return 1 # for assert()
 
         def printInterests(self):
             print "*********************** Interest Sets **************"
-            print "(Interest ID, Description, Scope, Event, Mode)"
+            print "(Description, Scope, Event, Mode)"
             for i in DoInterestManager._interests.values():
                 print i
             print "****************************************************"
+            print "(ContextId, ScopeId, ParentId, ZoneIdList)"
             for i in DoInterestManager._debug_currentInterests:
                 print i
             print "****************************************************"
@@ -158,7 +159,7 @@ class DoInterestManager(DirectObject.DirectObject):
                 necessarily have any relationship to the same contextId
                 on another client.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         if __debug__:
             DoInterestManager._debug_currentInterests.append(
                 (contextId, scopeId, parentId, zoneIdList))
@@ -185,7 +186,7 @@ class DoInterestManager(DirectObject.DirectObject):
                 necessarily have any relationship to the same contextId
                 on another client.
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_REMOVE_INTEREST)
@@ -199,26 +200,26 @@ class DoInterestManager(DirectObject.DirectObject):
         This handles the interest done messages and may dispatch a
         action based on the ID, Context
         """
-        assert self.notify.debugCall()
+        assert DoInterestManager.notify.debugCall()
         id = di.getUint16()
         scope = di.getUint32()
         expect_scope = self.getInterestScopeId(id)
-        self.notify.debug(
+        DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope))
         if expect_scope == scope:
-            self.notify.debug(
+            DoInterestManager.notify.debug(
                 "handleInterestDoneMessage--> Scope Match:%s Scope:%s"
                 %(id,scope))
             event = self.getInterestScopeEvent(id)
             if event is not None:
-                self.notify.debug(
+                DoInterestManager.notify.debug(
                     "handleInterestDoneMessage--> Send Event : %s"%(event))
                 messenger.send(event)
             else:
-                self.notify.debug("handleInterestDoneMessage--> No Event ")
+                DoInterestManager.notify.debug("handleInterestDoneMessage--> No Event ")
             self._ponderRemoveFlaggedInterest(id)
         else:
-            self.notify.debug(
+            DoInterestManager.notify.debug(
                 "handleInterestDoneMessage--> Scope MisMatch :%s :%s"
                 %(expect_scope,scope))
 
