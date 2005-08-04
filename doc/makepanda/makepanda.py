@@ -4182,88 +4182,88 @@ CompileLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-# for VER in ["5","6","65"]:
-#   if (OMIT.count('MAYA'+VER)==0):
-#     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
-#            'pandatool/src/cvscopy']
-#     OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
-#     CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
-#     CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayaloader'+VER+'_config_mayaloader.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libptloader.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libfltegg.lib',
-#                  'libflt.lib',
-#                  'liblwoegg.lib',
-#                  'liblwo.lib',
-#                  'libdxfegg.lib',
-#                  'libdxf.lib',
-#                  'libvrmlegg.lib',
-#                  'libpvrml.lib',
-#                  'libxfileegg.lib',
-#                  'libxfile.lib',
-#                  'libeggbase.lib',
-#                  'libprogbase.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#     ])
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
-#     CompileLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayapview'+VER+'_mayaPview.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libpandaegg.dll',
-#                  'libframework.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-#     OPTS=['MAYA'+VER, 'NSPR']
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
-#     CompileLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'maya2egg'+VER+'_mayaToEgg.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libeggbase.lib',
-#                  'libprogbase.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
-#     CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayacopy'+VER+'_mayaCopy.obj',
-#                  'libcvscopy.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libprogbase.lib',
-#                  'libpandatoolbase.lib',
-#                  'libconverter.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-# #    CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-# #    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-# #                 'mayasavepview'+VER+'_mayaSavePview.obj',
-# #    ])
+for VER in ["5","6","65"]:
+  if (OMIT.count('MAYA'+VER)==0):
+    IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
+           'pandatool/src/cvscopy']
+    OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
+    CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayaloader'+VER+'_config_mayaloader.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libptloader.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libmaya'+VER+'.lib',
+                 'libfltegg.lib',
+                 'libflt.lib',
+                 'liblwoegg.lib',
+                 'liblwo.lib',
+                 'libdxfegg.lib',
+                 'libdxf.lib',
+                 'libvrmlegg.lib',
+                 'libpvrml.lib',
+                 'libxfileegg.lib',
+                 'libxfile.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
+    CompileLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayapview'+VER+'_mayaPview.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libmaya'+VER+'.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libframework.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    OPTS=['MAYA'+VER, 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
+    CompileLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'maya2egg'+VER+'_mayaToEgg.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libmaya'+VER+'.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
+    CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayacopy'+VER+'_mayaCopy.obj',
+                 'libcvscopy.lib',
+                 'libmaya'+VER+'.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+#    CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
+#    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+#                 'mayasavepview'+VER+'_mayaSavePview.obj',
+#    ])
 
 #
 # DIRECTORY: pandatool/src/miscprogs/
