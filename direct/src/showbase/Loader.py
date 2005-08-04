@@ -204,7 +204,50 @@ class Loader:
             texture = TexturePool.loadTexture(texturePath, alphaPath)
         return texture
 
+    def load3DTexture(self, texturePattern):
+        """
+        texturePattern is a string that contains a sequence of one or
+        more '#' characters, which will be filled in with the sequence
+        number.
+
+        Returns a 3-D Texture object, suitable for rendering
+        volumetric textures, if successful, or None if not.
+
+        """
+        assert(Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern) ))
+        if phaseChecker:
+            phaseChecker(texturePattern)
+        texture = TexturePool.load3dTexture(texturePattern)
+        return texture
+
+    def loadCubeMap(self, texturePattern):
+        """
+        texturePattern is a string that contains a sequence of one or
+        more '#' characters, which will be filled in with the sequence
+        number.
+
+        Returns a six-face cube map Texture object if successful, or
+        None if not.
+
+        """
+        assert(Loader.notify.debug("Loading cube map: %s" % (texturePattern) ))
+        if phaseChecker:
+            phaseChecker(texturePattern)
+        texture = TexturePool.loadCubeMap(texturePattern)
+        return texture
+
     def unloadTexture(self, texture):
+
+        """ Removes the previously-loaded texture from the cache, so
+        that when the last reference to it is gone, it will be
+        released.  This also means that the next time the same texture
+        is loaded, it will be re-read from disk (and duplicated in
+        texture memory if there are still outstanding references to
+        it).
+
+        The texture parameter may be the return value of any previous
+        call to loadTexture(), load3DTexture(), or loadCubeMap().
+        """
         assert(Loader.notify.debug("Unloading texture: %s" % (texture) ))
         TexturePool.releaseTexture(texture)
 
