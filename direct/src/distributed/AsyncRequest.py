@@ -117,6 +117,7 @@ class AsyncRequest(DirectObject):
         else:
             if context is None:
                 context=self.air.allocateContext()
+            self.air.contextToClassName[context]=dclassName
             self.acceptOnce(
                 "doFieldResponse-%s"%(context,), 
                 self._checkCompletion, [key])
