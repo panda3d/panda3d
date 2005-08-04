@@ -25,13 +25,19 @@
 #ifdef BUILDING_PPYTHON
 #define LINK_SOURCE "\\bin\\ppython.exe"
 #define LINK_TARGET "\\python\\python.exe"
-#define GENPYCODE 0
+#define PPYTHON 1
 #endif
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "\\bin\\genpycode.exe"
 #define LINK_TARGET "\\python\\python.exe"
 #define GENPYCODE 1
+#endif
+
+#ifdef BUILDING_PACKPANDA
+#define LINK_SOURCE "\\bin\\packpanda.exe"
+#define LINK_TARGET "\\python\\python.exe"
+#define PACKPANDA 1
 #endif
 
 #include <windows.h>
@@ -103,9 +109,15 @@ int main(int argc, char **argv)
   
   // Calculate MODCMD
   
-  if (GENPYCODE) {
-    sprintf(modcmd,"python -c \"import direct.ffi.jGenPyCode\" %s",args);
-  } else sprintf(modcmd,"python %s",args);
+#ifdef PPYTHON
+  sprintf(modcmd,"python %s",args);
+#endif
+#ifdef GENPYCODE
+  sprintf(modcmd,"python -c \"import direct.ffi.jGenPyCode\" %s",args);
+#endif
+#ifdef PACKPANDA
+  sprintf(modcmd,"python -c \"import direct.directscripts.packpanda\" %s",args);
+#endif
   
   // Run it.
 
@@ -132,12 +144,17 @@ int main(int argc, char **argv)
 
 #ifdef BUILDING_PPYTHON
 #define LINK_SOURCE "/bin/ppython"
-#define GENPYCODE 0
+#define PPYTHON 1
 #endif
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "/bin/genpycode"
 #define GENPYCODE 1
+#endif
+
+#ifdef BUILDING_PACKPANDA
+#define LINK_SOURCE "/bin/packpanda"
+#define PACKPANDA 1
 #endif
 
 #include <stdlib.h>
@@ -196,10 +213,14 @@ int main(int argc, char **argv)
   
   modargc=0;
   modargv[modargc++]="python";
-  if (GENPYCODE) {
+#ifdef GENPYCODE
     modargv[modargc++] = "-c";
     modargv[modargc++] = "import direct.ffi.jGenPyCode";
-  }
+#endif
+#ifdef PACKPANDA
+    modargv[modargc++] = "-c";
+    modargv[modargc++] = "import direct.ffi.packpanda";
+#endif
   for (int i=1; i<argc; i++) modargv[modargc++] = argv[i];
   modargv[modargc] = 0;
   
