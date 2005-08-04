@@ -36,7 +36,7 @@
 
 // Where should we install PANDAAPP?
 #if $[or $[CTPROJS],$[PANDAAPP]]
-  #define PANDAAPP_INSTALL $[PANDAAPP]
+  #define PANDAAPP_INSTALL $[PANDAAPP]/built
   #define PANDAAPP_INSTALL_OTHER $(PANDAAPP)
   #if $[eq $[PANDAAPP],]
     #error You seem to be attached to some trees, but not PANDAAPP!
