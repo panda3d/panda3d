@@ -13,9 +13,9 @@
 #define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
 #define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
 
-#define python python
-#if $[and $[WINDOWS_PLATFORM],$[< $[OPTIMIZE],3]]
-  #define python $[python]_d
+#define python $[PYTHON_COMMAND]
+#if $[< $[OPTIMIZE],3]
+  #define python $[PYTHON_DEBUG_COMMAND]
 #endif
 
 // If we're on Win32 without Cygwin, generate a genPyCode.bat file;
