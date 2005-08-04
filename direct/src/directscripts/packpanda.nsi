@@ -5,44 +5,45 @@
 ; mangled by Josh Yelon <jyelon@andrew.cmu.edu>
 
 ; Caller needs to define these variables:
+;
 ;   COMPRESSOR    - either zlib or lzma
-;   FULLNAME      - full name of what we're building            (ie, "Panda3D" or "Airblade")
-;   SMDIRECTORY   - where to put this in the start menu         (ie, "Panda3D VERSION" or "Airblade VERSION")
-;   INSTALLDIR    - where to install the program                (ie, "C:\Program Files\Panda3D-VERSION")
+;   NAME          - name of what we're building                 (ie, "Panda3D" or "Airblade")
+;   SMDIRECTORY   - where to put this in the start menu         (ie, "Panda3D 1.1.0" or "Airblade 1.1.0")
+;   INSTALLDIR    - where to install the program                (ie, "C:\Program Files\Panda3D-1.1.0")
 ;   OUTFILE       - where to put the output file                (ie, "..\nsis-output.exe")
+;   LICENSE       - location of the license file                (ie, "C:\Airblade\LICENSE.TXT")
+;   LANGUAGE      - name of the Language file to use            (ie, "English" or "Panda3DEnglish")
+;   RUNTEXT       - text for run-box at end of installation     (ie, "Run the Panda Greeting Card")
+;   IBITMAP       - name of installer bitmap                    (ie, "C:\Airblade\Airblade.bmp")
+;   UBITMAP       - name of uninstaller bitmap                  (ie, "C:\Airblade\Airblade.bmp")
 ;
 ;   PANDA         - location of panda install tree.
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
 ;
-;   PPGAMEID      - id of prepackaged game, if any                      (ie, "airblade")
-;   PPGAMEPATH    - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
-;   PPGAMEPY      - python program containing prepackaged game, if any  (ie, "Airblade.py")
+;   PPGAME    - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
+;   PPMAIN      - python program containing prepackaged game, if any  (ie, "Airblade.py")
 
-; Use the Modern UI
-!include "PandaMUI.nsh"
-; Windows system messaging support
-!include "${NSISDIR}\Include\WinMessages.nsh"
-
-Name "${FULLNAME}"
+!include "MUI.nsh"
+!include "WinMessages.nsh"
+Name "${NAME}"
 InstallDir "${INSTALLDIR}"
 OutFile "${OUTFILE}"
 
 SetCompress auto
 SetCompressor ${COMPRESSOR}
 
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${IBITMAP}"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${UBITMAP}"
+
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION runFunction
-!ifdef PPGAMEID
-!define MUI_FINISHPAGE_RUN_TEXT "Play ${FULLNAME}"
-!else
-!define MUI_FINISHPAGE_RUN_TEXT "Run the Panda Greeting Card"
-!endif
+!define MUI_FINISHPAGE_RUN_TEXT "${RUNTEXT}"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "${PANDA}\LICENSE"
+!insertmacro MUI_PAGE_LICENSE "${LICENSE}"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -52,11 +53,12 @@ SetCompressor ${COMPRESSOR}
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 
-!insertmacro MUI_LANGUAGE "Panda3DEnglish"
+!insertmacro MUI_LANGUAGE "${LANGUAGE}"
 
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
-LicenseData ${PANDA}\LICENSE
+
+LicenseData ${LICENSE}
 
 InstType "Typical"
 
@@ -66,8 +68,8 @@ var READABLE
 var TUTNAME
 
 Function runFunction
-        !ifdef PPGAMEID
-        ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Play ${FULLNAME}.lnk"
+        !ifdef PPGAME
+        ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk"
         !else
         ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk"
         !endif        
@@ -98,13 +100,13 @@ Section "${SMDIRECTORY}" SecCore
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
 
-        !ifdef PPGAMEID
+        !ifdef PPGAME
 
             SetOutPath $INSTDIR\bin
             File /r ${PANDA}\bin\ppython.exe
-            SetOutpath $INSTDIR\${PPGAMEID}
-            File /r ${PPGAMEPATH}\*
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${FULLNAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPGAMEPY}" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Play ${FULLNAME}"
+            SetOutpath $INSTDIR\game
+            File /r ${PPGAME}\*
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPMAIN}" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
 
         !else
 
@@ -193,7 +195,7 @@ SectionEnd
 
 Section -post
 
-        !ifndef PPGAMEID
+        !ifndef PPGAME
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\bin"
         Call AddToPath
@@ -210,13 +212,13 @@ Section -post
         WriteUninstaller "$INSTDIR\uninst.exe"
         WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SMDIRECTORY}" "DisplayName" "${SMDIRECTORY}"
         WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SMDIRECTORY}" "UninstallString" '"$INSTDIR\uninst.exe"'
-        CreateShortcut "$SMPROGRAMS\${SMDIRECTORY}\Uninstall ${FULLNAME}.lnk" "$INSTDIR\uninst.exe" ""
+        CreateShortcut "$SMPROGRAMS\${SMDIRECTORY}\Uninstall ${NAME}.lnk" "$INSTDIR\uninst.exe" ""
 
 SectionEnd
 
 Section Uninstall
 
-        !ifndef PPGAMEID
+        !ifndef PPGAME
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
         !endif

@@ -12,14 +12,14 @@
 #
 ##############################################################################
 
-import sys,os,getopt,compileall
+import sys,os,getopt,string,shutil,py_compile
 
 OPTIONLIST = [
 ("game",      1, "Name of directory containing game"),
 ("version",   1, "Version number to add to game name"),
 ("fast",      0, "Use fast compression instead of good compression"),
-("bam",       0, "Convert all EGG files to BAM"),
-("pyc",       0, "Convert all PY files to PYC"),
+("cplegg",    0, "Convert all EGG files to BAM"),
+("cplpy",     0, "Convert all PY files to PYC"),
 ]
 
 def ParseFailure():
@@ -55,53 +55,6 @@ OPTIONS = ParseOptions(sys.argv[1:])
 
 ##############################################################################
 #
-# Identify the main parts of the game: GAME, NAME, MAIN, ICON, IMAGE
-#
-##############################################################################
-
-VER=OPTIONS["version"]
-GAME=OPTIONS["game"]
-if (GAME==""):
-  print "You must specify the --game option."
-  ParseFailure()
-GAME=os.path.abspath(GAME)
-NAME=os.path.basename(GAME)
-STARTMENU=os.path.basename(GAME)
-if (VER!=""): STARTMENU=STARTMENU+" "+VER
-MAIN=NAME+".py"
-ICON=os.path.join(GAME,NAME+".ico")
-IMAGE=os.path.join(GAME,NAME+".bmp")
-OUTPUT=os.path.basename(GAME)
-if (VER!=""): OUTPUT=OUTPUT+"-"+VER
-OUTPUT=os.path.abspath(OUTPUT+".exe")
-INSTALLTO='C:\\'+os.path.basename(GAME)
-if (VER!=""): INSTALLTO=INSTALLTO+"-"+VER
-COMPRESS="lzma"
-if (OPTIONS["fast"]): COMPRESS="zlib"
-
-def PrintFileStatus(label, file):
-  if (os.path.exists(file)):
-    print "%-15s: %s"%(label,file)
-  else:
-    print "%-15s: %s (MISSING)"%(label,file)
-  
-PrintFileStatus("Game",GAME)
-print "%-15s: %s"%("Name",NAME)
-print "%-15s: %s"%("Start Menu",STARTMENU)
-PrintFileStatus("Main",os.path.join(GAME,MAIN))
-PrintFileStatus("Icon",ICON)
-PrintFileStatus("Image",IMAGE)
-print "%-15s: %s"%("Output",OUTPUT)
-print "%-15s: %s"%("Install To",INSTALLTO)
-
-if (os.path.isdir(GAME)==0):
-  sys.exit("Difficulty reading "+GAME+". Cannot continue.")
-
-if (os.path.isfile(os.path.join(GAME,MAIN))==0):
-  sys.exit("Difficulty reading "+MAIN+". Cannot continue.")
-
-##############################################################################
-#
 # Locate the relevant trees.
 #
 ##############################################################################
@@ -122,24 +75,137 @@ else:
 
 ##############################################################################
 #
+# Identify the main parts of the game: GAME, NAME, MAIN, ICON, BITMAP, etc
+#
+##############################################################################
+
+VER=OPTIONS["version"]
+GAME=OPTIONS["game"]
+if (GAME==""):
+  print "You must specify the --game option."
+  ParseFailure()
+GAME=os.path.abspath(GAME)
+NAME=os.path.basename(GAME)
+SMDIRECTORY=os.path.basename(GAME)
+if (VER!=""): SMDIRECTORY=SMDIRECTORY+" "+VER
+if (OPTIONS["cplpy"]): MAIN=NAME+".pyc"
+else: MAIN=NAME+".py"
+ICON=os.path.join(GAME,NAME+".ico")
+BITMAP=os.path.join(GAME,NAME+".bmp")
+LICENSE=os.path.join(GAME,"LICENSE.TXT")
+OUTFILE=os.path.basename(GAME)
+if (VER!=""): OUTFILE=OUTFILE+"-"+VER
+OUTFILE=os.path.abspath(OUTFILE+".exe")
+INSTALLDIR='C:\\'+os.path.basename(GAME)
+if (VER!=""): INSTALLDIR=INSTALLDIR+"-"+VER
+COMPRESS="lzma"
+if (OPTIONS["fast"]): COMPRESS="zlib"
+
+def PrintFileStatus(label, file):
+  if (os.path.exists(file)):
+    print "%-15s: %s"%(label,file)
+  else:
+    print "%-15s: %s (MISSING)"%(label,file)
+  
+PrintFileStatus("Game",GAME)
+print "%-15s: %s"%("Name",NAME)
+print "%-15s: %s"%("Start Menu",SMDIRECTORY)
+PrintFileStatus("Main",os.path.join(GAME,MAIN))
+PrintFileStatus("Icon",ICON)
+PrintFileStatus("Bitmap",BITMAP)
+PrintFileStatus("License",LICENSE)
+print "%-15s: %s"%("Output",OUTFILE)
+print "%-15s: %s"%("Install Dir",INSTALLDIR)
+
+if (os.path.isdir(GAME)==0):
+  sys.exit("Difficulty reading "+GAME+". Cannot continue.")
+
+if (os.path.isfile(os.path.join(GAME,NAME+".py"))==0):
+  sys.exit("Difficulty reading "+NAME+".py. Cannot continue.")
+
+if (os.path.isfile(LICENSE)==0):
+  LICENSE=os.path.join(PANDA,"LICENSE")
+
+if (os.path.isfile(BITMAP)==0):
+  BITMAP=os.path.join(NSIS,"Contrib","Modern UI","Graphics","Wizard","nsis.bmp")
+
+##############################################################################
+#
+# If necessary, make a copy of the game for compilation purposes.
+#
+##############################################################################
+
+EGG2BAM=os.path.join(PANDA,"bin","egg2bam.exe")
+
+def egg2bam(file):
+    orig = os.getcwd()
+    dir = os.path.dirname(file)
+    base = os.path.basename(file)
+    pre = base[:-4]
+    cmd = 'egg2bam -noabs "'+base+'" -o "'+pre+'.bam"'
+    print "Executing: "+cmd
+    os.chdir(dir)
+    res = os.spawnl(os.P_WAIT, EGG2BAM, cmd)
+    if (res != 0): sys.exit("Cannot convert egg to bam")
+    os.chdir(orig)
+    os.unlink(file)
+
+def py2pyc(file):
+    print "Compiling python "+file
+    try: py_compile.compile(file)
+    except: sys.exit("Cannot compile "+file)
+    os.unlink(file)
+
+def CompileFiles(file):
+    if (os.path.isfile(file)):
+        if OPTIONS["cplegg"] and (string.lower(file[-4:])==".egg"):
+            egg2bam(file)
+        elif OPTIONS["cplpy"] and (string.lower(file[-3:])==".py"):
+            py2pyc(file)
+        else: pass
+    elif (os.path.isdir(file)):
+        for x in os.listdir(file):
+            CompileFiles(os.path.join(file,x))
+
+if (OPTIONS["cplpy"] or OPTIONS["cplegg"]):
+    TMPDIR=os.path.abspath("packpanda-TMP")
+    print "Copying the game to "+TMPDIR+"..."
+    if (os.path.exists(TMPDIR)):
+        try: shutil.rmtree(TMPDIR)
+        except: sys.exit("Cannot delete "+TMPDIR)
+    try: shutil.copytree(GAME, TMPDIR)
+    except: sys.exit("Cannot copy game to "+TMPDIR)
+    print "Searching for files to compile in "+TMPDIR+"..."
+    CompileFiles(TMPDIR)
+else:
+    TMPDIR=GAME
+
+##############################################################################
+#
 # Run NSIS. Yay!
 #
 ##############################################################################
 
 CMD=NSIS+"\\makensis.exe /V2 "
 CMD=CMD+'/DCOMPRESSOR="'+COMPRESS+'" '
-CMD=CMD+'/DFULLNAME="'+NAME+'" '
-CMD=CMD+'/DSMDIRECTORY="'+STARTMENU+'" '
-CMD=CMD+'/DINSTALLDIR="'+INSTALLTO+'" '
+CMD=CMD+'/DNAME="'+NAME+'" '
+CMD=CMD+'/DSMDIRECTORY="'+SMDIRECTORY+'" '
+CMD=CMD+'/DINSTALLDIR="'+INSTALLDIR+'" '
+CMD=CMD+'/DOUTFILE="'+OUTFILE+'" '
+CMD=CMD+'/DLICENSE="'+LICENSE+'" '
+CMD=CMD+'/DLANGUAGE="English" '
+CMD=CMD+'/DRUNTEXT="Play '+NAME+'" '
+CMD=CMD+'/DIBITMAP="'+BITMAP+'" '
+CMD=CMD+'/DUBITMAP="'+BITMAP+'" '
 CMD=CMD+'/DPANDA="'+PANDA+'" '
 CMD=CMD+'/DPSOURCE="'+PSOURCE+'" '
-CMD=CMD+'/DOUTFILE="'+OUTPUT+'" '
-CMD=CMD+'/DPPGAMEID="'+NAME+'" '
-CMD=CMD+'/DPPGAMEPATH="'+GAME+'" '
-CMD=CMD+'/DPPGAMEPY="'+MAIN+'" '
+CMD=CMD+'/DPPGAME="'+TMPDIR+'" '
+CMD=CMD+'/DPPMAIN="'+MAIN+'" '
 CMD=CMD+'"'+PSOURCE+'\\direct\\src\\directscripts\\packpanda.nsi"'
 
 print ""
 print CMD
 print "packing..."
 os.system(CMD)
+
+
