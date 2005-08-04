@@ -49,6 +49,7 @@ PUBLISHED:
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
+  virtual bool lower_attrib_can_override() const;
   virtual void output(ostream &out) const;
 
 protected:

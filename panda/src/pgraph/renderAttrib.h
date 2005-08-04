@@ -68,6 +68,7 @@ public:
   INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) make_default() const;
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
+  virtual bool lower_attrib_can_override() const;
 
   INLINE bool always_reissue() const;
 

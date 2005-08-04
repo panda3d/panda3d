@@ -1190,8 +1190,18 @@ do_compose(const RenderState *other) const {
       const Attribute &a = (*ai);
       const Attribute &b = (*bi);
       if (b._override < a._override) {
-        // A overrides.
+        // A, the higher RenderAttrib, overrides.
         *result = *ai;
+
+      } else if (a._override < b._override && 
+                 a._attrib->lower_attrib_can_override()) {
+        // B, the lower RenderAttrib, overrides.  This is a special
+        // case; normally, a lower RenderAttrib does not override a
+        // higher one, even if it has a higher override value.  But
+        // certain kinds of RenderAttribs redefine
+        // lower_attrib_can_override() to return true, allowing this
+        // override.
+        *result = *bi;
 
       } else {
         // Either they have the same override value, or B is higher.

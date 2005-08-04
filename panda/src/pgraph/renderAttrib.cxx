@@ -106,6 +106,38 @@ issue(GraphicsStateGuardianBase *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::lower_attrib_can_override
+//       Access: Public, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               This should return false if a RenderAttrib on a
+//               higher node will compose into a RenderAttrib on a
+//               lower node that has a higher override value, or false
+//               if the lower RenderAttrib will completely replace the
+//               state.
+//
+//               The default behavior is false: normally, a
+//               RenderAttrib in the graph cannot completely override
+//               a RenderAttrib above it, regardless of its override
+//               value--instead, the two attribs are composed.  But
+//               for some kinds of RenderAttribs, it is useful to
+//               allow this kind of override.
+//
+//               This method only handles the one special case of a
+//               lower RenderAttrib with a higher override value.  If
+//               the higher RenderAttrib has a higher override value,
+//               it always completely overrides.  And if both
+//               RenderAttribs have the same override value, they are
+//               always composed.
+////////////////////////////////////////////////////////////////////
+bool RenderAttrib::
+lower_attrib_can_override() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::output
 //       Access: Published, Virtual
 //  Description: 
