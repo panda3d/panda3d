@@ -674,8 +674,8 @@ class ClientRepository(ConnectionRepository):
         return doDict
 
     if wantOtpServer:
-        def sendEmulateSetZone(self, zoneId, visibleZoneList=None,
-                parentIdin=None, event=None):
+        def sendEmulateSetZoneMsg(self, zoneId, visibleZoneList=None,
+                                  parentIdin=None, event=None):
             """
             This Will Move The avatar and set an interest to that location ..
             """
@@ -683,11 +683,10 @@ class ClientRepository(ConnectionRepository):
             if parentId is None:
                 parentId = base.localAvatar.defaultShard
 
-            MyAvID = base.localAvatar.doId
-            # move thwe avatar..
-            self.sendSetLocation(MyAvID,parentId,zoneId)
-            # move the interest..
+            # move the avatar
+            self.sendSetLocation(base.localAvatar.doId,parentId,zoneId)
 
+            # move the interest
             InterestZones = zoneId
             if visibleZoneList is not None:
                 InterestZones = visibleZoneList
@@ -733,6 +732,13 @@ class ClientRepository(ConnectionRepository):
 
             # send the message
             self.send(datagram)
+
+            assert self.setZonesRequested >= self.setZonesReceived
+            self.setZonesRequested += 1
+
+        # override if desired
+        def handleSetZoneDone(self):
+            pass
 
     def handleDatagram(self, di):
         if self.notify.getDebug():
