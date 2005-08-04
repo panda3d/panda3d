@@ -3544,17 +3544,21 @@ project_texture(TextureStage *stage, Texture *tex, const NodePath &projector) {
 //               the normal map information (with a 3-d delta vector
 //               encoded into the r,g,b of each texel).  texcoord_name is
 //               the name of the texture coordinate set that contains
-//               the tangent and binormal we wish to use.
+//               the tangent and binormal we wish to use.  If
+//               preserve_color is true, then one additional texture
+//               stage is consumed to blend in the geometry's original
+//               vertex color.
 //
 //               Only one normal map may be in effect through this
 //               interface at any given time.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_normal_map(Texture *normal_map, const string &texcoord_name) {
+set_normal_map(Texture *normal_map, const string &texcoord_name,
+	       bool preserve_color) {
   clear_normal_map();
 
   // First, we apply the normal map itself, to the bottom layer.
-  PT(TextureStage) normal_map_ts = new TextureStage("normal_map");
+  PT(TextureStage) normal_map_ts = new TextureStage("__normal_map");
   normal_map_ts->set_texcoord_name(texcoord_name);
   normal_map_ts->set_sort(-20);
   normal_map_ts->set_mode(TextureStage::M_replace);
@@ -3563,7 +3567,7 @@ set_normal_map(Texture *normal_map, const string &texcoord_name) {
   // Then, we apply a normalization map, to normalize, per-pixel, the
   // vector to the light.
   PT(Texture) normalization_map = TexturePool::get_normalization_cube_map(32);
-  PT(TextureStage) normalization_map_ts = new TextureStage("normalization_map");
+  PT(TextureStage) normalization_map_ts = new TextureStage("__normalization_map");
   normalization_map_ts->set_combine_rgb
     (TextureStage::CM_dot3_rgb, 
      TextureStage::CS_texture, TextureStage::CO_src_color,
@@ -3575,6 +3579,16 @@ set_normal_map(Texture *normal_map, const string &texcoord_name) {
   // Finally, we enable M_light_vector texture coordinate generation.
   set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector, 
 	      texcoord_name, NodePath());
+
+  if (preserve_color) {
+    // One more stage to get back the original color.
+    PT(TextureStage) orig_color_ts = new TextureStage("__orig_color");
+    orig_color_ts->set_combine_rgb
+      (TextureStage::CM_modulate,
+       TextureStage::CS_primary_color, TextureStage::CO_src_color,
+       TextureStage::CS_previous, TextureStage::CO_src_color);
+    set_texture(orig_color_ts, normal_map);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3595,12 +3609,15 @@ clear_normal_map() {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     for (int i = 0; i < ta->get_num_on_stages(); i++) {
       TextureStage *stage = ta->get_on_stage(i);
-      if (stage->get_name() == "normal_map") {
+      if (stage->get_name() == "__normal_map") {
 	clear_texture(stage);
 
-      } else if (stage->get_name() == "normalization_map") {
+      } else if (stage->get_name() == "__normalization_map") {
 	clear_texture(stage);
 	clear_tex_gen(stage);
+
+      } else if (stage->get_name() == "__orig_color") {
+	clear_texture(stage);
       }
     }
   }

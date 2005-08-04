@@ -600,7 +600,8 @@ PUBLISHED:
   void project_texture(TextureStage *stage, Texture *tex, const NodePath &projector);
   INLINE void clear_project_texture(TextureStage *stage);
 
-  void set_normal_map(Texture *normal_map, const string &texcoord_name = string());
+  void set_normal_map(Texture *normal_map, const string &texcoord_name = string(),
+		      bool preserve_color = false);
   void clear_normal_map();
 
   Texture *find_texture(const string &name) const;
