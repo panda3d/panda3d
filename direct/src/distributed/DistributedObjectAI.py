@@ -125,7 +125,9 @@ class DistributedObjectAI(DirectObject):
             if not hasattr(self, "doNotDeallocateChannel"):
                 if self.air:
                     self.air.deallocateChannel(self.doId)
-            self.air = None
+            # Asad: As per Roger's suggestion, turn off the following line until a solution is
+            # Thought out of how to prevent this delete message or to handle this message better
+            #self.air = None
             if hasattr(self, 'parentId'):
                 del self.parentId
             del self.zoneId
