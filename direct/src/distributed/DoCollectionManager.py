@@ -5,6 +5,9 @@ class DoCollectionManager:
     def __init__(self):
         # Dict of {DistributedObject ids : DistributedObjects}
         self.doId2do = {}
+        # for OTP: (parentId, zoneId) to dict of doId->DistributedObjectAI
+        # for NON-OTP: zoneId to dict of doId->DistributedObjectAI
+        self.zoneId2doIds={}
         if wantOtpServer:
             # Dict of {
             #   parent DistributedObject id: 
@@ -194,6 +197,7 @@ class DoCollectionManager:
     if wantOtpServer:
         def addDOToTables(self, do, location=None):
             assert self.notify.debugStateCall(self)
+            assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
             if location is None:
                 location = (do.parentId, do.zoneId)
 
@@ -205,7 +209,8 @@ class DoCollectionManager:
             self.doId2do[do.doId]=do
 
             if self.isValidLocationTuple(location):
-                assert do.doId not in self.zoneId2doIds.get(location,{})
+                assert hasattr(do, "isGlobalDistObj") or (
+                    do.doId not in self.zoneId2doIds.get(location,{}))
                 self.zoneId2doIds.setdefault(location, {})
                 self.zoneId2doIds[location][do.doId]=do
 
@@ -231,6 +236,7 @@ class DoCollectionManager:
     if wantOtpServer:
         def removeDOFromTables(self, do):
             assert self.notify.debugStateCall(self)
+            assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
             #assert do.doId in self.doId2do
             location = do.getLocation()
             if location is not None:
@@ -264,6 +270,7 @@ class DoCollectionManager:
         
     if wantOtpServer:
         def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
+            assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
             oldLocation = (oldParentId, oldZoneId)
             newLocation = (newParentId, newZoneId)
             # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
