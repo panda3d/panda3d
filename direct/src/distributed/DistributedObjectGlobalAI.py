@@ -23,5 +23,5 @@ class DistributedObjectGlobalAI(DistributedObjectAI):
     
     def delete(self):
         self.air.unregisterForChannel(self.doId)
-        self.air.removeDOFromTables(self)
+        ## self.air.removeDOFromTables(self)
         DistributedObjectAI.delete(self)
