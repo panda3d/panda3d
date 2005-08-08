@@ -202,6 +202,168 @@ store_path(const Filename &orig_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PathReplace::full_convert_path
+//       Access: Public
+//  Description: Converts the input path into two different forms:
+//               A resolved path, and an output path.  The resolved
+//               path is an absolute path if at all possible.  The
+//               output path is in the form specified by the -ps
+//               path store option.
+////////////////////////////////////////////////////////////////////
+void PathReplace::
+full_convert_path(const Filename &orig_filename, 
+                  const DSearchPath &additional_path,
+                  Filename &resolved_path,
+                  Filename &output_path) {
+  Filename match;
+  bool got_match = false;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  Entries::const_iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    const Entry &entry = (*ei);
+    Filename new_filename;
+    if (entry.try_match(orig_filename, new_filename)) {
+      // The prefix matches.  Save the resulting filename for
+      // posterity.
+      got_match = true;
+      match = new_filename;
+      
+      if (new_filename.is_fully_qualified()) {
+        // If the resulting filename is fully qualified, it's a match
+        // if and only if it exists.
+        if (vfs->exists(new_filename)) {
+          resolved_path = new_filename;
+          goto calculate_output_path;
+        }
+        
+      } else {
+        // Otherwise, if it's a relative filename, attempt to look it
+        // up on the search path.
+        if (vfs->resolve_filename(new_filename, _path) ||
+            vfs->resolve_filename(new_filename, additional_path) ||
+            vfs->resolve_filename(new_filename, get_model_path())) {
+          // Found it!
+          resolved_path = new_filename;
+          goto calculate_output_path;
+        }
+      }
+      
+      // The prefix matched, but it didn't exist.  Keep looking.
+    }
+  }
+
+  // The file couldn't be found anywhere.  Did we at least get any
+  // prefix match?
+  if (got_match) {
+    if (_exists) {
+      _error_flag = true;
+      pandatoolbase_cat.error()
+        << "File does not exist: " << match << "\n";
+    } else if (pandatoolbase_cat.is_debug()) {
+      pandatoolbase_cat.debug()
+        << "File does not exist: " << match << "\n";
+    }
+
+    resolved_path = match;
+    goto calculate_output_path;
+  }
+
+  if (!orig_filename.is_local()) {
+    // Ok, we didn't match any specified prefixes.  If the file is an
+    // absolute pathname and we have _noabs set, that's an error.
+    if (_noabs) {
+      _error_flag = true;
+      pandatoolbase_cat.error()
+        << "Absolute pathname: " << orig_filename << "\n";
+    } else if (pandatoolbase_cat.is_debug()) {
+      pandatoolbase_cat.debug()
+        << "Absolute pathname: " << orig_filename << "\n";
+    }
+  }
+
+  // Well, we still haven't found it; look it up on the search path as
+  // is.
+  {
+    Filename new_filename = orig_filename;
+    if (vfs->resolve_filename(new_filename, _path) ||
+        vfs->resolve_filename(new_filename, additional_path) ||
+        vfs->resolve_filename(new_filename, get_model_path())) {
+      // Found it!
+      match = orig_filename;
+      resolved_path = new_filename;
+      goto calculate_output_path;
+    }
+  }
+
+  // Nope, couldn't find anything.  This is an error, but just return
+  // the original filename.
+  if (_exists) {
+    _error_flag = true;
+    pandatoolbase_cat.error()
+      << "File does not exist: " << orig_filename << "\n";
+  } else if (pandatoolbase_cat.is_debug()) {
+    pandatoolbase_cat.debug()
+      << "File does not exist: " << orig_filename << "\n";
+  }
+  match = orig_filename;
+  resolved_path = orig_filename;
+
+  // To calculate the output path, we need two inputs:
+  // the match, and the resolved path.  Which one is used
+  // depends upon the path-store mode.
+ calculate_output_path:
+
+  switch (_path_store) {
+  case PS_relative:
+    if (resolved_path.empty())
+      output_path = resolved_path;
+    else {
+      if (_path_directory.is_local())
+        _path_directory.make_absolute();
+      output_path = resolved_path;
+      output_path.make_absolute();
+      output_path.make_relative_to(_path_directory);
+    }
+    break;
+    
+  case PS_absolute:
+    if (resolved_path.empty())
+      output_path = resolved_path;
+    else {
+      output_path = resolved_path;
+      output_path.make_absolute();
+    }
+    break;
+
+  case PS_rel_abs:
+    if (resolved_path.empty())
+      output_path = resolved_path;
+    else {
+      if (_path_directory.is_local())
+        _path_directory.make_absolute();
+      output_path = resolved_path;
+      output_path.make_absolute();
+      output_path.make_relative_to(_path_directory, false);
+    }
+    break;
+
+  case PS_strip:
+    output_path = match.get_basename();
+    break;
+
+  case PS_keep:
+    output_path = match;
+    break;
+
+  case PS_invalid:
+    output_path = "";
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PathReplace::write
 //       Access: Public
 //  Description: 

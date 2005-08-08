@@ -2280,9 +2280,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         // If we have a texture on color, apply it as the filename.
         //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
-        Filename fullpath = 
-          _path_replace->match_path(filename, get_texture_path());
-        tex.set_filename(_path_replace->store_path(fullpath));
+        Filename fullpath, outpath;
+        _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+        tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         apply_texture_properties(tex, *color_def);
         
@@ -2325,8 +2325,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
             // set_alpha_file_channel()), but for now we assume it comes
             // from the grayscale data.
             filename = Filename::from_os_specific(trans_def._texture_filename);
-            fullpath = _path_replace->match_path(filename, get_texture_path());
-            tex.set_alpha_filename(_path_replace->store_path(fullpath));
+            _path_replace->full_convert_path(filename, get_texture_path(),
+                                             fullpath, outpath);
+            tex.set_alpha_filename(outpath);
             tex.set_alpha_fullpath(fullpath);
           }
         } else {
@@ -2355,9 +2356,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         // We have a texture on transparency only.  Apply it as the
         // primary filename, and set the format accordingly.
         Filename filename = Filename::from_os_specific(trans_def._texture_filename);
-        Filename fullpath = 
-          _path_replace->match_path(filename, get_texture_path());
-        tex.set_filename(_path_replace->store_path(fullpath));
+        Filename fullpath,outpath;
+        _path_replace->full_convert_path(filename, get_texture_path(),
+                                         fullpath, outpath);
+        tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         apply_texture_properties(tex, trans_def);
       }

@@ -145,7 +145,9 @@ read_egg(const Filename &filename) {
   // filename, since egg files almost always store relative paths.
   // This is a temporary kludge around integrating the path_replace
   // system with the EggData better.
-  data->resolve_filenames(file_path);
+  //
+  // Update: I believe this kludge is obsolete. Commenting out. - Josh.
+  // data->resolve_filenames(file_path);
 
   if (_force_complete) {
     if (!data->load_externals()) {

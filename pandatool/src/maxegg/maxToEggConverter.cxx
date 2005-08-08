@@ -1865,9 +1865,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
     if (color_def._has_texture) {
       // If we have a texture on color, apply it as the filename.
       Filename filename = Filename::from_os_specific(color_def._texture);
-      Filename fullpath = 
-        _path_replace->match_path(filename, get_texture_path());
-      tex.set_filename(_path_replace->store_path(fullpath));
+      Filename fullpath,outpath;
+      _path_replace->full_convert_path(filename, get_texture_path(),
+                                       fullpath, outpath);
+      tex.set_filename(outpath);
       tex.set_fullpath(fullpath);
       apply_texture_properties(tex, color_def);
 
@@ -1910,8 +1911,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
           // set_alpha_file_channel()), but for now we assume it comes
           // from the grayscale data.
           filename = Filename::from_os_specific(trans_def._texture);
-          fullpath = _path_replace->match_path(filename, get_texture_path());
-          tex.set_alpha_filename(_path_replace->store_path(fullpath));
+          _path_replace->full_convert_path(filename, get_texture_path(),
+                                           fullpath, outpath);
+          tex.set_alpha_filename(outpath);
           tex.set_alpha_fullpath(fullpath);
         }
 
@@ -1926,9 +1928,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
       // We have a texture on transparency only.  Apply it as the
       // primary filename, and set the format accordingly.
       Filename filename = Filename::from_os_specific(trans_def._texture);
-      Filename fullpath = 
-        _path_replace->match_path(filename, get_texture_path());
-      tex.set_filename(_path_replace->store_path(fullpath));
+      Filename fullpath, outpath;
+      _path_replace->full_convert_path(filename, get_texture_path(),
+                                       fullpath, outpath);
+      tex.set_filename(outpath);
       tex.set_fullpath(fullpath);
       tex.set_format(EggTexture::F_alpha);
       apply_texture_properties(tex, trans_def);
@@ -2014,9 +2017,10 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
 
       maxBitmapTex = (BitmapTex *) maxTexmap;
       Filename filename = Filename::from_os_specific(maxBitmapTex->GetMapName());
-      Filename fullpath = 
-        _path_replace->match_path(filename, get_texture_path());
-      tex.set_filename(_path_replace->store_path(fullpath));
+      Filename fullpath, outpath;
+      _path_replace->full_convert_path(filename, get_texture_path(),
+                                       fullpath, outpath);
+      tex.set_filename(outpath);
       tex.set_fullpath(fullpath);
       apply_texture_properties(tex, maxStandardMaterial);
       // *** Must add stuff here for looking for transparencies
@@ -2142,54 +2146,56 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
       ostringstream name_strm;
       name_strm << "Tex" << ++_cur_tref;
       EggTexture tex(name_strm.str(), "");
-
-	  if (has_diffuse_texture) {
-	  // It is! 
-	  	
-		Filename filename = Filename::from_os_specific(diffuseBitmapTex->GetMapName());
-		Filename fullpath = 
-          _path_replace->match_path(filename, get_texture_path());
-		tex.set_filename(_path_replace->store_path(fullpath));
-		tex.set_fullpath(fullpath);
-		apply_texture_properties(tex, maxStandardMaterial);
-		// *** Must add stuff here for looking for transparencies
-		diffuseBitmap = diffuseBitmapTex->GetBitmap(0);
-		//Query some parameters of the bitmap to get the format option.
-		if ( has_trans_texture ) {
-		  tex.set_format(EggTexture::F_rgba);
-		  if (stricmp(diffuseBitmapTex->GetMapName(),
-					  transBitmapTex->GetMapName()) == 0) {
-			// nothing more needs to be done
-		  } else {
+      
+      if (has_diffuse_texture) {
+        // It is! 
+        Filename filename = Filename::from_os_specific(diffuseBitmapTex->GetMapName());
+        Filename fullpath, outpath;
+        _path_replace->full_convert_path(filename, get_texture_path(),
+                                         fullpath, outpath);
+        tex.set_filename(outpath);
+        tex.set_fullpath(fullpath);
+        apply_texture_properties(tex, maxStandardMaterial);
+        // *** Must add stuff here for looking for transparencies
+        diffuseBitmap = diffuseBitmapTex->GetBitmap(0);
+        //Query some parameters of the bitmap to get the format option.
+        if ( has_trans_texture ) {
+          tex.set_format(EggTexture::F_rgba);
+          if (stricmp(diffuseBitmapTex->GetMapName(),
+                      transBitmapTex->GetMapName()) == 0) {
+            // nothing more needs to be done
+          } else {
             filename = Filename::from_os_specific(transBitmapTex->GetMapName());
-            fullpath = _path_replace->match_path(filename, get_texture_path());
-            tex.set_alpha_filename(_path_replace->store_path(fullpath));
+            _path_replace->full_convert_path(filename, get_texture_path(),
+                                             fullpath, outpath);
+            tex.set_alpha_filename(outpath);
             tex.set_alpha_fullpath(fullpath);
-		  }
-		} else {
-		  if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
-		    tex.set_format(EggTexture::F_rgba);
-		  } else {
-		    tex.set_format(EggTexture::F_rgb);
-		  }
+          }
+        } else {
+          if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
+            tex.set_format(EggTexture::F_rgba);
+          } else {
+            tex.set_format(EggTexture::F_rgb);
+          }
         }
-	  } else {
+      } else {
         // We have a texture on transparency only.  Apply it as the
         // primary filename, and set the format accordingly.
         Filename filename = Filename::from_os_specific(transBitmapTex->GetMapName());
-        Filename fullpath = 
-          _path_replace->match_path(filename, get_texture_path());
-        tex.set_filename(_path_replace->store_path(fullpath));
+        Filename fullpath, outpath;
+        _path_replace->full_convert_path(filename, get_texture_path(),
+                                         fullpath, outpath);
+        tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         tex.set_format(EggTexture::F_alpha);
         apply_texture_properties(tex, maxStandardMaterial);
-	  }
-	  EggTexture *new_tex =
-	    _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-    
+      }
+      EggTexture *new_tex =
+        _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
+      
       primitive.set_texture(new_tex);
     }
-
+    
     // Also apply an overall color to the primitive.
     Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
 

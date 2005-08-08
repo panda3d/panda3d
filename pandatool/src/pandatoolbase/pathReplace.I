@@ -119,7 +119,9 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename PathReplace::
 convert_path(const Filename &orig_filename, const DSearchPath &additional_path) {
-  return store_path(match_path(orig_filename, additional_path));
+  Filename fullpath, outpath;
+  full_convert_path(orig_filename, additional_path, fullpath, outpath);
+  return outpath;
 }
 
 ////////////////////////////////////////////////////////////////////

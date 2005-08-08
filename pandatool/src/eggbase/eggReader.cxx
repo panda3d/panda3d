@@ -198,7 +198,9 @@ handle_args(ProgramBase::Args &args) {
     // filename, since egg files almost always store relative paths.
     // This is a temporary kludge around integrating the path_replace
     // system with the EggData better.
-    file_data.resolve_filenames(file_path);
+    //
+    // Update: I believe this kludge is obsolete. Commenting out. - Josh.
+    // file_data.resolve_filenames(file_path);
     
     if (_force_complete) {
       if (!file_data.load_externals()) {

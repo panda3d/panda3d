@@ -220,6 +220,7 @@ handle_args(ProgramBase::Args &args) {
   if (!_got_path_directory && _got_output_filename) {
     // Put in the name of the output directory.
     _path_replace->_path_directory = _output_filename.get_dirname();
+    cerr << "_path_directory defaults to " << _path_replace->_path_directory << " in eggWriter\n";
   }
 
   return true;

@@ -63,6 +63,11 @@ public:
 
   INLINE Filename convert_path(const Filename &orig_filename,
                                const DSearchPath &additional_path = DSearchPath());
+  
+  void full_convert_path(const Filename &orig_filename,
+                         const DSearchPath &additional_path,
+                         Filename &resolved_path,
+                         Filename &output_path);
 
   void write(ostream &out, int indent_level = 0) const;
 
