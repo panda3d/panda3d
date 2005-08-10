@@ -108,8 +108,18 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _properties._magfilter = _egg_tex->get_magfilter();
   _properties._anisotropic_degree = _egg_tex->get_anisotropic_degree();
 
-  string name = downcase(filename.get_basename_wo_extension());
+  string name = filename.get_basename_wo_extension();
   TextureImage *texture = pal->get_texture(name);
+  if (texture->get_name() != name) {
+    nout << "Texture name conflict: \"" << name
+         << "\" conflicts with existing texture named \"" 
+         << texture->get_name() << "\".\n";
+
+    // Make this a hard error; refuse to do anything else until the
+    // user fixes it.  Case conflicts can be very bad, especially if
+    // CVS is involved on a Windows machine.
+    exit(1);
+  }
   _source_texture = texture->get_source(filename, alpha_filename, 
                                         alpha_file_channel);
   _source_texture->update_properties(_properties);

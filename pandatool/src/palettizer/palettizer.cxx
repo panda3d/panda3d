@@ -896,7 +896,17 @@ get_default_group() {
 ////////////////////////////////////////////////////////////////////
 TextureImage *Palettizer::
 get_texture(const string &name) {
+  // Look first in the same-case name, just in case it happens to be
+  // there (from an older version of egg-palettize that did this).
   Textures::iterator ti = _textures.find(name);
+  if (ti != _textures.end()) {
+    return (*ti).second;
+  }
+
+  // Then look in the downcase name, since we nowadays index textures
+  // only by their downcase names (to implement case insensitivity).
+  string downcase_name = downcase(name);
+  ti = _textures.find(downcase_name);
   if (ti != _textures.end()) {
     return (*ti).second;
   }
@@ -904,7 +914,7 @@ get_texture(const string &name) {
   TextureImage *image = new TextureImage;
   image->set_name(name);
   //  image->set_filename(name);
-  _textures.insert(Textures::value_type(name, image));
+  _textures.insert(Textures::value_type(downcase_name, image));
 
   return image;
 }
@@ -1120,9 +1130,9 @@ finalize(BamReader *manager) {
        ci != _texture_conflicts.end(); 
        ++ci) {
     TextureImage *texture_b = (*ci);
-    string name = downcase(texture_b->get_name());
+    string downcase_name = downcase(texture_b->get_name());
 
-    Textures::iterator ti = _textures.find(name);
+    Textures::iterator ti = _textures.find(downcase_name);
     nassertv(ti != _textures.end());
     TextureImage *texture_a = (*ti).second;
     _textures.erase(ti);
@@ -1131,11 +1141,11 @@ finalize(BamReader *manager) {
       // If either texture is not used, there's not really a
       // conflict--the other one wins.
       if (texture_a->is_used()) {
-        bool inserted1 = _textures.insert(Textures::value_type(texture_a->get_name(), texture_a)).second;
+        bool inserted1 = _textures.insert(Textures::value_type(downcase_name, texture_a)).second;
         nassertd(inserted1) { }
 
       } else if (texture_b->is_used()) {
-        bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
+        bool inserted2 = _textures.insert(Textures::value_type(downcase_name, texture_b)).second;
         nassertd(inserted2) { }
       }
 
@@ -1143,9 +1153,19 @@ finalize(BamReader *manager) {
       // If both textures are used, there *is* a conflict.
       nout << "Texture name conflict: \"" << texture_a->get_name()
            << "\" vs. \"" << texture_b->get_name() << "\"\n";
-      bool inserted1 = _textures.insert(Textures::value_type(texture_a->get_name(), texture_a)).second;
-      bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
-      nassertd(inserted1 && inserted2) { }
+      if (texture_a->get_name() != downcase_name &&
+          texture_b->get_name() != downcase_name) {
+        // Arbitrarily pick texture_a to get the right case.
+        bool inserted1 = _textures.insert(Textures::value_type(downcase_name, texture_a)).second;
+        bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
+        nassertd(inserted1 && inserted2) { }
+
+      } else {
+        // One of them is already the right case.
+        bool inserted1 = _textures.insert(Textures::value_type(texture_a->get_name(), texture_a)).second;
+        bool inserted2 = _textures.insert(Textures::value_type(texture_b->get_name(), texture_b)).second;
+        nassertd(inserted1 && inserted2) { }
+      }
     }
   }
 }
