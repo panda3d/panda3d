@@ -509,7 +509,7 @@ class ShowBase(DirectObject.DirectObject):
             return self.win.isValid()
         return 0
 
-    def openMainWindow(self):
+    def openMainWindow(self, *args, **kw):
         """
         Creates the initial, main window for the application, and sets
         up the mouse and render2d structures appropriately for it.  If
@@ -534,7 +534,7 @@ class ShowBase(DirectObject.DirectObject):
             self.closeWindow(self.win)
 
         # Open a new window.
-        self.openWindow()
+        self.openWindow(*args, **kw)
         if self.win == None:
             self.win = oldWin
             self.winList.append(oldWin)

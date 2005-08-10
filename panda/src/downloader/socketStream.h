@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "clockObject.h"
 #include "config_express.h" // for collect_tcp
+#include "datagram.h"
+#include "pdeque.h"
 
 // At the present, this module is not compiled if OpenSSL is not
 // available, since the only current use for it is to implement
@@ -29,7 +31,86 @@
 
 #ifdef HAVE_SSL
 
-class Datagram;
+////////////////////////////////////////////////////////////////////
+//       Class : SSReader
+// Description : An internal class for reading from a socket stream.
+//               This serves as a base class for both ISocketStream
+//               and SocketStream; its purpose is to minimize
+//               redundant code between them.  Do not use it directly.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS SSReader {
+public:
+  INLINE SSReader(istream *stream);
+  virtual ~SSReader();
+
+PUBLISHED:
+  INLINE bool receive_datagram(Datagram &dg);
+
+  virtual bool is_closed() = 0;
+  virtual void close() = 0;
+
+private:
+  bool do_receive_datagram(Datagram &dg);
+
+  istream *_istream;
+  size_t _data_expected;
+  string _data_so_far;
+
+#ifdef SIMULATE_NETWORK_DELAY
+PUBLISHED:
+  void start_delay(double min_delay, double max_delay);
+  void stop_delay();
+
+private:
+  void delay_datagram(const Datagram &datagram);
+  bool get_delayed(Datagram &datagram);
+
+  class DelayedDatagram {
+  public:
+    double _reveal_time;
+    Datagram _datagram;
+  };
+    
+  typedef pdeque<DelayedDatagram> Delayed;
+  Delayed _delayed;
+  bool _delay_active;
+  double _min_delay, _delay_variance;
+
+#endif  // SIMULATE_NETWORK_DELAY
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : SSWriter
+// Description : An internal class for writing to a socket stream.
+//               This serves as a base class for both OSocketStream
+//               and SocketStream; its purpose is to minimize
+//               redundant code between them.  Do not use it directly.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS SSWriter {
+public:
+  INLINE SSWriter(ostream *stream);
+  virtual ~SSWriter();
+
+PUBLISHED:
+  bool send_datagram(const Datagram &dg);
+
+  virtual bool is_closed() = 0;
+  virtual void close() = 0;
+
+  INLINE void set_collect_tcp(bool collect_tcp);
+  INLINE bool get_collect_tcp() const;
+  INLINE void set_collect_tcp_interval(double interval);
+  INLINE double get_collect_tcp_interval() const;
+
+  INLINE bool consider_flush();
+  INLINE bool flush();
+
+private:
+  ostream *_ostream;
+  bool _collect_tcp;
+  double _collect_tcp_interval;
+  double _queued_data_start;
+};
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ISocketStream
@@ -40,19 +121,13 @@ class Datagram;
 //               has been closed, or whether more data may be
 //               available later.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ISocketStream : public istream {
+class EXPCL_PANDAEXPRESS ISocketStream : public istream, public SSReader {
 public:
   INLINE ISocketStream(streambuf *buf);
 
 PUBLISHED:
-  bool receive_datagram(Datagram &dg);
-
   virtual bool is_closed() = 0;
   virtual void close() = 0;
-
-private:
-  size_t _data_expected;
-  string _data_so_far;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -63,28 +138,15 @@ private:
 //               whether the socket has been closed, or whether more
 //               data may be sent later.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS OSocketStream : public ostream {
+class EXPCL_PANDAEXPRESS OSocketStream : public ostream, public SSWriter {
 public:
   INLINE OSocketStream(streambuf *buf);
 
 PUBLISHED:
-  bool send_datagram(const Datagram &dg);
-
   virtual bool is_closed() = 0;
   virtual void close() = 0;
 
-  INLINE void set_collect_tcp(bool collect_tcp);
-  INLINE bool get_collect_tcp() const;
-  INLINE void set_collect_tcp_interval(double interval);
-  INLINE double get_collect_tcp_interval() const;
-
-  INLINE bool consider_flush();
   INLINE bool flush();
-
-private:
-  bool _collect_tcp;
-  double _collect_tcp_interval;
-  double _queued_data_start;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -92,32 +154,15 @@ private:
 // Description : A base class for iostreams that read and write to a
 //               (possibly non-blocking) socket.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS SocketStream : public iostream {
+class EXPCL_PANDAEXPRESS SocketStream : public iostream, public SSReader, public SSWriter {
 public:
   INLINE SocketStream(streambuf *buf);
 
 PUBLISHED:
-  bool receive_datagram(Datagram &dg);
-  bool send_datagram(const Datagram &dg);
-
   virtual bool is_closed() = 0;
   virtual void close() = 0;
 
-  INLINE void set_collect_tcp(bool collect_tcp);
-  INLINE bool get_collect_tcp() const;
-  INLINE void set_collect_tcp_interval(double interval);
-  INLINE double get_collect_tcp_interval() const;
-
-  INLINE bool consider_flush();
   INLINE bool flush();
-
-private:
-  size_t _data_expected;
-  string _data_so_far;
-
-  bool _collect_tcp;
-  double _collect_tcp_interval;
-  double _queued_data_start;
 };
 
 

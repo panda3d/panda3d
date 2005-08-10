@@ -46,8 +46,6 @@ public:
   INLINE void set_stream(BioStream *stream);
   INLINE BioStream *get_stream() const;
 
-  bool connect() const;
-  
 private:
   BioStream *_stream;
 };

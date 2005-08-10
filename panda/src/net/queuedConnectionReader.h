@@ -30,14 +30,6 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 
-#ifndef NDEBUG
-// We define this variable if we're compiling code to implement a
-// simulated network latency, useful for debuggin networked programs.
-// Normally, since this is a debugging tool, we wouldn't compile this
-// feature in if we're building a program for public release.
-#define SIMULATE_NETWORK_DELAY
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedConnectionReader
 // Description : This flavor of ConnectionReader will read from its

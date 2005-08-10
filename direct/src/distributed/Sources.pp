@@ -8,7 +8,7 @@
   #define LOCAL_LIBS \
     directbase dcparser
   #define OTHER_LIBS \
-    downloader:c panda:m express:c pandaexpress:m \
+    event:c downloader:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
   #if $[and $[HAVE_NET],$[HAVE_NSPR]] \

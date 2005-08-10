@@ -90,6 +90,25 @@ set_connection_http(HTTPChannel *channel) {
   disconnect();
   nassertv(channel->is_connection_ready());
   _http_conn = channel->get_connection();
+#ifdef SIMULATE_NETWORK_DELAY
+  if (min_lag != 0.0 || max_lag != 0.0) {
+    _http_conn->start_delay(min_lag, max_lag);
+  }
+#endif
+}
+#endif  // HAVE_SSL
+
+#ifdef HAVE_SSL
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_stream
+//       Access: Published
+//  Description: Returns the SocketStream that internally represents
+//               the already-established HTTP connection.  Returns
+//               NULL if there is no current HTTP connection.
+////////////////////////////////////////////////////////////////////
+SocketStream *CConnectionRepository::
+get_stream() {
+  return _http_conn;
 }
 #endif  // HAVE_SSL
 
@@ -119,6 +138,59 @@ try_connect_nspr(const URLSpec &url) {
   return false;
 }
 #endif  // HAVE_NSPR
+
+#ifdef SIMULATE_NETWORK_DELAY
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::start_delay
+//       Access: Published
+//  Description: Enables a simulated network latency.  All datagrams
+//               received from this point on will be held for a random
+//               interval of least min_delay seconds, and no more than
+//               max_delay seconds, before being visible.  It is as if
+//               datagrams suddenly took much longer to arrive.
+//
+//               This should *only* be called if the underlying socket
+//               is non-blocking.  If you call this on a blocking
+//               socket, it will force all datagrams to be held up
+//               until the socket closes.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+start_delay(double min_delay, double max_delay) {
+  if (min_delay != 0.0 || max_delay != 0.0) {
+#ifdef HAVE_NSPR
+    _qcr.start_delay(min_delay, max_delay);
+#endif  // HAVE_NSPR
+#ifdef HAVE_SSL
+    if (_http_conn != (SocketStream *)NULL) {
+      _http_conn->start_delay(min_delay, max_delay);
+    }
+#endif  // HAVE_SSL
+  } else {
+    stop_delay();
+  }
+}
+#endif  // SIMULATE_NETWORK_DELAY
+
+#ifdef SIMULATE_NETWORK_DELAY
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::stop_delay
+//       Access: Published
+//  Description: Disables the simulated network latency started by a
+//               previous call to start_delay().  Datagrams will once
+//               again be visible as soon as they are received.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+stop_delay() {
+#ifdef HAVE_NSPR
+  _qcr.stop_delay();
+#endif  // HAVE_NSPR
+#ifdef HAVE_SSL
+  if (_http_conn != (SocketStream *)NULL) {
+    _http_conn->stop_delay();
+  }
+#endif  // HAVE_SSL
+}
+#endif  // SIMULATE_NETWORK_DELAY
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::check_datagram

@@ -192,7 +192,7 @@ void QueuedConnectionReader::
 get_delayed() {
   if (_delay_active) {
     PR_Lock(_dd_mutex);
-    double now = ClockObject::get_global_clock()->get_real_time();
+    double now = ClockObject::get_global_clock()->get_frame_time();
     while (!_delayed.empty()) {
       const DelayedDatagram &dd = _delayed.front();
       if (dd._reveal_time > now) {
@@ -233,7 +233,7 @@ delay_datagram(const NetDatagram &datagram) {
       }
 
     } else {
-      double now = ClockObject::get_global_clock()->get_real_time();
+      double now = ClockObject::get_global_clock()->get_frame_time();
       double reveal_time = now + _min_delay;
       
       if (_delay_variance > 0.0) {

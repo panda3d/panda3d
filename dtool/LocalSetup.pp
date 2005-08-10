@@ -223,6 +223,9 @@ $[cdefine TRACK_IN_INTERPRETER]
 /* Define if we want to enable track-memory-usage.  */
 $[cdefine DO_MEMORY_USAGE]
 
+/* Define if we want to enable min-lag and max-lag.  */
+$[cdefine SIMULATE_NETWORK_DELAY]
+
 /* Define if we want to compile in support for pipelining.  */
 $[cdefine DO_PIPELINING]
 
