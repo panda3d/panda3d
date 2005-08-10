@@ -101,9 +101,14 @@ public:
   INLINE Window get_root() const;
   INLINE XIM get_im() const;
 
-  INLINE Atom get_wm_delete_window() const;
-
   INLINE Cursor get_hidden_cursor();
+
+public:
+  // Atom specifications.
+  Atom _wm_delete_window;
+  Atom _net_wm_window_type;
+  Atom _net_wm_window_type_splash;
+  Atom _net_wm_window_type_fullscreen;
 
 protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
@@ -145,8 +150,6 @@ private:
   Window _root;
   XIM _im;
 
-  Atom _wm_protocols;
-  Atom _wm_delete_window;
   Cursor _hidden_cursor;
 
   typedef int ErrorHandlerFunc(Display *, XErrorEvent *);

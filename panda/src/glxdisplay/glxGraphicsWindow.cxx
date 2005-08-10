@@ -34,6 +34,7 @@
 #include <sys/time.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 TypeHandle glxGraphicsWindow::_type_handle;
 
@@ -54,7 +55,10 @@ glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _xwindow = (Window)NULL;
   _ic = (XIC)NULL;
   _awaiting_configure = false;
-  _wm_delete_window = glx_pipe->get_wm_delete_window();
+  _wm_delete_window = glx_pipe->_wm_delete_window;
+  _net_wm_window_type = glx_pipe->_net_wm_window_type;
+  _net_wm_window_type_splash = glx_pipe->_net_wm_window_type_splash;
+  _net_wm_window_type_fullscreen = glx_pipe->_net_wm_window_type_fullscreen;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -506,11 +510,6 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsWindow::
 open_window() {
-  if (_properties.get_fullscreen()) {
-    // We don't support fullscreen windows.
-    return false;
-  }
-
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
   glxGraphicsStateGuardian *glxgsg;
@@ -660,15 +659,39 @@ set_wm_properties(const WindowProperties &properties) {
     wm_hints_p->flags = StateHint;
   }
 
-  // If we asked for a window without a border, there's no good way to
-  // arrange that.  It completely depends on the user's window manager
-  // of choice.  Instead, we'll totally punt and just set the window's
+  // If we asked for a window without a border, there's no excellent
+  // way to arrange that.  For users whose window managers follow the
+  // EWMH specification, we can ask for a "splash" screen, which is
+  // usually undecorated.  It's not exactly right, but the spec
+  // doesn't give us an exactly-right option.
+
+  // For other users, we'll totally punt and just set the window's
   // Class to "Undecorated", and let the user configure his/her window
   // manager not to put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
   if (properties.get_undecorated()) {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = "Undecorated";
+
+    long data[2];
+    data[0] = _net_wm_window_type_splash;
+    data[1] = None;
+
+    XChangeProperty(_display, _xwindow, _net_wm_window_type,
+                    XA_ATOM, 32, PropModeReplace,
+                    (unsigned char *)data, 1);
+  }
+
+  if (properties.get_fullscreen()) {
+    // For a "fullscreen" request, we pass this through, hoping the
+    // window manager will support EWMH.
+    long data[2];
+    data[0] = _net_wm_window_type_fullscreen;
+    data[1] = None;
+
+    XChangeProperty(_display, _xwindow, _net_wm_window_type,
+                    XA_ATOM, 32, PropModeReplace,
+                    (unsigned char *)data, 1);
   }
 
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,

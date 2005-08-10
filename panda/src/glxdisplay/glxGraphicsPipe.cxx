@@ -115,8 +115,11 @@ glxGraphicsPipe(const string &display) {
   XFree(im_supported_styles);
   */
 
-  // Get the X atom number.
+  // Get some X atom numbers.
   _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
+  _net_wm_window_type = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", false);
+  _net_wm_window_type_splash = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_SPLASH", false);
+  _net_wm_window_type_fullscreen = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_FULLSCREEN", false);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -62,17 +62,6 @@ get_im() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_wm_delete_window
-//       Access: Public
-//  Description: Returns the X atom that represents WM_DELETE_WINDOW
-//               to the current display.
-////////////////////////////////////////////////////////////////////
-INLINE Atom glxGraphicsPipe::
-get_wm_delete_window() const {
-  return _wm_delete_window;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::get_hidden_cursor
 //       Access: Public
 //  Description: Returns an invisible Cursor suitable for assigning to

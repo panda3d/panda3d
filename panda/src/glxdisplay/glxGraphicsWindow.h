@@ -77,7 +77,9 @@ private:
   long _event_mask;
   bool _awaiting_configure;
   Atom _wm_delete_window;
-
+  Atom _net_wm_window_type;
+  Atom _net_wm_window_type_splash;
+  Atom _net_wm_window_type_fullscreen;
 
 public:
   static TypeHandle get_class_type() {
