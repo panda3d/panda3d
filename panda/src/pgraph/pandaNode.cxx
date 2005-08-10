@@ -347,6 +347,7 @@ PandaNode(const string &name) :
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 ~PandaNode() {
+  cerr << "Destructing " << get_name() << "\n";
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
 #ifndef NDEBUG
@@ -1252,6 +1253,103 @@ copy_children(PandaNode *other) {
     add_stashed(child_node, sort);
   }
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_python_tag
+//       Access: Published
+//  Description: Associates an arbitrary Python object with a
+//               user-defined key which is stored on the node.  This
+//               is similar to set_tag(), except it can store any
+//               Python object instead of just a string.  However, the
+//               Python object is not recorded to a bam file.
+//
+//               Each unique key stores a different string value.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the length of
+//               any one key's value.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_python_tag(const string &key, PyObject *value) {
+  CDWriter cdata(_cycler);
+  Py_XINCREF(value);
+
+  pair<PythonTagData::iterator, bool> result;
+  result = cdata->_python_tag_data.insert(PythonTagData::value_type(key, value));
+
+  if (!result.second) {
+    // The insert was unsuccessful; that means the key was already
+    // present in the map.  In this case, we should decrement the
+    // original value's reference count and replace it with the new
+    // object.
+    PythonTagData::iterator ti = result.first;
+    PyObject *old_value = (*ti).second;
+    Py_XDECREF(old_value);
+    (*ti).second = value;
+  }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_python_tag
+//       Access: Published
+//  Description: Retrieves the Python object that was previously
+//               set on this node for the particular key, if any.  If
+//               no value has been previously set, returns None.
+////////////////////////////////////////////////////////////////////
+PyObject *PandaNode::
+get_python_tag(const string &key) const {
+  CDReader cdata(_cycler);
+  PythonTagData::const_iterator ti;
+  ti = cdata->_python_tag_data.find(key);
+  if (ti != cdata->_python_tag_data.end()) {
+    PyObject *result = (*ti).second;
+    Py_XINCREF(result);
+    return result;
+  }
+  return Py_None;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_python_tag
+//       Access: Published
+//  Description: Returns true if a Python object has been defined on
+//               this node for the particular key (even if that object
+//               is None), or false if no object has been set.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+has_python_tag(const string &key) const {
+  CDReader cdata(_cycler);
+  PythonTagData::const_iterator ti;
+  ti = cdata->_python_tag_data.find(key);
+  return (ti != cdata->_python_tag_data.end());
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_python_tag
+//       Access: Published
+//  Description: Removes the Python object defined for this key on
+//               this particular node.  After a call to
+//               clear_python_tag(), has_python_tag() will return
+//               false for the indicated key.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_python_tag(const string &key) {
+  CDWriter cdata(_cycler);
+  PythonTagData::iterator ti;
+  ti = cdata->_python_tag_data.find(key);
+  if (ti != cdata->_python_tag_data.end()) {
+    PyObject *value = (*ti).second;
+    Py_XDECREF(value);
+    cdata->_python_tag_data.erase(ti);
+  }
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::copy_tags

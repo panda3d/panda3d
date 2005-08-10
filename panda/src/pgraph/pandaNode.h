@@ -169,10 +169,10 @@ PUBLISHED:
   INLINE void clear_tag(const string &key);
 
 #ifdef HAVE_PYTHON
-  INLINE void set_python_tag(const string &key, PyObject *value);
-  INLINE PyObject *get_python_tag(const string &key) const;
-  INLINE bool has_python_tag(const string &key) const;
-  INLINE void clear_python_tag(const string &key);
+  void set_python_tag(const string &key, PyObject *value);
+  PyObject *get_python_tag(const string &key) const;
+  bool has_python_tag(const string &key) const;
+  void clear_python_tag(const string &key);
 #endif  // HAVE_PYTHON
 
   INLINE bool has_tags() const;
