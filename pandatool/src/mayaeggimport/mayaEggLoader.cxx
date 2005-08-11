@@ -656,6 +656,8 @@ void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
       values[vert->_index * joints.size() + joint->_index] = (float)strength;
     }
   }
+  for (unsigned int i=0; i<1024; i++)
+    skinCluster.setWeights(M->_shape_dag_path, component.object(), i, 0.0, false, &oldvalues);
   skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, &oldvalues);
 
   for (unsigned int i=0; i<joints.size(); i++) {
