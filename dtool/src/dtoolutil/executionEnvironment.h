@@ -51,15 +51,10 @@ public:
   INLINE static int get_num_args();
   INLINE static string get_arg(int n);
 
-  static Filename get_cwd();
-
-PUBLISHED:
   INLINE static string get_binary_name();
   INLINE static string get_dtool_name();
 
-PUBLISHED:
-  string ns_get_binary_name() const;
-  string ns_get_dtool_name() const;
+  static Filename get_cwd();
 
 private:
   bool ns_has_environment_variable(const string &var) const;
@@ -70,6 +65,9 @@ private:
 
   int ns_get_num_args() const;
   string ns_get_arg(int n) const;
+
+  string ns_get_binary_name() const;
+  string ns_get_dtool_name() const;
 
   static ExecutionEnvironment *get_ptr();
 
