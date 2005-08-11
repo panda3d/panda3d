@@ -347,7 +347,6 @@ PandaNode(const string &name) :
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 ~PandaNode() {
-  cerr << "Destructing " << get_name() << "\n";
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
 #ifndef NDEBUG
