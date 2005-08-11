@@ -640,16 +640,14 @@ make_frame() {
   frame->add_vertex(0);
   frame->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(frame);
   frame_node->add_geom(geom, state);
   
   if (get_frame_corners()) {
     PT(GeomPoints) corners = new GeomPoints(get_usage_hint());
     corners->add_consecutive_vertices(0, 4);
-    PT(Geom) geom2 = new Geom;
-    geom2->set_vertex_data(vdata);
+    PT(Geom) geom2 = new Geom(vdata);
     geom2->add_primitive(corners);
     frame_node->add_geom(geom2, state);
   }
@@ -691,8 +689,7 @@ make_card() {
   card->add_consecutive_vertices(0, 4);
   card->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(card);
   
   card_node->add_geom(geom);
@@ -798,8 +795,7 @@ make_card_with_border() {
   card->add_consecutive_vertices(8, 8);
   card->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(card);
   
   card_node->add_geom(geom);

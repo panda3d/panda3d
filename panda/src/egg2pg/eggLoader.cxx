@@ -354,8 +354,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     nassertv(vertex_data != (GeomVertexData *)NULL);
 
     // And create a Geom to hold the primitives.
-    PT(Geom) geom = new Geom;
-    geom->set_vertex_data(vertex_data);
+    PT(Geom) geom = new Geom(vertex_data);
 
     // Add each new primitive to the Geom.
     Primitives::const_iterator pi;
@@ -566,8 +565,7 @@ show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
     }
   }
 
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vertex_data);
+  PT(Geom) geom = new Geom(vertex_data);
   geom->add_primitive(primitive);
   geom_node->add_geom(geom);
 }

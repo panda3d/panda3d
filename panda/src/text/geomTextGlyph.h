@@ -37,7 +37,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomTextGlyph : public Geom {
 public:
-  INLINE GeomTextGlyph(DynamicTextGlyph *glyph);
+  INLINE GeomTextGlyph(DynamicTextGlyph *glyph,
+		       const GeomVertexData *data);
   INLINE GeomTextGlyph(const GeomTextGlyph &copy);
   void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();

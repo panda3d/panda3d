@@ -23,7 +23,8 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomTextGlyph::
-GeomTextGlyph(DynamicTextGlyph *glyph) :
+GeomTextGlyph(DynamicTextGlyph *glyph, const GeomVertexData *data) :
+  Geom(data),
   _glyph(glyph)
 {
   if (_glyph != (DynamicTextGlyph *)NULL) {

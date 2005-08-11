@@ -343,12 +343,10 @@ fill_viz_geom() {
   border->add_vertex(0);
   border->close_primitive();
   
-  PT(Geom) geom1 = new Geom;
-  geom1->set_vertex_data(vdata);
+  PT(Geom) geom1 = new Geom(vdata);
   geom1->add_primitive(body);
   
-  PT(Geom) geom2 = new Geom;
-  geom2->set_vertex_data(vdata);
+  PT(Geom) geom2 = new Geom(vdata);
   geom2->add_primitive(border);
   
   _viz_geom->add_geom(geom1, get_solid_viz_state());

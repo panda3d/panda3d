@@ -124,7 +124,6 @@ private:
   float _thick;
 
   PT(GeomVertexData) _created_data;
-  PT(Geom) _geom;
 
   BoundingHexahedron *_view_frustum;
   BoundingHexahedron *_reduced_frustum;

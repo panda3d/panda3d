@@ -129,12 +129,11 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 init_geoms() {
-  PT(Geom) geom = new Geom; 
-  _line_primitive = geom;
   _vdata = new GeomVertexData
     ("particles", GeomVertexFormat::get_v3cp(),
      Geom::UH_dynamic);
-  geom->set_vertex_data(_vdata);
+  PT(Geom) geom = new Geom(_vdata);
+  _line_primitive = geom;
   _lines = new GeomLines(Geom::UH_dynamic);
   geom->add_primitive(_lines);
 

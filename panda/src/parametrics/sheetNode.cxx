@@ -326,8 +326,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
     }
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,

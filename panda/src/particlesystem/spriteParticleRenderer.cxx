@@ -498,10 +498,9 @@ init_geoms() {
     // For each frame of the animation...
     for (j = 0; j < _anim_size[i]; ++j) {
       _ttl_count[i] = new int[_anim_size[i]];
-      PT(Geom) geom = new Geom;
-      _sprite_primitive[i].push_back((Geom*)geom);
       _vdata[i].push_back(new GeomVertexData("particles", format, Geom::UH_dynamic));
-      geom->set_vertex_data(_vdata[i][j]);
+      PT(Geom) geom = new Geom(_vdata[i][j]);
+      _sprite_primitive[i].push_back((Geom*)geom);
       _sprites[i].push_back(new GeomPoints(Geom::UH_dynamic));
       geom->add_primitive(_sprites[i][j]);
       

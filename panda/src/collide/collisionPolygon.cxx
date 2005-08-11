@@ -831,12 +831,10 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
   border->add_vertex(0);
   border->close_primitive();
   
-  PT(Geom) geom1 = new Geom;
-  geom1->set_vertex_data(vdata);
+  PT(Geom) geom1 = new Geom(vdata);
   geom1->add_primitive(body);
   
-  PT(Geom) geom2 = new Geom;
-  geom2->set_vertex_data(vdata);
+  PT(Geom) geom2 = new Geom(vdata);
   geom2->add_primitive(border);
 
   viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());

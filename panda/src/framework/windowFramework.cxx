@@ -645,8 +645,7 @@ load_default_model(const NodePath &parent) {
   tri->add_consecutive_vertices(0, 3);
   tri->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(tri);
   
   geomnode->add_geom(geom, state);
@@ -1034,8 +1033,7 @@ load_image_as_model(const Filename &filename) {
   strip->add_consecutive_vertices(0, 4);
   strip->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   card_node->add_geom(geom);

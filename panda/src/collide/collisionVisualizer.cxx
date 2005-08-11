@@ -206,8 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             points->close_primitive();
           }
 
-          PT(Geom) geom = new Geom;
-          geom->set_vertex_data(point_vdata);
+          PT(Geom) geom = new Geom(point_vdata);
           geom->add_primitive(points);
             
           CullableObject *object = 
@@ -235,8 +234,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           lines->add_next_vertices(2);
           lines->close_primitive();
 
-          PT(Geom) geom = new Geom;
-          geom->set_vertex_data(line_vdata);
+          PT(Geom) geom = new Geom(line_vdata);
           geom->add_primitive(lines);
           
           CullableObject *object = 

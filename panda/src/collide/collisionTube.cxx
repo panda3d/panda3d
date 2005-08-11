@@ -428,8 +428,7 @@ fill_viz_geom() {
     strip->close_primitive();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   // Now transform the vertices to their actual location.

@@ -108,12 +108,11 @@ resize_pool(int new_size) {
 
 void PointParticleRenderer::
 init_geoms() {
-  PT(Geom) geom = new Geom; 
-  _point_primitive = geom;
   _vdata = new GeomVertexData
     ("particles", GeomVertexFormat::get_v3cp(),
      Geom::UH_dynamic);
-  geom->set_vertex_data(_vdata);
+  PT(Geom) geom = new Geom(_vdata);
+  _point_primitive = geom;
   _points = new GeomPoints(Geom::UH_dynamic);
   geom->add_primitive(_points);
   

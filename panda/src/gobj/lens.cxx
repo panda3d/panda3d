@@ -956,8 +956,7 @@ make_geometry() {
   line->add_vertex(num_segments * (4 * 2) + 1);
   line->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(_geom_data);
+  PT(Geom) geom = new Geom(_geom_data);
   geom->add_primitive(line);
   
   return geom.p();

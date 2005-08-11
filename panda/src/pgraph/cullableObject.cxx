@@ -250,8 +250,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
   GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
   int new_vi = 0;
 
-  PT(Geom) new_geom = new Geom();
-  new_geom->set_vertex_data(new_data);
+  PT(Geom) new_geom = new Geom(new_data);
 
   const LMatrix4f &modelview = _modelview_transform->get_mat();
 

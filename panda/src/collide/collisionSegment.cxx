@@ -170,8 +170,7 @@ fill_viz_geom() {
   line->add_next_vertices(2);
   line->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(line);
   
   _viz_geom->add_geom(geom, get_other_viz_state());

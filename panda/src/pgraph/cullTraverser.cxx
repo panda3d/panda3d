@@ -333,8 +333,7 @@ make_bounds_viz(const BoundingVolume &vol) {
       strip->close_primitive();
     }
     
-    geom = new Geom;
-    geom->set_vertex_data(vdata);
+    geom = new Geom(vdata);
     geom->add_primitive(strip);
 
   } else {
@@ -398,8 +397,7 @@ make_tight_bounds_viz(PandaNode *node) {
     strip->add_vertex(1);
     strip->close_primitive();
       
-    PT(Geom) geom = new Geom;
-    geom->set_vertex_data(vdata);
+    PT(Geom) geom = new Geom(vdata);
     geom->add_primitive(strip);
     geom = geom.p();
   }

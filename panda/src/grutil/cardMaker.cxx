@@ -115,8 +115,7 @@ generate() {
   strip->add_next_vertices(4);
   strip->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   gnode->add_geom(geom);

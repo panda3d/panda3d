@@ -347,8 +347,7 @@ fill_viz_geom() {
     strip->close_primitive();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   _viz_geom->add_geom(geom, get_solid_viz_state());

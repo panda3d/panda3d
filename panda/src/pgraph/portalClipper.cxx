@@ -45,7 +45,6 @@ TypeHandle PortalClipper::_type_handle;
 PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup) {
   _previous = new GeomNode("my_frustum");
-  _geom = new Geom;
 
   _view_frustum = _reduced_frustum = DCAST(BoundingHexahedron, frustum);
 
@@ -204,14 +203,12 @@ draw_lines() {
     }
 
     if (lines->get_num_vertices() != 0) {
-      PT(Geom) geom = new Geom;
-      geom->set_vertex_data(vdata);
+      PT(Geom) geom = new Geom(vdata);
       geom->add_primitive(lines);
       _previous->add_geom(geom, state);
     }
     if (points->get_num_vertices() != 0) {
-      PT(Geom) geom = new Geom;
-      geom->set_vertex_data(vdata);
+      PT(Geom) geom = new Geom(vdata);
       geom->add_primitive(points);
       _previous->add_geom(geom, state);
     }

@@ -350,8 +350,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     strip->close_primitive();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
@@ -396,8 +395,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     strip->close_primitive();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,
@@ -446,8 +444,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     strip->close_primitive();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,
@@ -503,8 +500,7 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     vi += (int)segment.size();
   }
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,

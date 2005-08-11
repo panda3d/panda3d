@@ -53,7 +53,7 @@ class PreparedGraphicsObjects;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Geom : public TypedWritableReferenceCount, public BoundedObject, public GeomEnums {
 PUBLISHED:
-  Geom();
+  Geom(const GeomVertexData *data);
   Geom(const Geom &copy);
   void operator = (const Geom &copy);
   virtual ~Geom();

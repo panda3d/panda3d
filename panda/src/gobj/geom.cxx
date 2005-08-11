@@ -35,7 +35,8 @@ TypeHandle Geom::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 Geom::
-Geom() {
+Geom(const GeomVertexData *data) {
+  set_vertex_data(data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1067,7 +1068,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *Geom::
 make_from_bam(const FactoryParams &params) {
-  Geom *object = new Geom;
+  Geom *object = new Geom(NULL);
   DatagramIterator scan;
   BamReader *manager;
 

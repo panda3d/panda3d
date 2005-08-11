@@ -218,8 +218,7 @@ generate_flat_geom(const LVecBase4f &frame) {
   strip->add_next_vertices(4);
   strip->close_primitive();
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   gnode->add_geom(geom);
   
@@ -389,8 +388,7 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   strip->close_primitive();
   strip->set_shade_model(Geom::SM_flat_last_vertex);
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
@@ -631,8 +629,7 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   
   strip->set_shade_model(Geom::SM_flat_last_vertex);
   
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));

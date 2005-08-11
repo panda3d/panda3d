@@ -256,14 +256,12 @@ create(GeomNode *previous, bool dynamic) {
     }
 
     if (lines->get_num_vertices() != 0) {
-      PT(Geom) geom = new Geom;
-      geom->set_vertex_data(_created_data);
+      PT(Geom) geom = new Geom(_created_data);
       geom->add_primitive(lines);
       previous->add_geom(geom, state);
     }
     if (points->get_num_vertices() != 0) {
-      PT(Geom) geom = new Geom;
-      geom->set_vertex_data(_created_data);
+      PT(Geom) geom = new Geom(_created_data);
       geom->add_primitive(points);
       previous->add_geom(geom, state);
     }

@@ -22,7 +22,6 @@
 
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
-#include "geomTextGlyph.h"
 #include "geomVertexData.h"
 #include "geomVertexFormat.h"
 #include "geomTriangles.h"
@@ -151,8 +150,7 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   tris->add_vertex(3);
   tris->close_primitive();
 
-  PT(Geom) geom = new GeomTextGlyph(this);
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new GeomTextGlyph(this, vdata);
   geom->add_primitive(tris);
   _geom = geom;
   

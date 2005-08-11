@@ -253,8 +253,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
     strip->close_primitive();
   }
 
-  PT(Geom) geom = new Geom;
-  geom->set_vertex_data(vdata);
+  PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   geom_node->add_geom(geom);
