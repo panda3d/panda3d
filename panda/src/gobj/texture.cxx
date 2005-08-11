@@ -1455,9 +1455,14 @@ make_Texture(const FactoryParams &params) {
 
     } else {
       // This texture does have a filename, so try to load it from disk.
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      if (!manager->get_filename().empty())
+        vfs->resolve_filename(filename,manager->get_filename().get_dirname());
       if (alpha_filename.empty()) {
         me = TexturePool::load_texture(filename, primary_file_num_channels);
       } else {
+        if (!manager->get_filename().empty())
+          vfs->resolve_filename(alpha_filename, manager->get_filename().get_dirname());
         me = TexturePool::load_texture(filename, alpha_filename, 
                                        primary_file_num_channels, alpha_file_channel);
       }

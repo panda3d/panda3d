@@ -43,8 +43,8 @@ const int BamReader::_cur_minor = _bam_minor_ver;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
-BamReader(DatagramGenerator *generator)
-  : _source(generator)
+BamReader(DatagramGenerator *generator, const Filename &name)
+  : _source(generator), _filename(name)
 {
   _num_extra_objects = 0;
   _now_creating = _created_objs.end();
@@ -167,6 +167,19 @@ get_aux_data(const string &name) const {
     return (*di).second;
   }
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_filename
+//       Access: Public
+//  Description: If a BAM is a file, then the BamReader should
+//               contain the name of the file.  This enables the
+//               reader to interpret pathnames in the BAM as relative
+//               to the directory containing the BAM.
+////////////////////////////////////////////////////////////////////
+const Filename &BamReader::
+get_filename(void) const {
+  return _filename;
 }
 
 ////////////////////////////////////////////////////////////////////

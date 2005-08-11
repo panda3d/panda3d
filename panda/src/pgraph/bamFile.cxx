@@ -404,7 +404,7 @@ continue_open_read(const string &bam_filename, bool report_errors) {
     return false;
   }
 
-  _reader = new BamReader(&_din);
+  _reader = new BamReader(&_din, bam_filename);
   if (!_reader->init()) {
     close();
     return false;

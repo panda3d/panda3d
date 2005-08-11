@@ -94,14 +94,15 @@ public:
   static WritableFactory *const NullFactory;
 
   // The primary interface for a caller.
-  BamReader(DatagramGenerator *generator);
+  BamReader(DatagramGenerator *generator, const Filename &name="");
   ~BamReader();
 
   bool init();
 
   void set_aux_data(const string &name, void *data);
   void *get_aux_data(const string &name) const;
-
+  const Filename &get_filename() const;
+  
   TypedWritable *read_object();
   INLINE bool is_eof() const;
   bool resolve();
@@ -142,7 +143,6 @@ public:
 
   TypeHandle read_handle(DatagramIterator &scan);
 
-
 public:
   INLINE static WritableFactory *get_factory();
 private:
@@ -171,6 +171,9 @@ private:
   // to actual TypeHandles.
   typedef phash_map<int, TypeHandle, int_hash> IndexMap;
   IndexMap _index_map;
+
+  // This is the filename of the BAM, or null string if not in a file.
+  Filename _filename;
 
   // This maps the object ID numbers encountered within the Bam file
   // to the actual pointers of the corresponding generated objects.
