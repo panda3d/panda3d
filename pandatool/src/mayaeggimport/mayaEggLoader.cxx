@@ -56,6 +56,7 @@
 #include <maya/MDagPath.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MPlugArray.h>
+#include <maya/MDagPathArray.h>
 #include <maya/MMatrix.h>
 #include <maya/MTransformationMatrix.h>
 #include <maya/MFnIkJoint.h>
@@ -644,10 +645,18 @@ void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
     influenceIndices.append((int)index);
   }
 
-  MFloatArray values, oldvalues;
+  MDagPathArray paths;
+  unsigned infcount = skinCluster.influenceObjects(paths, &status);
+  if (status != MStatus::kSuccess) { perror("influenceObjects"); return; }
+  for (unsigned int i=0; i<infcount; i++) {
+    unsigned int index = skinCluster.indexForInfluenceObject(paths[i], &status);
+    if (status != MStatus::kSuccess) { perror("skinCluster index"); return; }
+    skinCluster.setWeights(M->_shape_dag_path, component.object(), index, 0.0, false, NULL);
+  }
+
+  MFloatArray values;
   int tot = M->_vert_count * joints.size();
   values.setLength(tot);
-  oldvalues.setLength(tot);
   for (int i=0; i<tot; i++) values[i] = 0.0;
   for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
     for (unsigned int i=0; i<vert->_weights.size(); i++) {
@@ -656,9 +665,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
       values[vert->_index * joints.size() + joint->_index] = (float)strength;
     }
   }
-  //  for (unsigned int i=0; i<1024; i++)
-  //    skinCluster.setWeights(M->_shape_dag_path, component.object(), i, 0.0, false, &oldvalues);
-  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, &oldvalues);
+  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, NULL);
 
   for (unsigned int i=0; i<joints.size(); i++) {
     joints[i]->_inskin = false;
