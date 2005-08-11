@@ -1,6 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
 #define maya2egg maya2egg
+#define egg2maya egg2maya
 #define mayacopy mayacopy
 
 #if $[UNIX_PLATFORM]
@@ -11,10 +12,19 @@
   // it in also on Unix.)
 
 #set maya2egg maya2egg_bin
+#set egg2maya egg2maya_bin
 #set mayacopy mayacopy_bin
 
 #begin sed_bin_target
   #define TARGET maya2egg
+
+  #define SOURCE mayapath_script
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s+zzz+$[MAYA_LICENSE_FILE]+g;
+
+#end sed_bin_target
+
+#begin sed_bin_target
+  #define TARGET egg2maya
 
   #define SOURCE mayapath_script
   #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s+zzz+$[MAYA_LICENSE_FILE]+g;
@@ -48,6 +58,26 @@
 
   #define SOURCES \
     mayaToEgg.cxx mayaToEgg.h
+
+#end bin_target
+
+#begin bin_target
+  #define USE_PACKAGES maya
+  #define TARGET $[egg2maya]
+  #define LOCAL_LIBS \
+    mayaegg maya eggbase progbase
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  // Irix requires this to be named explicitly.
+  #define UNIX_SYS_LIBS \
+    ExtensionLayer
+
+  #define SOURCES \
+    eggToMaya.cxx eggToMaya.h
 
 #end bin_target
 
@@ -110,6 +140,29 @@
 
   #define SOURCES \
     mayaSavePview.cxx mayaSavePview.h
+#end lib_target
+
+#begin lib_target
+  #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
+  #define USE_PACKAGES maya
+  #define TARGET mayaEggImport
+  #define LOCAL_LIBS mayaegg maya
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    framework:m \
+    linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define BUILDING_DLL BUILDING_MISC
+
+  #if $[WINDOWS_PLATFORM]
+    #define dlllib mll
+  #endif
+
+  #define SOURCES \
+    mayaEggImport.cxx
+
 #end lib_target
 
 #begin lib_target

@@ -31,6 +31,10 @@
 
 #include "dtoolbase.h"
 
+// We must define this to prevent Maya from doubly-declaring its
+// MApiVersion string in this file as well as in libmayaegg.
+#define _MApiVersion
+
 #include "pre_maya_include.h"
 #include <maya/MStatus.h>
 #include <maya/MPxCommand.h>

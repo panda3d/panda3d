@@ -156,6 +156,19 @@ as_reader() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggReader::pre_process_egg_file
+//       Access: Public, Virtual
+//  Description: Performs any processing of the egg file that is
+//               appropriate after reading it in.
+//
+//               Normally, you should not need to call this function
+//               directly; it is called automatically at startup.
+////////////////////////////////////////////////////////////////////
+void EggReader::
+pre_process_egg_file() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggReader::handle_args
 //       Access: Protected, Virtual
 //  Description:
@@ -214,6 +227,8 @@ handle_args(ProgramBase::Args &args) {
 
     _data->merge(file_data);
   }
+
+  pre_process_egg_file();
 
   return true;
 }

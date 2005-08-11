@@ -17,6 +17,7 @@
   #define SOURCES \
     config_mayaegg.cxx config_mayaegg.h \
     mayaEggGroupUserData.cxx mayaEggGroupUserData.I mayaEggGroupUserData.h \
+    mayaEggLoader.cxx mayaEggLoader.h \
     mayaBlendDesc.cxx mayaBlendDesc.h \
     mayaNodeDesc.cxx mayaNodeDesc.h \
     mayaNodeTree.cxx mayaNodeTree.h \

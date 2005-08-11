@@ -39,6 +39,7 @@ public:
   void add_delod_options(double default_delod = -1.0);
   
   virtual EggReader *as_reader();
+  virtual void pre_process_egg_file();
 
 protected:
   virtual bool handle_args(Args &args);

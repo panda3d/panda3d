@@ -22,6 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "eggConverter.h"
+#include "distanceUnit.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggToSomething
@@ -36,8 +37,15 @@ public:
                  bool allow_last_param = true,
                  bool allow_stdout = true);
 
+  void add_units_options();
+
 protected:
+  void apply_units_scale(EggData *data);
+  virtual void pre_process_egg_file();
   virtual bool handle_args(Args &args);
+
+  DistanceUnit _input_units;
+  DistanceUnit _output_units;
 };
 
 #endif
