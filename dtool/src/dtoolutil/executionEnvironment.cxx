@@ -387,7 +387,9 @@ read_args() {
     char buffer[buffer_size];
     DWORD size = GetModuleFileName(dllhandle, buffer, buffer_size);
     if (size != 0) {
-      _dtool_name = Filename::from_os_specific(string(buffer,size));
+      Filename tmp = Filename::from_os_specific(string(buffer,size));
+      tmp.make_true_case();
+      _dtool_name = tmp;
     }
   }
 #endif
@@ -414,7 +416,9 @@ read_args() {
   char buffer[buffer_size];
   DWORD size = GetModuleFileName(NULL, buffer, buffer_size);
   if (size != 0) {
-    _binary_name = Filename::from_os_specific(string(buffer, size));
+    Filename tmp = Filename::from_os_specific(string(buffer, size));
+    tmp.make_true_case();
+    _binary_name = tmp;
   }
 #endif  // WIN32_VC
 

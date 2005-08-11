@@ -1,4 +1,4 @@
-from pandac.VBase3 import VBase3
+from pandac.PandaModules import VBase3
 from direct.task import Task
 
 class Audio3DManager:

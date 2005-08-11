@@ -16,7 +16,7 @@
     def getSourceTextureName(self):
         if self.sourceTextureName == None:
             SpriteParticleRenderer.sourceTextureName = base.config.GetString(
-                'particle-sprite-texture', 'phase_3/maps/eyes.jpg')
+                'particle-sprite-texture', 'phase_3/maps/feyes.jpg')
         # Return instance copy of class variable
         return self.sourceTextureName
 

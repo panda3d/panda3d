@@ -102,6 +102,8 @@ Section "${SMDIRECTORY}" SecCore
 
         !ifdef PPGAME
 
+            SetOutPath $INSTDIR\models\audio
+            File /r /x CVS ${PANDA}\models\audio\*
             SetOutPath $INSTDIR\bin
             File /r ${PANDA}\bin\ppython.exe
             SetOutpath $INSTDIR\game

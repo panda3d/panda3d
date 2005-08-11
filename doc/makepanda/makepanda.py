@@ -4704,17 +4704,25 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
             os.remove(file)
         if (os.path.exists("nsis-output.exe")):
             os.remove("nsis-output.exe")
-        def0 = '/DCOMPRESSOR="'   + COMPRESSOR   + '" '
-        def1 = '/DFULLNAME="'     + fullname     + '" '
-        def2 = '/DSMDIRECTORY="'  + smdirectory  + '" '
-        def3 = '/DINSTALLDIR="'   + installdir   + '" '
-        def4 = '/DPANDA="..\\..\\..\\'    + PREFIX       + '" '
-        def5 = '/DPSOURCE="..\\..\\.." '
-        def6 = '/DPYEXTRAS="..\\..\\..\\thirdparty\\win-extras" '
-        def7 = '/DOUTFILE="..\\..\\..\\nsis-output.exe" '
-        oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+def6+def7+" direct/src/directscripts/packpanda.nsi")
+        psource=os.path.abspath(".")
+        panda=os.path.abspath(PREFIX)
+        cmd="thirdparty/win-nsis/makensis.exe /V2 "
+        cmd=cmd+'/DCOMPRESSOR="'+COMPRESSOR+'" '
+        cmd=cmd+'/DNAME="'+fullname+'" '
+        cmd=cmd+'/DSMDIRECTORY="'+smdirectory+'" '
+        cmd=cmd+'/DINSTALLDIR="'+installdir+'" '
+        cmd=cmd+'/DOUTFILE="'+psource+'\\nsis-output.exe" '
+        cmd=cmd+'/DLICENSE="'+panda+'\\LICENSE" '
+        cmd=cmd+'/DLANGUAGE="Panda3DEnglish" '
+        cmd=cmd+'/DRUNTEXT="Run the Panda Greeting Card" '
+        cmd=cmd+'/DIBITMAP="panda-install.bmp" '
+        cmd=cmd+'/DUBITMAP="panda-uninstall.bmp" '
+        cmd=cmd+'/DPANDA="'+panda+'" '
+        cmd=cmd+'/DPSOURCE="'+psource+'" '
+        cmd=cmd+'/DPYEXTRAS="'+psource+'\\thirdparty\\win-extras" '
+        cmd=cmd+'"'+psource+'\\direct\\src\\directscripts\\packpanda.nsi"'
+        oscmd(cmd)
         os.rename("nsis-output.exe", file)
-
 
 def MakeInstallerDPKG(file):
     if (older(file,ALLTARGETS)):

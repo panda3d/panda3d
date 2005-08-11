@@ -17,9 +17,11 @@ import sys,os,getopt,string,shutil,py_compile
 OPTIONLIST = [
 ("game",      1, "Name of directory containing game"),
 ("version",   1, "Version number to add to game name"),
+("rmdir",     2, "Delete all directories with given name"),
+("rmext",     2, "Delete all files with given extension"),
 ("fast",      0, "Use fast compression instead of good compression"),
-("cplegg",    0, "Convert all EGG files to BAM"),
-("cplpy",     0, "Convert all PY files to PYC"),
+("bam",       0, "Generate BAM files"),
+("pyc",       0, "Generate PYC files"),
 ]
 
 def ParseFailure():
@@ -38,15 +40,21 @@ def ParseOptions(args):
     options = {}
     longopts = []
     for (opt, hasval, explanation) in OPTIONLIST:
-      if (hasval): longopts.append(opt+"=")
-      else: longopts.append(opt)
-      options[opt] = 0
-      if (hasval): options[opt]=""
+      if (hasval==2):
+        longopts.append(opt+"=")
+        options[opt] = []
+      elif (hasval==1):
+        longopts.append(opt+"=")
+        options[opt] = ""
+      else:
+        longopts.append(opt)
+        options[opt] = 0
     opts, extras = getopt.getopt(args, "", longopts)
     for option,value in opts:
       for (opt, hasval, explanation) in OPTIONLIST:
         if (option == "--"+opt):
-          if (hasval): options[opt] = value
+          if (hasval==2): options[opt].append(value)
+          elif (hasval==1): options[opt] = value
           else: options[opt] = 1
     return options
   except: ParseFailure();
@@ -88,8 +96,6 @@ GAME=os.path.abspath(GAME)
 NAME=os.path.basename(GAME)
 SMDIRECTORY=os.path.basename(GAME)
 if (VER!=""): SMDIRECTORY=SMDIRECTORY+" "+VER
-if (OPTIONS["cplpy"]): MAIN=NAME+".pyc"
-else: MAIN=NAME+".py"
 ICON=os.path.join(GAME,NAME+".ico")
 BITMAP=os.path.join(GAME,NAME+".bmp")
 LICENSE=os.path.join(GAME,"LICENSE.TXT")
@@ -100,6 +106,8 @@ INSTALLDIR='C:\\'+os.path.basename(GAME)
 if (VER!=""): INSTALLDIR=INSTALLDIR+"-"+VER
 COMPRESS="lzma"
 if (OPTIONS["fast"]): COMPRESS="zlib"
+if (OPTIONS["pyc"]): MAIN=NAME+".pyc"
+else: MAIN=NAME+".py"
 
 def PrintFileStatus(label, file):
   if (os.path.exists(file)):
@@ -131,54 +139,88 @@ if (os.path.isfile(BITMAP)==0):
 
 ##############################################################################
 #
-# If necessary, make a copy of the game for compilation purposes.
+# Copy the game to a temporary directory, so we can modify it safely.
+#
+##############################################################################
+
+TMPDIR=os.path.abspath("packpanda-TMP")
+print ""
+print "Copying the game to "+TMPDIR+"..."
+if (os.path.exists(TMPDIR)):
+   try: shutil.rmtree(TMPDIR)
+   except: sys.exit("Cannot delete "+TMPDIR)
+try: shutil.copytree(GAME, TMPDIR)
+except: sys.exit("Cannot copy game to "+TMPDIR)
+
+##############################################################################
+#
+# Compile all py files, convert all egg files.
+#
+# We do this as a sanity check, even if the user
+# hasn't requested that his files be compiled.
 #
 ##############################################################################
 
 EGG2BAM=os.path.join(PANDA,"bin","egg2bam.exe")
 
 def egg2bam(file):
-    orig = os.getcwd()
-    dir = os.path.dirname(file)
-    base = os.path.basename(file)
-    pre = base[:-4]
-    cmd = 'egg2bam -noabs "'+base+'" -o "'+pre+'.bam"'
+    bam = file[:-4]+'.bam'
+    present = os.path.exists(bam)
+    if (present): bam = "packpanda-TMP.bam";
+    cmd = 'egg2bam -noabs -ps rel -pd . "'+file+'" -o "'+bam+'"'
     print "Executing: "+cmd
-    os.chdir(dir)
     res = os.spawnl(os.P_WAIT, EGG2BAM, cmd)
-    if (res != 0): sys.exit("Cannot convert egg to bam")
-    os.chdir(orig)
-    os.unlink(file)
+    if (res != 0): sys.exit("Problem in egg file: "+file)
+    if (present) or (OPTIONS["bam"]==0):
+        os.unlink(bam)
 
 def py2pyc(file):
     print "Compiling python "+file
+    pyc = file[:-3]+'.pyc'
+    pyo = file[:-3]+'.pyo'
+    if (os.path.exists(pyc)): os.unlink(pyc)
+    if (os.path.exists(pyo)): os.unlink(pyo)
     try: py_compile.compile(file)
     except: sys.exit("Cannot compile "+file)
-    os.unlink(file)
+    if (OPTIONS["pyc"]==0):
+        if (os.path.exists(pyc)):
+            os.unlink(pyc)
+        if (os.path.exists(pyo)):
+            os.unlink(pyo)
 
 def CompileFiles(file):
     if (os.path.isfile(file)):
-        if OPTIONS["cplegg"] and (string.lower(file[-4:])==".egg"):
+        if (string.lower(file[-4:])==".egg"):
             egg2bam(file)
-        elif OPTIONS["cplpy"] and (string.lower(file[-3:])==".py"):
+        elif (string.lower(file[-3:])==".py"):
             py2pyc(file)
         else: pass
     elif (os.path.isdir(file)):
         for x in os.listdir(file):
             CompileFiles(os.path.join(file,x))
 
-if (OPTIONS["cplpy"] or OPTIONS["cplegg"]):
-    TMPDIR=os.path.abspath("packpanda-TMP")
-    print "Copying the game to "+TMPDIR+"..."
-    if (os.path.exists(TMPDIR)):
-        try: shutil.rmtree(TMPDIR)
-        except: sys.exit("Cannot delete "+TMPDIR)
-    try: shutil.copytree(GAME, TMPDIR)
-    except: sys.exit("Cannot copy game to "+TMPDIR)
-    print "Searching for files to compile in "+TMPDIR+"..."
-    CompileFiles(TMPDIR)
-else:
-    TMPDIR=GAME
+def DeleteFiles(file):
+    base = string.lower(os.path.basename(file))
+    if (os.path.isdir(file)):
+        for pattern in OPTIONS["rmdir"]:
+            if (string.lower(pattern) == base):
+                print "Deleting "+file
+                shutil.rmtree(file)
+                return
+        for x in os.listdir(file):
+            DeleteFiles(os.path.join(file,x))
+    else:
+        for ext in OPTIONS["rmext"]:
+            if (base[-(len(ext)+1):] == string.lower("."+ext)):
+                print "Deleting "+file
+                os.unlink(file)
+                return
+
+print ""
+print "Compiling BAM and PYC files..."
+os.chdir(TMPDIR)
+CompileFiles(".")
+DeleteFiles(".")
 
 ##############################################################################
 #

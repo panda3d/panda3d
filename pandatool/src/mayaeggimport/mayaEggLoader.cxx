@@ -214,15 +214,25 @@ public:
   vector <MayaEggJoint *> _children;
 
 public:
-  LVector3d GetXV(void) { return _trans.get_row3(0); }
-  LVector3d GetYV(void) { return _trans.get_row3(1); }
-  LVector3d GetZV(void) { return _trans.get_row3(2); }
+  void GetRotation(LVector3d &xv, LVector3d &yv, LVector3d &zv);
   LVector3d GetPos(void) { return _trans.get_row3(3); }
   MayaEggJoint *ChooseBestChild(LVector3d dir);
   void ChooseEndPos(double thickness);
   void CreateMayaBone(CoordinateSystem sys);
   void AssignNames(void);
 };
+
+void MayaEggJoint::GetRotation(LVector3d &xv, LVector3d &yv, LVector3d &zv)
+{
+  xv = _trans.get_row3(0);
+  yv = _trans.get_row3(1);
+  zv = _trans.get_row3(2);
+  xv.normalize();
+  yv.normalize();
+  zv = xv.cross(yv);
+  zv.normalize();
+  yv = zv.cross(xv);
+}
 
 void MayaEggJoint::AssignNames(void)
 {
@@ -322,9 +332,11 @@ void MayaEggJoint::ChooseEndPos(double thickness)
 
 void MayaEggJoint::CreateMayaBone(CoordinateSystem sys)
 {
-  MFloatPoint xv(ConvertCoordSys(sys, GetXV()));
-  MFloatPoint yv(ConvertCoordSys(sys, GetYV()));
-  MFloatPoint zv(ConvertCoordSys(sys, GetZV()));
+  LVector3d rxv, ryv, rzv;
+  GetRotation(rxv, ryv, rzv);
+  MFloatPoint xv(ConvertCoordSys(sys, rxv));
+  MFloatPoint yv(ConvertCoordSys(sys, ryv));
+  MFloatPoint zv(ConvertCoordSys(sys, rzv));
   MFloatPoint pos(ConvertCoordSys(sys, GetPos()));
   MFloatPoint endpos(ConvertCoordSys(sys, _endpos));
   MFloatPoint tzv(ConvertCoordSys(sys, _perp));

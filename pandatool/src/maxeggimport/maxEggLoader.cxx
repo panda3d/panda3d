@@ -152,14 +152,24 @@ public:
   vector <MaxEggJoint *> _children;
 
 public:
-  LVector3d GetXV(void) { return _trans.get_row3(0); }
-  LVector3d GetYV(void) { return _trans.get_row3(1); }
-  LVector3d GetZV(void) { return _trans.get_row3(2); }
+  void GetRotation(LVector3d &xv, LVector3d &yv, LVector3d &zv);
   LVector3d GetPos(void) { return _trans.get_row3(3); }
   MaxEggJoint *ChooseBestChild(LVector3d dir);
   void ChooseEndPos(double thickness);
   void CreateMaxBone(CoordinateSystem sys);
 };
+
+void MaxEggJoint::GetRotation(LVector3d &xv, LVector3d &yv, LVector3d &zv)
+{
+  xv = _trans.get_row3(0);
+  yv = _trans.get_row3(1);
+  zv = _trans.get_row3(2);
+  xv.normalize();
+  yv.normalize();
+  zv = xv.cross(yv);
+  zv.normalize();
+  yv = zv.cross(xv);
+}
 
 MaxEggJoint *MaxEggLoader::FindJoint(EggGroup *joint)
 {
@@ -252,9 +262,11 @@ void MaxEggJoint::ChooseEndPos(double thickness)
 
 void MaxEggJoint::CreateMaxBone(CoordinateSystem sys)
 {
-  Point3 xv(ConvertCoordSys(sys, GetXV()));
-  Point3 yv(ConvertCoordSys(sys, GetYV()));
-  Point3 zv(ConvertCoordSys(sys, GetZV()));
+  LVector3d rxv,ryv,rzv;
+  GetRotation(rxv, ryv, rzv);
+  Point3 xv(ConvertCoordSys(sys, rxv));
+  Point3 yv(ConvertCoordSys(sys, ryv));
+  Point3 zv(ConvertCoordSys(sys, rzv));
   Point3 pos(ConvertCoordSys(sys, GetPos()));
   Point3 endpos(ConvertCoordSys(sys, _endpos));
   Point3 tzv(ConvertCoordSys(sys, _perp));
