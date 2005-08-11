@@ -28,6 +28,7 @@
 #include "filename.h"
 #include "frameRateMeter.h"
 #include "pointerTo.h"
+#include "partGroup.h"
 #include "pvector.h"
 #include "typedWritableReferenceCount.h"
 #include "graphicsWindow.h"
@@ -87,7 +88,9 @@ public:
                    const pvector<Filename> &files);
   NodePath load_model(const NodePath &parent, Filename filename);
   NodePath load_default_model(const NodePath &parent);
-  void loop_animations();
+  void loop_animations(int hierarchy_match_flags = 
+                       PartGroup::HMF_ok_part_extra |
+                       PartGroup::HMF_ok_anim_extra);
 
   enum BackgroundType {
     BT_other = 0,

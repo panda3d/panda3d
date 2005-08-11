@@ -661,11 +661,11 @@ load_default_model(const NodePath &parent) {
 //               matching animations found.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-loop_animations() {
+loop_animations(int hierarchy_match_flags) {
   // If we happened to load up both a character file and its matching
   // animation file, attempt to bind them together now and start the
   // animations looping.
-  auto_bind(get_render().node(), _anim_controls, ~0);
+  auto_bind(get_render().node(), _anim_controls, hierarchy_match_flags);
   _anim_controls.loop_all(true);
 }
 

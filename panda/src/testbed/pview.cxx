@@ -23,6 +23,7 @@
 #include "texturePool.h"
 #include "multitexReducer.h"
 #include "sceneGraphReducer.h"
+#include "partGroup.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -219,6 +220,10 @@ help() {
     "      displayed in the window.  The default is not to open the window\n"
     "      until all models are loaded.\n\n"
 
+    "  -i\n"
+    "      Ignore bundle/group names.  Normally, the <group> name must match\n"
+    "      the <bundle> name, or the animation will not be used.\n\n"
+
     "  -s filename\n"
     "      After displaying the models, immediately take a screenshot and\n"
     "      exit.\n\n"
@@ -246,11 +251,13 @@ main(int argc, char *argv[]) {
   bool auto_center = false;
   bool show_loading = false;
   bool auto_screenshot = false;
+  int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
+                              PartGroup::HMF_ok_anim_extra;
   Filename screenshotfn;
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "cls:Vh";
+  static const char *optflags = "cls:Vhi";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -263,6 +270,10 @@ main(int argc, char *argv[]) {
       show_loading = true;
       break;
       
+    case 'i':
+      hierarchy_match_flags |= PartGroup::HMF_ok_wrong_root_name;
+      break;
+
     case 's':
       auto_screenshot = true;
       screenshotfn = optarg;
@@ -322,7 +333,8 @@ main(int argc, char *argv[]) {
     } else {
       window->load_models(framework.get_models(), argc, argv);
     }
-    window->loop_animations();
+    window->loop_animations(hierarchy_match_flags);
+    
     loading_np.remove_node();
 
     if (auto_center) {

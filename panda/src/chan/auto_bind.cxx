@@ -22,6 +22,7 @@
 #include "partBundleNode.h"
 #include "config_chan.h"
 #include "string_utils.h"
+#include "partGroup.h"
 
 typedef pset<AnimBundleNode *> AnimNodes;
 typedef pmap<string, AnimNodes> Anims;
@@ -96,23 +97,29 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 //     Function: r_find_bundles
 //  Description: A support function for auto_bind(), below.  Walks
 //               through the hierarchy and finds all of the
-//               PartBundles and AnimBundles.
+//               PartBundles and AnimBundles.  The flag 'classify'
+//               controls whether or not the bundles are separated
+//               into groups according to their root name.  If not,
+//               they are all filed under the same name.
 ////////////////////////////////////////////////////////////////////
 static void 
-r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
+r_find_bundles(PandaNode *node, Anims &anims, Parts &parts, bool classify) {
   if (node->is_of_type(AnimBundleNode::get_class_type())) {
     AnimBundleNode *bn = DCAST(AnimBundleNode, node);
-    anims[bn->get_bundle()->get_name()].insert(bn);
-    
+    if (classify)
+      anims[bn->get_bundle()->get_name()].insert(bn);
+    else anims[""].insert(bn);
   } else if (node->is_of_type(PartBundleNode::get_class_type())) {
     PartBundleNode *bn = DCAST(PartBundleNode, node);
-    parts[bn->get_bundle()->get_name()].insert(bn);
+    if (classify)
+      parts[bn->get_bundle()->get_name()].insert(bn);
+    else parts[""].insert(bn);
   }
 
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_find_bundles(cr.get_child(i), anims, parts);
+    r_find_bundles(cr.get_child(i), anims, parts, classify);
   }
 }
 
@@ -132,8 +139,11 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
   // First, locate all the bundles in the subgraph.
   Anims anims;
   Parts parts;
-  r_find_bundles(root_node, anims, parts);
-
+  bool classify = true;
+  if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name)
+    classify = false;
+  r_find_bundles(root_node, anims, parts, classify);
+  
   if (chan_cat.is_debug()) {
     int anim_count = 0;
     Anims::const_iterator ai;
