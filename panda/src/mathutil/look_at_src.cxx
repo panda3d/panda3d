@@ -84,7 +84,7 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // axis is the amount to rotate about the X axis to bring the up
     // vector to the Z axis.
 
-    FLOATNAME(LVector2) x(up[1], up[0]*y[0]+up[2]*y[1]);
+    FLOATNAME(LVector2) x(-up[1], up[0]*y[0]+up[2]*y[1]);
     d = dot(x, x);
     if (d==0.0f) {
       x = FLOATNAME(LVector2)(0.0f, 1.0f);
