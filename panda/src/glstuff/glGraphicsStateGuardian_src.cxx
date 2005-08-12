@@ -787,7 +787,6 @@ reset() {
   _point_size = 1.0f;
   _point_perspective = false;
 
-  _transform_stale = false;
   _vertex_blending_enabled = false;
 
   report_my_gl_errors();

@@ -232,6 +232,7 @@ set_coordinate_system(CoordinateSystem cs) {
                               _coordinate_system));
   }
   _internal_transform = _cs_transform->compose(_external_transform);
+  _transform_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,6 +281,7 @@ reset() {
 
   _has_scene_graph_color = false;
   _scene_graph_color_stale = false;
+  _transform_stale = true;
   _color_blend_involves_color_scale = false;
   _texture_involves_color_scale = false;
   _vertex_colors_enabled = true;

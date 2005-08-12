@@ -298,7 +298,6 @@ protected:
   float _point_size;
   bool _point_perspective;
 
-  bool _transform_stale;
   bool _vertex_blending_enabled;
 
   CPT(DisplayRegion) _actual_display_region;

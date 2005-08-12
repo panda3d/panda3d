@@ -86,7 +86,6 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   _d3d_device = NULL;
 
   _dx_is_ready = false;
-  _transform_stale = false;
   _vertex_blending_enabled = false;
   _overlay_windows_supported = false;
   _tex_stats_retrieval_impossible = false;

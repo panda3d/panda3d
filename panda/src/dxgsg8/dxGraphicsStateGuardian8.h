@@ -192,7 +192,6 @@ protected:
   bool _dx_is_ready;
   HRESULT _last_testcooplevel_result;
 
-  bool _transform_stale;
   bool _vertex_blending_enabled;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation

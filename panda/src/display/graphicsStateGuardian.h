@@ -327,12 +327,12 @@ protected:
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
   bool _scene_graph_color_stale;
+  bool _transform_stale;
   bool _color_blend_involves_color_scale;
   bool _texture_involves_color_scale;
   bool _vertex_colors_enabled;
   bool _lighting_enabled;
   bool _clip_planes_enabled;
-
   bool _color_scale_enabled;
   LVecBase4f _current_color_scale;
 
