@@ -110,6 +110,7 @@ class ShowBase(DirectObject.DirectObject):
         self.win = None
         self.frameRateMeter = None
         self.winList = []
+        self.winControls = []
         self.mainWinMinimized = 0
         self.pipe = None
         self.pipeList = []
@@ -253,6 +254,9 @@ class ShowBase(DirectObject.DirectObject):
         # Transition effects (fade, iris, etc)
         import Transitions
         self.transitions = Transitions.Transitions(self.loader)
+
+        # Setup the window controls - handy for multiwindow applications
+        self.setupWindowControls()
 
         # Start Tk and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
@@ -591,6 +595,13 @@ class ShowBase(DirectObject.DirectObject):
             if self.frameRateMeter:
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
+
+    def setupWindowControls(self):
+        if not self.winControls:
+            winCtrl = WindowControls(self.win, mouseWatcher=self.mouseWatcher,
+                                     cam=self.camera, cam2d=self.camera2d,
+                                     mouseKeyboard = self.dataRoot.find("**/*"))
+            self.winControls.append(winCtrl)
 
 
     def setupRender(self):
@@ -1612,3 +1623,22 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.run()
 
 
+# A class to encapsulate information necessary for multiwindow support.
+class WindowControls:
+    def __init__(self, win, cam=None, cam2d=None, mouseWatcher=None, mouseKeyboard=None, closeCmd=lambda : 0):
+        self.win = win
+        self.camera = cam
+        self.camera2d = cam2d
+        self.mouseWatcher = mouseWatcher
+        self.mouseKeyboard = mouseKeyboard
+        self.closeCommand = closeCmd
+
+    def __str__(self):
+        s = "window = " + str(self.win) + "\n"
+        s += "camera = " + str(self.camera) + "\n"
+        s += "camera2d = " + str(self.camera2d) + "\n"
+        s += "mouseWatcher = " + str(self.mouseWatcher) + "\n"
+        s += "mouseAndKeyboard = " + str(self.mouseKeyboard) + "\n"
+        return s
+
+    
