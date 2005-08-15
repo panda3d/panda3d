@@ -37,7 +37,7 @@
 // This file is not protected from multiple inclusion; it may need to
 // be included multiple times.
 
-#include "glext.h"
+#include "panda_glext.h"
 
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
@@ -46,6 +46,6 @@
 #include "glGeomContext_src.h"
 #include "glGeomMunger_src.h"
 #include "glCgShaderContext_src.h"
+#include "glImmediateModeSender_src.h"
 #include "glGraphicsStateGuardian_src.h"
-
 

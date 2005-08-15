@@ -87,6 +87,21 @@ ConfigVariableBool vertex_buffers
           "or offscreen buffers).  On lower-end graphics cards this will "
           "make little or no difference."));
 
+ConfigVariableBool vertex_arrays
+("vertex-arrays", true,
+ PRC_DESC("Set this true to allow the use of vertex arrays for rendering "
+          "OpenGL vertex data.  This, or vertex buffers, is the normal "
+          "way of issuing vertices ever since OpenGL 1.1, and you "
+          "almost always want to have set to true.  However, some very "
+          "buggy graphics drivers may have problems handling vertex arrays "
+          "correctly, so if you are experiencing problems you might try "
+          "setting this to false.  If this is false, Panda will fall back "
+          "to using immediate-mode commands like glVertex3f(), etc., to "
+          "issue the vertices, which is potentially much slower than "
+          "vertex arrays.  Setting this false causes vertex_buffers to be "
+          "ignored (since vertex buffers are a special case of vertex "
+          "arrays in OpenGL).  This has no effect on DirectX rendering."));
+
 ConfigVariableBool display_lists
 ("display-lists", false,
  PRC_DESC("Set this true to allow the use of OpenGL display lists for "

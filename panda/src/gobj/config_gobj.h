@@ -50,6 +50,7 @@ EXPCL_PANDA istream &operator >> (istream &in, AutoTextureScale &ats);
 extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
 extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
 extern EXPCL_PANDA ConfigVariableBool vertex_buffers;
+extern EXPCL_PANDA ConfigVariableBool vertex_arrays;
 extern EXPCL_PANDA ConfigVariableBool display_lists;
 extern EXPCL_PANDA ConfigVariableBool hardware_animated_vertices;
 extern EXPCL_PANDA ConfigVariableBool hardware_point_sprites;

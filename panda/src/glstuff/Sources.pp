@@ -13,7 +13,7 @@
 
     
   #define INSTALL_HEADERS \
-     glext.h \
+     panda_glext.h \
      glmisc_src.cxx \
      glmisc_src.h \
      glstuff_src.cxx \
@@ -22,6 +22,9 @@
      glVertexBufferContext_src.cxx \
      glVertexBufferContext_src.I \
      glVertexBufferContext_src.h \
+     glImmediateModeSender_src.cxx \
+     glImmediateModeSender_src.I \
+     glImmediateModeSender_src.h \
      glIndexBufferContext_src.cxx \
      glIndexBufferContext_src.I \
      glIndexBufferContext_src.h \

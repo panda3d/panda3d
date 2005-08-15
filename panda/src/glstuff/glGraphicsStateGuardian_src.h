@@ -54,7 +54,10 @@ typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, 
 typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
-typedef void (APIENTRYP PFNGLMULTITEXCOORD2FVPROC) (GLenum target, const GLfloat *v);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD1FPROC) (GLenum target, const GLfloat s);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD2FPROC) (GLenum target, const GLfloat s, const GLfloat t);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD3FPROC) (GLenum target, const GLfloat s, const GLfloat t, const GLfloat r);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD4FPROC) (GLenum target, const GLfloat s, const GLfloat t, const GLfloat r, const GLfloat q);
 typedef void (APIENTRYP PFNGLBLENDEQUATIONPROC) (GLenum mode);
 typedef void (APIENTRYP PFNGLBLENDCOLORPROC) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 
@@ -154,6 +157,8 @@ public:
   void dump_state(void);
 
   const float *get_light_color(Light *light) const;
+  void draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode);
+  void draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode);
 
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
@@ -301,6 +306,9 @@ protected:
   bool _vertex_blending_enabled;
 
   CPT(DisplayRegion) _actual_display_region;
+  CLP(ImmediateModeSender) _sender;
+  bool _use_sender;
+
 #ifdef HAVE_CGGL
   PT(CgShader) _cg_shader; // The current CgShader object
   typedef pmap< PT(CgShader), PT(CLP(CgShaderContext)) > CGSHADERCONTEXTS;
@@ -346,7 +354,10 @@ public:
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
-  PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
+  PFNGLMULTITEXCOORD1FPROC _glMultiTexCoord1f;
+  PFNGLMULTITEXCOORD2FPROC _glMultiTexCoord2f;
+  PFNGLMULTITEXCOORD3FPROC _glMultiTexCoord3f;
+  PFNGLMULTITEXCOORD4FPROC _glMultiTexCoord4f;
 
   bool _supports_buffers;
   PFNGLGENBUFFERSPROC _glGenBuffers;
@@ -372,6 +383,7 @@ public:
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
+  static PStatCollector _vertices_immediate_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

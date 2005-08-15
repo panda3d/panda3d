@@ -75,6 +75,7 @@ TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
+PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
 
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
@@ -107,6 +108,7 @@ null_glBlendEquation(GLenum) {
 static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: uchar_bgr_to_rgb
@@ -489,8 +491,14 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "ActiveTexture");
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ClientActiveTexture");
-    _glMultiTexCoord2fv = (PFNGLMULTITEXCOORD2FVPROC)
-      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2fv");
+    _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord1f");
+    _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2f");
+    _glMultiTexCoord3f = (PFNGLMULTITEXCOORD3FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3f");
+    _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4f");
 
   } else if (has_extension("GL_ARB_multitexture")) {
     _supports_multitexture = true;
@@ -499,13 +507,20 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "ActiveTextureARB");
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ClientActiveTextureARB");
-    _glMultiTexCoord2fv = (PFNGLMULTITEXCOORD2FVPROC)
-      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2fvARB");
+    _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord1fARB");
+    _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2fARB");
+    _glMultiTexCoord3f = (PFNGLMULTITEXCOORD3FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3fARB");
+    _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4fARB");
   }
 
   if (_supports_multitexture) {
     if (_glActiveTexture == NULL || _glClientActiveTexture == NULL ||
-        _glMultiTexCoord2fv == NULL) {
+        _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL || 
+        _glMultiTexCoord3f == NULL || _glMultiTexCoord4f == NULL) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_multitexture = false;
@@ -686,6 +701,11 @@ reset() {
     } else {
       GLCAT.debug()
         << "vertex buffer objects are NOT supported.\n";
+    }
+
+    if (!vertex_arrays) {
+      GLCAT.debug()
+        << "immediate mode commands will be used instead of vertex arrays.\n";
     }
   }
 
@@ -1270,125 +1290,192 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 #endif
   }
 
-  const GeomVertexArrayData *array_data;
-  int num_values;
-  Geom::NumericType numeric_type;
-  int start;
-  int stride;
+  if (!vertex_arrays) {
+    // We must use immediate mode to render primitives.
+    _sender.clear();
+    _use_sender = true;
 
-  if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type, 
-                                    start, stride)) {
-    const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(VertexPointer)(num_values, get_numeric_type(numeric_type), 
-                       stride, client_pointer + start);
-    GLP(EnableClientState)(GL_VERTEX_ARRAY);
-  }
-
-  if (_vertex_data->get_normal_info(array_data, numeric_type, 
-                                    start, stride)) {
-    const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
-                       client_pointer + start);
-    GLP(EnableClientState)(GL_NORMAL_ARRAY);
-  } else {
-    GLP(DisableClientState)(GL_NORMAL_ARRAY);
-  }
-
-  if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
-                                   start, stride) &&
-      numeric_type != Geom::NT_packed_dabc) {
-    const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
-                      stride, client_pointer + start);
-    GLP(EnableClientState)(GL_COLOR_ARRAY);
-  } else {
-    GLP(DisableClientState)(GL_COLOR_ARRAY);
-
-    // Since we don't have per-vertex color, the implicit color is
-    // white.
-    GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
-  }
-
-  // Now set up each of the active texture coordinate stages--or at
-  // least those for which we're not generating texture coordinates
-  // automatically.
-  const Geom::ActiveTextureStages &active_stages = 
-    _current_texture->get_on_stages();
-  const Geom::NoTexCoordStages &no_texcoords = 
-    _current_tex_gen->get_no_texcoords();
-
-  int max_stage_index = (int)active_stages.size();
-  int stage_index = 0;
-  while (stage_index < max_stage_index) {
-    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
-    TextureStage *stage = active_stages[stage_index];
-    if (no_texcoords.find(stage) == no_texcoords.end()) {
-      // This stage is not one of the stages that doesn't need
-      // texcoords issued for it.
-      const InternalName *name = stage->get_texcoord_name();
-
-      if (_vertex_data->get_array_info(name, array_data, num_values, 
-                                       numeric_type, start, stride)) {
-        // The vertex data does have texcoords for this stage.
-        const unsigned char *client_pointer = setup_array_data(array_data);
-        GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type), 
-                             stride, client_pointer + start);
-        GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
-
-      } else {
-        // The vertex data doesn't have texcoords for this stage (even
-        // though they're needed).
-        GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
-      }
-    } else {
-      // No texcoords are needed for this stage.
-      GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+    _sender.add_column(_vertex_data, InternalName::get_normal(),
+                       NULL, NULL, GLP(Normal3f), NULL);
+    if (!_sender.add_column(_vertex_data, InternalName::get_color(),
+                            NULL, NULL, GLP(Color3f), GLP(Color4f))) {
+      // If we didn't have a color column, the item color is white.
+      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    ++stage_index;
-  }
+    // Now set up each of the active texture coordinate stages--or at
+    // least those for which we're not generating texture coordinates
+    // automatically.
+    const Geom::ActiveTextureStages &active_stages = 
+      _current_texture->get_on_stages();
+    const Geom::NoTexCoordStages &no_texcoords = 
+      _current_tex_gen->get_no_texcoords();
+    
+    int max_stage_index = (int)active_stages.size();
+    int stage_index = 0;
+    while (stage_index < max_stage_index) {
+      TextureStage *stage = active_stages[stage_index];
+      if (no_texcoords.find(stage) == no_texcoords.end()) {
+        // This stage is not one of the stages that doesn't need
+        // texcoords issued for it.
+        const InternalName *name = stage->get_texcoord_name();
+        if (stage_index == 0) {
+          // Use the original functions for stage 0, in case we don't
+          // support multitexture.
+          _sender.add_column(_vertex_data, name,
+                             GLP(TexCoord1f), GLP(TexCoord2f),
+                             GLP(TexCoord3f), GLP(TexCoord4f));
 
-  // Be sure also to disable any texture stages we had enabled before.
-  while (stage_index < _last_max_stage_index) {
-    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
-    GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
-    ++stage_index;
-  }
-  _last_max_stage_index = max_stage_index;
-
-  if (_supports_vertex_blend) {
-    if (hardware_animation) {
-      // Issue the weights and/or transform indices for vertex blending.
-      if (_vertex_data->get_array_info(InternalName::get_transform_weight(),
-                                       array_data, num_values, numeric_type, 
-                                       start, stride)) {
-        const unsigned char *client_pointer = setup_array_data(array_data);
-        _glWeightPointerARB(num_values, get_numeric_type(numeric_type), 
-                            stride, client_pointer + start);
-        GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
-      } else {
-        GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+        } else {
+          // Other stages require the multitexture functions.
+          _sender.add_texcoord_column(_vertex_data, name, stage_index,
+                                      _glMultiTexCoord1f, _glMultiTexCoord2f, 
+                                      _glMultiTexCoord3f, _glMultiTexCoord4f);
+        }
       }
+      
+      ++stage_index;
+    }
+    
+    // Be sure also to disable any texture stages we had enabled before.
+    while (stage_index < _last_max_stage_index) {
+      _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+      GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+      ++stage_index;
+    }
+    _last_max_stage_index = max_stage_index;
 
-      if (animation.get_indexed_transforms()) {
-        // Issue the matrix palette indices.
-        if (_vertex_data->get_array_info(InternalName::get_transform_index(),
+    // We must add vertex last, because glVertex3f() is the key
+    // function call that actually issues the vertex.
+    _sender.add_column(_vertex_data, InternalName::get_vertex(),
+                       NULL, GLP(Vertex2f), GLP(Vertex3f), GLP(Vertex4f));
+
+  } else {
+    // We may use vertex arrays or buffers to render primitives.
+    _use_sender = false;
+
+    const GeomVertexArrayData *array_data;
+    int num_values;
+    Geom::NumericType numeric_type;
+    int start;
+    int stride;
+    
+    if (_vertex_data->get_normal_info(array_data, numeric_type, 
+                                      start, stride)) {
+      const unsigned char *client_pointer = setup_array_data(array_data);
+      GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
+                         client_pointer + start);
+      GLP(EnableClientState)(GL_NORMAL_ARRAY);
+    } else {
+      GLP(DisableClientState)(GL_NORMAL_ARRAY);
+    }
+    
+    if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
+                                     start, stride) &&
+        numeric_type != Geom::NT_packed_dabc) {
+      const unsigned char *client_pointer = setup_array_data(array_data);
+      GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
+                        stride, client_pointer + start);
+      GLP(EnableClientState)(GL_COLOR_ARRAY);
+    } else {
+      GLP(DisableClientState)(GL_COLOR_ARRAY);
+      
+      // Since we don't have per-vertex color, the implicit color is
+      // white.
+      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+    
+    // Now set up each of the active texture coordinate stages--or at
+    // least those for which we're not generating texture coordinates
+    // automatically.
+    const Geom::ActiveTextureStages &active_stages = 
+      _current_texture->get_on_stages();
+    const Geom::NoTexCoordStages &no_texcoords = 
+      _current_tex_gen->get_no_texcoords();
+    
+    int max_stage_index = (int)active_stages.size();
+    int stage_index = 0;
+    while (stage_index < max_stage_index) {
+      _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+      TextureStage *stage = active_stages[stage_index];
+      if (no_texcoords.find(stage) == no_texcoords.end()) {
+        // This stage is not one of the stages that doesn't need
+        // texcoords issued for it.
+        const InternalName *name = stage->get_texcoord_name();
+        
+        if (_vertex_data->get_array_info(name, array_data, num_values, 
+                                         numeric_type, start, stride)) {
+          // The vertex data does have texcoords for this stage.
+          const unsigned char *client_pointer = setup_array_data(array_data);
+          GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type), 
+                               stride, client_pointer + start);
+          GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
+          
+        } else {
+          // The vertex data doesn't have texcoords for this stage (even
+          // though they're needed).
+          GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+        }
+      } else {
+        // No texcoords are needed for this stage.
+        GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+      }
+      
+      ++stage_index;
+    }
+    
+    // Be sure also to disable any texture stages we had enabled before.
+    while (stage_index < _last_max_stage_index) {
+      _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+      GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+      ++stage_index;
+    }
+    _last_max_stage_index = max_stage_index;
+
+    if (_supports_vertex_blend) {
+      if (hardware_animation) {
+        // Issue the weights and/or transform indices for vertex blending.
+        if (_vertex_data->get_array_info(InternalName::get_transform_weight(),
                                          array_data, num_values, numeric_type, 
                                          start, stride)) {
           const unsigned char *client_pointer = setup_array_data(array_data);
-          _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type), 
+          _glWeightPointerARB(num_values, get_numeric_type(numeric_type), 
                               stride, client_pointer + start);
-          GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+          GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
         } else {
+          GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+        }
+        
+        if (animation.get_indexed_transforms()) {
+          // Issue the matrix palette indices.
+          if (_vertex_data->get_array_info(InternalName::get_transform_index(),
+                                           array_data, num_values, numeric_type, 
+                                           start, stride)) {
+            const unsigned char *client_pointer = setup_array_data(array_data);
+            _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type), 
+                                     stride, client_pointer + start);
+            GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+          } else {
+            GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+          }
+        }
+        
+      } else {
+        GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+        if (_supports_matrix_palette) {
           GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
         }
       }
+    }
 
-    } else {
-      GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
-      if (_supports_matrix_palette) {
-        GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
-      }
+    // There's no requirement that we add vertices last, but we do
+    // anyway.
+    if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type, 
+                                      start, stride)) {
+      const unsigned char *client_pointer = setup_array_data(array_data);
+      GLP(VertexPointer)(num_values, get_numeric_type(numeric_type), 
+                         stride, client_pointer + start);
+      GLP(EnableClientState)(GL_VERTEX_ARRAY);
     }
   }
 
@@ -1412,21 +1499,26 @@ draw_triangles(const GeomTriangles *primitive) {
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
 
-  if (primitive->is_indexed()) {
-    const unsigned char *client_pointer = setup_primitive(primitive);
-    
-    _glDrawRangeElements(GL_TRIANGLES, 
-                         primitive->get_min_vertex(),
-                         primitive->get_max_vertex(),
-                         primitive->get_num_vertices(),
-                         get_numeric_type(primitive->get_index_type()), 
-                         client_pointer);
-  } else {
-    GLP(DrawArrays)(GL_TRIANGLES,
-                    primitive->get_first_vertex(),
-                    primitive->get_num_vertices());
-  }
+  if (_use_sender) {
+    draw_immediate_simple_primitives(primitive, GL_TRIANGLES);
 
+  } else {
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      
+      _glDrawRangeElements(GL_TRIANGLES, 
+                           primitive->get_min_vertex(),
+                           primitive->get_max_vertex(),
+                           primitive->get_num_vertices(),
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer);
+    } else {
+      GLP(DrawArrays)(GL_TRIANGLES,
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices());
+    }
+  }
+    
   report_my_gl_errors();
 }
 
@@ -1443,57 +1535,62 @@ draw_tristrips(const GeomTristrips *primitive) {
   }
 #endif  // NDEBUG
 
-  if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
-    // One long triangle strip, connected by the degenerate vertices
-    // that have already been set up within the primitive.
-    _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
-    _primitive_batches_tristrip_pcollector.add_level(1);
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
-      _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                           primitive->get_min_vertex(),
-                           primitive->get_max_vertex(),
-                           primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()), 
-                           client_pointer);
-    } else {
-      GLP(DrawArrays)(GL_TRIANGLE_STRIP,
-                      primitive->get_first_vertex(),
-                      primitive->get_num_vertices());
-    }
+  if (_use_sender) {
+    draw_immediate_composite_primitives(primitive, GL_TRIANGLE_STRIP);
 
   } else {
-    // Send the individual triangle strips, stepping over the
-    // degenerate vertices.
-    CPTA_int ends = primitive->get_ends();
-    
-    _primitive_batches_tristrip_pcollector.add_level(ends.size());
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
-      int index_stride = primitive->get_index_stride();
-      GeomVertexReader mins(primitive->get_mins(), 0);
-      GeomVertexReader maxs(primitive->get_maxs(), 0);
-      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-               primitive->get_maxs()->get_num_rows() == (int)ends.size());
-
-      unsigned int start = 0;
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+    if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
+      // One long triangle strip, connected by the degenerate vertices
+      // that have already been set up within the primitive.
+      _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+      _primitive_batches_tristrip_pcollector.add_level(1);
+      if (primitive->is_indexed()) {
+        const unsigned char *client_pointer = setup_primitive(primitive);
         _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                             mins.get_data1i(), maxs.get_data1i(), 
-                             ends[i] - start,
+                             primitive->get_min_vertex(),
+                             primitive->get_max_vertex(),
+                             primitive->get_num_vertices(),
                              get_numeric_type(primitive->get_index_type()), 
-                             client_pointer + start * index_stride);
-        start = ends[i] + 2;
+                             client_pointer);
+      } else {
+        GLP(DrawArrays)(GL_TRIANGLE_STRIP,
+                        primitive->get_first_vertex(),
+                        primitive->get_num_vertices());
       }
+      
     } else {
-      unsigned int start = 0;
-      int first_vertex = primitive->get_first_vertex();
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_tristrip_pcollector.add_level(ends[i] - start);
-        GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
-                        ends[i] - start);
-        start = ends[i] + 2;
+      // Send the individual triangle strips, stepping over the
+      // degenerate vertices.
+      CPTA_int ends = primitive->get_ends();
+      
+      _primitive_batches_tristrip_pcollector.add_level(ends.size());
+      if (primitive->is_indexed()) {
+        const unsigned char *client_pointer = setup_primitive(primitive);
+        int index_stride = primitive->get_index_stride();
+        GeomVertexReader mins(primitive->get_mins(), 0);
+        GeomVertexReader maxs(primitive->get_maxs(), 0);
+        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+                 primitive->get_maxs()->get_num_rows() == (int)ends.size());
+        
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                               mins.get_data1i(), maxs.get_data1i(), 
+                               ends[i] - start,
+                               get_numeric_type(primitive->get_index_type()), 
+                               client_pointer + start * index_stride);
+          start = ends[i] + 2;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = primitive->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
+                          ends[i] - start);
+          start = ends[i] + 2;
+        }
       }
     }
   }
@@ -1514,36 +1611,41 @@ draw_trifans(const GeomTrifans *primitive) {
   }
 #endif  // NDEBUG
 
-  // Send the individual triangle fans.  There's no connecting fans
-  // with degenerate vertices, so no worries about that.
-  CPTA_int ends = primitive->get_ends();
+  if (_use_sender) {
+    draw_immediate_composite_primitives(primitive, GL_TRIANGLE_FAN);
 
-  _primitive_batches_trifan_pcollector.add_level(ends.size());
-  if (primitive->is_indexed()) {
-    const unsigned char *client_pointer = setup_primitive(primitive);
-    int index_stride = primitive->get_index_stride();
-    GeomVertexReader mins(primitive->get_mins(), 0);
-    GeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-             primitive->get_maxs()->get_num_rows() == (int)ends.size());
-
-    unsigned int start = 0;
-    for (size_t i = 0; i < ends.size(); i++) {
-      _vertices_trifan_pcollector.add_level(ends[i] - start);
-      _glDrawRangeElements(GL_TRIANGLE_FAN, 
-                           mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
-                           get_numeric_type(primitive->get_index_type()), 
-                           client_pointer + start * index_stride);
-      start = ends[i];
-    }
   } else {
-    unsigned int start = 0;
-    int first_vertex = primitive->get_first_vertex();
-    for (size_t i = 0; i < ends.size(); i++) {
-      _vertices_trifan_pcollector.add_level(ends[i] - start);
-      GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
-                      ends[i] - start);
-      start = ends[i];
+    // Send the individual triangle fans.  There's no connecting fans
+    // with degenerate vertices, so no worries about that.
+    CPTA_int ends = primitive->get_ends();
+    
+    _primitive_batches_trifan_pcollector.add_level(ends.size());
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      int index_stride = primitive->get_index_stride();
+      GeomVertexReader mins(primitive->get_mins(), 0);
+      GeomVertexReader maxs(primitive->get_maxs(), 0);
+      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+               primitive->get_maxs()->get_num_rows() == (int)ends.size());
+      
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_trifan_pcollector.add_level(ends[i] - start);
+        _glDrawRangeElements(GL_TRIANGLE_FAN, 
+                             mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
+                             get_numeric_type(primitive->get_index_type()), 
+                             client_pointer + start * index_stride);
+        start = ends[i];
+      }
+    } else {
+      unsigned int start = 0;
+      int first_vertex = primitive->get_first_vertex();
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_trifan_pcollector.add_level(ends[i] - start);
+        GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
+                        ends[i] - start);
+        start = ends[i];
+      }
     }
   }
     
@@ -1563,21 +1665,26 @@ draw_lines(const GeomLines *primitive) {
   }
 #endif  // NDEBUG
 
-  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
-  _primitive_batches_other_pcollector.add_level(1);
+  if (_use_sender) {
+    draw_immediate_simple_primitives(primitive, GL_LINES);
 
-  if (primitive->is_indexed()) {
-    const unsigned char *client_pointer = setup_primitive(primitive);
-    _glDrawRangeElements(GL_LINES, 
-                         primitive->get_min_vertex(),
-                         primitive->get_max_vertex(),
-                         primitive->get_num_vertices(),
-                         get_numeric_type(primitive->get_index_type()), 
-                         client_pointer);
   } else {
-    GLP(DrawArrays)(GL_LINES,
-                    primitive->get_first_vertex(),
-                    primitive->get_num_vertices());
+    _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+    _primitive_batches_other_pcollector.add_level(1);
+    
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      _glDrawRangeElements(GL_LINES, 
+                           primitive->get_min_vertex(),
+                           primitive->get_max_vertex(),
+                           primitive->get_num_vertices(),
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer);
+    } else {
+      GLP(DrawArrays)(GL_LINES,
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices());
+    }
   }
 
   report_my_gl_errors();
@@ -1611,21 +1718,26 @@ draw_points(const GeomPoints *primitive) {
   }
 #endif  // NDEBUG
 
-  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
-  _primitive_batches_other_pcollector.add_level(1);
+  if (_use_sender) {
+    draw_immediate_simple_primitives(primitive, GL_POINTS);
 
-  if (primitive->is_indexed()) {
-    const unsigned char *client_pointer = setup_primitive(primitive);
-    _glDrawRangeElements(GL_POINTS, 
-                         primitive->get_min_vertex(),
-                         primitive->get_max_vertex(),
-                         primitive->get_num_vertices(),
-                         get_numeric_type(primitive->get_index_type()), 
-                         client_pointer);
   } else {
-    GLP(DrawArrays)(GL_POINTS,
-                    primitive->get_first_vertex(),
-                    primitive->get_num_vertices());
+    _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+    _primitive_batches_other_pcollector.add_level(1);
+    
+    if (primitive->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(primitive);
+      _glDrawRangeElements(GL_POINTS, 
+                           primitive->get_min_vertex(),
+                           primitive->get_max_vertex(),
+                           primitive->get_num_vertices(),
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer);
+    } else {
+      GLP(DrawArrays)(GL_POINTS,
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices());
+    }
   }
 
   report_my_gl_errors();
@@ -2950,7 +3062,81 @@ wants_texcoords() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: report_errors_loop
+//     Function: GLGraphicsStateGuardian::draw_immediate_simple_primitives
+//       Access: Protected
+//  Description: Uses the ImmediateModeSender to draw a series of
+//               primitives of the indicated type.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode) {
+  _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
+  GLP(Begin)(mode);
+
+  if (primitive->is_indexed()) {
+    for (int v = 0; v < primitive->get_num_vertices(); ++v) {
+      _sender.set_vertex(primitive->get_vertex(v));
+      _sender.issue_vertex();
+    }
+
+  } else {
+    _sender.set_vertex(primitive->get_first_vertex());
+    for (int v = 0; v < primitive->get_num_vertices(); ++v) {
+      _sender.issue_vertex();
+    }
+  }
+
+  GLP(End)();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_immediate_composite_primitives
+//       Access: Protected
+//  Description: Uses the ImmediateModeSender to draw a series of
+//               primitives of the indicated type.  This form is for
+//               primitive types like tristrips which must involve
+//               several begin/end groups.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode) {
+  _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
+  CPTA_int ends = primitive->get_ends();
+      
+  if (primitive->is_indexed()) {
+    int begin = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+
+      GLP(Begin)(mode);
+      for (int v = begin; v < end; ++v) {
+        _sender.set_vertex(primitive->get_vertex(v));
+        _sender.issue_vertex();
+      }
+      GLP(End)();
+      
+      begin = end;
+    }
+
+  } else {
+    _sender.set_vertex(primitive->get_first_vertex());
+    int begin = 0;
+    CPTA_int::const_iterator ei;
+    for (ei = ends.begin(); ei != ends.end(); ++ei) {
+      int end = (*ei);
+
+      GLP(Begin)(mode);
+      for (int v = begin; v < end; ++v) {
+        _sender.issue_vertex();
+      }
+      GLP(End)();
+      
+      begin = end;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::report_errors_loop
 //       Access: Protected, Static
 //  Description: The internal implementation of report_errors().
 //               Don't call this function; use report_errors()
