@@ -505,20 +505,22 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
-  static const LMatrix3f lens_to_uv
-    (0.5f, 0.0f, 0.0f,
-     0.0f, 0.5f, 0.0f,
-     0.5f, 0.5f, 1.0f);
+  static const LMatrix4f lens_to_uv
+    (0.5f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.5f, 0.0f, 0.0f, 
+     0.0f, 0.0f, 0.5f, 0.0f, 
+     0.5f, 0.5f, 0.5f, 1.0f);
 
-  static const LMatrix3f lens_to_uv_inverted
-    (0.5f, 0.0f, 0.0f,
-     0.0f,-0.5f, 0.0f,
-     0.5f, 0.5f, 1.0f);
+  static const LMatrix4f lens_to_uv_inverted
+    (0.5f, 0.0f, 0.0f, 0.0f,
+     0.0f,-0.5f, 0.0f, 0.0f, 
+     0.0f, 0.0f, 0.5f, 0.0f, 
+     0.5f, 0.5f, 0.5f, 1.0f);
 
   Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
 
-  const LMatrix3f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
+  const LMatrix4f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
   // Iterate through all the vertices in the Geom.
 
@@ -526,7 +528,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   if (!vdata->has_column(_texcoord_name)) {
     // We need to add a new column for the new texcoords.
     vdata = vdata->replace_column
-      (_texcoord_name, 2, Geom::NT_float32, Geom::C_texcoord);
+      (_texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
     geom->set_vertex_data(vdata);
   }
   if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
@@ -535,10 +537,18 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
       (InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color);
     geom->set_vertex_data(vdata);
   }
-  
-  GeomVertexWriter texcoord(geom->modify_vertex_data(), _texcoord_name);
-  GeomVertexWriter color(geom->modify_vertex_data());
-  GeomVertexReader vertex(geom->get_vertex_data(), InternalName::get_vertex());
+
+  // Clear the vdata pointer so we don't force a copy in the below.
+  vdata.clear();
+
+  PT(GeomVertexData) modify_vdata = geom->modify_vertex_data();
+
+  // Maybe the vdata has animation that we should consider.
+  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data()->animate_vertices();
+
+  GeomVertexWriter texcoord(modify_vdata, _texcoord_name);
+  GeomVertexWriter color(modify_vdata);
+  GeomVertexReader vertex(animated_vdata, InternalName::get_vertex());
   
   if (_vignette_on) {
     color.set_column(InternalName::get_color());
@@ -548,12 +558,12 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
     Vertexf vert = vertex.get_data3f();
     
     // For each vertex, project to the film plane.
-    LPoint2f film(0.0, 0.0);
+    LPoint3f film(0.0f, 0.0f, 0.0f);
     bool good = lens->project(vert * rel_mat, film);
     
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
-    texcoord.set_data2f(film * to_uv);
+    texcoord.set_data3f(film * to_uv);
     
     // If we have vignette color in effect, color the vertex according
     // to whether it fell in front of the lens or not.
