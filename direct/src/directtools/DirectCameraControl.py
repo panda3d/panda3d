@@ -2,6 +2,7 @@ from direct.showbase.PandaObject import *
 from DirectUtil import *
 from DirectGeometry import *
 from DirectGlobals import *
+from direct.interval.IntervalGlobal import Sequence, Func
 from direct.task import Task
 
 CAM_MOVE_DURATION = 1.2
@@ -23,6 +24,7 @@ class DirectCameraControl(PandaObject):
         self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
+        self.coaMarkerColorIval = None
         self.fLockCOA = 0
         self.nullHitPointCount = 0
         self.cqEntries = []
@@ -383,15 +385,23 @@ class DirectCameraControl(PandaObject):
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
             coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
-        # KEH: use current display region for fov
-        # sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.dr.fovV))
-        sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
+        # Nominal size based on default 30 degree vertical FOV
+        # Need to adjust size based on distance and current FOV
+        sf = COA_MARKER_SF * coaDist * (direct.drList.getCurrentDr().fovV/30.0)
         if sf == 0.0:
             sf = 0.1
         self.coaMarker.setScale(sf)
         # Lerp color to fade out
-        self.coaMarker.lerpColor(VBase4(1,0,0,1), VBase4(1,0,0,0), 3.0,
-                                 task = 'fadeAway')
+        if self.coaMarkerColorIval:
+            self.coaMarkerColorIval.finish()
+        self.coaMarkerColorIval = Sequence(
+            Func(self.coaMarker.unstash),
+            self.coaMarker.colorInterval(1.5, Vec4(1,0,0,0),
+                                         startColor = Vec4(1,0,0,1),
+                                         blendType = 'easeInOut'),
+            Func(self.coaMarker.stash)
+            )
+        self.coaMarkerColorIval.start()
 
     def homeCam(self):
         # Record undo point
