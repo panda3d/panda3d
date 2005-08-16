@@ -397,12 +397,12 @@ class Interval(DirectObject):
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
-            s.pause()
-            s.setT(0.0)
-            s.pause()
+            s.clearToInitial()
+            es.set(0, fCommand = 0)
         def toEnd(s=self):
             s.pause()
             s.setT(s.getDuration())
+            es.set(s.getDuration(), fCommand = 0)
             s.pause()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
