@@ -19,6 +19,8 @@
 #include "pandabase.h"
 #include "geomVertexReader.h"
 
+#ifdef SUPPORT_IMMEDIATE_MODE
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GLImmediateModeSender
 // Description : This class collects together a handful of objects
@@ -224,4 +226,6 @@ private:
 };
 
 #include "glImmediateModeSender_src.I"
+
+#endif  // SUPPORT_IMMEDIATE_MODE
 

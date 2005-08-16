@@ -157,8 +157,11 @@ public:
   void dump_state(void);
 
   const float *get_light_color(Light *light) const;
+
+#ifdef SUPPORT_IMMEDIATE_MODE
   void draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode);
   void draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode);
+#endif  // SUPPORT_IMMEDIATE_MODE
 
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
@@ -306,8 +309,11 @@ protected:
   bool _vertex_blending_enabled;
 
   CPT(DisplayRegion) _actual_display_region;
+
+#ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
+#endif  // SUPPORT_IMMEDIATE_MODE
 
 #ifdef HAVE_CGGL
   PT(CgShader) _cg_shader; // The current CgShader object

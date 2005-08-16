@@ -306,6 +306,14 @@
 // only in a development build.
 #defer SIMULATE_NETWORK_DELAY $[<= $[OPTIMIZE], 3]
 
+// This option compiles in support for immediate-mode OpenGL
+// rendering.  Since this is normally useful only for researching
+// buggy drivers, and since there is a tiny bit of per-primitive
+// overhead to have this option available even if it is unused, it is
+// by default enabled only in a development build.  This has no effect
+// on DirectX rendering.
+#define SUPPORT_IMMEDIATE_MODE $[<= $[OPTIMIZE], 3]
+
 // Do you want to compile in support for pipelining?  This enables
 // setting and accessing multiple different copies of frame-specific
 // data stored in nodes, etc.  At the moment, Panda cannot actually

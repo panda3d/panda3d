@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef SUPPORT_IMMEDIATE_MODE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(ImmediateModeSender)::Destructor
@@ -616,3 +617,5 @@ issue_vertex() {
 
   (*_func)(4, (const unsigned int *)d);
 }
+
+#endif  // SUPPORT_IMMEDIATE_MODE

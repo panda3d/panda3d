@@ -1041,6 +1041,7 @@ begin_frame() {
 
 #ifdef DO_PSTATS
   _vertices_display_list_pcollector.clear_level();
+  _vertices_immediate_pcollector.clear_level();
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
@@ -1297,10 +1298,11 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 #endif
   }
 
-  if (!vertex_arrays) {
+#ifdef SUPPORT_IMMEDIATE_MODE
+  _use_sender = !vertex_arrays;
+  if (_use_sender) {
     // We must use immediate mode to render primitives.
     _sender.clear();
-    _use_sender = true;
 
     _sender.add_column(_vertex_data, InternalName::get_normal(),
                        NULL, NULL, GLP(Normal3f), NULL);
@@ -1371,10 +1373,10 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     _sender.add_column(_vertex_data, InternalName::get_vertex(),
                        NULL, GLP(Vertex2f), GLP(Vertex3f), GLP(Vertex4f));
 
-  } else {
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
     // We may use vertex arrays or buffers to render primitives.
-    _use_sender = false;
-
     const GeomVertexArrayData *array_data;
     int num_values;
     Geom::NumericType numeric_type;
@@ -1517,29 +1519,32 @@ draw_triangles(const GeomTriangles *primitive) {
   }
 #endif  // NDEBUG
 
-  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
-  _primitive_batches_tri_pcollector.add_level(1);
-
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_TRIANGLES);
 
-  } else {
+  } else 
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+    _primitive_batches_tri_pcollector.add_level(1);
+
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
       
       _glDrawRangeElements(GL_TRIANGLES, 
-                           primitive->get_min_vertex(),
-                           primitive->get_max_vertex(),
-                           primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()), 
-                           client_pointer);
+			   primitive->get_min_vertex(),
+			   primitive->get_max_vertex(),
+			   primitive->get_num_vertices(),
+			   get_numeric_type(primitive->get_index_type()), 
+			   client_pointer);
     } else {
       GLP(DrawArrays)(GL_TRIANGLES,
-                      primitive->get_first_vertex(),
-                      primitive->get_num_vertices());
+		      primitive->get_first_vertex(),
+		      primitive->get_num_vertices());
     }
   }
-    
+  
   report_my_gl_errors();
 }
 
@@ -1556,27 +1561,30 @@ draw_tristrips(const GeomTristrips *primitive) {
   }
 #endif  // NDEBUG
 
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_composite_primitives(primitive, GL_TRIANGLE_STRIP);
 
-  } else {
+  } else 
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
     if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
       // One long triangle strip, connected by the degenerate vertices
       // that have already been set up within the primitive.
       _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
       _primitive_batches_tristrip_pcollector.add_level(1);
       if (primitive->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(primitive);
-        _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                             primitive->get_min_vertex(),
-                             primitive->get_max_vertex(),
-                             primitive->get_num_vertices(),
-                             get_numeric_type(primitive->get_index_type()), 
-                             client_pointer);
+	const unsigned char *client_pointer = setup_primitive(primitive);
+	_glDrawRangeElements(GL_TRIANGLE_STRIP, 
+			     primitive->get_min_vertex(),
+			     primitive->get_max_vertex(),
+			     primitive->get_num_vertices(),
+			     get_numeric_type(primitive->get_index_type()), 
+			     client_pointer);
       } else {
-        GLP(DrawArrays)(GL_TRIANGLE_STRIP,
-                        primitive->get_first_vertex(),
-                        primitive->get_num_vertices());
+	GLP(DrawArrays)(GL_TRIANGLE_STRIP,
+			primitive->get_first_vertex(),
+			primitive->get_num_vertices());
       }
       
     } else {
@@ -1586,32 +1594,32 @@ draw_tristrips(const GeomTristrips *primitive) {
       
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
       if (primitive->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(primitive);
-        int index_stride = primitive->get_index_stride();
-        GeomVertexReader mins(primitive->get_mins(), 0);
-        GeomVertexReader maxs(primitive->get_maxs(), 0);
-        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-                 primitive->get_maxs()->get_num_rows() == (int)ends.size());
-        
-        unsigned int start = 0;
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                               mins.get_data1i(), maxs.get_data1i(), 
-                               ends[i] - start,
-                               get_numeric_type(primitive->get_index_type()), 
-                               client_pointer + start * index_stride);
-          start = ends[i] + 2;
-        }
+	const unsigned char *client_pointer = setup_primitive(primitive);
+	int index_stride = primitive->get_index_stride();
+	GeomVertexReader mins(primitive->get_mins(), 0);
+	GeomVertexReader maxs(primitive->get_maxs(), 0);
+	nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+		 primitive->get_maxs()->get_num_rows() == (int)ends.size());
+	
+	unsigned int start = 0;
+	for (size_t i = 0; i < ends.size(); i++) {
+	  _vertices_tristrip_pcollector.add_level(ends[i] - start);
+	  _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+			       mins.get_data1i(), maxs.get_data1i(), 
+			       ends[i] - start,
+			       get_numeric_type(primitive->get_index_type()), 
+			       client_pointer + start * index_stride);
+	  start = ends[i] + 2;
+	}
       } else {
-        unsigned int start = 0;
-        int first_vertex = primitive->get_first_vertex();
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
-                          ends[i] - start);
-          start = ends[i] + 2;
-        }
+	unsigned int start = 0;
+	int first_vertex = primitive->get_first_vertex();
+	for (size_t i = 0; i < ends.size(); i++) {
+	  _vertices_tristrip_pcollector.add_level(ends[i] - start);
+	  GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
+			  ends[i] - start);
+	  start = ends[i] + 2;
+	}
       }
     }
   }
@@ -1632,10 +1640,12 @@ draw_trifans(const GeomTrifans *primitive) {
   }
 #endif  // NDEBUG
 
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_composite_primitives(primitive, GL_TRIANGLE_FAN);
-
-  } else {
+  } else 
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
     // Send the individual triangle fans.  There's no connecting fans
     // with degenerate vertices, so no worries about that.
     CPTA_int ends = primitive->get_ends();
@@ -1686,10 +1696,12 @@ draw_lines(const GeomLines *primitive) {
   }
 #endif  // NDEBUG
 
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_LINES);
-
-  } else {
+  } else 
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
     _vertices_other_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_other_pcollector.add_level(1);
     
@@ -1739,10 +1751,12 @@ draw_points(const GeomPoints *primitive) {
   }
 #endif  // NDEBUG
 
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_POINTS);
-
-  } else {
+  } else 
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
     _vertices_other_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_other_pcollector.add_level(1);
     
@@ -3082,6 +3096,7 @@ wants_texcoords() const {
   return true;
 }
 
+#ifdef SUPPORT_IMMEDIATE_MODE
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_immediate_simple_primitives
 //       Access: Protected
@@ -3108,7 +3123,9 @@ draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode) {
 
   GLP(End)();
 }
+#endif  // SUPPORT_IMMEDIATE_MODE
 
+#ifdef SUPPORT_IMMEDIATE_MODE
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_immediate_composite_primitives
 //       Access: Protected
@@ -3156,6 +3173,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
     }
   }
 }
+#endif  // SUPPORT_IMMEDIATE_MODE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::report_errors_loop

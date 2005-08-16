@@ -189,6 +189,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Vertices:Triangle strips",         { 0.2, 0.5, 0.8 } },
   { 1, "Vertices:Indexed triangle strips", { 0.5, 0.2, 0.8 } },
   { 1, "Vertices:Display lists",           { 0.8, 0.5, 1.0 } },
+  { 1, "Vertices:Immediate mode",          { 1.0, 0.5, 0.0 } },
   { 1, "Nodes",                            { 0.4, 0.2, 0.8 },  "", 500.0 },
   { 1, "Nodes:GeomNodes",                  { 0.8, 0.2, 0.0 } },
   { 1, "Geoms",                            { 0.4, 0.8, 0.3 },  "", 500.0 },

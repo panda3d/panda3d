@@ -92,15 +92,17 @@ ConfigVariableBool vertex_arrays
  PRC_DESC("Set this true to allow the use of vertex arrays for rendering "
           "OpenGL vertex data.  This, or vertex buffers, is the normal "
           "way of issuing vertices ever since OpenGL 1.1, and you "
-          "almost always want to have set to true.  However, some very "
+          "almost always want to have this set to true.  However, some very "
           "buggy graphics drivers may have problems handling vertex arrays "
           "correctly, so if you are experiencing problems you might try "
           "setting this to false.  If this is false, Panda will fall back "
           "to using immediate-mode commands like glVertex3f(), etc., to "
           "issue the vertices, which is potentially much slower than "
-          "vertex arrays.  Setting this false causes vertex_buffers to be "
-          "ignored (since vertex buffers are a special case of vertex "
-          "arrays in OpenGL).  This has no effect on DirectX rendering."));
+          "vertex arrays.  Setting this false also disables vertex buffers, "
+	  "effectively ignoring the setting of the vertex-buffers variable "
+	  "(since vertex buffers are a special case of vertex arrays in "
+	  "OpenGL).  This variable is normally not enabled in a production "
+	  "build.  This has no effect on DirectX rendering."));
 
 ConfigVariableBool display_lists
 ("display-lists", false,

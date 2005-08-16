@@ -226,6 +226,9 @@ $[cdefine DO_MEMORY_USAGE]
 /* Define if we want to enable min-lag and max-lag.  */
 $[cdefine SIMULATE_NETWORK_DELAY]
 
+/* Define if we want to allow immediate mode OpenGL rendering.  */
+$[cdefine SUPPORT_IMMEDIATE_MODE]
+
 /* Define if we want to compile in support for pipelining.  */
 $[cdefine DO_PIPELINING]
 
