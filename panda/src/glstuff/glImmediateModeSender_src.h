@@ -45,14 +45,14 @@ public:
   void issue_vertex();
 
   class ComponentSender;
-  typedef void GLAPIENTRY (Func1f)(GLfloat a);
-  typedef void GLAPIENTRY (Func2f)(GLfloat a, GLfloat b);
-  typedef void GLAPIENTRY (Func3f)(GLfloat a, GLfloat b, GLfloat c);
-  typedef void GLAPIENTRY (Func4f)(GLfloat a, GLfloat b, GLfloat c, GLfloat d);
-  typedef void GLAPIENTRY (TexcoordFunc1f)(GLenum texture, GLfloat a);
-  typedef void GLAPIENTRY (TexcoordFunc2f)(GLenum texture, GLfloat a, GLfloat b);
-  typedef void GLAPIENTRY (TexcoordFunc3f)(GLenum texture, GLfloat a, GLfloat b, GLfloat c);
-  typedef void GLAPIENTRY (TexcoordFunc4f)(GLenum texture, GLfloat a, GLfloat b, GLfloat c, GLfloat d);
+  typedef void GLAPIENTRY Func1f(GLfloat a);
+  typedef void GLAPIENTRY Func2f(GLfloat a, GLfloat b);
+  typedef void GLAPIENTRY Func3f(GLfloat a, GLfloat b, GLfloat c);
+  typedef void GLAPIENTRY Func4f(GLfloat a, GLfloat b, GLfloat c, GLfloat d);
+  typedef void GLAPIENTRY TexcoordFunc1f(GLenum texture, GLfloat a);
+  typedef void GLAPIENTRY TexcoordFunc2f(GLenum texture, GLfloat a, GLfloat b);
+  typedef void GLAPIENTRY TexcoordFunc3f(GLenum texture, GLfloat a, GLfloat b, GLfloat c);
+  typedef void GLAPIENTRY TexcoordFunc4f(GLenum texture, GLfloat a, GLfloat b, GLfloat c, GLfloat d);
 
   bool add_column(const GeomVertexData *vertex_data, const InternalName *name,
                   Func1f *func1f, Func2f *func2f, Func3f *func3f, Func4f *func4f);
