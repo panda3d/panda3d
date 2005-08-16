@@ -191,6 +191,115 @@ add_texcoord_column(const GeomVertexData *vertex_data,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::add_vector_column
+//       Access: Public
+//  Description: Creates a new ComponentSender for the named data
+//               column, if it exists in the vertex data, and adds it
+//               to the list of senders for this object.
+//
+//               This works like add_column(), but it specifically
+//               handles a function that accepts as its first
+//               parameter the size (number of components) of the
+//               floating-point vector, followed by the address of the
+//               vector.
+//
+//               The return value is true if the column is added,
+//               false if it is not for some reason (for instance, the
+//               named column doesn't exist in the vertex data).
+////////////////////////////////////////////////////////////////////
+bool CLP(ImmediateModeSender)::
+add_vector_column(const GeomVertexData *vertex_data, const InternalName *name,
+                  VectorFunc *func) {
+  if (vertex_data->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+    ComponentSender *sender = NULL;
+    const GeomVertexColumn *column = reader->get_column();
+    switch (column->get_num_components()) {
+    case 1:
+      sender = new VectorSender1f(reader, func);
+      break;
+
+    case 2:
+      sender = new VectorSender2f(reader, func);
+      break;
+
+    case 3:
+      sender = new VectorSender3f(reader, func);
+      break;
+
+    case 4:
+      sender = new VectorSender4f(reader, func);
+      break;
+    }
+
+    if (sender != (ComponentSender *)NULL) {
+      // Ok, we've got a valid sender; add it to the list.
+      _senders.push_back(sender);
+      return true;
+
+    } else {
+      // We didn't get a valid sender; clean up and return.
+      delete reader;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::add_vector_uint_column
+//       Access: Public
+//  Description: Creates a new ComponentSender for the named data
+//               column, if it exists in the vertex data, and adds it
+//               to the list of senders for this object.
+//
+//               This works like add_vector_column(), but handles a
+//               function that receives a vector of unsigned ints.
+//
+//               The return value is true if the column is added,
+//               false if it is not for some reason (for instance, the
+//               named column doesn't exist in the vertex data).
+////////////////////////////////////////////////////////////////////
+bool CLP(ImmediateModeSender)::
+add_vector_uint_column(const GeomVertexData *vertex_data, 
+                       const InternalName *name, VectorUintFunc *func) {
+  if (vertex_data->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+    ComponentSender *sender = NULL;
+    const GeomVertexColumn *column = reader->get_column();
+    switch (column->get_num_components()) {
+    case 1:
+      sender = new VectorSender1ui(reader, func);
+      break;
+
+    case 2:
+      sender = new VectorSender2ui(reader, func);
+      break;
+
+    case 3:
+      sender = new VectorSender3ui(reader, func);
+      break;
+
+    case 4:
+      sender = new VectorSender4ui(reader, func);
+      break;
+    }
+
+    if (sender != (ComponentSender *)NULL) {
+      // Ok, we've got a valid sender; add it to the list.
+      _senders.push_back(sender);
+      return true;
+
+    } else {
+      // We didn't get a valid sender; clean up and return.
+      delete reader;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(ImmediateModeSender)::add_sender
 //       Access: Public
 //  Description: Adds a new ComponentSender to the list of senders for
@@ -359,4 +468,151 @@ issue_vertex() {
 #endif  // NDEBUG
 
   (*_func)(GL_TEXTURE0 + _stage_index, d[0], d[1], d[2], d[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender1f::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender1f::
+issue_vertex() {
+  float d = _reader->get_data1f();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(1, &d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender2f::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender2f::
+issue_vertex() {
+  const LVecBase2f &d = _reader->get_data2f();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(2, d.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender3f::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender3f::
+issue_vertex() {
+  const LVecBase3f &d = _reader->get_data3f();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(3, d.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender4f::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender4f::
+issue_vertex() {
+  const LVecBase4f &d = _reader->get_data4f();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(4, d.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender1ui::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender1ui::
+issue_vertex() {
+  int d = _reader->get_data1i();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(1, (const unsigned int *)&d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender2ui::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender2ui::
+issue_vertex() {
+  const int *d = _reader->get_data2i();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << d[1] << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(2, (const unsigned int *)d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender3ui::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender3ui::
+issue_vertex() {
+  const int *d = _reader->get_data3i();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << d[1] << " " << d[2] << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(3, (const unsigned int *)d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(ImmediateModeSender)::VectorSender4ui::issue_vertex
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(ImmediateModeSender)::VectorSender4ui::
+issue_vertex() {
+  const int *d = _reader->get_data4i();
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << d[1] << " " << d[2] << " " << d[3] << "\n";
+  }
+#endif  // NDEBUG
+
+  (*_func)(4, (const unsigned int *)d);
 }

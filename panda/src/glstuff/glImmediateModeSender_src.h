@@ -53,6 +53,8 @@ public:
   typedef void APIENTRY TexcoordFunc2f(GLenum texture, GLfloat a, GLfloat b);
   typedef void APIENTRY TexcoordFunc3f(GLenum texture, GLfloat a, GLfloat b, GLfloat c);
   typedef void APIENTRY TexcoordFunc4f(GLenum texture, GLfloat a, GLfloat b, GLfloat c, GLfloat d);
+  typedef void APIENTRY VectorFunc(GLint, const GLfloat *);
+  typedef void APIENTRY VectorUintFunc(GLint, const GLuint *);
 
   bool add_column(const GeomVertexData *vertex_data, const InternalName *name,
                   Func1f *func1f, Func2f *func2f, Func3f *func3f, Func4f *func4f);
@@ -60,6 +62,11 @@ public:
                            const InternalName *name, int stage_index,
                            TexcoordFunc1f *func1f, TexcoordFunc2f *func2f, 
                            TexcoordFunc3f *func3f, TexcoordFunc4f *func4f);
+
+  bool add_vector_column(const GeomVertexData *vertex_data, const InternalName *name,
+                         VectorFunc *func);
+  bool add_vector_uint_column(const GeomVertexData *vertex_data, const InternalName *name,
+                              VectorUintFunc *func);
 
   void add_sender(ComponentSender *sender);
 
@@ -145,6 +152,70 @@ public:
   private:
     TexcoordFunc4f *_func;
     int _stage_index;
+  };
+
+  class VectorSender1f : public ComponentSender {
+  public:
+    INLINE VectorSender1f(GeomVertexReader *reader, VectorFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorFunc *_func;
+  };
+
+  class VectorSender2f : public ComponentSender {
+  public:
+    INLINE VectorSender2f(GeomVertexReader *reader, VectorFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorFunc *_func;
+  };
+
+  class VectorSender3f : public ComponentSender {
+  public:
+    INLINE VectorSender3f(GeomVertexReader *reader, VectorFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorFunc *_func;
+  };
+
+  class VectorSender4f : public ComponentSender {
+  public:
+    INLINE VectorSender4f(GeomVertexReader *reader, VectorFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorFunc *_func;
+  };
+
+  class VectorSender1ui : public ComponentSender {
+  public:
+    INLINE VectorSender1ui(GeomVertexReader *reader, VectorUintFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorUintFunc *_func;
+  };
+
+  class VectorSender2ui : public ComponentSender {
+  public:
+    INLINE VectorSender2ui(GeomVertexReader *reader, VectorUintFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorUintFunc *_func;
+  };
+
+  class VectorSender3ui : public ComponentSender {
+  public:
+    INLINE VectorSender3ui(GeomVertexReader *reader, VectorUintFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorUintFunc *_func;
+  };
+
+  class VectorSender4ui : public ComponentSender {
+  public:
+    INLINE VectorSender4ui(GeomVertexReader *reader, VectorUintFunc *func);
+    virtual void issue_vertex();
+  private:
+    VectorUintFunc *_func;
   };
 
 private:

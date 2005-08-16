@@ -337,10 +337,12 @@ public:
   bool _supports_vertex_blend;
   PFNGLWEIGHTPOINTERARBPROC _glWeightPointerARB;
   PFNGLVERTEXBLENDARBPROC _glVertexBlendARB;
+  PFNGLWEIGHTFVARBPROC _glWeightfvARB;
 
   bool _supports_matrix_palette;
   PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrixARB;
   PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointerARB;
+  PFNGLMATRIXINDEXUIVARBPROC _glMatrixIndexuivARB;
 
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;

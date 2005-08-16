@@ -360,8 +360,11 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "WeightPointerARB");
     _glVertexBlendARB = (PFNGLVERTEXBLENDARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "VertexBlendARB");
+    _glWeightfvARB = (PFNGLWEIGHTFVARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "WeightfvARB");
 
-    if (_glWeightPointerARB == NULL || _glVertexBlendARB == NULL) {
+    if (_glWeightPointerARB == NULL || _glVertexBlendARB == NULL ||
+        _glWeightfvARB == NULL) {
       GLCAT.warning()
         << "Vertex blending advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vertex_blend = false;
@@ -385,8 +388,12 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "CurrentPaletteMatrixARB");
     _glMatrixIndexPointerARB = (PFNGLMATRIXINDEXPOINTERARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "MatrixIndexPointerARB");
+    _glMatrixIndexuivARB = (PFNGLMATRIXINDEXUIVARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MatrixIndexuivARB");
 
-    if (_glCurrentPaletteMatrixARB == NULL || _glMatrixIndexPointerARB == NULL) {
+    if (_glCurrentPaletteMatrixARB == NULL || 
+        _glMatrixIndexPointerARB == NULL ||
+        _glMatrixIndexuivARB == NULL) {
       GLCAT.warning()
         << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_matrix_palette = false;
@@ -1344,6 +1351,20 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       ++stage_index;
     }
     _last_max_stage_index = max_stage_index;
+
+    if (_supports_vertex_blend) {
+      if (hardware_animation) {
+        // Issue the weights and/or transform indices for vertex blending.
+        _sender.add_vector_column(_vertex_data, InternalName::get_transform_weight(),
+                                  _glWeightfvARB);
+        
+        if (animation.get_indexed_transforms()) {
+          // Issue the matrix palette indices.
+          _sender.add_vector_uint_column(_vertex_data, InternalName::get_transform_index(),
+                                        _glMatrixIndexuivARB);
+        }
+      }
+    }
 
     // We must add vertex last, because glVertex3f() is the key
     // function call that actually issues the vertex.
