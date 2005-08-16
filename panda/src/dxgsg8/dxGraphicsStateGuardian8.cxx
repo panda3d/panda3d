@@ -3060,7 +3060,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // Calling this forces all of the textures and vbuffers to be
   // regenerated.  It appears to be necessary on some cards but not
   // on others.
-  release_all();
+  //  release_all();
+  // On second thought, let's try releasing the vertex buffers only.
+  release_all_vertex_buffers();
+  release_all_index_buffers();
 
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed

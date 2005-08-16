@@ -364,20 +364,24 @@ handle_reshape() {
     WindowProperties props = get_properties();
     int x_size = props.get_x_size();
     int y_size = props.get_y_size();
-    bool resize_succeeded = reset_device_resize_window(x_size, y_size);
 
-    if (wdxdisplay8_cat.is_debug()) {
-      if (!resize_succeeded) {
-        wdxdisplay8_cat.debug()
-          << "windowed_resize to size: (" << x_size << ", " << y_size
-          << ") failed due to out-of-memory\n";
-      } else {
-        int x_origin = props.get_x_origin();
-        int y_origin = props.get_y_origin();
-        wdxdisplay8_cat.debug()
-          << "windowed_resize to origin: (" << x_origin << ", "
-          << y_origin << "), size: (" << x_size
-          << ", " << y_size << ")\n";
+    if (_wcontext._presentation_params.BackBufferWidth != x_size ||
+	_wcontext._presentation_params.BackBufferHeight != y_size) {
+      bool resize_succeeded = reset_device_resize_window(x_size, y_size);
+      
+      if (wdxdisplay8_cat.is_debug()) {
+	if (!resize_succeeded) {
+	  wdxdisplay8_cat.debug()
+	    << "windowed_resize to size: (" << x_size << ", " << y_size
+	    << ") failed due to out-of-memory\n";
+	} else {
+	  int x_origin = props.get_x_origin();
+	  int y_origin = props.get_y_origin();
+	  wdxdisplay8_cat.debug()
+	    << "windowed_resize to origin: (" << x_origin << ", "
+	    << y_origin << "), size: (" << x_size
+	    << ", " << y_size << ")\n";
+	}
       }
     }
   }
