@@ -788,7 +788,13 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
     case 1:
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_0WEIGHTS);
+      // The MSDN docs suggest we should use D3DVBF_0WEIGHTS here, but
+      // that doesn't seem to work at all.  On the other hand,
+      // D3DVBF_DISABLE *does* work, because it disables special
+      // handling, meaning only the world matrix affects these
+      // vertices--and by accident or design, the first matrix,
+      // D3DTS_WORLDMATRIX(0), *is* the world matrix.
+      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
       break;
     case 2:
       _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_1WEIGHTS);

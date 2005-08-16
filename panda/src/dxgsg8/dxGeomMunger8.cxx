@@ -36,7 +36,8 @@ munge_format_impl(const GeomVertexFormat *orig,
   if (dxgsg8_cat.is_debug()) {
     if (animation.get_animation_type() != AT_none) {
       dxgsg8_cat.debug()
-        << "preparing animation type " << animation << "\n";
+        << "preparing animation type " << animation << " for " << *orig
+	<< "\n";
     }
   }
   // We have to build a completely new format that includes only the
@@ -135,15 +136,10 @@ munge_format_impl(const GeomVertexFormat *orig,
     }
   }
 
-  if (new_array_format->is_data_subset_of(*orig->get_array(0))) {
-    // If the new array format we have built is essentially the same
-    // as the first data array anyway, go ahead and keep the original.
-    return orig;
-  }
-
-  // Use the new format; make sure the FVF-style array we just built
-  // up is first in the list.
+  // Make sure the FVF-style array we just built up is first in the
+  // list.
   new_format->insert_array(0, new_array_format);
+
   return GeomVertexFormat::register_format(new_format);
 }
 
