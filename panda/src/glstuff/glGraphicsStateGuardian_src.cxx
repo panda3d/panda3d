@@ -3121,6 +3121,7 @@ void CLP(GraphicsStateGuardian)::
 draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode) {
   _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
   CPTA_int ends = primitive->get_ends();
+  int num_unused_vertices_per_primitive = primitive->get_num_unused_vertices_per_primitive();
       
   if (primitive->is_indexed()) {
     int begin = 0;
@@ -3135,7 +3136,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
       }
       GLP(End)();
       
-      begin = end;
+      begin = end + num_unused_vertices_per_primitive;
     }
 
   } else {
@@ -3151,7 +3152,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
       }
       GLP(End)();
       
-      begin = end;
+      begin = end + num_unused_vertices_per_primitive;
     }
   }
 }
