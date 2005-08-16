@@ -809,7 +809,16 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     const GeomInfo &geom_info = (*gi);
     const Geom *orig_geom = geom_info._geom_node->get_geom(geom_info._index);
 
+    // Copy the Geom.  This actually performs just a pointer copy of
+    // the original GeomVertexData and other associated structures.
     PT(Geom) geom = new Geom(*orig_geom);
+
+    // Ensure that any vertex animation has been applied.
+    geom->set_vertex_data(geom->get_vertex_data()->animate_vertices());
+
+    // Now get a modifiable pointer to the vertex data in the new
+    // Geom.  This will actually perform a deep copy of the vertex
+    // data.
     PT(GeomVertexData) vdata = geom->modify_vertex_data();
     vdata->set_usage_hint(Geom::UH_stream);
     
