@@ -88,14 +88,7 @@ private:
   TypeRegistry();
 
   static void init_global_pointer();
-
-  // In NDEBUG mode, this is an inline function; otherwise, it's
-  // out-of-line.
-#ifdef NDEBUG
-  INLINE TypeRegistryNode *look_up(TypeHandle type, TypedObject *object) const;
-#else
   TypeRegistryNode *look_up(TypeHandle type, TypedObject *object) const;
-#endif
 
   INLINE void freshen_derivations();
   void rebuild_derivations();

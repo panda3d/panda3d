@@ -17,23 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-#ifdef NDEBUG
-// This function is only inline if NDEBUG is defined.  Otherwise, it
-// is non-inline and its definition appears in typeRegistry.cxx.
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistry::look_up
-//       Access: Private
-//  Description: Returns the TypeRegistryNode associated with the
-//               indicated TypeHandle.
-////////////////////////////////////////////////////////////////////
-INLINE TypeRegistryNode *TypeRegistry::
-look_up(TypeHandle handle, TypedObject *) const {
-  return _handle_registry[handle._index];
-}
-#endif  // NDEBUG
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::freshen_derivations
 //       Access: Private

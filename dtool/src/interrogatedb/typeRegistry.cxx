@@ -584,11 +584,6 @@ write_node(ostream &out, int indent_level, const TypeRegistryNode *node) const {
   }
 }
 
-#ifndef NDEBUG
-// This function is only non-inline if NDEBUG is not defined.
-// Otherwise, it is inline and its definition appears in
-// typeRegistry.I.
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::look_up
 //       Access: Private
@@ -604,6 +599,7 @@ write_node(ostream &out, int indent_level, const TypeRegistryNode *node) const {
 ////////////////////////////////////////////////////////////////////
 TypeRegistryNode *TypeRegistry::
 look_up(TypeHandle handle, TypedObject *object) const {
+#ifndef NDEBUG
   if (handle._index == 0) {
     // The TypeHandle is unregistered.  This is an error condition.
 
@@ -650,6 +646,7 @@ look_up(TypeHandle handle, TypedObject *object) const {
       << "!  Is memory corrupt?\n";
     nassertr(false, NULL);
   }
+#endif  // NDEBUG
 
   return _handle_registry[handle._index];
 }
@@ -688,7 +685,4 @@ extern "C" int get_best_parent_from_Set(int id, const std::set<int> &set)
 
     return th.get_best_parent_from_Set(set);
 }
-
-
-#endif  // NDEBUG
 
