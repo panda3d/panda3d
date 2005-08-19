@@ -38,6 +38,27 @@ get_range() const {
   return _range;
 }
 
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_magnifier
+//       Access: Published
+//  Description: Sets a magnifier value for the mouseWatcherRegion in 
+//               the Y direction. 
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_magnifier(float value) {
+  PGItem::_mouseWatcherMagnifier = value;
+}
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_value
+//       Access: Published
+//  Description: Returns the current value of the bar.
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_magnifier() const {
+  return PGItem::_mouseWatcherMagnifier;
+}
+*/
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::set_value
 //       Access: Published
@@ -48,7 +69,7 @@ INLINE void PGSliderBar::
 set_value(float value) {
   _value = value;
   _mapped_value = _negative_mapping ? (_value*0.5 + 0.5) : _value;
-  _update_position = _width * (2*_mapped_value - 1);
+  _update_x = _width * (2*_mapped_value - 1);
   _bar_state = -1;
   _update_slider = true;
 }
@@ -75,14 +96,25 @@ get_mapped_value() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_update_position
+//     Function: PGSliderBar::get_update_x
 //       Access: Published
-//  Description: Returns the _update_position which is caluclated from 
+//  Description: Returns the _update_x which is caluclated from 
 //               _mapped_value with width formula
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
-get_update_position() const {
-  return _update_position;
+get_update_x() const {
+  return _update_x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_update_y
+//       Access: Published
+//  Description: Returns the _update_y which is caluclated from 
+//               _mapped_value with width formula
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_update_y() const {
+  return _update_y;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,8 +41,8 @@ PGSliderBar(const string &name) :
   _value = 0.0;
   // _mapped_value is a mapping of (-1<->1) into (0<->1)
   _mapped_value = 0.5*_value + 0.5;
-  // _update_position is mapping of _mapped_value wrt slider width
-  _update_position = 0.0; //will be set when _width is defined
+  // _update_x is mapping of _mapped_value wrt slider width
+  _update_x = 0.0; //will be set when _width is defined
   _speed = 0.05;
   _scale = 0.05;
   _bar_state = -1;
@@ -200,14 +200,16 @@ void PGSliderBar::
 press(const MouseWatcherParameter &param, bool background) {
   PGItem::press(param, background);
   //pgui_cat.info() << get_name() << "::" << param << endl;
-  //pgui_cat.info() << _slider->get_name() << "::press:" << _slider_button.get_x() << endl;
+  //pgui_cat.info() << _slider->get_name() << "::press:x" << _slider_button.get_x() 
+  //                << "    press:y" << _slider_button.get_y() << endl;
 
   // translate the mouse param position into frame space
   LPoint2f mouse_point = param.get_mouse();
   LVector3f result(mouse_point[0], mouse_point[1], 0);
   result = get_frame_inv_xform().xform_point(result);
   _update_slider = true;
-  _update_position = result[0];
+  _update_x = result[0];
+  _update_y = result[1];
   //_slider_button.set_x(result[0]);
 }
 
@@ -220,7 +222,8 @@ press(const MouseWatcherParameter &param, bool background) {
 void PGSliderBar::
 drag(const MouseWatcherParameter &param) {
   //pgui_cat.info() << get_name() << "::" << param << endl;
-  //pgui_cat.info() << _slider->get_name() << "::drag:" << _slider_button.get_x() << endl;
+  //pgui_cat.info() << _slider->get_name() << "::drag:x" << _slider_button.get_x() 
+  //                <<"    drag:y" << _slider_button.get_y() << endl;
 
   // translate the mouse param position into frame space
   LPoint2f mouse_point = param.get_mouse();
@@ -232,7 +235,8 @@ drag(const MouseWatcherParameter &param) {
   if (result[0] > _width)
     result[0] = _width;
   _update_slider = true;
-  _update_position = result[0];
+  _update_x = result[0];
+  _update_y = result[1];
   //_slider_button.set_x(result[0]);
 }
 
@@ -253,7 +257,7 @@ update() {
       // move the slider to the left
       float x = _slider_button.get_x() - _speed;
       _update_slider = true;
-      _update_position = max(x, -_width);
+      _update_x = max(x, -_width);
       //_slider_button.set_x(max(x, -_width));
     }
     
@@ -261,7 +265,7 @@ update() {
       // move the slider to the right
       float x = _slider_button.get_x() + _speed;
       _update_slider = true;
-      _update_position = min(x, _width);
+      _update_x = min(x, _width);
       //_slider_button.set_x(min(x, _width));
     }
   }
@@ -270,10 +274,11 @@ update() {
   // applied here so that value of current slider position as a ratio
   // of range can be updated
   if (_update_slider) {
-    //pgui_cat.info() << "mouse_point: " << _update_position << endl;
+    //pgui_cat.info() << "mouse_point:x " << _update_x 
+    //                << "   mouse_point:y " << _update_y << endl;
     if (!_slider_button.is_empty())
-      _slider_button.set_x(_update_position);
-    _mapped_value = (_update_position + _width)/(2*_width);
+      _slider_button.set_x(_update_x);
+    _mapped_value = (_update_x + _width)/(2*_width);
     _value = _negative_mapping ? ((_mapped_value-0.5)*2) : _mapped_value;
     _update_slider = false;
     throw_event(get_click_event());

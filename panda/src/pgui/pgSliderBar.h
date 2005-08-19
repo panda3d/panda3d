@@ -52,10 +52,14 @@ PUBLISHED:
   INLINE void set_range(float range);
   INLINE float get_range() const;
 
+  //INLINE void set_magnifier(float value);
+  //INLINE float get_magnifier() const;
+
   INLINE void set_value(float value);
   INLINE float get_value() const;
   INLINE float get_mapped_value() const;
-  INLINE float get_update_position() const;
+  INLINE float get_update_x() const;
+  INLINE float get_update_y() const;
 
   INLINE void set_speed(float speed);
   INLINE float get_speed() const;
@@ -88,7 +92,8 @@ private:
   // These 3 variables control slider range
   float _value;
   float _mapped_value;
-  float _update_position;
+  float _update_x;
+  float _update_y;
 
   float _range;
   float _speed, _width;
