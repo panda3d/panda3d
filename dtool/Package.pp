@@ -192,6 +192,11 @@
 #set DX_LIBS $[DX_LIBS]
 #set HAVE_DX $[HAVE_DX]
 
+#set CV_IPATH $[unixfilename $[CV_IPATH]]
+#set CV_LPATH $[unixfilename $[CV_LPATH]]
+#set CV_LIBS $[CV_LIBS]
+#set HAVE_CV $[HAVE_CV]
+
 #set HAVE_THREADS $[HAVE_THREADS]
 
 #set NET_IPATH $[unixfilename $[NET_IPATH]]

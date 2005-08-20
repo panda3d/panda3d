@@ -510,6 +510,12 @@
 #define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
 #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
+// Is CV available, and should we try to build with it?
+#define CV_IPATH $[WINTOOLS]/sdk/cv/include	
+#define CV_LPATH $[WINTOOLS]/sdk/cv/lib
+#define CV_LIBS cv.lib highgui.lib cxcore.lib
+#defer HAVE_CV $[libtest $[CV_LPATH],$[CV_LIBS]]
+
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may
 // cause libdirect.dll to fail to load on Win98 clients.
