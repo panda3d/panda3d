@@ -89,6 +89,10 @@ PUBLISHED:
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
+  INLINE bool prefers_triangle_strips() const;
+  INLINE int get_max_vertices_per_array() const;
+  INLINE int get_max_vertices_per_primitive() const;
+
   INLINE int get_max_texture_stages() const;
   INLINE int get_max_texture_dimension() const;
   INLINE int get_max_3d_texture_dimension() const;
@@ -119,6 +123,9 @@ PUBLISHED:
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
+
+  INLINE void make_global_gsg();
+  INLINE static GraphicsStateGuardian *get_global_gsg();
 
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
@@ -368,6 +375,11 @@ protected:
   bool _active;
 
   PT(PreparedGraphicsObjects) _prepared_objects;
+
+  bool _prefers_triangle_strips;
+  int _max_vertices_per_array;
+  int _max_vertices_per_primitive;
+
   int _max_texture_stages;
   int _max_texture_dimension;
   int _max_3d_texture_dimension;
@@ -460,6 +472,8 @@ private:
   PT(GraphicsPipe) _pipe;
   GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;
+
+  static GraphicsStateGuardian *_global_gsg;
 
 public:
   void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);

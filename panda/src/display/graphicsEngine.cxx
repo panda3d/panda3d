@@ -194,6 +194,11 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
     gsg->_threading_model = get_threading_model();
     gsg->_pipe = pipe;
     gsg->_engine = this;
+
+    // If there was no global GSG previously, this becomes the one.
+    if (GraphicsStateGuardian::get_global_gsg() == NULL) {
+      gsg->make_global_gsg();
+    }
   }
 
   return gsg;

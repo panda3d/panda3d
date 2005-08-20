@@ -686,14 +686,17 @@ reset() {
     _max_cube_map_dimension = 0;
   }
 
+  GLint max_elements_vertices, max_elements_indices;
+  GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
+  GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
+  _max_vertices_per_array = max_elements_vertices;
+  _max_vertices_per_primitive = max_elements_indices;
+
   if (GLCAT.is_debug()) {
     GLCAT.debug()
       << "max texture dimension = " << _max_texture_dimension
       << ", max 3d texture = " << _max_3d_texture_dimension
       << ", max cube map = " << _max_cube_map_dimension << "\n";
-    GLint max_elements_vertices, max_elements_indices;
-    GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
-    GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
     GLCAT.debug()
       << "max_elements_vertices = " << max_elements_vertices
       << ", max_elements_indices = " << max_elements_indices << "\n";

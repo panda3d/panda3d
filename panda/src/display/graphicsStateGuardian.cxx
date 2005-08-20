@@ -45,6 +45,7 @@
 #include "geomLinestrips.h"
 
 #include <algorithm>
+#include <limits.h>
 
 PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
@@ -84,6 +85,8 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
+GraphicsStateGuardian *GraphicsStateGuardian::_global_gsg = NULL;
+
 TypeHandle GraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -110,6 +113,10 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _closing_gsg = false;
   _active = true;
   _prepared_objects = new PreparedGraphicsObjects;
+
+  _prefers_triangle_strips = false;
+  _max_vertices_per_array = INT_MAX;
+  _max_vertices_per_primitive = INT_MAX;
 
   // Initially, we set this to 1 (the default--no multitexturing
   // supported).  A derived GSG may set this differently if it
@@ -163,6 +170,9 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
+  if (_global_gsg == this) {
+    _global_gsg = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

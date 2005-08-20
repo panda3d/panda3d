@@ -164,6 +164,44 @@ get_threading_model() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prefers_triangle_strips
+//       Access: Published
+//  Description: Returns true if this GSG strongly prefers triangle
+//               strips to individual triangles (such as SGI), or
+//               false if it prefers to minimize the number of
+//               primitive batches, even at the expense of triangle
+//               strips (such as most PC hardware).
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+prefers_triangle_strips() const {
+  return _prefers_triangle_strips;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_vertices_per_array
+//       Access: Published
+//  Description: Returns the maximum number of vertices that should be
+//               put into any one GeomVertexData object for use with
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_vertices_per_array() const {
+  return _max_vertices_per_array;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_vertices_per_primitive
+//       Access: Published
+//  Description: Returns the maximum number of vertex indices that
+//               should be put into any one GeomPrimitive object for
+//               use with this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_vertices_per_primitive() const {
+  return _max_vertices_per_primitive;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_texture_stages
 //       Access: Published
 //  Description: Returns the maximum number of simultaneous textures
@@ -443,6 +481,35 @@ get_color_scale_via_lighting() const {
 INLINE CoordinateSystem GraphicsStateGuardian::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::make_global_gsg
+//       Access: Published
+//  Description: Marks this particular GraphicsStateGuardian as the
+//               "global" GSG, which is used for optimization hints by
+//               operations like NodePath::flatten_strong().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+make_global_gsg() {
+  _global_gsg = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_global_gsg
+//       Access: Published, Static
+//  Description: Returns the "global" GSG, which is to say, the
+//               GraphicsStateGuardian object that has most recently
+//               had make_global_gsg() called for it.  It may return
+//               NULL if there is no such GSG.
+//
+//               This object should be used for optimization hints
+//               where appropriate, for instance by operations like
+//               NodePath::flatten_strong().
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian *GraphicsStateGuardian::
+get_global_gsg() {
+  return _global_gsg;
 }
 
 

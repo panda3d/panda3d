@@ -1517,6 +1517,9 @@ reset() {
       << "\n";
   }
 
+  _max_vertices_per_array = d3d_caps.MaxVertexIndex;
+  _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
+
   _max_texture_stages = d3d_caps.MaxSimultaneousTextures;
 
   _max_texture_dimension = min(d3d_caps.MaxTextureWidth, d3d_caps.MaxTextureHeight);
