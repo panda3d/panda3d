@@ -86,6 +86,11 @@
 #else
 #print - Did not find DirectX
 #endif
+#if $[HAVE_CV]
+#print + OpenCV
+#else
+#print - Did not find OpenCV
+#endif
 #if $[HAVE_MAYA]
 #print + OpenMaya
 #else
@@ -175,6 +180,10 @@ $[cdefine HAVE_ZLIB]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
+
+/* Define if we have OpenCV installed and want to build for OpenCV.  */
+$[cdefine HAVE_CV]
+
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]
