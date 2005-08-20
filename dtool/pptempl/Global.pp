@@ -160,6 +160,13 @@
   #define dx_libs $[DX_LIBS]
 #endif
 
+#if $[HAVE_CV]
+  #define cv_ipath $[wildcard $[CV_IPATH]]
+  #define cv_lpath $[wildcard $[CV_LPATH]]
+  #define cv_cflags $[CV_CFLAGS]
+  #define cv_libs $[CV_LIBS]
+#endif
+
 #if $[HAVE_JPEG]
   #define jpeg_ipath $[wildcard $[JPEG_IPATH]]
   #define jpeg_lpath $[wildcard $[JPEG_LPATH]]
