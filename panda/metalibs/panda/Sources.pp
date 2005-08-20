@@ -6,7 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDA
-#define USE_PACKAGES net
+#define USE_PACKAGES net cv
 
 #define COMPONENT_LIBS \
     recorder pgraph \
