@@ -1,6 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
+#define USE_PACKAGES cv
+
 #begin lib_target
   #define TARGET grutil
   #define LOCAL_LIBS \
@@ -13,19 +15,23 @@
     config_grutil.h \
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
-    multitexReducer.I multitexReducer.h multitexReducer.cxx
+    multitexReducer.I multitexReducer.h multitexReducer.cxx \
+    aviTexture.h aviTexture.I 
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
-    lineSegs.cxx
+    aviTexture.cxx \    	 
+    lineSegs.cxx 
+    
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
-    multitexReducer.I multitexReducer.h
+    multitexReducer.I multitexReducer.h \
+    aviTexture.I aviTexture.h
 
   #define IGATESCAN all
 
