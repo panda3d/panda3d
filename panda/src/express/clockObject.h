@@ -32,12 +32,6 @@ PUBLISHED:
   ulong tv[2];
 };
 
-BEGIN_PUBLISH
-
-EXPCL_PANDAEXPRESS void get_time_of_day(TimeVal &tv);
-
-END_PUBLISH
-
 ////////////////////////////////////////////////////////////////////
 //       Class : ClockObject
 // Description : A ClockObject keeps track of elapsed real time and
@@ -107,6 +101,8 @@ PUBLISHED:
   void tick();
   void sync_frame_time();
 
+  INLINE bool check_errors();
+
   INLINE static ClockObject *get_global_clock();
 
 private:
@@ -123,6 +119,7 @@ private:
   double _dt;
   double _max_dt;
   double _degrade_factor;
+  int _error_count;
 
   // For tracking the average frame rate over a certain interval of
   // time.

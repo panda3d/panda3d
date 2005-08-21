@@ -33,6 +33,7 @@
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
 #include "geomCacheManager.h"
+#include "throw_event.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -499,7 +500,11 @@ render_frame() {
 
   // Now cycle the pipeline and officially begin the next frame.
   _pipeline->cycle();
-  ClockObject::get_global_clock()->tick();
+  ClockObject *global_clock = ClockObject::get_global_clock();
+  global_clock->tick();
+  if (global_clock->check_errors()) {
+    throw_event("clock_error");
+  }
   PStatClient::main_tick();
 
   // Reset our pcollectors that track data across the frame.

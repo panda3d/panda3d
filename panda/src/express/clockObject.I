@@ -290,6 +290,23 @@ get_average_frame_rate() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::check_errors
+//       Access: Published
+//  Description: Returns true if a clock error was detected since the
+//               last time check_errors() was called.  A clock error
+//               means that something happened, an OS or BIOS bug, for
+//               instance, that makes the current value of the clock
+//               somewhat suspect, and an application may wish to
+//               resynchronize with any external clocks.
+////////////////////////////////////////////////////////////////////
+INLINE bool ClockObject::
+check_errors() {
+  int orig_error_count = _error_count;
+  _error_count = _true_clock->get_error_count();
+  return (_error_count != orig_error_count);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_global_clock
 //       Access: Published
 //  Description: Returns a pointer to the global ClockObject.  This is

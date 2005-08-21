@@ -54,6 +54,8 @@ ClockObject() {
   _max_dt = max_dt;
   _degrade_factor = clock_degrade_factor;
   _average_frame_rate_interval = average_frame_rate_interval;
+
+  _error_count = _true_clock->get_error_count();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,14 +260,6 @@ make_global_clock() {
 
   _global_clock = new ClockObject;
   _global_clock->set_mode(clock_mode);
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: get_time_of_day
-//  Description:
-////////////////////////////////////////////////////////////////////
-void get_time_of_day(TimeVal &tv) {
-  get_true_time_of_day(tv.tv[0], tv.tv[1]);
 }
 
 ////////////////////////////////////////////////////////////////////

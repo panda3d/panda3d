@@ -31,6 +31,22 @@ get_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_error_count
+//       Access: Public
+//  Description: Returns the number of clock errors that have
+//               been detected.  Each time a clock error is detected,
+//               in which the value returned by either of the above
+//               methods is suspect, the value returned by this method
+//               will be incremented.  Applications can monitor this
+//               value and react, for instance, by resynchronizing
+//               their clocks each time this value changes.
+////////////////////////////////////////////////////////////////////
+INLINE int TrueClock::
+get_error_count() const {
+  return _error_count;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TrueClock::Destructor
 //       Access: Protected
 //  Description: A protected destructor because no one should try to

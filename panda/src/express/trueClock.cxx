@@ -25,7 +25,7 @@
 
 TrueClock *TrueClock::_global_ptr = NULL;
 
-#if defined(WIN32_VC)
+#ifdef WIN32_VC
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -34,95 +34,152 @@ TrueClock *TrueClock::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 
 #include <sys/timeb.h>
-
-#define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
 
-static BOOL _has_high_res;
-static PN_int64 _frequency;
-static PN_int64 _init_count;
-static double _fFrequency,_recip_fFrequency;
-static DWORD _init_tc;
-static bool _paranoid_clock;
-static const double _0001 = 1.0/1000.0;
+static const double _0001 = 1.0 / 1000.0;
+static const double _00000001 = 1.0 / 10000000.0;
 
-void get_true_time_of_day(ulong &sec, ulong &usec) {
-  struct timeb tb;
-  ftime(&tb);
-  sec = tb.time;
-  usec = (ulong)(tb.millitm * 1000.0);
-}
+// This is the interval of time, in seconds, over which to measure the
+// high-precision clock rate vs. the time-of-day rate, when
+// paranoid-clock is in effect.  Reducing it makes the clock respond
+// more quickly to changes in rate, but setting it too small may
+// introduce erratic behavior.
+static const double paranoid_clock_interval = 1.0;
 
+// It will be considered a clock jump error if either the
+// high-precision clock or the time-of-day clock change by this number
+// of seconds without the other jumping by a similar amount.
+static const double paranoid_clock_jump_error = 2.0;
+
+// If the we detect a clock jump error but the corrected clock skew is
+// currently more than this amount, we hack the clock scale to try to
+// compensate.
+static const double paranoid_clock_jump_error_max_delta = 1.0;
+
+// If the measured time_scale appears to change by more than this
+// factor, it will be reported to the log.  Changes to time_scale less
+// than this factor are assumed to be within the margin of error.
+static const double paranoid_clock_report_scale_factor = 0.1;
+
+// If the high-precision clock, after applying time_scale correction,
+// is still more than this number of seconds above or below the
+// time-of-day clock, it will be sped up or slowed down slightly until
+// it is back in sync.
+static const double paranoid_clock_chase_threshold = 0.5;
+
+// This is the minimum factor by which the high-precision clock will
+// be sped up or slowed down when it gets out of sync by
+// paranoid-clock-chase-threshold.
+static const double paranoid_clock_chase_factor = 0.1;
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_long_time, Win32 implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_long_time() const {
-  DWORD tc = GetTickCount();
+get_long_time() {
+  int tc = GetTickCount();
   return (double)(tc - _init_tc) * _0001;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_short_time, Win32 implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_short_time() const {
+get_short_time() {
+  double time;
+
   if (_has_high_res) {
-    LARGE_INTEGER count;
-    QueryPerformanceCounter(&count);
+    // Use the high-resolution clock.  This is of questionable value,
+    // since (a) on some OS's and hardware, the low 24 bits can
+    // occasionally roll over without setting the carry bit, causing
+    // the time to jump backwards, and (b) reportedly it can set the
+    // carry bit incorrectly sometimes, causing the time to jump
+    // forwards, and (c) even when it doesn't do that, it's not very
+    // accurate and seems to lose seconds of time per hour, and (d)
+    // someone could be running a program such as Speed Gear which
+    // munges this value anyway.
+    PN_int64 count;
+    QueryPerformanceCounter((LARGE_INTEGER *)&count);
 
-    double time = (double)(count.QuadPart - _init_count) * _recip_fFrequency;
-
-    if (_paranoid_clock) {
-      // Now double-check the high-resolution clock against the system
-      // clock.
-      DWORD tc = GetTickCount();
-      double sys_time = (double)(tc - _init_tc) * _0001;
-      if (fabs(time - sys_time) > 0.5) {
-        // Too much variance!
-        express_cat.info()
-          << "Clock error!  High resolution clock reads " << time 
-          << " while system clock reads " << sys_time << ".\n";
-        _init_count = 
-          (PN_int64)(count.QuadPart - sys_time * _fFrequency);
-        time = (double)(count.QuadPart - _init_count) * _recip_fFrequency;
-        express_cat.info()
-          << "High resolution clock reset to " << time << ".\n";
-      }
-    }
-
-    return time;
+    time = (double)(count - _init_count) * _recip_frequency;
 
   } else {
     // No high-resolution clock; return the best information we have.
-    DWORD tc = GetTickCount();
-    return (double)(tc - _init_tc) * _0001;
+    // This doesn't suffer from the rollover problems that
+    // QueryPerformanceCounter does, but it's not very precise--only
+    // precise to 50ms on Win98, and 10ms on XP-based systems--and
+    // Speed Gear still munges it.
+    int tc = GetTickCount();
+    time = (double)(tc - _init_tc) * _0001;
   }
+
+  if (_paranoid_clock) {
+    // Check for rollforwards, rollbacks, and compensate for Speed
+    // Gear type programs by verifying against the time of day clock.
+    time = correct_time(time);
+  }
+
+  return time;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::Constructor, Win32 implementation
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
 TrueClock::
 TrueClock() {
+  _error_count = 0;
   _has_high_res = false;
+
+  _time_scale = 1.0;
+  _time_offset = 0.0;
+  _tod_offset = 0.0;
+  _time_scale_changed = false;
+  _last_reported_time_scale = 1.0;
+  _report_time_scale_time = 0.0;
+
   if (get_use_high_res_clock()) {
-    _has_high_res = QueryPerformanceFrequency((LARGE_INTEGER *)&_frequency);
-    _fFrequency = (double) _frequency;
-    _recip_fFrequency = 1.0/_fFrequency;
-  }
+    PN_int64 int_frequency;
+    _has_high_res = 
+      (QueryPerformanceFrequency((LARGE_INTEGER *)&int_frequency) != 0);
+    if (_has_high_res) {
+      if (int_frequency <= 0) {
+	express_cat.error()
+	  << "TrueClock::get_real_time() - frequency is negative!" << endl;
+	_has_high_res = false;
 
-  _paranoid_clock = get_paranoid_clock();
-
-  if (_has_high_res) {
-    LARGE_INTEGER count;
-    QueryPerformanceCounter(&count);
-    _init_count = count.QuadPart;
-
-    if (_frequency <= 0) {
-      express_cat.error()
-        << "TrueClock::get_real_time() - frequency is negative!" << endl;
-      _has_high_res = false;
+      } else {
+	_frequency = (double)int_frequency;
+	_recip_frequency = 1.0 / _frequency;
+	
+	QueryPerformanceCounter((LARGE_INTEGER *)&_init_count);
+      }
     }
   }
 
   // Also store the initial tick count.  We'll need this for
   // get_long_time(), as well as for get_short_time() if we're not
-  // using the high resolution clock, or to cross-check the high
-  // resolution clock if we are using it.
+  // using the high resolution clock.
   _init_tc = GetTickCount();
+
+  // And we will need the current time of day to cross-check either of
+  // the above clocks if paranoid-clock is enabled.
+  GetSystemTimeAsFileTime((FILETIME *)&_init_tod);
+
+  _paranoid_clock = get_paranoid_clock();
+  _chase_clock = CC_keep_even;
+
+  if (_paranoid_clock) {
+    // If we'll be cross-checking the clock, we'd better start out
+    // with at least one timestamp, so we'll know if the clock jumps
+    // just after startup.
+    _timestamps.push_back(Timestamp(0.0, 0.0));
+  }
 
   if (!_has_high_res) {
     express_cat.warning()
@@ -134,74 +191,287 @@ TrueClock() {
   }
 }
 
-
-#elif defined(PENV_PS2)
-
 ////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::correct_time, Win32 implementation
+//       Access: Protected
+//  Description: Ensures that the reported timestamp from the
+//               high-precision (or even the low-precision) clock is
+//               valid by verifying against the time-of-day clock.
 //
-// The PS2 implementation.
+//               This attempts to detect sudden jumps in time that
+//               might be caused by a failure of the high-precision
+//               clock to roll over properly.  
 //
+//               It also corrects for long-term skew of the clock by
+//               measuring the timing discrepency against the wall
+//               clock and projecting that discrepency into the
+//               future.  This also should defeat programs such as
+//               Speed Gear that work by munging the value returned by
+//               QueryPerformanceCounter() and GetTickCount(), but not
+//               the wall clock time.
+//
+//               However, relying on wall clock time presents its own
+//               set of problems, since the time of day might be
+//               adjusted slightly forward or back from time to time
+//               in response to ntp messages, or it might even be
+//               suddenly reset at any time by the user.  So we do the
+//               best we can.
 ////////////////////////////////////////////////////////////////////
+double TrueClock::
+correct_time(double time) {
+  // First, get the current time of day measurement.
+  PN_uint64 int_tod;
+  GetSystemTimeAsFileTime((FILETIME *)&int_tod);
+  double tod = (double)(int_tod - _init_tod) * _00000001;
 
+  nassertr(!_timestamps.empty(), time);
 
-#include <eeregs.h>
-#include <eekernel.h>
+  // Make sure we didn't experience a sudden jump from the last
+  // measurement.
+  double time_delta = (time - _timestamps.back()._time) * _time_scale;
+  double tod_delta = (tod - _timestamps.back()._tod);
+  
+  if (time_delta < 0.0 ||
+      fabs(time_delta - tod_delta) > paranoid_clock_jump_error) {
+    // A step backward in the high-precision clock, or more than a
+    // small jump on only one of the clocks, is cause for alarm.
 
-static unsigned int _msec;
-static unsigned int _sec;
+    express_cat.warning()
+      << "Clock error detected; elapsed time " << time_delta
+      << "s on high-resolution counter, and " << tod_delta
+      << "s on time-of-day clock.\n";
+    ++_error_count;
+    
+    // If both are negative, we call it 0.  If one is negative, we
+    // trust the other one.  If both are nonnegative, we trust the
+    // smaller of the two.
+    double time_adjust = 0.0;
+    double tod_adjust = 0.0;
 
-// PS2 timer interrupt, as the RTC routines don't exist unless you're
-// using the .irx iop compiler, which scares us.  A lot.
-static int
-timer_handler(int) {
-  _msec++;
+    if (time_delta < 0.0 && tod < 0.0) {
+      // Trust neither.
+      time_adjust = -time_delta;
+      tod_adjust = -tod_delta;
+      
+    } else if (time_delta < 0.0 || (tod_delta >= 0.0 && tod_delta < time_delta)) {
+      // Trust tod.
+      time_adjust = (tod_delta - time_delta);
+      
+    } else {
+      // Trust time.
+      tod_adjust = (time_delta - tod_delta);
+    }
 
-  if (_msec >= 1000) {
-    _msec = 0;
-    _sec++;
+    _time_offset += time_adjust;
+    time_delta += time_adjust;
+    _tod_offset += tod_adjust;
+    tod_delta += tod_adjust;
+    
+    // Apply the adjustments to the timestamp queue.  We could just
+    // completely empty the timestamp queue, but that makes it hard to
+    // catch up if we are getting lots of these "momentary" errors in
+    // a row.
+    Timestamps::iterator ti;
+    for (ti = _timestamps.begin(); ti != _timestamps.end(); ++ti) {
+      (*ti)._time -= time_adjust;
+      (*ti)._tod -= tod_adjust;
+    }
+
+    // And now we can record this timestamp, which is now consistent
+    // with the previous timestamps in the queue.
+    _timestamps.push_back(Timestamp(time, tod));
+
+    // Detecting and filtering this kind of momentary error can help
+    // protect us from legitimate problems cause by OS or BIOS bugs
+    // (which might introduce errors into the high precision clock),
+    // or from sudden changes to the time-of-day by the user, but we
+    // have to be careful because if the user uses a Speed Gear-type
+    // program to speed up the clock by an extreme amount, it can look
+    // like a lot of such "momentary" errors in a row--and if we throw
+    // them all out, we won't compute _time_scale correctly.  To avoid
+    // this, we hack _time_scale here if we seem to be getting out of
+    // sync.
+    double corrected_time = time * _time_scale + _time_offset;
+    double corrected_tod = tod + _tod_offset;
+    if (corrected_time - corrected_tod > paranoid_clock_jump_error_max_delta) {
+      express_cat.info()
+	<< "Force-adjusting time_scale to catch up to errors.\n";
+      set_time_scale(time, _time_scale * 0.5);
+    }
+
+  } else if (tod_delta < 0.0) {
+    // A small backwards jump on the time-of-day clock is not a
+    // concern, since this is technically allowed with ntp enabled.
+    // We simply ignore the event.
+    
+  } else {
+    // Ok, we don't think there was a sudden jump, so carry on.
+
+    // The timestamp queue here records the measured timestamps over
+    // the past _priority_interval seconds.  Its main purpose is to
+    // keep a running observation of _time_scale, so we can detect
+    // runtime changes of the clock's scale, for instance if the user
+    // is using a program like Speed Gear and pulls the slider during
+    // runtime.
+    
+    // Consider the oldest timestamp in our queue.
+    Timestamp oldest = _timestamps.front();
+    double time_age = (time - oldest._time);
+    double tod_age = (tod - oldest._tod);
+
+    double keep_interval = paranoid_clock_interval;
+    
+    if (tod_age > 0.0 && time_age > 0.0) {
+      // Adjust the _time_scale value to match the ratio between the
+      // elapsed time on the high-resolution clock, and the
+      // time-of-day clock.
+      double new_time_scale = tod_age / time_age;
+      
+      // When we adjust _time_scale, we have to be careful to adjust
+      // _time_offset at the same time, so we don't introduce a
+      // sudden jump in time.
+      set_time_scale(time, new_time_scale);
+  
+      // Check to see if the time scale has changed significantly
+      // since we last reported it.
+      double ratio = _time_scale / _last_reported_time_scale;
+      if (fabs(ratio - 1.0) > paranoid_clock_report_scale_factor) {
+	_time_scale_changed = true;
+	_last_reported_time_scale = _time_scale;
+	// Actually report it a little bit later, to give the time
+	// scale a chance to settle down.
+	_report_time_scale_time = tod + _tod_offset + keep_interval;
+      }
+    }
+    
+    // Clean out old entries in the timestamps queue.
+    if (tod_age > keep_interval) {
+      while (!_timestamps.empty() && 
+	     tod - _timestamps.front()._tod > keep_interval) {
+	_timestamps.pop_front();
+      }
+    }
+    
+    // Record this timestamp.
+    _timestamps.push_back(Timestamp(time, tod));
   }
 
-  return -1;
+  double corrected_time = time * _time_scale + _time_offset;
+  double corrected_tod = tod + _tod_offset;
+
+  if (_time_scale_changed && corrected_tod >= _report_time_scale_time) {
+    express_cat.info()
+      << "Clock appears to be running at " << 100.0 / _time_scale
+      << "% real time.\n";
+    _last_reported_time_scale = _time_scale;
+    _time_scale_changed = false;
+  }
+
+  // By the time we get here, we have a corrected_time and a
+  // corrected_tod value, both of which should be advancing at about
+  // the same rate.  However, there might be accumulated skew between
+  // them, since there is some lag in the above algorithm that
+  // corrects the _time_scale, and clock skew can accumulate while the
+  // algorithm is catching up.
+
+  // Therefore, we have one more line of defense: we check at this
+  // point for skew, and correct for it by slowing the clock down or
+  // speeding it up a bit as needed, until we even out the clocks
+  // again.  Rather than adjusting the clock speed with _time_scale
+  // here, we simply slide _time_offset forward and back as
+  // needed--that way we don't interfere with the above algorithm,
+  // which is trying to compute _time_scale accurately.
+
+  switch (_chase_clock) {
+  case CC_slow_down:
+    if (corrected_time < corrected_tod) {
+      // We caught up.
+      _chase_clock = CC_keep_even;
+      if (express_cat.is_debug()) {
+	express_cat.debug()
+	  << "Clock back down to real time.\n";
+	// Let's report the clock error now, so an app can resync now
+	// that we're at a good time.
+	++_error_count;
+      }
+
+    } else {
+      // Slow down the clock by sliding the offset a bit backward.
+      double fixup = 1.0 - (1.0 / (corrected_time - corrected_tod));
+      double correction = time_delta * max(fixup, paranoid_clock_chase_factor);
+      _time_offset -= correction;
+      corrected_time -= correction;
+    }
+    break;
+
+  case CC_keep_even:
+    if ((corrected_tod - corrected_time) > paranoid_clock_chase_threshold) {
+      // Oops, we're dropping behind; need to speed up.
+      _chase_clock = CC_speed_up;
+
+      if (express_cat.is_debug()) {
+	express_cat.debug()
+	  << "Clock is behind by " << (corrected_tod - corrected_time)
+	  << "s; speeding up to correct.\n";
+      }
+    } else if ((corrected_time - corrected_tod) > paranoid_clock_chase_threshold) {
+      // Oops, we're going too fast; need to slow down.
+      _chase_clock = CC_slow_down;
+
+      if (express_cat.is_debug()) {
+	express_cat.debug()
+	  << "Clock is ahead by " << (corrected_time - corrected_tod)
+	  << "s; slowing down to correct.\n";
+      }
+    }
+    break;
+
+  case CC_speed_up:
+    if (corrected_time > corrected_tod) {
+      // We caught up.
+      _chase_clock = CC_keep_even;
+      if (express_cat.is_debug()) {
+	express_cat.debug()
+	  << "Clock back up to real time.\n";
+	// Let's report the clock error now, so an app can resync now
+	// that we're at a good time.
+	++_error_count;
+      }
+
+    } else {
+      // Speed up the clock by sliding the offset a bit forward.
+      double fixup = 1.0 - (1.0 / (corrected_tod - corrected_time));
+      double correction = time_delta * max(fixup, paranoid_clock_chase_factor);
+      _time_offset += correction;
+      corrected_time += correction;
+    }
+    break;
+  }
+  
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "time " << time << " tod " << corrected_tod
+      << " corrected time " << corrected_time << "\n";
+  }
+
+  return corrected_time;
 }
 
-void get_true_time_of_day(ulong &sec, ulong &msec) {
-  cerr << "get_true_time_of_day() not implemented!" << endl;
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::set_time_scale, Win32 implementation
+//       Access: Protected
+//  Description: Changes the _time_scale value, recomputing
+//               _time_offset at the same time so we don't introduce a
+//               sudden jump in time.
+////////////////////////////////////////////////////////////////////
+void TrueClock::
+set_time_scale(double time, double new_time_scale) {
+  nassertv(new_time_scale > 0.0);
+  _time_offset = time * _time_scale + _time_offset - (time * new_time_scale);
+  _time_scale = new_time_scale;
 }
 
-double TrueClock::
-get_long_time() const {
-  return (double) _sec + ((double) _msec / 1000.0);
-}
-
-double TrueClock::
-get_short_time() const {
-  return (double) _sec + ((double) _msec / 1000.0);
-}
-
-TrueClock::
-TrueClock() {
-  _init_sec = 0;
-  _msec = 0;
-  _sec = 0;
-
-  tT_MODE timer_mode;
-  *(unsigned int *) &timer_mode = 0;
-
-  timer_mode.cxxLKS = 1;
-  timer_mode.ZRET = 1;
-  timer_mode.cxxUE = 1;
-  timer_mode.cxxMPE = 1;
-  timer_mode.EQUF = 1;
-
-  *T0_COMP = 9375;
-  *T0_MODE = *(unsigned int *) &timer_mode;
-
-  EnableIntc(INTC_TIM0);
-  AddIntcHandler(INTC_TIM0, timer_handler, -1);
-}
-
-
-#elif !defined(WIN32_VC)
+#else  // !WIN32_VC
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -214,28 +484,13 @@ TrueClock() {
 
 static long _init_sec;
 
-void get_true_time_of_day(ulong &sec, ulong &msec) {
-  struct timeval tv;
-  int result;
-
-#ifdef GETTIMEOFDAY_ONE_PARAM
-  result = gettimeofday(&tv);
-#else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
-#endif
-
-  if (result < 0) {
-    sec = 0;
-    msec = 0;
-    // Error in gettimeofday().
-    return;
-  }
-  sec = tv.tv_sec;
-  msec = tv.tv_usec;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_long_time, Posix implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_long_time() const {
+get_long_time() {
   struct timeval tv;
 
   int result;
@@ -258,8 +513,13 @@ get_long_time() const {
   return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_short_time, Posix implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_short_time() const {
+get_short_time() {
   struct timeval tv;
 
   int result;
@@ -282,8 +542,14 @@ get_short_time() const {
   return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::Constructor, Posix implementation
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
 TrueClock::
 TrueClock() {
+  _error_count = 0;
   struct timeval tv;
 
   int result;
