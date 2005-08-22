@@ -109,24 +109,38 @@ from direct.ffi import FFIConstants
 # ppremake was run in Direct.
 #define extensions_name $[if $[PYTHON_NATIVE],extensions_native,extensions]
 
-DoGenPyCode.outputDir = r'$[osfilename $[install_lib_dir]/pandac]'
-DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/$[extensions_name]]'
-DoGenPyCode.interrogateLib = r'libdtoolconfig'
-DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
-DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
-DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
-DoGenPyCode.native = $[if $[PYTHON_NATIVE],1,0]
-
 #if $[>= $[OPTIMIZE], 4]
 FFIConstants.wantComments = 0
 FFIConstants.wantTypeChecking = 0
 #endif
 
-#if $[CTPROJS]
+DoGenPyCode.interrogateLib = r'libdtoolconfig'
+DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
+DoGenPyCode.native = $[if $[PYTHON_NATIVE],1,0]
 
-# Actually, the user is expected to be using ctattach, so never mind
-# on the baked-in stuff--replace it with the dynamic settings from
+#if $[not $[CTPROJS]]
+// Since the user is not using ctattach, bake these variables in too.
+DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
+DoGenPyCode.outputDir = r'$[osfilename $[install_lib_dir]/pandac]'
+DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/$[extensions_name]]'
+DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
+
+#else
+# The user is expected to be using ctattach, so don't bake in the
+# following four; these instead come from the dynamic settings set by
 # ctattach.
+
+def cygpathW(osName):
+    cmd = 'cygpath -w "%s"' % (osName)
+    fd = os.popen(cmd, 'r')
+    result = fd.read()
+    status = fd.close()
+    if status != None:
+        error = 'Execution error: %s returned %s' % (cmd, status)
+        raise error
+    return result.strip()
+
+DoGenPyCode.directDir = cygpathW(os.environ['DIRECT'])
 DoGenPyCode.outputDir = os.path.join(directDir, 'built', 'lib', 'pandac')
 DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
