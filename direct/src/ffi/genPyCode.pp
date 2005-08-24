@@ -42,7 +42,17 @@ $[python] -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
+#if $[CTPROJS]
+# This script was generated while the user was using the ctattach
+# tools.  That had better still be the case.
+#if $[WINDOWS_PLATFORM]
+$[python] -u `cygpath -w $DIRECT/built/bin/genPyCode.py` "$@"
+#else
+$[python] -u $DIRECT/built/bin/genPyCode.py "$@"
+#endif
+#else
 $[python] -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
+#endif
 #end genPyCode
 
 #endif  // Win32
