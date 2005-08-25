@@ -73,13 +73,13 @@
     #if $[SOURCES]
       #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
     #endif
-  #end flt_egg
+  #end lwo_egg
 
   #forscopes maya_egg
     #if $[SOURCES]
       #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
     #endif
-  #end flt_egg
+  #end maya_egg
 #endif
 
 #define build_flt_eggs \
