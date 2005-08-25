@@ -37,9 +37,50 @@
 #defer phase_prefix $[if $[PHASE],phase_$[PHASE]/]
 
 #defer install_model_dir $[install_dir]/$[phase_prefix]$[INSTALL_TO]
-#define filter_dirs $[TARGET_DIR(filter_egg filter_char_egg optchar_egg)]
+#define filter_dirs $[sort $[TARGET_DIR(filter_egg filter_char_egg optchar_egg)]]
 
 #defer source_prefix $[SOURCE_DIR:%=%/]
+
+#if $[LANGUAGES]
+  #define exlanguage_sources $[notdir $[filter %.flt %.mb %.ma %.lwo %.LWO %.egg,$[wildcard $[TOPDIR]/$[DIRPREFIX]*_$[LANGUAGE].*]]]
+
+  #defun lang_add_files sources, src_ext, local_extra
+    #define default_filter
+    #define local_filter
+    #foreach ext $[src_ext]
+      #set default_filter $[default_filter] %_$[DEFAULT_LANGUAGE].$[ext]
+      #set local_filter $[local_filter] %_$[LANGUAGE].$[ext]
+    #end ext
+    #define default_langlist $[filter $[default_filter],$[sources]]
+    #define locallist $[filter $[local_filter],$[local_extra] $[exlanguage_sources]]
+    #define havelist
+    #foreach file $[default_langlist]
+      #foreach ext $[src_ext]
+        #define wantfile $[file:%_$[DEFAULT_LANGUAGE].$[ext]=%_$[LANGUAGE].$[ext]]
+        #set havelist $[havelist] $[filter $[wantfile],$[locallist]]
+      #end ext
+    #end file
+    $[havelist]
+  #end lang_add_files
+
+  #forscopes flt_egg
+    #if $[SOURCES]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], flt]]
+    #endif
+  #end flt_egg
+
+  #forscopes lwo_egg
+    #if $[SOURCES]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
+    #endif
+  #end flt_egg
+
+  #forscopes maya_egg
+    #if $[SOURCES]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
+    #endif
+  #end flt_egg
+#endif
 
 #define build_flt_eggs \
    $[SOURCES(flt_egg):%.flt=%.egg]
@@ -62,6 +103,14 @@
      $[build_lwo_eggs] \
      $[build_maya_eggs] \
      $[build_soft_eggs]]
+
+#if $[LANGUAGES]
+  #forscopes install_egg filter_egg
+    #if $[SOURCES]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], egg, $[build_eggs]]]
+    #endif
+  #end install_egg filter_egg
+#endif
 
 // Get the list of egg files that are to be installed
 #define install_pal_eggs
