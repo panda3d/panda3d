@@ -140,6 +140,8 @@ filter_filename(const string &source) {
 
   size_t dot = source.rfind('.');
   size_t underscore = source.rfind("_v", dot);
+  if ((underscore != string::npos) && !isdigit(source.at(underscore+2)))
+    underscore = string::npos;
 
   string extension = source.substr(dot);
   if (extension == ".ma") {
