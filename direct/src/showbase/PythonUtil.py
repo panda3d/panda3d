@@ -15,13 +15,6 @@ from direct.directutil import Verify
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
-# NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
-# before:
-#     ifAbsentPut(dict, key, defaultValue)
-# after:
-#     dict.setdefault(key, defaultValue)
-# Please use setdefault instead -- Joe
-
 def enumerate(L):
     """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:
     for i, item in enumerate(L):
@@ -196,12 +189,6 @@ def troff():
 
 #-----------------------------------------------------------------------------
 
-def apropos(obj, *args):
-    """
-    Obsolete, use pdir
-    """
-    print 'Use pdir instead'
-
 def getClassLineage(obj):
     """
     print object inheritance list
@@ -209,20 +196,26 @@ def getClassLineage(obj):
     if type(obj) == types.DictionaryType:
         # Just a dictionary, return dictionary
         return [obj]
-    elif type(obj) == types.InstanceType:
+    elif (type(obj) == types.InstanceType):
         # Instance, make a list with the instance and its class interitance
         return [obj] + getClassLineage(obj.__class__)
-    elif type(obj) == types.ClassType:
-        # Class, see what it derives from
+    elif ((type(obj) == types.ClassType) or
+          (type(obj) == types.TypeType)):
+        # Class or type, see what it derives from
         lineage = [obj]
         for c in obj.__bases__:
             lineage = lineage + getClassLineage(c)
         return lineage
+    # New FFI objects are types that are not defined.
+    # but they still act like classes
+    elif hasattr(obj, '__class__'):
+        # Instance, make a list with the instance and its class interitance
+        return [obj] + getClassLineage(obj.__class__)
     else:
         # Not what I'm looking for
         return []
 
-def pdir(obj, str = None, fOverloaded = 0, width = None,
+def pdir(obj, str = None, width = None,
             fTruncate = 1, lineWidth = 75, wantPrivate = 0):
     # Remove redundant class entries
     uniqueLineage = []
@@ -234,10 +227,10 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
     # Pretty print out directory info
     uniqueLineage.reverse()
     for obj in uniqueLineage:
-        _pdir(obj, str, fOverloaded, width, fTruncate, lineWidth, wantPrivate)
+        _pdir(obj, str, width, fTruncate, lineWidth, wantPrivate)
         print
 
-def _pdir(obj, str = None, fOverloaded = 0, width = None,
+def _pdir(obj, str = None, width = None,
             fTruncate = 1, lineWidth = 75, wantPrivate = 0):
     """
     Print out a formatted list of members and methods of an instance or class
@@ -267,6 +260,9 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
     # Get dict
     if type(obj) == types.DictionaryType:
         dict = obj
+    # FFI objects are builtin types, they have no __dict__
+    elif not hasattr(obj, '__dict__'):
+        dict = {}
     else:
         dict = obj.__dict__
     # Adjust width
@@ -432,13 +428,6 @@ class Signature:
         else:
             return "%s(?)" % self.name
 
-
-def aproposAll(obj):
-    """
-    Print out a list of all members and methods (including overloaded methods)
-    of an instance or class
-    """
-    apropos(obj, fOverloaded = 1, fTruncate = 0)
 
 def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
