@@ -1936,6 +1936,10 @@ dc-file sample.dc
 # Enable audio using the FMod audio library by default:
 
 audio-library-name fmod_audio
+
+# We recently implemented hardware vertex animation, but it's not quite ready
+
+hardware-animated-vertices 0
 """
 
 if (sys.platform != "win32"):
