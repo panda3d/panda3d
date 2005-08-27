@@ -27,6 +27,7 @@
 class BoundingSphere;
 class BoundingHexahedron;
 class BoundingLine;
+class BoundingPlane;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +119,7 @@ protected:
   virtual bool extend_by_sphere(const BoundingSphere *sphere);
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
   virtual bool extend_by_line(const BoundingLine *line);
+  virtual bool extend_by_plane(const BoundingPlane *plane);
 
   virtual bool around_spheres(const BoundingVolume **first,
                               const BoundingVolume **last);
@@ -125,10 +127,13 @@ protected:
                                   const BoundingVolume **last);
   virtual bool around_lines(const BoundingVolume **first,
                             const BoundingVolume **last);
+  virtual bool around_planes(const BoundingVolume **first,
+                            const BoundingVolume **last);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
   virtual int contains_line(const BoundingLine *line) const;
+  virtual int contains_plane(const BoundingPlane *plane) const;
 
 
 public:
@@ -151,6 +156,7 @@ private:
   friend class BoundingSphere;
   friend class BoundingHexahedron;
   friend class BoundingLine;
+  friend class BoundingPlane;
 };
 
 INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound);

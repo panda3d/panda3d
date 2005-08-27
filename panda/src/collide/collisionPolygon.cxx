@@ -279,9 +279,8 @@ get_collision_origin() const {
 PT(PandaNode) CollisionPolygon::
 get_viz(const CullTraverser *trav, const CullTraverserData &data, 
         bool bounds_only) const {
-  const RenderAttrib *cpa_attrib =
-    data._state->get_attrib(ClipPlaneAttrib::get_class_type());
-  if (cpa_attrib == (const RenderAttrib *)NULL) {
+  const ClipPlaneAttrib *cpa = data._state->get_clip_plane();
+  if (cpa == (const ClipPlaneAttrib *)NULL) {
     // Fortunately, the polygon is not clipped.  This is the normal,
     // easy case.
     return CollisionSolid::get_viz(trav, data, bounds_only);
@@ -289,7 +288,7 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "drawing polygon with clip plane " << *cpa_attrib << "\n";
+      << "drawing polygon with clip plane " << *cpa << "\n";
   }
 
   // The polygon is clipped.  We need to render it clipped.  We could
@@ -298,7 +297,6 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
   // and clip it by hand instead, just to prove that our clipping
   // algorithm works properly.  This does require some more dynamic
   // work.
-  const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, cpa_attrib);
   Points new_points;
   if (apply_clip_plane(new_points, cpa, data.get_net_transform(trav))) {
     // All points are behind the clip plane; just draw the original
@@ -1093,15 +1091,21 @@ clip_polygon(CollisionPolygon::Points &new_points,
     const LPoint2f &this_point = (*pi)._p;
     bool this_is_in = !is_right(this_point - from2d, delta2d);
 
-    if (this_is_in != last_is_in) {
+    // There appears to be a compiler bug in gcc 4.0: we need to
+    // extract this comparison outside of the if statement.
+    bool crossed_over = (this_is_in != last_is_in);
+    if (crossed_over) {
       // We have just crossed over the clipping line.  Find the point
       // of intersection.
       LVector2f d = this_point - last_point;
-      float t = -(a * last_point[0] + b * last_point[1] + c) / (a * d[0] + b * d[1]);
-      LPoint2f p = last_point + t * d;
+      float denom = (a * d[0] + b * d[1]);
+      if (denom != 0.0) {
+        float t = -(a * last_point[0] + b * last_point[1] + c) / denom;
+        LPoint2f p = last_point + t * d;
 
-      new_points.push_back(PointDef(p[0], p[1]));
-      last_is_in = this_is_in;
+        new_points.push_back(PointDef(p[0], p[1]));
+        last_is_in = this_is_in;
+      }
     } 
 
     if (this_is_in) {

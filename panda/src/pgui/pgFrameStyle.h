@@ -65,6 +65,12 @@ PUBLISHED:
   INLINE void set_width(const LVecBase2f &width);
   INLINE const LVecBase2f &get_width() const;
 
+  INLINE void set_visible_scale(float x, float y);
+  INLINE void set_visible_scale(const LVecBase2f &visible_scale);
+  INLINE const LVecBase2f &get_visible_scale() const;
+
+  LVecBase4f get_internal_frame(const LVecBase4f &frame) const;
+
   void output(ostream &out) const;
 
 public:
@@ -81,6 +87,7 @@ private:
   Colorf _color;
   PT(Texture) _texture;
   LVecBase2f _width;
+  LVecBase2f _visible_scale;
 };
 
 INLINE ostream &operator << (ostream &out, const PGFrameStyle &pfs);

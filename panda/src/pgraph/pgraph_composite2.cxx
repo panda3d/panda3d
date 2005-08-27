@@ -8,6 +8,7 @@
 #include "cullBinUnsorted.cxx"
 #include "cullFaceAttrib.cxx"
 #include "cullHandler.cxx"
+#include "cullPlanes.cxx"
 #include "cullResult.cxx"
 #include "cullTraverser.cxx"
 #include "cullTraverserData.cxx"

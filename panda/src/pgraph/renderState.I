@@ -337,6 +337,25 @@ get_render_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_clip_plane
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ClipPlaneAttrib on this state.  It returns a
+//               pointer to the ClipPlaneAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const ClipPlaneAttrib *RenderState::
+get_clip_plane() const {
+  if ((_flags & F_checked_clip_plane) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal clip_plane cache.
+    ((RenderState *)this)->determine_clip_plane();
+  }
+  return _clip_plane;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the

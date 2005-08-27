@@ -109,12 +109,14 @@ PUBLISHED:
   INLINE DisplayRegion *get_display_region() const;
   INLINE bool has_display_region() const;
 
+  bool add_group(MouseWatcherGroup *group);
+  bool remove_group(MouseWatcherGroup *group);
+  int get_num_groups() const;
+  MouseWatcherGroup *get_group(int n) const;
+
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
-
-  bool add_group(MouseWatcherGroup *group);
-  bool remove_group(MouseWatcherGroup *group);
 
 protected:
   typedef pvector< PT(MouseWatcherRegion) > VRegions;
@@ -136,7 +138,7 @@ protected:
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
 
-  void move(ButtonHandle button);
+  void move();
   void press(ButtonHandle button);
   void release(ButtonHandle button);
   void keystroke(int keycode);

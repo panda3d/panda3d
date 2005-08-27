@@ -18,7 +18,6 @@
 
 #include "config_pgui.h"
 #include "pgButton.h"
-#include "pgSliderButton.h"
 #include "pgCullTraverser.h"
 #include "pgEntry.h"
 #include "pgMouseWatcherParameter.h"
@@ -26,9 +25,11 @@
 #include "pgItem.h"
 #include "pgMouseWatcherBackground.h"
 #include "pgMouseWatcherRegion.h"
-#include "pgTop.h"
-#include "pgWaitBar.h"
+#include "pgScrollFrame.h"
 #include "pgSliderBar.h"
+#include "pgTop.h"
+#include "pgVirtualFrame.h"
+#include "pgWaitBar.h"
 
 #include "dconfig.h"
 
@@ -38,6 +39,18 @@ NotifyCategoryDef(pgui, "");
 ConfigureFn(config_pgui) {
   init_libpgui();
 }
+
+ConfigVariableDouble scroll_initial_delay
+("scroll-initial-delay", 0.3,
+ PRC_DESC("This is the amount of time, in seconds, to delay after the user "
+          "first clicks and holds on a scrollbar button before the scrolling "
+          "continues automatically."));
+
+ConfigVariableDouble scroll_continued_delay
+("scroll-continued-delay", 0.1,
+ PRC_DESC("This is the amount of time, in seconds, to delay between lines "
+          "scrolled while the user is continuing to hold down the scrollbar "
+          "button."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgui
@@ -56,7 +69,6 @@ init_libpgui() {
   initialized = true;
 
   PGButton::init_type();
-  PGSliderButton::init_type();
   PGCullTraverser::init_type();
   PGEntry::init_type();
   PGMouseWatcherParameter::init_type();
@@ -64,7 +76,9 @@ init_libpgui() {
   PGItem::init_type();
   PGMouseWatcherBackground::init_type();
   PGMouseWatcherRegion::init_type();
-  PGTop::init_type();
-  PGWaitBar::init_type();
+  PGScrollFrame::init_type();
   PGSliderBar::init_type();
+  PGTop::init_type();
+  PGVirtualFrame::init_type();
+  PGWaitBar::init_type();
 }

@@ -21,6 +21,7 @@
 #include "cullBinAttrib.h"
 #include "cullBinManager.h"
 #include "fogAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "transparencyAttrib.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -1645,6 +1646,21 @@ determine_render_mode() {
     _render_mode = DCAST(RenderModeAttrib, attrib);
   }
   _flags |= F_checked_render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_clip_plane
+//       Access: Private
+//  Description: This is the private implementation of get_clip_plane().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_clip_plane() {
+  const RenderAttrib *attrib = get_attrib(ClipPlaneAttrib::get_class_type());
+  _clip_plane = (const ClipPlaneAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _clip_plane = DCAST(ClipPlaneAttrib, attrib);
+  }
+  _flags |= F_checked_clip_plane;
 }
 
 ////////////////////////////////////////////////////////////////////

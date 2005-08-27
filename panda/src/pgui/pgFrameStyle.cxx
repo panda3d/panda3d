@@ -61,6 +61,39 @@ operator << (ostream &out, PGFrameStyle::Type type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_internal_frame
+//       Access: Published
+//  Description: Computes the size of the internal frame, given the
+//               indicated external frame, appropriate for this kind
+//               of frame style.  This simply subtracts the border
+//               width for those frame styles that include a border.
+////////////////////////////////////////////////////////////////////
+LVecBase4f PGFrameStyle::
+get_internal_frame(const LVecBase4f &frame) const {
+  LPoint2f center((frame[0] + frame[1]) / 2.0f,
+                  (frame[2] + frame[3]) / 2.0f);
+  LVecBase4f scaled_frame
+    ((frame[0] - center[0]) * _visible_scale[0] + center[0],
+     (frame[1] - center[0]) * _visible_scale[0] + center[0],
+     (frame[2] - center[1]) * _visible_scale[1] + center[1],
+     (frame[3] - center[1]) * _visible_scale[1] + center[1]);
+
+  switch (_type) {
+  case T_none:
+  case T_flat:
+    return scaled_frame;
+
+  default:
+    break;
+  }
+
+  return LVecBase4f(scaled_frame[0] + _width[0],
+                    scaled_frame[1] - _width[0],
+                    scaled_frame[2] + _width[1],
+                    scaled_frame[3] - _width[1]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::output
 //       Access: Published
 //  Description: 
@@ -68,6 +101,9 @@ operator << (ostream &out, PGFrameStyle::Type type) {
 void PGFrameStyle::
 output(ostream &out) const {
   out << _type << " color = " << _color << " width = " << _width;
+  if (_visible_scale != LVecBase2f(1.0f, 1.0f)) {
+    out << "visible_scale = " << get_visible_scale();
+  }
   if (has_texture()) {
     out << " texture = " << *get_texture();
   }
@@ -126,28 +162,36 @@ NodePath PGFrameStyle::
 generate_into(const NodePath &parent, const LVecBase4f &frame) {
   PT(PandaNode) new_node;
 
+  LPoint2f center((frame[0] + frame[1]) / 2.0f,
+                  (frame[2] + frame[3]) / 2.0f);
+  LVecBase4f scaled_frame
+    ((frame[0] - center[0]) * _visible_scale[0] + center[0],
+     (frame[1] - center[0]) * _visible_scale[0] + center[0],
+     (frame[2] - center[1]) * _visible_scale[1] + center[1],
+     (frame[3] - center[1]) * _visible_scale[1] + center[1]);
+
   switch (_type) {
   case T_none:
     return NodePath();
 
   case T_flat:
-    new_node = generate_flat_geom(frame);
+    new_node = generate_flat_geom(scaled_frame);
     break;
 
   case T_bevel_out:
-    new_node = generate_bevel_geom(frame, false);
+    new_node = generate_bevel_geom(scaled_frame, false);
     break;
 
   case T_bevel_in:
-    new_node = generate_bevel_geom(frame, true);
+    new_node = generate_bevel_geom(scaled_frame, true);
     break;
 
   case T_groove:
-    new_node = generate_groove_geom(frame, true);
+    new_node = generate_groove_geom(scaled_frame, true);
     break;
 
   case T_ridge:
-    new_node = generate_groove_geom(frame, false);
+    new_node = generate_groove_geom(scaled_frame, false);
     break;
 
   default:

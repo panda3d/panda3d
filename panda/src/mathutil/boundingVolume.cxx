@@ -120,6 +120,19 @@ extend_by_line(const BoundingLine *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_plane
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by extend_other()
+//               when the type we're extending by is known to be a
+//               plane.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_plane(const BoundingPlane *) {
+  _flags = F_infinite;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::around_spheres
 //       Access: Protected, Virtual
 //  Description: Double-dispatch support: called by around_other()
@@ -168,6 +181,28 @@ around_lines(const BoundingVolume **, const BoundingVolume **) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_planes
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be a nonempty plane.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_planes(const BoundingVolume **, const BoundingVolume **) {
+  _flags = F_infinite;
+  if (is_of_type(FiniteBoundingVolume::get_class_type())) {
+    // If it's a FiniteBoundingVolume, we can't do any better than
+    // making it infinite.  So we return true.
+    return true;
+  }
+
+  // Otherwise, we might do better, and we require each class to
+  // define a function.  If we get here, the function isn't defined,
+  // so we return false to indicate this.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::contains_sphere
 //       Access: Protected, Virtual
 //  Description: Double-dispatch support: called by contains_other()
@@ -200,5 +235,17 @@ contains_hexahedron(const BoundingHexahedron *) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
 contains_line(const BoundingLine *) const {
+  return IF_dont_understand;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_plane
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a plane.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_plane(const BoundingPlane *) const {
   return IF_dont_understand;
 }

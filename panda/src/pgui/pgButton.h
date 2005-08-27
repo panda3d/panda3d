@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "pgItem.h"
+#include "pgButtonNotify.h"
 #include "nodePath.h"
 #include "pset.h"
 
@@ -37,6 +38,9 @@ PUBLISHED:
   PGButton(const string &name);
   virtual ~PGButton();
 
+protected:
+  PGButton(const PGButton &copy);
+
 public:
   virtual PandaNode *make_copy() const;
 
@@ -46,10 +50,9 @@ public:
   virtual void release(const MouseWatcherParameter &param, bool background);
 
   virtual void click(const MouseWatcherParameter &param);
-  
-  virtual void move(const MouseWatcherParameter &param);
 
-  PGButton(const PGButton &copy);
+  INLINE void set_notify(PGButtonNotify *notify);
+  INLINE PGButtonNotify *get_notify() const;
 
 PUBLISHED:
   enum State {
@@ -59,7 +62,7 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(const string &label);
+  void setup(const string &label, float bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
   INLINE void setup(const NodePath &ready, const NodePath &depressed, 

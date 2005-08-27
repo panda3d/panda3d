@@ -34,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PlaneNode : public PandaNode {
 PUBLISHED:
-  PlaneNode(const string &name);
+  PlaneNode(const string &name, const Planef &plane = Planef());
 
 protected:
   PlaneNode(const PlaneNode &copy);

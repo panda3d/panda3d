@@ -436,7 +436,15 @@ get_stashed_sort(int n) const {
 INLINE void PandaNode::
 set_attrib(const RenderAttrib *attrib, int override) {
   CDWriter cdata(_cycler);
-  cdata->_state = cdata->_state->add_attrib(attrib, override);
+  CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
+  if (cdata->_state != new_state) {
+    cdata->_state = new_state;
+
+    // We mark the bound stale when the state changes, in case we have
+    // changed a ClipPlaneAttrib.
+    mark_bound_stale();
+    state_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,7 +491,15 @@ has_attrib(TypeHandle type) const {
 INLINE void PandaNode::
 clear_attrib(TypeHandle type) {
   CDWriter cdata(_cycler);
-  cdata->_state = cdata->_state->remove_attrib(type);
+  CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
+  if (cdata->_state != new_state) {
+    cdata->_state = new_state;
+  
+    // We mark the bound stale when the state changes, in case we have
+    // changed a ClipPlaneAttrib.
+    mark_bound_stale();
+    state_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,7 +570,14 @@ clear_effect(TypeHandle type) {
 INLINE void PandaNode::
 set_state(const RenderState *state) {
   CDWriter cdata(_cycler);
-  cdata->_state = state;
+  if (cdata->_state != state) {
+    cdata->_state = state;
+
+    // We mark the bound stale when the state changes, in case we have
+    // changed a ClipPlaneAttrib.
+    mark_bound_stale();
+    state_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,7 +606,14 @@ get_state() const {
 INLINE void PandaNode::
 clear_state() {
   CDWriter cdata(_cycler);
-  cdata->_state = RenderState::make_empty();
+  if (!cdata->_state->is_empty()) {
+    cdata->_state = RenderState::make_empty();
+
+    // We mark the bound stale when the state changes, in case we have
+    // changed a ClipPlaneAttrib.
+    mark_bound_stale();
+    state_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -633,9 +663,11 @@ clear_effects() {
 INLINE void PandaNode::
 set_transform(const TransformState *transform) {
   CDWriter cdata(_cycler);
-  cdata->_transform = transform;
-  mark_bound_stale();
-  transform_changed();
+  if (cdata->_transform != transform) {
+    cdata->_transform = transform;
+    mark_bound_stale();
+    transform_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -661,9 +693,11 @@ get_transform() const {
 INLINE void PandaNode::
 clear_transform() {
   CDWriter cdata(_cycler);
-  cdata->_transform = TransformState::make_identity();
-  mark_bound_stale();
-  transform_changed();
+  if (!cdata->_transform->is_identity()) {
+    cdata->_transform = TransformState::make_identity();
+    mark_bound_stale();
+    transform_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -819,7 +853,10 @@ ls(ostream &out, int indent_level) const {
 INLINE void PandaNode::
 set_draw_mask(DrawMask mask) {
   CDWriter cdata(_cycler);
-  cdata->_draw_mask = mask;
+  if (cdata->_draw_mask != mask) {
+    cdata->_draw_mask = mask;
+    draw_mask_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -885,6 +922,21 @@ get_net_collide_mask() const {
   BoundedObject::get_bound();
   CDReader cdata(_cycler);
   return cdata->_net_collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_off_clip_planes
+//       Access: Published
+//  Description: Returns a ClipPlaneAttrib which represents the union
+//               of all of the clip planes that have been turned *off*
+//               at this level and below.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderAttrib *PandaNode::
+get_off_clip_planes() const {
+  // Call get_bound() first to ensure the attrib is recomputed.
+  BoundedObject::get_bound();
+  CDReader cdata(_cycler);
+  return cdata->_off_clip_planes;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,6 +18,32 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGButton::set_notify
+//       Access: Published
+//  Description: Sets the object which will be notified when the
+//               PGButton changes.  Set this to NULL to disable
+//               this effect.  The PGButton does not retain
+//               ownership of the pointer; it is your responsibility
+//               to ensure that the notify object does not destruct.
+////////////////////////////////////////////////////////////////////
+INLINE void PGButton:: 
+set_notify(PGButtonNotify *notify) {
+  PGItem::set_notify(notify);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGButton::get_notify
+//       Access: Published
+//  Description: Returns the object which will be notified when the
+//               PGButton changes, if any.  Returns NULL if there
+//               is no such object configured.
+////////////////////////////////////////////////////////////////////
+INLINE PGButtonNotify *PGButton:: 
+get_notify() const {
+  return (PGButtonNotify *)PGItem::get_notify();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGButton::setup
 //       Access: Published
 //  Description: Sets up the button using the indicated NodePath as

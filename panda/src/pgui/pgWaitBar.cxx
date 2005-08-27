@@ -113,7 +113,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGWaitBar::setup
-//       Access: Public
+//       Access: Published
 //  Description: Creates a PGWaitBar with the indicated dimensions,
 //               with the indicated maximum range.
 ////////////////////////////////////////////////////////////////////
@@ -124,8 +124,10 @@ setup(float width, float height, float range) {
 
   set_frame(-0.5f * width, 0.5f * width, -0.5f * height, 0.5f * height);
 
+  float bevel = 0.05f;
+
   PGFrameStyle style;
-  style.set_width(0.05f, 0.05f);
+  style.set_width(bevel, bevel);
 
   style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_in);

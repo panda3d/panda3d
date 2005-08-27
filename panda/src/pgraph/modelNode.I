@@ -27,6 +27,7 @@ ModelNode(const string &name) :
   PandaNode(name)
 {
   _preserve_transform = PT_none;
+  _preserve_attributes = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +68,33 @@ get_preserve_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::set_preserve_attributes
+//       Access: Public
+//  Description: Sets the preserve_attributes flag.  This restricts the
+//               ability of a flatten operation to affect the
+//               render attributes stored on this node.
+//
+//               The value should be the union of bits from
+//               SceneGraphReducer::AttribTypes that represent the
+//               attributes that should *not* be changed.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelNode::
+set_preserve_attributes(int preserve_attributes) {
+  _preserve_attributes = preserve_attributes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::get_preserve_attributes
+//       Access: Public
+//  Description: Returns the current setting of the preserve_attributes
+//               flag.  See set_preserve_attributes().
+////////////////////////////////////////////////////////////////////
+INLINE int ModelNode::
+get_preserve_attributes() const {
+  return _preserve_attributes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::Copy Constructor
 //       Access: Protected
 //  Description:
@@ -74,6 +102,7 @@ get_preserve_transform() const {
 INLINE ModelNode::
 ModelNode(const ModelNode &copy) :
   PandaNode(copy),
-  _preserve_transform(copy._preserve_transform)
+  _preserve_transform(copy._preserve_transform),
+  _preserve_attributes(copy._preserve_attributes)
 {
 }

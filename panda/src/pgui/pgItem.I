@@ -34,6 +34,49 @@ get_region() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_notify
+//       Access: Published
+//  Description: Sets the object which will be notified when the
+//               PGItem changes.  Set this to NULL to disable
+//               this effect.  The PGItem does not retain
+//               ownership of the pointer; it is your responsibility
+//               to ensure that the notify object does not destruct.
+////////////////////////////////////////////////////////////////////
+INLINE void PGItem:: 
+set_notify(PGItemNotify *notify) {
+  if (_notify != (PGItemNotify *)NULL) {
+    _notify->remove_item(this);
+  }
+  _notify = notify;
+  if (_notify != (PGItemNotify *)NULL) {
+    _notify->add_item(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::has_notify
+//       Access: Published
+//  Description: Returns true if there is an object configured to be
+//               notified when the PGItem changes, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PGItem:: 
+has_notify() const {
+  return (_notify != (PGItemNotify *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_notify
+//       Access: Published
+//  Description: Returns the object which will be notified when the
+//               PGItem changes, if any.  Returns NULL if there
+//               is no such object configured.
+////////////////////////////////////////////////////////////////////
+INLINE PGItemNotify *PGItem:: 
+get_notify() const {
+  return _notify;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::set_frame
 //       Access: Published
 //  Description: Sets the bounding rectangle of the item, in local
@@ -58,9 +101,11 @@ set_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 set_frame(const LVecBase4f &frame) {
-  _has_frame = true;
-  _frame = frame;
-  mark_frames_stale();
+  if (!_has_frame || _frame != frame) {
+    _has_frame = true;
+    _frame = frame;
+    frame_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,8 +141,10 @@ has_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 clear_frame() {
-  _has_frame = false;
-  mark_frames_stale();
+  if (_has_frame) {
+    _has_frame = false;
+    frame_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -475,4 +522,33 @@ get_focus_item() {
 INLINE LMatrix4f PGItem::
 get_frame_inv_xform() const {
   return _frame_inv_xform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::compute_area
+//       Access: Private, Static
+//  Description: Computes the area of the indicated frame.
+////////////////////////////////////////////////////////////////////
+INLINE float PGItem::
+compute_area(const LVecBase4f &frame) {
+  return (frame[1] - frame[0]) * (frame[3] - frame[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::compare_largest
+//       Access: Private, Static
+//  Description: Given that largest is the pointer to the largest
+//               frame so far, and largest_area is its area, compare
+//               that to the area of the new frame; if the new frame
+//               is larger, adjust largest and largest_area
+//               appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void PGItem::
+compare_largest(const LVecBase4f *&largest, float &largest_area, 
+                const LVecBase4f *new_frame) {
+  float new_area = compute_area(*new_frame);
+  if (new_area > largest_area) {
+    largest = new_frame;
+    largest_area = new_area;
+  }
 }

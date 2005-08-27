@@ -50,6 +50,7 @@ public:
   virtual bool safe_to_modify_transform() const;
   virtual bool safe_to_combine() const;
   virtual bool preserve_name() const;
+  virtual int get_unsafe_to_apply_attribs() const;
 
 PUBLISHED:
   enum PreserveTransform {
@@ -61,8 +62,12 @@ PUBLISHED:
   INLINE void set_preserve_transform(PreserveTransform preserve_transform);
   INLINE PreserveTransform get_preserve_transform() const;
 
+  INLINE void set_preserve_attributes(int attrib_mask);
+  INLINE int get_preserve_attributes() const;
+
 private:
   PreserveTransform _preserve_transform;
+  int _preserve_attributes;
 
 public:
   static void register_with_read_factory();

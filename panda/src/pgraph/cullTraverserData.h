@@ -20,7 +20,7 @@
 #define CULLTRAVERSERDATA_H
 
 #include "pandabase.h"
-
+#include "cullPlanes.h"
 #include "workingNodePath.h"
 #include "renderState.h"
 #include "transformState.h"
@@ -64,20 +64,27 @@ public:
   CPT(TransformState) get_net_transform(const CullTraverser *trav) const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
+  INLINE int test_within_clip_planes(const CullTraverser *trav) const;
+
   void apply_transform_and_state(CullTraverser *trav);
   void apply_transform_and_state(CullTraverser *trav, 
                                  CPT(TransformState) node_transform, 
                                  CPT(RenderState) node_state,
-                                 CPT(RenderEffects) node_effects);
+                                 CPT(RenderEffects) node_effects,
+                                 const RenderAttrib *off_clip_planes);
 
   WorkingNodePath _node_path;
   CPT(TransformState) _modelview_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;
+  CPT(CullPlanes) _cull_planes;
 
 private:
   bool is_in_view_impl();
+  int test_within_clip_planes_impl(const CullTraverser *trav,
+                                   const ClipPlaneAttrib *cpa) const;
+
   static CPT(RenderState) get_fake_view_frustum_cull_state();
 };
 

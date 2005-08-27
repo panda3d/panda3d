@@ -12,7 +12,9 @@
 
   #define SOURCES  \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I  \
-    boundingLine.h boundingSphere.I boundingSphere.h  \
+    boundingLine.h \
+    boundingPlane.I boundingPlane.h \
+    boundingSphere.I boundingSphere.h  \
     boundingVolume.I boundingVolume.h config_mathutil.h  \
     fftCompressor.h finiteBoundingVolume.h frustum.h  \
     frustum_src.I frustum_src.h geometricBoundingVolume.I  \
@@ -24,7 +26,9 @@
     plane_src.h rotate_to.h rotate_to_src.cxx
      
   #define INCLUDED_SOURCES \
-    boundingHexahedron.cxx boundingLine.cxx boundingSphere.cxx  \
+    boundingHexahedron.cxx boundingLine.cxx \
+    boundingPlane.cxx \
+    boundingSphere.cxx  \
     boundingVolume.cxx config_mathutil.cxx fftCompressor.cxx  \
     finiteBoundingVolume.cxx geometricBoundingVolume.cxx  \
     look_at.cxx \
@@ -33,7 +37,9 @@
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
-    boundingLine.h boundingSphere.I boundingSphere.h boundingVolume.I \
+    boundingLine.h \
+    boundingPlane.I boundingPlane.h \
+    boundingSphere.I boundingSphere.h boundingVolume.I \
     boundingVolume.h config_mathutil.h fftCompressor.h \
     finiteBoundingVolume.h frustum.h frustum_src.I frustum_src.h \
     geometricBoundingVolume.I geometricBoundingVolume.h look_at.h \

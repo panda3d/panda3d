@@ -21,10 +21,13 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);
 
 // Configure variables for pgui package.
+extern ConfigVariableDouble scroll_initial_delay;
+extern ConfigVariableDouble scroll_continued_delay;
 
 extern EXPCL_PANDA void init_libpgui();
 

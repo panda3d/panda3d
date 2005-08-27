@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
-  INLINE_MATHUTIL FLOATNAME(Plane)(void);
+  INLINE_MATHUTIL FLOATNAME(Plane)();
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, 
                                    const FLOATNAME(LPoint3) &b,
@@ -35,20 +35,22 @@ PUBLISHED:
 
   INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix3) &mat) const;
   INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix4) &mat) const;
+  INLINE_MATHUTIL void operator *= (const FLOATNAME(LMatrix4) &mat);
+  INLINE_MATHUTIL void xform(const FLOATNAME(LMatrix4) &mat);
   INLINE_MATHUTIL FLOATNAME(Plane) operator - () const;
 
-  FLOATNAME(LMatrix4) get_reflection_mat(void) const;
+  FLOATNAME(LMatrix4) get_reflection_mat() const;
 
   INLINE_MATHUTIL FLOATNAME(LVector3) get_normal() const;
   FLOATNAME(LPoint3) get_point() const;
 
   INLINE_MATHUTIL FLOATTYPE dist_to_plane(const FLOATNAME(LPoint3) &point) const;
   INLINE_MATHUTIL bool intersects_line(FLOATNAME(LPoint3) &intersection_point,
-                              const FLOATNAME(LPoint3) &p1,
-                              const FLOATNAME(LPoint3) &p2) const;
+                                       const FLOATNAME(LPoint3) &p1,
+                                       const FLOATNAME(LPoint3) &p2) const;
   INLINE_MATHUTIL bool intersects_line(FLOATTYPE &t,
-                              const FLOATNAME(LPoint3) &from,
-                              const FLOATNAME(LVector3) &delta) const;
+                                       const FLOATNAME(LPoint3) &from,
+                                       const FLOATNAME(LVector3) &delta) const;
 
   bool intersects_plane(FLOATNAME(LPoint3) &from,
                         FLOATNAME(LVector3) &delta,

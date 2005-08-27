@@ -187,6 +187,7 @@ PUBLISHED:
   virtual CollideMask get_legal_collide_mask() const;
 
   INLINE CollideMask get_net_collide_mask() const;
+  INLINE const RenderAttrib *get_off_clip_planes() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -225,6 +226,8 @@ protected:
   virtual void parents_changed();
   virtual void children_changed();
   virtual void transform_changed();
+  virtual void state_changed();
+  virtual void draw_mask_changed();
   INLINE void add_net_collide_mask(CollideMask mask);
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
@@ -362,6 +365,13 @@ private:
     // the same reasons the bounding volume needs to be updated.  So
     // we update them together.
     CollideMask _net_collide_mask;
+
+    // This is a ClipPlaneAttrib that represents the union of all clip
+    // planes that have been turned *off* at and below this level.  As
+    // above, it's similar to a bounding volume, and is updated at the
+    // same time.  TODO: fix the circular reference counts involved
+    // here.
+    CPT(RenderAttrib) _off_clip_planes;
 
     bool _fixed_internal_bound;
   };

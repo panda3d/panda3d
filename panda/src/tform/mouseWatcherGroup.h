@@ -25,6 +25,7 @@
 #include "pointerTo.h"
 #include "referenceCount.h"
 #include "pvector.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcherGroup
@@ -33,18 +34,44 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseWatcherGroup : virtual public ReferenceCount {
 public:
+  MouseWatcherGroup();
   virtual ~MouseWatcherGroup();
 
 PUBLISHED:
-  bool add_region(MouseWatcherRegion *region);
+  void add_region(MouseWatcherRegion *region);
   bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
   MouseWatcherRegion *find_region(const string &name) const;
   void clear_regions();
 
+  int get_num_regions() const;
+  MouseWatcherRegion *get_region(int n) const;
+
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
+#ifndef NDEBUG
+  void show_regions(const NodePath &render2d);
+  void set_color(const Colorf &color);
+  void hide_regions();
+#endif  // NDEBUG
+
 protected:
   typedef pvector< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
+
+private:
+#ifndef NDEBUG
+  void update_regions();
+  PandaNode *make_viz_region(MouseWatcherRegion *region);
+
+  typedef pvector< PT(PandaNode) > Vizzes;
+  Vizzes _vizzes;
+
+  bool _show_regions;
+  NodePath _show_regions_root;
+  Colorf _color;
+#endif  // NDEBUG
 
 public:
   static TypeHandle get_class_type() {

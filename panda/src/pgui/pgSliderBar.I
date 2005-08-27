@@ -18,264 +18,418 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_notify
+//       Access: Published
+//  Description: Sets the object which will be notified when the
+//               PGSliderBar changes.  Set this to NULL to disable
+//               this effect.  The PGSliderBar does not retain
+//               ownership of the pointer; it is your responsibility
+//               to ensure that the notify object does not destruct.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_notify(PGSliderBarNotify *notify) {
+  PGItem::set_notify(notify);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_notify
+//       Access: Published
+//  Description: Returns the object which will be notified when the
+//               PGSliderBar changes, if any.  Returns NULL if there
+//               is no such object configured.
+////////////////////////////////////////////////////////////////////
+INLINE PGSliderBarNotify *PGSliderBar:: 
+get_notify() const {
+  return (PGSliderBarNotify *)PGItem::get_notify();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_axis
+//       Access: Published
+//  Description: Specifies the axis of the slider bar's motion.  This
+//               should be only one of four vectors: (1, 0, 0), (0, 0,
+//               1), (-1, 0, 0), or (0, 0, -1).
+//
+//               This specifies the vector in which the thumb moves
+//               when it is moving from the minimum to the maximum
+//               value.
+//
+//               The axis must be parallel to one of the screen axes,
+//               and it must be normalized.  Hence, it may only be one
+//               of the above four possibilities; anything else is an
+//               error and will result in indeterminate behavior.
+//
+//               Normally, you should not try to set the axis
+//               directly.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_axis(const LVector3f &axis) {
+  _axis = axis;
+  _needs_remanage = true;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_axis
+//       Access: Published
+//  Description: Returns the axis of the slider bar's motion.  See
+//               set_axis().
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &PGSliderBar:: 
+get_axis() const {
+  return _axis;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::set_range
 //       Access: Published
-//  Description: Sets the value at which the SliderBar indicates 100%.
+//  Description: Sets the minimum and maxmimum value for the slider.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_range(float range) {
-  _range = range;
-  _bar_state = -1;
+set_range(float min_value, float max_value) {
+  nassertv(min_value != max_value);
+  _min_value = min_value;
+  _max_value = max_value;
+  _needs_recompute = true;
+
+  if (has_notify()) {
+    get_notify()->slider_bar_set_range(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_range
+//     Function: PGSliderBar::get_min_value
 //       Access: Published
-//  Description: Returns the value at which the SliderBar indicates 100%.
+//  Description: Returns the value when the slider is all the way to
+//               the left.
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
-get_range() const {
-  return _range;
+get_min_value() const {
+  return _min_value;
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_magnifier
+//     Function: PGSliderBar::get_max_value
 //       Access: Published
-//  Description: Sets a magnifier value for the mouseWatcherRegion in 
-//               the Y direction. 
-////////////////////////////////////////////////////////////////////
-INLINE void PGSliderBar:: 
-set_magnifier(float value) {
-  PGItem::_mouseWatcherMagnifier = value;
-}
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_value
-//       Access: Published
-//  Description: Returns the current value of the bar.
+//  Description: Returns the value when the slider is all the way to
+//               the right.
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
-get_magnifier() const {
-  return PGItem::_mouseWatcherMagnifier;
+get_max_value() const {
+  return _max_value;
 }
-*/
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_scroll_size
+//       Access: Published
+//  Description: Specifies the amount the slider will move when the
+//               user clicks on the left or right buttons.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_scroll_size(float value) {
+  _scroll_value = value;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_scroll_size
+//       Access: Published
+//  Description: Returns the value last set by set_scroll_size().
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_scroll_size() const {
+  return _scroll_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_page_size
+//       Access: Published
+//  Description: Specifies the amount of data contained in a single
+//               page.  This indicates how much the thumb will jump
+//               when the trough is directly clicked; and if
+//               resize_thumb is true, it also controls the visible
+//               size of the thumb button.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_page_size(float value) {
+  _page_value = value;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_page_size
+//       Access: Published
+//  Description: Returns the value last set by set_page_size().
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_page_size() const {
+  return _page_value;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::set_value
 //       Access: Published
-//  Description: Sets the current value of the bar.  This should range
-//               between 0 and get_range().
+//  Description: Sets the current value of the slider
+//               programmatically.  This should range between
+//               get_min_value() and get_max_value().
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_value(float value) {
-  _value = value;
-  _mapped_value = _negative_mapping ? (_value*0.5 + 0.5) : _value;
-  _update_x = _width * (2*_mapped_value - 1);
-  _bar_state = -1;
-  _update_slider = true;
+  set_ratio((value - _min_value) / (_max_value - _min_value));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::get_value
 //       Access: Published
-//  Description: Returns the current value of the bar.
+//  Description: Returns the current value of the slider.
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_value() const {
-  return _value;
+  return get_ratio() * (_max_value - _min_value) + _min_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar:get_mapped_value
+//     Function: PGSliderBar::set_ratio
 //       Access: Published
-//  Description: Returns the _mapped_value which is caluclated from 
-//               _value with negative_mapping bool
-////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
-get_mapped_value() const {
-  return _mapped_value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_update_x
-//       Access: Published
-//  Description: Returns the _update_x which is caluclated from 
-//               _mapped_value with width formula
-////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
-get_update_x() const {
-  return _update_x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_update_y
-//       Access: Published
-//  Description: Returns the _update_y which is caluclated from 
-//               _mapped_value with width formula
-////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
-get_update_y() const {
-  return _update_y;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_speed
-//       Access: Published
-//  Description: Sets the current speed at which the slider moves
+//  Description: Sets the current value of the slider, expressed in
+//               the range 0 .. 1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_speed(float speed) {
-  _speed = speed;
+set_ratio(float ratio) {
+  _ratio = max(min(ratio, 1.0f), 0.0f);
+  _needs_reposition = true;
+  adjust();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_speed
+//     Function: PGSliderBar::get_ratio
 //       Access: Published
-//  Description: Returns the current speed at which the slider moves.
+//  Description: Returns the current value of the slider, expressed in
+//               the range 0 .. 1.
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
-get_speed() const {
-  return _speed;
+get_ratio() const {
+  return _ratio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_scale
+//     Function: PGSliderBar::set_resize_thumb
 //       Access: Published
-//  Description: Sets the scale of the traugh image
+//  Description: Sets the resize_thumb flag.  When this is true, the
+//               thumb button's frame will be adjusted so that its
+//               width visually represents the page size.  When this
+//               is false, the thumb button will be left alone.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_scale(float scale) {
-  _scale = scale/10;
+set_resize_thumb(bool resize_thumb) {
+  _resize_thumb = resize_thumb;
+  _needs_recompute = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_scale
+//     Function: PGSliderBar::get_resize_thumb
 //       Access: Published
-//  Description: Returns the scale set on the traugh image
-////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
-get_scale() const {
-  return _scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_slider_only
-//       Access: Published
-//  Description: Sets _slider_only. True:only slider button desired.
-//               No left or right button to control slider needed.
-//               Else, the left and right slider buttons are shown.
-////////////////////////////////////////////////////////////////////
-INLINE void PGSliderBar:: 
-set_slider_only(bool value) {
-  _slider_only = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_slider_only
-//       Access: Published
-//  Description: Returns what type of slider option set
+//  Description: Returns the resize_thumb flag.  See
+//               set_resize_thumb().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGSliderBar:: 
-get_slider_only() const {
-  return _slider_only;
+get_resize_thumb() const {
+  return _resize_thumb;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_negative_mapping
+//     Function: PGSliderBar::set_manage_pieces
 //       Access: Published
-//  Description: Sets _negative_mapping. True: slider will receive
-//               _value from -1 to +1 else, _value from 0 to + 1
+//  Description: Sets the manage_pieces flag.  When this is true, the
+//               sub-pieces of the slider bar--that is, the thumb, and
+//               the left and right scroll buttons--are automatically
+//               positioned and/or resized when the slider bar's
+//               overall frame is changed.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_negative_mapping(bool value) {
-  _negative_mapping = value;
+set_manage_pieces(bool manage_pieces) {
+  _manage_pieces = manage_pieces;
+  _needs_remanage = true;
+  _needs_recompute = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_negative_mapping
+//     Function: PGSliderBar::get_manage_pieces
 //       Access: Published
-//  Description: Returns what type of value range option set
+//  Description: Returns the manage_pieces flag.  See
+//               set_manage_pieces().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGSliderBar:: 
-get_negative_mapping() const {
-  return _negative_mapping;
+get_manage_pieces() const {
+  return _manage_pieces;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_bar_style
+//     Function: PGSliderBar::set_thumb_button
 //       Access: Published
-//  Description: Sets the kind of frame that is drawn on top of the
-//               SliderBar to represent the amount completed.
-////////////////////////////////////////////////////////////////////
-INLINE void PGSliderBar:: 
-set_bar_style(const PGFrameStyle &style) {
-  _bar_style = style;
-  _bar_state = -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_bar_style
-//       Access: Published
-//  Description: Returns the kind of frame that is drawn on top of the
-//               SliderBar to represent the amount completed.
-////////////////////////////////////////////////////////////////////
-INLINE PGFrameStyle PGSliderBar:: 
-get_bar_style() const {
-  return _bar_style;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_click_event
-//       Access: Published
-//  Description: Returns the event name that will be thrown when the
-//               slider button is moved
-////////////////////////////////////////////////////////////////////
-INLINE string PGSliderBar::
-get_click_event() const {
-  return "updated-slider-" + get_id();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_slider_button
-//       Access: Published
-//  Description: Returns the slider button that is drawn on the
-//               SliderBar to move the slider left or right 
-////////////////////////////////////////////////////////////////////
-INLINE NodePath PGSliderBar::
-get_slider_button() const {
-  return _slider_button;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_slider_button
-//       Access: Published
-//  Description: sets slider button that is drawn on the
-//               SliderBar to move the slider left or right 
+//  Description: Sets the PGButton object that will serve as the thumb
+//               for this slider.  This button visually represents the
+//               position of the slider, and can be dragged left and
+//               right by the user.
+//
+//               It is the responsibility of the caller to ensure that
+//               the button object is parented to the PGSliderBar
+//               node.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar::
-set_slider_button(NodePath &np, PGSliderButton *button) {
-  _slider_button = np;
-  _slider = button;
+set_thumb_button(PGButton *thumb_button) {
+  if (_thumb_button != (PGButton *)NULL) {
+    _thumb_button->set_notify(NULL);
+  }
+  _thumb_button = thumb_button;
+  if (_thumb_button != (PGButton *)NULL) {
+    _thumb_button->set_notify(this);
+  }
+  _needs_remanage = true;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::clear_thumb_button
+//       Access: Published
+//  Description: Removes the thumb button object from control of the
+//               frame.  It is your responsibility to actually remove
+//               or hide the button itself.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+clear_thumb_button() {
+  set_thumb_button(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_thumb_button
+//       Access: Published
+//  Description: Returns the PGButton that serves as the thumb for
+//               this slider, or NULL if it is not set.
+////////////////////////////////////////////////////////////////////
+INLINE PGButton *PGSliderBar::
+get_thumb_button() const {
+  return _thumb_button;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_left_button
+//       Access: Published
+//  Description: Sets the PGButton object that will serve as the left
+//               scroll button for this slider.  This button is
+//               optional; if present, the user can click on it to
+//               move scroll_size units at a time to the left.
+//
+//               It is the responsibility of the caller to ensure that
+//               the button object is parented to the PGSliderBar
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+set_left_button(PGButton *left_button) {
+  if (_left_button != (PGButton *)NULL) {
+    _left_button->set_notify(NULL);
+  }
+  _left_button = left_button;
+  if (_left_button != (PGButton *)NULL) {
+    _left_button->set_notify(this);
+  }
+  _needs_remanage = true;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::clear_left_button
+//       Access: Published
+//  Description: Removes the left button object from control of the
+//               frame.  It is your responsibility to actually remove
+//               or hide the button itself.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+clear_left_button() {
+  set_left_button(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::get_left_button
 //       Access: Published
-//  Description: Returns the left button that is drawn on left of the
-//               SliderBar to move the slider left
+//  Description: Returns the PGButton that serves as the left scroll
+//               button for this slider, if any, or NULL if it is not
+//               set.
 ////////////////////////////////////////////////////////////////////
-INLINE NodePath PGSliderBar::
+INLINE PGButton *PGSliderBar::
 get_left_button() const {
   return _left_button;
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_right_button
+//       Access: Published
+//  Description: Sets the PGButton object that will serve as the right
+//               scroll button for this slider.  This button is
+//               optional; if present, the user can click on it to
+//               move scroll_size units at a time to the right.
+//
+//               It is the responsibility of the caller to ensure that
+//               the button object is parented to the PGSliderBar
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+set_right_button(PGButton *right_button) {
+  if (_right_button != (PGButton *)NULL) {
+    _right_button->set_notify(NULL);
+  }
+  _right_button = right_button;
+  if (_right_button != (PGButton *)NULL) {
+    _right_button->set_notify(this);
+  }
+  _needs_remanage = true;
+  _needs_recompute = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::clear_right_button
+//       Access: Published
+//  Description: Removes the right button object from control of the
+//               frame.  It is your responsibility to actually remove
+//               or hide the button itself.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+clear_right_button() {
+  set_right_button(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::get_right_button
 //       Access: Published
-//  Description: Returns the right button that is drawn on right of the
-//               SliderBar to move the slider right
+//  Description: Returns the PGButton that serves as the right scroll
+//               button for this slider, if any, or NULL if it is not
+//               set.
 ////////////////////////////////////////////////////////////////////
-INLINE NodePath PGSliderBar::
+INLINE PGButton *PGSliderBar::
 get_right_button() const {
   return _right_button;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_adjust_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the adjust
+//               event for all PGSliderBars.  The adjust event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGSliderBar::
+get_adjust_prefix() {
+  return "adjust-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_adjust_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               slider bar value is adjusted by the user or
+//               programmatically.
+////////////////////////////////////////////////////////////////////
+INLINE string PGSliderBar::
+get_adjust_event() const {
+  return get_adjust_prefix() + get_id();
+}

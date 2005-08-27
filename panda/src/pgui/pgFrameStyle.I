@@ -27,6 +27,7 @@ PGFrameStyle() {
   _type = T_none;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _width.set(0.1f, 0.1f);
+  _visible_scale.set(1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +40,8 @@ PGFrameStyle(const PGFrameStyle &copy) :
   _type(copy._type),
   _color(copy._color),
   _texture(copy._texture),
-  _width(copy._width)
+  _width(copy._width),
+  _visible_scale(copy._visible_scale)
 {
 }
 
@@ -54,6 +56,7 @@ operator = (const PGFrameStyle &copy) {
   _color = copy._color;
   _texture = copy._texture;
   _width = copy._width;
+  _visible_scale = copy._visible_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,6 +198,48 @@ set_width(const LVecBase2f &width) {
 INLINE const LVecBase2f &PGFrameStyle::
 get_width() const {
   return _width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_visible_scale
+//       Access: Published
+//  Description: Sets a scale factor on the visible representation of
+//               the frame, in the X and Y directions.  If this scale
+//               factor is other than 1, it will affect the size of
+//               the visible frame representation within the actual
+//               frame border.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_visible_scale(float x, float y) {
+  set_visible_scale(LVecBase2f(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_visible_scale
+//       Access: Published
+//  Description: Sets a scale factor on the visible representation of
+//               the frame, in the X and Y directions.  If this scale
+//               factor is other than 1, it will affect the size of
+//               the visible frame representation within the actual
+//               frame border.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_visible_scale(const LVecBase2f &visible_scale) {
+  _visible_scale = visible_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_visible_scale
+//       Access: Published
+//  Description: Returns the scale factor on the visible
+//               representation of the frame, in the X and Y
+//               directions.  If this scale factor is other than 1, it
+//               will affect the size of the visible frame
+//               representation within the actual frame border.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2f &PGFrameStyle::
+get_visible_scale() const {
+  return _visible_scale;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 //               It's not clear how useful a default plane is.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(void) {
+FLOATNAME(Plane)() {
   _v.v._0 = 0.0f;
   _v.v._1 = 0.0f;
   _v.v._2 = 1.0f;
@@ -114,6 +114,26 @@ operator * (const FLOATNAME(LMatrix4) &mat) const {
   FLOATNAME(LVector3) new_normal = get_normal() * mat;
   FLOATNAME(LPoint3) new_point = get_point() * mat;
   return FLOATNAME(Plane)(new_normal, new_point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::Operator *= LMatrix4
+//       Access: Published
+//  Description: Transforms the plane by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL void FLOATNAME(Plane)::
+operator *= (const FLOATNAME(LMatrix4) &mat) {
+  (*this) = (*this) * mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::xform
+//       Access: Published
+//  Description: Transforms the plane by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(Plane)::
+xform(const FLOATNAME(LMatrix4) &mat) {
+  (*this) = (*this) * mat;
 }
 
 ////////////////////////////////////////////////////////////////////

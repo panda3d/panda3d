@@ -66,10 +66,11 @@ fillin(DatagramIterator &scan, BamReader *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PlaneNode::
-PlaneNode(const string &name) :
+PlaneNode(const string &name, const Planef &plane) :
   PandaNode(name),
   _priority(0)
 {
+  set_plane(plane);
 }
 
 ////////////////////////////////////////////////////////////////////

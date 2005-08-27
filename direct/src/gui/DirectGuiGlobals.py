@@ -29,6 +29,10 @@ FrameStyleDict = {'flat' : FLAT, 'raised' : RAISED, 'sunken': SUNKEN,
                   'groove' : GROOVE, 'ridge' : RIDGE 
                   }
 
+# Orientation of DirectSlider and DirectScrollBar
+HORIZONTAL = 'horizontal'
+VERTICAL = 'vertical'
+
 # Dialog button values
 DIALOG_NO = 0
 DIALOG_OK = DIALOG_YES = DIALOG_RETRY = 1
@@ -55,6 +59,8 @@ OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
 TYPE = PGEntry.getTypePrefix()
 ERASE = PGEntry.getErasePrefix()
+# For DirectSlider and DirectScrollBar widgets
+ADJUST = PGSliderBar.getAdjustPrefix()
 
 
 # For setting the sorting order of a widget's visible components

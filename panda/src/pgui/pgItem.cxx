@@ -20,7 +20,7 @@
 #include "pgMouseWatcherParameter.h"
 #include "pgCullTraverser.h"
 #include "config_pgui.h"
-
+#include "boundingVolume.h"
 #include "pandaNode.h"
 #include "sceneGraphReducer.h"
 #include "throw_event.h"
@@ -29,6 +29,7 @@
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
 #include "cullBinManager.h"
+#include "clipPlaneAttrib.h"
 #include "dcast.h"
 
 #ifdef HAVE_AUDIO
@@ -40,6 +41,16 @@ PT(TextNode) PGItem::_text_node;
 PGItem *PGItem::_focus_item = (PGItem *)NULL;
 PGItem::BackgroundFocus PGItem::_background_focus;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: is_right
+//  Description: Returns true if the 2-d v1 is to the right of v2.
+////////////////////////////////////////////////////////////////////
+INLINE bool
+is_right(const LVector2f &v1, const LVector2f &v2) {
+  return (-v1[0] * v2[1] + v1[1] * v2[0]) > 0;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PGItem::Constructor
 //       Access: Published
@@ -49,6 +60,7 @@ PGItem::
 PGItem(const string &name) : 
   PandaNode(name)
 {
+  _notify = NULL;
   _has_frame = false;
   _frame.set(0, 0, 0, 0);
   _region = new PGMouseWatcherRegion(this);
@@ -63,6 +75,11 @@ PGItem(const string &name) :
 ////////////////////////////////////////////////////////////////////
 PGItem::
 ~PGItem() {
+  if (_notify != (PGItemNotify *)NULL) {
+    _notify->remove_item(this);
+    _notify = NULL;
+  }
+
   nassertv(_region->_item == this);
   _region->_item = (PGItem *)NULL;
 
@@ -85,6 +102,7 @@ PGItem(const PGItem &copy) :
   _state(copy._state),
   _flags(copy._flags)
 {
+  _notify = NULL;
   _region = new PGMouseWatcherRegion(this);
 }
 
@@ -102,38 +120,33 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::xform
+//     Function: PGItem::transform_changed
 //       Access: Protected, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
+//  Description: Called after the node's transform has been changed
+//               for any reason, this just provides a hook so derived
+//               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-xform(const LMatrix4f &mat) {
-  // Transform the frame.
-  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
-  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
-  ll = ll * mat;
-  ur = ur * mat;
-  _frame.set(ll[0], ur[0], ll[2], ur[2]);
-
-  // Transform the individual states and their frame styles.
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    NodePath &root = (*di)._root;
-    // Apply the matrix to the previous transform.
-    root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
-
-    // Now flatten the transform into the subgraph.
-    SceneGraphReducer gr;
-    gr.apply_attribs(root.node());
-
-    // Transform the frame style too.
-    if ((*di)._frame_style.xform(mat)) {
-      (*di)._frame_stale = true;
-    }
+transform_changed() {
+  PandaNode::transform_changed();
+  if (has_notify()) {
+    get_notify()->item_transform_changed(this);
   }
-  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::draw_mask_changed
+//       Access: Protected, Virtual
+//  Description: Called after the node's draw_mask has been changed
+//               for any reason, this just provides a hook so derived
+//               classes can do something special in this case.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+draw_mask_changed() {
+  PandaNode::draw_mask_changed();
+  if (has_notify()) {
+    get_notify()->item_draw_mask_changed(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,8 +234,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      activate_region(transform, sort);
-      pg_trav->_top->add_region(get_region());
+      if (activate_region(transform, sort, data._state->get_clip_plane())) {
+        pg_trav->_top->add_region(get_region());
+      }
     }
   }
 
@@ -274,13 +288,52 @@ recompute_internal_bound() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+xform(const LMatrix4f &mat) {
+  // Transform the frame.
+  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
+  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
+  ll = ll * mat;
+  ur = ur * mat;
+  _frame.set(ll[0], ur[0], ll[2], ur[2]);
+
+  // Transform the individual states and their frame styles.
+  StateDefs::iterator di;
+  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
+    NodePath &root = (*di)._root;
+    // Apply the matrix to the previous transform.
+    root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
+
+    // Now flatten the transform into the subgraph.
+    SceneGraphReducer gr;
+    gr.apply_attribs(root.node());
+
+    // Transform the frame style too.
+    if ((*di)._frame_style.xform(mat)) {
+      (*di)._frame_stale = true;
+    }
+  }
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::activate_region
 //       Access: Public
 //  Description: Applies the indicated scene graph transform and order
 //               as determined by the traversal from PGTop.
+//
+//               The return value is true if the region is valid, or
+//               false if it is empty or completely clipped.
 ////////////////////////////////////////////////////////////////////
-void PGItem::
-activate_region(const LMatrix4f &transform, int sort) {
+bool PGItem::
+activate_region(const LMatrix4f &transform, int sort,
+                const ClipPlaneAttrib *cpa) {
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
   LPoint3f ll(_frame[0], 0.0f, _frame[2]);
@@ -291,10 +344,54 @@ activate_region(const LMatrix4f &transform, int sort) {
   lr = lr * transform;
   ul = ul * transform;
   ur = ur * transform;
-  _region->set_frame(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
-                     max(max(ll[0], lr[0]), max(ul[0], ur[0])),
-                     min(min(ll[2], lr[2]), min(ul[2], ur[2])),
-                     max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+
+  if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
+    // Apply the clip plane(s) now that we are here in world space.
+    
+    pvector<LPoint2f> points;
+    points.reserve(4);
+    points.push_back(LPoint2f(ll[0], ll[2]));
+    points.push_back(LPoint2f(lr[0], lr[2]));
+    points.push_back(LPoint2f(ur[0], ur[2]));
+    points.push_back(LPoint2f(ul[0], ul[2]));
+
+    int num_on_planes = cpa->get_num_on_planes();
+    for (int i = 0; i < num_on_planes; ++i) {
+      NodePath plane_path = cpa->get_on_plane(i);
+      Planef plane = DCAST(PlaneNode, plane_path.node())->get_plane();
+      plane.xform(plane_path.get_net_transform()->get_mat());
+
+      // We ignore the y coordinate, assuming the frame is still in
+      // the X-Z plane after being transformed.  Not sure if we really
+      // need to support general 3-D transforms on 2-D objects.
+      clip_frame(points, plane);
+    }
+
+    if (points.empty()) {
+      // Turns out it's completely clipped after all.
+      return false;
+    }
+
+    pvector<LPoint2f>::iterator pi;
+    pi = points.begin();
+    LVecBase4f frame((*pi)[0], (*pi)[0], (*pi)[1], (*pi)[1]);
+    ++pi;
+    while (pi != points.end()) {
+      frame[0] = min(frame[0], (*pi)[0]);
+      frame[1] = max(frame[1], (*pi)[0]);
+      frame[2] = min(frame[2], (*pi)[1]);
+      frame[3] = max(frame[3], (*pi)[1]);
+      ++pi;
+    }
+    _region->set_frame(frame);
+
+  } else {
+    // Since there are no clip planes involved, just set the frame.
+    _region->set_frame(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
+                       max(max(ll[0], lr[0]), max(ul[0], ur[0])),
+                       min(min(ll[2], lr[2]), min(ul[2], ur[2])),
+                       max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+  }
                      
   _region->set_sort(sort);
   _region->set_active(true);
@@ -302,6 +399,8 @@ activate_region(const LMatrix4f &transform, int sort) {
   // calculate the inverse of this transform, which is needed to 
   // go back to the frame space.
   _frame_inv_xform.invert_from(transform);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,6 +418,11 @@ enter(const MouseWatcherParameter &param) {
   string event = get_enter_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+
+  if (has_notify()) {
+    get_notify()->item_enter(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::enter()" << endl;
 }
 
@@ -337,6 +441,11 @@ exit(const MouseWatcherParameter &param) {
   string event = get_exit_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+
+  if (has_notify()) {
+    get_notify()->item_exit(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::exit()" << endl;
 }
 
@@ -356,6 +465,11 @@ within(const MouseWatcherParameter &param) {
   string event = get_within_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+
+  if (has_notify()) {
+    get_notify()->item_within(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::within()" << endl;
 }
 
@@ -372,6 +486,11 @@ without(const MouseWatcherParameter &param) {
   string event = get_without_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+
+  if (has_notify()) {
+    get_notify()->item_without(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::without()" << endl;
 }
 
@@ -386,6 +505,11 @@ focus_in() {
   string event = get_focus_in_event();
   play_sound(event);
   throw_event(event);
+
+  if (has_notify()) {
+    get_notify()->item_focus_in(this);
+  }
+
   //pgui_cat.info() << get_name() << "::focus_in()" << endl;
 }
 
@@ -400,6 +524,11 @@ focus_out() {
   string event = get_focus_out_event();
   play_sound(event);
   throw_event(event);
+
+  if (has_notify()) {
+    get_notify()->item_focus_out(this);
+  }
+
   //pgui_cat.info() << get_name() << "::focus_out()" << endl;
 }
 
@@ -418,6 +547,11 @@ press(const MouseWatcherParameter &param, bool background) {
     play_sound(event);
     throw_event(event, EventParameter(ep));
   }
+
+  if (has_notify()) {
+    get_notify()->item_press(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::press()" << endl;
 }
 
@@ -436,6 +570,11 @@ release(const MouseWatcherParameter &param, bool background) {
     play_sound(event);
     throw_event(event, EventParameter(ep));
   }
+
+  if (has_notify()) {
+    get_notify()->item_release(this, param);
+  }
+
   //pgui_cat.info() << get_name() << "::release()" << endl;
 }
 
@@ -452,6 +591,10 @@ keystroke(const MouseWatcherParameter &param, bool background) {
     string event = get_keystroke_event();
     play_sound(event);
     throw_event(event, EventParameter(ep));
+
+    if (has_notify()) {
+      get_notify()->item_keystroke(this, param);
+    }
   }
 }
 
@@ -464,6 +607,11 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 void PGItem::
 candidate(const MouseWatcherParameter &param, bool background) {
   // We don't throw sound events for candidate selections for now.
+  if (!background) {
+    if (has_notify()) {
+      get_notify()->item_candidate(this, param);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,11 +622,9 @@ candidate(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 move(const MouseWatcherParameter &param) {
-  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  string event = get_press_event(param.get_button());
-  play_sound(event);
-  throw_event(event, EventParameter(ep));
-  //pgui_cat.info() << get_name() << "::move()" << endl;
+  if (has_notify()) {
+    get_notify()->item_move(this, param);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -862,6 +1008,109 @@ play_sound(const string &event) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::reduce_region
+//       Access: Protected
+//  Description: The frame parameter is an in/out parameter.  This
+//               function adjusts frame so that it represents the
+//               largest part of the rectangular region passed in,
+//               that does not overlap with the rectangular region of
+//               the indicated obscurer.  If the obscurer is NULL, or
+//               is a hidden node, it is not considered and the frame
+//               is left unchanged.
+//
+//               This is used by slider bars and scroll frames, which
+//               have to automatically figure out how much space they
+//               have to work with after allowing space for scroll
+//               bars and buttons.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+reduce_region(LVecBase4f &frame, PGItem *obscurer) const {
+  if (obscurer != (PGItem *)NULL && !obscurer->get_draw_mask().is_zero()) {
+    LVecBase4f oframe = get_relative_frame(obscurer);
+
+    // Determine the four rectangular regions on the four sides of the
+    // obscuring region.
+    LVecBase4f right(max(frame[0], oframe[1]), frame[1], frame[2], frame[3]);
+    LVecBase4f left(frame[0], min(frame[1], oframe[0]), frame[2], frame[3]);
+    LVecBase4f above(frame[0], frame[1], max(frame[2], oframe[3]), frame[3]);
+    LVecBase4f below(frame[0], frame[1], frame[2], min(frame[3], oframe[2]));
+
+    // Now choose the largest of those four.
+    const LVecBase4f *largest = &right;
+    float largest_area = compute_area(*largest);
+    compare_largest(largest, largest_area, &left);
+    compare_largest(largest, largest_area, &above);
+    compare_largest(largest, largest_area, &below);
+
+    frame = *largest;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_relative_frame
+//       Access: Protected
+//  Description: Returns the LVecBase4f frame of the indicated item,
+//               converted into this item's coordinate space.
+//               Presumably, item is a child of this node.
+////////////////////////////////////////////////////////////////////
+LVecBase4f PGItem::
+get_relative_frame(PGItem *item) const {
+  NodePath this_np = NodePath::any_path((PGItem *)this);
+  NodePath item_np = this_np.find_path_to(item);
+  if (item_np.is_empty()) { 
+    item_np = NodePath::any_path(item);
+  }
+  const LVecBase4f &orig_frame = item->get_frame();
+  LMatrix4f transform = item_np.get_mat(this_np);
+  
+  // Transform the item's frame into the PGScrollFrame's
+  // coordinate space.  Transform all four vertices, and get the
+  // new bounding box.  This way the region works (mostly) even if
+  // has been rotated.
+  LPoint3f ll(orig_frame[0], 0.0f, orig_frame[2]);
+  LPoint3f lr(orig_frame[1], 0.0f, orig_frame[2]);
+  LPoint3f ul(orig_frame[0], 0.0f, orig_frame[3]);
+  LPoint3f ur(orig_frame[1], 0.0f, orig_frame[3]);
+  ll = ll * transform;
+  lr = lr * transform;
+  ul = ul * transform;
+  ur = ur * transform;
+  
+  return LVecBase4f(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
+                    max(max(ll[0], lr[0]), max(ul[0], ur[0])),
+                    min(min(ll[2], lr[2]), min(ul[2], ur[2])),
+                    max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::mouse_to_local
+//       Access: Protected
+//  Description: Converts from the 2-d mouse coordinates into the
+//               coordinate space of the item.
+////////////////////////////////////////////////////////////////////
+LPoint3f PGItem::
+mouse_to_local(const LPoint2f &mouse_point) const {
+  // This is ambiguous if the PGItem has multiple instances.  Why
+  // would you do that, anyway?
+  NodePath this_np((PGItem *)this);
+  CPT(TransformState) inv_transform = NodePath().get_transform(this_np);
+  return inv_transform->get_mat().xform_point(LVector3f::rfu(mouse_point[0], 0, mouse_point[1]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::frame_changed
+//       Access: Protected, Virtual
+//  Description: Called when the user changes the frame size.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+frame_changed() {
+  mark_frames_stale();
+  if (has_notify()) {
+    get_notify()->item_frame_changed(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::slot_state_def
 //       Access: Private
 //  Description: Ensures there is a slot in the array for the given
@@ -918,4 +1167,92 @@ mark_frames_stale() {
     (*di)._frame_stale = true;
   }
   mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::clip_frame
+//       Access: Private
+//  Description: Clips the four corners of the item's frame by the
+//               indicated clipping plane, and modifies the points to
+//               reflect the new set of clipped points.
+//
+//               The return value is true if the set of points is
+//               unmodified (all points are behind the clip plane), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PGItem::
+clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
+  if (source_points.empty()) {
+    return true;
+  }
+
+  LPoint3f from3d;
+  LVector3f delta3d;
+  if (!plane.intersects_plane(from3d, delta3d, Planef(LVector3f(0, 1, 0), LPoint3f::zero()))) {
+    // The clipping plane is parallel to the polygon.  The polygon is
+    // either all in or all out.
+    if (plane.dist_to_plane(LPoint3f::zero()) < 0.0) {
+      // A point within the polygon is behind the clipping plane: the
+      // polygon is all in.
+      return true;
+    }
+    return false;
+  }
+
+  // Project the line of intersection into the X-Z plane.  Now we have
+  // a 2-d clipping line.
+  LPoint2f from2d(from3d[0], from3d[2]);
+  LVector2f delta2d(delta3d[0], delta3d[2]);
+
+  float a = -delta2d[1];
+  float b = delta2d[0];
+  float c = from2d[0] * delta2d[1] - from2d[1] * delta2d[0];
+
+  // Now walk through the points.  Any point on the left of our line
+  // gets removed, and the line segment clipped at the point of
+  // intersection.
+
+  // We might increase the number of vertices by as many as 1, if the
+  // plane clips off exactly one corner.  (We might also decrease the
+  // number of vertices, or keep them the same number.)
+  pvector<LPoint2f> new_points;
+  new_points.reserve(source_points.size() + 1);
+
+  LPoint2f last_point = source_points.back();
+  bool last_is_in = !is_right(last_point - from2d, delta2d);
+  bool all_in = last_is_in;
+  pvector<LPoint2f>::const_iterator pi;
+  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
+    const LPoint2f &this_point = (*pi);
+    bool this_is_in = !is_right(this_point - from2d, delta2d);
+
+    // There appears to be a compiler bug in gcc 4.0: we need to
+    // extract this comparison outside of the if statement.
+    bool crossed_over = (this_is_in != last_is_in);
+    if (crossed_over) {
+      // We have just crossed over the clipping line.  Find the point
+      // of intersection.
+      LVector2f d = this_point - last_point;
+      float denom = (a * d[0] + b * d[1]);
+      if (denom != 0.0) {
+        float t = -(a * last_point[0] + b * last_point[1] + c) / denom;
+        LPoint2f p = last_point + t * d;
+        
+        new_points.push_back(p);
+        last_is_in = this_is_in;
+      }
+    } 
+
+    if (this_is_in) {
+      // We are behind the clipping line.  Keep the point.
+      new_points.push_back(this_point);
+    } else {
+      all_in = false;
+    }
+
+    last_point = this_point;
+  }
+
+  source_points.swap(new_points);
+  return all_in;
 }

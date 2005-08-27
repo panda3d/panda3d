@@ -43,6 +43,18 @@ get_mouse_watcher() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGTop::get_group
+//       Access: Published
+//  Description: Returns the MouseWatcherGroup pointer that the PGTop
+//               object registers its PG items with, or NULL if the
+//               MouseWatcher has not yet been set.
+////////////////////////////////////////////////////////////////////
+INLINE MouseWatcherGroup *PGTop::
+get_group() const {
+  return _watcher_group;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGTop::set_start_sort
 //       Access: Published
 //  Description: Specifies the sort index that is assigned during the
@@ -83,15 +95,12 @@ get_start_sort() const {
 //     Function: PGTop::add_region
 //       Access: Public
 //  Description: Adds the indicated region to the set of regions in
-//               the group.  Returns true if it was successfully
-//               added, or false if it was already on the list.
+//               the group.
 ////////////////////////////////////////////////////////////////////
-INLINE bool PGTop::
+INLINE void PGTop::
 add_region(MouseWatcherRegion *region) {
-  if (_watcher_group == (PGMouseWatcherGroup *)NULL) {
-    return false;
-  }
-  return _watcher_group->add_region(region);
+  nassertv(_watcher_group != (PGMouseWatcherGroup *)NULL);
+  _watcher_group->add_region(region);
 }
 
 ////////////////////////////////////////////////////////////////////

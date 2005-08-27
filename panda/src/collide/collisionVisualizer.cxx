@@ -34,6 +34,7 @@
 #include "depthOffsetAttrib.h"
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
+#include "clipPlaneAttrib.h"
 
 
 #ifdef DO_COLLISION_RECORDING
@@ -137,7 +138,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     xform_data._modelview_transform = trav->get_world_transform();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
-                                         RenderEffects::make_empty());
+                                         RenderEffects::make_empty(),
+                                         ClipPlaneAttrib::make());
 
     // Draw all the collision solids.
     Solids::const_iterator si;

@@ -24,6 +24,7 @@
 #include "boundingSphere.h"
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
+#include "boundingPlane.h"
 #include "linmath_events.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
@@ -51,6 +52,7 @@ ConfigureFn(config_mathutil) {
   GeometricBoundingVolume::init_type();
   OmniBoundingVolume::init_type();
   BoundingLine::init_type();
+  BoundingPlane::init_type();
   EventStoreVec2::init_type("EventStoreVec2");
   EventStoreVec3::init_type("EventStoreVec3");
   EventStoreMat4::init_type("EventStoreMat4");

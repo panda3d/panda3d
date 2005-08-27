@@ -29,6 +29,7 @@
 #include "transformState.h"
 #include "displayRegion.h"
 #include "dcast.h"
+#include "indent.h"
 
 #include <algorithm>
 
@@ -122,58 +123,9 @@ get_over_region(const LPoint2f &pos) const {
   return get_preferred_region(regions);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void MouseWatcher::
-output(ostream &out) const {
-  DataNode::output(out);
-
-  int count = _regions.size();
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    count += group->_regions.size();
-  }
-
-  out << " (" << count << " regions)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void MouseWatcher::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level)
-    << "MouseWatcher " << get_name() << ":\n";
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-    region->write(out, indent_level + 2);
-  }
-
-  if (!_groups.empty()) {
-    Groups::const_iterator gi;
-    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-      MouseWatcherGroup *group = (*gi);
-      indent(out, indent_level + 2)
-        << "Subgroup:\n";
-      for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-        MouseWatcherRegion *region = (*ri);
-        region->write(out, indent_level + 4);
-      }
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::add_group
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated group of regions to the set of
 //               regions the MouseWatcher will monitor each frame.
 //
@@ -207,7 +159,7 @@ add_group(MouseWatcherGroup *group) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::remove_group
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated group from the set of extra
 //               groups associated with the MouseWatcher.  Returns
 //               true if successful, or false if the group was already
@@ -235,6 +187,71 @@ remove_group(MouseWatcherGroup *group) {
 
   // Did not find the group to erase
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_num_groups
+//       Access: Published
+//  Description: Returns the number of separate groups added to the
+//               MouseWatcher via add_group().
+////////////////////////////////////////////////////////////////////
+int MouseWatcher::
+get_num_groups() const {
+  return _groups.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_group
+//       Access: Published
+//  Description: Returns the nth group added to the MouseWatcher via
+//               add_group().
+////////////////////////////////////////////////////////////////////
+MouseWatcherGroup *MouseWatcher::
+get_group(int n) const {
+  nassertr(n >= 0 && n < (int)_groups.size(), NULL);
+  return _groups[n];
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::output
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+output(ostream &out) const {
+  DataNode::output(out);
+
+  int count = _regions.size();
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    count += group->_regions.size();
+  }
+
+  out << " (" << count << " regions)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << "MouseWatcher " << get_name() << ":\n";
+  MouseWatcherGroup::write(out, indent_level + 2);
+
+  if (!_groups.empty()) {
+    Groups::const_iterator gi;
+    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+      MouseWatcherGroup *group = (*gi);
+      indent(out, indent_level + 2)
+        << "Subgroup:\n";
+      group->write(out, indent_level + 4);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -611,14 +628,14 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 //               being moved from last position.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-move(ButtonHandle button) {
+move() {
   MouseWatcherParameter param;
-  param.set_button(button);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
-  if (_preferred_button_down_region != (MouseWatcherRegion *)NULL)
+  if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
     _preferred_button_down_region->move(param);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -980,7 +997,6 @@ consider_keyboard_suppress(const MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
-  bool mouse_moved = false;
   // Initially, we do not suppress any events to objects below us in
   // the data graph.
   _internal_suppress = 0;
@@ -1002,7 +1018,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     // Asad: determine if mouse moved from last position
     const LVecBase2f &last_f = _xy->get_value();
     if (f != last_f) {
-      mouse_moved = true;
+      move();
     }
 
     if (_display_region != (DisplayRegion *)NULL) {
@@ -1083,10 +1099,6 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
   if (_has_mouse &&
       (_internal_suppress & MouseWatcherRegion::SF_mouse_position) == 0) {
-    if (mouse_moved) {
-      move(ButtonHandle::none());
-      //tform_cat.info() << "do_transmit_data()::mouse_moved" << endl;
-    }
     // Transmit the mouse position.
     _xy->set_value(_mouse);
     output.set_data(_xy_output, EventParameter(_xy));

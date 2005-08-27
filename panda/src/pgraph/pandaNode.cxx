@@ -25,6 +25,7 @@
 #include "geometricBoundingVolume.h"
 #include "sceneGraphReducer.h"
 #include "accumulatedAttribs.h"
+#include "clipPlaneAttrib.h"
 
 
 TypeHandle PandaNode::_type_handle;
@@ -1581,6 +1582,12 @@ recompute_bound() {
   CDWriter cdata(_cycler);
   cdata->_net_collide_mask = cdata->_into_collide_mask;
 
+  // And compute the set of "off" clip planes.
+  cdata->_off_clip_planes = cdata->_state->get_clip_plane();
+  if (cdata->_off_clip_planes == (RenderAttrib *)NULL) {
+    cdata->_off_clip_planes = ClipPlaneAttrib::make();
+  }
+
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
@@ -1595,6 +1602,8 @@ recompute_bound() {
     const BoundingVolume &child_bound = child->get_bound();
     child_volumes.push_back(&child_bound);
     cdata->_net_collide_mask |= child->get_net_collide_mask();
+    CPT(ClipPlaneAttrib) orig = DCAST(ClipPlaneAttrib, cdata->_off_clip_planes);
+    cdata->_off_clip_planes = orig->compose_off(child->get_off_clip_planes());
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];
@@ -1676,6 +1685,28 @@ children_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 transform_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::state_changed
+//       Access: Protected, Virtual
+//  Description: Called after the node's RenderState has been changed
+//               for any reason, this just provides a hook so derived
+//               classes can do something special in this case.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+state_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::draw_mask_changed
+//       Access: Protected, Virtual
+//  Description: Called after the node's DrawMask has been changed
+//               for any reason, this just provides a hook so derived
+//               classes can do something special in this case.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+draw_mask_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////

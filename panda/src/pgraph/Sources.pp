@@ -35,6 +35,7 @@
     cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
+    cullPlanes.I cullPlanes.h \
     cullResult.I cullResult.h \
     cullTraverser.I cullTraverser.h \
     cullTraverserData.I cullTraverserData.h \
@@ -134,6 +135,7 @@
     cullBinUnsorted.cxx \
     cullFaceAttrib.cxx \
     cullHandler.cxx \
+    cullPlanes.cxx \
     cullResult.cxx \
     cullTraverser.cxx \
     cullTraverserData.cxx \
@@ -229,6 +231,7 @@
     cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
+    cullPlanes.I cullPlanes.h \
     cullResult.I cullResult.h \
     cullTraverser.I cullTraverser.h \
     cullTraverserData.I cullTraverserData.h \

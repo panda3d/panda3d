@@ -1,9 +1,9 @@
-
-#include "pgFrameStyle.cxx"
-#include "pgItem.cxx"
 #include "pgMouseWatcherBackground.cxx"
 #include "pgMouseWatcherRegion.cxx"
-#include "pgTop.cxx"
-#include "pgWaitBar.cxx"
+#include "pgScrollFrame.cxx"
 #include "pgSliderBar.cxx"
+#include "pgSliderBarNotify.cxx"
+#include "pgTop.cxx"
+#include "pgVirtualFrame.cxx"
+#include "pgWaitBar.cxx"
 

@@ -156,18 +156,10 @@ click(const MouseWatcherParameter &param) {
   string event = get_click_event(param.get_button());
   play_sound(event);
   throw_event(event, EventParameter(ep));
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGButton::move
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse is moved while the mouse
-//               is within the region.
-////////////////////////////////////////////////////////////////////
-void PGButton::
-move(const MouseWatcherParameter &param) {
-  PGItem::move(param);
+  if (has_notify()) {
+    get_notify()->button_click(this, param);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +172,7 @@ move(const MouseWatcherParameter &param) {
 //               according to the size of the text.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-setup(const string &label) {
+setup(const string &label, float bevel) {
   clear_state_def(S_ready);
   clear_state_def(S_depressed);
   clear_state_def(S_rollover);
@@ -200,7 +192,7 @@ setup(const string &label) {
 
   PGFrameStyle style;
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
-  style.set_width(0.1f, 0.1f);
+  style.set_width(bevel, bevel);
 
   style.set_type(PGFrameStyle::T_bevel_out);
   set_frame_style(S_ready, style);

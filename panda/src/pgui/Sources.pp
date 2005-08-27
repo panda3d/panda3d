@@ -12,49 +12,61 @@
   #define SOURCES  \
     config_pgui.h \
     pgButton.I pgButton.h \
-    pgSliderButton.I pgSliderButton.h \
+    pgButtonNotify.I pgButtonNotify.h \
     pgCullTraverser.I pgCullTraverser.h \
     pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
+    pgItemNotify.I pgItemNotify.h \
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
+    pgScrollFrame.I pgScrollFrame.h \
+    pgSliderBar.I pgSliderBar.h \
+    pgSliderBarNotify.I pgSliderBarNotify.h \
     pgTop.I pgTop.h \
-    pgWaitBar.I pgWaitBar.h \
-    pgSliderBar.I pgSliderBar.h
+    pgVirtualFrame.I pgVirtualFrame.h \
+    pgWaitBar.I pgWaitBar.h
     
   #define INCLUDED_SOURCES  \
     config_pgui.cxx \
     pgButton.cxx \
-    pgSliderButton.cxx \
+    pgButtonNotify.cxx \
     pgCullTraverser.cxx \
     pgEntry.cxx \
     pgMouseWatcherGroup.cxx \
     pgMouseWatcherParameter.cxx \
     pgFrameStyle.cxx \
     pgItem.cxx \
+    pgItemNotify.cxx \
     pgMouseWatcherBackground.cxx \
     pgMouseWatcherRegion.cxx \
+    pgScrollFrame.cxx \
+    pgSliderBar.cxx \
+    pgSliderBarNotify.cxx \
     pgTop.cxx \
-    pgWaitBar.cxx \
-    pgSliderBar.cxx
+    pgVirtualFrame.cxx \
+    pgWaitBar.cxx
 
   #define INSTALL_HEADERS \
     pgButton.I pgButton.h \
-    pgSliderButton.I pgSliderButton.h \
+    pgButtonNotify.I pgButtonNotify.h \
     pgCullTraverser.I pgCullTraverser.h \
     pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
+    pgItemNotify.I pgItemNotify.h \
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
+    pgScrollFrame.I pgScrollFrame.h \
+    pgSliderBar.I pgSliderBar.h \
+    pgSliderBarNotify.I pgSliderBarNotify.h \
     pgTop.I pgTop.h \
-    pgWaitBar.I pgWaitBar.h \
-    pgSliderBar.I pgSliderBar.h
+    pgVirtualFrame.I pgVirtualFrame.h \
+    pgWaitBar.I pgWaitBar.h
     
 
   #define IGATESCAN all

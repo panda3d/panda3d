@@ -166,8 +166,7 @@ traverse(CullTraverserData &data) {
 
     data.apply_transform_and_state(this);
 
-    const RenderState *node_state = node->get_state();
-    const FogAttrib *fog = node_state->get_fog();
+    const FogAttrib *fog = node->get_state()->get_fog();
     if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
       // If we just introduced a FogAttrib here, call adjust_to_camera()
       // now.  This maybe isn't the perfect time to call it, but it's

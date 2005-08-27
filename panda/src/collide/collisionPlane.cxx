@@ -32,7 +32,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "omniBoundingVolume.h"
+#include "boundingPlane.h"
 #include "geom.h"
 #include "geomTrifans.h"
 #include "geomLinestrips.h"
@@ -94,11 +94,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionPlane::
 recompute_bound() {
-  // Planes always have an infinite bounding volume.
   BoundedObject::recompute_bound();
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
-  return set_bound_ptr(new OmniBoundingVolume);
+  return set_bound_ptr(new BoundingPlane(_plane));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,6 +23,7 @@
 
 #include "pgMouseWatcherRegion.h"
 #include "pgFrameStyle.h"
+#include "pgItemNotify.h"
 
 #include "pandaNode.h"
 #include "nodePath.h"
@@ -30,12 +31,13 @@
 #include "pointerTo.h"
 #include "audioSound.h"
 #include "textNode.h"
-
+#include "plane.h"
 #include "pmap.h"
 
 class PGTop;
 class MouseWatcherParameter;
 class AudioSound;
+class ClipPlaneAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItem
@@ -60,14 +62,18 @@ protected:
   PGItem(const PGItem &copy);
 
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void transform_changed();
+  virtual void draw_mask_changed();
+
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual BoundingVolume *recompute_internal_bound();
 
 public:
-  void activate_region(const LMatrix4f &transform, int sort);
+  virtual void xform(const LMatrix4f &mat);
+  bool activate_region(const LMatrix4f &transform, int sort,
+                       const ClipPlaneAttrib *cpa);
   INLINE PGMouseWatcherRegion *get_region() const;
 
   virtual void enter(const MouseWatcherParameter &param);
@@ -86,6 +92,10 @@ public:
   static void background_release(const MouseWatcherParameter &param);
   static void background_keystroke(const MouseWatcherParameter &param);
   static void background_candidate(const MouseWatcherParameter &param);
+
+  INLINE void set_notify(PGItemNotify *notify);
+  INLINE bool has_notify() const;
+  INLINE PGItemNotify *get_notify() const;
 
 PUBLISHED:
   INLINE void set_frame(float left, float right, float bottom, float top);
@@ -158,10 +168,27 @@ PUBLISHED:
 protected:
   void play_sound(const string &event);
 
+  void reduce_region(LVecBase4f &clip, PGItem *obscurer) const;
+  void reduce_region(LVecBase4f &frame, float px, float py) const;
+  LVecBase4f get_relative_frame(PGItem *item) const;
+  LPoint3f mouse_to_local(const LPoint2f &mouse_point) const;
+
+  virtual void frame_changed();
+
 private:
   void slot_state_def(int state);
   void update_frame(int state);
   void mark_frames_stale();
+
+  INLINE static float compute_area(const LVecBase4f &frame);
+  INLINE static void compare_largest(const LVecBase4f *&largest, 
+                                     float &largest_area, 
+                                     const LVecBase4f *new_frame);
+
+  bool clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const;
+
+private:
+  PGItemNotify *_notify;
 
   bool _has_frame;
   LVecBase4f _frame;

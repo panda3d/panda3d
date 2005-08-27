@@ -685,6 +685,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
             ('frameTexture',   None,         self.setFrameTexture),
+            ('frameVisibleScale', (1,1),     self.setFrameVisibleScale),
             ('pad',            (0,0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
             ('guiId',          None,         INITOPT),
@@ -866,6 +867,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Use user specified bounds
             self.bounds = self['frameSize']
             #print "%s bounds = %s" % (self.getName(),self.bounds)            
+            bw = (0,0)
+
         else:
             if fClearFrame and (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
@@ -878,11 +881,13 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             if (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
-        if ((frameType != PGFrameStyle.TNone) and
-            (frameType != PGFrameStyle.TFlat)):
-            bw = self['borderWidth']
-        else:
-            bw = (0,0)
+
+            if ((frameType != PGFrameStyle.TNone) and
+                (frameType != PGFrameStyle.TFlat)):
+                bw = self['borderWidth']
+            else:
+                bw = (0,0)
+
         # Set frame to new dimensions
         self.guiItem.setFrame(
             self.bounds[0] - bw[0],
@@ -972,6 +977,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 texture = textures[i]
             if texture:
                 self.frameStyle[i].setTexture(texture)
+        self.updateFrameStyle()
+
+    def setFrameVisibleScale(self):
+        scale = self['frameVisibleScale']
+        for i in range(self['numStates']):
+            self.frameStyle[i].setVisibleScale(scale[0], scale[1])
         self.updateFrameStyle()
 
     def setBorderWidth(self):

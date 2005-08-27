@@ -110,6 +110,22 @@ preserve_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::get_unsafe_to_apply_attribs
+//       Access: Public, Virtual
+//  Description: Returns the union of all attributes from
+//               SceneGraphReducer::AttribTypes that may not safely be
+//               applied to the vertices of this node.  If this is
+//               nonzero, these attributes must be dropped at this
+//               node as a state change.
+//
+//               This is a generalization of safe_to_transform().
+////////////////////////////////////////////////////////////////////
+int ModelNode::
+get_unsafe_to_apply_attribs() const {
+  return _preserve_attributes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -130,6 +146,7 @@ void ModelNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   dg.add_uint8((int)_preserve_transform);
+  dg.add_uint16(_preserve_attributes);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,4 +181,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
   _preserve_transform = (PreserveTransform)scan.get_uint8();
+  _preserve_attributes = 0;
+  if (manager->get_file_minor_ver() >= 3) {
+    _preserve_attributes = scan.get_uint16();
+  }
 }

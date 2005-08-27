@@ -31,7 +31,8 @@ CullTraverserData(const NodePath &start,
   _modelview_transform(modelview_transform),
   _state(state),
   _view_frustum(view_frustum),
-  _guard_band(guard_band)
+  _guard_band(guard_band),
+  _cull_planes(CullPlanes::make_empty())
 {
 }
 
@@ -46,7 +47,8 @@ CullTraverserData(const CullTraverserData &copy) :
   _modelview_transform(copy._modelview_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
-  _guard_band(copy._guard_band)
+  _guard_band(copy._guard_band),
+  _cull_planes(copy._cull_planes)
 {
 }
 
@@ -62,6 +64,7 @@ operator = (const CullTraverserData &copy) {
   _state = copy._state;
   _view_frustum = copy._view_frustum;
   _guard_band = copy._guard_band;
+  _cull_planes = copy._cull_planes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +79,8 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _modelview_transform(parent._modelview_transform),
   _state(parent._state),
   _view_frustum(parent._view_frustum),
-  _guard_band(parent._guard_band)
+  _guard_band(parent._guard_band),
+  _cull_planes(parent._cull_planes)
 {
 }
 
@@ -132,9 +136,10 @@ is_in_view(const DrawMask &camera_mask) {
     return false;
   }
 
-  if (_view_frustum == (GeometricBoundingVolume *)NULL) {
-    // If the transform is valid, but we don't have a frustum, it's
-    // always in.
+  if (_view_frustum == (GeometricBoundingVolume *)NULL &&
+      _cull_planes->is_empty()) {
+    // If the transform is valid, but we don't have a frustum or any
+    // clip planes, it's always in.
     return true;
   }
 
@@ -142,3 +147,28 @@ is_in_view(const DrawMask &camera_mask) {
   return is_in_view_impl();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::test_within_clip_planes
+//       Access: Public
+//  Description: Returns the BoundingVolume intersection bits
+//               appropriate for the intersection of the current clip
+//               planes with the current node.
+//
+//               That is, if the current node is within all clip
+//               planes (and will not be clipped at all), returns
+//               BoundingVolume::IF_all.  If it is completely behind
+//               at least one clip plane, returns
+//               BoundingVolume::IF_intersection.  If it is partially
+//               behind one or more clip planes, returns
+//               BoundingVolume::IF_some.
+////////////////////////////////////////////////////////////////////
+INLINE int CullTraverserData::
+test_within_clip_planes(const CullTraverser *trav) const {
+  const ClipPlaneAttrib *cpa = _state->get_clip_plane();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    return test_within_clip_planes_impl(trav, cpa);
+  }
+  // No clip plane attrib; therefore, the node is not clipped at
+  // all.
+  return BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
+}

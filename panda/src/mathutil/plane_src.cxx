@@ -25,7 +25,7 @@
 //               mirror.
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LMatrix4) FLOATNAME(Plane)::
-get_reflection_mat(void) const {
+get_reflection_mat() const {
   FLOATTYPE aa = _v.v._0 * _v.v._0; 
   FLOATTYPE ab = _v.v._0 * _v.v._1;
   FLOATTYPE ac = _v.v._0 * _v.v._2;

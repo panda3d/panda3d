@@ -96,6 +96,7 @@ PUBLISHED:
   CPT(ClipPlaneAttrib) filter_to_max(int max_clip_planes) const;
 
 public:
+  CPT(RenderAttrib) compose_off(const RenderAttrib *other) const;
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
 

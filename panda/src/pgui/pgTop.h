@@ -60,13 +60,14 @@ public:
 PUBLISHED:
   void set_mouse_watcher(MouseWatcher *watcher);
   INLINE MouseWatcher *get_mouse_watcher() const;
+  INLINE MouseWatcherGroup *get_group() const;
 
   INLINE void set_start_sort(int start_sort);
   INLINE int get_start_sort() const;
 
 public:
   // These methods duplicate the functionality of MouseWatcherGroup.
-  INLINE bool add_region(MouseWatcherRegion *region);
+  INLINE void add_region(MouseWatcherRegion *region);
   INLINE void clear_regions();
 
 private:

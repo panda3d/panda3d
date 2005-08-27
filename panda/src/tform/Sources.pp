@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET tform
   #define LOCAL_LIBS \
-    dgraph pgraph linmath display event putil gobj gsgbase \
+    grutil dgraph pgraph linmath display event putil gobj gsgbase \
     mathutil device
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 

@@ -1,5 +1,5 @@
-// Filename: pgButton.I
-// Created by:  masad (21Oct04)
+// Filename: boundingPlane.I
+// Created by:  drose (19Aug05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderButton::is_drag_n_drop
+//     Function: BoundingPlane::Default Constructor
 //       Access: Published
-//  Description: Returns if this button is drag_n_drop kind
+//  Description: Constructs an empty "plane" that has no
+//               intersections.
 ////////////////////////////////////////////////////////////////////
-INLINE bool PGSliderButton::
-is_drag_n_drop() {
-  return _drag_n_drop;
+INLINE_MATHUTIL BoundingPlane::
+BoundingPlane() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderButton::set_drag_n_drop
+//     Function: BoundingPlane::Constructor
 //       Access: Published
-//  Description: Makes this button a drag_n_drop kind
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PGSliderButton::
-set_drag_n_drop(bool value) {
-  _drag_n_drop = value;
+INLINE_MATHUTIL BoundingPlane::
+BoundingPlane(const Planef &plane) :
+  _plane(plane)
+{
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderButton::set_slider_bar
+//     Function: BoundingPlane::get_plane
 //       Access: Published
-//  Description: Store a copy of the controlling slider bar item
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PGSliderButton::
-set_slider_bar(PGItem *item) {
-  _slider_bar = item;
+INLINE_MATHUTIL const Planef &BoundingPlane::
+get_plane() const {
+  nassertr(!is_empty(), _plane);
+  nassertr(!is_infinite(), _plane);
+  return _plane;
 }

@@ -28,6 +28,7 @@ class DirectButton(DirectFrame):
             ('pgFunc',         PGButton,   None),
             ('numStates',      4,          None),
             ('state',          NORMAL,     None),
+            ('relief',         RAISED,     None),
             ('invertedFrames', (1,),       None),
             # Command to be called on button click
             ('command',        None,       None),

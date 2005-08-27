@@ -517,6 +517,83 @@ filter_to_max(int max_clip_planes) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::compose_off
+//       Access: Public
+//  Description: This is a special method which composes two
+//               ClipPlaneAttribs with regard only to their set of
+//               "off" clip planes, for the purposes of deriving
+//               PandaNode::get_off_clip_planes().
+//
+//               The result will be a ClipPlaneAttrib that represents
+//               the union of all of the clip planes turned off in
+//               either attrib.  The set of on planes in the result is
+//               undefined and should be ignored.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ClipPlaneAttrib::
+compose_off(const RenderAttrib *other) const {
+  const ClipPlaneAttrib *ta;
+  DCAST_INTO_R(ta, other, 0);
+
+  if (_off_all_planes || (!ta->_off_all_planes && ta->_off_planes.empty())) {
+    // If we turn off all planes, or the other turns none off, the
+    // result is the same as this one.
+    return this;
+  }
+
+  if (ta->_off_all_planes || _off_planes.empty()) {
+    // And contrariwise.
+    return ta;
+  }
+
+  Planes::const_iterator ai = _off_planes.begin();
+  Planes::const_iterator bi = ta->_off_planes.begin();
+
+  // Create a new ClipPlaneAttrib that will hold the result.
+  ClipPlaneAttrib *new_attrib = new ClipPlaneAttrib;
+  back_insert_iterator<Planes> result = 
+    back_inserter(new_attrib->_on_planes);
+
+  while (ai != _off_planes.end() && 
+         bi != ta->_off_planes.end()) {
+    if ((*ai) < (*bi)) {
+      // Here is a plane that we have in the original, which is not
+      // present in the secondary.
+      *result = *ai;
+      ++ai;
+      ++result;
+
+    } else if ((*bi) < (*ai)) {
+      // Here is a new plane we have in the secondary, that was not
+      // present in the original.
+      *result = *bi;
+      ++bi;
+      ++result;
+
+    } else {  // (*bi) == (*ai)
+      // Here is a plane we have in both.
+      *result = *bi;
+      ++ai;
+      ++bi;
+      ++result;
+    }
+  }
+
+  while (ai != _off_planes.end()) {
+    *result = *ai;
+    ++ai;
+    ++result;
+  }
+
+  while (bi != ta->_off_planes.end()) {
+    *result = *bi;
+    ++bi;
+    ++result;
+  }
+
+  return return_new(new_attrib);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::issue
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the indicated GSG
