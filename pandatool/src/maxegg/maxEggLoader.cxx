@@ -80,16 +80,11 @@ public:
   JointTable       _joint_tab;
   TexTable         _tex_tab;
   int              _next_tex;
-  CoordinateSystem _coord_sys;
 };
 
-Point3 ConvertCoordSys(CoordinateSystem sys, LVector3d vec)
+Point3 MakeMaxPoint(LVector3d vec)
 {
-  if (sys == CS_yup_right) {
-    return Point3(vec[0], -vec[2], vec[1]);
-  } else {
-    return Point3(vec[0], vec[1], vec[2]);
-  }
+  return Point3(vec[0], vec[1], vec[2]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +151,7 @@ public:
   LVector3d GetPos(void) { return _trans.get_row3(3); }
   MaxEggJoint *ChooseBestChild(LVector3d dir);
   void ChooseEndPos(double thickness);
-  void CreateMaxBone(CoordinateSystem sys);
+  void CreateMaxBone(void);
 };
 
 void MaxEggJoint::GetRotation(LVector3d &xv, LVector3d &yv, LVector3d &zv)
@@ -260,16 +255,16 @@ void MaxEggJoint::ChooseEndPos(double thickness)
   _perp.normalize();
 }
 
-void MaxEggJoint::CreateMaxBone(CoordinateSystem sys)
+void MaxEggJoint::CreateMaxBone(void)
 {
   LVector3d rxv,ryv,rzv;
   GetRotation(rxv, ryv, rzv);
-  Point3 xv(ConvertCoordSys(sys, rxv));
-  Point3 yv(ConvertCoordSys(sys, ryv));
-  Point3 zv(ConvertCoordSys(sys, rzv));
-  Point3 pos(ConvertCoordSys(sys, GetPos()));
-  Point3 endpos(ConvertCoordSys(sys, _endpos));
-  Point3 tzv(ConvertCoordSys(sys, _perp));
+  Point3 xv(MakeMaxPoint(rxv));
+  Point3 yv(MakeMaxPoint(ryv));
+  Point3 zv(MakeMaxPoint(rzv));
+  Point3 pos(MakeMaxPoint(GetPos()));
+  Point3 endpos(MakeMaxPoint(_endpos));
+  Point3 tzv(MakeMaxPoint(_perp));
   
   Point3 fwd = endpos - pos;
   double len = fwd.Length();
@@ -373,7 +368,7 @@ public:
   TVertTable _tvert_tab;
   CVertTable _cvert_tab;
   
-  int GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys);
+  int GetVert(EggVertex *vert, EggGroup *context);
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
@@ -382,7 +377,7 @@ public:
 
 #define CTRLJOINT_DEFORM ((EggGroup*)((char*)(-1)))
 
-int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys)
+int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context)
 {
   MaxEggVertex vtx;
   vtx._pos = vert->get_pos3();
@@ -410,7 +405,7 @@ int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context, CoordinateSystem sys
   }
   vtx._index = _vert_count++;
   _vert_tab.insert(vtx);
-  _mesh->setVert(vtx._index, ConvertCoordSys(sys, vtx._pos));
+  _mesh->setVert(vtx._index, MakeMaxPoint(vtx._pos));
   return vtx._index;
 }
 
@@ -600,7 +595,7 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
       TexCoordd uv = vtx->get_uv();
-      vertIndices.push_back(mesh->GetVert(vtx, context, _coord_sys));
+      vertIndices.push_back(mesh->GetVert(vtx, context));
       tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));
     }
@@ -640,12 +635,13 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   MeshIterator ci;
   JointIterator ji;
   TexIterator ti;
-
+  
+  data->set_coordinate_system(CS_zup_right);
+  
   SuspendAnimate();
   SuspendSetKeyMode();
   AnimateOff();
   _next_tex = 0;
-  _coord_sys = data->get_coordinate_system();
   
   TraverseEggNode(data, NULL);
 
@@ -671,7 +667,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MaxEggJoint *joint = *ji;
     joint->ChooseEndPos(thickness);
-    joint->CreateMaxBone(_coord_sys);
+    joint->CreateMaxBone();
   }
   
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {

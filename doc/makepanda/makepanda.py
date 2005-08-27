@@ -4003,6 +4003,7 @@ for VER in ["5","6","65"]:
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
     CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx',        obj='mayaegg'+VER+'_loader.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
     CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
 
@@ -4010,13 +4011,14 @@ for VER in ["5","6","65"]:
 # DIRECTORY: pandatool/src/maxegg/
 #
 
-for VER in ["5", "6", "7"]:
+for VER in ["6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER"]
     CopyAllHeaders(IPATH[0], skip="ALL")
     CopyFile(PREFIX+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
-    CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS+["MSFORSCOPE"], src='maxEggLoader.cxx',      obj='maxegg'+VER+'_loader.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx', obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', ldef="pandatool/src/maxegg/maxEgg.def", obj=[
                 'maxegg'+VER+'_composite1.obj',
                 'maxEgg.obj',
@@ -4034,43 +4036,20 @@ for VER in ["5", "6", "7"]:
 
 
 #
-# DIRECTORY: pandatool/src/maxeggimport/
+# DIRECTORY: pandatool/src/maxprogs/
 #
 
-for VER in ["7"]:
+for VER in ["6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
-    IPATH=['pandatool/src/maxeggimport']
+    IPATH=['pandatool/src/maxprogs']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders(IPATH[0])
-    CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxeggimport/maxImportRes.obj")
-    CompileC(ipath=IPATH, opts=OPTS, src='maxEggLoader.cxx',obj='maxeggimport'+VER+'_maxeggloader.obj')
+    CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
     CompileC(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxeggimport'+VER+'_maxeggimport.obj')
-    CompileLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxeggimport/maxEggImport.def", obj=[
-                'maxeggimport'+VER+'_maxeggloader.obj',
+    CompileLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxprogs/maxEggImport.def", obj=[
+                'maxegg'+VER+'_loader.obj',
                 'maxeggimport'+VER+'_maxeggimport.obj',
                 'maxImportRes.obj',
-                'libpandaegg.dll',
-                'libpanda.dll',
-                'libpandaexpress.dll',
-                'libdtoolconfig.dll',
-                'libdtool.dll',
-                'libpystub.dll'
-               ])
-
-#
-# DIRECTORY: pandatool/src/mayaeggimport/
-#
-
-for VER in ["6"]:
-  if (OMIT.count("MAYA"+VER)==0):
-    IPATH=['pandatool/src/mayaeggimport']
-    OPTS=['MAYA'+VER, 'NSPR', 'BUILDING_MISC']
-    CopyAllHeaders(IPATH[0])
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx',obj='mayaeggimport'+VER+'_mayaeggimport.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx',obj='mayaeggimport'+VER+'_mayaeggloader.obj')
-    CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
-                'mayaeggimport'+VER+'_mayaeggimport.obj',
-                'mayaeggimport'+VER+'_mayaeggloader.obj',
                 'libpandaegg.dll',
                 'libpanda.dll',
                 'libpandaexpress.dll',
@@ -4191,6 +4170,17 @@ for VER in ["5","6","65"]:
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
     OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx',obj='mayaprogs'+VER+'_mayaeggimport.obj')
+    CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
+                'mayaprogs'+VER+'_mayaeggimport.obj',
+                'mayaegg'+VER+'_loader.obj',
+                'libpandaegg.dll',
+                'libpanda.dll',
+                'libpandaexpress.dll',
+                'libdtoolconfig.dll',
+                'libdtool.dll',
+                'libpystub.dll'
+               ])
     CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
     CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayaloader'+VER+'_config_mayaloader.obj',
