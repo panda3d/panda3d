@@ -1506,10 +1506,10 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
             if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
             if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/zlib/lib/libz.lib'
-            if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/png/lib/libpng.lib'
-            if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/jpeg/lib/libjpeg.lib'
-            if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/tiff/lib/libtiff.lib'
+            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/zlib/lib/libpandazlib1.lib'
+            if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/png/lib/libpandapng13.lib'
+            if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/jpeg/lib/libpandajpeg.lib'
+            if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/tiff/lib/libpandatiff.lib'
             if (PkgSelected(opts,"VRPN")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/vrpn.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/quat.lib'
@@ -1531,10 +1531,10 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             if (PkgSelected(opts,"NSPR")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/nspr4.lib'
             if (PkgSelected(opts,"SSL")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/ssleay32.lib'
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libeay32.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libpandassl.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libpandaeay.lib'
             if (PkgSelected(opts,"FREETYPE")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/libfreetype.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/freetype.lib'
             if (PkgSelected(opts,"FFTW")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
@@ -1936,10 +1936,6 @@ dc-file sample.dc
 # Enable audio using the FMod audio library by default:
 
 audio-library-name fmod_audio
-
-# We recently implemented hardware vertex animation, but it's not quite ready
-
-hardware-animated-vertices 0
 """
 
 if (sys.platform != "win32"):
@@ -4003,7 +3999,7 @@ for VER in ["5","6","65"]:
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
     CopyAllHeaders(IPATH[0])
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx',        obj='mayaegg'+VER+'_loader.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx', obj='mayaegg'+VER+'_loader.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
     CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
 
@@ -4014,11 +4010,11 @@ for VER in ["5","6","65"]:
 for VER in ["6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
-    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER"]
-    CopyAllHeaders(IPATH[0], skip="ALL")
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+    CopyAllHeaders(IPATH[0])
     CopyFile(PREFIX+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
-    CompileC(ipath=IPATH, opts=OPTS+["MSFORSCOPE"], src='maxEggLoader.cxx',      obj='maxegg'+VER+'_loader.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx', obj='maxegg'+VER+'_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='maxEggLoader.cxx',obj='maxegg'+VER+'_loader.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dlo', ldef="pandatool/src/maxegg/maxEgg.def", obj=[
                 'maxegg'+VER+'_composite1.obj',
                 'maxEgg.obj',
@@ -4045,10 +4041,10 @@ for VER in ["6", "7"]:
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders(IPATH[0])
     CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
-    CompileC(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxeggimport'+VER+'_maxeggimport.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxprogs'+VER+'_maxeggimport.obj')
     CompileLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxprogs/maxEggImport.def", obj=[
                 'maxegg'+VER+'_loader.obj',
-                'maxeggimport'+VER+'_maxeggimport.obj',
+                'maxprogs'+VER+'_maxeggimport.obj',
                 'maxImportRes.obj',
                 'libpandaegg.dll',
                 'libpanda.dll',
@@ -4170,10 +4166,10 @@ for VER in ["5","6","65"]:
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
     OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx',obj='mayaprogs'+VER+'_mayaeggimport.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx', obj='mayaeggimport'+VER+'_mayaeggimport.obj')
     CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
-                'mayaprogs'+VER+'_mayaeggimport.obj',
                 'mayaegg'+VER+'_loader.obj',
+                'mayaeggimport'+VER+'_mayaeggimport.obj',
                 'libpandaegg.dll',
                 'libpanda.dll',
                 'libpandaexpress.dll',
