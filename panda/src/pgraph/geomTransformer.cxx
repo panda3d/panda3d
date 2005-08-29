@@ -133,6 +133,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = new Geom(*entry._geom);
     if (transform_vertices(new_geom, mat)) {
+      node->mark_bound_stale();
       entry._geom = new_geom;
       any_changed = true;
     }
