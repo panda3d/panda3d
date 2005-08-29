@@ -784,11 +784,10 @@ if (COMPILER == "MSVC7"):
 #
 ##########################################################################################
 
-if (sys.platform != "win32"):
-    if (OMIT.count("HELIX")==0):
-        WARNINGS.append("HELIX not yet supported under linux")
-        WARNINGS.append("I have automatically added this command-line option: --no-helix")
-        OMIT.append("HELIX")
+if (OMIT.count("HELIX")==0):
+    WARNINGS.append("HELIX is currently nonoperational")
+    WARNINGS.append("I have automatically added this command-line option: --no-helix")
+    OMIT.append("HELIX")
 
 ##########################################################################################
 #
@@ -1773,170 +1772,8 @@ ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 #
 ##########################################################################################
 
-CONFAUTOPRC="""
-###########################################################
-###                                                     ###
-### Panda3D Configuration File - Auto-Generated Portion ###
-###                                                     ###
-### Editing this file is not recommended. Most of these ###
-### directives can be overriden in Config.prc           ###
-###                                                     ###
-###########################################################
-
-# Define the display types that have been compiled in.  Panda will
-# pick one of these by going through the list in this order until one
-# is found that works, unless the user specifically requests a
-# particular display type with the load-display directive.
-
-aux-display pandagl
-aux-display pandadx9
-aux-display pandadx8
-aux-display pandadx7
-
-# The egg loader is handy to have available by default.  This allows
-# clients to load egg files.  (The bam loader is built-in so bam files
-# are always loadable).
-
-# By qualifying with the extension "egg", we indicate the egg loader
-# should be made available only if you explicitly name a file with an
-# .egg extension.
-
-load-file-type egg pandaegg
-
-# The following lines define some handy object types to use within the
-# egg syntax.  This remaps <ObjectType> { name } into whatever egg
-# syntax is given by egg-object-type-name, which makes a handy
-# abbreviation for modeling packages (like Maya) to insert
-# sophisticated egg syntax into the generated egg file, using a single
-# object type string.
-
-egg-object-type-portal          <Scalar> portal { 1 }
-egg-object-type-polylight       <Scalar> polylight { 1 }
-egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
-egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
-egg-object-type-indexed         <Scalar> indexed { 1 }
-
-# These are just shortcuts to define the Model and DCS flags, which
-# indicate nodes that should not be flattened out of the hierarchy
-# during the conversion process.  DCS goes one step further and
-# indicates that the node's transform is important and should be
-# preserved (DCS stands for Dynamic Coordinate System).
-
-egg-object-type-model           <Model> { 1 }
-egg-object-type-dcs             <DCS> { 1 }
-
-# The following define various kinds of collision geometry.  These
-# mark the geometry at this level and below as invisible collision
-# polygons, which can be used by Panda's collision system to detect
-# collisions more optimally than regular visible polygons.
-
-egg-object-type-barrier         <Collide> { Polyset descend }
-egg-object-type-sphere          <Collide> { Sphere descend }
-egg-object-type-invsphere       <Collide> { InvSphere descend }
-egg-object-type-tube            <Collide> { Tube descend }
-
-# As above, but these are flagged to be "intangible", so that they
-# will trigger an event but not stop an object from passing through.
-
-egg-object-type-trigger         <Collide> { Polyset descend intangible }
-egg-object-type-trigger-sphere  <Collide> { Sphere descend intangible }
-
-# "bubble" puts an invisible bubble around an object, but does not
-# otherwise remove the geometry.
-
-egg-object-type-bubble          <Collide> { Sphere keep descend }
-
-# "ghost" turns off the normal collide bit that is set on visible
-# geometry by default, so that if you are using visible geometry for
-# collisions, this particular geometry will not be part of those
-# collisions--it is ghostlike.
-
-egg-object-type-ghost           <Scalar> collide-mask { 0 }
-
-# This module allows direct loading of formats like .flt, .mb, or .dxf
-
-load-file-type ptloader
-
-# Define a new egg object type.  See the comments in _panda.prc about this.
-
-egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> { Polyset descend }
-
-# Define a new cull bin that will render on top of everything else.
-
-cull-bin gui-popup 60 unsorted
-"""
-
-CONFIGPRC="""
-###########################################################
-###                                                     ###
-### Panda3D Configuration File -  User-Editable Portion ###
-###                                                     ###
-###########################################################
-
-# Uncomment one of the following lines to choose whether you should
-# run using OpenGL or DirectX rendering.
-
-load-display pandagl
-
-# These control the placement and size of the default rendering window.
-
-win-origin 100 0
-win-size 800 600
-
-# Uncomment this line if you want to run Panda fullscreen instead of
-# in a window.
-
-fullscreen #f
-
-# If you don't object to running OpenGL in software leave the keyword
-# "software" in the following line, otherwise remove it to force
-# hardware only.
-
-framebuffer-mode rgba double-buffer depth hardware
-
-# These control the amount of output Panda gives for some various
-# categories.  The severity levels, in order, are "spam", "debug",
-# "info", "warning", and "fatal"; the default is "info".  Uncomment
-# one (or define a new one for the particular category you wish to
-# change) to control this output.
-
-notify-level warning
-default-directnotify-level warning
-
-# These specify where model files may be loaded from.  You probably
-# want to set this to a sensible path for yourself.  $THIS_PRC_DIR is
-# a special variable that indicates the same directory as this
-# particular Config.prc file.
-
-model-path    .
-model-path    $THIS_PRC_DIR/..
-model-path    $THIS_PRC_DIR/../models
-sound-path    .
-sound-path    $THIS_PRC_DIR/..
-sound-path    $THIS_PRC_DIR/../models
-texture-path  .
-texture-path  $THIS_PRC_DIR/..
-texture-path  $THIS_PRC_DIR/../models
-
-# This enable the automatic creation of a TK window when running
-# Direct.
-
-want-directtools  #f
-want-tk           #f
-
-# Enable/disable performance profiling tool and frame-rate meter
-
-want-pstats            #f
-show-frame-rate-meter  #f
-
-# This enables simple networked programs to easily provide a DC file
-
-dc-file sample.dc
-
-# Enable audio using the FMod audio library by default:
-
-audio-library-name fmod_audio
-"""
+CONFAUTOPRC=ReadFile("makepanda/confauto.in")
+CONFIGPRC=ReadFile("makepanda/config.in")
 
 if (sys.platform != "win32"):
     CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx9","")
