@@ -120,7 +120,7 @@ class ClockDelta(DirectObject.DirectObject):
         """
         newDelta = (float(localTime) -
                     (float(networkTime) / NetworkTimePrecision))
-        self.newDelta(localTime, newDelta, newUncertainty)
+        self.newDelta(localTime, newDelta, newUncertainty, trustNew = trustNew)
 
     def peerToPeerResync(self, avId, timestamp, serverTime, uncertainty):
         """
@@ -184,8 +184,8 @@ class ClockDelta(DirectObject.DirectObject):
         """
         oldUncertainty = self.getUncertainty()
         if oldUncertainty != None:
-            assert(self.notify.debug('previous delta at %.3f s, +/- %.3f s.' % (self.delta, oldUncertainty)))
-            assert(self.notify.debug('new delta at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty)))
+            self.notify.info('previous delta at %.3f s, +/- %.3f s.' % (self.delta, oldUncertainty))
+            self.notify.info('new delta at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty))
             # Our previous measurement was self.delta +/- oldUncertainty;
             # our new measurement is newDelta +/- newUncertainty.  Take
             # the intersection of both.
@@ -209,7 +209,7 @@ class ClockDelta(DirectObject.DirectObject):
             else:
                 newDelta = (low + high) / 2.0
                 newUncertainty = (high - low) / 2.0
-                assert(self.notify.debug('intersection at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty)))
+                self.notify.info('intersection at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty))
 
         self.delta = newDelta
         self.uncertainty = newUncertainty

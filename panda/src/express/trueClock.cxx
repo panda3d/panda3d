@@ -43,8 +43,9 @@ static const double _00000001 = 1.0 / 10000000.0;
 // high-precision clock rate vs. the time-of-day rate, when
 // paranoid-clock is in effect.  Reducing it makes the clock respond
 // more quickly to changes in rate, but setting it too small may
-// introduce erratic behavior.
-static const double paranoid_clock_interval = 1.0;
+// introduce erratic behavior, especially if the user has ntp
+// configured.
+static const double paranoid_clock_interval = 3.0;
 
 // It will be considered a clock jump error if either the
 // high-precision clock or the time-of-day clock change by this number
@@ -105,7 +106,8 @@ get_short_time() {
     PN_int64 count;
     QueryPerformanceCounter((LARGE_INTEGER *)&count);
 
-    time = (double)(count - _init_count) * _recip_frequency;
+    time = (double)(count - _init_count) * _recip_frequency +
+      ConfigVariableDouble("clock-jump", 0.0);
 
   } else {
     // No high-resolution clock; return the best information we have.
@@ -273,7 +275,7 @@ correct_time(double time) {
     // a row.
     Timestamps::iterator ti;
     for (ti = _timestamps.begin(); ti != _timestamps.end(); ++ti) {
-      (*ti)._time -= time_adjust;
+      (*ti)._time -= time_adjust / _time_scale;
       (*ti)._tod -= tod_adjust;
     }
 
@@ -293,7 +295,8 @@ correct_time(double time) {
     // sync.
     double corrected_time = time * _time_scale + _time_offset;
     double corrected_tod = tod + _tod_offset;
-    if (corrected_time - corrected_tod > paranoid_clock_jump_error_max_delta) {
+    if (corrected_time - corrected_tod > paranoid_clock_jump_error_max_delta &&
+	_time_scale > 0.00001) {
       express_cat.info()
 	<< "Force-adjusting time_scale to catch up to errors.\n";
       set_time_scale(time, _time_scale * 0.5);
@@ -321,7 +324,7 @@ correct_time(double time) {
 
     double keep_interval = paranoid_clock_interval;
     
-    if (tod_age > 0.0 && time_age > 0.0) {
+    if (tod_age > keep_interval / 2.0 && time_age > 0.0) {
       // Adjust the _time_scale value to match the ratio between the
       // elapsed time on the high-resolution clock, and the
       // time-of-day clock.
@@ -341,6 +344,12 @@ correct_time(double time) {
 	// Actually report it a little bit later, to give the time
 	// scale a chance to settle down.
 	_report_time_scale_time = tod + _tod_offset + keep_interval;
+	if (express_cat.is_debug()) {
+	  express_cat.debug()
+	    << "Will report time scale, now " << 100.0 / _time_scale
+	    << "%, tod_age = " << tod_age << ", time_age = " << time_age
+	    << ", ratio = " << ratio << "\n";
+	}
       }
     }
     
@@ -360,9 +369,11 @@ correct_time(double time) {
   double corrected_tod = tod + _tod_offset;
 
   if (_time_scale_changed && corrected_tod >= _report_time_scale_time) {
+    double percent = 100.0 / _time_scale;
+    // Round percent to the nearest 5% to reduce confusion in the logs.
+    percent = floor(percent / 20.0 + 0.5) * 20.0;
     express_cat.info()
-      << "Clock appears to be running at " << 100.0 / _time_scale
-      << "% real time.\n";
+      << "Clock appears to be running at " << percent << "% real time.\n";
     _last_reported_time_scale = _time_scale;
     _time_scale_changed = false;
   }
