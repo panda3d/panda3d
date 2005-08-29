@@ -41,7 +41,8 @@ init_cg() {
   cgContext = cgCreateContext();
   
   if (cgContext == NULL) {
-    cerr << "COULD NOT CREATE CG CONTEXT" << "\n" ;
+    express_cat.error()
+      << "Could not create Cg context\n" ;
     return false;
   }
 
@@ -69,14 +70,16 @@ load_shaders(){
   if (cgVertexProgram == NULL) {
     // We Need To Determine What Went Wrong
     CGerror Error = cgGetError();
-    printf("VERTEX SHADER ERROR %s",cgGetErrorString(Error));
+    effects_cat.error()
+      << "VERTEX SHADER " << cgGetErrorString(Error) << "\n";
     return false;
   }
 
   if (cgFragmentProgram == NULL) {
     // We Need To Determine What Went Wrong
     CGerror Error = cgGetError();
-    printf("PIXEL SHADER ERROR %s",cgGetErrorString(Error));
+    effects_cat.error()
+      << "PIXEL SHADER " << cgGetErrorString(Error) << "\n";
     return false;
   }
 
