@@ -106,8 +106,7 @@ get_short_time() {
     PN_int64 count;
     QueryPerformanceCounter((LARGE_INTEGER *)&count);
 
-    time = (double)(count - _init_count) * _recip_frequency +
-      ConfigVariableDouble("clock-jump", 0.0);
+    time = (double)(count - _init_count) * _recip_frequency;
 
   } else {
     // No high-resolution clock; return the best information we have.
