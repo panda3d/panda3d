@@ -454,7 +454,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # This collision node will test for collisions with any collision
         # solids with a bit mask set to 0x80000000
         mask = BitMask32()
-        mask.setWord(0x80000000)
+        mask.setBit(31)
         self.collisionNode.setFromCollideMask(mask)
         # But in this case, don't test against actual geometry
         self.collisionNode.setCollideGeom(0)
