@@ -123,9 +123,9 @@ class DirectFrame(DirectGuiWidget):
         if arg == None:
             # Passed in None
             imageList = (None,) * self['numStates']
-        elif isinstance(arg, NodePath):
-            imageList = (arg,) * self['numStates']
-        elif isinstance(arg, types.StringTypes):
+        elif isinstance(arg, NodePath) or \
+             isinstance(arg, Texture) or \
+             isinstance(arg, types.StringTypes):
             # Passed in a single node path, make a tuple out of it
             imageList = (arg,) * self['numStates']
         else:

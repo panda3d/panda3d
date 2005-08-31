@@ -40,34 +40,10 @@ class OnscreenImage(PandaObject, NodePath):
         """
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
+
         if parent == None:
             parent = aspect2d
-        # Assign geometry
-        self.sort = sort
-        if isinstance(image, NodePath):
-            self.assign(image.copyTo(parent, sort))
-        elif type(image) == type(''):
-            # Assume its a file name and create a texture card
-            tex = loader.loadTexture(image)
-            cm = CardMaker('OnscreenImage')
-            cm.setFrame(-1, 1, -1, 1)
-            self.assign(parent.attachNewNode(cm.generate(), sort))
-            self.setTexture(tex)
-        elif type(image) == type(()):
-            # Assume its a file+node name, extract texture from node
-            model = loader.loadModelOnce(image[0])
-            if model:
-                node = model.find(image[1])
-                if node:
-                    #print 'assigning'
-                    self.assign(node.copyTo(parent, sort))
-                else:
-                    print 'OnscreenImage: node %s not found' % image[1]
-                    return
-                model.removeNode()
-            else:
-                print 'OnscreenImage: model %s not found' % image[0]
-                return
+        self.setImage(image, parent = parent, sort = sort)
 
         # Adjust pose
         # Set pos
@@ -97,24 +73,48 @@ class OnscreenImage(PandaObject, NodePath):
             # Set color, if specified
             self.setColor(color[0], color[1], color[2], color[3])
 
-    def setImage(self, image):
-        parent = self.getParent()
-        # Assign geometry
+    def setImage(self, image,
+                 parent = NodePath(),
+                 transform = TransformState.makeIdentity(),
+                 sort = 0):
+        # Get the original parent, transform, and sort, if any, so we can
+        # preserve them across this call.
+        if not self.isEmpty():
+            parent = self.getParent()
+            transform = self.getTransform()
+            sort = self.getSort()
+
         self.removeNode()
+
+        # Assign geometry
         if isinstance(image, NodePath):
-            self.assign(image.copyTo(parent))
-        elif type(image) == type(''):
-            # Assume its a file name and create a texture card
-            tex = loader.loadTexture(image)
+            self.assign(image.copyTo(parent, sort))
+        elif isinstance(image, types.StringTypes) or \
+             isinstance(image, Texture):
+            if isinstance(image, Texture):
+                # It's a Texture
+                tex = image
+            else:
+                # It's a Texture file name
+                tex = loader.loadTexture(image)
             cm = CardMaker('OnscreenImage')
             cm.setFrame(-1, 1, -1, 1)
-            self.assign(parent.attachNewNode(cm.generate(), self.sort))
+            self.assign(parent.attachNewNode(cm.generate(), sort))
             self.setTexture(tex)
         elif type(image) == type(()):
+            # Assume its a file+node name, extract texture from node
             model = loader.loadModelOnce(image[0])
-            self.assign(model.find(image[1]))
-            self.reparentTo(parent)
-            model.removeNode()
+            if model:
+                node = model.find(image[1])
+                if node:
+                    self.assign(node.copyTo(parent, sort))
+                else:
+                    print 'OnscreenImage: node %s not found' % image[1]
+            else:
+                print 'OnscreenImage: model %s not found' % image[0]
+
+        if not self.isEmpty():
+            self.setTransform(transform)
 
     def getImage(self):
         return self
