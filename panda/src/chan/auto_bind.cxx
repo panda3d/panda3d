@@ -97,29 +97,22 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 //     Function: r_find_bundles
 //  Description: A support function for auto_bind(), below.  Walks
 //               through the hierarchy and finds all of the
-//               PartBundles and AnimBundles.  The flag 'classify'
-//               controls whether or not the bundles are separated
-//               into groups according to their root name.  If not,
-//               they are all filed under the same name.
+//               PartBundles and AnimBundles.
 ////////////////////////////////////////////////////////////////////
 static void 
-r_find_bundles(PandaNode *node, Anims &anims, Parts &parts, bool classify) {
+r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
   if (node->is_of_type(AnimBundleNode::get_class_type())) {
     AnimBundleNode *bn = DCAST(AnimBundleNode, node);
-    if (classify)
-      anims[bn->get_bundle()->get_name()].insert(bn);
-    else anims[""].insert(bn);
+    anims[bn->get_bundle()->get_name()].insert(bn);
   } else if (node->is_of_type(PartBundleNode::get_class_type())) {
     PartBundleNode *bn = DCAST(PartBundleNode, node);
-    if (classify)
-      parts[bn->get_bundle()->get_name()].insert(bn);
-    else parts[""].insert(bn);
+    parts[bn->get_bundle()->get_name()].insert(bn);
   }
 
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_find_bundles(cr.get_child(i), anims, parts, classify);
+    r_find_bundles(cr.get_child(i), anims, parts);
   }
 }
 
@@ -137,12 +130,9 @@ void
 auto_bind(PandaNode *root_node, AnimControlCollection &controls,
           int hierarchy_match_flags) {
   // First, locate all the bundles in the subgraph.
-  Anims anims;
-  Parts parts;
-  bool classify = true;
-  if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name)
-    classify = false;
-  r_find_bundles(root_node, anims, parts, classify);
+  Anims anims; AnimNodes extraAnims;
+  Parts parts; PartNodes extraParts;
+  r_find_bundles(root_node, anims, parts);
   
   if (chan_cat.is_debug()) {
     int anim_count = 0;
@@ -190,10 +180,20 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
   while (ai != anims.end() && pi != parts.end()) {
     if ((*ai).first < (*pi).first) {
       // Here's an anim with no matching parts.
+      if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
+        AnimNodes::const_iterator ani;
+        for (ani = (*ai).second.begin(); ani != (*ai).second.end(); ++ani)
+          extraAnims.insert(*ani);
+      }
       ++ai;
 
     } else if ((*pi).first < (*ai).first) {
       // And here's a part with no matching anims.
+      if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
+        PartNodes::const_iterator pni;
+        for (pni = (*pi).second.begin(); pni != (*pi).second.end(); ++pni)
+          extraParts.insert(*pni);
+      }
       ++pi;
 
     } else {
@@ -207,6 +207,9 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
       // name.
     }
   }
+  if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name)
+    bind_anims(extraParts, extraAnims, controls,
+               hierarchy_match_flags);
 }
 
 
