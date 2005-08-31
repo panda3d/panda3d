@@ -294,9 +294,7 @@ class ShowBase(DirectObject.DirectObject):
         self.graphicsEngine.removeAllWindows()
 
         if self.musicManager:
-            # Temporary condition for old Pandas.
-            if hasattr(self.musicManager, 'shutdown'):
-                self.musicManager.shutdown()
+            self.musicManager.shutdown()
 
         del self.win
         del self.winList
@@ -610,12 +608,7 @@ class ShowBase(DirectObject.DirectObject):
         rendering 3-d geometry.
         """
         self.render = NodePath('render')
-
-        # Temporary try..except for old pandas.
-        try:
-            self.render.node().setAttrib(RescaleNormalAttrib.makeDefault())
-        except:
-            pass
+        self.render.setAttrib(RescaleNormalAttrib.makeDefault())
 
         self.render.setTwoSided(0)
         self.backfaceCullingEnabled = 1
@@ -687,10 +680,8 @@ class ShowBase(DirectObject.DirectObject):
 
         dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
         dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
-        #lt = LightTransition.allOff()
-        self.render2dp.node().setAttrib(dt)
-        self.render2dp.node().setAttrib(dw)
-        #self.render2dp.node().setAttrib(lt, 1)
+        self.render2dp.setDepthTest(0)
+        self.render2dp.setDepthWrite(0)
 
         self.render2dp.setMaterialOff(1)
         self.render2dp.setTwoSided(1)
@@ -704,9 +695,7 @@ class ShowBase(DirectObject.DirectObject):
 
         aspectRatio = self.getAspectRatio()
         self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2dp"))
-        # Temporary test for old panda.
-        if hasattr(PGTop, 'setStartSort'):
-            self.aspect2dp.node().setStartSort(16384)
+        self.aspect2dp.node().setStartSort(16384)
         self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
         # It's important to know the bounds of the aspect2d screen.
@@ -732,16 +721,21 @@ class ShowBase(DirectObject.DirectObject):
             aspectRatio = float(win.getXSize()) / float(win.getYSize())
 
         else:
-            props = WindowProperties.getDefault()
-            if not props.hasSize():
+            if win == None:
+                props = WindowProperties.getDefault()
+            else:
                 props = win.getRequestedProperties()
+                if not props.hasSize():
+                    props = WindowProperties.getDefault()
+                    
             if props.hasSize():
                 aspectRatio = float(props.getXSize()) / float(props.getYSize())
 
         return aspectRatio
 
     def makeCamera(self, win, sort = 0, scene = None,
-                   displayRegion = (0, 1, 0, 1), aspectRatio = None, camName = 'cam'):
+                   displayRegion = (0, 1, 0, 1), aspectRatio = None,
+                   lens = None, camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
@@ -755,13 +749,14 @@ class ShowBase(DirectObject.DirectObject):
         # By default, we do not clear 3-d display regions (the entire
         # window will be cleared, which is normally sufficient).
 
-        if aspectRatio == None:
-            aspectRatio = self.getAspectRatio(win)
-
         # Now make a new Camera node.
         camNode = Camera(camName)
-        lens = PerspectiveLens()
-        lens.setAspectRatio(aspectRatio)
+        if lens == None:
+            lens = PerspectiveLens()
+
+            if aspectRatio == None:
+                aspectRatio = self.getAspectRatio(win)
+            lens.setAspectRatio(aspectRatio)
 
         camNode.setLens(lens)
 
@@ -784,7 +779,8 @@ class ShowBase(DirectObject.DirectObject):
         return cam
 
     def makeCamera2d(self, win, sort = 10,
-                     displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
+                     displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1),
+                     lens = None):
         """
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
@@ -800,10 +796,11 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now make a new Camera node.
         cam2dNode = Camera('cam2d')
-        lens = OrthographicLens()
-        lens.setFilmSize(right - left, top - bottom)
-        lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
-        lens.setNearFar(-1000, 1000)
+        if lens == None:
+            lens = OrthographicLens()
+            lens.setFilmSize(right - left, top - bottom)
+            lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
+            lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
 
         # self.camera2d is the analog of self.camera, although it's
@@ -817,7 +814,8 @@ class ShowBase(DirectObject.DirectObject):
         return camera2d
 
     def makeCamera2dp(self, win, sort = 20,
-                      displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
+                      displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1),
+                      lens = None):
         """
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
@@ -833,10 +831,11 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now make a new Camera node.
         cam2dNode = Camera('cam2d')
-        lens = OrthographicLens()
-        lens.setFilmSize(right - left, top - bottom)
-        lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
-        lens.setNearFar(-1000, 1000)
+        if lens == None:
+            lens = OrthographicLens()
+            lens.setFilmSize(right - left, top - bottom)
+            lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
+            lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
 
         # self.camera2d is the analog of self.camera, although it's
