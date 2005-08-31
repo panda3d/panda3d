@@ -968,13 +968,17 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameTexture(self):
         # this might be a single texture or a list of textures
         textures = self['frameTexture']
-        if textures == None or isinstance(textures, Texture):
-            textures = (textures,)
+        if textures == None or \
+           isinstance(textures, Texture) or \
+           isinstance(textures, types.StringTypes):
+            textures = (textures,) * self['numStates']
         for i in range(self['numStates']):
             if i >= len(textures):
                 texture = textures[-1]
             else:
                 texture = textures[i]
+            if isinstance(texture, types.StringTypes):
+                texture = loader.loadTexture(texture)
             if texture:
                 self.frameStyle[i].setTexture(texture)
         self.updateFrameStyle()

@@ -81,15 +81,19 @@ class DirectFrame(DirectGuiWidget):
 
     def setGeom(self):
         # Determine argument type
-        if self['geom'] == None:
+        geom = self['geom']
+        
+        if geom == None:
             # Passed in None
             geomList = (None,) * self['numStates']
-        elif isinstance(self['geom'], NodePath):
+        elif isinstance(geom, NodePath) or \
+             isinstance(geom, types.StringTypes):
             # Passed in a single node path, make a tuple out of it
-            geomList = (self['geom'],) * self['numStates']
+            geomList = (geom,) * self['numStates']
         else:
             # Otherwise, hope that the user has passed in a tuple/list
-            geomList = self['geom']
+            geomList = geom
+            
         # Create/destroy components
         for i in range(self['numStates']):
             component = 'geom' + `i`

@@ -42,14 +42,8 @@ class OnscreenGeom(PandaObject, NodePath):
         NodePath.__init__(self)
         if parent == None:
             parent = aspect2d
-        self.parent = parent
-        # Assign geometry
-        self.sort = sort
-        if isinstance(geom, NodePath):
-            self.assign(geom.copyTo(parent, self.sort))
-        elif type(geom) == type(''):
-            self.assign(loader.loadModelCopy(geom))
-            self.reparentTo(parent, self.sort)
+
+        self.setGeom(geom, parent = parent, sort = sort, color = color)
 
         # Adjust pose
         # Set pos
@@ -74,20 +68,35 @@ class OnscreenGeom(PandaObject, NodePath):
               isinstance(scale, types.IntType)):
             self.setScale(scale)
 
-        # Set color
-        if color:
-            # Set color, if specified
-            self.setColor(color[0], color[1], color[2], color[3])
+    def setGeom(self, geom,
+                parent = NodePath(),
+                transform = TransformState.makeIdentity(),
+                sort = 0,
+                color = None):
+        # Get the original parent, transform, and sort, if any, so we can
+        # preserve them across this call.
+        if not self.isEmpty():
+            parent = self.getParent()
+            transform = self.getTransform()
+            sort = self.getSort()
+            if self.hasColor():
+                color = self.getColor()
 
-    def setGeom(self, geom):
-        # Assign geometry
         self.removeNode()
+
         # Assign geometry
         if isinstance(geom, NodePath):
-            self.assign(geom.copyTo(self.parent))
-        elif type(geom) == type(''):
+            self.assign(geom.copyTo(parent, sort))
+        elif isinstance(geom, types.StringTypes):
             self.assign(loader.loadModelCopy(geom))
-            self.reparentTo(self.parent)
+            self.reparentTo(parent, sort)
+
+        if not self.isEmpty():
+            self.setTransform(transform)
+
+            # Set color, if specified
+            if color:
+                self.setColor(color[0], color[1], color[2], color[3])
 
     def getGeom(self):
         return self
