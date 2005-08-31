@@ -42,6 +42,8 @@ EggBase() {
   _normals_mode = NM_preserve;
   _normals_threshold = 0.0;
 
+  _got_tbnall = false;
+
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
 
