@@ -35,14 +35,14 @@ ConfigVariableInt game_server_timeout_ms
 ConfigVariableDouble min_lag
 ("min-lag", 0.0,
  PRC_DESC("This represents the time in seconds by which to artificially lag "
-          "inbound messages.  It is only used when the connection method is "
-          "NSPR."));
+          "inbound messages.  It is useful to test a game's tolerance of "
+	  "network latency."));
 
 ConfigVariableDouble max_lag
 ("max-lag", 0.0,
  PRC_DESC("This represents the time in seconds by which to artificially lag "
-          "inbound messages.  It is only used when the connection method is "
-          "NSPR."));
+          "inbound messages.  It is useful to test a game's tolerance of "
+	  "network latency."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdistributed
