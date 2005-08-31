@@ -140,17 +140,7 @@ DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
 # following four; these instead come from the dynamic settings set by
 # ctattach.
 
-def cygpathW(osName):
-    cmd = 'cygpath -w "%s"' % (osName)
-    fd = os.popen(cmd, 'r')
-    result = fd.read()
-    status = fd.close()
-    if status != None:
-        error = 'Execution error: %s returned %s' % (cmd, status)
-        raise error
-    return result.strip()
-
-DoGenPyCode.directDir = cygpathW(os.environ['DIRECT'])
+DoGenPyCode.directDir = directDir
 DoGenPyCode.outputDir = os.path.join(directDir, 'built', 'lib', 'pandac')
 DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
