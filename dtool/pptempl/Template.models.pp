@@ -65,19 +65,19 @@
 
   #forscopes flt_egg
     #if $[SOURCES]
-      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], flt]]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], flt, ]]
     #endif
   #end flt_egg
 
   #forscopes lwo_egg
     #if $[SOURCES]
-      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO, ]]
     #endif
   #end lwo_egg
 
   #forscopes maya_egg
     #if $[SOURCES]
-      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO]]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], lwo LWO, ]]
     #endif
   #end maya_egg
 #endif
