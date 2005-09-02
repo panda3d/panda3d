@@ -208,6 +208,10 @@ pick_channel_index(plist<int> &holes, int &next) const {
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
 bind_hierarchy(AnimGroup *anim, int channel_index) {
+  if (chan_cat.is_debug()) {
+    chan_cat.debug()
+      << "binding " << *this << " to " << *anim << "\n";
+  }
   while ((int)_channels.size() <= channel_index) {
     _channels.push_back((AnimChannelBase*)0L);
   }

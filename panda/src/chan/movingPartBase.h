@@ -42,6 +42,11 @@ protected:
 public:
   MovingPartBase(PartGroup *parent, const string &name);
 
+PUBLISHED:
+  INLINE int get_max_bound() const;
+  INLINE AnimChannelBase *get_bound(int n) const;
+
+public:
   virtual TypeHandle get_value_type() const=0;
   virtual AnimChannelBase *make_initial_channel() const=0;
   virtual void write(ostream &out, int indent_level) const;

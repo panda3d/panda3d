@@ -73,6 +73,7 @@ PUBLISHED:
 
   PartBundle *get_part() const;
   INLINE AnimBundle *get_anim() const;
+  INLINE int get_channel_index() const;
 
   void output(ostream &out) const;
 
@@ -85,8 +86,6 @@ public:
 
   bool channel_has_changed(AnimChannelBase *channel) const;
   void mark_channels();
-
-  INLINE int get_channel_index() const;
 
 private:
 

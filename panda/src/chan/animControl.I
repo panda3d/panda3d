@@ -116,8 +116,15 @@ get_anim() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_channel_index
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: Returns the particular channel index associated with
+//               this AnimControl.  This channel index is the slot on
+//               which each AnimGroup is bound to its associated
+//               PartGroup, for each joint in the animation.
+//
+//               It will be true that
+//               get_part()->find_child("n")->get_bound(get_channel_index())
+//               == get_anim()->find_child("n"), for each joint "n".
 ////////////////////////////////////////////////////////////////////
 INLINE int AnimControl::
 get_channel_index() const {
