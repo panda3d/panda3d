@@ -25,8 +25,12 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SavedContext
-// Description : This is the base class for both a TextureContext and
-//               a GeomContext.
+// Description : This is the base class for all GSG-specific context
+//               objects, such as TextureContext and GeomContext.  It
+//               exists mainly to provide some structural
+//               organization.  At the moment, there are no methods
+//               common to all of these objects, but there might be
+//               one day.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SavedContext : public TypedObject {
 public:
