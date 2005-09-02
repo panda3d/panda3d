@@ -161,9 +161,6 @@ draw_lines() {
   if (!_list.empty()) {
     _created_data = NULL;
       
-    CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
-    CPT(RenderState) state = RenderState::make(thick);
-
     PT(GeomVertexData) vdata = new GeomVertexData
       ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -205,12 +202,12 @@ draw_lines() {
     if (lines->get_num_vertices() != 0) {
       PT(Geom) geom = new Geom(vdata);
       geom->add_primitive(lines);
-      _previous->add_geom(geom, state);
+      _previous->add_geom(geom);
     }
     if (points->get_num_vertices() != 0) {
       PT(Geom) geom = new Geom(vdata);
       geom->add_primitive(points);
-      _previous->add_geom(geom, state);
+      _previous->add_geom(geom);
     }
   }
 }

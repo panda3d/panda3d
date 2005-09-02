@@ -121,7 +121,6 @@ private:
 
   LineList _list;
   Colorf _color;
-  float _thick;
 
   PT(GeomVertexData) _created_data;
 
