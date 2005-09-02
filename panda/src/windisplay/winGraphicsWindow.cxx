@@ -792,19 +792,23 @@ open_regular_window() {
     }
   }
 
-  if (!_properties.has_origin()) {
-    _properties.set_origin(0, 0);
+  int x_origin = 0;
+  int y_origin = 0;
+  if (_properties.has_origin()) {
+    x_origin = _properties.get_x_origin();
+    y_origin = _properties.get_y_origin();
   }
-  if (!_properties.has_size()) {
-    _properties.set_size(100, 100);
+
+  int x_size = 100;
+  int y_size = 100;
+  if (_properties.has_size()) {
+    x_size = _properties.get_x_size();
+    y_size = _properties.get_y_size();
   }
 
   RECT win_rect;
-  SetRect(&win_rect, 
-          _properties.get_x_origin(),
-          _properties.get_y_origin(),
-          _properties.get_x_origin() + _properties.get_x_size(),
-          _properties.get_y_origin() + _properties.get_y_size());
+  SetRect(&win_rect, x_origin, y_origin,
+	  x_origin + x_size, y_origin + y_size);
   
   // compute window size based on desired client area size
   if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
@@ -812,26 +816,25 @@ open_regular_window() {
       << "AdjustWindowRect failed!" << endl;
     return false;
   }
-  
-  // make sure origin is on screen; slide far bounds over if necessary
-  if (win_rect.left < 0) {
-    win_rect.right += abs(win_rect.left); 
-    win_rect.left = 0;
-  }
-  if (win_rect.top < 0) {
-    win_rect.bottom += abs(win_rect.top); 
-    win_rect.top = 0;
-  }
 
   string title;
   if (_properties.has_title()) {
     title = _properties.get_title();
   }
 
+  if (_properties.has_origin()) {
+    x_origin = win_rect.left;
+    y_origin = win_rect.top;
+
+  } else {
+    x_origin = CW_USEDEFAULT;
+    y_origin = CW_USEDEFAULT;
+  }
+
   const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
   _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
-                       win_rect.left, win_rect.top,
+                       x_origin, y_origin,
                        win_rect.right - win_rect.left,
                        win_rect.bottom - win_rect.top,
                        NULL, NULL, hinstance, 0);
@@ -2313,8 +2316,10 @@ void PrintErrorMessage(DWORD msgID) {
 void
 ClearToBlack(HWND hWnd, const WindowProperties &props) {
   if (!props.has_origin()) {
-    windisplay_cat.info()
-      << "Skipping ClearToBlack, no origin specified yet.\n";
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+	<< "Skipping ClearToBlack, no origin specified yet.\n";
+    }
     return;
   }
 
