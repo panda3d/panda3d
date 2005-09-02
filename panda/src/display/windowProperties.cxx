@@ -61,23 +61,13 @@ get_default() {
 
   props.set_open(true);
 
-  if (win_width.has_value() && win_height.has_value() &&
-      !win_size.has_value()) {
-    props.set_size(win_width, win_height);
-
-  } else {
-    if (win_size.get_num_words() == 1) {
-      props.set_size(win_size[0], win_size[0]);
-    } else {
-      props.set_size(win_size[0], win_size[1]);
-    }
+  if (win_size.get_num_words() == 1) {
+    props.set_size(win_size[0], win_size[0]);
+  } else if (win_size.get_num_words() >= 2) {
+    props.set_size(win_size[0], win_size[1]);
   }
 
-  if (win_origin_x.has_value() && win_origin_y.has_value() && 
-      !win_origin.has_value()) {
-    props.set_origin(win_origin_x, win_origin_y);
-
-  } else {
+  if (win_origin.get_num_words() >= 2) {
     props.set_origin(win_origin[0], win_origin[1]);
   }
 

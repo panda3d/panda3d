@@ -63,10 +63,6 @@ extern EXPCL_PANDA ConfigVariableBool color_scale_via_lighting;
 
 extern EXPCL_PANDA ConfigVariableInt win_size;
 extern EXPCL_PANDA ConfigVariableInt win_origin;
-extern EXPCL_PANDA ConfigVariableInt win_width;
-extern EXPCL_PANDA ConfigVariableInt win_height;
-extern EXPCL_PANDA ConfigVariableInt win_origin_x;
-extern EXPCL_PANDA ConfigVariableInt win_origin_y;
 extern EXPCL_PANDA ConfigVariableBool fullscreen;
 extern EXPCL_PANDA ConfigVariableBool undecorated;
 extern EXPCL_PANDA ConfigVariableBool cursor_hidden;

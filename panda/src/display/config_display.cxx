@@ -184,21 +184,9 @@ ConfigVariableInt win_size
           "replaces the deprecated win-width and win-height variables."));
 
 ConfigVariableInt win_origin
-("win-origin", "0 0",
+("win-origin", "",
  PRC_DESC("This is the default position at which to open a new window.  This "
           "replaces the deprecated win-origin-x and win-origin-y variables."));
-
-ConfigVariableInt win_width
-("win-width", 0);
-
-ConfigVariableInt win_height
-("win-height", 0);
-
-ConfigVariableInt win_origin_x
-("win-origin-x", 0);
-
-ConfigVariableInt win_origin_y
-("win-origin-y", 0);
 
 ConfigVariableBool fullscreen
 ("fullscreen", false);
