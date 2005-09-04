@@ -24,6 +24,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
+#include "shader.h"
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
@@ -76,6 +77,18 @@ PreparedGraphicsObjects::
   _prepared_geoms.clear();
   _released_geoms.clear();
   _enqueued_geoms.clear();
+
+  Shaders::iterator sci;
+  for (sci = _prepared_shaders.begin();
+       sci != _prepared_shaders.end();
+       ++sci) {
+    ShaderContext *sc = (*sci);
+    sc->_shader->clear_prepared(this);
+  }
+
+  _prepared_shaders.clear();
+  _released_shaders.clear();
+  _enqueued_shaders.clear();
 
   VertexBuffers::iterator vbci;
   for (vbci = _prepared_vertex_buffers.begin();
@@ -249,7 +262,6 @@ prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   return tc;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::enqueue_geom
 //       Access: Public
@@ -388,6 +400,146 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
   }
 
   return gc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::enqueue_shader
+//       Access: Public
+//  Description: Indicates that a shader would like to be put on the
+//               list to be prepared when the GSG is next ready to
+//               do this (presumably at the next frame).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+enqueue_shader(Shader *shader) {
+  MutexHolder holder(_lock);
+
+  _enqueued_shaders.insert(shader);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::dequeue_shader
+//       Access: Public
+//  Description: Removes a shader from the queued list of shaders to
+//               be prepared.  Normally it is not necessary to call
+//               this, unless you change your mind about preparing it
+//               at the last minute, since the shader will
+//               automatically be dequeued and prepared at the next
+//               frame.
+//
+//               The return value is true if the shader is
+//               successfully dequeued, false if it had not been
+//               queued.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+dequeue_shader(Shader *shader) {
+  MutexHolder holder(_lock);
+
+  EnqueuedShaders::iterator qi = _enqueued_shaders.find(shader);
+  if (qi != _enqueued_shaders.end()) {
+    _enqueued_shaders.erase(qi);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_shader
+//       Access: Public
+//  Description: Indicates that a shader context, created by a
+//               previous call to prepare_shader(), is no longer
+//               needed.  The driver resources will not be freed until
+//               some GSG calls update(), indicating it is at a
+//               stage where it is ready to release shaders--this
+//               prevents conflicts from threading or multiple GSG's
+//               sharing shaders (we have no way of knowing which
+//               graphics context is currently active, or what state
+//               it's in, at the time release_shader is called).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_shader(ShaderContext *sc) {
+  MutexHolder holder(_lock);
+
+  sc->_shader->clear_prepared(this);
+
+  // We have to set the Shader pointer to NULL at this point, since
+  // the Shader itself might destruct at any time after it has been
+  // released.
+  sc->_shader = (Shader *)NULL;
+
+  bool removed = (_prepared_shaders.erase(sc) != 0);
+  nassertv(removed);
+
+  _released_shaders.insert(sc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_all_shaders
+//       Access: Public
+//  Description: Releases all shaders at once.  This will force them
+//               to be reloaded into shader memory for all GSG's that
+//               share this object.  Returns the number of shaders
+//               released.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+release_all_shaders() {
+  MutexHolder holder(_lock);
+
+  int num_shaders = (int)_prepared_shaders.size();
+
+  Shaders::iterator sci;
+  for (sci = _prepared_shaders.begin();
+       sci != _prepared_shaders.end();
+       ++sci) {
+    ShaderContext *sc = (*sci);
+    sc->_shader->clear_prepared(this);
+    sc->_shader = (Shader *)NULL;
+
+    _released_shaders.insert(sc);
+  }
+
+  _prepared_shaders.clear();
+
+  return num_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::prepare_shader_now
+//       Access: Public
+//  Description: Immediately creates a new ShaderContext for the
+//               indicated shader and returns it.  This assumes that
+//               the GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               shaders.  If this is not necessarily the case, you
+//               should use enqueue_shader() instead.
+//
+//               Normally, this function is not called directly.  Call
+//               Shader::prepare_now() instead.
+//
+//               The ShaderContext contains all of the pertinent
+//               information needed by the GSG to keep track of this
+//               one particular shader, and will exist as long as the
+//               shader is ready to be rendered.
+//
+//               When either the Shader or the
+//               PreparedGraphicsObjects object destructs, the
+//               ShaderContext will be deleted.
+////////////////////////////////////////////////////////////////////
+ShaderContext *PreparedGraphicsObjects::
+prepare_shader_now(Shader *shader, GraphicsStateGuardianBase *gsg) {
+  MutexHolder holder(_lock);
+
+  // Ask the GSG to create a brand new ShaderContext.  There might
+  // be several GSG's sharing the same set of shaders; if so, it
+  // doesn't matter which of them creates the context (since they're
+  // all shared anyway).
+  ShaderContext *sc = gsg->prepare_shader(shader);
+
+  if (sc != (ShaderContext *)NULL) {
+    bool prepared = _prepared_shaders.insert(sc).second;
+    nassertr(prepared, sc);
+  }
+
+  return sc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -722,6 +874,16 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _released_geoms.clear();
 
+  Shaders::iterator sci;
+  for (sci = _released_shaders.begin();
+       sci != _released_shaders.end();
+       ++sci) {
+    ShaderContext *sc = (*sci);
+    gsg->release_shader(sc);
+  }
+
+  _released_shaders.clear();
+
   VertexBuffers::iterator vbci;
   for (vbci = _released_vertex_buffers.begin();
        vbci != _released_vertex_buffers.end();
@@ -763,6 +925,16 @@ update(GraphicsStateGuardianBase *gsg) {
   }
 
   _enqueued_geoms.clear();
+
+  EnqueuedShaders::iterator qsi;
+  for (qsi = _enqueued_shaders.begin();
+       qsi != _enqueued_shaders.end();
+       ++qsi) {
+    Shader *shader = (*qsi);
+    shader->prepare_now(this, gsg);
+  }
+
+  _enqueued_shaders.clear();
 
   EnqueuedVertexBuffers::iterator qvbi;
   for (qvbi = _enqueued_vertex_buffers.begin();

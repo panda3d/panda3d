@@ -16,6 +16,8 @@
 #include "textureContext.cxx"
 #include "texturePool.cxx"
 #include "textureStage.cxx"
+#include "shader.cxx"
+#include "shaderContext.cxx"
 #include "transformBlend.cxx"
 #include "transformBlendTable.cxx"
 #include "transformTable.cxx"

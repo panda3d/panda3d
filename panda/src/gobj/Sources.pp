@@ -44,6 +44,7 @@
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
+    shader.I shader.h \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
@@ -92,6 +93,7 @@
     preparedGraphicsObjects.cxx \
     lens.cxx  \
     savedContext.cxx \
+    shader.cxx \
     sliderTable.cxx \
     texture.cxx textureContext.cxx texturePool.cxx \
     textureStage.cxx \
@@ -140,6 +142,7 @@
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
+    shader.h shaderContext.h \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \

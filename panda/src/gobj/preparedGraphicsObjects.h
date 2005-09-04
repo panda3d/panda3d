@@ -25,6 +25,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
+#include "shader.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -32,6 +33,7 @@
 
 class TextureContext;
 class GeomContext;
+class ShaderContext;
 class VertexBufferContext;
 class IndexBufferContext;
 class GraphicsStateGuardianBase;
@@ -76,6 +78,13 @@ public:
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
+  void enqueue_shader(Shader *shader);
+  bool dequeue_shader(Shader *shader);
+  void release_shader(ShaderContext *sc);
+  int release_all_shaders();
+
+  ShaderContext *prepare_shader_now(Shader *shader, GraphicsStateGuardianBase *gsg);
+
   void enqueue_vertex_buffer(GeomVertexArrayData *data);
   bool dequeue_vertex_buffer(GeomVertexArrayData *data);
   void release_vertex_buffer(VertexBufferContext *vbc);
@@ -101,6 +110,8 @@ private:
   typedef phash_set< PT(Texture) > EnqueuedTextures;
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
+  typedef phash_set<ShaderContext *, pointer_hash> Shaders;
+  typedef phash_set< PT(Shader) > EnqueuedShaders;
   typedef phash_set<VertexBufferContext *, pointer_hash> VertexBuffers;
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set<IndexBufferContext *, pointer_hash> IndexBuffers;
@@ -111,6 +122,8 @@ private:
   EnqueuedTextures _enqueued_textures;
   Geoms _prepared_geoms, _released_geoms;  
   EnqueuedGeoms _enqueued_geoms;
+  Shaders _prepared_shaders, _released_shaders;
+  EnqueuedShaders _enqueued_shaders;
   VertexBuffers _prepared_vertex_buffers, _released_vertex_buffers;  
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
   IndexBuffers _prepared_index_buffers, _released_index_buffers;  

@@ -1,5 +1,5 @@
-// Filename: preparedGraphicsObjects.I
-// Created by:  drose (23Feb04)
+// Filename: shader.I
+// Heavily Modified:  jyelon (Sep05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,17 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::get_text
+//  Access: Public
+//  Description: Return the shader's text.
+////////////////////////////////////////////////////////////////////
+INLINE const string &Shader::
+get_text(void) {
+  return _text;
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all
-//       Access: Public
-//  Description: Releases all prepared objects of all kinds at once.
+//  Function: Shader::get_file
+//  Access: Public
+//  Description: Return the shader's filename, or null string.
 ////////////////////////////////////////////////////////////////////
-INLINE void PreparedGraphicsObjects::
-release_all() {
-  release_all_textures();
-  release_all_geoms();
-  release_all_shaders();
-  release_all_vertex_buffers();
-  release_all_index_buffers();
+INLINE const Filename &Shader::
+get_file(void) {
+  return _file;
 }
+
