@@ -59,11 +59,13 @@ class GeomMunger;
 
 class PreparedGraphicsObjects;
 class GraphicsOutput;
-class TextureContext;
 class Texture;
+class TextureContext;
+class Shader;
+class ShaderContext;
+class ShaderMode;
 class RenderState;
 class TransformState;
-
 class Material;
 
 class ColorScaleAttrib;
@@ -81,13 +83,14 @@ class AlphaTestAttrib;
 class DepthTestAttrib;
 class DepthWriteAttrib;
 class TexGenAttrib;
-class CgShaderAttrib;
+class ShaderAttrib;
 class CullFaceAttrib;
 class ClipPlaneAttrib;
 class ShadeModelAttrib;
 class TransparencyAttrib;
 class FogAttrib;
 class DepthOffsetAttrib;
+class ShaderAttrib;
 
 class PointLight;
 class DirectionalLight;
@@ -136,6 +139,9 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
 
+  virtual ShaderContext *prepare_shader(Shader *shader)=0;
+  virtual void release_shader(ShaderContext *sc)=0;
+  
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;
   virtual void release_vertex_buffer(VertexBufferContext *vbc)=0;
 
@@ -224,7 +230,7 @@ public:
   virtual void issue_depth_offset(const DepthOffsetAttrib *) { }
   virtual void issue_color_blend(const ColorBlendAttrib *) { }
   virtual void issue_tex_gen(const TexGenAttrib *) { }
-  virtual void issue_cg_shader_bind(const CgShaderAttrib *){}
+  virtual void issue_shader(const ShaderAttrib *) { }
   virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
   virtual void issue_shade_model(const ShadeModelAttrib *) { }
 
