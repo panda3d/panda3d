@@ -2276,6 +2276,20 @@ Interrogate(ipath=IPATH, opts=OPTS, outd='libpgraph.in', outc='libpgraph_igate.c
 CompileC(ipath=IPATH, opts=OPTS, src='libpgraph_igate.cxx', obj='libpgraph_igate.obj')
 
 #
+# DIRECTORY: panda/src/effects/
+#
+
+IPATH=['panda/src/effects']
+OPTS=['BUILDING_PANDAFX', 'NSPR', 'NVIDIACG']
+CopyAllHeaders(IPATH[0])
+CompileC(ipath=IPATH, opts=OPTS, src='effects_composite1.cxx', obj='effects_composite1.obj')
+Interrogate(ipath=IPATH, opts=OPTS, outd='libeffects.in', outc='libeffects_igate.cxx',
+            src='panda/src/effects',  module='pandafx', library='libeffects',
+            skip=["cgShader.h", "cgShaderAttrib.h", "cgShaderContext.h"],
+            also=["effects_composite1.cxx"])
+CompileC(ipath=IPATH, opts=OPTS, src='libeffects_igate.cxx', obj='libeffects_igate.obj')
+
+#
 # DIRECTORY: panda/src/chan/
 #
 
@@ -2762,19 +2776,6 @@ if (sys.platform == "win32"):
 #       'libdtool.dll',
 #       ])
 # 
-
-#
-# DIRECTORY: panda/src/effects/
-#
-
-IPATH=['panda/src/effects']
-OPTS=['BUILDING_PANDAFX', 'NSPR', 'NVIDIACG']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='effects_composite1.cxx', obj='effects_composite1.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libeffects.in', outc='libeffects_igate.cxx',
-            src='panda/src/effects',  module='pandafx', library='libeffects',
-            skip=[], also=["effects_composite1.cxx"])
-CompileC(ipath=IPATH, opts=OPTS, src='libeffects_igate.cxx', obj='libeffects_igate.obj')
 
 #
 # DIRECTORY: panda/src/egg/
