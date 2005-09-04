@@ -27,6 +27,7 @@
 #include "textureAttrib.h"
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
+#include "shaderAttrib.h"
 #include "textureStage.h"
 #include "antialiasAttrib.h"
 #include "renderModeAttrib.h"
@@ -37,9 +38,8 @@
 #include "pmap.h"
 #include "geomVertexArrayData.h"
 #include "pmutex.h"
-#ifdef HAVE_CGGL
-#include "cgShader.h"
-#endif
+#include "shader.h"
+#include "shaderMode.h"
 
 class PlaneNode;
 class Light;
@@ -102,6 +102,10 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
+
+  virtual ShaderContext *prepare_shader(Shader *shader);
+  virtual void release_shader(ShaderContext *sc);
+
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -135,9 +139,7 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   virtual void issue_shade_model(const ShadeModelAttrib *attrib);
-#ifdef HAVE_CGGL
-  virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
-#endif
+  virtual void issue_shader(const ShaderAttrib *attrib);
 
   virtual void do_issue_material();
 
@@ -294,7 +296,9 @@ protected:
   bool _polygon_offset_enabled;
   bool _flat_shade_model;
   int _decal_level;
-
+  PT(ShaderMode) _shader_mode;
+  CLP(ShaderContext) *_shader_context;
+  
   bool _dithering_enabled;
   bool _texgen_forced_normal;
 
@@ -305,7 +309,6 @@ protected:
   RenderModeAttrib::Mode _render_mode;
   float _point_size;
   bool _point_perspective;
-
   bool _vertex_blending_enabled;
 
   CPT(DisplayRegion) _actual_display_region;
@@ -314,12 +317,6 @@ protected:
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
-
-#ifdef HAVE_CGGL
-  PT(CgShader) _cg_shader; // The current CgShader object
-  typedef pmap< PT(CgShader), PT(CLP(CgShaderContext)) > CGSHADERCONTEXTS;
-  CGSHADERCONTEXTS _gl_cg_shader_contexts;// Associate CgShader with GLCgShaderContext
-#endif
 
   int _pass_number;
   bool _auto_rescale_normal;

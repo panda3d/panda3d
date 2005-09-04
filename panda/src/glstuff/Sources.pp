@@ -40,9 +40,9 @@
      glTextureContext_src.cxx \
      glTextureContext_src.I \
      glTextureContext_src.h \
-     glCgShaderContext_src.cxx \
-     glCgShaderContext_src.h \
-     glCgShaderContext_src.I \
+     glShaderContext_src.cxx \
+     glShaderContext_src.h \
+     glShaderContext_src.I \
 
   #define SOURCES \
     $[INSTALL_HEADERS] glpure.cxx

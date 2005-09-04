@@ -45,7 +45,7 @@
 #include "glIndexBufferContext_src.h"
 #include "glGeomContext_src.h"
 #include "glGeomMunger_src.h"
-#include "glCgShaderContext_src.h"
+#include "glShaderContext_src.h"
 #include "glImmediateModeSender_src.h"
 #include "glGraphicsStateGuardian_src.h"
 

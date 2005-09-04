@@ -9,6 +9,8 @@
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
 #include "shadeModelAttrib.cxx"
+#include "shaderMode.cxx"
+#include "shaderAttrib.cxx"
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
 #include "stateMunger.cxx"

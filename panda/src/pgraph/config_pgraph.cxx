@@ -80,6 +80,8 @@
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
 #include "shadeModelAttrib.h"
+#include "shaderMode.h"
+#include "shaderAttrib.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
 #include "stateMunger.h"
@@ -318,6 +320,8 @@ init_libpgraph() {
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
   ShadeModelAttrib::init_type();
+  ShaderMode::init_type();
+  ShaderAttrib::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   StateMunger::init_type();
@@ -374,6 +378,8 @@ init_libpgraph() {
   RenderState::register_with_read_factory();
   SequenceNode::register_with_read_factory();
   ShadeModelAttrib::register_with_read_factory();
+  ShaderMode::register_with_read_factory();
+  ShaderAttrib::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   Spotlight::register_with_read_factory();
   SwitchNode::register_with_read_factory();

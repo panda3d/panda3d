@@ -51,6 +51,7 @@
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "shadeModelAttrib.h"
+#include "shaderAttrib.h"
 #include "fog.h"
 #include "clockObject.h"
 #include "string_utils.h"
@@ -64,9 +65,8 @@
 #include "mutexHolder.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
-#ifdef HAVE_CGGL
-#include "cgShaderAttrib.h"
-#endif
+#include "shader.h"
+#include "shaderMode.h"
 
 #include <algorithm>
 
@@ -279,9 +279,8 @@ CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
   GraphicsStateGuardian(properties, CS_yup_right) 
 {
   _error_count = 0;
-#ifdef HAVE_CGGL
-  _cg_shader = (CgShader *)NULL;
-#endif
+  _shader_mode = (ShaderMode *)NULL;
+  _shader_context = (CLP(ShaderContext) *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -774,10 +773,9 @@ reset() {
 
   _texgen_forced_normal = false;
 
-#ifdef HAVE_CGGL
-  _cg_shader = (CgShader *)NULL;
-#endif
-
+  _shader_mode = (ShaderMode *)NULL;
+  _shader_context = (CLP(ShaderContext) *)NULL;
+  
   // Count the max number of lights
   GLint max_lights;
   GLP(GetIntegerv)(GL_MAX_LIGHTS, &max_lights);
@@ -1928,6 +1926,27 @@ release_geom(GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::prepare_shader
+//       Access: Public, Virtual
+//  Description: yadda.
+////////////////////////////////////////////////////////////////////
+ShaderContext *CLP(GraphicsStateGuardian)::
+prepare_shader(Shader *shader) {
+  return new CLP(ShaderContext)(shader);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::release_shader
+//       Access: Public, Virtual
+//  Description: yadda.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+release_shader(ShaderContext *sc) {
+  CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
+  delete gsc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::record_deleted_display_list
 //       Access: Public
 //  Description: This is intended to be called only from the
@@ -2561,49 +2580,33 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
   }
 }
 
-
-
-
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_cg_shader_bind
+//     Function: GLGraphicsStateGuardian::issue_shader
 //       Access: Public, Virtual
-//  Description: Bind shader of current node
-//               and unbind the shader of the previous node
-//               Create a new GLCgShaderContext if this shader
-//               object is coming in for the first time
-//               Also maintain the map of CgShader objects to
-//               respective GLCgShaderContexts
+//  Description: Bind a shader.
 ////////////////////////////////////////////////////////////////////
-#ifdef HAVE_CGGL
 void CLP(GraphicsStateGuardian)::
-issue_cg_shader_bind(const CgShaderAttrib *attrib) {
+issue_shader(const ShaderAttrib *attrib) {
+  ShaderMode *mode = attrib->get_shader_mode();
+  Shader *shader = mode->get_shader();
+  CLP(ShaderContext) *context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
 
-  if (attrib->is_off()) { //Current node has no shaders
-    if (_cg_shader != (CgShader *) NULL) {
-      _gl_cg_shader_contexts[_cg_shader]->un_bind();// Prev node had shaders
-    }    
-    _cg_shader = attrib->get_cg_shader();//Store current node.. here NULL 
-  } else {// Current node has shaders
-    if (_cg_shader != (CgShader *) NULL) {
-      _gl_cg_shader_contexts[_cg_shader]->un_bind();// Prev node had shaders
+  if (context != _shader_context) {
+    // Use a completely different shader than before.
+    // Unbind old shader, bind the new one.
+    if (_shader_context != 0) {
+      _shader_context->unbind();
+      _shader_context = 0;
     }
-    _cg_shader = attrib->get_cg_shader();//Store current node  
-    CGSHADERCONTEXTS::const_iterator csci;
-    csci = _gl_cg_shader_contexts.find(_cg_shader);
-    if (csci != _gl_cg_shader_contexts.end()) { // Already have context?
-      (*csci).second->bind(this); // Bind the current shader
-    } else {// First time CgShader object...need to make a new GLCgShaderContext
-      PT(CLP(CgShaderContext)) csc = new CLP(CgShaderContext)(_cg_shader);
-      _cg_shader->load_shaders(); // Profiles created lets load from HD
-      csc->load_shaders(); // Programs loaded, compile and download to GPU
-      CGSHADERCONTEXTS::value_type shader_and_context(_cg_shader, csc);
-      _gl_cg_shader_contexts.insert(shader_and_context);
-      csc->bind(this);// Bind the new shader
+    if (context != 0) {
+      context->bind(mode);
+      _shader_context = context;
     }
+  } else {
+    // Use the same shader as before, but with new input arguments.
+    context->rebind(_shader_mode, mode);
   }
-  report_my_gl_errors();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_render_mode
