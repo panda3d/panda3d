@@ -2588,6 +2588,15 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
 void CLP(GraphicsStateGuardian)::
 issue_shader(const ShaderAttrib *attrib) {
   ShaderMode *mode = attrib->get_shader_mode();
+  if (mode == 0) {
+    if (_shader_context != 0) {
+      _shader_context->unbind();
+      _shader_context = 0;
+      _shader_mode = 0;
+    }
+    return;
+  }
+  
   Shader *shader = mode->get_shader();
   CLP(ShaderContext) *context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
 
@@ -2602,9 +2611,11 @@ issue_shader(const ShaderAttrib *attrib) {
       context->bind(mode);
       _shader_context = context;
     }
+    _shader_mode = mode;
   } else {
     // Use the same shader as before, but with new input arguments.
     context->rebind(_shader_mode, mode);
+    _shader_mode = mode;
   }
 }
 
