@@ -55,10 +55,17 @@ PUBLISHED:
 
   INLINE const string   &get_text(void);
   INLINE const Filename &get_file(void);
-
+  
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
+
+PUBLISHED:
+  void parse_init(void);
+  void parse_line(string &result, bool rt, bool lt);
+  void parse_upto(string &result, string pattern, bool include);
+  void parse_rest(string &result);
+  bool parse_eof(void);
 
 public:
   INLINE int arg_count(void);
@@ -66,6 +73,7 @@ public:
 
   string         _text;
   Filename       _file;
+  int            _parse;
   vector<string> _args;
   
   typedef pmap<PreparedGraphicsObjects *, ShaderContext *> Contexts;
@@ -80,6 +88,7 @@ public:
                              GraphicsStateGuardianBase *gsg);
 
 private:  
+  void parse(void);
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
 public:

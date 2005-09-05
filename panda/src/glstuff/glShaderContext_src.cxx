@@ -17,3 +17,27 @@
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle CLP(ShaderContext)::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::Constructor
+//       Access: Public
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+CLP(ShaderContext)::
+CLP(ShaderContext)(Shader *s) : ShaderContext(s) {
+  string header, body;
+  s->parse_init();
+  s->parse_line(header, true, true);
+  s->parse_rest(body);
+  cerr << "Compiling shader. Language=" << header << " Body=\n" << body << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::Destructor
+//       Access: Public
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+CLP(ShaderContext)::
+~CLP(ShaderContext)(void) {
+}
+

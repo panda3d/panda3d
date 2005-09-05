@@ -43,6 +43,89 @@ Shader::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_init
+//       Access: Public
+//  Description: Set a 'parse pointer' to the beginning of the shader.
+////////////////////////////////////////////////////////////////////
+void Shader::
+parse_init(void) {
+  _parse = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_line
+//       Access: Public
+//  Description: Parse a line of text. If 'lt' is true, trim blanks
+//               from the left end of the line. If 'rt' is true, trim
+//               blanks from the right end (the newline is always
+//               trimmed).
+////////////////////////////////////////////////////////////////////
+void Shader::
+parse_line(string &result, bool lt, bool rt) {
+  int len = _text.size();
+  int head = _parse;
+  int tail = head;
+  while ((tail < len) && (_text[tail] != '\n')) tail++;
+  if (tail < len) {
+    _parse = tail+1;
+  } else {
+    _parse = tail;
+  }
+  if (lt) {
+    while ((head < tail)&&(isspace(_text[head]))) head++;
+    while ((tail > head)&&(isspace(_text[tail-1]))) tail--;
+  }
+  result = _text.substr(head, tail-head);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_upto
+//       Access: Public
+//  Description: Parse lines until you read a line that matches the
+//               specified pattern.  Returns all the preceding lines,
+//               and if the include flag is set, returns the final
+//               line as well.
+////////////////////////////////////////////////////////////////////
+void Shader::
+parse_upto(string &result, string pattern, bool include) {
+  int start = _parse;
+  int last = _parse;
+  while (true) {
+    string t;
+    parse_line(t, true, true);
+    if (t == pattern) break;
+    last = _parse;
+  }
+  if (include) {
+    result = _text.substr(start, _parse - start);
+  } else {
+    result = _text.substr(start, last - start);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_rest
+//       Access: Public
+//  Description: Returns the rest of the text from the current
+//               parse location.
+////////////////////////////////////////////////////////////////////
+void Shader::
+parse_rest(string &result) {
+  result = _text.substr(_parse, _text.size() - _parse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_eof
+//       Access: Public
+//  Description: Returns true if the parse pointer is at the end of
+//               the shader.
+////////////////////////////////////////////////////////////////////
+bool Shader::
+parse_eof(void) {
+  return _text.size() == _parse;
+}
+
+////////////////////////////////////////////////////////////////////
 //  Function: Shader::arg_index
 //  Access: Public
 //  Description: Allocates an integer index to the given
