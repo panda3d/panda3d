@@ -142,7 +142,8 @@
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
-    shader.h shaderContext.h \
+    shader.h shader.I \
+    shaderContext.h shaderContext.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
