@@ -18,8 +18,6 @@
 
 #include "pandabase.h"
 #include "shaderAttrib.h"
-#include "config_effects.h"
-
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
 #include "bamWriter.h"
