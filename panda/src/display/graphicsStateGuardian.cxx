@@ -43,6 +43,7 @@
 #include "geomTristrips.h"
 #include "geomTrifans.h"
 #include "geomLinestrips.h"
+#include "shader.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -411,6 +412,25 @@ prepare_geom(Geom *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_geom(GeomContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_shader
+//       Access: Public, Virtual
+//  Description: Compile a vertex/fragment shader body.
+////////////////////////////////////////////////////////////////////
+ShaderContext *GraphicsStateGuardian::
+prepare_shader(Shader *shader) {
+  return (ShaderContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_shader
+//       Access: Public, Virtual
+//  Description: Releases the resources allocated by prepare_shader
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_shader(ShaderContext *sc) {
 }
 
 ////////////////////////////////////////////////////////////////////

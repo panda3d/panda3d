@@ -45,10 +45,10 @@
 #include "materialAttrib.h"
 #include "lightAttrib.h"
 #include "transparencyAttrib.h"
+#include "shaderAttrib.h"
 #include "config_display.h"
 #include "geomMunger.h"
 #include "geomVertexData.h"
-
 #include "notify.h"
 #include "pvector.h"
 
@@ -139,6 +139,9 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
+  virtual ShaderContext *prepare_shader(Shader *shader);
+  virtual void release_shader(ShaderContext *sc);
+  
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
