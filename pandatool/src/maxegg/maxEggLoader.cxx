@@ -36,7 +36,6 @@
 
 #include <stdio.h>
 #include "Max.h"
-#include "maxImportRes.h"
 #include "istdplug.h"
 #include "stdmat.h"
 #include "decomp.h"
