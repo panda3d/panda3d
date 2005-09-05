@@ -2361,34 +2361,6 @@ Interrogate(ipath=IPATH, opts=OPTS, outd='libdevice.in', outc='libdevice_igate.c
 CompileC(ipath=IPATH, opts=OPTS, src='libdevice_igate.cxx', obj='libdevice_igate.obj')
 
 #
-# DIRECTORY: panda/src/tform/
-#
-
-IPATH=['panda/src/tform']
-OPTS=['BUILDING_PANDA', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='tform_composite1.cxx', obj='tform_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='tform_composite2.cxx', obj='tform_composite2.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libtform.in', outc='libtform_igate.cxx',
-            src='panda/src/tform',  module='panda', library='libtform',
-            skip=[], also=["tform_composite1.cxx", "tform_composite2.cxx"])
-CompileC(ipath=IPATH, opts=OPTS, src='libtform_igate.cxx', obj='libtform_igate.obj')
-
-#
-# DIRECTORY: panda/src/collide/
-#
-
-IPATH=['panda/src/collide']
-OPTS=['BUILDING_PANDA', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='collide_composite1.cxx', obj='collide_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='collide_composite2.cxx', obj='collide_composite2.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libcollide.in', outc='libcollide_igate.cxx',
-            src='panda/src/collide',  module='panda', library='libcollide',
-            skip=["collide_headers.h"], also=["collide_composite1.cxx", "collide_composite2.cxx"])
-CompileC(ipath=IPATH, opts=OPTS, src='libcollide_igate.cxx', obj='libcollide_igate.obj')
-
-#
 # DIRECTORY: panda/src/pnmtext/
 #
 
@@ -2428,6 +2400,34 @@ Interrogate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', outc='libgrutil_igate.c
             src='panda/src/grutil',  module='panda', library='libgrutil',
             skip=[], also=["multitexReducer.cxx","grutil_composite1.cxx"])
 CompileC(ipath=IPATH, opts=OPTS, src='libgrutil_igate.cxx', obj='libgrutil_igate.obj')
+
+#
+# DIRECTORY: panda/src/tform/
+#
+
+IPATH=['panda/src/tform']
+OPTS=['BUILDING_PANDA', 'NSPR']
+CopyAllHeaders(IPATH[0])
+CompileC(ipath=IPATH, opts=OPTS, src='tform_composite1.cxx', obj='tform_composite1.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='tform_composite2.cxx', obj='tform_composite2.obj')
+Interrogate(ipath=IPATH, opts=OPTS, outd='libtform.in', outc='libtform_igate.cxx',
+            src='panda/src/tform',  module='panda', library='libtform',
+            skip=[], also=["tform_composite1.cxx", "tform_composite2.cxx"])
+CompileC(ipath=IPATH, opts=OPTS, src='libtform_igate.cxx', obj='libtform_igate.obj')
+
+#
+# DIRECTORY: panda/src/collide/
+#
+
+IPATH=['panda/src/collide']
+OPTS=['BUILDING_PANDA', 'NSPR']
+CopyAllHeaders(IPATH[0])
+CompileC(ipath=IPATH, opts=OPTS, src='collide_composite1.cxx', obj='collide_composite1.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='collide_composite2.cxx', obj='collide_composite2.obj')
+Interrogate(ipath=IPATH, opts=OPTS, outd='libcollide.in', outc='libcollide_igate.cxx',
+            src='panda/src/collide',  module='panda', library='libcollide',
+            skip=["collide_headers.h"], also=["collide_composite1.cxx", "collide_composite2.cxx"])
+CompileC(ipath=IPATH, opts=OPTS, src='libcollide_igate.cxx', obj='libcollide_igate.obj')
 
 #
 # DIRECTORY: panda/src/parametrics/
