@@ -11,23 +11,14 @@
 
   #define SOURCES \
     config_effects.h \
-    cgShader.I cgShader.h \
-    cgShaderAttrib.I cgShaderAttrib.h \
-    cgShaderContext.I cgShaderContext.h \
     lensFlareNode.I lensFlareNode.h
     
   #define INCLUDED_SOURCES \
     config_effects.cxx \
-    cgShader.cxx \
-    cgShaderAttrib.cxx \
-    cgShaderContext.cxx \
     lensFlareNode.cxx 
 
   #define INSTALL_HEADERS \
     config_effects.h \
-    cgShader.I cgShader.h \
-    cgShaderAttrib.I cgShaderAttrib.h \
-    cgShaderContext.I cgShaderContext.h \
     lensFlareNode.I lensFlareNode.h
 
   #define IGATESCAN all
