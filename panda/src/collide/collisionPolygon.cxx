@@ -40,6 +40,7 @@
 #include "geomTrifans.h"
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
+#include "renderState.h"
 
 #include <algorithm>
 
