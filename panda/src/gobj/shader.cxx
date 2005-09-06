@@ -88,12 +88,13 @@ parse_line(string &result, bool lt, bool rt) {
 ////////////////////////////////////////////////////////////////////
 void Shader::
 parse_upto(string &result, string pattern, bool include) {
+  GlobPattern endpat(pattern);
   int start = _parse;
   int last = _parse;
-  while (true) {
+  while (_parse < _text.size()) {
     string t;
     parse_line(t, true, true);
-    if (t == pattern) break;
+    if (endpat.matches(t)) break;
     last = _parse;
   }
   if (include) {
@@ -276,4 +277,3 @@ void Shader::
 register_with_read_factory() {
   // IMPLEMENT ME
 }
-

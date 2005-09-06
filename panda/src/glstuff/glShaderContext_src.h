@@ -18,6 +18,11 @@
 
 #include "pandabase.h"
 #include "shaderContext.h"
+#ifdef CGGL
+#include "Cg/CgGL.h"
+#endif
+
+class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLShaderContext
@@ -26,12 +31,22 @@
 
 class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
-  CLP(ShaderContext)(Shader *shader);
+  CLP(ShaderContext)(CLP(GraphicsStateGuardian) *gsg, Shader *shader);
   ~CLP(ShaderContext)();
 
   INLINE void bind(ShaderMode *mode);
   INLINE void unbind();
   INLINE void rebind(ShaderMode *oldmode, ShaderMode *newmode);
+
+  bool _valid;
+  
+private:
+  CLP(GraphicsStateGuardian) *_gsg;
+  
+#ifdef CGGL
+  CGprogram _cg_vprogram;
+  CGprogram _cg_fprogram;
+#endif
 
 public:
   static TypeHandle get_class_type() {

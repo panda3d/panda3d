@@ -42,3 +42,4 @@ unbind() {
 INLINE void CLP(ShaderContext)::
 rebind(ShaderMode *oldmode, ShaderMode *newmode) {
 }
+

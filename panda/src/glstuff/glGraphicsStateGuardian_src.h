@@ -41,6 +41,10 @@
 #include "shader.h"
 #include "shaderMode.h"
 
+#ifdef CGGL
+#include "Cg/CgGL.h"
+#endif
+
 class PlaneNode;
 class Light;
 
@@ -384,6 +388,12 @@ public:
   Mutex _lock;
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
+
+#ifdef CGGL
+  CGcontext _cg_context;
+  CGprofile _cg_vprofile;
+  CGprofile _cg_fprofile;
+#endif
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;

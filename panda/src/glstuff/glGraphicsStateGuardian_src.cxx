@@ -68,6 +68,10 @@
 #include "shader.h"
 #include "shaderMode.h"
 
+#ifdef CGGL
+#include "Cg/CgGL.h"
+#endif
+
 #include <algorithm>
 
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
@@ -279,8 +283,6 @@ CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
   GraphicsStateGuardian(properties, CS_yup_right) 
 {
   _error_count = 0;
-  _shader_mode = (ShaderMode *)NULL;
-  _shader_context = (CLP(ShaderContext) *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,6 +858,16 @@ reset() {
   }
 
   _error_count = 0;
+
+#ifdef CGGL
+  _cg_context = cgCreateContext();
+  if (_cg_context != 0) {
+    _cg_vprofile = cgGLGetLatestProfile(CG_GL_VERTEX);
+    _cg_fprofile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+  } else {
+    cerr << "Warning: could not create Cg context.\n";
+  }
+#endif
 
   report_my_gl_errors();
 }
@@ -1932,7 +1944,7 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *shader) {
-  return new CLP(ShaderContext)(shader);
+  return new CLP(ShaderContext)(this, shader);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4750,6 +4762,12 @@ finish_modify_state() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
+#ifdef CGGL
+  if (_cg_context) {
+    cgDeleteContext(_cg_context);
+    _cg_context = 0;
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
