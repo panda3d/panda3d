@@ -63,7 +63,7 @@ xform(const LMatrix4f &mat) {
 
   if (!is_empty() && !is_infinite()) {
     // First, determine the longest axis of the matrix, in case it
-    // contains a non-proportionate scale.
+    // contains a non-uniform scale.
 
 /*
     LVector3f x,y,z;
@@ -77,18 +77,18 @@ xform(const LMatrix4f &mat) {
 */
     float xd,yd,zd,scale;
 
-        #define ROW_DOTTED(mat,ROWNUM)                        \
+#define ROW_DOTTED(mat,ROWNUM)                        \
             (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
              mat._m.m._##ROWNUM##1*mat._m.m._##ROWNUM##1 +    \
              mat._m.m._##ROWNUM##2*mat._m.m._##ROWNUM##2)
-
+    
     xd = ROW_DOTTED(mat,0);
     yd = ROW_DOTTED(mat,1);
     zd = ROW_DOTTED(mat,2);
 
-        scale = max(xd,yd);
-        scale = max(scale,zd);
-        scale = sqrtf(scale);
+    scale = max(xd,yd);
+    scale = max(scale,zd);
+    scale = sqrtf(scale);
 
     // Transform the radius
     _radius *= scale;
@@ -439,6 +439,13 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_sphere
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a sphere.
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty() && !is_infinite(), 0);
@@ -462,12 +469,38 @@ contains_sphere(const BoundingSphere *sphere) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_hexahedron
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a hexahedron.
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   return hexahedron->contains_sphere(this) & ~IF_all;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_line
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a line.
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_line(const BoundingLine *line) const {
   return line->contains_sphere(this) & ~IF_all;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_plane
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a plane.
+////////////////////////////////////////////////////////////////////
+int BoundingSphere::
+contains_plane(const BoundingPlane *plane) const {
+  return plane->contains_sphere(this) & ~IF_all;
 }

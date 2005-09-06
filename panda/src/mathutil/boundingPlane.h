@@ -62,7 +62,6 @@ protected:
 private:
   Planef _plane;
 
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -79,6 +78,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class BoundingSphere;
 };
 
 #include "boundingPlane.I"

@@ -122,7 +122,7 @@ parse_rest(string &result) {
 ////////////////////////////////////////////////////////////////////
 bool Shader::
 parse_eof(void) {
-  return _text.size() == _parse;
+  return (int)_text.size() == _parse;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ parse_eof(void) {
 //  Description: Allocates an integer index to the given
 //               shader parameter name.
 ////////////////////////////////////////////////////////////////////
-INLINE int Shader::
+int Shader::
 arg_index(const string &id) {
   for (int i=0; i<(int)(_args.size()); i++)
     if (_args[i] == id)
