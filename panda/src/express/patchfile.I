@@ -24,7 +24,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float Patchfile::
-get_progress(void) const {
+get_progress() const {
   if (false == _initiated) {
     express_cat.warning()
       << "Patchfile::get_progress() - Patch has not been initiated" << endl;

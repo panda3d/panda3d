@@ -21,7 +21,7 @@
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicalNode::
-clear(void) {
+clear() {
   _physicals.erase(_physicals.begin(), _physicals.end());
 }
 
@@ -41,7 +41,7 @@ get_physical(int index) const {
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE int PhysicalNode::
-get_num_physicals(void) const {
+get_num_physicals() const {
   return _physicals.size();
 }
 

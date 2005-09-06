@@ -107,7 +107,7 @@ const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Patchfile::
-Patchfile(void) {
+Patchfile() {
   PT(Buffer) buffer = new Buffer(patchfile_buffer_size);
   init(buffer);
 }
@@ -144,7 +144,7 @@ init(PT(Buffer) buffer) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Patchfile::
-~Patchfile(void) {
+~Patchfile() {
   if (true == _initiated)
     cleanup();
 }
@@ -155,7 +155,7 @@ Patchfile::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-cleanup(void) {
+cleanup() {
   if (false == _initiated) {
     express_cat.error()
       << "Patchfile::cleanup() - Patching has not been initiated"
@@ -268,7 +268,7 @@ read_header(const Filename &patch_file) {
 //  Description: Perform one buffer's worth of patching
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
-run(void) {
+run() {
   // Now patch the file using the given buffer
   int buflen;
   int bytes_read;

@@ -66,7 +66,7 @@ AsyncUtility::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
-create_thread(void) {
+create_thread() {
 #ifdef OLD_HAVE_IPC
   if (_threaded == false && _threads_enabled == true) {
     downloader_cat.debug()
@@ -83,7 +83,7 @@ create_thread(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
-destroy_thread(void) {
+destroy_thread() {
 #ifdef OLD_HAVE_IPC
   if (_threaded == false)
     return;
@@ -130,7 +130,7 @@ st_callback(void *arg) {
 //               forever for a request to show up, and then serves it.
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
-callback(void) {
+callback() {
 #ifdef OLD_HAVE_IPC
   while (process_request()) {
     // Sleep until a signal arrives
@@ -147,7 +147,7 @@ callback(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
-nap(void) const {
+nap() const {
 #ifdef OLD_HAVE_IPC
 #ifdef WIN32
   _sleep((DWORD)(1000 * _frequency));

@@ -406,7 +406,7 @@ make_CollisionPlane(const FactoryParams &params)
 //  Description: Factory method to generate a CollisionPlane object
 ////////////////////////////////////////////////////////////////////
 void CollisionPlane::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionPlane);
 }

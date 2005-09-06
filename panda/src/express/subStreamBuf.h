@@ -38,8 +38,8 @@ public:
 
 protected:
   virtual int overflow(int c);
-  virtual int sync(void);
-  virtual int underflow(void);
+  virtual int sync();
+  virtual int underflow();
 
 private:
   istream *_source;

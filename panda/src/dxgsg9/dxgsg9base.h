@@ -215,7 +215,7 @@ typedef struct {
 
 //utility stuff
 extern map<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
-extern void Init_D3DFORMAT_map(void);
+extern void Init_D3DFORMAT_map();
 extern const char *D3DFormatStr(D3DFORMAT fmt);
 
 #endif

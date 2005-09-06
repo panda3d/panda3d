@@ -71,7 +71,7 @@ protected:
   CPTA_float _tables[num_matrix_components];
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_AnimChannelMatrixXfmTable(const FactoryParams &params);

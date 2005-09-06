@@ -124,9 +124,9 @@ public:
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.
-  virtual bool wants_normals(void) const=0;
-  virtual bool wants_texcoords(void) const=0;
-  virtual bool wants_colors(void) const=0;
+  virtual bool wants_normals() const=0;
+  virtual bool wants_texcoords() const=0;
+  virtual bool wants_colors() const=0;
 
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory

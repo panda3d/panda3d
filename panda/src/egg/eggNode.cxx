@@ -24,7 +24,7 @@
 
 #include <algorithm>
 
-extern int eggyyparse(void);
+extern int eggyyparse();
 #include "parserDefs.h"
 #include "lexerDefs.h"
 

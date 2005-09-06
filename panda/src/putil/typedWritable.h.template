@@ -5,11 +5,11 @@ class BamReader;
 //FOR H FILES
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWriteable &p_list, 
                                 BamReader *manager);
-  virtual void finalize(void);
+  virtual void finalize();
 
   static TypedWriteable *make_Generic(const FactoryParams &params);
 

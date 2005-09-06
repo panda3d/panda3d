@@ -51,7 +51,7 @@ complete_pointers(vector_typedWriteable &p_list, BamReader *manager)
 //               that have to be performed by this object are performed
 ////////////////////////////////////////////////////////////////////
 void Generic::
-finalize(void)
+finalize()
 {
 }
 
@@ -80,7 +80,7 @@ make_Generic(const FactoryParams &params)
 //  Description: Factory method to generate a Generic object
 ////////////////////////////////////////////////////////////////////
 void Generic::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_Generic);
 }

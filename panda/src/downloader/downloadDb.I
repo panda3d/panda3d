@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
-get_client_num_multifiles(void) const {
+get_client_num_multifiles() const {
   return _client_db.get_num_multifiles();
 }
 
@@ -33,7 +33,7 @@ get_client_num_multifiles(void) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
-get_server_num_multifiles(void) const {
+get_server_num_multifiles() const {
   return _server_db.get_num_multifiles();
 }
 

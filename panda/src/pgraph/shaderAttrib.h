@@ -39,7 +39,7 @@
 class EXPCL_PANDA ShaderAttrib: public RenderAttrib {
 
 private:
-  INLINE ShaderAttrib(void);
+  INLINE ShaderAttrib();
 
 PUBLISHED:
   static CPT(RenderAttrib) make(ShaderMode *sm);

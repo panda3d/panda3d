@@ -573,7 +573,7 @@ register_with_read_factory() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LensFlareNode::
-LensFlareNode(void) :
+LensFlareNode() :
   _global_scale(1), _next_switch(-1), _sparkle_fps(0.2),
   _texel_scale(0.1), _inv_sparkle_fps(5), _exp_scale(15)
 {

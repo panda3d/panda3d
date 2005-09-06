@@ -131,7 +131,7 @@ protected:
   virtual void set_blend_mode();
 
   void free_nondx_resources();
-  void free_d3d_device(void);
+  void free_d3d_device();
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);

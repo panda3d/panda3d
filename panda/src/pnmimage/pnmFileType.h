@@ -67,7 +67,7 @@ private:
 
   // The TypedWritable interface follows.
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
 
 protected:

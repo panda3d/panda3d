@@ -462,7 +462,7 @@ make_PartBundle(const FactoryParams &params)
 //  Description: Factory method to generate a PartBundle object
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_PartBundle);
 }

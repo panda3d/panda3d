@@ -44,9 +44,9 @@ public:
 
 #if 0
 protected:
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type();
+  static void init_type();
+  virtual TypeHandle get_type() const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 #endif
 };

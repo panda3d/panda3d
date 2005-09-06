@@ -50,8 +50,8 @@ public:
 #endif
 
   // must be public since called from global callback fns
-  void DeleteTexture(void);
-  HRESULT FillDDSurfTexturePixels(void);
+  void DeleteTexture();
+  HRESULT FillDDSurfTexturePixels();
 
 protected:
     unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);

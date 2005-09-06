@@ -27,10 +27,10 @@
 class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
   CLP(ShaderContext)(Shader *shader);
-  ~CLP(ShaderContext)(void);
+  ~CLP(ShaderContext)();
 
   INLINE void bind(ShaderMode *mode);
-  INLINE void unbind(void);
+  INLINE void unbind();
   INLINE void rebind(ShaderMode *oldmode, ShaderMode *newmode);
 
 public:

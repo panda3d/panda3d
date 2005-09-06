@@ -24,6 +24,6 @@
 //               the definition of an interface
 ////////////////////////////////////////////////////////////////////
 
-INLINE DatagramGenerator::DatagramGenerator(void){
+INLINE DatagramGenerator::DatagramGenerator(){
 }
 

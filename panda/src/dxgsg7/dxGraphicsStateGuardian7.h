@@ -124,7 +124,7 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool wants_texcoords(void) const;
+  virtual bool wants_texcoords() const;
 
   virtual void set_color_clear_value(const Colorf& value);
 
@@ -150,7 +150,7 @@ protected:
   virtual void set_blend_mode();
 
   void free_pointers();            // free local internal buffers
-  void free_dxgsg_objects(void);   // free the DirectX objects we create
+  void free_dxgsg_objects();   // free the DirectX objects we create
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
@@ -177,9 +177,9 @@ protected:
                     D3DVECTOR *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
-  HRESULT RestoreAllVideoSurfaces(void);
-  HRESULT RecreateAllVideoSurfaces(void);
-  HRESULT DeleteAllVideoSurfaces(void);
+  HRESULT RestoreAllVideoSurfaces();
+  HRESULT RecreateAllVideoSurfaces();
+  HRESULT DeleteAllVideoSurfaces();
 
 /*
   INLINE void enable_multisample_alpha_one(bool val);
@@ -321,14 +321,14 @@ public:
   static GraphicsStateGuardian*
   make_DXGraphicsStateGuardian(const FactoryParams &params);
 
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type();
+  static void init_type();
+  virtual TypeHandle get_type() const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 //  INLINE void Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
-  INLINE bool GetDXReady(void)  { return _dx_ready;}
+  INLINE bool GetDXReady()  { return _dx_ready;}
   void DXGraphicsStateGuardian7::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
@@ -351,7 +351,7 @@ public:
           LPDIRECT3D7          d3d,
           LPDIRECT3DDEVICE7    d3dDevice,
           RECT  viewrect); */
-  void dx_init(void);
+  void dx_init();
   
   friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
 

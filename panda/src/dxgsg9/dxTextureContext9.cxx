@@ -930,7 +930,7 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
 }
 
 HRESULT DXTextureContext9::
-FillDDSurfTexturePixels(void) {
+FillDDSurfTexturePixels() {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
 

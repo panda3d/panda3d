@@ -26,7 +26,7 @@ TypeHandle NoBlendType::_type_handle;
 
 LerpBlendType::LerpBlendType(const LerpBlendType&) {}
 
-LerpBlendType::~LerpBlendType(void) {}
+LerpBlendType::~LerpBlendType() {}
 
 LerpBlendType& LerpBlendType::operator=(const LerpBlendType&) {
   return *this;
@@ -40,7 +40,7 @@ EaseInBlendType::EaseInBlendType(const EaseInBlendType& c) : LerpBlendType(c)
 {
 }
 
-EaseInBlendType::~EaseInBlendType(void) {}
+EaseInBlendType::~EaseInBlendType() {}
 
 EaseInBlendType& EaseInBlendType::operator=(const EaseInBlendType& c) {
   LerpBlendType::operator=(c);
@@ -55,7 +55,7 @@ float EaseInBlendType::operator()(float t) {
 EaseOutBlendType::EaseOutBlendType(const EaseOutBlendType& c)
   : LerpBlendType(c) {}
 
-EaseOutBlendType::~EaseOutBlendType(void) {}
+EaseOutBlendType::~EaseOutBlendType() {}
 
 EaseOutBlendType& EaseOutBlendType::operator=(const EaseOutBlendType& c) {
   LerpBlendType::operator=(c);
@@ -69,7 +69,7 @@ float EaseOutBlendType::operator()(float t) {
 EaseInOutBlendType::EaseInOutBlendType(const EaseInOutBlendType& c)
   : LerpBlendType(c) {}
 
-EaseInOutBlendType::~EaseInOutBlendType(void) {}
+EaseInOutBlendType::~EaseInOutBlendType() {}
 
 EaseInOutBlendType& EaseInOutBlendType::operator=(const EaseInOutBlendType& c)
 {
@@ -84,7 +84,7 @@ float EaseInOutBlendType::operator()(float t) {
 
 NoBlendType::NoBlendType(const NoBlendType& c) : LerpBlendType(c) {}
 
-NoBlendType::~NoBlendType(void) {}
+NoBlendType::~NoBlendType() {}
 
 NoBlendType& NoBlendType::operator=(const NoBlendType& c) {
   LerpBlendType::operator=(c);

@@ -31,7 +31,7 @@ TypeHandle ColorInterpolationFunctionSinusoid::_type_handle;
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunction::
-ColorInterpolationFunction(void) {
+ColorInterpolationFunction() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ ColorInterpolationFunction(void) {
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunction::
-~ColorInterpolationFunction(void) {
+~ColorInterpolationFunction() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ ColorInterpolationFunction::
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionConstant::
-ColorInterpolationFunctionConstant(void) :
+ColorInterpolationFunctionConstant() :
   _c_a(1.0f,1.0f,1.0f,1.0f) {
 }
 
@@ -84,7 +84,7 @@ interpolate(const float t) const {
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionLinear::
-ColorInterpolationFunctionLinear(void) :
+ColorInterpolationFunctionLinear() :
   _c_b(1.0f,1.0f,1.0f,1.0f) {
 }
 
@@ -119,7 +119,7 @@ interpolate(const float t) const {
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionStepwave::
-ColorInterpolationFunctionStepwave(void) :
+ColorInterpolationFunctionStepwave() :
   _w_a(0.5f),
   _w_b(0.5f) {
 }
@@ -161,7 +161,7 @@ interpolate(const float t) const {
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionSinusoid::
-ColorInterpolationFunctionSinusoid(void) :
+ColorInterpolationFunctionSinusoid() :
   _period(1.0f) {
 }
 
@@ -235,7 +235,7 @@ ColorInterpolationSegment(const ColorInterpolationSegment &copy) :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationSegment::
-~ColorInterpolationSegment(void) {
+~ColorInterpolationSegment() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ interpolateColor(const float t) const {
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationManager::
-ColorInterpolationManager(void) :
+ColorInterpolationManager() :
   _default_color(Colorf(1.0f,1.0f,1.0f,1.0f)),
   _id_generator(0) {
 }
@@ -296,7 +296,7 @@ ColorInterpolationManager(const ColorInterpolationManager& copy) :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationManager::
-~ColorInterpolationManager(void) {
+~ColorInterpolationManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -394,7 +394,7 @@ clear_segment(const int seg_id) {
 ////////////////////////////////////////////////////////////////////
 
 void ColorInterpolationManager::
-clear_to_initial(void) {
+clear_to_initial() {
   _i_segs.clear();
   _id_generator = 0;
 }

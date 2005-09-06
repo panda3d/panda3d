@@ -336,7 +336,7 @@ private:
 
   // Datagram stuff
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_Texture(const FactoryParams &params);

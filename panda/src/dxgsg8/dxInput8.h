@@ -26,9 +26,9 @@ typedef vector<DIDEVICEOBJECTINSTANCE> DI_DeviceObjInfos;
 
 class DInput8Info {
 public:
- DInput8Info(void);
- ~DInput8Info(void);
- bool InitDirectInput(void);
+ DInput8Info();
+ ~DInput8Info();
+ bool InitDirectInput();
  bool CreateJoystickOrPad(HWND _window);
  bool ReadJoystick(int devnum, DIJOYSTATE2 &js);
 

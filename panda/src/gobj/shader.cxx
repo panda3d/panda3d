@@ -48,7 +48,7 @@ Shader::
 //  Description: Set a 'parse pointer' to the beginning of the shader.
 ////////////////////////////////////////////////////////////////////
 void Shader::
-parse_init(void) {
+parse_init() {
   _parse = 0;
 }
 
@@ -121,7 +121,7 @@ parse_rest(string &result) {
 //               the shader.
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-parse_eof(void) {
+parse_eof() {
   return (int)_text.size() == _parse;
 }
 

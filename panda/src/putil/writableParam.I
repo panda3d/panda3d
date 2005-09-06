@@ -45,7 +45,7 @@ WritableParam(const WritableParam &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE WritableParam::
-~WritableParam(void) {
+~WritableParam() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ operator = (const WritableParam &) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Datagram& WritableParam::
-get_datagram(void) {
+get_datagram() {
   return _packet;
 }
 

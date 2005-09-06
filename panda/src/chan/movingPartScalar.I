@@ -46,5 +46,5 @@ MovingPartScalar(PartGroup *parent, const string &name,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MovingPartScalar::
-MovingPartScalar(void){
+MovingPartScalar(){
 }

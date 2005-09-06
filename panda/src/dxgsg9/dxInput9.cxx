@@ -59,7 +59,7 @@ DInput9Info::~DInput9Info() {
   }
 }
 
-bool DInput9Info::InitDirectInput(void) {
+bool DInput9Info::InitDirectInput() {
     HRESULT hr;
 
     // assumes dx9 exists

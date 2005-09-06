@@ -119,7 +119,7 @@ private:
   LMatrix4f _to_2d_mat;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_CollisionPolygon(const FactoryParams &params);

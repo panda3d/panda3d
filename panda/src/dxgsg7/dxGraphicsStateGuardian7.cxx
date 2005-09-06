@@ -327,7 +327,7 @@ set_context(DXScreenData *pNewContextData) {
 
 // recreate dx objects without modifying gsg state, other than clearing state cache
 void DXGraphicsStateGuardian7::
-free_dxgsg_objects(void) {
+free_dxgsg_objects() {
     ULONG refcnt;
 
     free_pointers();
@@ -3512,7 +3512,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgb);
   
-  (void) ConvertDDSurftoPixBuf(tex,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? _pScrn->pddsBack : _pScrn->pddsPrimary));
+  () ConvertDDSurftoPixBuf(tex,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? _pScrn->pddsBack : _pScrn->pddsPrimary));
   
   nassertr(tex->has_ram_image(), false);
   return true;
@@ -4562,15 +4562,15 @@ free_pointers() {
 #endif
 }
 
-TypeHandle DXGraphicsStateGuardian7::get_type(void) const {
+TypeHandle DXGraphicsStateGuardian7::get_type() const {
     return get_class_type();
 }
 
-TypeHandle DXGraphicsStateGuardian7::get_class_type(void) {
+TypeHandle DXGraphicsStateGuardian7::get_class_type() {
     return _type_handle;
 }
 
-void DXGraphicsStateGuardian7::init_type(void) {
+void DXGraphicsStateGuardian7::init_type() {
     GraphicsStateGuardian::init_type();
     register_type(_type_handle, "DXGraphicsStateGuardian7",
                   GraphicsStateGuardian::get_class_type());
@@ -4816,7 +4816,7 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg7_ptr) {
 }
 
 // release all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian7::DeleteAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian7::DeleteAllVideoSurfaces() {
   // BUGBUG: need to handle vertexbuffer handling here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -4828,7 +4828,7 @@ HRESULT DXGraphicsStateGuardian7::DeleteAllVideoSurfaces(void) {
 }
 
 // recreate all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian7::RecreateAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian7::RecreateAllVideoSurfaces() {
   // BUGBUG: need to handle vertexbuffer handling here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -4839,7 +4839,7 @@ HRESULT DXGraphicsStateGuardian7::RecreateAllVideoSurfaces(void) {
   return S_OK;
 }
 
-HRESULT DXGraphicsStateGuardian7::RestoreAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian7::RestoreAllVideoSurfaces() {
   // BUGBUG: this should also restore vertex buffer contents when they are implemented
   // You will need to destroy and recreate
   // optimized vertex buffers however, restoring is not enough.
@@ -4867,7 +4867,7 @@ HRESULT DXGraphicsStateGuardian7::RestoreAllVideoSurfaces(void) {
 //       Access:
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::show_frame(void) {
+void DXGraphicsStateGuardian7::show_frame() {
   if(_pScrn->pddsPrimary==NULL)
     return;
 
@@ -4929,7 +4929,7 @@ support_overlay_window(bool flag) {
 //       Access:
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::show_full_screen_frame(void) {
+void DXGraphicsStateGuardian7::show_full_screen_frame() {
   HRESULT hr;
 
   // Flip the front and back buffers, to make what we just rendered
@@ -4974,7 +4974,7 @@ void DXGraphicsStateGuardian7::show_full_screen_frame(void) {
 //  Description: Repaint primary buffer from back buffer (windowed
 //               mode only)
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::show_windowed_frame(void) {
+void DXGraphicsStateGuardian7::show_windowed_frame() {
   HRESULT hr;
 
   DX_DECLARE_CLEAN(DDBLTFX, bltfx);

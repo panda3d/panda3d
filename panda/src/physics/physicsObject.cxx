@@ -29,7 +29,7 @@ TypeHandle PhysicsObject::_type_handle;
 //  Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
-PhysicsObject(void) :
+PhysicsObject() :
   _terminal_velocity(_default_terminal_velocity),
   _mass(1.0f),
   _process_me(false),

@@ -128,7 +128,7 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool wants_texcoords(void) const;
+  virtual bool wants_texcoords() const;
 
   virtual void set_color_clear_value(const Colorf& value);
 
@@ -151,7 +151,7 @@ protected:
   virtual void set_blend_mode();
 
   void free_nondx_resources();            // free local internal buffers
-  void free_d3d_device(void);
+  void free_d3d_device();
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
@@ -175,9 +175,9 @@ protected:
                     D3DXVECTOR3 *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
-  HRESULT ReleaseAllDeviceObjects(void);
-  HRESULT RecreateAllDeviceObjects(void);
-  HRESULT DeleteAllDeviceObjects(void);
+  HRESULT ReleaseAllDeviceObjects();
+  HRESULT RecreateAllDeviceObjects();
+  HRESULT DeleteAllDeviceObjects();
 
 /*
   INLINE void enable_multisample_alpha_one(bool val);
@@ -323,23 +323,23 @@ public:
   void set_context(DXScreenData *pNewContextData);
   void set_render_target();
 
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type();
+  static void init_type();
+  virtual TypeHandle get_type() const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
-  INLINE bool GetDXReady(void)  { return _bDXisReady;}
+  INLINE bool GetDXReady()  { return _bDXisReady;}
   void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
-  void reset_panda_gsg(void);
+  void reset_panda_gsg();
   HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn=NULL);
 
   #define DO_REACTIVATE_WINDOW true
   bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
   void show_frame(bool bNoNewFrameDrawn = false);
-  void dx_init(void);
+  void dx_init();
 
   void support_overlay_window(bool flag);
 

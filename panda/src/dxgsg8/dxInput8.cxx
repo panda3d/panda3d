@@ -59,7 +59,7 @@ DInput8Info::~DInput8Info() {
   }
 }
 
-bool DInput8Info::InitDirectInput(void) {
+bool DInput8Info::InitDirectInput() {
     HRESULT hr;
 
     // assumes dx8 exists

@@ -30,7 +30,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Patcher::
-Patcher(void) {
+Patcher() {
   PT(Buffer) buffer = new Buffer(patcher_buffer_size);
   init(buffer);
 }
@@ -65,7 +65,7 @@ init(PT(Buffer) buffer) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Patcher::
-~Patcher(void) {
+~Patcher() {
   delete _patchfile;
 }
 
@@ -85,7 +85,7 @@ initiate(Filename &patch, Filename &infile) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Patcher::
-run(void) {
+run() {
   return _patchfile->run();
 }
 

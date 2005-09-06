@@ -54,8 +54,8 @@ public:
     }
   }
 
-  INLINE bool is_dirty(void) const { return _dirty; }
-  INLINE void make_dirty(void) { _dirty = true; }
+  INLINE bool is_dirty() const { return _dirty; }
+  INLINE void make_dirty() { _dirty = true; }
 
 private:
 

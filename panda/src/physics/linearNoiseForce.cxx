@@ -39,7 +39,7 @@ TypeHandle LinearNoiseForce::_type_handle;
 //                lattice.
 ////////////////////////////////////////////////////////////////////
 void LinearNoiseForce::
-init_noise_tables(void) {
+init_noise_tables() {
   // since this is a repeatable noise function, we always want
   // to init with the same seed.
   srand(_random_seed);
@@ -93,7 +93,7 @@ LinearNoiseForce::
 //  Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearNoiseForce::
-make_copy(void) {
+make_copy() {
   return new LinearNoiseForce(*this);
 }
 

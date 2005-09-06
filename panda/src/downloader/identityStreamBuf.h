@@ -43,7 +43,7 @@ public:
   void close_read();
 
 protected:
-  virtual int underflow(void);
+  virtual int underflow();
 
 private:
   size_t read_chars(char *start, size_t length);

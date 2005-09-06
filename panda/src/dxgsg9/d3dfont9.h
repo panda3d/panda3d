@@ -98,9 +98,9 @@ public:
 
     // Initializing and destroying device-dependent objects
     HRESULT InitDeviceObjects(LPDIRECT3DDEVICE9 pd3dDevice);
-    HRESULT RestoreDeviceObjects(void);
-    HRESULT InvalidateDeviceObjects(void);
-    HRESULT DeleteDeviceObjects(void);
+    HRESULT RestoreDeviceObjects();
+    HRESULT InvalidateDeviceObjects();
+    HRESULT DeleteDeviceObjects();
 
     // Constructor / destructor
     CD3DFont( TCHAR* strFontName, DWORD dwHeight, DWORD dwFlags=0L );

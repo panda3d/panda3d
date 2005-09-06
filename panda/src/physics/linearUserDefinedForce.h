@@ -37,7 +37,7 @@ PUBLISHED:
                    float a = 1.0f,
                    bool md = false);
   LinearUserDefinedForce(const LinearUserDefinedForce &copy);
-  virtual ~LinearUserDefinedForce(void);
+  virtual ~LinearUserDefinedForce();
 
   INLINE void set_proc(LVector3f (*proc)(const PhysicsObject *));
   
@@ -48,18 +48,18 @@ private:
   LVector3f (*_proc)(const PhysicsObject *po);
 
   virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearUserDefinedForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

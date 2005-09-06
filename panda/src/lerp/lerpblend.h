@@ -24,8 +24,8 @@
 
 class EXPCL_PANDA LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
-  LerpBlendType(void) {}
-  virtual ~LerpBlendType(void);
+  LerpBlendType() {}
+  virtual ~LerpBlendType();
   virtual float operator()(float) = 0;
 
 public:
@@ -33,18 +33,18 @@ public:
   LerpBlendType& operator=(const LerpBlendType&);
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LerpBlendType",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -54,8 +54,8 @@ private:
 
 class EXPCL_PANDA EaseInBlendType : public LerpBlendType {
 PUBLISHED:
-  EaseInBlendType(void) {}
-  virtual ~EaseInBlendType(void);
+  EaseInBlendType() {}
+  virtual ~EaseInBlendType();
   virtual float operator()(float);
 
 public:
@@ -63,18 +63,18 @@ public:
   EaseInBlendType& operator=(const EaseInBlendType&);
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseInBlendType",
                   LerpBlendType::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -84,8 +84,8 @@ private:
 
 class EXPCL_PANDA EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
-  EaseOutBlendType(void) {}
-  virtual ~EaseOutBlendType(void);
+  EaseOutBlendType() {}
+  virtual ~EaseOutBlendType();
   virtual float operator()(float);
 
 public:
@@ -93,18 +93,18 @@ public:
   EaseOutBlendType& operator=(const EaseOutBlendType&);
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseOutBlendType",
                   LerpBlendType::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -114,26 +114,26 @@ private:
 
 class EXPCL_PANDA EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
-  EaseInOutBlendType(void) {}
-  virtual ~EaseInOutBlendType(void);
+  EaseInOutBlendType() {}
+  virtual ~EaseInOutBlendType();
   virtual float operator()(float);
 public:
   EaseInOutBlendType(const EaseInOutBlendType&);
   EaseInOutBlendType& operator=(const EaseInOutBlendType&);
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseInOutBlendType",
                   LerpBlendType::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -143,26 +143,26 @@ private:
 
 class EXPCL_PANDA NoBlendType : public LerpBlendType {
 PUBLISHED:
-  NoBlendType(void) {}
-  virtual ~NoBlendType(void);
+  NoBlendType() {}
+  virtual ~NoBlendType();
   virtual float operator()(float);
 public:
   NoBlendType(const NoBlendType&);
   NoBlendType& operator=(const NoBlendType&);
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "NoBlendType",
                   LerpBlendType::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }

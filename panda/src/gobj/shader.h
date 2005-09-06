@@ -51,24 +51,24 @@ class EXPCL_PANDA Shader: public TypedWritableReferenceCount {
 
 PUBLISHED:
   Shader(const string &text, const string &file);
-  ~Shader(void);
+  ~Shader();
 
-  INLINE const string   &get_text(void);
-  INLINE const Filename &get_file(void);
+  INLINE const string   &get_text();
+  INLINE const Filename &get_file();
   
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
 PUBLISHED:
-  void parse_init(void);
+  void parse_init();
   void parse_line(string &result, bool rt, bool lt);
   void parse_upto(string &result, string pattern, bool include);
   void parse_rest(string &result);
-  bool parse_eof(void);
+  bool parse_eof();
 
 public:
-  INLINE int arg_count(void);
+  INLINE int arg_count();
   int        arg_index(const string &id);
 
   string         _text;
@@ -79,7 +79,7 @@ public:
   typedef pmap<PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
   friend class ShaderContext;
   friend class PreparedGraphicsObjects;
@@ -88,7 +88,7 @@ public:
                              GraphicsStateGuardianBase *gsg);
 
 private:  
-  void parse(void);
+  void parse();
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
 public:

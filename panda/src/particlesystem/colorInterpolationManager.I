@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE Colorf ColorInterpolationFunctionConstant::
-get_color_a(void) const {
+get_color_a() const {
   return _c_a;
 }
 
@@ -47,7 +47,7 @@ set_color_a(const Colorf c) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE Colorf ColorInterpolationFunctionLinear::
-get_color_b(void) const {
+get_color_b() const {
   return _c_b;
 }
 
@@ -69,7 +69,7 @@ set_color_b(const Colorf c) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float ColorInterpolationFunctionStepwave::
-get_width_a(void) const {
+get_width_a() const {
   return _w_a;
 }
 
@@ -80,7 +80,7 @@ get_width_a(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float ColorInterpolationFunctionStepwave::
-get_width_b(void) const {
+get_width_b() const {
   return _w_b;
 }
 
@@ -115,7 +115,7 @@ set_width_b(const float w) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float ColorInterpolationFunctionSinusoid::
-get_period(void) const {
+get_period() const {
   return _period;
 }
 
@@ -139,7 +139,7 @@ set_period(const float p) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE TypedReferenceCount* ColorInterpolationSegment::
-get_function(void) const {
+get_function() const {
   return _color_inter_func;
 }
 
@@ -152,7 +152,7 @@ get_function(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float ColorInterpolationSegment::
-get_time_begin(void) const {
+get_time_begin() const {
   return _t_begin;
 }
 
@@ -165,7 +165,7 @@ get_time_begin(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float ColorInterpolationSegment::
-get_time_end(void) const {
+get_time_end() const {
   return _t_end;
 }
 
@@ -176,7 +176,7 @@ get_time_end(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool ColorInterpolationSegment::
-is_enabled(void) const {
+is_enabled() const {
   return _enabled;
 }
 
@@ -188,7 +188,7 @@ is_enabled(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE int ColorInterpolationSegment::
-get_id(void) const {
+get_id() const {
   return _id;
 }
 
@@ -268,7 +268,7 @@ get_segment(const int seg_id) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE string ColorInterpolationManager::
-get_segment_id_list(void) {
+get_segment_id_list() {
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
   ostringstream output;
 

@@ -68,7 +68,7 @@ make_CharacterJointBundle(const FactoryParams &params)
 //  Description: Factory method to generate a CharacterJointBundle object
 ////////////////////////////////////////////////////////////////////
 void CharacterJointBundle::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_CharacterJointBundle);
 }

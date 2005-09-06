@@ -81,10 +81,10 @@ PUBLISHED:
     Status_extracted = 3
   };
 
-  DownloadDb(void);
+  DownloadDb();
   DownloadDb(Ramfile &server_file, Filename &client_file);
   DownloadDb(Filename &server_file, Filename &client_file);
-  ~DownloadDb(void);
+  ~DownloadDb();
 
   void output(ostream &out) const;
   void write(ostream &out) const;
@@ -94,8 +94,8 @@ PUBLISHED:
   bool write_client_db(Filename &file);
   bool write_server_db(Filename &file);
 
-  INLINE int get_client_num_multifiles(void) const;
-  INLINE int get_server_num_multifiles(void) const;
+  INLINE int get_client_num_multifiles() const;
+  INLINE int get_server_num_multifiles() const;
 
   INLINE string get_client_multifile_name(int index) const;
   INLINE string get_server_multifile_name(int index) const;
@@ -143,7 +143,7 @@ public:
 
   class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
   public:
-    FileRecord(void);
+    FileRecord();
     FileRecord(string name);
     void write(ostream &out) const;
     string _name;
@@ -153,10 +153,10 @@ public:
 
   class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
   public:
-    MultifileRecord(void);
+    MultifileRecord();
     MultifileRecord(string name, Phase phase, int size, int status);
     void write(ostream &out) const;
-    int get_num_files(void) const;
+    int get_num_files() const;
     string get_file_name(int index) const;
     bool file_exists(string fname) const;
     PT(FileRecord) get_file_record_named(string fname) const;
@@ -174,9 +174,9 @@ public:
 
   class EXPCL_PANDAEXPRESS Db {
   public:
-    Db(void);
+    Db();
     void write(ostream &out) const;
-    int get_num_multifiles(void) const;
+    int get_num_multifiles() const;
     string get_multifile_name(int index) const;
     bool multifile_exists(string mfname) const;
     PT(MultifileRecord) get_multifile_record_named(string mfname) const;

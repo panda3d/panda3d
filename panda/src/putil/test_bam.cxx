@@ -90,7 +90,7 @@ complete_pointers(TypedWritable **p_list, BamReader *)
 }
 
 void Person::
-print_relationships(void){
+print_relationships(){
   nout << "My name is " << _name << endl;
   if (_bro != NULL)
     nout << "My brother is " << _bro->name() << endl;
@@ -148,7 +148,7 @@ setDaughter(Child* daughter)
 
 
 void Parent::
-print_relationships(void){
+print_relationships(){
   Person::print_relationships();
   if (_son != NULL)
     nout << "My son is " << _son->name() << endl;
@@ -209,7 +209,7 @@ setMother(Parent* mom)
 }
 
 void Child::
-print_relationships(void){
+print_relationships(){
   Person::print_relationships();
   if (_dad != NULL)
       nout << "My dad is " << _dad->name() << endl;

@@ -67,7 +67,7 @@ LinearSourceForce::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearSourceForce::
-make_copy(void) {
+make_copy() {
   return new LinearSourceForce(*this);
 }
 

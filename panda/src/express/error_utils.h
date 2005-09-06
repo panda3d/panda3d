@@ -80,11 +80,11 @@ enum ErrorUtilCode {
 };
 
 EXPCL_PANDAEXPRESS string error_to_text(ErrorUtilCode err);
-EXPCL_PANDAEXPRESS int get_write_error(void);
+EXPCL_PANDAEXPRESS int get_write_error();
 
 #ifdef HAVE_NET
-EXPCL_PANDAEXPRESS string handle_socket_error(void);
-EXPCL_PANDAEXPRESS int get_network_error(void);
+EXPCL_PANDAEXPRESS string handle_socket_error();
+EXPCL_PANDAEXPRESS int get_network_error();
 #endif
 
 END_PUBLISH

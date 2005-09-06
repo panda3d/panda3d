@@ -141,7 +141,7 @@ protected:
   bool _anim_changed;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void finalize(BamReader *manager);
 
   static TypedWritable *make_PartBundle(const FactoryParams &params);

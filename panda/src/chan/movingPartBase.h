@@ -61,7 +61,7 @@ public:
                                 bool parent_changed);
 
 protected:
-  MovingPartBase(void);
+  MovingPartBase();
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index);

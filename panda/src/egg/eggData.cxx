@@ -30,7 +30,7 @@
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"
 
-extern int eggyyparse(void);
+extern int eggyyparse();
 #include "parserDefs.h"
 #include "lexerDefs.h"
 

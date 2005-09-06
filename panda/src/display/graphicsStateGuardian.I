@@ -717,7 +717,7 @@ set_transform(const TransformState *transform) {
 //               a call to prepare_display_region().
 ////////////////////////////////////////////////////////////////////
 INLINE const DisplayRegion *GraphicsStateGuardian::
-get_current_display_region(void) const {
+get_current_display_region() const {
   return _current_display_region;
 }
 

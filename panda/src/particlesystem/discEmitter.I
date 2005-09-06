@@ -89,7 +89,7 @@ set_cubic_lerping(bool clerp) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }
 
@@ -100,7 +100,7 @@ get_radius(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_outer_angle(void) const {
+get_outer_angle() const {
   return _outer_aoe;
 }
 
@@ -111,7 +111,7 @@ get_outer_angle(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_inner_angle(void) const {
+get_inner_angle() const {
   return _inner_aoe;
 }
 
@@ -122,7 +122,7 @@ get_inner_angle(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_outer_magnitude(void) const {
+get_outer_magnitude() const {
   return _outer_magnitude;
 }
 
@@ -133,7 +133,7 @@ get_outer_magnitude(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_inner_magnitude(void) const {
+get_inner_magnitude() const {
   return _inner_magnitude;
 }
 
@@ -144,6 +144,6 @@ get_inner_magnitude(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool DiscEmitter::
-get_cubic_lerping(void) const {
+get_cubic_lerping() const {
   return _cubic_lerping;
 }

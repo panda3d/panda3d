@@ -21,7 +21,7 @@
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ForceNode::
-clear(void) {
+clear() {
   _forces.erase(_forces.begin(), _forces.end());
 }
 

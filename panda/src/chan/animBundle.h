@@ -42,13 +42,13 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 protected:
-  INLINE AnimBundle(void);
+  INLINE AnimBundle();
 
   float _fps;
   int _num_frames;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_AnimBundle(const FactoryParams &params);

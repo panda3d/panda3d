@@ -32,11 +32,11 @@
 
 class ColorInterpolationFunction : public TypedReferenceCount {
 PUBLISHED:
-//  virtual string get_type(void);
+//  virtual string get_type();
   
 public:
-  ColorInterpolationFunction(void);
-  virtual ~ColorInterpolationFunction(void);
+  ColorInterpolationFunction();
+  virtual ~ColorInterpolationFunction();
 
   virtual Colorf interpolate(const float t = 0) const = 0;
 
@@ -67,17 +67,17 @@ private:
 
 class ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
 PUBLISHED:
-  INLINE Colorf get_color_a(void) const;
+  INLINE Colorf get_color_a() const;
 
   INLINE void set_color_a(const Colorf c);
 
 public:
-  ColorInterpolationFunctionConstant(void);
+  ColorInterpolationFunctionConstant();
   ColorInterpolationFunctionConstant(const Colorf color_a);
 
 protected:
   virtual Colorf interpolate(const float t = 0) const;
-  //  virtual string get_type(void);
+  //  virtual string get_type();
 
   Colorf _c_a;
 
@@ -108,17 +108,17 @@ private:
 
 class ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
 PUBLISHED:
-  INLINE Colorf get_color_b(void) const;
+  INLINE Colorf get_color_b() const;
 
   INLINE void set_color_b(const Colorf c);
 
 public:
-  ColorInterpolationFunctionLinear(void);
+  ColorInterpolationFunctionLinear();
   ColorInterpolationFunctionLinear(const Colorf color_a, const Colorf color_b);
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  //  virtual string get_type(void);
+  //  virtual string get_type();
 
   Colorf _c_b;
 
@@ -152,19 +152,19 @@ private:
 
 class ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
 PUBLISHED:
-  INLINE float get_width_a(void) const;
-  INLINE float get_width_b(void) const;
+  INLINE float get_width_a() const;
+  INLINE float get_width_b() const;
 
   INLINE void set_width_a(const float w);
   INLINE void set_width_b(const float w);
 
 public:
-  ColorInterpolationFunctionStepwave(void);
+  ColorInterpolationFunctionStepwave();
   ColorInterpolationFunctionStepwave(const Colorf color_a, const Colorf color_b, const float width_a, const float width_b);
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  //  virtual string get_type(void);
+  //  virtual string get_type();
 
   float _w_a;
   float _w_b;
@@ -200,17 +200,17 @@ private:
 
 class ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
 PUBLISHED:
-  INLINE float get_period(void) const;
+  INLINE float get_period() const;
 
   INLINE void set_period(const float p);
 
 public:
-  ColorInterpolationFunctionSinusoid(void);
+  ColorInterpolationFunctionSinusoid();
   ColorInterpolationFunctionSinusoid(const Colorf color_a, const Colorf color_b, const float period);
 
 protected:
   Colorf interpolate(const float t = 0) const;
-  //  virtual string get_type(void);
+  //  virtual string get_type();
 
   float _period;
 
@@ -245,14 +245,14 @@ class ColorInterpolationSegment : public ReferenceCount {
 PUBLISHED:
   ColorInterpolationSegment(ColorInterpolationFunction* function, const float &time_begin, const float &time_end, const int id);
   ColorInterpolationSegment(const ColorInterpolationSegment &s);
-  virtual ~ColorInterpolationSegment(void);
+  virtual ~ColorInterpolationSegment();
 
-  //  INLINE ColorInterpolationFunction* get_function(void) const;
-  INLINE TypedReferenceCount* get_function(void) const;
-  INLINE float get_time_begin(void) const;
-  INLINE float get_time_end(void) const;
-  INLINE int get_id(void) const;
-  INLINE bool is_enabled(void) const;
+  //  INLINE ColorInterpolationFunction* get_function() const;
+  INLINE TypedReferenceCount* get_function() const;
+  INLINE float get_time_begin() const;
+  INLINE float get_time_end() const;
+  INLINE int get_id() const;
+  INLINE bool is_enabled() const;
 
   INLINE void set_function(ColorInterpolationFunction* function);
   INLINE void set_time_begin(const float time);
@@ -282,10 +282,10 @@ protected:
 
 class ColorInterpolationManager : public ReferenceCount {
 PUBLISHED:
-ColorInterpolationManager(void);
+ColorInterpolationManager();
   ColorInterpolationManager(const Colorf &c);
   ColorInterpolationManager(const ColorInterpolationManager& copy);    
-  virtual ~ColorInterpolationManager(void);
+  virtual ~ColorInterpolationManager();
 
   int add_constant(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color = Colorf(1.0f,1.0f,1.0f,1.0f));
   int add_linear(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f));
@@ -298,9 +298,9 @@ ColorInterpolationManager(void);
   static ColorInterpolationFunctionSinusoid* downcast_function_to_sinusoid(ColorInterpolationFunction* f);
   */
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);
-  INLINE string get_segment_id_list(void);
+  INLINE string get_segment_id_list();
   void clear_segment(const int seg_id);
-  void clear_to_initial(void);
+  void clear_to_initial();
 
 public:
   Colorf generateColor(const float interpolated_time);

@@ -36,7 +36,7 @@ FLOATNAME(Frustum)() {
 //       Access:
 //  Description: Sets up a two-dimensional orthographic frustum
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho_2D(void) {
+INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho_2D() {
   make_ortho(-1.0f, 1.0f);
 }
 

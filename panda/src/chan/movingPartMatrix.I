@@ -46,5 +46,5 @@ MovingPartMatrix(PartGroup *parent, const string &name,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MovingPartMatrix::
-MovingPartMatrix(void) {
+MovingPartMatrix() {
 }

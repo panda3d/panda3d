@@ -24,27 +24,27 @@
 
 class EXPCL_PANDA LerpFunctor : public TypedReferenceCount {
 public:
-  LerpFunctor(void) {}
+  LerpFunctor() {}
   LerpFunctor(const LerpFunctor&);
-  virtual ~LerpFunctor(void);
+  virtual ~LerpFunctor();
   LerpFunctor& operator=(const LerpFunctor&);
   virtual void operator()(float) = 0;
 
 PUBLISHED:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
 
 public:
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LerpFunctor",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -64,7 +64,7 @@ protected:
     {}
   SimpleLerpFunctor(const SimpleLerpFunctor<value>&);
 public:
-  virtual ~SimpleLerpFunctor(void);
+  virtual ~SimpleLerpFunctor();
   SimpleLerpFunctor<value>& operator=(const SimpleLerpFunctor<value>&);
   virtual void operator()(float);
 
@@ -74,20 +74,20 @@ PUBLISHED:
   INLINE const value &get_end() const { return _end; }
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LerpFunctor::init_type();
     do_init_type(value);
     ostringstream os;
     os << "SimpleLerpFunctor<" << get_type_handle(value).get_name() << ">";
     register_type(_type_handle, os.str(), LerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -109,17 +109,17 @@ protected:
 public:
   SimpleQueryLerpFunctor(value start, value end)
     : SimpleLerpFunctor<value>(start, end) {}
-  virtual ~SimpleQueryLerpFunctor(void);
+  virtual ~SimpleQueryLerpFunctor();
   SimpleQueryLerpFunctor<value>& operator=(const SimpleQueryLerpFunctor<value>&);
   virtual void operator()(float);
 PUBLISHED:
-  value get_value(void);
+  value get_value();
 
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
 public:
-  static void init_type(void) {
+  static void init_type() {
     SimpleLerpFunctor<value>::init_type();
     ostringstream os;
     os << "SimpleQueryLerpFunctor<" << get_type_handle(value).get_name()
@@ -127,10 +127,10 @@ public:
     register_type(_type_handle, os.str(),
                   SimpleLerpFunctor<value>::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -199,29 +199,29 @@ private:
   typedef phash_set< PT(LerpFunctor) > Functors;
   Functors _funcs;
 public:
-  MultiLerpFunctor(void) {}
+  MultiLerpFunctor() {}
   MultiLerpFunctor(const MultiLerpFunctor&);
-  virtual ~MultiLerpFunctor(void);
+  virtual ~MultiLerpFunctor();
   MultiLerpFunctor& operator=(const MultiLerpFunctor&);
   virtual void operator()(float);
   void add_functor(LerpFunctor*);
   void remove_functor(LerpFunctor*);
 
 PUBLISHED:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
 
 public:
-  static void init_type(void) {
+  static void init_type() {
     LerpFunctor::init_type();
     register_type(_type_handle, "MultiLerpFunctor",
                   LerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -239,7 +239,7 @@ SimpleLerpFunctor<value>::SimpleLerpFunctor(const SimpleLerpFunctor<value>& c)
   {}
 
 template <class value>
-SimpleLerpFunctor<value>::~SimpleLerpFunctor(void)
+SimpleLerpFunctor<value>::~SimpleLerpFunctor()
 {
 }
 
@@ -269,7 +269,7 @@ SimpleQueryLerpFunctor<value>::SimpleQueryLerpFunctor(const SimpleQueryLerpFunct
 */
 
 template <class value>
-SimpleQueryLerpFunctor<value>::~SimpleQueryLerpFunctor(void)
+SimpleQueryLerpFunctor<value>::~SimpleQueryLerpFunctor()
 {
 }
 
@@ -287,7 +287,7 @@ void SimpleQueryLerpFunctor<value>::operator()(float t) {
 }
 
 template <class value>
-value SimpleQueryLerpFunctor<value>::get_value(void) {
+value SimpleQueryLerpFunctor<value>::get_value() {
   return _save;
 }
 

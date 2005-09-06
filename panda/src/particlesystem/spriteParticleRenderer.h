@@ -111,7 +111,7 @@ PUBLISHED:
     return _source_node;
   }
 
-  int get_num_frames(void) const {
+  int get_num_frames() const {
     return textures.size();
   }
 

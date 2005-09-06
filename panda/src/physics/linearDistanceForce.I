@@ -52,7 +52,7 @@ set_force_center(const LPoint3f& p) {
 // Description : falloff_type query
 ////////////////////////////////////////////////////////////////////
 INLINE LinearDistanceForce::FalloffType LinearDistanceForce::
-get_falloff_type(void) const {
+get_falloff_type() const {
   return _falloff;
 }
 
@@ -62,7 +62,7 @@ get_falloff_type(void) const {
 // Description : radius query
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearDistanceForce::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }
 
@@ -72,7 +72,7 @@ get_radius(void) const {
 // Description : force_center query
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f LinearDistanceForce::
-get_force_center(void) const {
+get_force_center() const {
   return _force_center;
 }
 
@@ -82,7 +82,7 @@ get_force_center(void) const {
 // Description : calculate the term based on falloff
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearDistanceForce::
-get_scalar_term(void) const {
+get_scalar_term() const {
   float r = _radius;
   if (_falloff == FT_ONE_OVER_R_SQUARED)
     r = r * r;

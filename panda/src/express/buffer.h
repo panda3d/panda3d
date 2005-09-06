@@ -33,7 +33,7 @@ public:
   ~Buffer();
 
 PUBLISHED:
-  INLINE int get_length(void) const;
+  INLINE int get_length() const;
 
 #ifndef CPPPARSER
 // hidden from interrogate

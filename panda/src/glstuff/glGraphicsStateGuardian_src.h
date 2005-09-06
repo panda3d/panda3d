@@ -150,13 +150,13 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
                           int light_id);
 
-  virtual bool wants_texcoords(void) const;
+  virtual bool wants_texcoords() const;
 
   void print_gfx_visual();
 
   //For those interested in what the guardian thinks is the current
   //enabled/disable GL State compared to what GL says it is
-  void dump_state(void);
+  void dump_state();
 
   const float *get_light_color(Light *light) const;
 

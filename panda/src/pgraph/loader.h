@@ -81,7 +81,7 @@ private:
   static void load_file_types();
   static bool _file_types_loaded;
 
-  virtual bool process_request(void);
+  virtual bool process_request();
   PT(PandaNode) load_file(const Filename &filename, bool search) const;
 
   typedef TokenBoard<LoaderToken> LoaderTokenBoard;

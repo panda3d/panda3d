@@ -95,7 +95,7 @@ wdxGraphicsWindow9::
 }
 
 void wdxGraphicsWindow9::
-make_current(void) {
+make_current() {
   PStatTimer timer(_make_current_pcollector);
 
   DXGraphicsStateGuardian9 *dxgsg;
@@ -115,7 +115,7 @@ make_current(void) {
 /* BUGBUG:  need to reinstate these methods ASAP.  they were incorrectly moved from the GraphicsWindow to the GSG
             apps need to know the framebuffer format so they can create texture/rendertgt with same fmt
 int wdxGraphicsWindow9::
-get_depth_bitwidth(void) {
+get_depth_bitwidth() {
     assert(_dxgsg!=NULL);
     if(_dxgsg->scrn.PresParams.EnableAutoDepthStencil)
        return _dxgsg->scrn.depth_buffer_bitdepth;
@@ -906,7 +906,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 //               Returns true if successful, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
-choose_device(void) {
+choose_device() {
   HRESULT hr;
 
   wdxGraphicsPipe9 *dxpipe;
@@ -1003,7 +1003,7 @@ choose_device(void) {
 
 /*
 primary init sequence of old method, still need to integrate multi-window functionality
-void wdxGraphicsWindow9Group::initWindowGroup(void) {
+void wdxGraphicsWindow9Group::initWindowGroup() {
     HRESULT hr;
 
     assert(_windows.size()>0);
@@ -1740,7 +1740,7 @@ reset_window(bool swapchain) {
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
-open_window(void) {
+open_window() {
   PT(DXGraphicsDevice9) dxdev;
   DXGraphicsStateGuardian9 *dxgsg;
   DCAST_INTO_R(dxgsg,_gsg,false);
@@ -1813,6 +1813,6 @@ open_window(void) {
 
 bool wdxGraphicsWindow9::
 handle_mouse_motion(int x, int y) {
-  (void) WinGraphicsWindow::handle_mouse_motion(x,y);
+  () WinGraphicsWindow::handle_mouse_motion(x,y);
   return false;
 }

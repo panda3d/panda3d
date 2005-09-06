@@ -32,6 +32,6 @@ set_frequency(float frequency) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float AsyncUtility::
-get_frequency(void) const {
+get_frequency() const {
   return _frequency;
 }

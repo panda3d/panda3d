@@ -25,7 +25,7 @@
 // Description : Constructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticleFactory::
-OrientedParticleFactory(void) :
+OrientedParticleFactory() :
   BaseParticleFactory() {
 }
 
@@ -47,7 +47,7 @@ OrientedParticleFactory(const OrientedParticleFactory &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticleFactory::
-~OrientedParticleFactory(void) {
+~OrientedParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ populate_child_particle(BaseParticle *bp) const {
 // Description : child particle generation function
 ////////////////////////////////////////////////////////////////////
 BaseParticle *OrientedParticleFactory::
-alloc_particle(void) const {
+alloc_particle() const {
   return new OrientedParticle;
 }
 

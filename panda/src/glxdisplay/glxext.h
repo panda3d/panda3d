@@ -301,11 +301,11 @@ extern "C" {
    on my redhat 8.0 box).  So we work around this by typedeffing it
    explicitly; and we use #define in case it is already typedeffed. */
 #define __GLXextFuncPtr panda__GLXextFuncPtr
-typedef void (*__GLXextFuncPtr)(void);
+typedef void (*__GLXextFuncPtr)();
 
   /*
 #ifndef GLX_ARB_get_proc_address
-typedef void (*__GLXextFuncPtr)(void);
+typedef void (*__GLXextFuncPtr)();
 #endif
   */
 
@@ -358,8 +358,8 @@ extern void glXDestroyPbuffer (Display *, GLXPbuffer);
 extern void glXQueryDrawable (Display *, GLXDrawable, int, unsigned int *);
 extern GLXContext glXCreateNewContext (Display *, GLXFBConfig, int, GLXContext, Bool);
 extern Bool glXMakeContextCurrent (Display *, GLXDrawable, GLXDrawable, GLXContext);
-extern GLXDrawable glXGetCurrentReadDrawable (void);
-extern Display * glXGetCurrentDisplay (void);
+extern GLXDrawable glXGetCurrentReadDrawable ();
+extern Display * glXGetCurrentDisplay ();
 extern int glXQueryContext (Display *, GLXContext, int, int *);
 extern void glXSelectEvent (Display *, GLXDrawable, unsigned long);
 extern void glXGetSelectedEvent (Display *, GLXDrawable, unsigned long *);
@@ -379,8 +379,8 @@ typedef void (* PFNGLXDESTROYPBUFFERPROC) (Display *dpy, GLXPbuffer pbuf);
 typedef void (* PFNGLXQUERYDRAWABLEPROC) (Display *dpy, GLXDrawable draw, int attribute, unsigned int *value);
 typedef GLXContext (* PFNGLXCREATENEWCONTEXTPROC) (Display *dpy, GLXFBConfig config, int render_type, GLXContext share_list, Bool direct);
 typedef Bool (* PFNGLXMAKECONTEXTCURRENTPROC) (Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
-typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLEPROC) (void);
-typedef Display * (* PFNGLXGETCURRENTDISPLAYPROC) (void);
+typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLEPROC) ();
+typedef Display * (* PFNGLXGETCURRENTDISPLAYPROC) ();
 typedef int (* PFNGLXQUERYCONTEXTPROC) (Display *dpy, GLXContext ctx, int attribute, int *value);
 typedef void (* PFNGLXSELECTEVENTPROC) (Display *dpy, GLXDrawable draw, unsigned long event_mask);
 typedef void (* PFNGLXGETSELECTEDEVENTPROC) (Display *dpy, GLXDrawable draw, unsigned long *event_mask);
@@ -436,10 +436,10 @@ typedef int (* PFNGLXWAITVIDEOSYNCSGIPROC) (int divisor, int remainder, unsigned
 #define GLX_SGI_make_current_read 1
 #ifdef GLX_GLXEXT_PROTOTYPES
 extern Bool glXMakeCurrentReadSGI (Display *, GLXDrawable, GLXDrawable, GLXContext);
-extern GLXDrawable glXGetCurrentReadDrawableSGI (void);
+extern GLXDrawable glXGetCurrentReadDrawableSGI ();
 #endif /* GLX_GLXEXT_PROTOTYPES */
 typedef Bool (* PFNGLXMAKECURRENTREADSGIPROC) (Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
-typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLESGIPROC) (void);
+typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLESGIPROC) ();
 #endif
 
 #ifndef GLX_SGIX_video_source
@@ -461,13 +461,13 @@ typedef void (* PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (Display *dpy, GLXVideoSour
 #ifndef GLX_EXT_import_context
 #define GLX_EXT_import_context 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Display * glXGetCurrentDisplayEXT (void);
+extern Display * glXGetCurrentDisplayEXT ();
 extern int glXQueryContextInfoEXT (Display *, GLXContext, int, int *);
 extern GLXContextID glXGetContextIDEXT (const GLXContext);
 extern GLXContext glXImportContextEXT (Display *, GLXContextID);
 extern void glXFreeContextEXT (Display *, GLXContext);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Display * (* PFNGLXGETCURRENTDISPLAYEXTPROC) (void);
+typedef Display * (* PFNGLXGETCURRENTDISPLAYEXTPROC) ();
 typedef int (* PFNGLXQUERYCONTEXTINFOEXTPROC) (Display *dpy, GLXContext context, int attribute, int *value);
 typedef GLXContextID (* PFNGLXGETCONTEXTIDEXTPROC) (const GLXContext context);
 typedef GLXContext (* PFNGLXIMPORTCONTEXTEXTPROC) (Display *dpy, GLXContextID contextID);

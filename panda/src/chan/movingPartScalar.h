@@ -44,10 +44,10 @@ public:
   virtual void get_blend_value(const PartBundle *root);
 
 protected:
-  INLINE MovingPartScalar(void);
+  INLINE MovingPartScalar();
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
   static TypedWritable *make_MovingPartScalar(const FactoryParams &params);
 

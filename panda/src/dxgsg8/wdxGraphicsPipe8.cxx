@@ -772,7 +772,7 @@ make_gsg(const FrameBufferProperties &properties,
 
 pmap<D3DFORMAT_FLAG, D3DFORMAT> g_D3DFORMATmap;
 
-void Init_D3DFORMAT_map(void) {
+void Init_D3DFORMAT_map() {
   if (g_D3DFORMATmap.size() != 0)
     return;
 

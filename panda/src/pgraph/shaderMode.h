@@ -41,8 +41,8 @@ public:
     SAT_NODEPATH,
   };
 
-  INLINE ShaderModeArg(void);
-  INLINE ~ShaderModeArg(void);
+  INLINE ShaderModeArg();
+  INLINE ~ShaderModeArg();
   
   int         _type;
   NodePath    _nvalue;
@@ -72,7 +72,7 @@ PUBLISHED:
   
   ~ShaderMode();
   
-  INLINE Shader *get_shader(void);
+  INLINE Shader *get_shader();
   
   // Overloaded set_param to be used based on your param type
   void set_param(const string &pname, Texture *t);
@@ -86,7 +86,7 @@ PUBLISHED:
   void set_param(const string &pname, LVector3d p3d);
   void set_param(const string &pname, LVector4d p4d);
 
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
 private:
   ShaderModeArg *mod_param(const string &pname, int kind);

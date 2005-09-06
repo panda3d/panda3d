@@ -36,6 +36,6 @@ set_radius(float r) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float SphereVolumeEmitter::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }

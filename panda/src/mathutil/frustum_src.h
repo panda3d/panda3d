@@ -24,7 +24,7 @@ class EXPCL_PANDA FLOATNAME(Frustum) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Frustum)();
 
-  INLINE_MATHUTIL void make_ortho_2D(void);
+  INLINE_MATHUTIL void make_ortho_2D();
   INLINE_MATHUTIL void make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b);
 
   INLINE_MATHUTIL void make_ortho(FLOATTYPE fnear, FLOATTYPE ffar);

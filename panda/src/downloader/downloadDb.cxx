@@ -89,7 +89,7 @@ DownloadDb(Filename &server_file, Filename &client_file) {
 //  Description: Primarily used for testing.
 ////////////////////////////////////////////////////////////////////
 DownloadDb::
-DownloadDb(void) {
+DownloadDb() {
   _client_db = Db();
   _server_db = Db();
 }
@@ -100,7 +100,7 @@ DownloadDb(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::
-~DownloadDb(void) {
+~DownloadDb() {
   if (downloader_cat.is_debug())
     downloader_cat.debug()
       << "DownloadDb destructor called" << endl;    
@@ -394,7 +394,7 @@ write_db(Filename &file, Db db, bool want_server_info) {
 //               new clean server db
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-create_new_server_db(void) {
+create_new_server_db() {
   _server_db = Db();
 }
 
@@ -449,7 +449,7 @@ server_add_file(string mfname, string fname) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::MultifileRecord::
-MultifileRecord(void) {
+MultifileRecord() {
   _name = "";
   _phase = 0;
   _size = 0;
@@ -499,7 +499,7 @@ write(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::MultifileRecord::
-get_num_files(void) const {
+get_num_files() const {
   return _file_records.size();
 }
 
@@ -578,7 +578,7 @@ add_file_record(PT(FileRecord) fr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::Db::
-Db(void) {
+Db() {
   // The head is a magic number and the number of multifiles in the db
   _header_length = sizeof(_magic_number) + sizeof(PN_int32);
 }
@@ -604,7 +604,7 @@ write(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::Db::
-get_num_multifiles(void) const {
+get_num_multifiles() const {
   return _mfile_records.size();
 }
 
@@ -1030,7 +1030,7 @@ write_header(ostream &write_stream) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::FileRecord::
-FileRecord(void) {
+FileRecord() {
   _name = "";
 }
 

@@ -24,5 +24,5 @@
 //               the definition of an interface
 ////////////////////////////////////////////////////////////////////
 
-INLINE DatagramSink::DatagramSink(void){
+INLINE DatagramSink::DatagramSink(){
 }

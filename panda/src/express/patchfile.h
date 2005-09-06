@@ -53,19 +53,19 @@ PUBLISHED:
   };
   */
 
-  Patchfile(void);
+  Patchfile();
   Patchfile(PT(Buffer) buffer);
-  ~Patchfile(void);
+  ~Patchfile();
 
   bool build(Filename file_orig, Filename file_new, Filename patch_name);
   int read_header(const Filename &patch_file);
 
   int initiate(const Filename &patch_file, const Filename &file);
-  int run(void);
+  int run();
 
   bool apply(Filename &patch_file, Filename &file);
 
-  INLINE float get_progress(void) const;
+  INLINE float get_progress() const;
 
   INLINE void set_footprint_length(int length);
   INLINE int get_footprint_length();
@@ -78,7 +78,7 @@ PUBLISHED:
 private:
   int internal_read_header(const Filename &patch_file);
   void init(PT(Buffer) buffer);
-  void cleanup(void);
+  void cleanup();
 
 private:
   // stuff for the build operation

@@ -32,7 +32,7 @@ set_frame_stepping(int every_nth_frame) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE int ParticleSystemManager::
-get_frame_stepping(void) const {
+get_frame_stepping() const {
   return _nth_frame;
 }
 
@@ -57,6 +57,6 @@ attach_particlesystem(ParticleSystem *ps) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystemManager::
-clear(void) {
+clear() {
   _ps_list.erase(_ps_list.begin(), _ps_list.end());
 }

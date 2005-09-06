@@ -47,8 +47,8 @@ public:
   virtual ~wdxGraphicsWindow7();
   virtual void end_flip();
   //virtual bool begin_frame();
-  virtual void make_current(void);
-  virtual bool open_window(void);
+  virtual void make_current();
+  virtual bool open_window();
 
 protected:
   virtual void fullscreen_restored(WindowProperties &properties);

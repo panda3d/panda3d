@@ -35,7 +35,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WritableParam : public FactoryParam {
 public:
-  INLINE const Datagram &get_datagram(void);
+  INLINE const Datagram &get_datagram();
 
 private:
   const Datagram &_packet;

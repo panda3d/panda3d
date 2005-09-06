@@ -39,7 +39,7 @@ set_radius_spread(float spread) {
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float TangentRingEmitter::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }
 
@@ -48,6 +48,6 @@ get_radius(void) const {
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float TangentRingEmitter::
-get_radius_spread(void) const {
+get_radius_spread() const {
   return _radius_spread;
 }

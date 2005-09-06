@@ -379,7 +379,7 @@ set_extra_handler(EventHandler *eh) {
 //               can be dealt with much sooner.
 ////////////////////////////////////////////////////////////////////
 INLINE EventHandler *MouseWatcher::
-get_extra_handler(void) const {
+get_extra_handler() const {
   return _eh;
 }
 

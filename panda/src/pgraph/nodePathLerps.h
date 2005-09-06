@@ -51,24 +51,24 @@ PUBLISHED:
 
 public:
   PosLerpFunctor(const PosLerpFunctor&);
-  virtual ~PosLerpFunctor(void);
+  virtual ~PosLerpFunctor();
   PosLerpFunctor& operator=(const PosLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LPoint3fLerpFunctor::init_type();
     register_type(_type_handle, "PosLerpFunctor",
                   LPoint3fLerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -102,29 +102,29 @@ PUBLISHED:
                  float ez, NodePath wrt)
     : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
-  void take_shortest(void);
-  void take_longest(void);
+  void take_shortest();
+  void take_longest();
 
 public:
   HprLerpFunctor(const HprLerpFunctor&);
-  virtual ~HprLerpFunctor(void);
+  virtual ~HprLerpFunctor();
   HprLerpFunctor& operator=(const HprLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LVecBase3fLerpFunctor::init_type();
     register_type(_type_handle, "HprLerpFunctor",
                   LVecBase3fLerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -159,24 +159,24 @@ PUBLISHED:
 
 public:
   ScaleLerpFunctor(const ScaleLerpFunctor&);
-  virtual ~ScaleLerpFunctor(void);
+  virtual ~ScaleLerpFunctor();
   ScaleLerpFunctor& operator=(const ScaleLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LVecBase3fLerpFunctor::init_type();
     register_type(_type_handle, "ScaleLerpFunctor",
                   LVecBase3fLerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -210,24 +210,24 @@ PUBLISHED:
 
 public:
   ColorLerpFunctor(const ColorLerpFunctor&);
-  virtual ~ColorLerpFunctor(void);
+  virtual ~ColorLerpFunctor();
   ColorLerpFunctor& operator=(const ColorLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LVecBase4fLerpFunctor::init_type();
     register_type(_type_handle, "ColorLerpFunctor",
                   LVecBase4fLerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -277,29 +277,29 @@ PUBLISHED:
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend - _hstart), _is_wrt(true), _wrt_path(wrt) {}
-  void take_shortest(void);
-  void take_longest(void);
+  void take_shortest();
+  void take_longest();
 
 public:
   PosHprLerpFunctor(const PosHprLerpFunctor&);
-  virtual ~PosHprLerpFunctor(void);
+  virtual ~PosHprLerpFunctor();
   PosHprLerpFunctor& operator=(const PosHprLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LerpFunctor::init_type();
     register_type(_type_handle, "PosHprLerpFunctor",
                   LerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -354,29 +354,29 @@ PUBLISHED:
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(true),
       _wrt_path(wrt) {}
-  void take_shortest(void);
-  void take_longest(void);
+  void take_shortest();
+  void take_longest();
 
 public:
   HprScaleLerpFunctor(const HprScaleLerpFunctor&);
-  virtual ~HprScaleLerpFunctor(void);
+  virtual ~HprScaleLerpFunctor();
   HprScaleLerpFunctor& operator=(const HprScaleLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LerpFunctor::init_type();
     register_type(_type_handle, "HprScaleLerpFunctor",
                   LerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -439,29 +439,29 @@ PUBLISHED:
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(true),
       _wrt_path(wrt) {}
-  void take_shortest(void);
-  void take_longest(void);
+  void take_shortest();
+  void take_longest();
 
 public:
   PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor&);
-  virtual ~PosHprScaleLerpFunctor(void);
+  virtual ~PosHprScaleLerpFunctor();
   PosHprScaleLerpFunctor& operator=(const PosHprScaleLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LerpFunctor::init_type();
     register_type(_type_handle, "PosHprScaleLerpFunctor",
                   LerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -495,24 +495,24 @@ PUBLISHED:
 
 public:
   ColorScaleLerpFunctor(const ColorScaleLerpFunctor&);
-  virtual ~ColorScaleLerpFunctor(void);
+  virtual ~ColorScaleLerpFunctor();
   ColorScaleLerpFunctor& operator=(const ColorScaleLerpFunctor&);
   virtual void operator()(float);
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LVecBase4fLerpFunctor::init_type();
     register_type(_type_handle, "ColorScaleLerpFunctor",
                   LVecBase4fLerpFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }

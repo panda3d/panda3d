@@ -99,7 +99,7 @@ PUBLISHED:
   INLINE void clear_geometry();
 
   INLINE void set_extra_handler(EventHandler *eh);
-  INLINE EventHandler *get_extra_handler(void) const;
+  INLINE EventHandler *get_extra_handler() const;
 
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
   INLINE ModifierButtons get_modifier_buttons() const;

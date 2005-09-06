@@ -33,14 +33,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patcher {
 PUBLISHED:
-  Patcher(void);
+  Patcher();
   Patcher(PT(Buffer) buffer);
-  virtual ~Patcher(void);
+  virtual ~Patcher();
 
   int initiate(Filename &patch, Filename &infile);
-  int run(void);
+  int run();
 
-  INLINE float get_progress(void) const;
+  INLINE float get_progress() const;
 
 private:
   void init(PT(Buffer) buffer);

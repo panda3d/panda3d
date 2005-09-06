@@ -49,11 +49,11 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
-  AnimChannelScalarTable(void);
+  AnimChannelScalarTable();
   CPTA_float _table;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_AnimChannelScalarTable(const FactoryParams &params);

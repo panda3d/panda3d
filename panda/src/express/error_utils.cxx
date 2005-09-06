@@ -158,7 +158,7 @@ string error_to_text(ErrorUtilCode err) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int
-get_write_error(void) {
+get_write_error() {
 #ifndef WIN32
   return EU_error_abort;
 #else
@@ -195,7 +195,7 @@ get_write_error(void) {
 //     Function: handle_socket_error
 //  Description:
 ////////////////////////////////////////////////////////////////////
-string handle_socket_error(void) {
+string handle_socket_error() {
 #ifndef WIN32
   return string(strerror(errno));
 #else
@@ -255,7 +255,7 @@ string handle_socket_error(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int
-get_network_error(void) {
+get_network_error() {
 #ifndef WIN32
   return EU_error_abort;
 #else

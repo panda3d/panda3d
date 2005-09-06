@@ -48,7 +48,7 @@ PUBLISHED:
   float get_progress() const;
 
 private:
-  void cleanup(void);
+  void cleanup();
 
   Filename _source_filename;
   

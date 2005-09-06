@@ -41,9 +41,9 @@ public:
   }
   INLINE LerpChannelRange(const LerpChannelRange& c) : _low(c._low),
                                                        _high(c._high) {}
-  INLINE ~LerpChannelRange(void) {}
-  INLINE float GetLow(void) { return _low; }
-  INLINE float GetHigh(void) { return _high; }
+  INLINE ~LerpChannelRange() {}
+  INLINE float GetLow() { return _low; }
+  INLINE float GetHigh() { return _high; }
   INLINE void SetLow(float l) {
     if (l > _high) {
       _low = _high;

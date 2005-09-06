@@ -56,7 +56,7 @@ public:
   virtual LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual bool handle_mouse_motion(int x, int y);
-  virtual void handle_mouse_exit(void);
+  virtual void handle_mouse_exit();
 
   INLINE HWND get_ime_hwnd();
 

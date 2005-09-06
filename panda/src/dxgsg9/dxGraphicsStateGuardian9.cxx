@@ -149,7 +149,7 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice9 *pD3D
 #endif
 
 void DXGraphicsStateGuardian9::
-reset_panda_gsg(void) {
+reset_panda_gsg() {
     GraphicsStateGuardian::reset();
 
     _auto_rescale_normal = false;
@@ -244,7 +244,7 @@ reset() {
 
 // setup up for re-calling dx_init(), this is not the final exit cleanup routine (see dx_cleanup)
 void DXGraphicsStateGuardian9::
-free_d3d_device(void) {
+free_d3d_device() {
     // dont want a full reset of gsg, just a state clear
     set_state(RenderState::make_empty());
     // want gsg to pass all state settings through
@@ -286,7 +286,7 @@ free_nondx_resources() {
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-dx_init(void) {
+dx_init() {
     HRESULT hr;
 
     // make sure gsg passes all current state down to us
@@ -2900,7 +2900,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
   
-  (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,tex);
+  () ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,tex);
   
   RELEASE(pD3DSurf,dxgsg9,"pD3DSurf",RELEASE_ONCE);
   
@@ -3935,15 +3935,15 @@ set_blend_mode() {
   enable_blend(false);
 }
 
-TypeHandle DXGraphicsStateGuardian9::get_type(void) const {
+TypeHandle DXGraphicsStateGuardian9::get_type() const {
     return get_class_type();
 }
 
-TypeHandle DXGraphicsStateGuardian9::get_class_type(void) {
+TypeHandle DXGraphicsStateGuardian9::get_class_type() {
     return _type_handle;
 }
 
-void DXGraphicsStateGuardian9::init_type(void) {
+void DXGraphicsStateGuardian9::init_type() {
     GraphicsStateGuardian::init_type();
     register_type(_type_handle, "DXGraphicsStateGuardian9",
                   GraphicsStateGuardian::get_class_type());
@@ -4068,7 +4068,7 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
 }
 
 // release all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian9::DeleteAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian9::DeleteAllDeviceObjects() {
   // BUGBUG: need to release any vertexbuffers here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -4087,7 +4087,7 @@ HRESULT DXGraphicsStateGuardian9::DeleteAllDeviceObjects(void) {
 }
 
 // recreate all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian9::RecreateAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian9::RecreateAllDeviceObjects() {
   // BUGBUG: need to handle vertexbuffer handling here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -4098,7 +4098,7 @@ HRESULT DXGraphicsStateGuardian9::RecreateAllDeviceObjects(void) {
   return S_OK;
 }
 
-HRESULT DXGraphicsStateGuardian9::ReleaseAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian9::ReleaseAllDeviceObjects() {
     // release any D3DPOOL_DEFAULT objects here (currently none)
     return S_OK;
 }

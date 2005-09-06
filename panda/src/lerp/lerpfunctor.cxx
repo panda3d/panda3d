@@ -25,7 +25,7 @@ LerpFunctor::LerpFunctor(const LerpFunctor&)
 {
 }
 
-LerpFunctor::~LerpFunctor(void)
+LerpFunctor::~LerpFunctor()
 {
 }
 
@@ -40,7 +40,7 @@ void LerpFunctor::operator()(float) {
 MultiLerpFunctor::MultiLerpFunctor(const MultiLerpFunctor& c)
   : LerpFunctor(c), _funcs(c._funcs) {}
 
-MultiLerpFunctor::~MultiLerpFunctor(void) {}
+MultiLerpFunctor::~MultiLerpFunctor() {}
 
 MultiLerpFunctor& MultiLerpFunctor::operator=(const MultiLerpFunctor& c) {
   _funcs = c._funcs;

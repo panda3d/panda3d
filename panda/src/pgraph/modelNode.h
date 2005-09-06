@@ -86,7 +86,7 @@ public:
     register_type(_type_handle, "ModelNode",
                   PandaNode::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

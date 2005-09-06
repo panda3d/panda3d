@@ -1657,7 +1657,7 @@ downsample_image(uchar *source, int num_pixels, int component_width) {
 }
 
 HRESULT DXTextureContext7::
-FillDDSurfTexturePixels(void) {
+FillDDSurfTexturePixels() {
     
     CPTA_uchar orig_image = _texture->get_ram_image();
     if (orig_image.empty()) {

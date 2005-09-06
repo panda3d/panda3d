@@ -37,7 +37,7 @@ class ClockObject;
 class EXPCL_PANDAFX LensFlareNode : public Node
 {
 PUBLISHED:
-  INLINE LensFlareNode(void);
+  INLINE LensFlareNode();
 
   void add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets,
                  PTA_float angle_scales, PTA_Colorf colors);

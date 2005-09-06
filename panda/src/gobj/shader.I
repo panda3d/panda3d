@@ -22,7 +22,7 @@
 //  Description: Return the shader's text.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Shader::
-get_text(void) {
+get_text() {
   return _text;
 }
 
@@ -32,7 +32,7 @@ get_text(void) {
 //  Description: Return the shader's filename, or null string.
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Shader::
-get_file(void) {
+get_file() {
   return _file;
 }
 

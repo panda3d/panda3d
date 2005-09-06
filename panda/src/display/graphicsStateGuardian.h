@@ -212,7 +212,7 @@ public:
 
   RenderBuffer get_render_buffer(int buffer_type);
 
-  INLINE const DisplayRegion *get_current_display_region(void) const;
+  INLINE const DisplayRegion *get_current_display_region() const;
   INLINE const Lens *get_current_lens() const;
 
   INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);

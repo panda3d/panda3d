@@ -69,7 +69,7 @@ private:
   VertexTransforms _vertex_transforms;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
   virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);

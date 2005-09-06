@@ -204,7 +204,7 @@ set_switch(int index, float in, float out) {
 //               children.  See add_switch().
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
-clear_switches(void) {
+clear_switches() {
   CDWriter cdata(_cycler);
   cdata->_switch_vector.clear();
   cdata->_lowest = 0;

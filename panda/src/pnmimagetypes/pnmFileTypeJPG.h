@@ -70,7 +70,7 @@ public:
   class Reader : public PNMReader {
   public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
-    ~Reader(void);
+    ~Reader();
 
     virtual int read_data(xel *array, xelval *alpha);
 

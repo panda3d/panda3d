@@ -83,7 +83,7 @@ private:
   float _endt;
   float _t;
 
-  virtual void step(void);
+  virtual void step();
   static void handle_event(CPT(Event), void*);
 
 PUBLISHED:

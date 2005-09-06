@@ -22,7 +22,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float Patcher::
-get_progress(void) const {
+get_progress() const {
   if(_patchfile) {
     return _patchfile->get_progress();
   }

@@ -45,10 +45,10 @@ public:
   virtual void get_blend_value(const PartBundle *root);
 
 protected:
-  INLINE MovingPartMatrix(void);
+  INLINE MovingPartMatrix();
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
   static TypedWritable *make_MovingPartMatrix(const FactoryParams &params);
 

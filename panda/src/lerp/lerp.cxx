@@ -52,7 +52,7 @@ Lerp::Lerp(const Lerp& c) : _blend(c._blend), _func(c._func), _event(c._event),
                             _startt(c._startt), _endt(c._endt),
                             _delta(c._delta), _t(c._t) {}
 
-Lerp::~Lerp(void) {}
+Lerp::~Lerp() {}
 
 Lerp& Lerp::operator=(const Lerp& c) {
   _blend = c._blend;
@@ -65,7 +65,7 @@ Lerp& Lerp::operator=(const Lerp& c) {
   return *this;
 }
 
-void Lerp::step(void) {
+void Lerp::step() {
   _t += _delta;
   if (is_done()) {
     (*_func)(1.0);
@@ -83,7 +83,7 @@ void Lerp::set_step_size(float delta) {
   _delta = delta;
 }
 
-float Lerp::get_step_size(void) const {
+float Lerp::get_step_size() const {
   return _delta;
 }
 
@@ -94,15 +94,15 @@ void Lerp::set_t(float t) {
   (*_func)(x);
 }
 
-float Lerp::get_t(void) const {
+float Lerp::get_t() const {
   return _t;
 }
 
-bool Lerp::is_done(void) const {
+bool Lerp::is_done() const {
   return (_t >= _endt);
 }
 
-LerpFunctor* Lerp::get_functor(void) const {
+LerpFunctor* Lerp::get_functor() const {
   return _func;
 }
 
@@ -110,7 +110,7 @@ void Lerp::set_end_event(const std::string& event) {
   _event = event;
 }
 
-std::string Lerp::get_end_event(void) const {
+std::string Lerp::get_end_event() const {
   return _event;
 }
 
@@ -132,7 +132,7 @@ AutonomousLerp::AutonomousLerp(const AutonomousLerp& c) : _blend(c._blend),
                                                           _endt(c._endt),
                                                           _t(c._t) {}
 
-AutonomousLerp::~AutonomousLerp(void) {}
+AutonomousLerp::~AutonomousLerp() {}
 
 AutonomousLerp& AutonomousLerp::operator=(const AutonomousLerp& c) {
   _blend = c._blend;
@@ -145,24 +145,24 @@ AutonomousLerp& AutonomousLerp::operator=(const AutonomousLerp& c) {
   return *this;
 }
 
-void AutonomousLerp::start(void) {
+void AutonomousLerp::start() {
   _t = _startt;
   _handler->add_hook("NewFrame", handle_event, this);
 }
 
-void AutonomousLerp::stop(void) {
+void AutonomousLerp::stop() {
   _handler->remove_hook("NewFrame", handle_event, this);
 }
 
-void AutonomousLerp::resume(void) {
+void AutonomousLerp::resume() {
   _handler->add_hook("NewFrame", handle_event, this);
 }
 
-bool AutonomousLerp::is_done(void) const {
+bool AutonomousLerp::is_done() const {
   return (_t >= _endt);
 }
 
-LerpFunctor* AutonomousLerp::get_functor(void) const {
+LerpFunctor* AutonomousLerp::get_functor() const {
   return _func;
 }
 
@@ -173,7 +173,7 @@ void AutonomousLerp::set_t(float t) {
   (*_func)(x);
 }
 
-float AutonomousLerp::get_t(void) const {
+float AutonomousLerp::get_t() const {
   return _t;
 }
 
@@ -181,11 +181,11 @@ void AutonomousLerp::set_end_event(const std::string& event) {
   _event = event;
 }
 
-std::string AutonomousLerp::get_end_event(void) const {
+std::string AutonomousLerp::get_end_event() const {
   return _event;
 }
 
-void AutonomousLerp::step(void) {
+void AutonomousLerp::step() {
   // Probably broken because it does not set the final value when t
   // exceeds end_t. see fixed Lerp::step() above
   if (is_done()) {

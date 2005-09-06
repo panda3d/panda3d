@@ -45,7 +45,7 @@ PUBLISHED:
 public:
   virtual PartGroup *make_copy() const;
 
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
   static TypedWritable *make_CharacterJointBundle(const FactoryParams &params);
 

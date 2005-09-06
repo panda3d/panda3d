@@ -32,7 +32,7 @@ Particle Systems
 CLASS: ParticleSystem
 
 Particle systems have the following methods:
-  void render(void); // renders the particle system's particles*
+  void render(); // renders the particle system's particles*
   void update(float dt); // updates the state of the particle system for "dt" seconds of elapsed time*
 
 *NOTE: render() and update() should not be called for a particle system that is attached to a
@@ -360,7 +360,7 @@ systems can be attached to a single ParticleSystemManager.
 Particle system managers have the following methods:
   void attach_particlesystem(ParticleSystem *ps); // attach a particle system to this manager
   void remove_particlesystem(ParticleSystem *ps); // un-attach a particle system from this manager
-  void clear(void);             // un-attach all particle systems from this manager
+  void clear();             // un-attach all particle systems from this manager
   void do_particles(float dt);  // update all attached particle systems for "dt" seconds of elapsed time
 
 Particle system managers have the following parameter:

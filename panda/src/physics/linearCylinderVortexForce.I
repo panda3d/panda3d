@@ -48,7 +48,7 @@ set_coef(float coef) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearCylinderVortexForce::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }
 
@@ -57,7 +57,7 @@ get_radius(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearCylinderVortexForce::
-get_length(void) const {
+get_length() const {
   return _length;
 }
 
@@ -66,6 +66,6 @@ get_length(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearCylinderVortexForce::
-get_coef(void) const {
+get_coef() const {
   return _coef;
 }

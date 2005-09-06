@@ -44,8 +44,8 @@ public:
 
 protected:
   virtual int overflow(int c);
-  virtual int sync(void);
-  virtual int underflow(void);
+  virtual int sync();
+  virtual int underflow();
 
 private:
   size_t write_chars(const char *start, size_t length);

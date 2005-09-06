@@ -46,7 +46,7 @@ AnimChannelScalarTable(AnimGroup *parent, const string &name)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(void){
+AnimChannelScalarTable(){
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,7 +330,7 @@ make_AnimChannelScalarTable(const FactoryParams &params)
 //  Description: Factory method to generate a AnimChannelScalarTable object
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelScalarTable);
 }

@@ -50,17 +50,17 @@ public:
 
   void setBrother(Person* bro) {if (bro->isMale()) _bro = bro;}
   void setSister(Person* sis) {if (!sis->isMale()) _sis = sis;}
-  bool isMale(void) {return myGender == MALE;}
+  bool isMale() {return myGender == MALE;}
 
-  void print_relationships(void);
-  string name(void) {return _name;}
+  void print_relationships();
+  string name() {return _name;}
 private:
   Person *_bro, *_sis;
   sex myGender;
   string _name;
 
 public:
-  Person(void) {}
+  Person() {}
   Person(const string &name, const sex Gender) :
      _name(name), myGender(Gender), _bro((Person*)NULL), _sis((Person*)NULL) {
 
@@ -79,7 +79,7 @@ public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -101,13 +101,13 @@ public:
   void setSon(Child*);
   void setDaughter(Child*);
 
-  void print_relationships(void);
+  void print_relationships();
 
 private:
   Child *_son, *_daughter;
 
 public:
-  Parent(void) {}
+  Parent() {}
   Parent(const string &name, const sex Gender) : Person(name, Gender) {
 
   }
@@ -125,7 +125,7 @@ public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -147,13 +147,13 @@ public:
   void setFather(Parent*);
   void setMother(Parent*);
 
-  void print_relationships(void);
+  void print_relationships();
 
 private:
   Parent *_dad, *_mom;
 
 public:
-  Child(void) {}
+  Child() {}
   Child(const string &name, const sex Gender) : Person(name, Gender) {
 
   }
@@ -170,7 +170,7 @@ public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }

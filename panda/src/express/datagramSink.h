@@ -31,8 +31,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramSink {
 public:
-  INLINE DatagramSink(void);
-  virtual ~DatagramSink(void);
+  INLINE DatagramSink();
+  virtual ~DatagramSink();
 
   virtual bool put_datagram(const Datagram &data) = 0;
   virtual bool is_error() = 0;

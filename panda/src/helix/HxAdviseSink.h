@@ -77,7 +77,7 @@ class HxAdviseSink : public IHXClientAdviseSink {
     ~HxAdviseSink();
     HX_RESULT dump_reg_tree(const char* tree_name );
     void get_statistics (char*  registry_key);
-    void get_all_statistics (void);
+    void get_all_statistics ();
 
     // Private Member variables
     LONG32 _ref_count;

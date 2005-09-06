@@ -42,8 +42,8 @@ public:
   wdxGraphicsWindow9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                      const string &name);
   virtual ~wdxGraphicsWindow9();
-  virtual bool open_window(void);
-  virtual void close_window(void);
+  virtual bool open_window();
+  virtual void close_window();
   virtual void reset_window(bool swapchain);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
@@ -64,7 +64,7 @@ private:
   bool create_screen_buffers_and_device(DXScreenData &Display,
                                         bool force_16bpp_zbuffer);
 
-  bool choose_device(void);
+  bool choose_device();
   bool search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info);
 
   //  void set_coop_levels_and_display_modes();
@@ -100,7 +100,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  virtual void make_current(void);
+  virtual void make_current();
 
 private:
   static TypeHandle _type_handle;

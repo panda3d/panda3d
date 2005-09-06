@@ -54,7 +54,7 @@ public:
   INLINE virtual void write_datagram(BamWriter* manager, Datagram &me);
 
 protected:
-  INLINE MovingPart(void);
+  INLINE MovingPart();
   INLINE void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:

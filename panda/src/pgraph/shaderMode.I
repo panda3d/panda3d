@@ -22,7 +22,7 @@
 //  Description: initialize a shader arg storage structure.
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderModeArg::
-ShaderModeArg(void) {
+ShaderModeArg() {
   _type = SAT_INVALID;
 }
   
@@ -32,7 +32,7 @@ ShaderModeArg(void) {
 //  Description: delete a shader arg storage structure.
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderModeArg::
-~ShaderModeArg(void) {
+~ShaderModeArg() {
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ INLINE ShaderModeArg::
 //  Description: Return the Shader associated with this shader mode.
 ////////////////////////////////////////////////////////////////////
 INLINE Shader *ShaderMode::
-get_shader(void) {
+get_shader() {
   return _shader;
 }
 

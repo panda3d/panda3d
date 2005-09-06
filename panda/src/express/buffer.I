@@ -22,6 +22,6 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int Buffer::
-get_length(void) const {
+get_length() const {
   return _length;
 }

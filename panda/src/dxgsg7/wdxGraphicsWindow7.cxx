@@ -135,7 +135,7 @@ wdxGraphicsWindow7::
 }
 
 void wdxGraphicsWindow7::
-make_current(void) {
+make_current() {
   PStatTimer timer(_make_current_pcollector);
 
   DXGraphicsStateGuardian7 *dxgsg;
@@ -158,7 +158,7 @@ make_current(void) {
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
-open_window(void) {
+open_window() {
 
   if (!choose_device(0, NULL)) {
     wdxdisplay7_cat.error() << "Unable to find suitable rendering device.\n";

@@ -38,6 +38,6 @@ CLP(ShaderContext)(Shader *s) : ShaderContext(s) {
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
-~CLP(ShaderContext)(void) {
+~CLP(ShaderContext)() {
 }
 

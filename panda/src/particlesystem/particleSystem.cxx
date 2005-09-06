@@ -117,7 +117,7 @@ ParticleSystem(const ParticleSystem& copy) :
 // Description : You get the ankles and I'll get the wrists.
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
-~ParticleSystem(void) {
+~ParticleSystem() {
   set_pool_size(0);
 
   if (!_template_system_flag) {
@@ -135,7 +135,7 @@ ParticleSystem::
 //               resets an element from the particle pool.
 ////////////////////////////////////////////////////////////////////
 bool ParticleSystem::
-birth_particle(void) {
+birth_particle() {
   int pool_index;
 
   // make sure there's room for a new particle

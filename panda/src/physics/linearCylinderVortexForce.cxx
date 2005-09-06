@@ -62,7 +62,7 @@ LinearCylinderVortexForce::
 // Description : child copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearCylinderVortexForce::
-make_copy(void) {
+make_copy() {
   return new LinearCylinderVortexForce(*this);
 }
 

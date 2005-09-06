@@ -178,7 +178,7 @@ get_aux_data(const string &name) const {
 //               to the directory containing the BAM.
 ////////////////////////////////////////////////////////////////////
 const Filename &BamReader::
-get_filename(void) const {
+get_filename() const {
   return _filename;
 }
 

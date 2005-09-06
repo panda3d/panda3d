@@ -551,7 +551,7 @@ make_PartGroup(const FactoryParams &params)
 //  Description: Factory method to generate a PartGroup object
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-register_with_read_factory(void)
+register_with_read_factory()
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_PartGroup);
 }

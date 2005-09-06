@@ -55,7 +55,7 @@ PUBLISHED:
 
   INLINE void add_switch(float in, float out);
   INLINE bool set_switch(int index, float in, float out);
-  INLINE void clear_switches(void);
+  INLINE void clear_switches();
 
   INLINE int get_num_switches() const;
   INLINE float get_in(int index) const;

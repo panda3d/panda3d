@@ -39,20 +39,20 @@
 class EXPCL_PANDAEXPRESS AsyncUtility {
 PUBLISHED:
   INLINE void set_frequency(float frequency);
-  INLINE float get_frequency(void) const;
+  INLINE float get_frequency() const;
 
-  void create_thread(void);
+  void create_thread();
 
 public:
   AsyncUtility(float frequency = 0.2);
-  virtual ~AsyncUtility(void);
+  virtual ~AsyncUtility();
 
 protected:
-  void destroy_thread(void);
+  void destroy_thread();
   static void* st_callback(void *arg);
-  void callback(void);
-  virtual bool process_request(void) = 0;
-  void nap(void) const;
+  void callback();
+  virtual bool process_request() = 0;
+  void nap() const;
 
 protected:
   int _next_token;

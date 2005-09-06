@@ -22,7 +22,7 @@
 //  Description : generates a random unit vector
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f LinearRandomForce::
-random_unit_vector(void) {
+random_unit_vector() {
   float z, r, theta;
 
   z = 1.0f - (2.0f * bounded_rand());

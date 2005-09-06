@@ -22,7 +22,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LensFlareNode::
-LensFlareNode(void) :
+LensFlareNode() :
   _global_scale(1), _texel_scale(0.1), _blind_fall_off(45), _flare_fall_off(5)
 {
   _blind = (Texture *)NULL;
