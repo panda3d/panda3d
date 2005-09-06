@@ -18,8 +18,8 @@
 
 #include "pandabase.h"
 #include "shaderContext.h"
-#ifdef CGGL
-#include "Cg/CgGL.h"
+#ifdef HAVE_CGGL
+#include "Cg/cgGL.h"
 #endif
 
 class CLP(GraphicsStateGuardian);
@@ -43,7 +43,7 @@ public:
 private:
   CLP(GraphicsStateGuardian) *_gsg;
   
-#ifdef CGGL
+#ifdef HAVE_CGGL
   CGprogram _cg_vprogram;
   CGprogram _cg_fprogram;
 #endif

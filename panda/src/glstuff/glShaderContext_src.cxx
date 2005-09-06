@@ -31,7 +31,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *gsg, Shader *s) : ShaderContext(s
   s->parse_init();
   s->parse_line(header, true, true);
   
-#ifdef CGGL
+#ifdef HAVE_CGGL
   _cg_vprogram = 0;
   _cg_fprogram = 0;
 
@@ -46,11 +46,11 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *gsg, Shader *s) : ShaderContext(s
     s->parse_upto(fs, "---*---", false);
 
     _cg_vprogram = cgCreateProgram(_gsg->_cg_context, CG_SOURCE,
-                                   vp.c_str(), _gsg->_cg_vprofile,
-                                   "main", (char**)NULL);
+                                   vs.c_str(), _gsg->_cg_vprofile,
+                                   "main", (const char**)NULL);
     _cg_fprogram = cgCreateProgram(_gsg->_cg_context, CG_SOURCE,
-                                   fp.c_str(), _gsg->_cg_fprofile,
-                                   "main", (char**)NULL);
+                                   fs.c_str(), _gsg->_cg_fprofile,
+                                   "main", (const char**)NULL);
     
     if ((_cg_vprogram==0)||(_cg_fprogram == 0)) {
       if (_cg_vprogram != 0) cgDestroyProgram(_cg_vprogram);

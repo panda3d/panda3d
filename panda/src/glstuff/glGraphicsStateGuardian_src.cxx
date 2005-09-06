@@ -68,8 +68,8 @@
 #include "shader.h"
 #include "shaderMode.h"
 
-#ifdef CGGL
-#include "Cg/CgGL.h"
+#ifdef HAVE_CGGL
+#include "Cg/cgGL.h"
 #endif
 
 #include <algorithm>
@@ -859,7 +859,7 @@ reset() {
 
   _error_count = 0;
 
-#ifdef CGGL
+#ifdef HAVE_CGGL
   _cg_context = cgCreateContext();
   if (_cg_context != 0) {
     _cg_vprofile = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -4762,9 +4762,9 @@ finish_modify_state() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
-#ifdef CGGL
+#ifdef HAVE_CGGL
   if (_cg_context) {
-    cgDeleteContext(_cg_context);
+    cgDestroyContext(_cg_context);
     _cg_context = 0;
   }
 #endif

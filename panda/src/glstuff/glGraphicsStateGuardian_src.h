@@ -41,8 +41,8 @@
 #include "shader.h"
 #include "shaderMode.h"
 
-#ifdef CGGL
-#include "Cg/CgGL.h"
+#ifdef HAVE_CGGL
+#include "Cg/cgGL.h"
 #endif
 
 class PlaneNode;
@@ -389,7 +389,7 @@ public:
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
 
-#ifdef CGGL
+#ifdef HAVE_CGGL
   CGcontext _cg_context;
   CGprofile _cg_vprofile;
   CGprofile _cg_fprofile;
