@@ -39,6 +39,7 @@ TypeHandle FrameRateMeter::_type_handle;
 FrameRateMeter::
 FrameRateMeter(const string &name) : TextNode(name) {
   _update_interval = frame_rate_meter_update_interval;
+  _last_update = 0.0f;
   _text_pattern = frame_rate_meter_text_pattern;
   _clock_object = ClockObject::get_global_clock();
 

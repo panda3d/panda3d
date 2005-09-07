@@ -62,6 +62,8 @@ PUBLISHED:
   INLINE void set_clock_object(ClockObject *clock_object);
   INLINE ClockObject *get_clock_object() const;
 
+  INLINE void update();
+
 protected:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 

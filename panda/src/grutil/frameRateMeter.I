@@ -101,6 +101,7 @@ get_text_pattern() const {
 INLINE void FrameRateMeter::
 set_clock_object(ClockObject *clock_object) {
   _clock_object = clock_object;
+  _last_update = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,4 +113,17 @@ set_clock_object(ClockObject *clock_object) {
 INLINE ClockObject *FrameRateMeter::
 get_clock_object() const {
   return _clock_object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameRateMeter::update
+//       Access: Published
+//  Description: You can call this to explicitly force the
+//               FrameRateMeter to update itself with the latest frame
+//               rate information.  Normally, it is not necessary to
+//               call this explicitly.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameRateMeter::
+update() {
+  do_update();
 }
