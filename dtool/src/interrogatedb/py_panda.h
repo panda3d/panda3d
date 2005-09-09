@@ -251,10 +251,23 @@ PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *k
 ////////////////////////////////////////////////////////////////////////
 /// Delete functions..
 ////////////////////////////////////////////////////////////////////////
+#ifdef NDEBUG
 #define Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
 {\
-}\
+}
+#else // NDEBUG
+#define Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
+{\
+    if(((Dtool_PyInstDef *)self)->_ptr_to_object != NULL)\
+        if(((Dtool_PyInstDef *)self)->_memory_rules)\
+        {\
+          cerr << "Detected leak for " << #CLASS_NAME \
+               << " which interrogate cannot delete.\n"; \
+        }\
+}
+#endif  // NDEBUG
 
 #define Define_Dtool_FreeInstance(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
@@ -264,7 +277,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
         {\
             delete ((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
         }\
-}\
+}
 
 #define Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
@@ -274,7 +287,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self)\
         {\
             unref_delete((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
         }\
-}\
+}
 
 ////////////////////////////////////////////////////////////////////////
 /// Simple Recognition Functions..
@@ -292,6 +305,7 @@ EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtoo
 
 
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef);
+EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name);
 
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
 

@@ -59,20 +59,47 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * 
 };
 
 
-void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef)
-{
-  if(self != NULL)
-  {
-      if(DtoolCanThisBeAPandaInstance(self))
-        return ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
-      else
-         PyErr_SetString(PyExc_TypeError, "Failed Dtool Type Check .."); 
+void *
+DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef) {
+  return DTOOL_Call_GetPointerThisClass(self, classdef, 0, "unknown");
+}
+
+void *
+DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
+                               int param, const string &function_name) {
+  if (self != NULL) {
+    if (DtoolCanThisBeAPandaInstance(self)) {
+      Dtool_PyTypedObject *my_type = ((Dtool_PyInstDef *)self)->_My_Type;
+      void *result = my_type->_Dtool_UpcastInterface(self, classdef);
+      if (result != NULL) {
+        return result;
+      }
+
+      ostringstream str;
+      str << function_name << "() argument " << param << " must be "
+          << classdef->_name << ", not " << my_type->_name;
+      string msg = str.str();
+      PyErr_SetString(PyExc_TypeError, msg.c_str());
+
+    } else {
+      ostringstream str;
+      str << function_name << "() argument " << param << " must be "
+          << classdef->_name;
+      PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+      if (tname != (PyObject *)NULL) {
+        str << ", not " << PyString_AsString(tname);
+        Py_DECREF(tname);
+      }
+
+      string msg = str.str();
+      PyErr_SetString(PyExc_TypeError, msg.c_str());
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
   }
-  else
-        PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
 
   return NULL;
-};
+}
 
 void * DTOOL_Call_GetPointerThis(PyObject *self)
 {
@@ -163,7 +190,7 @@ PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_cl
     }
 
     Dtool_PyTypedObject * classdef = &in_classdef;
-	Dtool_PyInstDef * self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL,NULL);
+    Dtool_PyInstDef * self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL,NULL);
     if(self != NULL)
     {
         self->_ptr_to_object = local_this;

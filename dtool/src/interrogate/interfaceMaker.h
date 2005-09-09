@@ -99,7 +99,6 @@ public:
     const InterrogateType &_itype;
     Functions _constructors;
     Functions _methods;
-    Function *_destructor;
   };
   typedef map<TypeIndex, Object *> Objects;
   Objects _objects;

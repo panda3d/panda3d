@@ -63,46 +63,46 @@ struct FlagSet
 
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet methodRenameDictionary[] = {
-    "operator=="  , "eq",                   0,
-    "operator!="  , "ne",                   0,
-    "operator<<"  , "__lshift__",           0,
-    "operator>>"  , "__rshift__",           0,
-    "operator<"   , "lessThan",             0,
-    "operator>"   , "greaterThan",          0,
-    "operator<="  , "lessThanOrEqual",      0,
-    "operator>="  , "greaterThanOrEqual",   0,
-    "operator="   , "assign",               0,
-    "operator()"  , "__call__",             0,
-    "operator[]"  , "__getitem__",          0,
-    "operator++"  , "increment",            0,                
-    "operator--"  , "decrement",            0,
-    "operator^"   , "__xor__",              0,
-    "operator%"   , "__mod__",              0,
-    "operator!"   , "logicalNot",           0,
-    "operator~"   , "bitwiseNot",           0,
-    "operator&"   , "__and__",              0,
-    "operator&&"  , "logicalAnd",           0,
-    "operator|"   , "__or__",               0,
-    "operator||"  , "logicalOr",            0,
-    "operator+"   , "__add__",              0,
-    "operator-"   , "__sub__",              0,
-    "operator*"   , "__mul__",              0,
-    "operator/"   , "__div__",              0,
-    "operator+="  , "__iadd__",             1,
-    "operator-="  , "__isub__",             1,
-    "operator*="  , "__imul__",             1,
-    "operator/="  , "__idiv__",             1,
-    "operator,"   , "concatenate",          0,
-    "operator|="  , "__ior__",              1,
-    "operator&="  , "__iand__",             1,
-    "operator^="  , "__ixor__",             1,
-    "operator~="  , "bitwiseNotEqual",      0,
-    "operator->"  , "dereference",          0,
-    "operator<<=" , "__ilshift__",          1,
-    "operator>>=" , "__irshift__",          1,
-    "print"       , "Cprint",               0,
-    "CInterval.setT" , "_priv__cSetT",      0,
-    NULL,NULL,-1
+    { "operator=="  , "eq",                   0 },
+    { "operator!="  , "ne",                   0 },
+    { "operator<<"  , "__lshift__",           0 },
+    { "operator>>"  , "__rshift__",           0 },
+    { "operator<"   , "lessThan",             0 },
+    { "operator>"   , "greaterThan",          0 },
+    { "operator<="  , "lessThanOrEqual",      0 },
+    { "operator>="  , "greaterThanOrEqual",   0 },
+    { "operator="   , "assign",               0 },
+    { "operator()"  , "__call__",             0 },
+    { "operator[]"  , "__getitem__",          0 },
+    { "operator++"  , "increment",            0 },
+    { "operator--"  , "decrement",            0 },
+    { "operator^"   , "__xor__",              0 },
+    { "operator%"   , "__mod__",              0 },
+    { "operator!"   , "logicalNot",           0 },
+    { "operator~"   , "bitwiseNot",           0 },
+    { "operator&"   , "__and__",              0 },
+    { "operator&&"  , "logicalAnd",           0 },
+    { "operator|"   , "__or__",               0 },
+    { "operator||"  , "logicalOr",            0 },
+    { "operator+"   , "__add__",              0 },
+    { "operator-"   , "__sub__",              0 },
+    { "operator*"   , "__mul__",              0 },
+    { "operator/"   , "__div__",              0 },
+    { "operator+="  , "__iadd__",             1 },
+    { "operator-="  , "__isub__",             1 },
+    { "operator*="  , "__imul__",             1 },
+    { "operator/="  , "__idiv__",             1 },
+    { "operator,"   , "concatenate",          0 },
+    { "operator|="  , "__ior__",              1 },
+    { "operator&="  , "__iand__",             1 },
+    { "operator^="  , "__ixor__",             1 },
+    { "operator~="  , "bitwiseNotEqual",      0 },
+    { "operator->"  , "dereference",          0 },
+    { "operator<<=" , "__ilshift__",          1 },
+    { "operator>>=" , "__irshift__",          1 },
+    { "print"       , "Cprint",               0 },
+    { "CInterval.setT" , "_priv__cSetT",      0 },
+    { NULL, NULL, -1 }
     };
 
 char *  InPlaceSet[] = {
@@ -122,39 +122,39 @@ char *  InPlaceSet[] = {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet classRenameDictionary[] = {
-    "Loader"                    , "PandaLoader",0,
-    "String"                    , "CString",0,
-    "LMatrix4f"                 , "Mat4",0,
-    "LMatrix3f"                 , "Mat3",0,
-    "LVecBase4f"                , "VBase4",0,
-    "LVector4f"                 , "Vec4",0,
-    "LPoint4f"                  , "Point4",0,
-    "LVecBase3f"                , "VBase3",0,
-    "LVector3f"                 , "Vec3",0,
-    "LPoint3f"                  , "Point3",0,
-    "LVecBase2f"                , "VBase2",0,
-    "LVector2f"                 , "Vec2",0,
-    "LPoint2f"                  , "Point2",0,
-    "LQuaternionf"              , "Quat",0,
-    "LMatrix4d"                 , "Mat4D",0,
-    "LMatrix3d"                 , "Mat3D",0,
-    "LVecBase4d"                , "VBase4D",0,
-    "LVector4d"                 , "Vec4D",0,
-    "LPoint4d"                  , "Point4D",0,
-    "LVecBase3d"                , "VBase3D",0,
-    "LVector3d"                 , "Vec3D",0,
-    "LPoint3d"                  , "Point3D",0,
-    "LVecBase2d"                , "VBase2D",0,
-    "LVector2d"                 , "Vec2D",0,
-    "LPoint2d"                  , "Point2D",0,
-    "LQuaterniond"              , "QuatD",0,
-    "Plane"                     , "PlaneBase",0,
-    "Planef"                    , "Plane",0,
-    "Planed"                    , "PlaneD",0,
-    "Frustum"                   , "FrustumBase",0,
-    "Frustumf"                  , "Frustum",0,
-    "Frustumd"                  , "FrustumD",0,
-    NULL,NULL,-1
+    { "Loader"                    , "PandaLoader",0 },
+    { "String"                    , "CString",0 },
+    { "LMatrix4f"                 , "Mat4",0 },
+    { "LMatrix3f"                 , "Mat3",0 },
+    { "LVecBase4f"                , "VBase4",0 },
+    { "LVector4f"                 , "Vec4",0 },
+    { "LPoint4f"                  , "Point4",0 },
+    { "LVecBase3f"                , "VBase3",0 },
+    { "LVector3f"                 , "Vec3",0 },
+    { "LPoint3f"                  , "Point3",0 },
+    { "LVecBase2f"                , "VBase2",0 },
+    { "LVector2f"                 , "Vec2",0 },
+    { "LPoint2f"                  , "Point2",0 },
+    { "LQuaternionf"              , "Quat",0 },
+    { "LMatrix4d"                 , "Mat4D",0 },
+    { "LMatrix3d"                 , "Mat3D",0 },
+    { "LVecBase4d"                , "VBase4D",0 },
+    { "LVector4d"                 , "Vec4D",0 },
+    { "LPoint4d"                  , "Point4D",0 },
+    { "LVecBase3d"                , "VBase3D",0 },
+    { "LVector3d"                 , "Vec3D",0 },
+    { "LPoint3d"                  , "Point3D",0 },
+    { "LVecBase2d"                , "VBase2D",0 },
+    { "LVector2d"                 , "Vec2D",0 },
+    { "LPoint2d"                  , "Point2D",0 },
+    { "LQuaterniond"              , "QuatD",0 },
+    { "Plane"                     , "PlaneBase",0 },
+    { "Planef"                    , "Plane",0 },
+    { "Planed"                    , "PlaneD",0 },
+    { "Frustum"                   , "FrustumBase",0 },
+    { "Frustumf"                  , "Frustum",0 },
+    { "Frustumd"                  , "FrustumD",0 },
+    { NULL,NULL,-1 }
     };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -511,13 +511,14 @@ void InterfaceMakerPythonNative::write_prototypes(ostream &out_code,ostream *out
   out_code << "//*** prototypes for .. Glabal\n";
   out_code << "//********************************************************************\n";
 
+  /*
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) 
   {
-
       Function *func = (*fi);
-//      if(!func->_itype.is_global() && isFunctionLegal(func))
-  //        write_prototype_for(out_code, func);
+      if(!func->_itype.is_global() && isFunctionLegal(func))
+        write_prototype_for(out_code, func);
   }
+  */
 
   Objects::iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
@@ -581,19 +582,24 @@ void InterfaceMakerPythonNative::write_prototypes_class(ostream &out_code,ostrea
     out_code << "//*** prototypes for .. " << ClassName <<"\n";
     out_code << "//********************************************************************\n";
 
+    /*
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) 
     {
         Function *func = (*fi);
-       // write_prototype_for(out_code, func);
+        write_prototype_for(out_code, func);
     }
+    */
 
+    /*
     for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
     {
         Function *func = (*fi);
         std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
-        //write_prototype_for_name(out_code, func,fname);
+        write_prototype_for_name(out_code, func,fname);
 
     }
+    */
+
     write_ClasseDeclarations(out_code,out_h,obj);
 }
 
@@ -712,20 +718,18 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         }
     }
 
-        InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-
-        std::map< string ,CastDetails > details;
-        std::map< string ,CastDetails >::iterator di;
-        TypeIndex pp_type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(obj->_itype._cpptype)),false);
-        GetValideChildClasses(details,obj->_itype._cpptype->as_struct_type());
-        for(di = details.begin(); di != details.end(); di++)
-        {
-            //InterrogateType ptype =idb->get_type(di->first);
-            if(di->second._is_legal_py_class && !isExportThisRun(di->second._structType))
-                _external_imports.insert(make_safe_name(di->second._to_class_name));
-                //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(di->second._to_class_name) <<";\n";
-        }
-
+    std::map< string ,CastDetails > details;
+    std::map< string ,CastDetails >::iterator di;
+    builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(obj->_itype._cpptype)),false);
+    GetValideChildClasses(details,obj->_itype._cpptype->as_struct_type());
+    for(di = details.begin(); di != details.end(); di++)
+      {
+        //InterrogateType ptype =idb->get_type(di->first);
+        if(di->second._is_legal_py_class && !isExportThisRun(di->second._structType))
+          _external_imports.insert(make_safe_name(di->second._to_class_name));
+        //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(di->second._to_class_name) <<";\n";
+      }
+    
 
 
     { // the Cast Converter
@@ -743,7 +747,6 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         out << "    if(requested_type == &Dtool_"<<ClassName<<")\n";
         out << "        return local_this;\n";
 
-        InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
         for(di = details.begin(); di != details.end(); di++)
         {
             if(di->second._is_legal_py_class)
@@ -793,7 +796,8 @@ void InterfaceMakerPythonNative::write_ClasseDeclarations(ostream &out, ostream 
     std::string class_struct_name = std::string(CLASS_PREFEX) +class_name;
 
     out << "typedef  "<< c_class_name <<"  "<< class_name <<"_localtype;\n";
-    if(obj->_constructors.size() >0)
+    if(obj->_itype.has_destructor() ||
+       obj->_itype.destructor_is_inherited())
     {
         if(TypeManager::is_reference_count(obj->_itype._cpptype))
         {
@@ -1654,170 +1658,176 @@ void InterfaceMakerPythonNative::write_function_for_top(ostream &out, InterfaceM
 //
 //   Wrap a complete name override function for Py.....
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::write_function_for_name(
-    ostream &out1, 
-    InterfaceMaker::Function *func, 
-    const std::string &function_name, 
-    const std::string &PreProcess,
-    const std::string &ClassName)
-{
-    ostringstream forward_decl;
-    ostringstream out;
+void InterfaceMakerPythonNative::
+write_function_for_name(ostream &out1, InterfaceMaker::Function *func, 
+                        const std::string &function_name, 
+                        const std::string &PreProcess,
+                        const std::string &ClassName) {
+  ostringstream forward_decl;
+  ostringstream out;
 
-    std::map<int , std::set<FunctionRemap *>  >    MapSets;
-    std::map<int , std::set<FunctionRemap *>  >::iterator    mii;
-    std::set<FunctionRemap *>::iterator                      sii;
+  std::map<int , std::set<FunctionRemap *>  >    MapSets;
+  std::map<int , std::set<FunctionRemap *>  >::iterator    mii;
+  std::set<FunctionRemap *>::iterator                      sii;
 
 
-    Function::Remaps::const_iterator ri;
-    out1 << "/******************************************************************\n" << " * Python type method wrapper for\n";
-    for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) 
-    {
-        FunctionRemap *remap = (*ri);
-        if(isRemapLegal(*remap))
-        {
-            int parameter_size = remap->_parameters.size();
-            if(remap->_has_this && remap->_type != FunctionRemap::T_constructor)
-                parameter_size --;
-
-            MapSets[parameter_size].insert(remap);
-            out1 << " * ";
-            remap->write_orig_prototype(out1, 0);
-            out1 << "\n";
-        }
-        else
-        {
-         out1 << " * Rejected Remap [";
-         remap->write_orig_prototype(out1, 0);
-         out1 << "]\n";
-        }
-
+  Function::Remaps::const_iterator ri;
+  out1 << "/******************************************************************\n" << " * Python type method wrapper for\n";
+  for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
+    FunctionRemap *remap = (*ri);
+    if (isRemapLegal(*remap)) {
+      int parameter_size = remap->_parameters.size();
+      if(remap->_has_this && remap->_type != FunctionRemap::T_constructor)
+        parameter_size --;
+      
+      MapSets[parameter_size].insert(remap);
+      out1 << " * ";
+      remap->write_orig_prototype(out1, 0);
+      out1 << "\n";
+    } else {
+      out1 << " * Rejected Remap [";
+      remap->write_orig_prototype(out1, 0);
+      out1 << "]\n";
     }
-    out1 << " *******************************************************************/\n";
-    out << function_name << " {\n";
-    if(isFunctionWithThis(func))
-        out << PreProcess;
+  }
 
+  out1 << " *******************************************************************/\n";
 
-    bool is_inplace = isInplaceFunction(func->_ifunc.get_name());
+  out << function_name << " {\n";
+  if (isFunctionWithThis(func)) {
+    out << PreProcess;
+  }
 
-    if(MapSets.empty())
-        return;
+  bool is_inplace = isInplaceFunction(func->_ifunc.get_name());
 
+  if (MapSets.empty()) {
+    return;
+  }
 
-    std::string FunctionComment = func->_ifunc._comment;
-    std::string FunctionComment1;
-    if(FunctionComment.size() > 2)
-        FunctionComment += "\n";
+  std::string FunctionComment = func->_ifunc._comment;
+  std::string FunctionComment1;
+  if (FunctionComment.size() > 2) {
+    FunctionComment += "\n";
+  }
 
+  if (MapSets.size() > 1) {
+    string expected_params;
+      
+    indent(out,4) << "int parameter_count = 1;\n";
+    indent(out,4) << "if(PyTuple_Check(args))\n";
+    indent(out,4) << "{\n";
+    indent(out,4) << "    parameter_count = PyTuple_Size(args);\n" ;
+    indent(out,4) << "    if(kwds != NULL && PyDict_Check(kwds))\n";
+    indent(out,4) << "          parameter_count += PyDict_Size(kwds);\n" ;
+    indent(out,4) << "}\n";
+      
+    indent(out,4) << "switch(parameter_count)\n";
+    indent(out,4) << "{\n";
+    bool constructor = false;
+    for(mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
+      indent(out,4) << "case(" << mii->first << "):\n";
+      indent(out,8) << "{\n";
+        
+      write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
+      if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
+        constructor = true;
+        
+        
+      indent(out,8)<< "}\n";       
+      indent(out,8)<< "break;\n";       
+    } 
+      
+    indent(out,4)<< "default:\n";
+    indent(out,8)<< "{\n";
+    indent(out,12)
+      << "PyErr_Format(PyExc_TypeError, \""
+      << func->_remaps[0]->_cppfunc->get_local_name(&parser)
+      << "() takes ";
 
-    if(MapSets.size() > 1)
-    {
-        string expected_params;
-        std::string argString;
-
-        for(mii = MapSets.begin(); mii != MapSets.end(); mii ++)
-        {
-
-            if(MapSets.begin() != mii)
-                argString += ",";
-            char buffer[30];
-           sprintf(buffer,"%d",mii->first);
-           argString += buffer;   
+    // We add one to the parameter count for "self", following the
+    // Python convention.
+    int add_self = func->_has_this ? 1 : 0;
+    size_t mic;
+    for (mic = 0, mii = MapSets.begin(); 
+         mii != MapSets.end(); 
+         ++mii, ++mic) {
+      if (mic == MapSets.size() - 1) {
+        if (mic == 1) {
+          out << " or ";
+        } else {
+          out << ", or ";
         }
+      } else if (mic != 0) {
+        out << ", ";
+      }
 
-        indent(out,4) << "int parameter_count = 1;\n";
-        indent(out,4) << "if(PyTuple_Check(args))\n";
-        indent(out,4) << "{\n";
-        indent(out,4) << "    parameter_count = PyTuple_Size(args);\n" ;
-        indent(out,4) << "    if(kwds != NULL && PyDict_Check(kwds))\n";
-        indent(out,4) << "          parameter_count += PyDict_Size(kwds);\n" ;
-        indent(out,4) << "}\n";
-
-        indent(out,4) << "switch(parameter_count)\n";
-        indent(out,4) << "{\n";
-        bool constructor = false;
-        for(mii = MapSets.begin(); mii != MapSets.end(); mii ++)
-        {
-            indent(out,4) << "case(" << mii->first << "):\n";
-            indent(out,8) << "{\n";
-
-            write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
-            if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
-                constructor = true;
-
-
-            indent(out,8)<< "}\n";       
-            indent(out,8)<< "break;\n";       
-        } 
-
-        indent(out,4)<< "default:\n";
-        indent(out,8)<< "{\n";
-        //indent(out,12)<< "PyString_FromFormat(\"("<<methodNameFromCppName( func->_ifunc.get_name(),"") <<") Wrong Number Of Arguments(%d) must be: " << argString <<"\",parameter_count);\n";
-        indent(out,12)<< "PyErr_Format(PyExc_TypeError, \"("<<methodNameFromCppName( func->_ifunc.get_name(),"") <<") Wrong Number Of Arguments(%d) must be: " << argString <<"\",parameter_count);\n"; 
-        if (constructor)
-            indent(out,12) << "return -1;\n";
-          else
-            indent(out,12) << "return (PyObject *) NULL; \n";
-
-        indent(out,8)<< "}\n";
-        indent(out,8)<< "break;\n";
-        indent(out,4)<< "}\n";
-
-        out << "    if(!PyErr_Occurred()) // let error pass on \n";
-        out << "        PyErr_SetString(PyExc_TypeError, \"Arguments must match one of:\\n" << make_safe_comment(expected_params) << " \"); \n";
-        if (constructor)
-            indent(out,4) << "return -1;\n";
-          else
-            indent(out,4) << "return (PyObject *) NULL; \n";
-
-        if(!expected_params.empty() && FunctionComment1.empty())
-            FunctionComment1 += "C++ Interface:\n";
-
-        FunctionComment1 += expected_params;
-    }
-    else 
-    {
-        string expected_params = "";
-        bool constructor = false;
-        for(mii = MapSets.begin(); mii != MapSets.end(); mii ++)
-        {
-            write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
-            if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
-                constructor = true;
-       }
-
-        out << "    if(!PyErr_Occurred())\n";
-        out << "        PyErr_SetString(PyExc_TypeError, \"Must Match :\\n" << make_safe_comment(expected_params) << " \"); \n";
-        if (constructor)
-            indent(out,4) << "return -1;\n";
-        else
-            indent(out,4) << "return (PyObject *) NULL; \n";
-
-        if(!expected_params.empty() && FunctionComment1.empty())
-            FunctionComment1 += "C++ Interface:\n";
-
-         FunctionComment1 += expected_params;
+      out << mii->first + add_self;
     }
 
-    out << "}\n\n";
+    out << " arguments (%d given)\", parameter_count + " << add_self << ");\n";
+      
+    if (constructor)
+      indent(out,12) << "return -1;\n";
+    else
+      indent(out,12) << "return (PyObject *) NULL; \n";
+      
+    indent(out,8)<< "}\n";
+    indent(out,8)<< "break;\n";
+    indent(out,4)<< "}\n";
+      
+    out << "    if(!PyErr_Occurred()) // let error pass on \n";
+    out << "        PyErr_SetString(PyExc_TypeError, \"Arguments must match one of:\\n" << make_safe_comment(expected_params) << " \"); \n";
+    if (constructor)
+      indent(out,4) << "return -1;\n";
+    else
+      indent(out,4) << "return (PyObject *) NULL; \n";
+      
+    if(!expected_params.empty() && FunctionComment1.empty())
+      FunctionComment1 += "C++ Interface:\n";
+      
+    FunctionComment1 += expected_params;
 
-    if(!FunctionComment1.empty())
-        FunctionComment = FunctionComment1 + "\n" + FunctionComment;
+  } else {
+    string expected_params = "";
+    bool constructor = false;
+    for(mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
+      write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
+      if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
+        constructor = true;
+    }
+
+    out << "    if(!PyErr_Occurred())\n";
+    out << "        PyErr_SetString(PyExc_TypeError, \"Must Match :\\n" << make_safe_comment(expected_params) << " \"); \n";
+    if (constructor)
+      indent(out,4) << "return -1;\n";
+    else
+      indent(out,4) << "return (PyObject *) NULL; \n";
+      
+    if(!expected_params.empty() && FunctionComment1.empty())
+      FunctionComment1 += "C++ Interface:\n";
+      
+    FunctionComment1 += expected_params;
+  }
+
+  out << "}\n\n";
+
+  if(!FunctionComment1.empty())
+    FunctionComment = FunctionComment1 + "\n" + FunctionComment;
 
 
-    out << "#ifndef NDEBUG\n";
-    out << "static char * " << func->_name << "_comment = \"" << make_safe_comment(FunctionComment) << " \";\n";
-    out << "#else\n";
-    out << "static char * " << func->_name << "_comment = \"" << "\";\n";
-    out << "#endif\n";
+  out << "#ifndef NDEBUG\n";
+  out << "static char * " << func->_name << "_comment = \"" << make_safe_comment(FunctionComment) << " \";\n";
+  out << "#else\n";
+  out << "static char * " << func->_name << "_comment = \"" << "\";\n";
+  out << "#endif\n";
 
-    out << "\n";
+  out << "\n";
 
 
-    out1 << forward_decl.str();
-    out1 << out.str();
+  out1 << forward_decl.str();
+  out1 << out.str();
 }
+
 ////////////////////////////////////////////////////////
 // Function : GetParnetDepth
 //
@@ -1825,7 +1835,6 @@ void InterfaceMakerPythonNative::write_function_for_name(
 ////////////////////////////////////////////////////////
 int     GetParnetDepth(CPPType  *type)
 {
-    InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
     int answer = 0;
 //    printf("    %s\n",type->get_local_name().c_str());
 
@@ -1861,9 +1870,6 @@ int     GetParnetDepth(CPPType  *type)
         }
         answer += deepest;
 //        printf(" Class Name %s  %d\n",itype.get_name().c_str(),answer);
-    }  else
-    {
-        int yy = 0;
     }
 
 
@@ -1932,7 +1938,7 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
                  indent(out,indent_level)<< "{ // -2 " ;
                  remap->write_orig_prototype(out, 0); out << "\n" ;
 
-                 write_function_instance(out, func, remap,expected_params,indent_level,false,forward_decl,functionname, is_inplace);
+                 write_function_instance(out, func, remap,expected_params,indent_level+4,false,forward_decl, func->_name, is_inplace);
 
                  indent(out,indent_level+4)<< "PyErr_Clear(); \n";
                  indent(out,indent_level)<< "}\n\n";            
@@ -1950,7 +1956,7 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
 
              indent(out,indent_level)<< "// 1-" ;remap->write_orig_prototype(out, 0); out << "\n" ;
 //             indent(out,indent_level)<< "do{\n";
-             write_function_instance(out, func, remap,expected_params,indent_level,true,forward_decl,functionname, is_inplace);
+             write_function_instance(out, func, remap,expected_params,indent_level+4,true,forward_decl, func->_name, is_inplace);
   //           indent(out,indent_level)<< "}while(false);\n";
              }
         }
@@ -1977,26 +1983,26 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   string extra_cleanup;
   string pname_for_pyobject;
 
-  bool isconstructor = false;
- if (remap->_type == FunctionRemap::T_constructor )
-    isconstructor = true;
+  bool is_constructor = false;
+
+  if (remap->_type == FunctionRemap::T_constructor) {
+    is_constructor = true;
+  }
 
   // Make one pass through the parameter list.  We will output a
   // one-line temporary variable definition for each parameter, while
   // simultaneously building the ParseTuple() function call and also
   // the parameter expression list for call_function().
 
-
   expected_params += remap->_cppfunc->get_simple_name();
   expected_params += "(";
 
   int pn;
-  for (pn = 0; pn < (int)remap->_parameters.size(); pn++)
-  {
-    if(pn > 0)
-        expected_params += ",";
+  for (pn = 0; pn < (int)remap->_parameters.size(); pn++) {
+    if(pn > 0) {
+      expected_params += ", ";
+    }
 
-    //indent(out, 2);
     CPPType *orig_type = remap->_parameters[pn]._remap->get_orig_type();
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
     string param_name = remap->get_parameter_name(pn);
@@ -2006,18 +2012,18 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     string pexpr_string =
       "(" + type->get_local_name(&parser) + ")" + param_name;
 
-    if (!remap->_has_this ||pn != 0)
-        keyword_list += "\""+remap->_parameters[pn]._name + "\",";
+    if (!remap->_has_this || pn != 0) {
+      keyword_list += "\""+remap->_parameters[pn]._name + "\", ";
+    }
 
-    if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) 
-    {
+    if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) {
       if (TypeManager::is_char_pointer(orig_type)) {
-        indent(out,indent_level+4)<< "char *" << param_name;
+        indent(out,indent_level)<< "char *" << param_name;
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
-
+        
       } else if (TypeManager::is_wstring(orig_type)) {
-        indent(out,indent_level+4) << "Py_UNICODE *" << param_name
+        indent(out,indent_level) << "Py_UNICODE *" << param_name
             << "_str; int " << param_name << "_len";
         format_specifiers += "u#";
         parameter_list += ", &" + param_name
@@ -2027,7 +2033,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
           param_name + "_len)";
 
       } else {
-        indent(out,indent_level+4) << "char *" << param_name
+        indent(out,indent_level) << "char *" << param_name
             << "_str; int " << param_name << "_len";
         format_specifiers += "s#";
         parameter_list += ", &" + param_name
@@ -2039,16 +2045,15 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       expected_params += "string";
       
     } else if (TypeManager::is_bool(type)) {
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       pexpr_string = "(PyObject_IsTrue(" + param_name + ")!=0)";
       expected_params += "bool";
       pname_for_pyobject += param_name;
 
-
     } else if (TypeManager::is_unsigned_longlong(type)) {
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
@@ -2058,9 +2063,8 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       expected_params += "unsigned long long";
       pname_for_pyobject += param_name;
 
-
     } else if (TypeManager::is_longlong(type)) {
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
@@ -2070,9 +2074,8 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       expected_params += "long long";
       pname_for_pyobject += param_name;
 
-    }else if(TypeManager::is_unsigned_integer(type))
-    {
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+    } else if (TypeManager::is_unsigned_integer(type)) {
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
@@ -2082,201 +2085,197 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       expected_params += "unsigned int";
       pname_for_pyobject += param_name;
 
-    }else if (TypeManager::is_integer(type)) {
-      indent(out,indent_level+4) << "int " << param_name;
+    } else if (TypeManager::is_integer(type)) {
+      indent(out,indent_level) << "int " << param_name;
       format_specifiers += "i";
       parameter_list += ", &" + param_name;
       expected_params += "int";
 
     } else if (TypeManager::is_float(type)) {
-      indent(out,indent_level+4) << "double " << param_name;
+      indent(out,indent_level) << "double " << param_name;
       format_specifiers += "d";
       parameter_list += ", &" + param_name;
       expected_params += "float ";
 
     } else if (TypeManager::is_char_pointer(type)) {
-      indent(out,indent_level+4) << "char *" << param_name;
+      indent(out,indent_level) << "char *" << param_name;
       format_specifiers += "s";
       parameter_list += ", &" + param_name;
       expected_params += "string";
 
-    }
-    else if (TypeManager::is_pointer_to_PyObject(type)) 
-    {
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+    } else if (TypeManager::is_pointer_to_PyObject(type)) {
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       pexpr_string = param_name;
       pname_for_pyobject += param_name;
       expected_params += "PyObject";
-    }
-    else if (TypeManager::is_pointer(type)) 
-    {
-        expected_params += type->get_preferred_name();
-        if (!remap->_has_this || pn != 0 )
-        {
-            indent(out,indent_level+4) << "PyObject *" << param_name;
-            format_specifiers += "O";
-            parameter_list += ", &" + param_name;
-            pname_for_pyobject += param_name;
 
-            TypeIndex p_type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
-            InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-            const InterrogateType &p_itype = idb->get_type(p_type_index);    
+    } else if (TypeManager::is_pointer(type)) {
+      expected_params += type->get_preferred_name();
+      if (!remap->_has_this || pn != 0) {
+        indent(out, indent_level) 
+          << "PyObject *" << param_name;
+        format_specifiers += "O";
+        parameter_list += ", &" + param_name;
+        pname_for_pyobject += param_name;
 
-            //make_safe_name(itype.get_scoped_name())
-            extra_convert += p_itype.get_scoped_name()+" *" + param_name + "_this = ("+p_itype.get_scoped_name()+" *)";
-            // need to a forward scope for this class..
-            if(!isExportThisRun(p_itype._cpptype))
-            {
-                _external_imports.insert(make_safe_name(p_itype.get_scoped_name()));
-                //ForwardDeclrs << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(p_itype.get_scoped_name()) << ";\n";
-            }
+        TypeIndex p_type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
+        InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+        const InterrogateType &p_itype = idb->get_type(p_type_index);    
 
-            extra_convert += "DTOOL_Call_GetPointerThisClass(" + param_name + ",&Dtool_"+make_safe_name(p_itype.get_scoped_name())+");\n";
-            extra_param_check += "|| (" + param_name + "_this == NULL)";
-            pexpr_string =  param_name + "_this";
+        //make_safe_name(itype.get_scoped_name())
+        extra_convert += p_itype.get_scoped_name()+" *" + param_name + "_this = ("+p_itype.get_scoped_name()+" *)";
+        // need to a forward scope for this class..
+        if(!isExportThisRun(p_itype._cpptype)) {
+          _external_imports.insert(make_safe_name(p_itype.get_scoped_name()));
+          //ForwardDeclrs << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(p_itype.get_scoped_name()) << ";\n";
         }
 
-    } 
-    else 
-    {
+        ostringstream str;
+        str << "DTOOL_Call_GetPointerThisClass(" << param_name 
+            << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name()) 
+            << ", " << pn << ", \"" 
+            << remap->_cppfunc->get_local_name(&parser)
+            << "\");\n";
+
+        extra_convert += str.str();
+        extra_param_check += "|| (" + param_name + "_this == NULL)";
+        pexpr_string =  param_name + "_this";
+      }
+
+    } else {
       // Ignore a parameter.
-      indent(out,indent_level+4) << "PyObject *" << param_name;
+      indent(out,indent_level) << "PyObject *" << param_name;
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       expected_params += "any";
       pname_for_pyobject += param_name;
-
     }
 
     if (remap->_parameters[pn]._has_name) {
       expected_params += " " + remap->_parameters[pn]._name;
     }
 
-    if (remap->_has_this && pn == 0)
-    {
-        container = "local_this";
+    if (remap->_has_this && pn == 0) {
+      container = "local_this";
+    } else {
+      out << ";\n";
     }
-    else
-    {
-        out << ";\n";
-    }
-
 
     pexprs.push_back(pexpr_string);
   }
   expected_params += ")\n";
     
-    
 
-  if(!format_specifiers.empty())
-  {
-      std::string format_specifiers1 = format_specifiers + ":" + functionnamestr;
-      indent(out,indent_level+4) <<  "char * key_word_list[] = {"<< keyword_list << "NULL};\n";
+  /*if (!format_specifiers.empty()) */ {
+    std::string format_specifiers1 = format_specifiers + ":" + remap->_cppfunc->get_local_name(&parser);
+    indent(out,indent_level)
+      << "static char * key_word_list[] = {" << keyword_list << "NULL};\n";
 
-      if(remap->_parameters.size() == 1 || (remap->_has_this && remap->_parameters.size() == 2))
-      {
-        indent(out,indent_level+4) << "// Special Case to Make operator work \n";
-        indent(out,indent_level+4) << "if(PyTuple_Check(args) || (kwds != NULL && PyDict_Check(kwds)))\n";
-        indent(out,indent_level+4) << "    (PyArg_ParseTupleAndKeywords(args,kwds, \"" << format_specifiers1<< "\",key_word_list" << parameter_list << "));\n";
-        indent(out,indent_level+4) << "else\n";
-        indent(out,indent_level+4) << "    (PyArg_Parse(args, \"" << format_specifiers1<< "\"" << parameter_list << "));\n";
-        indent(out,indent_level+4) << "if(!PyErr_Occurred())\n";
-      }
-      else
-          indent(out,indent_level+4) << "if (PyArg_ParseTupleAndKeywords(args,kwds, \"" << format_specifiers1 << "\",key_word_list" << parameter_list << "))\n";
+    if (remap->_parameters.size() == 1 || 
+        (remap->_has_this && remap->_parameters.size() == 2)) {
+      indent(out,indent_level)
+        << "// Special Case to Make operator work \n";
+      indent(out,indent_level)
+        << "if(PyTuple_Check(args) || (kwds != NULL && PyDict_Check(kwds)))\n";
+      indent(out,indent_level)
+        << "    (PyArg_ParseTupleAndKeywords(args,kwds, \"" 
+        << format_specifiers1 << "\", key_word_list" << parameter_list
+        << "));\n";
+      indent(out,indent_level)
+        << "else\n";
+      indent(out,indent_level)
+        << "    (PyArg_Parse(args, \"" << format_specifiers1 << "\"" 
+        << parameter_list << "));\n";
+      indent(out,indent_level)
+        << "if(!PyErr_Occurred())\n";
+
+    } else {
+      indent(out,indent_level)
+        << "if (PyArg_ParseTupleAndKeywords(args,kwds, \"" 
+        << format_specifiers1 << "\", key_word_list"
+        << parameter_list << "))\n";
+    }
   }
-  indent(out,indent_level+4) << "{\n";
+  indent(out,indent_level) << "{\n";
 
-  if (!extra_convert.empty()) 
-  {
-    indent(out,indent_level+8) <<  extra_convert << "\n";
+  if (!extra_convert.empty()) {
+    indent(out,indent_level+4)
+      << extra_convert << "\n";
   }
 
-  int extra_indent_level =indent_level+8;
+  int extra_indent_level = indent_level+4;
 
-  if (!extra_param_check.empty()) 
-  {
-      indent(out,extra_indent_level) << "if (!(" << extra_param_check.substr(3) << "))\n";
-      indent(out,extra_indent_level) <<"{\n";
-      extra_indent_level+=4;
+  if (!extra_param_check.empty()) {
+    indent(out,extra_indent_level)
+      << "if (!(" << extra_param_check.substr(3) << "))\n";
+    indent(out,extra_indent_level)
+      <<"{\n";
+    extra_indent_level+=4;
   }
   
+  if (!remap->_void_return && 
+      remap->_return_type->new_type_is_atomic_string()) {
+    // Treat strings as a special case.  We don't want to format the
+    // return expression.
+    string tt;
+    string return_expr = remap->call_function(out, extra_indent_level, false, container, pexprs);
+    CPPType *type = remap->_return_type->get_orig_type();
+    indent(out,extra_indent_level);
+    type->output_instance(out, "return_value", &parser);
+    //    type->output_instance(tt, "return_value", &parser);
+    out << " = " << return_expr << ";\n";
+    
+    if (track_interpreter) {
+      indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+    }
+    if (!extra_cleanup.empty()) {
+      indent(out,extra_indent_level) <<  extra_cleanup << "\n";
+    }
 
-  if (!remap->_void_return && remap->_return_type->new_type_is_atomic_string())
-  {
-      // Treat strings as a special case.  We don't want to format the
-      // return expression.
-      string tt;
-      string return_expr = remap->call_function(out, extra_indent_level, false, container, pexprs);
-      CPPType *type = remap->_return_type->get_orig_type();
-      indent(out,extra_indent_level);
-      type->output_instance(out, "return_value", &parser);
-      //    type->output_instance(tt, "return_value", &parser);
-      out << " = " << return_expr << ";\n";
+    return_expr = manage_return_value(out, 4, remap, "return_value");
+    do_assert_init(out, extra_indent_level,is_constructor);
+    pack_return_value(out, extra_indent_level, remap, return_expr,ForwardDeclrs,is_inplace);
 
+  } else {
+    string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
+    if (return_expr.empty()) {
       if (track_interpreter) {
-          indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
       if (!extra_cleanup.empty()) {
-          indent(out,extra_indent_level) <<  extra_cleanup << "\n";
+        indent(out,extra_indent_level) << extra_cleanup << "\n";
       }
+      do_assert_init(out, extra_indent_level,is_constructor);
+      indent(out,extra_indent_level) << "return Py_BuildValue(\"\");\n";
 
-      return_expr = manage_return_value(out, 4, remap, "return_value");
-      do_assert_init(out, extra_indent_level,isconstructor);
-      pack_return_value(out, extra_indent_level, remap, return_expr,ForwardDeclrs,is_inplace);
-    
-  }
-  else 
-  {
-      string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
-      if (return_expr.empty())
-      {
-          if (track_interpreter) 
-          {
-              indent(out,extra_indent_level) << "in_interpreter = 1;\n";
-          }
-          if (!extra_cleanup.empty()) 
-          {
-              indent(out,extra_indent_level) << extra_cleanup << "\n";
-          }
-          do_assert_init(out, extra_indent_level,isconstructor);
-          indent(out,extra_indent_level) << "return Py_BuildValue(\"\");\n";
-
-      } 
-      else 
-      {
-          CPPType *type = remap->_return_type->get_temporary_type();
-          if(!is_inplace)
-          {
-              indent(out,extra_indent_level);
-              type->output_instance(out, "return_value", &parser);
-              out << " = " << return_expr << ";\n";
-          }
-          if (track_interpreter) {
-              indent(out,extra_indent_level) << "in_interpreter = 1;\n";
-          }
-          if (!extra_cleanup.empty()) {
-              indent(out,extra_indent_level) << extra_cleanup << "\n";
-          }
-
-          return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
-          do_assert_init(out, extra_indent_level,isconstructor);
-          pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
+    } else {
+      CPPType *type = remap->_return_type->get_temporary_type();
+      if(!is_inplace) {
+        indent(out,extra_indent_level);
+        type->output_instance(out, "return_value", &parser);
+        out << " = " << return_expr << ";\n";
       }
+      if (track_interpreter) {
+        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+      }
+      if (!extra_cleanup.empty()) {
+        indent(out,extra_indent_level) << extra_cleanup << "\n";
+      }
+      
+      return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
+      do_assert_init(out, extra_indent_level,is_constructor);
+      pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
+    }
   }
 
-  if (!extra_param_check.empty()) 
-  {
-      extra_indent_level-=4;
-      indent(out,extra_indent_level)<< "}\n";
+  if (!extra_param_check.empty()) {
+    extra_indent_level-=4;
+    indent(out,extra_indent_level)<< "}\n";
   }
-
-//    printf(" %s \n",keyword_list.c_str());
-
-
-  indent(out,indent_level+4) << "}\n";
+  
+  indent(out,indent_level) << "}\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2504,13 +2503,6 @@ InterfaceMaker::Object *InterfaceMakerPythonNative::record_object(TypeIndex type
       if(isFunctionLegal(function))
         object->_constructors.push_back(function);
   }
-
-// destructor are handled in a much difrent fashion..
-//  if (itype.has_destructor() && !itype.destructor_is_inherited()) 
-//  {
-//      function = record_function(itype, itype.get_destructor());
-//      object->_destructor = function;
-//  }
   
   int num_methods = itype.number_of_methods();
   int mi;
@@ -2534,7 +2526,7 @@ InterfaceMaker::Object *InterfaceMakerPythonNative::record_object(TypeIndex type
   for (int di = 0; di < num_derivations; di++) 
   {
     TypeIndex d_type_Index = itype.get_derivation(di);
-    const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+    idb->get_type(d_type_Index);    
 
     if(!interrogate_type_is_unpublished(d_type_Index))
     {
@@ -2613,9 +2605,8 @@ void InterfaceMakerPythonNative::generate_wrappers()
         ++ti;
   }
 
-  int gi = 0;
-  while( gi = idb->get_num_global_elements())
-  {
+  int num_global_elements = idb->get_num_global_elements();
+  for (int gi = 0; gi < num_global_elements; ++gi) {
     printf(" Global Type = %d",gi);
     TypeIndex type_index = idb->get_global_element(gi);
     record_object(type_index);
@@ -2720,10 +2711,10 @@ bool InterfaceMakerPythonNative::isCppTypeLegal(CPPType *in_ctype)
 bool InterfaceMakerPythonNative::isExportThisRun(CPPType *ctype)
 {
     CPPType *type = TypeManager::unwrap(ctype);
-    if(TypeManager::IsLocal(ctype))
+    if(TypeManager::IsLocal(type))
         return true;
 
-    if(builder.in_forcetype(ctype->get_local_name(&parser)))
+    if(builder.in_forcetype(type->get_local_name(&parser)))
         return true;
 
     return false;

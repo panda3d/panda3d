@@ -82,7 +82,6 @@ InterfaceMaker::Object::
 Object(const InterrogateType &itype) :
   _itype(itype)
 {
-  _destructor = (Function *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,13 +160,11 @@ generate_wrappers() {
 //    printf(" New Type %d\n",ti);
   }
 
-  int gi = 0;
-  while( gi = idb->get_num_global_elements())
-  {
+  int num_global_elements = idb->get_num_global_elements();
+  for (int gi = 0; gi < num_global_elements; ++gi) {
     printf(" Global Type = %d",gi);
     TypeIndex type_index = idb->get_global_element(gi);
     record_object(type_index);
-
   }
 
   int num_functions = idb->get_num_global_functions();
@@ -610,18 +607,11 @@ record_object(TypeIndex type_index) {
 
   Function *function;
 
-      int num_constructors = itype.number_of_constructors();
-      for (int ci = 0; ci < num_constructors; ci++) 
-      {
-          function = record_function(itype, itype.get_constructor(ci));
-          object->_constructors.push_back(function);
-      }
-
-    if (itype.has_destructor() && !itype.destructor_is_inherited()) 
-    {
-        function = record_function(itype, itype.get_destructor());
-        object->_destructor = function;
-    }
+  int num_constructors = itype.number_of_constructors();
+  for (int ci = 0; ci < num_constructors; ci++) {
+    function = record_function(itype, itype.get_constructor(ci));
+    object->_constructors.push_back(function);
+  }
   
   int num_methods = itype.number_of_methods();
   int mi;
