@@ -17,29 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::bind
+//     Function: GLShaderContext::valid
 //       Access: Public
-//  Description: xyz
+//  Description: Returns true if the shader is "valid", ie, if the
+//               compilation was successful.  The compilation could
+//               fail if there is a syntax error in the shader, or
+//               if the current video card isn't shader-capable,
+//               or if no shader languages are compiled into panda.
 ////////////////////////////////////////////////////////////////////
-INLINE void CLP(ShaderContext)::
-bind(ShaderMode *m) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::unbind
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(ShaderContext)::
-unbind() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::rebind
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(ShaderContext)::
-rebind(ShaderMode *oldmode, ShaderMode *newmode) {
+INLINE bool CLP(ShaderContext)::
+valid() {
+#ifdef HAVE_CGGL
+  if (_cg_context) return true;
+#endif
+  return false;
 }
 

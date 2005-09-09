@@ -41,6 +41,12 @@ public:
   INLINE ShaderContext(Shader *shader);
   
   Shader *_shader;
+
+  enum {
+    VERT_SHADER=0,
+    FRAG_SHADER=1,
+    BOTH_SHADER=2,
+  };
   
 public:
   static TypeHandle get_class_type() {

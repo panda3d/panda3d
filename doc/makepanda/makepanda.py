@@ -1773,7 +1773,10 @@ ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 ##########################################################################################
 
 CONFAUTOPRC=ReadFile("makepanda/confauto.in")
-CONFIGPRC=ReadFile("makepanda/config.in")
+if (os.path.isfile("makepanda/myconfig.in")):
+  CONFIGPRC=ReadFile("makepanda/myconfig.in")
+else:
+  CONFIGPRC=ReadFile("makepanda/config.in")
 
 if (sys.platform != "win32"):
     CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx9","")

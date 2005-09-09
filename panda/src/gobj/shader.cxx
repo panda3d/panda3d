@@ -116,6 +116,19 @@ parse_rest(string &result) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_lineno
+//       Access: Public
+//  Description: Returns the line number of the current parse pointer.
+////////////////////////////////////////////////////////////////////
+int Shader::
+parse_lineno() {
+  int result = 1;
+  for (int i=0; i<_parse; i++)
+    if (_text[i] == '\n') result += 1;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Shader::parse_eof
 //       Access: Public
 //  Description: Returns true if the parse pointer is at the end of
@@ -277,3 +290,4 @@ void Shader::
 register_with_read_factory() {
   // IMPLEMENT ME
 }
+

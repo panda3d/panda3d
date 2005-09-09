@@ -61,13 +61,17 @@ PUBLISHED:
   int release_all();
 
 PUBLISHED:
+  // These routines help split the shader into sections,
+  // for those shader implementations that need to do so.
   void parse_init();
   void parse_line(string &result, bool rt, bool lt);
   void parse_upto(string &result, string pattern, bool include);
   void parse_rest(string &result);
+  int  parse_lineno();
   bool parse_eof();
-
+  
 public:
+
   INLINE int arg_count();
   int        arg_index(const string &id);
 

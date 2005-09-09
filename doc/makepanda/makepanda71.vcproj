@@ -18,7 +18,7 @@
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="cd .. &amp; makepanda\makepanda --everything --installer"
-				Output="..\built\bin\ppython.exe"/>
+				Output="..\built\python\python.exe"/>
 		</Configuration>
 	</Configurations>
 	<References>
