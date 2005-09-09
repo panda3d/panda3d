@@ -76,6 +76,28 @@ three() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::four
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               fourth mouse button.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+four() {
+  return _buttons[3];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::five
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               fifth mouse button.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+five() {
+  return _buttons[4];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::wheel_up
 //       Access: Public, Static
 //  Description: Returns the ButtonHandle generated when the mouse
@@ -105,7 +127,7 @@ wheel_down() {
 ////////////////////////////////////////////////////////////////////
 bool MouseButton::
 is_mouse_button(ButtonHandle button) {
-  for (int i = 0; i < num_mouse_buttons; i++) {
+  for (int i = 0; i < num_mouse_buttons; ++i) {
     if (button == _buttons[i]) {
       return true;
     }
@@ -124,7 +146,7 @@ void MouseButton::
 init_mouse_buttons() {
   char numstr[20];
 
-  for (int i = 0; i < num_mouse_buttons; i++) {
+  for (int i = 0; i < num_mouse_buttons; ++i) {
     sprintf(numstr, "mouse%d", i + 1);
     nassertv(strlen(numstr) < 20);
 

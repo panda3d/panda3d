@@ -35,6 +35,8 @@ PUBLISHED:
   static ButtonHandle one();
   static ButtonHandle two();
   static ButtonHandle three();
+  static ButtonHandle four();
+  static ButtonHandle five();
   static ButtonHandle wheel_up();
   static ButtonHandle wheel_down();
 
@@ -43,7 +45,7 @@ PUBLISHED:
 public:
   static void init_mouse_buttons();
 
-  enum { num_mouse_buttons = 3 };
+  enum { num_mouse_buttons = 5 };
   static ButtonHandle _buttons[num_mouse_buttons];
   static ButtonHandle _wheel_up;
   static ButtonHandle _wheel_down;

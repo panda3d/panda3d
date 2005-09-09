@@ -1110,6 +1110,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
         _input_devices[0].button_down(MouseButton::button(2), get_message_time());
         break;
+
+      case WM_XBUTTONDOWN:
+        {
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        SetCapture(hwnd);
+        int whichButton = GET_XBUTTON_WPARAM(wparam);
+        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+        if (whichButton == XBUTTON1) {
+            _input_devices[0].button_down(MouseButton::button(3), get_message_time());
+        } else if (whichButton == XBUTTON2) {
+            _input_devices[0].button_down(MouseButton::button(4), get_message_time());
+        }
+        }
+        break;
     
       case WM_LBUTTONUP:
         if (_lost_keypresses) {
@@ -1133,6 +1149,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         ReleaseCapture();
         _input_devices[0].button_up(MouseButton::button(2), get_message_time());
+        break;
+
+      case WM_XBUTTONUP:
+        {
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        ReleaseCapture();
+        int whichButton = GET_XBUTTON_WPARAM(wparam);
+        if (whichButton == XBUTTON1) {
+            _input_devices[0].button_up(MouseButton::button(3), get_message_time());
+        } else if (whichButton == XBUTTON2) {
+            _input_devices[0].button_up(MouseButton::button(4), get_message_time());
+        }
+        }
         break;
 
       case WM_MOUSEWHEEL:
@@ -2092,7 +2123,7 @@ handle_raw_input(HRAWINPUT hraw) {
     return;
   }
   
-  for (int i = 1; i < (int)(_input_devices.size()); i++) {
+  for (int i = 1; i < (int)(_input_devices.size()); ++i) {
     if (_input_device_handle[i] == raw->header.hDevice) {
       int adjx = raw->data.mouse.lLastX;
       int adjy = raw->data.mouse.lLastY;
@@ -2122,6 +2153,18 @@ handle_raw_input(HRAWINPUT hraw) {
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_UP) {
         _input_devices[i].button_up(MouseButton::button(1), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) {
+        _input_devices[i].button_down(MouseButton::button(3), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) {
+        _input_devices[i].button_up(MouseButton::button(3), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) {
+        _input_devices[i].button_down(MouseButton::button(4), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) {
+        _input_devices[i].button_up(MouseButton::button(4), get_message_time());
       }
     }
   }

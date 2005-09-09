@@ -181,7 +181,9 @@ press(const MouseWatcherParameter &param, bool background) {
       
       if (button == MouseButton::one() ||
           button == MouseButton::two() ||
-          button == MouseButton::three()) {
+          button == MouseButton::three() ||
+          button == MouseButton::four() ||
+          button == MouseButton::five()) {
         // Mouse button; set focus.
         set_focus(true);
         

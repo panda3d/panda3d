@@ -27,9 +27,11 @@
 TypeHandle Trackball::_type_handle;
 
 // These are used internally.
-#define B1_MASK 0x1
-#define B2_MASK 0x2
-#define B3_MASK 0x4
+#define B1_MASK 0x01
+#define B2_MASK 0x02
+#define B3_MASK 0x04
+#define B4_MASK 0x08
+#define B5_MASK 0x10
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::Constructor
@@ -62,6 +64,8 @@ Trackball(const string &name) :
   watch_button(MouseButton::one());
   watch_button(MouseButton::two());
   watch_button(MouseButton::three());
+  watch_button(MouseButton::four());
+  watch_button(MouseButton::five());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -553,6 +557,12 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     }
     if (is_down(MouseButton::three())) {
       this_button |= B3_MASK;
+    }
+    if (is_down(MouseButton::four())) {
+      this_button |= B4_MASK;
+    }
+    if (is_down(MouseButton::five())) {
+      this_button |= B5_MASK;
     }
     
     float x = this_x - _lastx;
