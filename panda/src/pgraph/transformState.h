@@ -161,6 +161,8 @@ PUBLISHED:
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
 
+  INLINE CPT(TransformState) get_inverse() const;
+
   INLINE int get_geom_rendering(int geom_rendering) const;
 
   int unref() const;

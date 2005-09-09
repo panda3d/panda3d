@@ -625,6 +625,19 @@ get_mat3() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_inverse
+//       Access: Published
+//  Description: Returns the inverse of this transform.  If you are
+//               going to immediately compose this result with another
+//               TransformState, it is faster to do it in one
+//               operation with invert_compose().
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+get_inverse() const {
+  return invert_compose(TransformState::make_identity());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_geom_rendering
 //       Access: Published
 //  Description: Returns the union of the Geom::GeomRendering bits
