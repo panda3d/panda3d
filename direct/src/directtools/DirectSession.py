@@ -462,8 +462,9 @@ class DirectSession(PandaObject):
     def gotAlt(self, modifiers):
         return modifiers & DIRECT_ALT_MOD
 
-    def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
-        dnp = self.selected.select(nodePath, fMultiSelect)
+    def select(self, nodePath, fMultiSelect = 0,
+               fSelectTag = 1, fResetAncestry = 1):
+        dnp = self.selected.select(nodePath, fMultiSelect, fSelectTag)
         if dnp:
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
