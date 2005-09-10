@@ -318,6 +318,8 @@ class Particles(ParticleSystem):
             file.write((targ + '.renderer.setHeadColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
             sColor = self.renderer.getTailColor()
             file.write((targ + '.renderer.setTailColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
+            sf = self.renderer.getLineScaleFactor()
+            file.write((targ + '.renderer.setLineScaleFactor(%.2f)\n' % (sf)))
         elif (self.rendererType == "GeomParticleRenderer"):
             file.write('# Geom parameters\n')
             node = self.renderer.getGeomNode()
@@ -531,6 +533,7 @@ class Particles(ParticleSystem):
         elif (self.emitterType == "RingEmitter"):
             file.write('# Ring parameters\n')
             file.write(targ + '.emitter.setRadius(%.4f)\n' % self.emitter.getRadius())
+            file.write(targ + '.emitter.setRadiusSpread(%.4f)\n' % self.emitter.getRadiusSpread())
             if (eType == "ETCUSTOM"):
                 file.write(targ + '.emitter.setAngle(%.4f)\n' % self.emitter.getAngle())
         elif (self.emitterType == "SphereSurfaceEmitter"):
@@ -542,3 +545,4 @@ class Particles(ParticleSystem):
         elif (self.emitterType == "TangentRingEmitter"):
             file.write('# Tangent Ring parameters\n')
             file.write(targ + '.emitter.setRadius(%.4f)\n' % self.emitter.getRadius())
+            file.write(targ + '.emitter.setRadiusSpread(%.4f)\n' % self.emitter.getRadiusSpread())
