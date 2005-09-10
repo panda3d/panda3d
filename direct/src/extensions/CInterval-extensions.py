@@ -60,8 +60,9 @@
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
-            s.setT(0.0)
-            s.pause()
+            s.clearToInitial()
+            s.setT(0)
+            es.set(0, fCommand = 0)
         def toEnd(s=self):
             s.setT(s.getDuration())
             s.pause()

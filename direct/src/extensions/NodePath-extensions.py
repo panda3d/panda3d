@@ -231,6 +231,39 @@
                formatString % scale[2] +
                ')\n')
 
+    def printTransform(self, other = None, sd = 2, fRecursive = 0):
+        from pandac.PandaModules import Vec3
+        fmtStr = '%%0.%df' % sd
+        name = self.getName()
+        if other == None:
+            transform = self.getTransform()
+        else:
+            transform = self.getTransform(other)            
+        if transform.hasPos():
+            pos = transform.getPos()
+            if not pos.almostEqual(Vec3(0)):
+                outputString = '%s.setPos(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
+                print outputString % (pos[0], pos[1], pos[2]) 
+        if transform.hasHpr():
+            hpr = transform.getHpr()
+            if not hpr.almostEqual(Vec3(0)):
+                outputString = '%s.setHpr(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
+                print outputString % (hpr[0], hpr[1], hpr[2]) 
+        if transform.hasScale():
+            if transform.hasUniformScale():
+                scale = transform.getUniformScale()
+                if scale != 1.0:
+                    outputString = '%s.setScale(%s)' % (name, fmtStr)
+                    print outputString % scale
+            else:
+                scale = transform.getScale()
+                if not scale.almostEqual(Vec3(1)):
+                    outputString = '%s.setScale(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
+                    print outputString % (scale[0], scale[1], scale[2])
+        if fRecursive:
+            for child in self.getChildrenAsList():
+                child.printTransform(other, sd, fRecursive)
+
     def iPos(self, other = None):
         """ Set node path's pos to 0,0,0 """
         if other:
