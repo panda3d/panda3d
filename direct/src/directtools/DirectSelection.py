@@ -25,7 +25,10 @@ class DirectNodePath(NodePath):
         # Transform from nodePath to widget
         self.tDnp2Widget = TransformState.makeIdentity()
 
-    def highlight(self):
+    def highlight(self, fRecompute = 1):
+        if fRecompute:
+            pass
+            #self.bbox.recompute()
         self.bbox.show()
 
     def dehighlight(self):
@@ -60,7 +63,7 @@ class SelectedNodePaths(PandaObject):
         self.deselectedDict = {}
         __builtins__["last"] = self.last = None
 
-    def select(self, nodePath, fMultiSelect = 0):
+    def select(self, nodePath, fMultiSelect = 0, fSelectTag = 1):
         """ Select the specified node path.  Multiselect as required """
         # Do nothing if nothing selected
         if not nodePath:
@@ -72,10 +75,11 @@ class SelectedNodePaths(PandaObject):
             self.deselectAll()
 
         # Select tagged object if present
-        for tag in self.tagList:
-            if nodePath.hasNetTag(tag):
-                nodePath = nodePath.findNetTag(tag)
-                break
+        if fSelectTag:
+            for tag in self.tagList:
+                if nodePath.hasNetTag(tag):
+                    nodePath = nodePath.findNetTag(tag)
+                    break
         
         # Get this pointer
         id = nodePath.id()
@@ -94,7 +98,7 @@ class SelectedNodePaths(PandaObject):
                 # Didn't find it, create a new selectedNodePath instance
                 dnp = DirectNodePath(nodePath)
                 # Show its bounding box
-                dnp.highlight()
+                dnp.highlight(fRecompute = 0)
             # Add it to the selected dictionary
             self.selectedDict[dnp.id()] = dnp
         # And update last
@@ -247,6 +251,11 @@ class DirectBoundingBox:
         self.computeTightBounds()
         # Generate the bounding box
         self.lines = self.createBBoxLines()
+
+    def recompute(self):
+        # Compute bounds, min, max, etc.
+        self.computeTightBounds()
+        self.updateBBoxLines()
 
     def computeTightBounds(self):
         # Compute bounding box using tighter calcTightBounds function
