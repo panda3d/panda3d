@@ -304,7 +304,6 @@ EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
 EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
 
 
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef);
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name);
 
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);

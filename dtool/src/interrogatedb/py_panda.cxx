@@ -58,12 +58,6 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * 
         answer = NULL;
 };
 
-
-void *
-DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef) {
-  return DTOOL_Call_GetPointerThisClass(self, classdef, 0, "unknown");
-}
-
 void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                                int param, const string &function_name) {

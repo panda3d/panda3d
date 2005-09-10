@@ -42,7 +42,7 @@ extern std::string EXPORT_IMPORT_PREFEX;
 #define         CLASS_PREFEX  "Dtool_"
 #define         INSTANCE_PREFEX "Dtool_"
 #define         BASE_INSTANCE_NAME "Dtool_PyInstDef"
-#define MAX_COMMENT_SIZE  1024
+#define MAX_COMMENT_SIZE  6144
 
 
 /////////////////////////////////////////////////////////
@@ -323,41 +323,39 @@ std::string  methodNameFromCppName(std::string cppName, const std::string &class
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-std::string make_safe_comment(const std::string & name_in)
-{
+std::string 
+make_safe_comment(const std::string & name_in) {
+  std::string name(name_in.substr(0,MAX_COMMENT_SIZE));
 
+  static const char safe_chars2[] = ",.[](){}:;'`~!@#$%^&*+\\=/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ";
+  std::string result = name;
 
-    std::string name(name_in.substr(0,MAX_COMMENT_SIZE));
-
-    static const char safe_chars2[] = ",.[](){}:;'`~!@#$%^&*+\\=/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ";
-	std::string result = name;
-
-	size_t pos = result.find_first_of("\\");
-	while (pos != std::string::npos)
-	{
-        result.replace(pos,1,"_");
-		pos = result.find_first_of("\\");
-	}
+  size_t pos = result.find_first_of("\\");
+  while (pos != std::string::npos)
+    {
+      result.replace(pos,1,"_");
+      pos = result.find_first_of("\\");
+    }
 
 
 
 
-	pos = result.find_first_of("\n");
-	while (pos != std::string::npos)
-	{
-        result.replace(pos,1,"\\n");
-		pos = result.find_first_of("\n");
-	}
+  pos = result.find_first_of("\n");
+  while (pos != std::string::npos)
+    {
+      result.replace(pos,1,"\\n");
+      pos = result.find_first_of("\n");
+    }
 
 
-	pos = result.find_first_not_of(safe_chars2);
-	while (pos != std::string::npos)
-	{
-		result[pos] = ' ';
-		pos = result.find_first_not_of(safe_chars2);
-	}
+  pos = result.find_first_not_of(safe_chars2);
+  while (pos != std::string::npos)
+    {
+      result[pos] = ' ';
+      pos = result.find_first_not_of(safe_chars2);
+    }
 
-	return result;
+  return result;
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -1149,417 +1147,424 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Function :write_module_class
 /////////////////////////////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::write_module_class(ostream &out,  Object *obj) 
-{
+void InterfaceMakerPythonNative::
+write_module_class(ostream &out,  Object *obj) {
+  bool has_local_hash = false;
+  bool has_local_repr = false;
+  bool has_local_str = false;
 
-    bool has_local_hash = false;
-    bool has_local_repr = false;
-    bool has_local_str = false;
+  {
+    int num_nested = obj->_itype.number_of_nested_types();
+    for (int ni = 0; ni < num_nested; ni++)
+      {
+        TypeIndex nested_index = obj->_itype.get_nested_type(ni);
+        Object * nested_obj =  _objects[nested_index];
+        if(nested_obj->_itype.is_class() ||nested_obj->_itype.is_struct())
+          {
+            write_module_class(out,nested_obj);
+          }
+      }
+  }
 
+  bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
+
+
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+
+  std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
+  std::string cClassName =  obj->_itype.get_true_name();
+  std::string export_calss_name = classNameFromCppName(obj->_itype.get_name());
+
+  Functions::iterator fi;
+  out << "//********************************************************************\n";
+  out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
+  out << "//********************************************************************\n";
+  out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
+
+
+
+  std::map<int , Function * > static_functions;
+  std::map<Function *, std::string >       normal_Operator_functions;
+  std::map<Function *, std::pair< std::string , int>  >          wraped_Operator_functions;
+  // function Table
+  int x;
+  for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) 
     {
-        int num_nested = obj->_itype.number_of_nested_types();
-        for (int ni = 0; ni < num_nested; ni++)
+      Function *func = (*fi);
+      std::string temp0;
+      int temp1;
+      if(!GetSlotedFunctinDef( methodNameFromCppName( func->_ifunc.get_name(),export_calss_name),temp0,temp1))
         {
-            TypeIndex nested_index = obj->_itype.get_nested_type(ni);
-            Object * nested_obj =  _objects[nested_index];
-            if(nested_obj->_itype.is_class() ||nested_obj->_itype.is_struct())
+
+          out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+              << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+          if(!isFunctionWithThis(func))
+            static_functions[x] = func;
+        }
+      else
+        {
+          if(temp1 > 0)
             {
-                write_module_class(out,nested_obj);
+              wraped_Operator_functions[func] = std::pair< std::string, int>(temp0,temp1);
+
+              out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+                  << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+              if(!isFunctionWithThis(func))
+                static_functions[x] = func;
+
+            }
+          else
+            {
+              normal_Operator_functions[func] = temp0;
+
+              out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+                  << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+              if(!isFunctionWithThis(func))
+                static_functions[x] = func;
             }
         }
     }
 
-        bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
 
 
-        InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+  out << "  { NULL, NULL }\n"
+      << "};\n\n";
 
-        std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
-        std::string cClassName =  obj->_itype.get_true_name();
-        std::string export_calss_name = classNameFromCppName(obj->_itype.get_name());
-
-        Functions::iterator fi;
-    out << "//********************************************************************\n";
-    out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
-    out << "//********************************************************************\n";
-        out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
-
-
-
-        std::map<int , Function * > static_functions;
-        std::map<Function *, std::string >       normal_Operator_functions;
-        std::map<Function *, std::pair< std::string , int>  >          wraped_Operator_functions;
-        // function Table
-        int x;
-        for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) 
+  int num_derivations = obj->_itype.number_of_derivations();
+  int di;
+  for (di = 0; di < num_derivations; di++) 
+    {
+      TypeIndex d_type_Index = obj->_itype.get_derivation(di);
+      if(!interrogate_type_is_unpublished(d_type_Index))
         {
-            Function *func = (*fi);
-            std::string temp0;
-            int temp1;
-            if(!GetSlotedFunctinDef( methodNameFromCppName( func->_ifunc.get_name(),export_calss_name),temp0,temp1))
+          const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+          if(isCppTypeLegal(d_itype._cpptype))
             {
-
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
-                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-                if(!isFunctionWithThis(func))
-                    static_functions[x] = func;
-            }
-            else
-            {
-                if(temp1 > 0)
+              if(!isExportThisRun(d_itype._cpptype))
                 {
-                    wraped_Operator_functions[func] = std::pair< std::string, int>(temp0,temp1);
+                  _external_imports.insert(make_safe_name(d_itype.get_scoped_name().c_str()));
 
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
-                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-                if(!isFunctionWithThis(func))
-                    static_functions[x] = func;
-
-                }
-                else
-                {
-                    normal_Operator_functions[func] = temp0;
-
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
-                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-                if(!isFunctionWithThis(func))
-                    static_functions[x] = func;
+                  //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(d_itype.get_scoped_name().c_str()) <<";\n";
                 }
             }
         }
+    }
 
-
-
-        out << "  { NULL, NULL }\n"
-            << "};\n\n";
-
-        int num_derivations = obj->_itype.number_of_derivations();
-	int di;
-        for (di = 0; di < num_derivations; di++) 
+  std::vector< std::string >  bases;
+  for (di = 0; di < num_derivations; di++) 
+    {
+      TypeIndex d_type_Index = obj->_itype.get_derivation(di);
+      if(!interrogate_type_is_unpublished(d_type_Index))
         {
-             TypeIndex d_type_Index = obj->_itype.get_derivation(di);
-             if(!interrogate_type_is_unpublished(d_type_Index))
-             {
-                const InterrogateType &d_itype = idb->get_type(d_type_Index);    
-                if(isCppTypeLegal(d_itype._cpptype))
-                {
-                    if(!isExportThisRun(d_itype._cpptype))
-                    {
-                        _external_imports.insert(make_safe_name(d_itype.get_scoped_name().c_str()));
 
-                        //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(d_itype.get_scoped_name().c_str()) <<";\n";
-                    }
-                }
-             }
+          const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+          if(isCppTypeLegal(d_itype._cpptype))
+            {
+              bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
+            }
         }
+    }
 
-        std::vector< std::string >  bases;
-        for (di = 0; di < num_derivations; di++) 
-        {
-             TypeIndex d_type_Index = obj->_itype.get_derivation(di);
-             if(!interrogate_type_is_unpublished(d_type_Index))
-             {
-
-                const InterrogateType &d_itype = idb->get_type(d_type_Index);    
-                if(isCppTypeLegal(d_itype._cpptype))
-                {
-                    bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
-                }
-             }
-        }
-
-        if(bases.empty())
-            bases.push_back("DTOOL_SUPPER_BASE");
+  if(bases.empty())
+    bases.push_back("DTOOL_SUPPER_BASE");
 
 
-        {
-            std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
-            for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
-            {
-                if(rfi->second.second == 1)
-                {
-                    Function *func = rfi->first;
-                    out << "//////////////////\n";
-                    out << "//  Required TO Convert the calling Conventions.. \n";
-                    out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-                    out << "//////////////////\n";
-                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
-                    out << "{\n";
-                    out << "    return "<< func->_name <<"(self,args);\n";
-                    out << "}\n\n";
-                }
-                else if(rfi->second.second == 2)
-                {
-                    Function *func = rfi->first;
-                    out << "//////////////////\n";
-                    out << "//  Required TO Convert the calling Conventions.. \n";
-                    out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-                    out << "//////////////////\n";
-                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self)\n";
-                    out << "{\n";
-                    out << "    return "<< func->_name <<"(self,Py_None,Py_None);\n";
-                    out << "}\n\n";
-                }
+  {
+    std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
+    for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
+      {
+        if(rfi->second.second == 1)
+          {
+            Function *func = rfi->first;
+            out << "//////////////////\n";
+            out << "//  Required TO Convert the calling Conventions.. \n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//////////////////\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
+            out << "{\n";
+            out << "    return "<< func->_name <<"(self,args);\n";
+            out << "}\n\n";
+          }
+        else if(rfi->second.second == 2)
+          {
+            Function *func = rfi->first;
+            out << "//////////////////\n";
+            out << "//  Required TO Convert the calling Conventions.. \n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//////////////////\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self)\n";
+            out << "{\n";
+            out << "    return "<< func->_name <<"(self,Py_None,Py_None);\n";
+            out << "}\n\n";
+          }
 
-                if(rfi->second.second == 3)
-                {
-                    Function *func = rfi->first;
-                    out << "//////////////////\n";
-                    out << "//  Required TO Convert the calling Conventions.. \n";
-                    out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-                    out << "//////////////////\n";
-                    out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args)\n";
-                    out << "{\n";
-                    out << "    return "<< func->_name <<"(self,args,Py_None);\n";
-                    out << "}\n\n";
-                }
+        if(rfi->second.second == 3)
+          {
+            Function *func = rfi->first;
+            out << "//////////////////\n";
+            out << "//  Required TO Convert the calling Conventions.. \n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//////////////////\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args)\n";
+            out << "{\n";
+            out << "    return "<< func->_name <<"(self,args,Py_None);\n";
+            out << "}\n\n";
+          }
 
-            }
+      }
 
-            if(HasAGetKeyFunction(obj->_itype)) 
-            {
-                out << "//////////////////\n";
-                out << "//  A LocalHash(getKey) Function for this type";
-                out << "//     " <<ClassName << "\n";
-                out << "//////////////////\n";
-                out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
-                out << "{\n";
-                out << "    "<<cClassName  << " * local_this = NULL;\n";
-                out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-                out << "    if(local_this == NULL)\n";
-                out << "    {\n";
-                out << "       return -1;\n";
-                out << "    };\n";
-                out << "    return local_this->get_key();\n";
-                out << "}\n\n";
-                has_local_hash = true;
-            }
-            else
-            {
-                if(bases.size() == 0)
-                {
-                    out << "//////////////////\n";
-                    out << "//  A LocalHash(This Pointer) Function for this type";
-                    out << "//     " <<ClassName << "\n";
-                    out << "//////////////////\n";
-                    out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
-                    out << "{\n";
-                    out << "    "<<cClassName  << " * local_this = NULL;\n";
-                    out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-                    out << "    if(local_this == NULL)\n";
-                    out << "    {\n";
-                    out << "       return -1;\n";
-                    out << "    };\n";
-                    out << "    return (long)local_this;\n";
-                    out << "}\n\n";
-                    has_local_hash = true;
-                }
-            }
-
-            if(NeedsAReprFunction(obj->_itype))
-            {
-                out << "//////////////////\n";
-                out << "//  A __repr__ Function\n";
-                out << "//     " <<ClassName << "\n";
-                out << "//////////////////\n";
-                out << "static PyObject *  Dtool_Repr_"<<ClassName << "(PyObject * self)\n";
-                out << "{\n";
-                out << "    "<<cClassName  << " * local_this = NULL;\n";
-                out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-                out << "    if(local_this != NULL)\n";
-                out << "    {\n";
-                out << "       ostringstream os;\n";
-                out << "       local_this->output(os);\n";
-//                out << "       return PyString_FromString(os.str().c_str());\n";
-                out << "       std::string ss = os.str();\n";
-                out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
-                out << "    };\n";
-                out << "    return Py_BuildValue(\"\");\n";
-                out << "}\n";   
-                has_local_repr = true;
-            }
-
-            int need_str = NeedsAStrFunction(obj->_itype);
-            if(need_str > 0)
-            {
-                out << "//////////////////\n";
-                out << "//  A __str__ Function\n";
-                out << "//     " <<ClassName << "\n";
-                out << "//////////////////\n";
-                out << "static PyObject *  Dtool_Str_"<<ClassName << "(PyObject * self)\n";
-                out << "{\n";
-                out << "    "<<cClassName  << " * local_this = NULL;\n";
-                out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-                out << "    if(local_this != NULL)\n";
-                out << "    {\n";
-                out << "       ostringstream os;\n";
-                if(need_str == 2)
-                    out << "       local_this->write(os,0);\n";
-                else
-                    out << "       local_this->write(os);\n";
-//                out << "       return PyString_FromString(os.str().c_str());\n";
-                out << "       std::string ss = os.str();\n";
-                out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
-                out << "    };\n";
-                out << "    return Py_BuildValue(\"\");\n";
-                out << "}\n";   
-                has_local_str = true;
-            }
-
-
-        }
-
-
-
-
-        out << "void   Dtool_PyModuleClassInit_" << ClassName << "(PyObject *module)\n";
+    if(HasAGetKeyFunction(obj->_itype)) 
+      {
+        out << "//////////////////\n";
+        out << "//  A LocalHash(getKey) Function for this type";
+        out << "//     " <<ClassName << "\n";
+        out << "//////////////////\n";
+        out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
         out << "{\n";
-        out << "    static bool initdone = false;\n";
-        out << "    if(!initdone)\n";
+        out << "    "<<cClassName  << " * local_this = NULL;\n";
+        out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+        out << "    if(local_this == NULL)\n";
         out << "    {\n";
-        out << "        initdone = true;\n";
-//        out << "        memset(Dtool_"<< ClassName << ".As_PyTypeObject().tp_as_number,0,sizeof(PyNumberMethods));\n";
-//        out << "        memset(Dtool_"<< ClassName << ".As_PyTypeObject().tp_as_mapping,0,sizeof(PyMappingMethods));\n";
-//        out << "        static Dtool_PyTypedObject  *InheritsFrom[] = {";
+        out << "       return -1;\n";
+        out << "    };\n";
+        out << "    return local_this->get_key();\n";
+        out << "}\n\n";
+        has_local_hash = true;
+      }
+    else
+      {
+        if(bases.size() == 0)
+          {
+            out << "//////////////////\n";
+            out << "//  A LocalHash(This Pointer) Function for this type";
+            out << "//     " <<ClassName << "\n";
+            out << "//////////////////\n";
+            out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
+            out << "{\n";
+            out << "    "<<cClassName  << " * local_this = NULL;\n";
+            out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+            out << "    if(local_this == NULL)\n";
+            out << "    {\n";
+            out << "       return -1;\n";
+            out << "    };\n";
+            out << "    return (long)local_this;\n";
+            out << "}\n\n";
+            has_local_hash = true;
+          }
+      }
+
+    if(NeedsAReprFunction(obj->_itype))
+      {
+        out << "//////////////////\n";
+        out << "//  A __repr__ Function\n";
+        out << "//     " <<ClassName << "\n";
+        out << "//////////////////\n";
+        out << "static PyObject *  Dtool_Repr_"<<ClassName << "(PyObject * self)\n";
+        out << "{\n";
+        out << "    "<<cClassName  << " * local_this = NULL;\n";
+        out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+        out << "    if(local_this != NULL)\n";
+        out << "    {\n";
+        out << "       ostringstream os;\n";
+        out << "       local_this->output(os);\n";
+        //                out << "       return PyString_FromString(os.str().c_str());\n";
+        out << "       std::string ss = os.str();\n";
+        out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
+        out << "    };\n";
+        out << "    return Py_BuildValue(\"\");\n";
+        out << "}\n";   
+        has_local_repr = true;
+      }
+
+    int need_str = NeedsAStrFunction(obj->_itype);
+    if(need_str > 0)
+      {
+        out << "//////////////////\n";
+        out << "//  A __str__ Function\n";
+        out << "//     " <<ClassName << "\n";
+        out << "//////////////////\n";
+        out << "static PyObject *  Dtool_Str_"<<ClassName << "(PyObject * self)\n";
+        out << "{\n";
+        out << "    "<<cClassName  << " * local_this = NULL;\n";
+        out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+        out << "    if(local_this != NULL)\n";
+        out << "    {\n";
+        out << "       ostringstream os;\n";
+        if(need_str == 2)
+          out << "       local_this->write(os,0);\n";
+        else
+          out << "       local_this->write(os);\n";
+        //                out << "       return PyString_FromString(os.str().c_str());\n";
+        out << "       std::string ss = os.str();\n";
+        out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
+        out << "    };\n";
+        out << "    return Py_BuildValue(\"\");\n";
+        out << "}\n";   
+        has_local_str = true;
+      }
+
+
+  }
 
 
 
-        // add bases///
-        if(bases.size() > 0)
+
+  out << "void   Dtool_PyModuleClassInit_" << ClassName << "(PyObject *module)\n";
+  out << "{\n";
+  out << "    static bool initdone = false;\n";
+  out << "    if(!initdone)\n";
+  out << "    {\n";
+  out << "        initdone = true;\n";
+  //        out << "        memset(Dtool_"<< ClassName << ".As_PyTypeObject().tp_as_number,0,sizeof(PyNumberMethods));\n";
+  //        out << "        memset(Dtool_"<< ClassName << ".As_PyTypeObject().tp_as_mapping,0,sizeof(PyMappingMethods));\n";
+  //        out << "        static Dtool_PyTypedObject  *InheritsFrom[] = {";
+
+  // add doc string 
+  if (obj->_itype.has_comment()) {
+    out << "#ifndef NDEBUG\n";
+    out << "        // Class documentation string\n";
+    out << "        Dtool_" << ClassName 
+        << ".As_PyTypeObject().tp_doc = \""
+        << make_safe_comment(obj->_itype.get_comment()) << "\";\n";
+    out << "#endif\n";
+  }
+
+  // add bases///
+  if(bases.size() > 0)
+    {
+      out << "        // Dependent Objects   \n";
+      std::string format1= "";
+      std::string format2= "";
+      for(std::vector< std::string >::iterator bi = bases.begin(); bi != bases.end(); bi++)
         {
-            out << "        // Dependent Objects   \n";
-            std::string format1= "";
-            std::string format2= "";
-            for(std::vector< std::string >::iterator bi = bases.begin(); bi != bases.end(); bi++)
-            {
-                format1 += "O";
-                format2 += ",&Dtool_" + *bi + ".As_PyTypeObject()";
-                out << "        Dtool_"<< make_safe_name(*bi) << "._Dtool_ClassInit(NULL);\n";
-            }
-
-            out << "        Dtool_"<<ClassName<<".As_PyTypeObject().tp_bases = Py_BuildValue(\"(" << format1 << ")\""<< format2 << ");\n";           
+          format1 += "O";
+          format2 += ",&Dtool_" + *bi + ".As_PyTypeObject()";
+          out << "        Dtool_"<< make_safe_name(*bi) << "._Dtool_ClassInit(NULL);\n";
         }
 
-        // get dictionary
-        out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
-        out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\"DtoolClassDict\",Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict);\n";
+      out << "        Dtool_"<<ClassName<<".As_PyTypeObject().tp_bases = Py_BuildValue(\"(" << format1 << ")\""<< format2 << ");\n";           
+    }
+
+  // get dictionary
+  out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
+  out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\"DtoolClassDict\",Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict);\n";
         
 
 
-        // the standard call functions
-        std::map<Function *, std::string >::iterator ofi;
-        for(ofi = normal_Operator_functions.begin(); ofi != normal_Operator_functions.end(); ofi++)
-        {
-            Function *func = ofi->first;
-            out << "        // " << ofi->second <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << ofi->second <<" = &" << func->_name <<";\n";
-        }
+  // the standard call functions
+  std::map<Function *, std::string >::iterator ofi;
+  for(ofi = normal_Operator_functions.begin(); ofi != normal_Operator_functions.end(); ofi++)
+    {
+      Function *func = ofi->first;
+      out << "        // " << ofi->second <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << ofi->second <<" = &" << func->_name <<";\n";
+    }
 
 
-        // wraped functions...
-        {
-        std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
-        for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
-        {
-            Function *func = rfi->first;
-            out << "        // " << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second.first <<" = &" << func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name)<<";\n";
-        }
-        }
+  // wraped functions...
+  {
+    std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
+    for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
+      {
+        Function *func = rfi->first;
+        out << "        // " << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second.first <<" = &" << func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name)<<";\n";
+      }
+  }
 
-        // compare and hash work together in PY inherit behavior hmm grrr
-        // __hash__
-        if(has_local_hash == true)
-        {
-            out << "        // __hash__\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_hash = &DTool_HashKey_"<<ClassName <<";\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;\n";
+  // compare and hash work together in PY inherit behavior hmm grrr
+  // __hash__
+  if(has_local_hash == true)
+    {
+      out << "        // __hash__\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_hash = &DTool_HashKey_"<<ClassName <<";\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;\n";
             
 
-        }
+    }
 
-        if(has_local_repr == true)
+  if(has_local_repr == true)
+    {
+      out << "        // __repr__\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_repr = & Dtool_Repr_"<<ClassName <<";\n";
+    }
+
+  if(has_local_str == true)
+    {
+      out << "        // __str__\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_str = & Dtool_Str_"<<ClassName <<";\n";
+
+    }
+  else if(has_local_repr == true)
+    {
+      out << "        // __str__ Repr Proxy\n";
+      out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_str = & Dtool_Repr_"<<ClassName <<";\n";
+    }
+
+
+
+  int num_nested = obj->_itype.number_of_nested_types();
+  for (int ni = 0; ni < num_nested; ni++)
+    {
+      TypeIndex nested_index = obj->_itype.get_nested_type(ni);
+      Object * nested_obj =  _objects[nested_index];
+      if(nested_obj->_itype.is_class() ||nested_obj->_itype.is_struct())
         {
-            out << "        // __repr__\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_repr = & Dtool_Repr_"<<ClassName <<";\n";
-        }
-
-        if(has_local_str == true)
+          std::string ClassName1 = make_safe_name(nested_obj->_itype.get_scoped_name());
+          std::string ClassName2 = make_safe_name(nested_obj->_itype.get_name());
+          out << "        // Nested Object   "<< ClassName1 << ";\n";
+          out << "        Dtool_" << ClassName1 << "._Dtool_ClassInit(NULL);\n";
+          out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(ClassName2) <<"\",(PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+        }  
+      else
         {
-            out << "        // __str__\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_str = & Dtool_Str_"<<ClassName <<";\n";
+          if(nested_obj->_itype.is_enum())
+            {
+              out << "        // Enum  "<< nested_obj->_itype.get_scoped_name() << ";\n";
+              int enum_count = nested_obj->_itype.number_of_enum_values();
+              for(int xx = 0; xx< enum_count; xx++)
+                out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(nested_obj->_itype.get_enum_value_name(xx)) <<"\",PyInt_FromLong("<<  nested_obj->_itype.get_enum_value(xx) << "));\n";
 
+            }
         }
-        else if(has_local_repr == true)
-        {
-            out << "        // __str__ Repr Proxy\n";
-            out << "        Dtool_" << ClassName <<".As_PyTypeObject().tp_str = & Dtool_Repr_"<<ClassName <<";\n";
-        }
+    }
+
+  out << "        if(PyType_Ready(&Dtool_"<< ClassName << ".As_PyTypeObject()) < 0)\n";
+  out << "        {\n";
+  out << "             PyErr_SetString(PyExc_TypeError, \"PyType_Ready("<< ClassName << ")\");\n"; 
+  out << "             printf(\" Error In PyType_Ready" << ClassName << "\");\n";
+  out << "             return;\n";
+  out << "        }\n";
+
+  out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_calss_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
+
+  // static function into dictionary with bogus self..
+  //
+  std::map<int , Function * >::iterator sfi;
+  for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
+    {
+      out << "        //  Static Method " << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) << "\n";
+      out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
+      out << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) ;
+      out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
+    }
 
 
 
-        int num_nested = obj->_itype.number_of_nested_types();
-        for (int ni = 0; ni < num_nested; ni++)
-        {
-          TypeIndex nested_index = obj->_itype.get_nested_type(ni);
-          Object * nested_obj =  _objects[nested_index];
-          if(nested_obj->_itype.is_class() ||nested_obj->_itype.is_struct())
-          {
-              std::string ClassName1 = make_safe_name(nested_obj->_itype.get_scoped_name());
-              std::string ClassName2 = make_safe_name(nested_obj->_itype.get_name());
-              out << "        // Nested Object   "<< ClassName1 << ";\n";
-              out << "        Dtool_" << ClassName1 << "._Dtool_ClassInit(NULL);\n";
-              out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(ClassName2) <<"\",(PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
-          }  
-          else
-          {
-              if(nested_obj->_itype.is_enum())
-              {
-                  out << "        // Enum  "<< nested_obj->_itype.get_scoped_name() << ";\n";
-                  int enum_count = nested_obj->_itype.number_of_enum_values();
-                  for(int xx = 0; xx< enum_count; xx++)
-                      out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(nested_obj->_itype.get_enum_value_name(xx)) <<"\",PyInt_FromLong("<<  nested_obj->_itype.get_enum_value(xx) << "));\n";
+  if(is_runtime_typed)
+    out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<","<< cClassName <<"::get_class_type().get_index());\n";
+  else
+    out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<",-1);\n";
 
-              }
-          }
-        }
+  out << "    }\n";
 
-        out << "        if(PyType_Ready(&Dtool_"<< ClassName << ".As_PyTypeObject()) < 0)\n";
-        out << "        {\n";
-        out << "             PyErr_SetString(PyExc_TypeError, \"PyType_Ready("<< ClassName << ")\");\n"; 
-        out << "             printf(\" Error In PyType_Ready" << ClassName << "\");\n";
-        out << "             return;\n";
-        out << "        }\n";
-
-        out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
-        out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_calss_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
-
-        // static function into dictionary with bogus self..
-        //
-        std::map<int , Function * >::iterator sfi;
-        for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
-        {
-            out << "        //  Static Method " << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) << "\n";
-            out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
-            out << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) ;
-            out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
-        }
-
-
-
-        if(is_runtime_typed)
-            out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<","<< cClassName <<"::get_class_type().get_index());\n";
-        else
-            out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<",-1);\n";
-
-        out << "    }\n";
-
-        out << "    if(module != NULL)\n";
-        out << "    {\n";
-        out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
-        out << "        PyModule_AddObject(module, \""<<export_calss_name<<"\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
-        out << "    }\n";
-        out << "}\n";
+  out << "    if(module != NULL)\n";
+  out << "    {\n";
+  out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  out << "        PyModule_AddObject(module, \""<<export_calss_name<<"\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  out << "    }\n";
+  out << "}\n";
 
 }
 ////////////////////////////////////////////////////////////////////
