@@ -229,7 +229,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             if len(doIdsPending) == 0:
                 # That was the last doId on the list.  Call the
                 # allCallback!
-                assert(self.notify.debug("All objects generated on list: %s" % (doIdList)))
+                assert(self.notify.debug("All objects generated on list: %s" % (doIdList,)))
                 if doLaterName:
                     taskMgr.remove(doLaterName)
             
