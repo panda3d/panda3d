@@ -42,7 +42,12 @@ extern std::string EXPORT_IMPORT_PREFEX;
 #define         CLASS_PREFEX  "Dtool_"
 #define         INSTANCE_PREFEX "Dtool_"
 #define         BASE_INSTANCE_NAME "Dtool_PyInstDef"
+
+#ifdef WIN32
+#define MAX_COMMENT_SIZE  1024
+#else
 #define MAX_COMMENT_SIZE  6144
+#endif
 
 
 /////////////////////////////////////////////////////////
