@@ -111,6 +111,8 @@ public:
     int NeedsAStrFunction(const InterrogateType &itype_class);
     bool NeedsAReprFunction(const InterrogateType &itype_class);
 
+    void output_quoted(ostream &out, int indent_level, const std::string &str);
+
     // stash the forwad declarations for this compile pass..
     std::set< std::string >     _external_imports;    
 

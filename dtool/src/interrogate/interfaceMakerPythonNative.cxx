@@ -328,40 +328,6 @@ std::string  methodNameFromCppName(std::string cppName, const std::string &class
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-std::string 
-make_safe_comment(const std::string & name_in) {
-  std::string name(name_in.substr(0,MAX_COMMENT_SIZE));
-
-  static const char safe_chars2[] = ",.[](){}:;'`~!@#$%^&*+\\=/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ";
-  std::string result = name;
-
-  size_t pos = result.find_first_of("\\");
-  while (pos != std::string::npos)
-    {
-      result.replace(pos,1,"_");
-      pos = result.find_first_of("\\");
-    }
-
-
-
-
-  pos = result.find_first_of("\n");
-  while (pos != std::string::npos)
-    {
-      result.replace(pos,1,"\\n");
-      pos = result.find_first_of("\n");
-    }
-
-
-  pos = result.find_first_not_of(safe_chars2);
-  while (pos != std::string::npos)
-    {
-      result[pos] = ' ';
-      pos = result.find_first_not_of(safe_chars2);
-    }
-
-  return result;
-}
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -1429,9 +1395,10 @@ write_module_class(ostream &out,  Object *obj) {
     out << "#ifndef NDEBUG\n";
     out << "        // Class documentation string\n";
     out << "        Dtool_" << ClassName 
-        << ".As_PyTypeObject().tp_doc = \""
-        << make_safe_comment(obj->_itype.get_comment()) << "\";\n";
-    out << "#endif\n";
+        << ".As_PyTypeObject().tp_doc =\n";
+    output_quoted(out, 10, obj->_itype.get_comment());
+    out << ";\n"
+	<< "#endif\n";
   }
 
   // add bases///
@@ -1786,7 +1753,10 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     indent(out,4)<< "}\n";
       
     out << "    if(!PyErr_Occurred()) // let error pass on \n";
-    out << "        PyErr_SetString(PyExc_TypeError, \"Arguments must match one of:\\n" << make_safe_comment(expected_params) << " \"); \n";
+    out << "        PyErr_SetString(PyExc_TypeError, \n";
+    out << "          \"Arguments must match one of:\\n\"\n";
+    output_quoted(out, 10, expected_params);
+    out << ");\n";
     if (constructor)
       indent(out,4) << "return -1;\n";
     else
@@ -1807,7 +1777,10 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     }
 
     out << "    if(!PyErr_Occurred())\n";
-    out << "        PyErr_SetString(PyExc_TypeError, \"Must Match :\\n" << make_safe_comment(expected_params) << " \"); \n";
+    out << "        PyErr_SetString(PyExc_TypeError,\n";
+    out << "          \"Must Match :\\n\"\n";
+    output_quoted(out, 10, expected_params);
+    out << ");\n";
     if (constructor)
       indent(out,4) << "return -1;\n";
     else
@@ -1826,9 +1799,11 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
 
 
   out << "#ifndef NDEBUG\n";
-  out << "static char * " << func->_name << "_comment = \"" << make_safe_comment(FunctionComment) << " \";\n";
+  out << "static char * " << func->_name << "_comment =\n";
+  output_quoted(out, 4, FunctionComment);
+  out << ";\n";
   out << "#else\n";
-  out << "static char * " << func->_name << "_comment = \"" << "\";\n";
+  out << "static char * " << func->_name << "_comment = \"\";\n";
   out << "#endif\n";
 
   out << "\n";
@@ -3063,4 +3038,32 @@ bool InterfaceMakerPythonNative::NeedsAReprFunction(const InterrogateType &itype
 };
 
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::output_quoted
+//       Access: Private
+//  Description: Outputs the indicated string as a single quoted,
+//               multi-line string to the generated C++ source code.
+//               The output point is left on the last line of the
+//               string, following the trailing quotation mark.
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+output_quoted(ostream &out, int indent_level, const std::string &str) {
+  indent(out, indent_level)
+    << '"';
+  std::string::const_iterator si;
+  for (si = str.begin(); si != str.end(); ++si) {
+    if ((*si) == '"') {
+      out << "\\\"";
+    } else if ((*si) == '\n') {
+      out << "\\n\"\n";
+      indent(out, indent_level)
+	<< '"';
+    } else if (!isprint(*si)) {
+      out << "\\" << oct << setw(3) << setfill('0') << (unsigned int)(*si)
+	  << dec;
+    } else {
+      out << *si;
+    }
+  }
+  out << '"';
+}
