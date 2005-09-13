@@ -5365,11 +5365,11 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
   FindApproxLevelEntry *deleted_entries = NULL;
 
   while (num_levels_remaining > 0 && level != NULL) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
         << "find_matches pass: " << result << ", "
         << max_matches << ", " << num_levels_remaining << "\n";
-      level->write_level(pgraph_cat.debug(false), 4);
+      level->write_level(pgraph_cat.spam(false), 4);
     }
 
     num_levels_remaining--;

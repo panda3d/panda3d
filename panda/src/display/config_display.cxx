@@ -24,6 +24,7 @@
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
 #include "graphicsWindow.h"
+#include "graphicsDevice.h"
 #include "parasiteBuffer.h"
 
 ConfigureDef(config_display);
@@ -270,5 +271,6 @@ init_libdisplay() {
   GraphicsOutput::init_type();
   GraphicsWindow::init_type();
   GraphicsBuffer::init_type();
+  GraphicsDevice::init_type();
   ParasiteBuffer::init_type();
 }

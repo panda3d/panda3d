@@ -339,6 +339,13 @@ PandaNode::
 PandaNode(const string &name) :
   Namable(name)
 {
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Constructing " << (void *)this << ", " << get_name() << "\n";
+  }
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -348,6 +355,11 @@ PandaNode(const string &name) :
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 ~PandaNode() {
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Destructing " << (void *)this << ", " << get_name() << "\n";
+  }
+
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
 #ifndef NDEBUG
@@ -387,6 +399,13 @@ PandaNode(const PandaNode &copy) :
   TypedWritable(copy),
   Namable(copy)
 {
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Copying " << (void *)this << ", " << get_name() << "\n";
+  }
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
   // Copying a node does not copy its children.
 
   // Copy the other node's state.
