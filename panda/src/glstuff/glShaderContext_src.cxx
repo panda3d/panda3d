@@ -267,7 +267,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #ifdef HAVE_CGGL
   if (_cg_context) {
 #ifdef SUPPORT_IMMEDIATE_MODE
-    if (_use_sender) {
+    if (gsg->_use_sender) {
       cerr << "immediate mode shaders not implemented yet\n";
     } else
 #endif // SUPPORT_IMMEDIATE_MODE
