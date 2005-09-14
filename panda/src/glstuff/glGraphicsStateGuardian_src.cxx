@@ -771,8 +771,10 @@ reset() {
 
   _texgen_forced_normal = false;
 
-  _shader_mode = (ShaderMode *)NULL;
-  _shader_context = (CLP(ShaderContext) *)NULL;
+  _current_shader_mode = (ShaderMode *)NULL;
+  _current_shader_context = (CLP(ShaderContext) *)NULL;
+  _vertex_array_shader_mode = (ShaderMode *)NULL;
+  _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
   
   // Count the max number of lights
   GLint max_lights;
@@ -1297,8 +1299,53 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 #endif
   }
 
+  // Enable the appropriate vertex arrays, and disable any
+  // extra vertex arrays used by the previous rendering mode.
 #ifdef SUPPORT_IMMEDIATE_MODE
   _use_sender = !vertex_arrays;
+#endif
+  if (_vertex_array_shader_context==0) {
+    if (_current_shader_context==0) {
+      update_standard_vertex_arrays();
+    } else {
+      disable_standard_vertex_arrays();
+      _current_shader_context->update_shader_vertex_arrays(NULL,this);
+    }
+  } else {
+    if (_current_shader_context==0) {
+      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+      update_standard_vertex_arrays();
+    } else {
+      _current_shader_context->
+        update_shader_vertex_arrays(_vertex_array_shader_context,this);
+    }
+  }
+  _vertex_array_shader_mode = _current_shader_mode;
+  _vertex_array_shader_context = _current_shader_context;
+  
+  report_my_gl_errors();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_standard_vertex_arrays
+//       Access: Protected
+//  Description: Disables any unneeded vertex arrays that
+//               were previously enabled, and enables any vertex
+//               arrays that are needed that were not previously
+//               enabled (or, sets up an immediate-mode sender).
+//               Called only from begin_draw_primitives.
+//               Used only when the standard (non-shader) pipeline
+//               is about to be used - glShaderContexts are responsible
+//               for setting up their own vertex arrays.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+update_standard_vertex_arrays()
+{
+  const GeomVertexAnimationSpec &animation = 
+    _vertex_data->get_format()->get_animation();
+  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
+#ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     // We must use immediate mode to render primitives.
     _sender.clear();
@@ -1500,9 +1547,46 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       GLP(EnableClientState)(GL_VERTEX_ARRAY);
     }
   }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_standard_vertex_arrays
+//       Access: Protected
+//  Description: Used to disable all the standard vertex arrays that
+//               are currently enabled.  glShaderContexts are
+//               responsible for setting up their own vertex arrays,
+//               but before they can do so, the standard vertex
+//               arrays need to be disabled to get them "out of the
+//               way."  Called only from begin_draw_primitives.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+disable_standard_vertex_arrays()
+{
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) return;
+#endif
+
+  GLP(DisableClientState)(GL_NORMAL_ARRAY);
+  GLP(DisableClientState)(GL_COLOR_ARRAY);
+  GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
   report_my_gl_errors();
-  return true;
+
+  for (int stage_index=0; stage_index < _last_max_stage_index; stage_index++) {
+    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+    GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+  }
+  _last_max_stage_index = 0;
+  report_my_gl_errors();
+  
+  if (_supports_vertex_blend) {
+    GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+    if (_supports_matrix_palette) {
+      GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+    }
+  }
+  
+  GLP(DisableClientState)(GL_VERTEX_ARRAY);
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1554,6 +1638,9 @@ draw_triangles(const GeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const GeomTristrips *primitive) {
+
+  report_my_gl_errors();
+
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_tristrips: " << *primitive << "\n";
@@ -2558,6 +2645,9 @@ issue_transform(const TransformState *transform) {
     do_auto_rescale_normal();
   }
 
+  if (_current_shader_context)
+    _current_shader_context->issue_transform(_current_shader_mode, this);
+  
   report_my_gl_errors();
 }
 
@@ -2590,10 +2680,10 @@ void CLP(GraphicsStateGuardian)::
 issue_shader(const ShaderAttrib *attrib) {
   ShaderMode *mode = attrib->get_shader_mode();
   if (mode == 0) {
-    if (_shader_context != 0) {
-      _shader_context->unbind();
-      _shader_context = 0;
-      _shader_mode = 0;
+    if (_current_shader_context != 0) {
+      _current_shader_context->unbind();
+      _current_shader_mode = 0;
+      _current_shader_context = 0;
     }
     return;
   }
@@ -2601,23 +2691,35 @@ issue_shader(const ShaderAttrib *attrib) {
   Shader *shader = mode->get_shader();
   CLP(ShaderContext) *context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
 
-  if (context != _shader_context) {
+  if (context == 0) {
+    if (_current_shader_context != 0) {
+      _current_shader_context->unbind();
+      _current_shader_mode = 0;
+      _current_shader_context = 0;
+    }
+    return;
+  }
+  
+  if (context != _current_shader_context) {
     // Use a completely different shader than before.
     // Unbind old shader, bind the new one.
-    if (_shader_context != 0) {
-      _shader_context->unbind();
-      _shader_context = 0;
+    if (_current_shader_context != 0) {
+      _current_shader_context->unbind();
+      _current_shader_context = 0;
     }
     if (context != 0) {
       context->bind(mode, this);
-      _shader_context = context;
+      _current_shader_mode = mode;
+      _current_shader_context = context;
     }
-    _shader_mode = mode;
   } else {
     // Use the same shader as before, but with new input arguments.
-    context->rebind(_shader_mode, mode);
-    _shader_mode = mode;
+    _current_shader_mode = mode;
+    _current_shader_context = context;
+    context->issue_parameters(mode, this);
   }
+
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////

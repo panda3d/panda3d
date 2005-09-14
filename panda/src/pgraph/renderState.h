@@ -41,6 +41,7 @@ class ColorScaleAttrib;
 class TextureAttrib;
 class TexGenAttrib;
 class ClipPlaneAttrib;
+class ShaderAttrib;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +136,8 @@ PUBLISHED:
   INLINE const TexMatrixAttrib *get_tex_matrix() const;
   INLINE const RenderModeAttrib *get_render_mode() const;
   INLINE const ClipPlaneAttrib *get_clip_plane() const;
-
+  INLINE const ShaderAttrib *get_shader() const;
+  
   int get_geom_rendering(int geom_rendering) const;
 
 public:
@@ -180,6 +182,7 @@ private:
   void determine_tex_matrix();
   void determine_render_mode();
   void determine_clip_plane();
+  void determine_shader();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -278,7 +281,8 @@ private:
   const TexMatrixAttrib *_tex_matrix;
   const RenderModeAttrib *_render_mode;
   const ClipPlaneAttrib *_clip_plane;
-
+  const ShaderAttrib *_shader;
+  
   enum Flags {
     F_checked_bin_index    = 0x0001,
     F_checked_fog          = 0x0002,
@@ -291,6 +295,7 @@ private:
     F_checked_tex_matrix   = 0x0100,
     F_checked_render_mode  = 0x0200,
     F_checked_clip_plane   = 0x0400,
+    F_checked_shader       = 0x0800,
     F_is_destructing       = 0x8000,
   };
   unsigned short _flags;

@@ -41,13 +41,34 @@ public:
   INLINE ShaderContext(Shader *shader);
   
   Shader *_shader;
-
-  enum {
-    VERT_SHADER=0,
-    FRAG_SHADER=1,
-    BOTH_SHADER=2,
-  };
   
+public:
+  // The following declarations represent useful routines
+  // and constants that can be used by shader implementations.
+  
+  enum {
+    SHADER_type_vert=0,
+    SHADER_type_frag=1,
+    SHADER_type_both=2,
+  };
+  enum {
+    SHADER_arg_world = -1,
+    SHADER_arg_camera = -2,
+    SHADER_arg_model = -3,
+  };
+  enum {
+    SHADER_data_matrix,
+    SHADER_data_transpose,
+    SHADER_data_row0,
+    SHADER_data_row1,
+    SHADER_data_row2,
+    SHADER_data_row3,
+    SHADER_data_col0,
+    SHADER_data_col1,
+    SHADER_data_col2,
+    SHADER_data_col3,
+  };
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

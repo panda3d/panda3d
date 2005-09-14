@@ -27,6 +27,7 @@
 #include "colorScaleAttrib.h"
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
+#include "shaderAttrib.h"
 #include "pStatTimer.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -1661,6 +1662,21 @@ determine_clip_plane() {
     _clip_plane = DCAST(ClipPlaneAttrib, attrib);
   }
   _flags |= F_checked_clip_plane;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_shader
+//       Access: Private
+//  Description: This is the private implementation of get_shader().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_shader() {
+  const RenderAttrib *attrib = get_attrib(ShaderAttrib::get_class_type());
+  _shader = (const ShaderAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _shader = DCAST(ShaderAttrib, attrib);
+  }
+  _flags |= F_checked_shader;
 }
 
 ////////////////////////////////////////////////////////////////////

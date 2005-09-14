@@ -209,7 +209,8 @@ public:
   INLINE void modify_state(const RenderState *state);
   INLINE void set_state(const RenderState *state);
   INLINE void set_transform(const TransformState *transform);
-
+  INLINE CPT(TransformState) get_transform();
+  
   RenderBuffer get_render_buffer(int buffer_type);
 
   INLINE const DisplayRegion *get_current_display_region() const;

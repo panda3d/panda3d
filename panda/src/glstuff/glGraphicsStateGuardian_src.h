@@ -73,6 +73,7 @@ class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
   CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
   virtual ~CLP(GraphicsStateGuardian)();
+  friend class CLP(ShaderContext);
 
   virtual void reset();
 
@@ -248,6 +249,9 @@ protected:
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
   static GLenum get_usage(Geom::UsageHint usage_hint);
 
+  void disable_standard_vertex_arrays();
+  void update_standard_vertex_arrays();
+
   static CPT(RenderState) get_untextured_state();
   static CPT(RenderState) get_smooth_state();
   static CPT(RenderState) get_flat_state();
@@ -296,8 +300,6 @@ protected:
   bool _polygon_offset_enabled;
   bool _flat_shade_model;
   int _decal_level;
-  PT(ShaderMode) _shader_mode;
-  CLP(ShaderContext) *_shader_context;
   
   bool _dithering_enabled;
   bool _texgen_forced_normal;
@@ -310,7 +312,12 @@ protected:
   float _point_size;
   bool _point_perspective;
   bool _vertex_blending_enabled;
-
+  
+  PT(ShaderMode) _current_shader_mode;
+  CLP(ShaderContext) *_current_shader_context;
+  PT(ShaderMode) _vertex_array_shader_mode;
+  CLP(ShaderContext) *_vertex_array_shader_context;
+  
   CPT(DisplayRegion) _actual_display_region;
 
 #ifdef SUPPORT_IMMEDIATE_MODE

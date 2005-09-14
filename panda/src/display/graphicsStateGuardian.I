@@ -708,6 +708,20 @@ set_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_transform
+//       Access: Public
+//  Description: Fetches the external net transform.  This
+//               transform is generally only set when geometry is
+//               about to be rendered.  Therefore, this "get" function
+//               is typically only meaningful during the geometry
+//               rendering process.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) GraphicsStateGuardian::
+get_transform() {
+  return _external_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_current_display_region
 //       Access: Public
 //  Description: Returns the current display region being rendered to,

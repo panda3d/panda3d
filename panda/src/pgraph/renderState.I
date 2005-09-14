@@ -356,6 +356,25 @@ get_clip_plane() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_shader
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ShaderAttrib on this state.  It returns a
+//               pointer to the ShaderAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const ShaderAttrib *RenderState::
+get_shader() const {
+  if ((_flags & F_checked_shader) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal shader cache.
+    ((RenderState *)this)->determine_shader();
+  }
+  return _shader;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the
