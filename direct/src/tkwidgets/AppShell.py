@@ -207,7 +207,6 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         self.about = Pmw.AboutDialog(self._hull, 
                                      applicationname=self.appname)
         self.about.withdraw()
-        return None
        
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():

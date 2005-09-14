@@ -1,4 +1,4 @@
-"""DistributedObjectAI module: contains the DistributedObjectAI class"""
+"""DistributedObjectUD module: contains the DistributedObjectUD class"""
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import PythonUtil
@@ -7,15 +7,15 @@ from pandac.PandaModules import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
-class DistributedObjectAI(DirectObject):
-    notify = directNotify.newCategory("DistributedObjectAI")
+class DistributedObjectUD(DirectObject):
+    notify = directNotify.newCategory("DistributedObjectUD")
     QuietZone = 1
 
     def __init__(self, air):
         try:
-            self.DistributedObjectAI_initialized
+            self.DistributedObjectUD_initialized
         except:
-            self.DistributedObjectAI_initialized = 1
+            self.DistributedObjectUD_initialized = 1
 
             self.accountName=''
             # Record the repository
@@ -35,7 +35,7 @@ class DistributedObjectAI(DirectObject):
             # here.
             self.lastNonQuietZone = None
 
-            self._DOAI_requestedDelete = False
+            self._DOUD_requestedDelete = False
 
             # These are used to implement beginBarrier().
             self.__nextBarrierContext = 0
@@ -90,20 +90,20 @@ class DistributedObjectAI(DirectObject):
         """
         Inheritors should redefine this to take appropriate action on delete
         Note that this may be called multiple times if a class inherits
-        from DistributedObjectAI more than once.
+        from DistributedObjectUD more than once.
         """
         # prevent this code from executing multiple times
         if self.air is not None:
             # self.doId may not exist.  The __dict__ syntax works around that.
             assert(self.notify.debug('delete(): %s' % (self.__dict__.get("doId"))))
 
-            if not self._DOAI_requestedDelete:
+            if not self._DOUD_requestedDelete:
                 # this logs every delete that was not requested by us.
                 # TODO: this currently prints warnings for deletes of objects
                 # that we did not create. We need to add a 'locally created'
                 # flag to every object to filter these out.
                 """
-                DistributedObjectAI.notify.warning(
+                DistributedObjectUD.notify.warning(
                     'delete() called but requestDelete never called for %s: %s'
                     % (self.__dict__.get('doId'), self.__class__.__name__))
                     """
@@ -112,10 +112,10 @@ class DistributedObjectAI(DirectObject):
                 # result of a network msg.
                 # this is slow.
                 from direct.showbase.PythonUtil import StackTrace
-                DistributedObjectAI.notify.warning(
+                DistributedObjectUD.notify.warning(
                     'stack trace: %s' % StackTrace())
                     """
-            self._DOAI_requestedDelete = False
+            self._DOUD_requestedDelete = False
 
             # Clean up all the pending barriers.
             for barrier in self.__barriers.values():
@@ -197,9 +197,9 @@ class DistributedObjectAI(DirectObject):
                 messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
                 # if we are not going into the quiet zone, send a 'logical' zone
                 # change message
-                if zoneId != DistributedObjectAI.QuietZone:
+                if zoneId != DistributedObjectUD.QuietZone:
                     lastLogicalZone = oldZoneId
-                    if oldZoneId == DistributedObjectAI.QuietZone:
+                    if oldZoneId == DistributedObjectUD.QuietZone:
                         lastLogicalZone = self.lastNonQuietZone
                     self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                     self.lastNonQuietZone = zoneId
@@ -229,9 +229,9 @@ class DistributedObjectAI(DirectObject):
             messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
             # if we are not going into the quiet zone, send a 'logical' zone change
             # message
-            if newZoneId != DistributedObjectAI.QuietZone:
+            if newZoneId != DistributedObjectUD.QuietZone:
                 lastLogicalZone = oldZoneId
-                if oldZoneId == DistributedObjectAI.QuietZone:
+                if oldZoneId == DistributedObjectUD.QuietZone:
                     lastLogicalZone = self.lastNonQuietZone
                 self.handleLogicalZoneChange(newZoneId, lastLogicalZone)
                 self.lastNonQuietZone = newZoneId
@@ -448,7 +448,7 @@ class DistributedObjectAI(DirectObject):
         assert self.notify.debugStateCall(self)
         # This is a special method used for estates, etc., which get
         # their fields set from the database indirectly by way of the
-        # AI.  The input parameter is a dictionary of field names to
+        # UD.  The input parameter is a dictionary of field names to
         # datagrams that describes the initial field values from the
         # database.
 
@@ -466,7 +466,7 @@ class DistributedObjectAI(DirectObject):
             self.notify.warning("Tried to delete a %s (doId %s) that is already deleted" % (self.__class__, doId))
             return
         self.air.requestDelete(self)
-        self._DOAI_requestedDelete = True
+        self._DOUD_requestedDelete = True
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))

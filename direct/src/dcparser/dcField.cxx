@@ -301,17 +301,6 @@ is_broadcast() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_p2p
-//       Access: Published
-//  Description: Returns true if the "p2p" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_p2p() const {
-  return has_keyword("p2p");
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCField::is_ram
 //       Access: Published
 //  Description: Returns true if the "ram" flag is set for this
@@ -364,6 +353,17 @@ is_clrecv() const {
 bool DCField::
 is_ownsend() const {
   return has_keyword("ownsend");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_ownrecv
+//       Access: Published
+//  Description: Returns true if the "ownrecv" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_ownrecv() const {
+  return has_keyword("ownrecv");
 }
 
 ////////////////////////////////////////////////////////////////////

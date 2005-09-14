@@ -1,5 +1,6 @@
 #hack:
-BAD_DO_ID = BAD_ZONE_ID = -1
+BAD_DO_ID = BAD_ZONE_ID = 0xFFFFFFFF
+BAD_CHANNEL_ID = 0xFFFFFFFFFFFFFFFF
 
 class DoCollectionManager:
     def __init__(self):
@@ -8,11 +9,27 @@ class DoCollectionManager:
         # for OTP: (parentId, zoneId) to dict of doId->DistributedObjectAI
         # for NON-OTP: zoneId to dict of doId->DistributedObjectAI
         self.zoneId2doIds={}
+        if self.hasOwnerView():
+            # Dict of {DistributedObject ids : DistributedObjects} for 'owner' views of objects
+            self.doId2ownerView = {}
         if wantOtpServer:
             # Dict of {
             #   parent DistributedObject id: 
             #     { zoneIds : [child DistributedObject ids] }}
             self.__doHierarchy = {}
+
+    def getDo(self, doId):
+        return self.doId2do.get(doId)
+    def getOwnerView(self, doId):
+        assert self.hasOwnerView()
+        return self.doId2ownerView.get(doId)
+
+    def getDoTable(self, ownerView):
+        if ownerView:
+            assert self.hasOwnerView()
+            return self.doId2ownerView
+        else:
+            return self.doId2do
 
     def doFind(self, str):
         """
@@ -48,6 +65,22 @@ class DoCollectionManager:
                     distObj.__dict__.get("doId"),
                     distObj.dclass.getName(),
                     distObj.__dict__.get("name"))
+
+    def getDoList(self, parentId, zoneId=None, classType=None):
+        """
+        parentId is any distributed object id.
+        zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
+            you're not sure which zone to use (0 is a bad/null zone and 
+            1 has had reserved use in the past as a no messages zone, while
+            2 has traditionally been a global, uber, misc stuff zone).
+        dclassType is a distributed class type filter, defaults 
+            to None (no filter).
+        
+        If dclassName is None then all objects in the zone are returned;
+        otherwise the list is filtered to only include objects of that type.
+        """
+        return [self.doId2do.get(i)
+            for i in self.getDoIdList(parentId, zoneId, classType)]
 
     def getDoIdList(self, parentId, zoneId=None, classType=None):
         """
@@ -195,24 +228,27 @@ class DoCollectionManager:
                 objList.remove(objId)
     
     if wantOtpServer:
-        def addDOToTables(self, do, location=None):
+        def addDOToTables(self, do, location=None, ownerView=False):
             assert self.notify.debugStateCall(self)
             assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
-            if location is None:
-                location = (do.parentId, do.zoneId)
+            if not ownerView:
+                if location is None:
+                    location = (do.parentId, do.zoneId)
 
-            #assert do.doId not in self.doId2do
-            if do.doId in self.doId2do:
+            doTable = self.getDoTable(ownerView)
+            
+            #assert do.doId not in doTable
+            if do.doId in doTable:
                 print "ignoring repeated object %s" % (do.doId)
                 return
             
-            self.doId2do[do.doId]=do
+            doTable[do.doId]=do
 
-            if self.isValidLocationTuple(location):
-                assert hasattr(do, "isGlobalDistObj") or (
-                    do.doId not in self.zoneId2doIds.get(location,{}))
-                self.zoneId2doIds.setdefault(location, {})
-                self.zoneId2doIds[location][do.doId]=do
+            if not ownerView:
+                if self.isValidLocationTuple(location):
+                    assert do.doId not in self.zoneId2doIds.get(location,{})
+                    self.zoneId2doIds.setdefault(location, {})
+                    self.zoneId2doIds[location][do.doId]=do
 
         def isValidLocationTuple(self, location):
             return (location is not None

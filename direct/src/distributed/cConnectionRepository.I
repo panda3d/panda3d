@@ -29,6 +29,17 @@ get_dc_file() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::has_owner_view
+//       Access: Published
+//  Description: Returns true if this repository can have 'owner'
+//               views of distributed objects.
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+has_owner_view() const {
+  return _has_owner_view;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_client_datagram
 //       Access: Published
 //  Description: Sets the client_datagram flag.  If this is true,

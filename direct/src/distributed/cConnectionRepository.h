@@ -55,10 +55,12 @@ class SocketStream;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
-  CConnectionRepository();
+  CConnectionRepository(bool has_owner_view=false);
   ~CConnectionRepository();
 
   INLINE DCFile &get_dc_file();
+
+  INLINE bool has_owner_view() const;
 
   INLINE void set_client_datagram(bool client_datagram);
   INLINE bool get_client_datagram() const;
@@ -116,6 +118,7 @@ PUBLISHED:
 private:
   bool do_check_datagram();
   bool handle_update_field();
+  bool handle_update_field_owner();
 
 #ifndef NDEBUG
   void describe_message(ostream &out, const string &prefix, 
@@ -138,6 +141,7 @@ private:
 #endif
 
   DCFile _dc_file;
+  bool _has_owner_view;
   bool _client_datagram;
   bool _simulated_disconnect;
   bool _verbose;

@@ -4,7 +4,7 @@ from pandac.PandaModules import *
 from ClockDelta import *
 import DistributedNode
 import DistributedSmoothNodeBase
-from direct.task import Task
+from direct.task.Task import cont
 
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture
@@ -107,7 +107,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             
     def doSmoothTask(self, task):
         self.smoothPosition()
-        return Task.cont
+        return cont
 
     def wantsSmoothing(self):
         # Override this function to return 0 if this particular kind
@@ -216,7 +216,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.setComponentP(p)
         self.setComponentR(r)
         self.setComponentTLive(timestamp)
-        return
 
     ### component set pos and hpr functions ###
 

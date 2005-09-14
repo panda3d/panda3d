@@ -19,11 +19,17 @@ class ConnectionRepository(
     notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
 
-    def __init__(self, config):
+    def __init__(self, config, hasOwnerView=False):
         assert self.notify.debugCall()
+        # let the C connection repository know whether we're supporting
+        # 'owner' views of distributed objects (i.e. 'receives ownrecv',
+        # 'I own this object and have a separate view of it regardless of
+        # where it currently is located')
+        CConnectionRepository.__init__(self, hasOwnerView)
+        # DoInterestManager.__init__ relies on CConnectionRepository being
+        # initialized
         DoInterestManager.__init__(self)
         DoCollectionManager.__init__(self)
-        CConnectionRepository.__init__(self)
         self.setPythonRepository(self)
 
         self.config = config
@@ -59,9 +65,44 @@ class ConnectionRepository(
         # DC file.  The AIRepository will redefine this to 'AI'.
         self.dcSuffix = ''
 
-    def generateGlobalObject(self, doId, dcname):
+    def generateGlobalObject(self, doId, dcname, values=None):
+        def applyFieldValues(distObj, dclass, values):
+            for i in range(dclass.getNumInheritedFields()):
+                field = dclass.getInheritedField(i)
+                if field.asMolecularField() == None:
+                    value = values.get(field.getName(), None)
+                    if value is None and field.isRequired():
+                        # Gee, this could be better.  What would really be
+                        # nicer is to get value from field.getDefaultValue
+                        # or similar, but that returns a binary string, not
+                        # a python tuple, like the following does.  If you
+                        # want to change something better, please go ahead.
+                        packer = DCPacker()
+                        packer.beginPack(field)
+                        packer.packDefaultValue()
+                        packer.endPack()
+                        
+                        unpacker = DCPacker()
+                        unpacker.setUnpackData(packer.getString())
+                        unpacker.beginUnpack(field)
+                        value = unpacker.unpackObject()
+                        unpacker.endUnpack()
+                    if value is not None:
+                        try:
+                            function = getattr(distObj, field.getName())
+                            function(*value)
+                        except AttributeError:
+                            self.notify.error("\n\n\nNot able to find %s.%s"%(
+                                distObj.__class__.__name__, field.getName()))
+                            pass
+            
         # Look up the dclass
-        dclass = self.dclassesByName[dcname+self.dcSuffix]
+        dclass = self.dclassesByName.get(dcname+self.dcSuffix)
+        if dclass is None:
+            print "\n\n\nNeed to define", dcname+self.dcSuffix
+            dclass = self.dclassesByName.get(dcname+'AI')
+        if dclass is None:
+            dclass = self.dclassesByName.get(dcname)
         # Create a new distributed object, and put it in the dictionary
         #distObj = self.generateWithRequiredFields(dclass, doId, di)
 
@@ -79,6 +120,8 @@ class ConnectionRepository(
         # Update the required fields
         distObj.generateInit()  # Only called when constructed
         distObj.generate()
+        if values is not None:
+            applyFieldValues(distObj, dclass, values)
         distObj.announceGenerate()
         distObj.parentId = 0
         distObj.zoneId = 0
@@ -121,7 +164,7 @@ class ConnectionRepository(
 
         # Now import all of the modules required by the DC file.
         for n in range(dcFile.getNumImportModules()):
-            moduleName = dcFile.getImportModule(n)
+            moduleName = dcFile.getImportModule(n)[:]
 
             # Maybe the module name is represented as "moduleName/AI".
             suffix = moduleName.split('/')
@@ -184,9 +227,63 @@ class ConnectionRepository(
                 #else:
                 #    dclass.setClassDef(classDef)
                 dclass.setClassDef(classDef)
+
             self.dclassesByName[className] = dclass
             if number >= 0:
                 self.dclassesByNumber[number] = dclass
+
+        # Owner Views
+        if self.hasOwnerView():
+            ownerDcSuffix = self.dcSuffix + 'OV'
+            # dict of class names (without 'OV') that have owner views
+            ownerImportSymbols = {}
+
+            # Now import all of the modules required by the DC file.
+            for n in range(dcFile.getNumImportModules()):
+                moduleName = dcFile.getImportModule(n)
+
+                # Maybe the module name is represented as "moduleName/AI".
+                suffix = moduleName.split('/')
+                moduleName = suffix[0]
+                suffix=suffix[1:]
+                if ownerDcSuffix in suffix:
+                    moduleName = moduleName + ownerDcSuffix
+
+                importSymbols = []
+                for i in range(dcFile.getNumImportSymbols(n)):
+                    symbolName = dcFile.getImportSymbol(n, i)
+
+                    # Check for the OV suffix
+                    suffix = symbolName.split('/')
+                    symbolName = suffix[0]
+                    suffix=suffix[1:]
+                    if ownerDcSuffix in suffix:
+                        symbolName += ownerDcSuffix
+                    importSymbols.append(symbolName)
+                    ownerImportSymbols[symbolName] = None
+
+                self.importModule(dcImports, moduleName, importSymbols)
+
+            # Now get the class definition for the owner classes named
+            # in the DC file.
+            for i in range(dcFile.getNumClasses()):
+                dclass = dcFile.getClass(i)
+                if ((dclass.getName()+ownerDcSuffix) in ownerImportSymbols):
+                    number = dclass.getNumber()
+                    className = dclass.getName() + ownerDcSuffix
+
+                    # Does the class have a definition defined in the newly
+                    # imported namespace?
+                    classDef = dcImports.get(className)
+                    if classDef is None:
+                        self.notify.error("No class definition for %s." % className)
+                    else:
+                        if type(classDef) == types.ModuleType:
+                            if not hasattr(classDef, className):
+                                self.notify.error("Module %s does not define class %s." % (className, className))
+                            classDef = getattr(classDef, className)
+                        dclass.setOwnerClassDef(classDef)
+                        self.dclassesByName[className] = dclass
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """

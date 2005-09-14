@@ -9,7 +9,6 @@ p.s. A great deal of this code is just code moved from ClientRepository.py.
 
 from pandac.PandaModules import *
 from MsgTypes import *
-from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.PythonUtil import *
 from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
@@ -20,7 +19,8 @@ class DoInterestManager(DirectObject.DirectObject):
     Top level Interest Manager
     """
     if __debug__:
-        notify = DirectNotifyGlobal.directNotify.newCategory("DoInterestManager")
+        from direct.directnotify.DirectNotifyGlobal import directNotify
+        notify = directNotify.newCategory("DoInterestManager")
 
     _interestIdAssign = 1
     _interestIdScopes = 100
@@ -201,23 +201,23 @@ class DoInterestManager(DirectObject.DirectObject):
         action based on the ID, Context
         """
         assert DoInterestManager.notify.debugCall()
-        id = di.getUint16()
+        interestId = di.getUint16()
         scope = di.getUint32()
-        expect_scope = self.getInterestScopeId(id)
+        expect_scope = self.getInterestScopeId(interestId)
         DoInterestManager.notify.debug(
-            "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope))
+            "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(interestId, scope))
         if expect_scope == scope:
             DoInterestManager.notify.debug(
                 "handleInterestDoneMessage--> Scope Match:%s Scope:%s"
-                %(id,scope))
-            event = self.getInterestScopeEvent(id)
+                %(interestId, scope))
+            event = self.getInterestScopeEvent(interestId)
             if event is not None:
                 DoInterestManager.notify.debug(
                     "handleInterestDoneMessage--> Send Event : %s"%(event))
                 messenger.send(event)
             else:
                 DoInterestManager.notify.debug("handleInterestDoneMessage--> No Event ")
-            self._ponderRemoveFlaggedInterest(id)
+            self._ponderRemoveFlaggedInterest(interestId)
         else:
             DoInterestManager.notify.debug(
                 "handleInterestDoneMessage--> Scope MisMatch :%s :%s"

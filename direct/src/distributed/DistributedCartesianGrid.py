@@ -160,7 +160,6 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
                 
         # Set the location on the server
         av.b_setLocation(self.doId, zoneId)
-        return
 
 
     ##################################################

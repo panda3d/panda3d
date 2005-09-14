@@ -181,7 +181,6 @@ class ClusterClientSync(ClusterClient):
 
     def startSwapCoordinatorTask(self):
         taskMgr.add(self.swapCoordinator, "clientSwapCoordinator", 51)
-        return None
 
     def swapCoordinator(self,task):
         self.ready = 1

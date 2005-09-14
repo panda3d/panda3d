@@ -12,7 +12,8 @@ class Transitions:
     FadeModelName = "models/misc/fade"
 
     def __init__(self, loader):
-        self.ival = None
+        self.transitionIval = None
+        self.letterboxIval = None
         self.iris = None
         self.fade = None
         self.letterbox = None
@@ -60,15 +61,15 @@ class Transitions:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
             self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
-            self.ival = Sequence(LerpColorInterval(self.fade, t,
+            self.transitionIval = Sequence(LerpColorInterval(self.fade, t,
                                                    color = self.alphaOff,
                                                    startColor = self.alphaOn),
                                  Func(self.fade.detachNode),
                                  name = self.fadeTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.transitionIval.append(finishIval)
+            self.transitionIval.start()
             
     def fadeOut(self, t=0.5, finishIval=None):
         """
@@ -88,14 +89,17 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.ival = Sequence(LerpColorInterval(self.fade, t,
+            self.transitionIval = Sequence(LerpColorInterval(self.fade, t,
                                                    color = self.alphaOn,
                                                    startColor = self.alphaOff),
                                  name = self.fadeTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.transitionIval.append(finishIval)
+            self.transitionIval.start()
+
+    def fadeOutActive(self):
+        return self.fade and self.fade.getColor()[3] > 0
 
     def fadeScreen(self, alpha=0.5):
         """
@@ -126,9 +130,9 @@ class Transitions:
         """
         Removes any current fade tasks and parents the fade polygon away
         """
-        if self.ival:
-            self.ival.pause()
-            self.ival = None
+        if self.transitionIval:
+            self.transitionIval.pause()
+            self.transitionIval = None
         if self.fade:
             self.fade.detachNode()
 
@@ -160,15 +164,15 @@ class Transitions:
         else:
             self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
 
-            self.ival = Sequence(LerpScaleInterval(self.iris, t,
+            self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.18,
                                                    startScale = 0.01),
                                  Func(self.iris.detachNode),
                                  name = self.irisTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.transitionIval.append(finishIval)
+            self.transitionIval.start()
             
     def irisOut(self, t=0.5, finishIval=None):
         """
@@ -187,7 +191,7 @@ class Transitions:
         else:
             self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
 
-            self.ival = Sequence(LerpScaleInterval(self.iris, t,
+            self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.01,
                                                    startScale = 0.18),
                                  Func(self.iris.detachNode),
@@ -196,16 +200,16 @@ class Transitions:
                                  name = self.irisTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.transitionIval.append(finishIval)
+            self.transitionIval.start()
 
     def noIris(self):
         """
         Removes any current iris tasks and parents the iris polygon away
         """
-        if self.ival:
-            self.ival.pause()
-            self.ival = None
+        if self.transitionIval:
+            self.transitionIval.pause()
+            self.transitionIval = None
         if self.iris != None:
             self.iris.detachNode()
         # Actually we need to remove the fade too,
@@ -218,7 +222,8 @@ class Transitions:
         """
         self.noFade()
         self.noIris()
-        self.noLetterbox()
+        # Letterbox is not really a transition, it is a screen overlay
+        # self.noLetterbox()
 
     ##################################################
     # Letterbox
@@ -258,9 +263,9 @@ class Transitions:
         """
         Removes any current letterbox tasks and parents the letterbox polygon away
         """
-        if self.ival:
-            self.ival.pause()
-            self.ival = None
+        if self.letterboxIval:
+            self.letterboxIval.pause()
+            self.letterboxIval = None
         if self.letterbox != None:
             self.letterbox.detachNode()
 
@@ -268,7 +273,7 @@ class Transitions:
         """
         Move black bars in over t seconds.
         """
-        self.noTransitions()
+        self.noLetterbox()
         self.loadLetterbox()
         if (t == 0):
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
@@ -276,7 +281,7 @@ class Transitions:
             self.letterboxTop.setPos(0,0,0.8)
         else:
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
-            self.ival = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
+            self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
                                                           pos = Vec3(0,0,-1),
                                                           startPos = Vec3(0,0,-1.2)),
                                           LerpPosInterval(self.letterboxTop, t,
@@ -289,20 +294,20 @@ class Transitions:
                                  name = self.letterboxTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.letterboxIval.append(finishIval)
+            self.letterboxIval.start()
             
     def letterboxOff(self, t=0.25, finishIval=None):
         """
         Move black bars away over t seconds.
         """
-        self.noTransitions()
+        self.noLetterbox()
         self.loadLetterbox()
         if (t == 0):
             self.letterbox.detachNode()
         else:
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
-            self.ival = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
+            self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
                                                           pos = Vec3(0,0,-1.2),
                                                           startPos = Vec3(0,0,-1)),
                                           LerpPosInterval(self.letterboxTop, t,
@@ -315,5 +320,5 @@ class Transitions:
                                  name = self.letterboxTaskName,
                                  )
             if finishIval:
-                self.ival.append(finishIval)
-            self.ival.start()
+                self.letterboxIval.append(finishIval)
+            self.letterboxIval.start()

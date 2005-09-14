@@ -322,7 +322,6 @@ class DirectScrolledList(DirectFrame):
             self.refresh()
         if(type(item) == types.InstanceType):
             return item.itemID  # to pass to scrollToItemID
-        return
 
     def removeItem(self, item, refresh=1):
         """

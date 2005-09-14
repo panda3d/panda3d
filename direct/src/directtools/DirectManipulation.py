@@ -54,17 +54,19 @@ class DirectManipulationControl(PandaObject):
         else:
             # Nope, off the widget, no constraint
             self.constraint = None
-        # Check to see if we are moving the object
-        # We are moving the object if we either wait long enough
-        taskMgr.doMethodLater(MANIPULATION_MOVE_DELAY,
-                              self.switchToMoveMode,
-                              'manip-move-wait')
-        # Or we move far enough
-        self.moveDir = None
-        watchMouseTask = Task.Task(self.watchMouseTask)
-        watchMouseTask.initX = direct.dr.mouseX
-        watchMouseTask.initY = direct.dr.mouseY
-        taskMgr.add(watchMouseTask, 'manip-watch-mouse')
+            
+        if not direct.gotAlt(modifiers):
+            # Check to see if we are moving the object
+            # We are moving the object if we either wait long enough
+            taskMgr.doMethodLater(MANIPULATION_MOVE_DELAY,
+                                  self.switchToMoveMode,
+                                  'manip-move-wait')
+            # Or we move far enough
+            self.moveDir = None
+            watchMouseTask = Task.Task(self.watchMouseTask)
+            watchMouseTask.initX = direct.dr.mouseX
+            watchMouseTask.initY = direct.dr.mouseY
+            taskMgr.add(watchMouseTask, 'manip-watch-mouse')
 
     def switchToMoveMode(self, state):
         taskMgr.remove('manip-watch-mouse')

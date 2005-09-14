@@ -41,7 +41,7 @@ PStatCollector CConnectionRepository::_update_pcollector("App:Show code:readerPo
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CConnectionRepository::
-CConnectionRepository() :
+CConnectionRepository(bool has_owner_view) :
 #ifdef HAVE_PYTHON
   _python_repository(NULL),
 #endif
@@ -57,7 +57,8 @@ CConnectionRepository() :
   _verbose(distributed_cat.is_spam()),
 //  _msg_channels(),
   _msg_sender(0),
-  _msg_type(0)
+  _msg_type(0),
+  _has_owner_view(has_owner_view)
 {
 #if defined(HAVE_NSPR) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -246,8 +247,14 @@ check_datagram() {
 #ifdef HAVE_PYTHON
     case CLIENT_OBJECT_UPDATE_FIELD:
     case STATESERVER_OBJECT_UPDATE_FIELD:
-      if (!handle_update_field()) {
-        return false;
+      if (_has_owner_view) {
+	if (!handle_update_field_owner()) {
+	  return false;
+	}
+      } else {
+	if (!handle_update_field()) {
+	  return false;
+	}
       }
       break;
 #endif  // HAVE_PYTHON
@@ -514,6 +521,118 @@ handle_update_field() {
         return false;
       }
     }
+
+  }
+  #endif  // HAVE_PYTHON  
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::handle_update_field_owner
+//       Access: Private
+//  Description: Directly handles an update message on a field.
+//               Supports 'owner' views of objects, separate from 'visible'
+//               view, and forwards fields to the appropriate view(s) based
+//               on DC flags.  Python never touches the datagram; it just
+//               gets its distributed method called with the appropriate
+//               parameters.  Returns true if everything is ok, false if
+//               there was an error processing the field's update method.
+////////////////////////////////////////////////////////////////////
+bool CConnectionRepository::
+handle_update_field_owner() {
+  #ifdef HAVE_PYTHON
+  PStatTimer timer(_update_pcollector);
+  unsigned int do_id = _di.get_uint32();
+  if (_python_repository != (PyObject *)NULL) {
+    PyObject *doId2do =
+      PyObject_GetAttrString(_python_repository, "doId2do");
+    nassertr(doId2do != NULL, false);
+
+    PyObject *doId2ownerView =
+      PyObject_GetAttrString(_python_repository, "doId2ownerView");
+    nassertr(doId2ownerView != NULL, false);
+
+    #ifdef USE_PYTHON_2_2_OR_EARLIER
+    PyObject *doId = PyInt_FromLong(do_id);
+    #else
+    PyObject *doId = PyLong_FromUnsignedLong(do_id);
+    #endif
+
+    // pass the update to the owner view first
+    PyObject *distobjOV = PyDict_GetItem(doId2ownerView, doId);
+    Py_DECREF(doId2ownerView);
+
+    if (distobjOV != NULL) {
+      PyObject *dclass_obj = PyObject_GetAttrString(distobjOV, "dclass");
+      nassertr(dclass_obj != NULL, false);
+
+      PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
+      Py_DECREF(dclass_obj);
+      nassertr(dclass_this != NULL, false);
+
+      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      Py_DECREF(dclass_this);
+
+      // check if we should forward this update to the owner view
+      DCPacker packer;
+      packer.set_unpack_data(_di.get_remaining_bytes());
+      int field_id = packer.raw_unpack_uint16();
+      DCField *field = dclass->get_field_by_index(field_id);
+      if (field->is_ownrecv()) {
+	// It's a good idea to ensure the reference count to distobjOV is
+	// raised while we call the update method--otherwise, the update
+	// method might get into trouble if it tried to delete the
+	// object from the doId2do map.
+	Py_INCREF(distobjOV);
+	// make a copy of the datagram iterator so that we can use the main
+	// iterator for the non-owner update
+	DatagramIterator _odi(_di);
+	dclass->receive_update(distobjOV, _odi); 
+	Py_DECREF(distobjOV);
+      
+	if (PyErr_Occurred()) {
+	  return false;
+	}
+      }
+    }
+
+    // now pass the update to the visible view
+    PyObject *distobj = PyDict_GetItem(doId2do, doId);
+    Py_DECREF(doId);
+    Py_DECREF(doId2do);
+
+    if (distobj != NULL) {
+      PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
+      nassertr(dclass_obj != NULL, false);
+
+      PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
+      Py_DECREF(dclass_obj);
+      nassertr(dclass_this != NULL, false);
+
+      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      Py_DECREF(dclass_this);
+
+      // check if we should forward this update to the owner view
+      DCPacker packer;
+      packer.set_unpack_data(_di.get_remaining_bytes());
+      int field_id = packer.raw_unpack_uint16();
+      DCField *field = dclass->get_field_by_index(field_id);
+      if (true) {//field->is_broadcast()) {
+	// It's a good idea to ensure the reference count to distobj is
+	// raised while we call the update method--otherwise, the update
+	// method might get into trouble if it tried to delete the
+	// object from the doId2do map.
+	Py_INCREF(distobj);
+	dclass->receive_update(distobj, _di); 
+	Py_DECREF(distobj);
+      
+	if (PyErr_Occurred()) {
+	  return false;
+	}
+      }
+    }
+
   }
   #endif  // HAVE_PYTHON  
 

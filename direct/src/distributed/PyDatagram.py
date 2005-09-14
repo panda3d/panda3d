@@ -28,30 +28,31 @@ class PyDatagram(Datagram):
         STBlob32: (Datagram.addString32, None),
         }
 
-        
+    #def addChannel(self, channelId):
+    #    ...
     addChannel = Datagram.addUint64
     
-    def AddServerHeader(self, channel, sender, code):
+    def addServerHeader(self, channel, sender, code):
         self.addInt8(1)
         self.addChannel(channel)
         self.addChannel(sender)
         self.addUint16(code)
     
     
-    def AddOldServerHeader(self, channel, sender, code):
+    def addOldServerHeader(self, channel, sender, code):
         self.addChannel(channel)
         self.addChannel(sender)
         self.addChannel('A')
         self.addUint16(code)
     
     
-    def AddServerControlHeader(self,   code):
+    def addServerControlHeader(self,   code):
         self.addInt8(1)
         self.addChannel(CONTROL_MESSAGE)
         self.addUint16(code)
     
     
-    def AddOldServerControlHeader(self,   code):
+    def addOldServerControlHeader(self,   code):
         self.addChannel(CONTROL_MESSAGE)
         self.addUint16(code)
     

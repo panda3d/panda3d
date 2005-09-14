@@ -44,6 +44,13 @@ class ControlManager:
         inputState.watch("reverse", "alt-arrow_down", "arrow_down-up")
         inputState.watch("reverse", "control-alt-arrow_down", "arrow_down-up")
         inputState.watch("reverse", "shift-arrow_down", "arrow_down-up")
+        
+        inputState.watch("reverse", "mouse4", "mouse4-up")
+        inputState.watch("reverse", "control-mouse4", "mouse4-up")
+        inputState.watch("reverse", "shift-control-mouse4", "mouse4-up")
+        inputState.watch("reverse", "alt-mouse4", "mouse4-up")
+        inputState.watch("reverse", "control-alt-mouse4", "mouse4-up")
+        inputState.watch("reverse", "shift-mouse4", "mouse4-up")
 
         inputState.watch("turnLeft", "arrow_left", "arrow_left-up")
         inputState.watch("turnLeft", "control-arrow_left", "arrow_left-up")

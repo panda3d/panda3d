@@ -69,12 +69,12 @@ PUBLISHED:
 
   bool is_required() const;
   bool is_broadcast() const;
-  bool is_p2p() const;
   bool is_ram() const;
   bool is_db() const;
   bool is_clsend() const;
   bool is_clrecv() const;
   bool is_ownsend() const;
+  bool is_ownrecv() const;
   bool is_airecv() const;
 
   void output(ostream &out) const;

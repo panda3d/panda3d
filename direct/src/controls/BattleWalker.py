@@ -8,6 +8,10 @@ def ToggleStrafe():
     global BattleStrafe
     BattleStrafe = not BattleStrafe
 
+def SetStrafe(status):
+    global BattleStrafe
+    BattleStrafe = status
+    
 class BattleWalker(GravityWalker.GravityWalker):
     def __init__(self):
         GravityWalker.GravityWalker.__init__(self)
@@ -109,7 +113,30 @@ class BattleWalker(GravityWalker.GravityWalker):
         elif delH > rMax:
             self.avatarNodePath.setH(curH+rMax)
             self.rotationSpeed=self.avatarControlRotateSpeed
-            
+
+        # Check to see if we're moving at all:
+        self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
+        if self.moving:
+            distance = dt * self.speed
+            slideDistance = dt * self.slideSpeed
+            rotation = dt * self.rotationSpeed
+
+            # Take a step in the direction of our previous heading.
+            self.vel=Vec3(Vec3.forward() * distance +
+                          Vec3.right() * slideDistance)
+            if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
+                if 1:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    step=(self.priorParent * dt) + rotMat.xform(self.vel)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+            self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
+        else:
+            self.vel.set(0.0, 0.0, 0.0)
+
+        """
         # Check to see if we're moving at all:
         self.moving = self.advanceSpeed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
         if self.moving:
@@ -138,6 +165,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
         else:
             self.vel.set(0.0, 0.0, 0.0)
+        """
         if self.moving or jump:
             messenger.send("avatarMoving")
         return Task.cont

@@ -10,7 +10,6 @@ class CRCache:
         self.maxCacheItems = maxCacheItems
         self.dict = {}
         self.fifo = []
-        return None
 
     def flush(self):
         """
@@ -52,7 +51,6 @@ class CRCache:
                 
         # Make sure that the fifo and the dictionary are sane
         assert(len(self.dict) == len(self.fifo))
-        return None
 
     def retrieve(self, doId):
         assert(self.checkCache())

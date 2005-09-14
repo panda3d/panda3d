@@ -32,8 +32,12 @@ class DirectCameraControl(PandaObject):
         self.camManipRef = direct.group.attachNewNode('camManipRef')
         t = CAM_MOVE_DURATION
         self.actionEvents = [
+            ['DIRECT-mouse1', self.mouseRotateStart],
+            ['DIRECT-mouse1Up', self.mouseFlyStop],
             ['DIRECT-mouse2', self.mouseFlyStart],
             ['DIRECT-mouse2Up', self.mouseFlyStop],
+            ['DIRECT-mouse3', self.mouseDollyStart],
+            ['DIRECT-mouse3Up', self.mouseFlyStop],
             ]
         self.keyEvents = [
             ['c', self.centerCamIn, 0.5],
@@ -62,6 +66,8 @@ class DirectCameraControl(PandaObject):
             ]
         # set this to true to prevent the camera from rolling
         self.lockRoll = False
+        # NIK - flag to determine whether to use maya camera controls
+        self.useMayaCamControls = 0
 
     def toggleMarkerVis(self):
         if direct.cameraControl.coaMarker.isHidden():
@@ -69,28 +75,52 @@ class DirectCameraControl(PandaObject):
         else:
             direct.cameraControl.coaMarker.hide()
 
-    def mouseFlyStart(self, modifiers):
-        # Record undo point
-        direct.pushUndo([direct.camera])
-        # Where are we in the display region?
-        if ((abs(direct.dr.mouseX) < 0.9) and (abs(direct.dr.mouseY) < 0.9)):
-            # MOUSE IS IN CENTRAL REGION
+    def mouseRotateStart(self, modifiers):
+        if self.useMayaCamControls and modifiers == 4: # alt is pressed - use maya controls
+            direct.pushUndo([direct.camera])
+            self.spawnMouseRotateTask()
+
+    def mouseDollyStart(self, modifiers):
+        if self.useMayaCamControls and modifiers == 4: # alt is pressed - use maya controls
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
             self.startT= globalClock.getFrameTime()
             self.startF = globalClock.getFrameCount()
             # Start manipulation
-            self.spawnXZTranslateOrHPanYZoom()
-            # END MOUSE IN CENTRAL REGION
+            self.spawnHPanYZoom()
+
+    def mouseFlyStart(self, modifiers):
+        # Record undo point
+        direct.pushUndo([direct.camera])
+        if self.useMayaCamControls and modifiers == 4: # alt is down, use maya controls
+            # Hide the marker for this kind of motion
+            self.coaMarker.hide()
+            # Record time of start of mouse interaction
+            self.startT= globalClock.getFrameTime()
+            self.startF = globalClock.getFrameCount()
+            # Start manipulation
+            self.spawnXZTranslate()
         else:
-            if ((abs(direct.dr.mouseX) > 0.9) and
-                (abs(direct.dr.mouseY) > 0.9)):
-                # Mouse is in corners, spawn roll task
-                self.spawnMouseRollTask()
+            # Where are we in the display region?
+            if ((abs(direct.dr.mouseX) < 0.9) and (abs(direct.dr.mouseY) < 0.9)):
+                # MOUSE IS IN CENTRAL REGION
+                # Hide the marker for this kind of motion
+                self.coaMarker.hide()
+                # Record time of start of mouse interaction
+                self.startT= globalClock.getFrameTime()
+                self.startF = globalClock.getFrameCount()
+                # Start manipulation
+                self.spawnXZTranslateOrHPanYZoom()
+                # END MOUSE IN CENTRAL REGION
             else:
-                # Mouse is in outer frame, spawn mouseRotateTask
-                self.spawnMouseRotateTask()
+                if ((abs(direct.dr.mouseX) > 0.9) and
+                    (abs(direct.dr.mouseY) > 0.9)):
+                    # Mouse is in corners, spawn roll task
+                    self.spawnMouseRollTask()
+                else:
+                    # Mouse is in outer frame, spawn mouseRotateTask
+                    self.spawnMouseRotateTask()
 
     def mouseFlyStop(self):
         taskMgr.remove('manipulateCamera')
@@ -118,6 +148,15 @@ class DirectCameraControl(PandaObject):
         self.coaMarker.show()
         # Resize it
         self.updateCoaMarkerSize()
+
+    def mouseFlyStartTopWin(self):
+        print "Moving mouse 2 in new window"
+        #altIsDown = base.getAlt()
+        #if altIsDown:
+        #    print "Alt is down"
+
+    def mouseFlyStopTopWin(self):
+        print "Stopping mouse 2 in new window"
 
     def spawnXZTranslateOrHPanYZoom(self):
         # Kill any existing tasks
@@ -183,6 +222,11 @@ class DirectCameraControl(PandaObject):
         return Task.cont
 
     def HPanYZoomTask(self,state):
+        # If the cam is orthogonal, don't rotate or zoom.
+        if (hasattr(direct.camera.node(), "getLens") and
+            direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+            return
+        
         if direct.fControl:
             moveDir = Vec3(self.coaMarker.getPos(direct.camera))
             # If marker is behind camera invert vector
@@ -230,6 +274,10 @@ class DirectCameraControl(PandaObject):
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRotateTask(self, state):
+        # If the cam is orthogonal, don't rotate.
+        if (hasattr(direct.camera.node(), "getLens") and
+            direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+            return
         # If moving outside of center, ignore motion perpendicular to edge
         if ((state.constrainedDir == 'y') and (abs(direct.dr.mouseX) > 0.9)):
             deltaX = 0

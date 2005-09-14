@@ -709,7 +709,7 @@ setup_default_keywords() {
   static KeywordDef default_keywords[] = {
     { "required", 0x0001 },
     { "broadcast", 0x0002 },
-    { "p2p", 0x0004 },
+    { "ownrecv", 0x0004 },
     { "ram", 0x0008 },
     { "db", 0x0010 },
     { "clsend", 0x0020 },

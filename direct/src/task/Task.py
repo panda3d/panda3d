@@ -760,7 +760,6 @@ class TaskManager:
         signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
-        return
 
     def run(self):
         # Set the clock to have last frame's time in case we were
@@ -783,6 +782,17 @@ class TaskManager:
                     self.step()
                 except KeyboardInterrupt:
                     self.stop()
+                except IOError, (errno, strerror):
+                    # Since upgrading to Python 2.4.1, pausing the execution
+                    # often gives this IOError during the sleep function:
+                    #     IOError: [Errno 4] Interrupted function call
+                    # So, let's just handle that specific exception and stop.
+                    # All other IOErrors should still get raised.
+                    # Only problem: legit IOError 4s will be obfuscated.
+                    if errno == 4:
+                        self.stop()
+                    else:
+                        raise
                 except:
                     if self.extendedExceptions:
                         self.stop()
