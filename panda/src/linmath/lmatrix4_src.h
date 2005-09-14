@@ -181,6 +181,9 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
+#ifdef HAVE_PYTHON
+  void python_repr(ostream &out, const string &class_name) const;
+#endif
 
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;

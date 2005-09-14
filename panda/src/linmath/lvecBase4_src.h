@@ -117,6 +117,9 @@ PUBLISHED:
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
+#ifdef HAVE_PYTHON
+  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+#endif
 
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;

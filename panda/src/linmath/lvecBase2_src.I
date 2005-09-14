@@ -592,6 +592,20 @@ output(ostream &out) const {
       << MAYBE_ZERO(_v.v._1);
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::python_repr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase2)::
+python_repr(ostream &out, const string &class_name) const {
+  out << class_name << "("
+      << MAYBE_ZERO(_v.v._0) << ", "
+      << MAYBE_ZERO(_v.v._1) << ")";
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::generate_hash
 //       Access: Public

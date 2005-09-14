@@ -383,3 +383,14 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
  return FLOATNAME(LVector3)(right_v,vy,vz);
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVector3::python_repr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVector3)::
+python_repr(ostream &out, const string &class_name) const {
+  FLOATNAME(LVecBase3)::python_repr(out, class_name);
+}
+#endif  // HAVE_PYTHON

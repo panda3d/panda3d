@@ -242,3 +242,15 @@ operator / (FLOATTYPE scalar) const {
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (recip_scalar));
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::python_repr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVector4)::
+python_repr(ostream &out, const string &class_name) const {
+  FLOATNAME(LVecBase4)::python_repr(out, class_name);
+}
+#endif  // HAVE_PYTHON

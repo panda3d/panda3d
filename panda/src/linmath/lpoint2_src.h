@@ -51,6 +51,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint2) operator / (FLOATTYPE scalar) const;
 
+#ifdef HAVE_PYTHON
+  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+#endif
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

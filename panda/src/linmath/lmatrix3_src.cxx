@@ -288,6 +288,29 @@ write(ostream &out, int indent_level) const {
     << "\n";
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::python_repr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+python_repr(ostream &out, const string &class_name) const {
+  out << class_name << "(" 
+      << MAYBE_ZERO(_m.m._00) << ", "
+      << MAYBE_ZERO(_m.m._01) << ", "
+      << MAYBE_ZERO(_m.m._02) << ", "
+
+      << MAYBE_ZERO(_m.m._10) << ", "
+      << MAYBE_ZERO(_m.m._11) << ", "
+      << MAYBE_ZERO(_m.m._12) << ", "
+
+      << MAYBE_ZERO(_m.m._20) << ", "
+      << MAYBE_ZERO(_m.m._21) << ", "
+      << MAYBE_ZERO(_m.m._22) << ")";
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::generate_hash
 //       Access: Public

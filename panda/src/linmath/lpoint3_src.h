@@ -65,6 +65,11 @@ PUBLISHED:
                                        FLOATTYPE fwd,
                                        FLOATTYPE up,
                                        CoordinateSystem cs = CS_default);
+
+#ifdef HAVE_PYTHON
+  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+#endif
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

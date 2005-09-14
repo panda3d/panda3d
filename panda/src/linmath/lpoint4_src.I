@@ -208,3 +208,15 @@ INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint4)(FLOATNAME(LVecBase4)::operator / (scalar));
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint4::python_repr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LPoint4)::
+python_repr(ostream &out, const string &class_name) const {
+  FLOATNAME(LVecBase4)::python_repr(out, class_name);
+}
+#endif  // HAVE_PYTHON
