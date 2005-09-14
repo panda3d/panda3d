@@ -473,6 +473,25 @@ is_const_ref_to_basic_string_char(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_string
+//       Access: Public, Static
+//  Description: Returns true if the type is basic_string<char>, or
+//               a const reference to it.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_string(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_reference:
+    return is_const_basic_string_char(type->as_reference_type()->_pointing_at);
+
+  default:
+    break;
+  }
+
+  return is_basic_string_wchar(type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_basic_string_wchar
 //       Access: Public, Static
 //  Description: Returns true if the type is basic_string<wchar_t>.  This

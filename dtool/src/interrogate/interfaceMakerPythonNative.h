@@ -109,7 +109,7 @@ public:
     void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace);
     bool HasAGetKeyFunction(const InterrogateType &itype_class);
     int NeedsAStrFunction(const InterrogateType &itype_class);
-    bool NeedsAReprFunction(const InterrogateType &itype_class);
+    int NeedsAReprFunction(const InterrogateType &itype_class);
 
     void output_quoted(ostream &out, int indent_level, const std::string &str);
 
