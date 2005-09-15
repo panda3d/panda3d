@@ -235,7 +235,12 @@ void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap)
 
 void
 RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
-  if(class_id > 0) {
+  if (class_id == 0) {
+    interrogatedb_cat.warning()
+      << "Class " << otype->_name 
+      << " has a zero TypeHandle value; check that init_type() is called.\n";
+
+  } else if (class_id > 0) {
     RunTimeTypeDictionary &dict = GetRunTimeDictionary();
     pair<RunTimeTypeDictionary::iterator, bool> result =
       dict.insert(RunTimeTypeDictionary::value_type(class_id, otype));
@@ -244,7 +249,8 @@ RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
       Dtool_PyTypedObject *other_type = (*result.first).second;
       interrogatedb_cat.warning()
 	<< "Classes " << otype->_name << " and " << other_type->_name
-	<< " share the same TypeHandle value; check class definitions.\n";
+	<< " share the same TypeHandle value (" << class_id 
+	<< "); check class definitions.\n";
 
     } else {
       GetRunTimeTypeList().insert(class_id);
