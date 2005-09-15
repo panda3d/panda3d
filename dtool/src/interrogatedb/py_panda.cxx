@@ -233,14 +233,24 @@ void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id)
-{
-    if(class_id > 0)
-    {
-        GetRunTimeDictionary()[class_id] = otype;
-        GetRunTimeTypeList().insert(class_id);
-        otype->_Dtool_IsRunTimeCapable = true;
+void
+RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
+  if(class_id > 0) {
+    RunTimeTypeDictionary &dict = GetRunTimeDictionary();
+    pair<RunTimeTypeDictionary::iterator, bool> result =
+      dict.insert(RunTimeTypeDictionary::value_type(class_id, otype));
+    if (!result.second) {
+      // There was already an entry in the dictionary for class_id.
+      Dtool_PyTypedObject *other_type = (*result.first).second;
+      interrogatedb_cat.warning()
+	<< "Classes " << otype->_name << " and " << other_type->_name
+	<< " share the same TypeHandle value; check class definitions.\n";
+
+    } else {
+      GetRunTimeTypeList().insert(class_id);
+      otype->_Dtool_IsRunTimeCapable = true;
     }
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
