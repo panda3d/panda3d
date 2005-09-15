@@ -51,10 +51,11 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 
   set_anisotropic_degree(_font->get_anisotropic_degree());
 
-  // It's slightly better to let the texture clamp, rather than
-  // wrapping, so we're less likely to get bleeding at the edges.
-  set_wrap_u(WM_clamp);
-  set_wrap_v(WM_clamp);
+  // Clamp to an explicit invisible border, so we don't get bleeding
+  // at the edges at all.
+  set_wrap_u(WM_border_color);
+  set_wrap_v(WM_border_color);
+  set_border_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
