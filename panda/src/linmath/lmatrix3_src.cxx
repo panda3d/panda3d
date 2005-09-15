@@ -294,7 +294,7 @@ write(ostream &out, int indent_level) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LMatrix3)::
+void FLOATNAME(LMatrix3)::
 python_repr(ostream &out, const string &class_name) const {
   out << class_name << "(" 
       << MAYBE_ZERO(_m.m._00) << ", "

@@ -202,7 +202,7 @@ output(ostream &out) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LMatrix4)::
+void FLOATNAME(LMatrix4)::
 python_repr(ostream &out, const string &class_name) const {
   out << class_name << "(" 
       << MAYBE_ZERO(_m.m._00) << ", "
