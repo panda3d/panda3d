@@ -133,7 +133,7 @@ PUBLISHED:
 
 PUBLISHED:
   Texture(const string &name = string());
-  ~Texture();
+  virtual ~Texture();
 
   void setup_texture(TextureType texture_type,
                      int x_size, int y_size, int z_size,
@@ -266,11 +266,12 @@ public:
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
 
-private:
-  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
-
+protected:
   static int up_to_power_2(int value);
   static int down_to_power_2(int value);
+
+private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   
   void consider_rescale(PNMImage &pnmimage);
   void consider_downgrade(PNMImage &pnmimage, int num_channels);

@@ -73,7 +73,7 @@ Texture(const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::Destructor
-//       Access: Published
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
@@ -1272,6 +1272,36 @@ string_filter_type(const string &string) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::up_to_power_2
+//       Access: Protected, Static
+//  Description: Returns the smallest power of 2 greater than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+int Texture::
+up_to_power_2(int value) {
+  int x = 1;
+  while (x < value) {
+    x = (x << 1);
+  }
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::down_to_power_2
+//       Access: Protected, Static
+//  Description: Returns the largest power of 2 less than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+int Texture::
+down_to_power_2(int value) {
+  int x = 1;
+  while ((x << 1) <= value) {
+    x = (x << 1);
+  }
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_prepared
 //       Access: Private
 //  Description: Removes the indicated PreparedGraphicsObjects table
@@ -1291,36 +1321,6 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     // prepared_objects which the texture didn't know about.
     nassertv(false);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::up_to_power_2
-//       Access: Private, Static
-//  Description: Returns the smallest power of 2 greater than or equal
-//               to value.
-////////////////////////////////////////////////////////////////////
-int Texture::
-up_to_power_2(int value) {
-  int x = 1;
-  while (x < value) {
-    x = (x << 1);
-  }
-  return x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::down_to_power_2
-//       Access: Private, Static
-//  Description: Returns the largest power of 2 less than or equal
-//               to value.
-////////////////////////////////////////////////////////////////////
-int Texture::
-down_to_power_2(int value) {
-  int x = 1;
-  while ((x << 1) <= value) {
-    x = (x << 1);
-  }
-  return x;
 }
 
 ////////////////////////////////////////////////////////////////////
