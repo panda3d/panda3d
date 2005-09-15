@@ -30,6 +30,7 @@
 #include "eggFilenameNode.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"
+#include "eggGroupUniquifier.h"
 #include "eggLine.h"
 #include "eggMaterial.h"
 #include "eggNameUniquifier.h"
@@ -40,6 +41,7 @@
 #include "eggObject.h"
 #include "eggPoint.h"
 #include "eggPolygon.h"
+#include "eggPolysetMaker.h"
 #include "eggPoolUniquifier.h"
 #include "eggPrimitive.h"
 #include "eggSAnimData.h"
@@ -180,6 +182,7 @@ init_libegg() {
   EggFilenameNode::init_type();
   EggGroup::init_type();
   EggGroupNode::init_type();
+  EggGroupUniquifier::init_type();
   EggLine::init_type();
   EggMaterial::init_type();
   EggNameUniquifier::init_type();
@@ -190,6 +193,7 @@ init_libegg() {
   EggObject::init_type();
   EggPoint::init_type();
   EggPolygon::init_type();
+  EggPolysetMaker::init_type();
   EggPoolUniquifier::init_type();
   EggPrimitive::init_type();
   EggSAnimData::init_type();

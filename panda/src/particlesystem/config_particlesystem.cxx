@@ -29,6 +29,7 @@ ConfigureFn(config_particlesystem) {
   ColorInterpolationFunctionLinear::init_type();
   ColorInterpolationFunctionStepwave::init_type();
   ColorInterpolationFunctionSinusoid::init_type();
+  ParticleSystem::init_type();
   init_libparticlesystem();
 }
 

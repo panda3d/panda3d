@@ -19,6 +19,8 @@
 #include "eggPolysetMaker.h"
 #include "eggPolygon.h"
 
+TypeHandle EggPolysetMaker::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolysetMaker::Constructor
 //       Access: Public

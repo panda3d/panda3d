@@ -34,6 +34,8 @@
 #include "pointParticleFactory.h"
 #include "sphereSurfaceEmitter.h"
 
+TypeHandle ParticleSystem::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //    Function : ParticleSystem
 //      Access : Public

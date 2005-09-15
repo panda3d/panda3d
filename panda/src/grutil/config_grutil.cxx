@@ -18,6 +18,7 @@
 
 #include "config_grutil.h"
 #include "frameRateMeter.h"
+#include "aviTexture.h"
 
 #include "dconfig.h"
 
@@ -61,5 +62,6 @@ init_libgrutil() {
   initialized = true;
 
   FrameRateMeter::init_type();
+  AviTexture::init_type();
 }
 

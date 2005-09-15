@@ -4,8 +4,7 @@
 #include "aviTexture.h"
 #include <stdio.h>
 
-
-
+TypeHandle AviTexture::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AviTexture::AviTexture
