@@ -62,6 +62,9 @@ init_libgrutil() {
   initialized = true;
 
   FrameRateMeter::init_type();
+
+#ifdef HAVE_CV
   AviTexture::init_type();
+#endif // HAVE_CV
 }
 
