@@ -3472,13 +3472,16 @@ is_at_least_version(int major_version, int minor_version,
                     int release_version) const {
   if (_gl_version_major < major_version) {
     return false;
+  } else if (_gl_version_major == major_version) {
+    if (_gl_version_minor < minor_version) {
+      return false;
+    } else if (_gl_version_minor == minor_version) {
+      if (_gl_version_release < release_version) {
+	return false;
+      }
+    }
   }
-  if (_gl_version_minor < minor_version) {
-    return false;
-  }
-  if (_gl_version_release < release_version) {
-    return false;
-  }
+
   return true;
 }
 
