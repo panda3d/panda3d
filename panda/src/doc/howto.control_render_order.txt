@@ -100,11 +100,7 @@ The following bin types may be specified:
 
     Collects together objects that share similar state and renders
     them together, in an attempt to minimize state transitions in the
-    scene.  Note: at the moment, this mode is not actually implemented
-    in Panda, and defaults to the same behavior as BT_unsorted.  This
-    does limit the performance of Panda for extremely complex scenes
-    on very high-end graphics cards, but has little impact on most
-    consumer-level cards.
+    scene.
 
   BT_back_to_front
 
