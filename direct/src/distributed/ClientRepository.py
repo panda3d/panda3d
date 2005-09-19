@@ -214,7 +214,7 @@ class ClientRepository(ConnectionRepository):
         if wantOtpServer:
             parentId = di.getUint32()
             zoneId = di.getUint32()
-            assert parentId == 4617 or parentId in self.doId2do
+            assert parentId == 4617 or parentId == 4618 or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
