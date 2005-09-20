@@ -206,7 +206,7 @@ INLINE NodePath PortalNode::get_cell_out() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::set_visible
 //       Access: Published
-//  Description: Python sets this based on curent camera zone
+//  Description: this is set if the portal is facing camera
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalNode::set_visible(bool value) {
   _visible = value;
@@ -215,8 +215,26 @@ INLINE void PortalNode::set_visible(bool value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::is_visible
 //       Access: Published
-//  Description: Is this portal visible from current camera zone
+//  Description: Is this portal facing the camera
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalNode::is_visible() {
   return _visible;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_open
+//       Access: Published
+//  Description: Python sets this based on curent camera zone
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_open(bool value) {
+  _open = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::is_open
+//       Access: Published
+//  Description: Is this portal open from current camera zone
+////////////////////////////////////////////////////////////////////
+INLINE bool PortalNode::is_open() {
+  return _open;
 }

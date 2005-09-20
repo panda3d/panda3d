@@ -99,6 +99,7 @@
 ConfigureDef(config_pgraph);
 NotifyCategoryDef(pgraph, "");
 NotifyCategoryDef(loader, "");
+NotifyCategoryDef(portal, "");
 
 ConfigureFn(config_pgraph) {
   init_libpgraph();

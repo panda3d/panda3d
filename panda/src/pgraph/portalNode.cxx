@@ -49,7 +49,8 @@ PortalNode(const string &name) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
-  _visible = true;
+  _visible = false;
+  _open = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +71,8 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
   add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
   add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]+1.0*scale));
 
-  _visible = true;
+  _visible = false;
+  _open = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +89,8 @@ PortalNode(const PortalNode &copy) :
   _vertices(copy._vertices),
   _cell_in(copy._cell_in),
   _cell_out(copy._cell_out),
-  _visible(copy._visible)
+  _visible(copy._visible),
+  _open(copy._open)
 {
 }
 
@@ -201,9 +204,10 @@ has_cull_callback() const {
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PortalClipper *portal_viewer = trav->get_portal_clipper();
-  if (is_visible() && !_cell_out.is_empty() && portal_viewer) {
+  set_visible(false);
+  if (is_open() && !_cell_out.is_empty() && portal_viewer) {
     //CullTraverserData next_data(data, _cell_out);
-    pgraph_cat.debug() << "checking portal node  " << *this << endl;
+    portal_cat.debug() << "checking portal node  " << *this << endl;
     PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
     PT(BoundingVolume) reduced_frustum;
      
@@ -211,40 +215,49 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     portal_viewer->prepare_portal(data._node_path.get_node_path());
     portal_viewer->clip_portal(data._node_path.get_node_path());
     if ((reduced_frustum = portal_viewer->get_reduced_frustum(data._node_path.get_node_path()))) {
+      set_visible(true);
       // This reduced frustum is in camera space
-      pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
+      portal_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
       vf = DCAST(GeometricBoundingVolume, reduced_frustum);
       
       // keep a copy of this reduced frustum
-      BoundingHexahedron *new_bh = DCAST(BoundingHexahedron, vf->make_copy());
+      PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
       
       // trasform it to cull_center space
-      CPT(TransformState) cull_center_transform = 
-        portal_viewer->_scene_setup->get_cull_center().get_transform(_cell_out);
-      vf->xform(cull_center_transform->get_mat());
-      
-      pgraph_cat.spam() << "vf is " << *vf << "\n";
+      //      CPT(TransformState) cull_center_transform = 
+      //portal_viewer->_scene_setup->get_cull_center().get_transform(_cell_out);
+
+      /*
+      CPT(TransformState) transform = portal_viewer->_scene_setup->get_cull_center().get_net_transform();
+      CPT(TransformState) portal_transform =
+        data._modelview_transform->compose(transform);
+      */
     
-      // Get the net trasform of the _cell_out
-      CPT(TransformState) cell_transform = _cell_out.get_net_transform();
+      // Get the net trasform of the _cell_out as seen from the camera.
+      CPT(TransformState) cell_transform = 
+        trav->get_camera_transform()->invert_compose(_cell_out.get_net_transform());
+
+      CPT(TransformState) frustum_transform = 
+        _cell_out.get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+
+      new_bh->xform(frustum_transform->get_mat());
+      
+      portal_cat.spam() << "new_bh is " << *new_bh << "\n";
       
       CullTraverserData next_data(_cell_out, 
                                   cell_transform,
-                                  trav->get_initial_state(), vf, 
-                                  trav->get_guard_band());
-
-      pgraph_cat.spam() << "cull_callback: traversing " << _cell_out.get_name() << endl;
+                                  data._state, new_bh, NULL);
 
       // Make this cell show with the reduced frustum
-      _cell_out.show();
-
+      //      _cell_out.show();
       // all nodes visible through this portal, should have this node's frustum
-      BoundingHexahedron *old_bh = portal_viewer->get_reduced_frustum();
+      PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
       portal_viewer->set_reduced_frustum(new_bh);
+      portal_cat.spam() << "cull_callback: before traversing " << _cell_out.get_name() << endl;
       trav->traverse(next_data);
-
+      portal_cat.spam() << "cull_callback: after traversing " << _cell_out.get_name() << endl;
       // make sure traverser is not drawing this node again
-      _cell_out.hide();
+      //    _cell_out.hide();
 
       // reset portal viewer frustum for the siblings;
       portal_viewer->set_reduced_frustum(old_bh);

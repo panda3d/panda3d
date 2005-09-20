@@ -32,6 +32,7 @@ class DSearchPath;
 ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(portal, EXPCL_PANDA, EXPTP_PANDA);
 
 extern ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool allow_portal_cull;

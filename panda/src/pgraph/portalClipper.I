@@ -129,12 +129,14 @@ get_reduced_frustum() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
 is_facing_view(Planef portal_plane) {
-  Planef view_plane(_reduced_frustum->get_point(4), _reduced_frustum->get_point(5), _reduced_frustum->get_point(6));
+  //  Planef view_plane(_reduced_frustum->get_point(4), _reduced_frustum->get_point(5), _reduced_frustum->get_point(6));
 
   // use the view_frustum's near plane to calculate direction
-  pgraph_cat.spam() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
-  float direction = portal_plane.get_normal().dot(-view_plane.get_normal());
-  pgraph_cat.spam() << "Found direction of " << direction << endl;
+  //portal_cat.spam() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
+  //float direction = portal_plane.get_normal().dot(-view_plane.get_normal());
+  portal_cat.spam() << portal_plane.get_normal() << "; " << Normalf::forward() << endl;
+  float direction = portal_plane.get_normal().dot(Normalf::forward());
+  portal_cat.spam() << "Found direction of " << direction << endl;
   return (direction < _FACING_THRESHOLD);
 }
 
@@ -157,7 +159,7 @@ is_whole_portal_in_view(LMatrix4f cmat) {
 
   int result = _reduced_frustum->contains(gbv);
 
-  pgraph_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << endl;
+  portal_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << endl;
   return (result != 0);
 }
 
@@ -176,7 +178,7 @@ is_partial_portal_in_view() {
   for (int j=0; j<_num_vert; ++j) {
     result |= _reduced_frustum->contains(_coords[j]);
   }
-  pgraph_cat.spam() << "frustum: " << *_reduced_frustum << " contains(coord) result = " << result << endl;
+  portal_cat.spam() << "frustum: " << *_reduced_frustum << " contains(coord) result = " << result << endl;
 
   return (result != 0);
 }
@@ -191,8 +193,8 @@ get_plane_depth(float x, float z, Planef *portal_plane) {
   float y = 0.0;
   // Plane equation: Ax + By + Cz + D = 0
   // y = (Ax + Cz + D) / -B
-  pgraph_cat.spam() << *portal_plane << endl;
-  pgraph_cat.spam() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
+  portal_cat.spam() << *portal_plane << endl;
+  portal_cat.spam() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
                      << portal_plane->_v.v._2 << " " << portal_plane->_v.v._3 << endl;
 
   if (portal_plane->_v.v._1 != 0.0) {

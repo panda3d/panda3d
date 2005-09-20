@@ -235,20 +235,20 @@ prepare_portal(const NodePath &node_path)
   _num_vert = 0;
 
   // Get the geometry from the portal    
-  pgraph_cat.spam() << *_portal_node << endl;
+  portal_cat.spam() << *_portal_node << endl;
 
   /*
   // Get the World transformation matrix
   CPT(TransformState) wtransform = portal_nodepath.get_transform(_scene_setup->get_scene_root());
   LMatrix4f wmat = wtransform->get_mat();
-  pgraph_cat.spam() << wmat << endl;
+  portal_cat.spam() << wmat << endl;
   */
   
   // Get the camera transformation matrix
   CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
   //CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_camera_path());
   LMatrix4f cmat = ctransform->get_mat();
-  pgraph_cat.spam() << cmat << endl;
+  portal_cat.spam() << cmat << endl;
  
   Vertexf temp[4];
   temp[0] = _portal_node->get_vertex(0);
@@ -256,11 +256,11 @@ prepare_portal(const NodePath &node_path)
   temp[2] = _portal_node->get_vertex(2);
   temp[3] = _portal_node->get_vertex(3);
 
-  pgraph_cat.spam() << "before transformation to camera space" << endl;
-  pgraph_cat.spam() << temp[0] << endl;
-  pgraph_cat.spam() << temp[1] << endl;
-  pgraph_cat.spam() << temp[2] << endl;
-  pgraph_cat.spam() << temp[3] << endl;
+  portal_cat.spam() << "before transformation to camera space" << endl;
+  portal_cat.spam() << temp[0] << endl;
+  portal_cat.spam() << temp[1] << endl;
+  portal_cat.spam() << temp[2] << endl;
+  portal_cat.spam() << temp[3] << endl;
   
   temp[0] = temp[0]*cmat;
   temp[1] = temp[1]*cmat;
@@ -269,15 +269,15 @@ prepare_portal(const NodePath &node_path)
 
   Planef portal_plane(temp[0], temp[1], temp[2]);
   if (!is_facing_view(portal_plane)) {
-    pgraph_cat.debug() << "portal failed 1st level test \n";
+    portal_cat.debug() << "portal failed 1st level test \n";
     return;
   }
 
-  pgraph_cat.spam() << "after transformation to camera space" << endl;
-  pgraph_cat.spam() << temp[0] << endl;
-  pgraph_cat.spam() << temp[1] << endl;
-  pgraph_cat.spam() << temp[2] << endl;
-  pgraph_cat.spam() << temp[3] << endl;
+  portal_cat.spam() << "after transformation to camera space" << endl;
+  portal_cat.spam() << temp[0] << endl;
+  portal_cat.spam() << temp[1] << endl;
+  portal_cat.spam() << temp[2] << endl;
+  portal_cat.spam() << temp[3] << endl;
   
   float min_x, max_x, min_z, max_z;
 
@@ -286,31 +286,31 @@ prepare_portal(const NodePath &node_path)
   min_z = min(min(min(temp[0][2], temp[1][2]), temp[2][2]), temp[3][2]);
   max_z = max(max(max(temp[0][2], temp[1][2]), temp[2][2]), temp[3][2]);
 
-  pgraph_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_z " << min_z << ";max_z " << max_z << endl;
+  portal_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_z " << min_z << ";max_z " << max_z << endl;
 
   float y;
 
   y = get_plane_depth(min_x, min_z, &portal_plane);
-  pgraph_cat.spam() << "plane's depth is " << y << endl;
+  portal_cat.spam() << "plane's depth is " << y << endl;
   _coords[0].set(min_x, y, min_z);
 
   y = get_plane_depth(max_x, min_z, &portal_plane);
-  pgraph_cat.spam() << "plane's depth is " << y << endl;
+  portal_cat.spam() << "plane's depth is " << y << endl;
   _coords[1].set(max_x, y, min_z);
 
   y = get_plane_depth(max_x, max_z, &portal_plane);
-  pgraph_cat.spam() << "plane's depth is " << y << endl;
+  portal_cat.spam() << "plane's depth is " << y << endl;
   _coords[2].set(max_x, y, max_z);
 
   y = get_plane_depth(min_x, max_z, &portal_plane);
-  pgraph_cat.spam() << "plane's depth is " << y << endl;
+  portal_cat.spam() << "plane's depth is " << y << endl;
   _coords[3].set(min_x, y, max_z);
     
-  pgraph_cat.spam() << "after min max calculation" << endl;
-  pgraph_cat.spam() << _coords[0] << endl;
-  pgraph_cat.spam() << _coords[1] << endl;
-  pgraph_cat.spam() << _coords[2] << endl;
-  pgraph_cat.spam() << _coords[3] << endl;
+  portal_cat.spam() << "after min max calculation" << endl;
+  portal_cat.spam() << _coords[0] << endl;
+  portal_cat.spam() << _coords[1] << endl;
+  portal_cat.spam() << _coords[2] << endl;
+  portal_cat.spam() << _coords[3] << endl;
 
   // check if portal is in view
   if (is_whole_portal_in_view(cmat)) {
@@ -330,11 +330,11 @@ prepare_portal(const NodePath &node_path)
     draw_to(_coords[3]);
     draw_to(_coords[0]);
     
-    pgraph_cat.spam() << "assembled " << _portal_node->get_name() << ": frustum points" << endl;
+    portal_cat.spam() << "assembled " << _portal_node->get_name() << ": frustum points" << endl;
     _num_vert = _portal_node->get_num_vertices();
   }
   else
-    pgraph_cat.debug() << "portal failed 2nd level test \n";
+    portal_cat.debug() << "portal failed 2nd level test \n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -374,10 +374,10 @@ clip_portal(const NodePath &node_path)
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
     if (is_intersect && (t >= 0.0 && t <= 1.0)) {
       xect |= 1 << 0;
-      pgraph_cat.debug() << "bottom plane intersected segment " << j << "->" 
+      portal_cat.debug() << "bottom plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
+      portal_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 1) {
         // means bottom should cut 1->2 by moving 1 to the intersection point
         _coords[1] = cut_point;
@@ -387,10 +387,10 @@ clip_portal(const NodePath &node_path)
         _coords[0] = cut_point;
       }
       else
-        pgraph_cat.debug() << "ignored for now for simplicity \n";
+        portal_cat.debug() << "ignored for now for simplicity \n";
     }
     else
-      pgraph_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
+      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
   // Look for intersection with the view frustum's top_plane and portal edges
@@ -401,10 +401,10 @@ clip_portal(const NodePath &node_path)
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
     if (is_intersect && (t >= 0.0 && t <= 1.0)) {
       xect |= 1 << 1;
-      pgraph_cat.debug() << "top plane intersected segment " << j << "->" 
+      portal_cat.debug() << "top plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
+      portal_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 1) {
         // means top should cut 1->2 by moving 2 to the intersection point
         _coords[2] = cut_point;
@@ -414,10 +414,10 @@ clip_portal(const NodePath &node_path)
         _coords[3] = cut_point;
       }
       else
-        pgraph_cat.debug() << "ignored for now for simplicity \n";
+        portal_cat.debug() << "ignored for now for simplicity \n";
     }
     else
-      pgraph_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
+      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
   // Look for intersection with the view frustum's right_plane and portal edges
@@ -428,10 +428,10 @@ clip_portal(const NodePath &node_path)
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
     if (is_intersect && (t >= 0.0 && t <= 1.0)) {
       xect |= 1 << 2;
-      pgraph_cat.debug() << "right plane intersected segment " << j << "->" 
+      portal_cat.debug() << "right plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
+      portal_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 0) {
         // means right should cut 0->1 by moving 1 to the intersection point
         _coords[1] = cut_point;
@@ -441,10 +441,10 @@ clip_portal(const NodePath &node_path)
         _coords[2] = cut_point;
       }
       else
-        pgraph_cat.debug() << "ignored for now for simplicity \n";
+        portal_cat.debug() << "ignored for now for simplicity \n";
     }
     else
-      pgraph_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
+      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
   // Look for intersection with the view frustum's left_plane and portal edges
@@ -455,10 +455,10 @@ clip_portal(const NodePath &node_path)
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
     if (is_intersect && (t >= 0.0 && t <= 1.0)) {
       xect |= 1 << 3;
-      pgraph_cat.debug() << "left plane intersected segment " << j << "->" 
+      portal_cat.debug() << "left plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
+      portal_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 0) {
         // means left should cut 0->1 by moving 0 to the intersection point
         _coords[0] = cut_point;
@@ -468,10 +468,10 @@ clip_portal(const NodePath &node_path)
         _coords[3] = cut_point;
       }
       else
-        pgraph_cat.debug() << "ignored for now for simplicity \n";
+        portal_cat.debug() << "ignored for now for simplicity \n";
     }
     else
-      pgraph_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
+      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
   // ok, now lets add the clipped portal
   _color = Colorf(1,0,0,1);
@@ -482,12 +482,12 @@ clip_portal(const NodePath &node_path)
   draw_to(_coords[0]);
 
   // 3rd level test, more accurate to determine if the portal is worth visiting
-  pgraph_cat.debug() << "portal clipper flag: " << xect << endl;
+  portal_cat.debug() << "portal clipper flag: " << xect << endl;
   if (xect == 0xf) {  //if all four planes intersected the portal, it is visible
     return;
   }
   if (!is_partial_portal_in_view()) {
-    pgraph_cat.debug() << "portal failed 3rd level test \n";
+    portal_cat.debug() << "portal failed 3rd level test \n";
     _num_vert = 0;
   }
 }
@@ -521,9 +521,9 @@ get_reduced_frustum(const NodePath &node_path)
   LVector3f from_direction = _coords[3] - from_origin;
   bool is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
   if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    pgraph_cat.spam() << "far plane intersected 7->3 at t=" << t << endl;
+    portal_cat.spam() << "far plane intersected 7->3 at t=" << t << endl;
     intersect_points[0] = from_origin + t*from_direction;
-    pgraph_cat.spam() << intersect_points[0] << endl;
+    portal_cat.spam() << intersect_points[0] << endl;
   }
   else
     visible = false;
@@ -533,9 +533,9 @@ get_reduced_frustum(const NodePath &node_path)
   from_direction = _coords[0] - from_origin;
   is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
   if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    pgraph_cat.spam() << "far plane intersected 4->0 at t=" << t << endl;
+    portal_cat.spam() << "far plane intersected 4->0 at t=" << t << endl;
     intersect_points[1] = from_origin + t*from_direction;
-    pgraph_cat.spam() << intersect_points[1] << endl;
+    portal_cat.spam() << intersect_points[1] << endl;
   }
   else
     visible = false;
@@ -545,9 +545,9 @@ get_reduced_frustum(const NodePath &node_path)
   from_direction = _coords[1] - from_origin;
   is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
   if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    pgraph_cat.spam() << "far plane intersected 5->1 at t=" << t << endl;
+    portal_cat.spam() << "far plane intersected 5->1 at t=" << t << endl;
     intersect_points[2] = from_origin + t*from_direction;
-    pgraph_cat.spam() << intersect_points[2] << endl;
+    portal_cat.spam() << intersect_points[2] << endl;
   }
   else
     visible = false;
@@ -557,15 +557,15 @@ get_reduced_frustum(const NodePath &node_path)
   from_direction = _coords[2] - from_origin;
   is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
   if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    pgraph_cat.spam() << "far plane intersected 6->2 at t=" << t << endl;
+    portal_cat.spam() << "far plane intersected 6->2 at t=" << t << endl;
     intersect_points[3] = from_origin + t*from_direction;
-    pgraph_cat.spam() << intersect_points[3] << endl;
+    portal_cat.spam() << intersect_points[3] << endl;
   }
   else
     visible = false;
 
   if (!visible) {
-    pgraph_cat.spam() << "portal is not visible from current camera look at" << endl;
+    portal_cat.spam() << "portal is not visible from current camera look at" << endl;
     return NULL;
   }
   
@@ -576,7 +576,7 @@ get_reduced_frustum(const NodePath &node_path)
                        _reduced_frustum->get_point(4), _reduced_frustum->get_point(5),
                        _reduced_frustum->get_point(6), _reduced_frustum->get_point(7));
 
-  pgraph_cat.debug() << *reduced_frustum << endl;
+  portal_cat.debug() << *reduced_frustum << endl;
 
   // draw this hexahedron
   _color = Colorf(0,0,1,1);

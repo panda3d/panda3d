@@ -79,6 +79,9 @@ PUBLISHED:
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
 
+  INLINE void set_open(bool value);
+  INLINE bool is_open();
+
   //  void draw () const;
 
 protected:
@@ -107,6 +110,7 @@ private:
   NodePath _cell_out;  // This is the cell it leads out to
 
   bool _visible;
+  bool _open;
 
 public:
   static void register_with_read_factory();
