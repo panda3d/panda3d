@@ -510,10 +510,10 @@
 #define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
 #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
-// Is CV available, and should we try to build with it?
-#define CV_IPATH $[WINTOOLS]/sdk/cv/include	
-#define CV_LPATH $[WINTOOLS]/sdk/cv/lib
-#define CV_LIBS cv.lib highgui.lib cxcore.lib
+// Is OpenCV installed, and where?
+#define CV_IPATH /usr/local/include/opencv
+#define CV_LPATH /usr/local/lib
+#define CV_LIBS $[if $[WINDOWS_PLATFORM],cv.lib highgui.lib cxcore.lib,cv highgui cxcore]
 #defer HAVE_CV $[libtest $[CV_LPATH],$[CV_LIBS]]
 
 // Do you want to build the DirectD tools for starting Panda clients
