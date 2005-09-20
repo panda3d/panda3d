@@ -75,13 +75,18 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         self.visContext = self.cr.addInterest(self.getDoId(), 0, self.uniqueName("visibility"))
         taskMgr.add(self.processVisibility, self.taskName("processVisibility"))
 
-    def stopProcessVisibility(self):
+    def stopProcessVisibility(self,clearAll=False):
         taskMgr.remove(self.taskName("processVisibility"))
         if self.visContext is not None:
             self.cr.removeInterest(self.visContext)
             self.visContext = None
         self.visAvatar = None
         self.visZone = None
+
+        # sometimes we also need to remove vis avatar from
+        # my parent if it is also a grid
+        if (clearAll):
+            self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility()
 
     def processVisibility(self, task):
         pos = self.visAvatar.getPos(self)
