@@ -13,6 +13,7 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
+    attribSlots.h attribSlots.I \
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
@@ -115,6 +116,7 @@
     alphaTestAttrib.cxx \  
     ambientLight.cxx \
     antialiasAttrib.cxx \
+    attribSlots.cxx \
     auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \
@@ -213,6 +215,7 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
+    attribSlots.h attribSlots.I \
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
