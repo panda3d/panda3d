@@ -45,7 +45,7 @@ CConnectionRepository(bool has_owner_view) :
 #ifdef HAVE_PYTHON
   _python_repository(NULL),
 #endif
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   _http_conn(NULL),
 #endif
 #ifdef HAVE_NSPR
@@ -77,7 +77,7 @@ CConnectionRepository::
   disconnect();
 }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_connection_http
 //       Access: Published
@@ -97,9 +97,9 @@ set_connection_http(HTTPChannel *channel) {
   }
 #endif
 }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_stream
 //       Access: Published
@@ -111,7 +111,7 @@ SocketStream *CConnectionRepository::
 get_stream() {
   return _http_conn;
 }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 
 #ifdef HAVE_NSPR
@@ -161,11 +161,11 @@ start_delay(double min_delay, double max_delay) {
 #ifdef HAVE_NSPR
     _qcr.start_delay(min_delay, max_delay);
 #endif  // HAVE_NSPR
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     if (_http_conn != (SocketStream *)NULL) {
       _http_conn->start_delay(min_delay, max_delay);
     }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
   } else {
     stop_delay();
   }
@@ -185,11 +185,11 @@ stop_delay() {
 #ifdef HAVE_NSPR
   _qcr.stop_delay();
 #endif  // HAVE_NSPR
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   if (_http_conn != (SocketStream *)NULL) {
     _http_conn->stop_delay();
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 }
 #endif  // SIMULATE_NETWORK_DELAY
 
@@ -298,7 +298,7 @@ is_connected() {
   }
 #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   if (_http_conn) {
     if (!_http_conn->is_closed()) {
       return true;
@@ -308,7 +308,7 @@ is_connected() {
     delete _http_conn;
     _http_conn = NULL;
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   return false;
 }
@@ -342,7 +342,7 @@ send_datagram(const Datagram &dg) {
   }
 #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   if (_http_conn) {
     if (!_http_conn->send_datagram(dg)) {
       distributed_cat.warning()
@@ -352,7 +352,7 @@ send_datagram(const Datagram &dg) {
 
     return true;
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   distributed_cat.warning()
     << "Unable to send datagram after connection is closed.\n";
@@ -378,11 +378,11 @@ consider_flush() {
   }
 #endif  // HAVE_NSPR
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   if (_http_conn) {
     return _http_conn->consider_flush();
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   return false;
 }
@@ -406,11 +406,11 @@ flush() {
   }
   #endif  // HAVE_NSPR
 
-  #ifdef HAVE_SSL
+  #ifdef HAVE_OPENSSL
   if (_http_conn) {
     return _http_conn->flush();
   }
-  #endif  // HAVE_SSL
+  #endif  // HAVE_OPENSSL
 
   return false;
 }
@@ -429,13 +429,13 @@ disconnect() {
   }
   #endif  // HAVE_NSPR
 
-  #ifdef HAVE_SSL
+  #ifdef HAVE_OPENSSL
   if (_http_conn) {
     _http_conn->close();
     delete _http_conn;
     _http_conn = NULL;
   }
-  #endif  // HAVE_SSL
+  #endif  // HAVE_OPENSSL
 
   _simulated_disconnect = false;
 }
@@ -459,12 +459,12 @@ do_check_datagram() {
   }
   #endif  // HAVE_NSPR
 
-  #ifdef HAVE_SSL
+  #ifdef HAVE_OPENSSL
   if (_http_conn) {
     _http_conn->consider_flush();
     return _http_conn->receive_datagram(_dg);
   }
-  #endif  // HAVE_SSL
+  #endif  // HAVE_OPENSSL
 
   return false;
 }

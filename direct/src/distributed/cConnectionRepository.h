@@ -69,7 +69,7 @@ PUBLISHED:
   INLINE void set_python_repository(PyObject *python_repository);
 #endif
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   void set_connection_http(HTTPChannel *channel);
   SocketStream *get_stream();
 #endif
@@ -129,7 +129,7 @@ private:
   PyObject *_python_repository;
 #endif
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   SocketStream *_http_conn;
 #endif
 

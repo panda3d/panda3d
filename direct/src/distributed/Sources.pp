@@ -2,7 +2,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES ssl nspr
+  #define USE_PACKAGES openssl nspr
 
   #define TARGET distributed
   #define LOCAL_LIBS \
