@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorScaleAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -85,20 +86,6 @@ set_scale(const LVecBase4f &scale) const {
   attrib->quantize_scale();
   attrib->_has_scale = !scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorScaleAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void ColorScaleAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_color_scale(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,6 +255,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *ColorScaleAttrib::
 make_default_impl() const {
   return new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void ColorScaleAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_color_scale = this;
 }
 
 ////////////////////////////////////////////////////////////////////

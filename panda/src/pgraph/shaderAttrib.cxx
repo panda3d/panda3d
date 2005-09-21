@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "shaderAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -52,20 +53,6 @@ make_off() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void ShaderAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_shader(this);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::make_default_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived ShaderAttrib
@@ -79,6 +66,18 @@ issue(GraphicsStateGuardianBase *gsg) const {
 RenderAttrib *ShaderAttrib::
 make_default_impl() const {
   return new ShaderAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void ShaderAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_shader = this;
 }
 
 ////////////////////////////////////////////////////////////////////

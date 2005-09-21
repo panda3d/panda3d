@@ -32,6 +32,8 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
+#include "namable.h"
+#include "graphicsStateGuardianBase.h"
 #include "internalName.h"
 
 ////////////////////////////////////////////////////////////////////

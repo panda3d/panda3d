@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "antialiasAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -66,20 +67,6 @@ CPT(RenderAttrib) AntialiasAttrib::
 make(unsigned short mode) {
   AntialiasAttrib *attrib = new AntialiasAttrib(mode);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AntialiasAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void AntialiasAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_antialias(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,6 +204,18 @@ compose_impl(const RenderAttrib *other) const {
 RenderAttrib *AntialiasAttrib::
 make_default_impl() const {
   return new AntialiasAttrib(M_none);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AntialiasAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void AntialiasAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_antialias = this;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthWriteAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -35,20 +36,6 @@ CPT(RenderAttrib) DepthWriteAttrib::
 make(DepthWriteAttrib::Mode mode) {
   DepthWriteAttrib *attrib = new DepthWriteAttrib(mode);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void DepthWriteAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_depth_write(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +92,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *DepthWriteAttrib::
 make_default_impl() const {
   return new DepthWriteAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void DepthWriteAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_depth_write = this;
 }
 
 ////////////////////////////////////////////////////////////////////

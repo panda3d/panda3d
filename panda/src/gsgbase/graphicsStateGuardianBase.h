@@ -210,30 +210,6 @@ public:
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
-  virtual void issue_transform(const TransformState *) { }
-  virtual void issue_alpha_test(const AlphaTestAttrib *) { }
-  virtual void issue_color_scale(const ColorScaleAttrib *) { }
-  virtual void issue_color(const ColorAttrib *) { }
-  virtual void issue_tex_matrix(const TexMatrixAttrib *) { }
-  virtual void issue_texture(const TextureAttrib *) { }
-  virtual void issue_light(const LightAttrib *) { }
-  virtual void issue_material(const MaterialAttrib *) { }
-  virtual void issue_render_mode(const RenderModeAttrib *) { }
-  virtual void issue_antialias(const AntialiasAttrib *) { }
-  virtual void issue_rescale_normal(const RescaleNormalAttrib *) { }
-  virtual void issue_color_write(const ColorWriteAttrib *) { }
-  virtual void issue_depth_test(const DepthTestAttrib *) { }
-  virtual void issue_depth_write(const DepthWriteAttrib *) { }
-  virtual void issue_cull_face(const CullFaceAttrib *) { }
-  virtual void issue_transparency(const TransparencyAttrib *) { }
-  virtual void issue_fog(const FogAttrib *) { }
-  virtual void issue_depth_offset(const DepthOffsetAttrib *) { }
-  virtual void issue_color_blend(const ColorBlendAttrib *) { }
-  virtual void issue_tex_gen(const TexGenAttrib *) { }
-  virtual void issue_shader(const ShaderAttrib *) { }
-  virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
-  virtual void issue_shade_model(const ShadeModelAttrib *) { }
-
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id) { }
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,

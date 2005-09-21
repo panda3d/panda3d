@@ -1483,7 +1483,8 @@ reset() {
   HRESULT hr;
 
   // make sure gsg passes all current state down to us
-  set_state(RenderState::make_empty());
+  // set_state_and_transform(RenderState::make_empty(),
+  // TransformState::make_identity());
   // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
   assert(_screen->_d3d8 != NULL);
@@ -1579,10 +1580,6 @@ reset() {
   _projection_mat = LMatrix4f::ident_mat();
   _has_scene_graph_color = false;
 
-  // Apply a default material when materials are turned off.
-  _pending_material = NULL;
-  do_issue_material();
-
   _last_testcooplevel_result = D3D_OK;
 
   for(int i = 0; i < MAX_POSSIBLE_TEXFMTS; i++) {
@@ -1670,17 +1667,6 @@ reset() {
   _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
   PRINT_REFCNT(dxgsg8, _d3d_device);
-
-  // Make sure the DX state matches all of our initial attribute states.
-  CPT(RenderAttrib) dta = DepthTestAttrib::make(DepthTestAttrib::M_less);
-  CPT(RenderAttrib) dwa = DepthWriteAttrib::make(DepthWriteAttrib::M_on);
-  CPT(RenderAttrib) cfa = CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise);
-
-  dta->issue(this);
-  dwa->issue(this);
-  cfa->issue(this);
-
-  PRINT_REFCNT(dxgsg8, _d3d_device);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1730,8 +1716,8 @@ apply_fog(Fog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_transform
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_transform
+//       Access: Protected
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
 //
@@ -1739,7 +1725,8 @@ apply_fog(Fog *fog) {
 //               converted into the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_transform(const TransformState *transform) {
+do_issue_transform() {
+  const TransformState *transform = _internal_transform;
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 
   const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
@@ -1752,12 +1739,13 @@ issue_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_alpha_test
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_alpha_test
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_alpha_test(const AlphaTestAttrib *attrib) {
+do_issue_alpha_test() {
+  const AlphaTestAttrib *attrib = _target._alpha_test;
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
     enable_alpha_test(false);
@@ -1770,12 +1758,13 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_render_mode
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_render_mode
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_render_mode(const RenderModeAttrib *attrib) {
+do_issue_render_mode() {
+  const RenderModeAttrib *attrib = _target._render_mode;
   RenderModeAttrib::Mode mode = attrib->get_mode();
 
   switch (mode) {
@@ -1822,12 +1811,13 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_rescale_normal
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_rescale_normal
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_rescale_normal(const RescaleNormalAttrib *attrib) {
+do_issue_rescale_normal() {
+  const RescaleNormalAttrib *attrib = _target._rescale_normal;
   RescaleNormalAttrib::Mode mode = attrib->get_mode();
 
   _auto_rescale_normal = false;
@@ -1854,23 +1844,13 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_color_write
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_depth_test
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_color_write(const ColorWriteAttrib *attrib) {
-  _color_write_mode = attrib->get_mode();
-  set_color_writemask((_color_write_mode == ColorWriteAttrib::M_on) ? 0xFFFFFFFF : 0x0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_depth_test
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-issue_depth_test(const DepthTestAttrib *attrib) {
+do_issue_depth_test() {
+  const DepthTestAttrib *attrib = _target._depth_test;
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     _depth_test_enabled = false;
@@ -1883,22 +1863,24 @@ issue_depth_test(const DepthTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_depth_write
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_depth_write
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_depth_write(const DepthWriteAttrib *attrib) {
+do_issue_depth_write() {
+  const DepthWriteAttrib *attrib = _target._depth_write;
   enable_zwritemask(attrib->get_mode() == DepthWriteAttrib::M_on);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_cull_face
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_cull_face
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_cull_face(const CullFaceAttrib *attrib) {
+do_issue_cull_face() {
+  const CullFaceAttrib *attrib = _target._cull_face;
   _cull_face_mode = attrib->get_effective_mode();
 
   switch (_cull_face_mode) {
@@ -1919,12 +1901,13 @@ issue_cull_face(const CullFaceAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_fog
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_fog
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_fog(const FogAttrib *attrib) {
+do_issue_fog() {
+  const FogAttrib *attrib = _target._fog;
   if (!attrib->is_off()) {
     enable_fog(true);
     Fog *fog = attrib->get_fog();
@@ -1936,34 +1919,25 @@ issue_fog(const FogAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_depth_offset
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_depth_offset
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_depth_offset(const DepthOffsetAttrib *attrib) {
+do_issue_depth_offset() {
+  const DepthOffsetAttrib *attrib = _target._depth_offset;
   int offset = attrib->get_offset();
   _d3d_device->SetRenderState(D3DRS_ZBIAS, offset);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_tex_gen
-//       Access: Public, Virtual
+//     Function: DXGraphicsStateGuardian8::do_issue_shade_model
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-issue_tex_gen(const TexGenAttrib *attrib) {
-  _current_tex_gen = attrib;
-  _texture_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::issue_shade_model
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-issue_shade_model(const ShadeModelAttrib *attrib) {
+do_issue_shade_model() {
+  const ShadeModelAttrib *attrib = _target._shade_model;
   switch (attrib->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
@@ -1972,6 +1946,156 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
   case ShadeModelAttrib::M_flat:
     _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
     break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::set_state_and_transform
+//       Access: Public, Virtual
+//  Description: Simultaneously resets the render state and the
+//               transform state.
+//
+//               This transform specified is the "external" net
+//               transform, expressed in the external coordinate
+//               space; internally, it will be pretransformed by
+//               get_cs_transform() to express it in the GSG's
+//               internal coordinate space.
+//
+//               Special case: if (state==NULL), then the target
+//               state is already stored in _target.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+set_state_and_transform(const RenderState *state,
+                        const TransformState *transform) {
+#ifndef NDEBUG
+  if (gsg_cat.is_spam()) {
+    gsg_cat.spam() << "Setting GSG state to " << (void *)state << ":\n";
+    state->write(gsg_cat.spam(false), 2);
+  }
+#endif
+  _state_pcollector.add_level(1);
+
+  if (transform != _external_transform) {
+    _state_pcollector.add_level(1);
+    _external_transform = transform;
+    _internal_transform = _cs_transform->compose(transform);
+    do_issue_transform();
+  }
+  
+  if (state) {
+    if (state == _last_state) {
+      return;
+    }
+    _target.clear_to_defaults();
+    state->store_into_slots(&_target);
+  }
+  _last_state = state;
+  
+  
+  if (_target._alpha_test != _state._alpha_test) {
+    do_issue_alpha_test();
+    _state._alpha_test = _target._alpha_test;
+  }
+  
+  if (_target._antialias != _state._antialias) {
+    // Antialias not implemented under DX8
+    _state._antialias = _target._antialias;
+  }
+  
+  if (_target._clip_plane != _state._clip_plane) {
+    do_issue_clip_plane();
+    _state._clip_plane = _target._clip_plane;
+  }
+  
+  if (_target._color != _state._color) {
+    do_issue_color();
+    _state._color = _target._color;
+  }
+  
+  if (_target._color_scale != _state._color_scale) {
+    do_issue_color_scale();
+    _state._color_scale = _target._color_scale;
+  }
+  
+  if (_target._cull_face != _state._cull_face) {
+    do_issue_cull_face();
+    _state._cull_face = _target._cull_face;
+  }
+  
+  if (_target._depth_offset != _state._depth_offset) {
+    do_issue_depth_offset();
+    _state._depth_offset = _target._depth_offset;
+  }
+  
+  if (_target._depth_test != _state._depth_test) {
+    do_issue_depth_test();
+    _state._depth_test = _target._depth_test;
+  }
+  
+  if (_target._depth_write != _state._depth_write) {
+    do_issue_depth_write();
+    _state._depth_write = _target._depth_write;
+  }
+  
+  if (_target._fog != _state._fog) {
+    do_issue_fog();
+    _state._fog = _target._fog;
+  }
+  
+  if (_target._render_mode != _state._render_mode) {
+    do_issue_render_mode();
+    _state._render_mode = _target._render_mode;
+  }
+  
+  if (_target._rescale_normal != _state._rescale_normal) {
+    do_issue_rescale_normal();
+    _state._rescale_normal = _target._rescale_normal;
+  }
+  
+  if (_target._shade_model != _state._shade_model) {
+    do_issue_shade_model();
+    _state._shade_model = _target._shade_model;
+  }
+  
+  // Shaders not implemented under DX8
+  if (_target._shader != _state._shader) {
+    _state._shader = _target._shader;
+  }
+  
+  if (_target._tex_gen != _state._tex_gen) {
+    _current_tex_gen = _target._tex_gen;
+    _state._texture = 0;
+    _state._tex_gen = _target._tex_gen;
+  }
+  
+  if (_target._tex_matrix != _state._tex_matrix) {
+    _current_tex_mat = _target._tex_matrix;
+    _needs_tex_mat = true;
+    _state._tex_matrix = _target._tex_matrix;
+  }
+  
+  if ((_target._transparency != _state._transparency)||
+      (_target._color_write != _state._color_write)||
+      (_target._color_blend != _state._color_blend)) {
+    do_issue_blending();
+    _state._transparency = _target._transparency;
+    _state._color_write = _target._color_write;
+    _state._color_blend = _target._color_blend;
+  }
+  
+  if (_target._texture != _state._texture) {
+    do_issue_texture();
+    _state._texture = _target._texture;
+  }
+
+  if (_target._material != _state._material) {
+    do_issue_material();
+    _state._material = _target._material;
+  }
+  
+  if (_target._light != _state._light) {
+    do_issue_light();
+    _state._light = _target._light;
   }
 }
 
@@ -2152,11 +2276,11 @@ void DXGraphicsStateGuardian8::
 do_issue_material() {
   static Material empty;
   const Material *material;
-  if (_pending_material == (MaterialAttrib *)NULL ||
-      _pending_material->is_off()) {
+  if (_target._material == (MaterialAttrib *)NULL ||
+      _target._material->is_off()) {
     material = &empty;
   } else {
-    material = _pending_material->get_material();
+    material = _target._material->get_material();
   }
 
   D3DMATERIAL8 cur_material;
@@ -2215,7 +2339,7 @@ void DXGraphicsStateGuardian8::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  CPT(TextureAttrib) new_texture = _pending_texture->filter_to_max(_max_texture_stages);
+  CPT(TextureAttrib) new_texture = _target._texture->filter_to_max(_max_texture_stages);
 
   int num_stages = new_texture->get_num_on_stages();
   int num_old_stages = _current_texture->get_num_on_stages();
@@ -2500,23 +2624,36 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 //               blending mode based on the current properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-set_blend_mode() {
+do_issue_blending() {
 
-  if ((_color_write_mode == ColorWriteAttrib::M_off) && !_screen->_can_direct_disable_color_writes) {
-    // need !_screen->_can_direct_disable_color_writes guard because other
-    // issue_colorblend, issue_transp will come this way, and they
-    // should ignore the colorwriteattrib value since it's been
-    // handled separately in set_color_writemask
-    enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
+    if (_target._color_write != _state._color_write) {
+      if (_screen->_can_direct_disable_color_writes) {
+        enable_blend(false);
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
+      } else {
+        enable_blend(true);
+        call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+      }
+    }
     return;
+  } else {
+    if (_target._color_write != _state._color_write) {
+      if (_screen->_can_direct_disable_color_writes) {
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0xFFFFFFFF);
+      }
+    }
   }
 
+  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
+  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
+  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
+
   // Is there a color blend set?
-  if (_color_blend_mode != ColorBlendAttrib::M_none) {
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
     enable_blend(true);
 
-    switch (_color_blend_mode) {
+    switch (color_blend_mode) {
     case ColorBlendAttrib::M_add:
       _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
       break;
@@ -2538,13 +2675,13 @@ set_blend_mode() {
       break;
     }
 
-    call_dxBlendFunc(get_blend_func(_color_blend->get_operand_a()),
-                     get_blend_func(_color_blend->get_operand_b()));
+    call_dxBlendFunc(get_blend_func(color_blend->get_operand_a()),
+                     get_blend_func(color_blend->get_operand_b()));
     return;
   }
 
   // No color blend; is there a transparency set?
-  switch (_transparency_mode) {
+  switch (transparency_mode) {
   case TransparencyAttrib::M_none:
   case TransparencyAttrib::M_binary:
     break;
@@ -2560,7 +2697,7 @@ set_blend_mode() {
 
   default:
     dxgsg8_cat.error()
-      << "invalid transparency mode " << (int)_transparency_mode << endl;
+      << "invalid transparency mode " << (int)transparency_mode << endl;
     break;
   }
 
@@ -2587,7 +2724,8 @@ free_nondx_resources() {
 void DXGraphicsStateGuardian8::
 free_d3d_device() {
   // dont want a full reset of gsg, just a state clear
-  set_state(RenderState::make_empty());
+  _last_state = 0;
+  _state.clear_to_zero();
   // want gsg to pass all state settings through
 
   _dx_is_ready = false;

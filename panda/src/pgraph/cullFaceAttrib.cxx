@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullFaceAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -101,20 +102,6 @@ get_effective_mode() const {
   }
       
   return M_cull_none;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullFaceAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void CullFaceAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_cull_face(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,6 +241,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *CullFaceAttrib::
 make_default_impl() const {
   return new CullFaceAttrib(M_cull_clockwise, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void CullFaceAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_cull_face = this;
 }
 
 ////////////////////////////////////////////////////////////////////

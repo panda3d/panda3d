@@ -94,19 +94,6 @@ public:
 
   virtual void apply_fog(Fog *fog);
 
-  virtual void issue_transform(const TransformState *transform);
-  virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
-  virtual void issue_render_mode(const RenderModeAttrib *attrib);
-  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_color_write(const ColorWriteAttrib *attrib);
-  virtual void issue_depth_test(const DepthTestAttrib *attrib);
-  virtual void issue_depth_write(const DepthWriteAttrib *attrib);
-  virtual void issue_cull_face(const CullFaceAttrib *attrib);
-  virtual void issue_fog(const FogAttrib *attrib);
-  virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-  virtual void issue_tex_gen(const TexGenAttrib *attrib);
-  virtual void issue_shade_model(const ShadeModelAttrib *attrib);
-
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id);
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
@@ -117,18 +104,32 @@ public:
   static D3DFORMAT get_index_type(Geom::NumericType numeric_type);
   INLINE static DWORD Colorf_to_D3DCOLOR(const Colorf &cColorf);
 
-protected:
-  virtual void do_issue_material();
-  virtual void do_issue_texture();
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform);
 
+protected:
+  void do_issue_transform();
+  void do_issue_alpha_test();
+  void do_issue_render_mode();
+  void do_issue_rescale_normal();
+  void do_issue_color_write();
+  void do_issue_depth_test();
+  void do_issue_depth_write();
+  void do_issue_cull_face();
+  void do_issue_fog();
+  void do_issue_depth_offset();
+  void do_issue_tex_gen();
+  void do_issue_shade_model();
+  void do_issue_material();
+  void do_issue_texture();
+  void do_issue_blending();
+  
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
 
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
-
-  virtual void set_blend_mode();
 
   void free_nondx_resources();
   void free_d3d_device();
@@ -142,7 +143,6 @@ protected:
   INLINE void enable_color_material(bool val);
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
-  INLINE void set_color_writemask(UINT color_writemask);
   INLINE void set_vertex_format(DWORD NewFvfType);
 
   INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);

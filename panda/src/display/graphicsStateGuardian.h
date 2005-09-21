@@ -38,19 +38,12 @@
 #include "renderState.h"
 #include "light.h"
 #include "planeNode.h"
-#include "colorWriteAttrib.h"
-#include "colorBlendAttrib.h"
-#include "textureAttrib.h"
-#include "texGenAttrib.h"
-#include "materialAttrib.h"
-#include "lightAttrib.h"
-#include "transparencyAttrib.h"
-#include "shaderAttrib.h"
 #include "config_display.h"
 #include "geomMunger.h"
 #include "geomVertexData.h"
 #include "notify.h"
 #include "pvector.h"
+#include "attribSlots.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -206,9 +199,6 @@ public:
   virtual void reset();
   INLINE bool is_valid() const;
 
-  INLINE void modify_state(const RenderState *state);
-  INLINE void set_state(const RenderState *state);
-  INLINE void set_transform(const TransformState *transform);
   INLINE CPT(TransformState) get_transform();
   
   RenderBuffer get_render_buffer(int buffer_type);
@@ -222,19 +212,11 @@ public:
   INLINE const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
 
-  virtual void issue_transform(const TransformState *transform);
-  virtual void issue_color_scale(const ColorScaleAttrib *attrib);
-  virtual void issue_color(const ColorAttrib *attrib);
-  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
-  virtual void issue_light(const LightAttrib *attrib);
-  virtual void issue_material(const MaterialAttrib *attrib);
-  virtual void issue_color_write(const ColorWriteAttrib *attrib);
-  virtual void issue_transparency(const TransparencyAttrib *attrib);
-  virtual void issue_color_blend(const ColorBlendAttrib *attrib);
-  virtual void issue_tex_gen(const TexGenAttrib *attrib);
-  virtual void issue_texture(const TextureAttrib *attrib);
-  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
-
+  void do_issue_clip_plane();
+  void do_issue_color();
+  void do_issue_color_scale();
+  void do_issue_light();
+  
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id);
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
@@ -243,10 +225,6 @@ public:
                           int light_id);
 
 protected:
-  void do_issue_light();
-  virtual void do_issue_material();
-  virtual void do_issue_texture();
-
   INLINE NodePath get_light(int light_id) const;
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -260,10 +238,6 @@ protected:
   virtual void begin_bind_clip_planes();
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
-
-  virtual void set_blend_mode();
-
-  virtual void finish_modify_state();
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -304,9 +278,12 @@ protected:
   static CPT(RenderState) get_untextured_state();
 
 protected:
+  PT(SceneSetup) _scene_null;
   PT(SceneSetup) _scene_setup;
-
-  CPT(RenderState) _state;
+  
+  CPT(RenderState) _last_state;
+  AttribSlots _state;
+  AttribSlots _target;
   CPT(TransformState) _external_transform;
   CPT(TransformState) _internal_transform;
   CPT(GeomMunger) _munger;
@@ -337,7 +314,6 @@ protected:
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
-  bool _scene_graph_color_stale;
   bool _transform_stale;
   bool _color_blend_involves_color_scale;
   bool _texture_involves_color_scale;
@@ -346,19 +322,6 @@ protected:
   bool _clip_planes_enabled;
   bool _color_scale_enabled;
   LVecBase4f _current_color_scale;
-
-  ColorWriteAttrib::Mode _color_write_mode;
-  ColorBlendAttrib::Mode _color_blend_mode;
-  TransparencyAttrib::Mode _transparency_mode;
-  CPT(ColorBlendAttrib) _color_blend;
-  bool _blend_mode_stale;
-
-  CPT(TextureAttrib) _pending_texture;
-  bool _texture_stale;
-  CPT(LightAttrib) _pending_light;
-  bool _light_stale;
-  CPT(MaterialAttrib) _pending_material;
-  bool _material_stale;
 
   bool _has_material_force_color;
   Colorf _material_force_color;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBinAttrib.h"
+#include "attribSlots.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -97,6 +98,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *CullBinAttrib::
 make_default_impl() const {
   return new CullBinAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void CullBinAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_cull_bin = this;
 }
 
 ////////////////////////////////////////////////////////////////////

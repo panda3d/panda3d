@@ -2,6 +2,7 @@
 #include "ambientLight.cxx"
 #include "antialiasAttrib.cxx"
 #include "auxSceneData.cxx"
+#include "attribSlots.cxx"
 #include "bamFile.cxx"
 #include "billboardEffect.cxx"
 #include "binCullHandler.cxx"

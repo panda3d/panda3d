@@ -115,26 +115,6 @@ enable_zwritemask(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::set_color_writemask
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-set_color_writemask(UINT color_writemask) {
-  if (_color_writemask != color_writemask) {
-    _color_writemask = color_writemask;
-    if(_screen->_can_direct_disable_color_writes) {
-      // only newer HW supports this rstate
-      _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
-    } else {
-      // blending can only handle on/off
-      assert((color_writemask==0x0)||(color_writemask==0xFFFFFFFF));
-      set_blend_mode();
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_vertex_format
 //       Access: Protected
 //  Description:

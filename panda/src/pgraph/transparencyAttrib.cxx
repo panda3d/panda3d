@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "transparencyAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -35,20 +36,6 @@ CPT(RenderAttrib) TransparencyAttrib::
 make(TransparencyAttrib::Mode mode) {
   TransparencyAttrib *attrib = new TransparencyAttrib(mode);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void TransparencyAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_transparency(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,6 +112,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *TransparencyAttrib::
 make_default_impl() const {
   return new TransparencyAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransparencyAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void TransparencyAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_transparency = this;
 }
 
 ////////////////////////////////////////////////////////////////////

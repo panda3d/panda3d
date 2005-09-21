@@ -279,10 +279,14 @@ reset() {
   _frame_buffer_stack_level = 0;
   _lens_stack_level = 0;
 
-  _state = RenderState::make_empty();
+  _last_state = NULL;
+  _state.clear_to_zero();
+  _target.clear_to_defaults();
   _external_transform = TransformState::make_identity();
   _internal_transform = _cs_transform;
-
+  _scene_null = new SceneSetup;
+  _scene_setup = _scene_null;
+  
   _buffer_mask = 0;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _depth_clear_value = 1.0f;
@@ -291,7 +295,6 @@ reset() {
   _force_normals = 0;
 
   _has_scene_graph_color = false;
-  _scene_graph_color_stale = false;
   _transform_stale = true;
   _color_blend_involves_color_scale = false;
   _texture_involves_color_scale = false;
@@ -304,19 +307,6 @@ reset() {
 
   _color_scale_enabled = false;
   _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
-
-  _color_write_mode = ColorWriteAttrib::M_on;
-  _color_blend_mode = ColorBlendAttrib::M_none;
-  _transparency_mode = TransparencyAttrib::M_none;
-
-  _color_blend = NULL;
-  _blend_mode_stale = false;
-  _pending_texture = NULL;
-  _texture_stale = false;
-  _pending_light = NULL;
-  _light_stale = false;
-  _pending_material = NULL;
-  _material_stale = false;
 
   _has_material_force_color = false;
   _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -331,6 +321,26 @@ reset() {
   _last_max_stage_index = 0;
 
   _is_valid = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_state_and_transform
+//       Access: Public
+//  Description: Simultaneously resets the render state and the
+//               transform state.
+//
+//               This transform specified is the "external" net
+//               transform, expressed in the external coordinate
+//               space; internally, it will be pretransformed by
+//               get_cs_transform() to express it in the GSG's
+//               internal coordinate space.
+//
+//               Special case: if (state==NULL), then the target
+//               state is already stored in _target.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_state_and_transform(const RenderState *state,
+                        const TransformState *trans) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -533,25 +543,6 @@ make_geom_munger(const RenderState *state) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_state_and_transform
-//       Access: Public, Virtual
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "external" net
-//               transform, expressed in the external coordinate
-//               space; internally, it will be pretransformed by
-//               get_cs_transform() to express it in the GSG's
-//               internal coordinate space.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_state_and_transform(const RenderState *state,
-                        const TransformState *transform) {
-  set_transform(transform);
-  set_state(state);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
@@ -681,8 +672,9 @@ begin_frame() {
   // have changed properties since last time without changing
   // attribute pointers--like textures, lighting, or fog--will still
   // be accurately updated.
-  set_state(RenderState::make_empty());
-
+  _last_state = 0;
+  _state.clear_to_zero();
+  
   return true;
 }
 
@@ -718,8 +710,10 @@ begin_scene() {
 void GraphicsStateGuardian::
 end_scene() {
   // We should clear this pointer now, so that we don't keep unneeded
-  // reference counts dangling.
-  _scene_setup = NULL;
+  // reference counts dangling.  We keep around a "null" scene setup 
+  // object instead of using a null pointer to avoid special-case code
+  // in set_state_and_transform.
+  _scene_setup = _scene_null;
   
   // Undo any lighting we had enabled last scene, to force the lights
   // to be reissued, in case their parameters or positions have
@@ -756,8 +750,9 @@ end_scene() {
     _clip_planes_enabled_this_frame = false;
   }
 
-  // Actually, just clear all the state between scenes.
-  set_state(RenderState::make_empty());
+  // Put the state into the 'unknown' state, forcing a reload.
+  _last_state = 0;
+  _state.clear_to_zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1023,47 +1018,36 @@ framebuffer_release_texture(GraphicsOutput *, Texture *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_transform
-//       Access: Public, Virtual
-//  Description: Sends the indicated transform matrix to the graphics
-//               API to be applied to future vertices.
-//
-//               This transform is the internal_transform, already
-//               converted into the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_transform(const TransformState *) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_color_scale
+//     Function: GraphicsStateGuardian::do_issue_color_scale
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-issue_color_scale(const ColorScaleAttrib *attrib) {
+do_issue_color_scale() {
+  const ColorScaleAttrib *attrib = _target._color_scale;
   _color_scale_enabled = attrib->has_scale();
   _current_color_scale = attrib->get_scale();
-
-  _scene_graph_color_stale = _has_scene_graph_color;
-
+  
   if (_color_blend_involves_color_scale) {
-    _blend_mode_stale = true;
+    _last_state = 0;
+    _state._transparency = 0;
   }
   if (_texture_involves_color_scale) {
-    _texture_stale = true;
+    _last_state = 0;
+    _state._texture = 0;
   }
   if (_color_scale_via_lighting) {
-    _light_stale = true;
-    _material_stale = true;
+    _last_state = 0;
+    _state._light = 0;
+    _state._material = 0;
 
     determine_light_color_scale();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_color
-//       Access: Public, Virtual
+//     Function: GraphicsStateGuardian::do_issue_color
+//       Access: Public
 //  Description: This method is defined in the base class because it
 //               is likely that this functionality will be used for
 //               all (or at least most) kinds of
@@ -1075,7 +1059,8 @@ issue_color_scale(const ColorScaleAttrib *attrib) {
 //               _vertex_colors_enabled, etc.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-issue_color(const ColorAttrib *attrib) {
+do_issue_color() {
+  const ColorAttrib *attrib = _target._color;
   switch (attrib->get_color_type()) {
   case ColorAttrib::T_flat:
     // Color attribute flat: it specifies a scene graph color that
@@ -1083,14 +1068,12 @@ issue_color(const ColorAttrib *attrib) {
     _scene_graph_color = attrib->get_color();
     _has_scene_graph_color = true;
     _vertex_colors_enabled = false;
-    _scene_graph_color_stale = true;
     break;
 
   case ColorAttrib::T_off:
     // Color attribute off: it specifies that no scene graph color is
     // in effect, and vertex color is not important either.
     _has_scene_graph_color = false;
-    _scene_graph_color_stale = false;
     _vertex_colors_enabled = false;
     break;
 
@@ -1098,140 +1081,35 @@ issue_color(const ColorAttrib *attrib) {
     // Color attribute vertex: it specifies that vertex color should
     // be revealed.
     _has_scene_graph_color = false;
-    _scene_graph_color_stale = false;
     _vertex_colors_enabled = true;
     break;
   }
 
   if (_color_scale_via_lighting) {
-    _light_stale = true;
-    _material_stale = true;
+    _last_state = 0;
+    _state._light = 0;
+    _state._material = 0;
 
     determine_light_color_scale();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_tex_matrix
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_tex_matrix(const TexMatrixAttrib *attrib) {
-  // We don't apply the texture matrix right away, since we might yet
-  // get a TextureAttrib that changes the set of TextureStages we have
-  // active.  Instead, we simply set a flag that indicates we need to
-  // re-issue the texture matrix after all of the other attribs are
-  // done being issued.
-  _current_tex_mat = attrib;
-  _needs_tex_mat = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_light
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_light(const LightAttrib *attrib) {
-  // By default, we don't apply the light attrib right away, since
-  // it might have a dependency on the current ColorScaleAttrib.
-  _pending_light = attrib;
-  _light_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_material(const MaterialAttrib *attrib) {
-  // By default, we don't apply the material attrib right away, since
-  // it might have a dependency on the current ColorScaleAttrib.
-  _pending_material = attrib;
-  _material_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_color_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_color_write(const ColorWriteAttrib *attrib) {
-  _color_write_mode = attrib->get_mode();
-  _blend_mode_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_transparency
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_transparency(const TransparencyAttrib *attrib) {
-  _transparency_mode = attrib->get_mode();
-  _blend_mode_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_color_blend
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_color_blend(const ColorBlendAttrib *attrib) {
-  _color_blend = attrib;
-  _color_blend_mode = attrib->get_mode();
-  _color_blend_involves_color_scale = attrib->involves_color_scale();
-  _blend_mode_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_tex_gen
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_tex_gen(const TexGenAttrib *attrib) {
-  // We don't apply the texture coordinate generation commands right
-  // away, since we might yet get a TextureAttrib that changes the set
-  // of TextureStages we have active.  Instead, we simply set a flag
-  // that indicates we need to re-issue the TexGenAttrib after all of
-  // the other attribs are done being issued.
-  _current_tex_gen = attrib;
-  _needs_tex_gen = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-issue_texture(const TextureAttrib *attrib) {
-  // By default, we don't apply the texture attrib right away, since
-  // it might have a dependency on the current ColorScaleAttrib.
-  _pending_texture = attrib;
-  _texture_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_clip_plane
-//       Access: Public, Virtual
-//  Description: This is fundametically similar to issue_light(), with
+//     Function: GraphicsStateGuardian::do_issue_clip_plane
+//       Access: Public
+//  Description: This is fundametically similar to do_issue_light(), with
 //               calls to apply_clip_plane() and enable_clip_planes(),
 //               as appropriate.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-issue_clip_plane(const ClipPlaneAttrib *attrib) {
+do_issue_clip_plane() {
+  const ClipPlaneAttrib *attrib = _target._clip_plane;
   int i;
   int cur_max_planes = (int)_clip_plane_info.size();
   for (i = 0; i < cur_max_planes; i++) {
     _clip_plane_info[i]._next_enabled = false;
   }
-
+  
   CPT(ClipPlaneAttrib) new_attrib = attrib->filter_to_max(_max_clip_planes);
 
   bool any_bound = false;
@@ -1374,7 +1252,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::do_issue_light
 //       Access: Protected
-//  Description: This implementation of issue_light() assumes
+//  Description: This implementation of do_issue_light() assumes
 //               we have a limited number of hardware lights
 //               available.  This function assigns each light to a
 //               different hardware light id, trying to keep each
@@ -1405,8 +1283,8 @@ do_issue_light() {
   bool any_bound = false;
 
   int num_enabled = 0;
-  if (_pending_light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = _pending_light->filter_to_max(_max_lights);
+  if (_target._light != (LightAttrib *)NULL) {
+    CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
 
     int num_on_lights = new_light->get_num_on_lights();
     for (int li = 0; li < num_on_lights; li++) {
@@ -1534,31 +1412,11 @@ do_issue_light() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_material
-//       Access: Protected, Virtual
-//  Description: Should be overridden by derived classes to actually
-//               apply the material saved in _pending_material.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-do_issue_material() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_texture
-//       Access: Protected, Virtual
-//  Description: Should be overridden by derived classes to actually
-//               apply the texture saved in _pending_texture.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-do_issue_texture() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of lighting overall.  This
-//               is called by issue_light() according to whether any
+//               is called by do_issue_light() according to whether any
 //               lights are in use or not.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
@@ -1570,7 +1428,7 @@ enable_lighting(bool enable) {
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               indicate the color of the ambient light that should
-//               be in effect.  This is called by issue_light() after
+//               be in effect.  This is called by do_issue_light() after
 //               all other lights have been enabled or disabled.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
@@ -1622,7 +1480,7 @@ end_bind_lights() {
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of clipping planes overall.
-//               This is called by issue_clip_plane() according to
+//               This is called by do_issue_clip_plane() according to
 //               whether any planes are in use or not.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
@@ -1680,49 +1538,6 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_bind_clip_planes() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_blend_mode
-//       Access: Protected, Virtual
-//  Description: Called after any of the things that might change
-//               blending state have changed, this function is
-//               responsible for setting the appropriate color
-//               blending mode based on the current properties.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_blend_mode() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::finish_modify_state
-//       Access: Protected, Virtual
-//  Description: Called after the GSG state has been modified via
-//               modify_state() or set_state(), this hook is provided
-//               for the derived class to do any further state setup
-//               work.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-finish_modify_state() {
-  if (_blend_mode_stale) {
-    _blend_mode_stale = false;
-    set_blend_mode();
-  }
-
-  if (_texture_stale) {
-    _texture_stale = false;
-    do_issue_texture();
-  }
-
-  if (_material_stale) {
-    _material_stale = false;
-    do_issue_material();
-  }
-
-  if (_light_stale) {
-    _light_stale = false;
-    do_issue_light();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

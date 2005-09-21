@@ -253,6 +253,24 @@ make(const RenderAttrib * const *attrib, int num_attribs, int override) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::make
+//       Access: Published, Static
+//  Description: Returns a RenderState made from the specified slots.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+make(const AttribSlots *slots, int override) {
+  RenderState *state = new RenderState;
+  for (int i = 0; i < AttribSlots::slot_count; i++) {
+    const RenderAttrib *attrib = slots->get_slot(i);
+    if (attrib != 0) {
+      state->_attributes.push_back(Attribute(attrib, override));
+    }
+  }
+  state->_attributes.reserve(state->_attributes.size());
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::compose
 //       Access: Published
 //  Description: Returns a new RenderState object that represents the
@@ -956,143 +974,16 @@ get_geom_rendering(int geom_rendering) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::issue_delta_modify
+//     Function: RenderState::store_into_slots
 //       Access: Public
-//  Description: This is intended to be called only from
-//               GraphicsStateGuardian::modify_state().  It calls
-//               issue() for each attribute given in the other state
-//               that differs from the current state (which is assumed
-//               to represent the GSG's current state).  Returns the
-//               RenderState representing the newly composed result.
+//  Description: Convert the attribute list into an AttribSlots.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) RenderState::
-issue_delta_modify(const RenderState *other, 
-                   GraphicsStateGuardianBase *gsg) const {
-  if (other->is_empty()) {
-    // If the other state is empty, that's a trivial special case.
-    return this;
+void RenderState::
+store_into_slots(AttribSlots *output) const {
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ai++) {
+    (*ai)._attrib->store_into_slot(output);
   }
-
-  // First, build a new Attributes member that represents the union of
-  // this one and that one.
-  Attributes::const_iterator ai = _attributes.begin();
-  Attributes::const_iterator bi = other->_attributes.begin();
-
-  // Create a new RenderState that will hold the result.
-  RenderState *new_state = new RenderState;
-  back_insert_iterator<Attributes> result = 
-    back_inserter(new_state->_attributes);
-
-  bool any_changed = false;
-
-  while (ai != _attributes.end() && bi != other->_attributes.end()) {
-    if ((*ai) < (*bi)) {
-      // Here is an attribute that we have in the original, which is
-      // not present in the secondary.  Leave it alone.
-      *result = *ai;
-      ++ai;
-      ++result;
-    } else if ((*bi) < (*ai)) {
-      // Here is a new attribute we have in the secondary, that was
-      // not present in the original.  Issue the new one, and save it.
-      (*bi)._attrib->issue(gsg);
-      *result = *bi;
-      ++bi;
-      ++result;
-      any_changed = true;
-    } else {
-      // Here is an attribute we have in both.  Issue the new one if
-      // it's different, and save it.
-      if ((*ai)._attrib != (*bi)._attrib) {
-        any_changed = true;
-        (*bi)._attrib->issue(gsg);
-      }
-      *result = *bi;
-      ++ai;
-      ++bi;
-      ++result;
-    }
-  }
-
-  while (ai != _attributes.end()) {
-    *result = *ai;
-    ++ai;
-    ++result;
-  }
-
-  while (bi != other->_attributes.end()) {
-    (*bi)._attrib->issue(gsg);
-    *result = *bi;
-    ++bi;
-    ++result;
-    any_changed = true;
-  }
-
-  if (any_changed) {
-    return return_new(new_state);
-  } else {
-    delete new_state;
-    return this;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::issue_delta_set
-//       Access: Public
-//  Description: This is intended to be called only from
-//               GraphicsStateGuardian::set_state().  It calls issue()
-//               for each attribute given in the other state that
-//               differs from the current state (which is assumed to
-//               represent the GSG's current state).  Returns the
-//               RenderState representing the newly composed result
-//               (which will be the same as other).
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) RenderState::
-issue_delta_set(const RenderState *other, 
-                GraphicsStateGuardianBase *gsg) const {
-  if (other == this) {
-    // If the state doesn't change, that's a trivial special case.
-    return other;
-  }
-
-  Attributes::const_iterator ai = _attributes.begin();
-  Attributes::const_iterator bi = other->_attributes.begin();
-
-  while (ai != _attributes.end() && bi != other->_attributes.end()) {
-    if ((*ai) < (*bi)) {
-      // Here is an attribute that we have in the original, which is
-      // not present in the secondary.  Issue the default state instead.
-      (*ai)._attrib->make_default()->issue(gsg);
-      ++ai;
-
-    } else if ((*bi) < (*ai)) {
-      // Here is a new attribute we have in the secondary, that was
-      // not present in the original.  Issue the new one.
-      (*bi)._attrib->issue(gsg);
-      ++bi;
-
-    } else {
-      // Here is an attribute we have in both.  Issue the new one if
-      // it's different.
-      if ((*ai)._attrib != (*bi)._attrib) {
-        (*bi)._attrib->issue(gsg);
-      }
-      ++ai;
-      ++bi;
-    }
-  }
-
-  while (ai != _attributes.end()) {
-    (*ai)._attrib->make_default()->issue(gsg);
-    ++ai;
-  }
-
-  while (bi != other->_attributes.end()) {
-    (*bi)._attrib->issue(gsg);
-    ++bi;
-  }
-
-  return other;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -90,7 +90,8 @@ PUBLISHED:
                                const RenderAttrib *attrib4, int override = 0);
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
-
+  static CPT(RenderState) make(const AttribSlots *slots, int override = 0);
+  
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
 
@@ -141,11 +142,8 @@ PUBLISHED:
   int get_geom_rendering(int geom_rendering) const;
 
 public:
-  CPT(RenderState) issue_delta_modify(const RenderState *other, 
-                                      GraphicsStateGuardianBase *gsg) const;
-  CPT(RenderState) issue_delta_set(const RenderState *other, 
-                                   GraphicsStateGuardianBase *gsg) const;
-
+  void store_into_slots(AttribSlots *slots) const;
+  
   static void bin_removed(int bin_index);
 
 private:

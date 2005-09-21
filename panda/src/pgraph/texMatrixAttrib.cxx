@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "texMatrixAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -208,20 +209,6 @@ get_transform(TextureStage *stage) const {
     return (*mi).second;
   }
   return TransformState::make_identity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void TexMatrixAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_tex_matrix(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,6 +424,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *TexMatrixAttrib::
 make_default_impl() const {
   return new TexMatrixAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void TexMatrixAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_tex_matrix = this;
 }
 
 ////////////////////////////////////////////////////////////////////

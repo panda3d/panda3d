@@ -128,22 +128,6 @@ public:
 
   void apply_fog(Fog *fog);
 
-  virtual void issue_transform(const TransformState *transform);
-  virtual void issue_render_mode(const RenderModeAttrib *attrib);
-  virtual void issue_antialias(const AntialiasAttrib *);
-  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_color_write(const ColorWriteAttrib *attrib);
-  virtual void issue_depth_test(const DepthTestAttrib *attrib);
-  virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
-  virtual void issue_depth_write(const DepthWriteAttrib *attrib);
-  virtual void issue_cull_face(const CullFaceAttrib *attrib);
-  virtual void issue_fog(const FogAttrib *attrib);
-  virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-  virtual void issue_shade_model(const ShadeModelAttrib *attrib);
-  virtual void issue_shader(const ShaderAttrib *attrib);
-
-  virtual void do_issue_material();
-
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id);
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
@@ -175,7 +159,27 @@ public:
   INLINE int get_gl_version_minor() const;
   INLINE int get_gl_version_release() const;
 
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform);
+
 protected:
+  void do_issue_transform();
+  void do_issue_render_mode();
+  void do_issue_antialias();
+  void do_issue_rescale_normal();
+  void do_issue_color_write();
+  void do_issue_depth_test();
+  void do_issue_alpha_test();
+  void do_issue_depth_write();
+  void do_issue_cull_face();
+  void do_issue_fog();
+  void do_issue_depth_offset();
+  void do_issue_shade_model();
+  void do_issue_shader();
+  void do_issue_material();
+  void do_issue_texture();
+  void do_issue_blending();
+
   static bool report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code, int &error_count);
   string show_gl_string(const string &name, GLenum id);
@@ -197,10 +201,6 @@ protected:
   virtual void begin_bind_clip_planes();
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
-
-  virtual void set_blend_mode();
-
-  virtual void finish_modify_state();
 
   virtual void free_pointers();
 
@@ -252,12 +252,7 @@ protected:
   void disable_standard_vertex_arrays();
   void update_standard_vertex_arrays();
 
-  static CPT(RenderState) get_untextured_state();
-  static CPT(RenderState) get_smooth_state();
-  static CPT(RenderState) get_flat_state();
-
   void do_auto_rescale_normal();
-  virtual void do_issue_texture();
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);

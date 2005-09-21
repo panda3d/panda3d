@@ -81,8 +81,8 @@ public:
   INLINE const Geom::ActiveTextureStages &get_on_stages() const;
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;
 
-  virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
+  virtual void store_into_slot(AttribSlots *slots) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

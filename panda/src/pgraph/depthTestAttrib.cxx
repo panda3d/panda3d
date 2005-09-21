@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthTestAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -35,20 +36,6 @@ CPT(RenderAttrib) DepthTestAttrib::
 make(DepthTestAttrib::PandaCompareFunc mode) {
   DepthTestAttrib *attrib = new DepthTestAttrib(mode);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthTestAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void DepthTestAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_depth_test(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +85,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *DepthTestAttrib::
 make_default_impl() const {
   return new DepthTestAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthTestAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void DepthTestAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_depth_test = this;
 }
 
 ////////////////////////////////////////////////////////////////////

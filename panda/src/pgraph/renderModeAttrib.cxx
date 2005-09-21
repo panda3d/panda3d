@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderModeAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -52,20 +53,6 @@ CPT(RenderAttrib) RenderModeAttrib::
 make(RenderModeAttrib::Mode mode, float thickness, bool perspective) {
   RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderModeAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void RenderModeAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_render_mode(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,6 +162,18 @@ compose_impl(const RenderAttrib *other) const {
 RenderAttrib *RenderModeAttrib::
 make_default_impl() const {
   return new RenderModeAttrib(M_filled, 1.0f, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void RenderModeAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_render_mode = this;
 }
 
 ////////////////////////////////////////////////////////////////////

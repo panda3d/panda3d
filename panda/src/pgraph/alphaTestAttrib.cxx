@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "alphaTestAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -36,20 +37,6 @@ make(PandaCompareFunc mode, float reference_value) {
   assert((reference_value >=0.0f) && (reference_value <=1.0f));
   AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void AlphaTestAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_alpha_test(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +92,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *AlphaTestAttrib::
 make_default_impl() const {
   return new AlphaTestAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AlphaTestAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void AlphaTestAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_alpha_test = this;
 }
 
 ////////////////////////////////////////////////////////////////////

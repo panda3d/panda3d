@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "clipPlaneAttrib.h"
+#include "attribSlots.h"
 #include "pandaNode.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
@@ -594,20 +595,6 @@ compose_off(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void ClipPlaneAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_clip_plane(this);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::output
 //       Access: Public, Virtual
 //  Description: 
@@ -893,6 +880,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *ClipPlaneAttrib::
 make_default_impl() const {
   return new ClipPlaneAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void ClipPlaneAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_clip_plane = this;
 }
 
 ////////////////////////////////////////////////////////////////////

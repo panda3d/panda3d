@@ -819,21 +819,6 @@ reset() {
 
   report_my_gl_errors();
 
-  // Make sure the GL state matches all of our initial attribute
-  // states.
-  CPT(RenderAttrib) dta = DepthTestAttrib::make(DepthTestAttrib::M_less);
-  CPT(RenderAttrib) dwa = DepthWriteAttrib::make(DepthWriteAttrib::M_on);
-  CPT(RenderAttrib) cfa = CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise);
-  CPT(RenderAttrib) ta = TextureAttrib::make_off();
-
-  dta->issue(this);
-  dwa->issue(this);
-  cfa->issue(this);
-  ta->issue(this);
-
-  _pending_material = NULL;
-  do_issue_material();
-
   if (CLP(cheap_textures)) {
     GLCAT.info()
       << "Setting GLP(Hint)() for fastest textures.\n";
@@ -872,14 +857,13 @@ do_clear(const RenderBuffer &buffer) {
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
-  CPT(RenderState) state = RenderState::make_empty();
 
   if (buffer_type & RenderBuffer::T_color) {
     GLP(ClearColor)(_color_clear_value[0],
                     _color_clear_value[1],
                     _color_clear_value[2],
                     _color_clear_value[3]);
-    state = state->add_attrib(ColorWriteAttrib::make(ColorWriteAttrib::M_on));
+    _target._color_write = AttribSlots::get_defaults()._color_write;
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -891,7 +875,7 @@ do_clear(const RenderBuffer &buffer) {
 
     // In order to clear the depth buffer, the depth mask must enable
     // writing to the depth buffer.
-    state = state->add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_on));
+    _target._depth_write = AttribSlots::get_defaults()._depth_write;
   }
 
   if (buffer_type & RenderBuffer::T_stencil) {
@@ -906,7 +890,7 @@ do_clear(const RenderBuffer &buffer) {
                     _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
-
+  
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "glClear(";
     if (mask & GL_COLOR_BUFFER_BIT) {
@@ -923,9 +907,9 @@ do_clear(const RenderBuffer &buffer) {
     }
     GLCAT.spam(false) << ")" << endl;
   }
-
-  modify_state(state);
-
+  
+  set_state_and_transform(NULL, _external_transform);
+  
   GLP(Clear)(mask);
   report_my_gl_errors();
 }
@@ -1130,6 +1114,14 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       break;
     case GeomPrimitive::PT_none:
       break;
+    }
+    if ((_target._transparency != _state._transparency)||
+        (_target._color_write != _state._color_write)||
+        (_target._color_blend != _state._color_blend)) {
+      do_issue_blending();
+      _state._transparency = _target._transparency;
+      _state._color_write = _target._color_write;
+      _state._color_blend = _target._color_blend;
     }
   }
 
@@ -2445,8 +2437,9 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   report_my_gl_errors();
 
-  // Clear the internal texture state, since we've just monkeyed with it.
-  modify_state(get_untextured_state());
+  // Force reload of texture state, since we've just monkeyed with it.
+  _last_state = 0;
+  _state._texture = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2470,8 +2463,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // for GLP(ReadPixels)() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  modify_state(get_untextured_state());
-
+  _target._texture = AttribSlots::get_defaults()._texture;
+  set_state_and_transform(NULL, _external_transform);
+  
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
@@ -2621,8 +2615,8 @@ apply_fog(Fog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_transform
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_transform
+//       Access: Protected
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
 //
@@ -2630,7 +2624,8 @@ apply_fog(Fog *fog) {
 //               converted into the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_transform(const TransformState *transform) {
+do_issue_transform() {
+  const TransformState *transform = _internal_transform;
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
@@ -2652,12 +2647,13 @@ issue_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_shade_model
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_shade_model
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_shade_model(const ShadeModelAttrib *attrib) {
+do_issue_shade_model() {
+  const ShadeModelAttrib *attrib = _target._shade_model;
   switch (attrib->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     GLP(ShadeModel)(GL_SMOOTH);
@@ -2672,12 +2668,13 @@ issue_shade_model(const ShadeModelAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_shader
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_shader
+//       Access: Protected
 //  Description: Bind a shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_shader(const ShaderAttrib *attrib) {
+do_issue_shader() {
+  const ShaderAttrib *attrib = _target._shader;
   ShaderMode *mode = attrib->get_shader_mode();
   if (mode == 0) {
     if (_current_shader_context != 0) {
@@ -2723,12 +2720,13 @@ issue_shader(const ShaderAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_render_mode
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_render_mode
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_render_mode(const RenderModeAttrib *attrib) {
+do_issue_render_mode() {
+  const RenderModeAttrib *attrib = _target._render_mode;
   _render_mode = attrib->get_mode();
   _point_size = attrib->get_thickness();
   _point_perspective = attrib->get_perspective();
@@ -2761,12 +2759,13 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_antialias
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_antialias
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_antialias(const AntialiasAttrib *attrib) {
+do_issue_antialias() {
+  const AntialiasAttrib *attrib = _target._antialias;
   if (attrib->get_mode_type() == AntialiasAttrib::M_auto) {
     // In this special mode, we must enable antialiasing on a
     // case-by-case basis, because we enable it differently for
@@ -2817,12 +2816,13 @@ issue_antialias(const AntialiasAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_rescale_normal
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_rescale_normal
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_rescale_normal(const RescaleNormalAttrib *attrib) {
+do_issue_rescale_normal() {
+  const RescaleNormalAttrib *attrib = _target._rescale_normal;
   RescaleNormalAttrib::Mode mode = attrib->get_mode();
 
   _auto_rescale_normal = false;
@@ -2863,44 +2863,17 @@ issue_rescale_normal(const RescaleNormalAttrib *attrib) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_color_write(const ColorWriteAttrib *attrib) {
-  // If we did not override this function, the default implementation
-  // would achieve turning off color writes by changing the blend mode
-  // in set_blend_mode().  However, since GL does support an easy way
-  // to disable writes to the color buffer, we can take advantage of
-  // it here.
-  if (CLP(color_mask)) {
-    ColorWriteAttrib::Mode mode = attrib->get_mode();
-    if (mode == ColorWriteAttrib::M_off) {
-      GLP(ColorMask)(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    } else {
-      GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    }
-    report_my_gl_errors();
-
-  } else {
-    // Some implementations don't seem to handle GLP(ColorMask)() very
-    // robustly, however, so we provide this fallback.
-    GraphicsStateGuardian::issue_color_write(attrib);
-  }
-}
-
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_test
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_depth_test
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_depth_test(const DepthTestAttrib *attrib) {
+do_issue_depth_test() {
+  const DepthTestAttrib *attrib = _target._depth_test;
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     enable_depth_test(false);
@@ -2912,12 +2885,13 @@ issue_depth_test(const DepthTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_alpha_test
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_alpha_test
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_alpha_test(const AlphaTestAttrib *attrib) {
+do_issue_alpha_test() {
+  const AlphaTestAttrib *attrib = _target._alpha_test;
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
     enable_alpha_test(false);
@@ -2929,12 +2903,13 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_write
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_depth_write
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_depth_write(const DepthWriteAttrib *attrib) {
+do_issue_depth_write() {
+  const DepthWriteAttrib *attrib = _target._depth_write;
   DepthWriteAttrib::Mode mode = attrib->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
     GLP(DepthMask)(GL_FALSE);
@@ -2945,12 +2920,13 @@ issue_depth_write(const DepthWriteAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_cull_face
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_cull_face
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_cull_face(const CullFaceAttrib *attrib) {
+do_issue_cull_face() {
+  const CullFaceAttrib *attrib = _target._cull_face;
   CullFaceAttrib::Mode mode = attrib->get_effective_mode();
 
   switch (mode) {
@@ -2974,12 +2950,13 @@ issue_cull_face(const CullFaceAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_fog
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_fog
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_fog(const FogAttrib *attrib) {
+do_issue_fog() {
+  const FogAttrib *attrib = _target._fog;
   if (!attrib->is_off()) {
     enable_fog(true);
     Fog *fog = attrib->get_fog();
@@ -2992,12 +2969,13 @@ issue_fog(const FogAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_offset
-//       Access: Public, Virtual
+//     Function: GLGraphicsStateGuardian::do_issue_depth_offset
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_depth_offset(const DepthOffsetAttrib *attrib) {
+do_issue_depth_offset() {
+  const DepthOffsetAttrib *attrib = _target._depth_offset;
   int offset = attrib->get_offset();
 
   if (offset != 0) {
@@ -3015,18 +2993,18 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_material
-//       Access: Public, Virtual
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_material() {
   static Material empty;
   const Material *material;
-  if (_pending_material == (MaterialAttrib *)NULL || 
-      _pending_material->is_off()) {
+  if (_target._material == (MaterialAttrib *)NULL || 
+      _target._material->is_off()) {
     material = &empty;
   } else {
-    material = _pending_material->get_material();
+    material = _target._material->get_material();
   }
 
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
@@ -4277,7 +4255,7 @@ get_light_color(Light *light) const {
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of lighting overall.  This
-//               is called by issue_light() according to whether any
+//               is called by do_issue_light() according to whether any
 //               lights are in use or not.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
@@ -4294,7 +4272,7 @@ enable_lighting(bool enable) {
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               indicate the color of the ambient light that should
-//               be in effect.  This is called by issue_light() after
+//               be in effect.  This is called by do_issue_light() after
 //               all other lights have been enabled or disabled.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
@@ -4452,36 +4430,53 @@ end_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_blend_mode
-//       Access: Protected, Virtual
-//  Description: Called after any of the things that might change
-//               blending state have changed, this function is
-//               responsible for setting the appropriate color
-//               blending mode based on the current properties.
+//     Function: GLGraphicsStateGuardian::do_issue_blending
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_blend_mode() {
-  // If color_write_mode is off, we disable writing to the color using
-  // blending.  This case is only used if we can't use GLP(ColorMask) to
-  // disable the color writing for some reason (usually a driver
+do_issue_blending() {
+
+  // If necessary, we disable writing to the color buffer using
+  // blending.  This case is only used if we can't use GLP(ColorMask)
+  // to disable the color writing for some reason (usually a driver
   // problem).
-  if (_color_write_mode == ColorWriteAttrib::M_off) {
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    _glBlendEquation(GL_FUNC_ADD);
-    GLP(BlendFunc)(GL_ZERO, GL_ONE);
-   return;
+  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
+    if (_target._color_write != _state._color_write) {
+      enable_multisample_alpha_one(false);
+      enable_multisample_alpha_mask(false);
+      if (CLP(color_mask)) {
+        enable_blend(false);
+        GLP(ColorMask)(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      } else {
+        enable_blend(true);
+        _glBlendEquation(GL_FUNC_ADD);
+        GLP(BlendFunc)(GL_ZERO, GL_ONE);
+      }
+    }
+    return;
+  } else {
+    if (_target._color_write != _state._color_write) {
+      if (CLP(color_mask)) {
+        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      }
+    }
   }
+  
+  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
+  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
+  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
+
+  _color_blend_involves_color_scale = color_blend->involves_color_scale();
 
   // Is there a color blend set?
-  if (_color_blend_mode != ColorBlendAttrib::M_none) {
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    _glBlendEquation(get_blend_equation_type(_color_blend_mode));
-    GLP(BlendFunc)(get_blend_func(_color_blend->get_operand_a()),
-                   get_blend_func(_color_blend->get_operand_b()));
+    _glBlendEquation(get_blend_equation_type(color_blend_mode));
+    GLP(BlendFunc)(get_blend_func(color_blend->get_operand_a()),
+                   get_blend_func(color_blend->get_operand_b()));
 
     if (_color_blend_involves_color_scale) {
       // Apply the current color scale to the blend mode.
@@ -4489,14 +4484,14 @@ set_blend_mode() {
                     _current_color_scale[2], _current_color_scale[3]);
       
     } else {
-      Colorf c = _color_blend->get_color();
+      Colorf c = color_blend->get_color();
       _glBlendColor(c[0], c[1], c[2], c[3]);
     }
     return;
   }
 
   // No color blend; is there a transparency set?
-  switch (_transparency_mode) {
+  switch (transparency_mode) {
   case TransparencyAttrib::M_none:
   case TransparencyAttrib::M_binary:
     break;
@@ -4525,7 +4520,7 @@ set_blend_mode() {
     
   default:
     GLCAT.error()
-      << "invalid transparency mode " << (int)_transparency_mode << endl;
+      << "invalid transparency mode " << (int)transparency_mode << endl;
     break;
   }
 
@@ -4557,16 +4552,153 @@ set_blend_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::finish_modify_state
-//       Access: Protected, Virtual
-//  Description: Called after the GSG state has been modified via
-//               modify_state() or set_state(), this hook is provided
-//               for the derived class to do any further state setup
-//               work.
+//     Function: GLGraphicsStateGuardian::set_state_and_transform
+//       Access: Public, Virtual
+//  Description: Simultaneously resets the render state and the
+//               transform state.
+//
+//               This transform specified is the "external" net
+//               transform, expressed in the external coordinate
+//               space; internally, it will be pretransformed by
+//               get_cs_transform() to express it in the GSG's
+//               internal coordinate space.
+//
+//               Special case: if (state==NULL), then the target
+//               state is already stored in _target.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-finish_modify_state() {
-  GraphicsStateGuardian::finish_modify_state();
+set_state_and_transform(const RenderState *state,
+                        const TransformState *transform) {
+#ifndef NDEBUG
+  if (gsg_cat.is_spam()) {
+    gsg_cat.spam() << "Setting GSG state to " << (void *)state << ":\n";
+    state->write(gsg_cat.spam(false), 2);
+  }
+#endif
+  _state_pcollector.add_level(1);
+
+  if (transform != _external_transform) {
+    _state_pcollector.add_level(1);
+    _external_transform = transform;
+    _internal_transform = _cs_transform->compose(transform);
+    do_issue_transform();
+  }
+  
+  if (state) {
+    if (state == _last_state) {
+      return;
+    }
+    _target.clear_to_defaults();
+    state->store_into_slots(&_target);
+  }
+  _last_state = state;
+  
+  
+  if (_target._alpha_test != _state._alpha_test) {
+    do_issue_alpha_test();
+    _state._alpha_test = _target._alpha_test;
+  }
+  
+  if (_target._antialias != _state._antialias) {
+    do_issue_antialias();
+    _state._antialias = _target._antialias;
+  }
+  
+  if (_target._clip_plane != _state._clip_plane) {
+    do_issue_clip_plane();
+    _state._clip_plane = _target._clip_plane;
+  }
+  
+  if (_target._color != _state._color) {
+    do_issue_color();
+    _state._color = _target._color;
+  }
+  
+  if (_target._color_scale != _state._color_scale) {
+    do_issue_color_scale();
+    _state._color_scale = _target._color_scale;
+  }
+  
+  if (_target._cull_face != _state._cull_face) {
+    do_issue_cull_face();
+    _state._cull_face = _target._cull_face;
+  }
+  
+  if (_target._depth_offset != _state._depth_offset) {
+    do_issue_depth_offset();
+    _state._depth_offset = _target._depth_offset;
+  }
+  
+  if (_target._depth_test != _state._depth_test) {
+    do_issue_depth_test();
+    _state._depth_test = _target._depth_test;
+  }
+  
+  if (_target._depth_write != _state._depth_write) {
+    do_issue_depth_write();
+    _state._depth_write = _target._depth_write;
+  }
+  
+  if (_target._fog != _state._fog) {
+    do_issue_fog();
+    _state._fog = _target._fog;
+  }
+  
+  if (_target._render_mode != _state._render_mode) {
+    do_issue_render_mode();
+    _state._render_mode = _target._render_mode;
+  }
+  
+  if (_target._rescale_normal != _state._rescale_normal) {
+    do_issue_rescale_normal();
+    _state._rescale_normal = _target._rescale_normal;
+  }
+  
+  if (_target._shade_model != _state._shade_model) {
+    do_issue_shade_model();
+    _state._shade_model = _target._shade_model;
+  }
+  
+  if (_target._shader != _state._shader) {
+    do_issue_shader();
+    _state._shader = _target._shader;
+  }
+  
+  if (_target._tex_gen != _state._tex_gen) {
+    _current_tex_gen = _target._tex_gen;
+    _needs_tex_gen = true;
+    _state._tex_gen = _target._tex_gen;
+  }
+  
+  if (_target._tex_matrix != _state._tex_matrix) {
+    _current_tex_mat = _target._tex_matrix;
+    _needs_tex_mat = true;
+    _state._tex_matrix = _target._tex_matrix;
+  }
+  
+  if ((_target._transparency != _state._transparency)||
+      (_target._color_write != _state._color_write)||
+      (_target._color_blend != _state._color_blend)) {
+    do_issue_blending();
+    _state._transparency = _target._transparency;
+    _state._color_write = _target._color_write;
+    _state._color_blend = _target._color_blend;
+  }
+  
+  if (_target._texture != _state._texture) {
+    do_issue_texture();
+    _state._texture = _target._texture;
+  }
+
+  if (_target._material != _state._material) {
+    do_issue_material();
+    _state._material = _target._material;
+  }
+  
+  if (_target._light != _state._light) {
+    do_issue_light();
+    _state._light = _target._light;
+  }
 
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
@@ -4859,51 +4991,6 @@ free_pointers() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_untextured_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState object that represents
-//               texturing off.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) CLP(GraphicsStateGuardian)::
-get_untextured_state() {
-  static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
-    state = RenderState::make(TextureAttrib::make_off());
-  }
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_smooth_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState object that represents
-//               smooth, per-vertex shading.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) CLP(GraphicsStateGuardian)::
-get_smooth_state() {
-  static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
-    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
-  }
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_flat_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState object that represents
-//               flat, per-primitive shading.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) CLP(GraphicsStateGuardian)::
-get_flat_state() {
-  static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
-    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-  }
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_auto_rescale_normal
 //       Access: Protected
 //  Description: Issues the appropriate GL commands to either rescale
@@ -4947,7 +5034,7 @@ void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  CPT(TextureAttrib) new_texture = _pending_texture->filter_to_max(_max_texture_stages);
+  CPT(TextureAttrib) new_texture = _target._texture->filter_to_max(_max_texture_stages);
   
   int num_stages = new_texture->get_num_on_stages();
   int num_old_stages = _current_texture->get_num_on_stages();

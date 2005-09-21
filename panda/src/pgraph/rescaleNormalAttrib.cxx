@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "rescaleNormalAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -68,20 +69,6 @@ make_default() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RescaleNormalAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void RescaleNormalAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_rescale_normal(this);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RescaleNormalAttrib::output
 //       Access: Public, Virtual
 //  Description: 
@@ -127,6 +114,18 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *RescaleNormalAttrib::
 make_default_impl() const {
   return new RescaleNormalAttrib(M_none);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RescaleNormalAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void RescaleNormalAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_rescale_normal = this;
 }
 
 ////////////////////////////////////////////////////////////////////

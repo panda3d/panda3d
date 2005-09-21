@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthOffsetAttrib.h"
+#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -37,20 +38,6 @@ CPT(RenderAttrib) DepthOffsetAttrib::
 make(int offset) {
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthOffsetAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void DepthOffsetAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_depth_offset(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,6 +132,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *DepthOffsetAttrib::
 make_default_impl() const {
   return new DepthOffsetAttrib(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthOffsetAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void DepthOffsetAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_depth_offset = this;
 }
 
 ////////////////////////////////////////////////////////////////////

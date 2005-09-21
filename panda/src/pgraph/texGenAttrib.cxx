@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "texGenAttrib.h"
+#include "attribSlots.h"
 #include "texturePool.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
@@ -226,20 +227,6 @@ get_light(TextureStage *stage) const {
     return (*mi).second._light;
   }
   return NodePath();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void TexGenAttrib::
-issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_tex_gen(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -548,6 +535,18 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *TexGenAttrib::
 make_default_impl() const {
   return new TexGenAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::store_into_slot
+//       Access: Public, Virtual
+//  Description: When attribs are stored in a slot-based attrib array,
+//               this returns the index of the appropriate slot
+//               for this attrib type.
+////////////////////////////////////////////////////////////////////
+void TexGenAttrib::
+store_into_slot(AttribSlots *slots) const {
+  slots->_tex_gen = this;
 }
 
 ////////////////////////////////////////////////////////////////////

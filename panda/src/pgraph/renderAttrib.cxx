@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderAttrib.h"
+#include "attribSlots.h"
 #include "bamReader.h"
 #include "indent.h"
 #include "config_pgraph.h"
@@ -90,19 +91,6 @@ RenderAttrib::
     _attribs->erase(_saved_entry);
     _saved_entry = _attribs->end();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::issue
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the indicated GSG
-//               to issue the graphics commands appropriate to the
-//               given attribute.  This is normally called
-//               (indirectly) only from
-//               GraphicsStateGuardian::set_state() or modify_state().
-////////////////////////////////////////////////////////////////////
-void RenderAttrib::
-issue(GraphicsStateGuardianBase *) const {
 }
 
 ////////////////////////////////////////////////////////////////////

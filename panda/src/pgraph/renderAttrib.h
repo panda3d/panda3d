@@ -25,6 +25,7 @@
 #include "pointerTo.h"
 #include "pset.h"
 
+class AttribSlots;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -67,10 +68,10 @@ public:
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) make_default() const;
-  virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual bool lower_attrib_can_override() const;
 
   INLINE bool always_reissue() const;
+  virtual void store_into_slot(AttribSlots *slots) const=0;
 
 PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;

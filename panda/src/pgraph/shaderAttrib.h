@@ -50,11 +50,12 @@ PUBLISHED:
 
   static void register_with_read_factory();
 
-  virtual void issue(GraphicsStateGuardianBase *gsg) const;
+public:
+  virtual void store_into_slot(AttribSlots *slots) const;
 
 protected:
-   virtual RenderAttrib *make_default_impl() const;
-   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual RenderAttrib *make_default_impl() const;
+  virtual int compare_to_impl(const RenderAttrib *other) const;
 
 private:
   PT(ShaderMode) _shader_mode;

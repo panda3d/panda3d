@@ -224,7 +224,7 @@ enable_multisample_alpha_mask(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
   if (_line_smooth_enabled != val) {
-    _blend_mode_stale = true;
+    _state._transparency = 0;
     _line_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_LINE_SMOOTH);
@@ -242,7 +242,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
   if (_point_smooth_enabled != val) {
-    _blend_mode_stale = true;
+    _state._transparency = 0;
     _point_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_POINT_SMOOTH);
@@ -283,10 +283,6 @@ setup_antialias_line() {
     // have multisample available.
     enable_multisample_antialias(false);
     enable_line_smooth(true);
-
-    if (_blend_mode_stale) {
-      set_blend_mode();
-    }
   }
 }
 
@@ -304,10 +300,6 @@ setup_antialias_point() {
     // have multisample available.
     enable_multisample_antialias(false);
     enable_point_smooth(true);
-
-    if (_blend_mode_stale) {
-      set_blend_mode();
-    }
   }
 }
 
@@ -344,10 +336,6 @@ setup_antialias_polygon() {
       } else {
         enable_polygon_smooth(true);
       }
-    }
-
-    if (_blend_mode_stale) {
-      set_blend_mode();
     }
   }
 }
