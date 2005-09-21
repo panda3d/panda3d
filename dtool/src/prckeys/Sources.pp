@@ -1,8 +1,8 @@
 #define LOCAL_LIBS pystub dtoolutil dtoolbase prc dconfig interrogatedb
 
 #begin bin_target
-  #define BUILD_TARGET $[HAVE_SSL]
-  #define USE_PACKAGES ssl
+  #define BUILD_TARGET $[HAVE_OPENSSL]
+  #define USE_PACKAGES openssl
 
   #define TARGET make-prc-key
 
@@ -15,8 +15,8 @@
 #end bin_target
 
 // #begin bin_target
-//   #define BUILD_TARGET $[HAVE_SSL]
-//   #define USE_PACKAGES ssl
+//   #define BUILD_TARGET $[HAVE_OPENSSL]
+//   #define USE_PACKAGES openssl
 // 
 //   #define TARGET panda-sign1
 // 

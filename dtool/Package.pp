@@ -113,10 +113,10 @@
 #set NSPR_LIBS $[NSPR_LIBS]
 #set HAVE_NSPR $[HAVE_NSPR]
 
-#set SSL_IPATH $[unixfilename $[SSL_IPATH]]
-#set SSL_LPATH $[unixfilename $[SSL_LPATH]]
-#set SSL_LIBS $[SSL_LIBS]
-#set HAVE_SSL $[HAVE_SSL]
+#set OPENSSL_IPATH $[unixfilename $[OPENSSL_IPATH]]
+#set OPENSSL_LPATH $[unixfilename $[OPENSSL_LPATH]]
+#set OPENSSL_LIBS $[OPENSSL_LIBS]
+#set HAVE_OPENSSL $[HAVE_OPENSSL]
 
 #set JPEG_IPATH $[unixfilename $[JPEG_IPATH]]
 #set JPEG_LPATH $[unixfilename $[JPEG_LPATH]]
@@ -192,10 +192,10 @@
 #set DX_LIBS $[DX_LIBS]
 #set HAVE_DX $[HAVE_DX]
 
-#set CV_IPATH $[unixfilename $[CV_IPATH]]
-#set CV_LPATH $[unixfilename $[CV_LPATH]]
-#set CV_LIBS $[CV_LIBS]
-#set HAVE_CV $[HAVE_CV]
+#set OPENCV_IPATH $[unixfilename $[OPENCV_IPATH]]
+#set OPENCV_LPATH $[unixfilename $[OPENCV_LPATH]]
+#set OPENCV_LIBS $[OPENCV_LIBS]
+#set HAVE_OPENCV $[HAVE_OPENCV]
 
 #set HAVE_THREADS $[HAVE_THREADS]
 

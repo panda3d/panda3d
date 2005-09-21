@@ -1,5 +1,5 @@
 #define LOCAL_LIBS dtoolutil dtoolbase
-#define USE_PACKAGES ssl
+#define USE_PACKAGES openssl
 
 #begin lib_target
   #define TARGET prc

@@ -16,52 +16,74 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-//Windows has isnan in a different place and with a different name
-//than everyone else.  Sheesh
-#ifdef _WIN32
-#include <float.h>
-#endif
-
 #ifdef __APPLE__
-#define      isnan( x )         ( ( sizeof ( x ) == sizeof(double) ) ?           \
-                              __isnand ( x ) :                                 \
-                                ( sizeof ( x ) == sizeof( float) ) ?            \
-                              __isnanf ( x ) :                                 \
-                              __isnan  ( x ) )
+#define isnan(x) \
+  ((sizeof(x) == sizeof(double)) ? \
+    __isnand(x) : \
+   (sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
 #endif
 
-INLINE float csqrt(float v) {
+#ifdef __INTEL_COMPILER
+// see float.h
+#define FPU_CONTROLWORD_WRITEMASK    0xFFFFF        // if you look at defn of _CW_DEFAULT, all settings fall within 0xFFFFF
+#define FPU_CONTROLWORD_NEW_SETTING  _CW_DEFAULT
+#endif  
+
+////////////////////////////////////////////////////////////////////
+//     Function: csqrt
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+csqrt(float v) {
   return sqrtf(v);
 }
 
-INLINE float csin(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: csin
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+csin(float v) {
   return sinf(v);
 }
 
-INLINE float ccos(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: ccos
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+ccos(float v) {
   return cosf(v);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ctan
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE float ctan(float v) {
   return tanf(v);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: csincos
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE void
-csincos(float v, float *pSinResult, float *pCosResult) {
+csincos(float v, float *sin_result, float *cos_result) {
   // MS VC defines _M_IX86 for x86.  gcc should define _X86_
 #if defined(_M_IX86) || defined(_X86_)
   //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
   __asm {
-    mov eax, pSinResult
-      mov edx, pCosResult
+    mov eax, sin_result
+      mov edx, cos_result
       fld v
       fsincos
       fstp DWORD ptr [edx]
       fstp DWORD ptr [eax]
       }
 #else //!_X86_
-  *pSinResult = sinf(v);
-  *pCosResult = cosf(v);
+  *sin_result = sinf(v);
+  *cos_result = cosf(v);
 #endif //!_X86_
 }
 
@@ -78,33 +100,68 @@ csin_over_x(float v) {
   }
 }
 
-INLINE float cabs(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: cabs
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+cabs(float v) {
   return fabs(v);
 }
 
-INLINE float catan(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: catan
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+catan(float v) {
   return atanf(v);
 }
 
-INLINE float catan2(float y, float x) {
+////////////////////////////////////////////////////////////////////
+//     Function: catan2
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+catan2(float y, float x) {
   return atan2f(y, x);
 }
 
-INLINE float casin(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: casin
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+casin(float v) {
   return asinf(v);
 }
 
-INLINE float cacos(float v) {
+////////////////////////////////////////////////////////////////////
+//     Function: cacos
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float
+cacos(float v) {
   return acosf(v);
 }
 
-#ifdef __INTEL_COMPILER
-// see float.h
-#define FPU_CONTROLWORD_WRITEMASK    0xFFFFF        // if you look at defn of _CW_DEFAULT, all settings fall within 0xFFFFF
-#define FPU_CONTROLWORD_NEW_SETTING  _CW_DEFAULT
-#endif  
+////////////////////////////////////////////////////////////////////
+//     Function: cmod
+//  Description: This is similar to fmod(), but it behaves properly
+//               when x is negative: that is, it always returns a
+//               value in the range [0, y), assuming y is positive.
+////////////////////////////////////////////////////////////////////
+INLINE float
+cmod(float x, float y) {
+  return x - cfloor(x / y) * y;
+}
 
-INLINE double cfloor(double f) {
+////////////////////////////////////////////////////////////////////
+//     Function: cfloor
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+cfloor(double f) {
   #ifdef __INTEL_COMPILER
     // intel floor doesnt work right if fpu mode is not double, so make double-prec mode is on
     unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
@@ -117,7 +174,12 @@ INLINE double cfloor(double f) {
   #endif
 }
 
-INLINE double cceil(double f) {
+////////////////////////////////////////////////////////////////////
+//     Function: cceil
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+cceil(double f) {
   #ifdef __INTEL_COMPILER
     // intel ceil doesnt work right if fpu mode is not double, so make double-prec mode is on
     unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
@@ -130,37 +192,61 @@ INLINE double cceil(double f) {
   #endif
 }
 
-INLINE double csqrt(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: csqrt
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+csqrt(double v) {
   return sqrt(v);
 }
 
-INLINE double csin(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: csin
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+csin(double v) {
   return sin(v);
 }
 
-INLINE double ccos(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: ccos
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+ccos(double v) {
   return cos(v);
 }
 
-INLINE double ctan(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: ctan
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+ctan(double v) {
   return tan(v);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: csincos
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE void
-csincos(double v, double *pSinResult, double *pCosResult) {
+csincos(double v, double *sin_result, double *cos_result) {
 #if defined(_M_IX86) || defined(_X86_)
   //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
   __asm {
-    mov eax, pSinResult
-      mov edx, pCosResult
+    mov eax, sin_result
+      mov edx, cos_result
       fld v
       fsincos
       fstp QWORD ptr [edx]
       fstp QWORD ptr [eax]
       }
 #else //!_X86_
-  *pSinResult = sin(v);
-  *pCosResult = cos(v);
+  *sin_result = sin(v);
+  *cos_result = cos(v);
 #endif //!_X86_
 }
 
@@ -177,27 +263,68 @@ csin_over_x(double v) {
   }
 }
 
-INLINE double cabs(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: cabs
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+cabs(double v) {
   return fabs(v);
 }
 
-INLINE double catan(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: catan
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+catan(double v) {
   return atan(v);
 }
 
-INLINE double catan2(double y, double x) {
+////////////////////////////////////////////////////////////////////
+//     Function: catan2
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+catan2(double y, double x) {
   return atan2(y, x);
 }
 
-INLINE double casin(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: casin
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+casin(double v) {
   return asin(v);
 }
 
-INLINE double cacos(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: cacos
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double
+cacos(double v) {
   return acos(v);
 }
 
-INLINE bool cnan(double v) {
+////////////////////////////////////////////////////////////////////
+//     Function: cmod
+//  Description: This is similar to fmod(), but it behaves properly
+//               when x is negative: that is, it always returns a
+//               value in the range [0, y), assuming y is positive.
+////////////////////////////////////////////////////////////////////
+INLINE double
+cmod(double x, double y) {
+  return x - cfloor(x / y) * y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cnan
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool
+cnan(double v) {
 #ifndef _WIN32
   return (isnan(v) != 0);
 #else
@@ -206,3 +333,21 @@ INLINE bool cnan(double v) {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: cmod
+//  Description: This is similar to fmod(), but it behaves properly
+//               when x is negative: that is, it always returns a
+//               value in the range [0, y), assuming y is positive.
+//
+//               This integer-valued function is provided since the
+//               built-in modulo operator % does not work properly for
+//               negative x.
+////////////////////////////////////////////////////////////////////
+INLINE int
+cmod(int x, int y) {
+  if (x < 0) {
+    return y - 1 - ((-x - 1) % y);
+  } else {
+    return x % y;
+  }
+}

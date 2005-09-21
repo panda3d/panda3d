@@ -25,7 +25,7 @@
 // the OpenSSL library to manage keys and to sign and validate
 // signatures.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "pvector.h"
 #include <openssl/evp.h>
@@ -82,7 +82,7 @@ private:
 
 #include "prcKeyRegistry.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif
 

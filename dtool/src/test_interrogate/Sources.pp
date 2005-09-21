@@ -1,5 +1,5 @@
 #define LOCAL_LIBS pystub interrogatedb dconfig dtoolutil dtoolbase
-#define USE_PACKAGES ssl
+#define USE_PACKAGES openssl
 
 #begin bin_target
   #define TARGET test_interrogate

@@ -25,7 +25,7 @@
 
 #include <ctype.h>
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #include <openssl/evp.h>
 #endif
 
@@ -133,7 +133,7 @@ read_prc(istream &in) {
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   // Set up the evp context for verifying the signature, if we find
   // one.
 #ifdef SSL_097
@@ -142,7 +142,7 @@ read_prc(istream &in) {
   _md_ctx = new EVP_MD_CTX;
 #endif
   EVP_VerifyInit((EVP_MD_CTX *)_md_ctx, EVP_sha1());
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   string prev_line;
 
@@ -194,7 +194,7 @@ read_prc(istream &in) {
     read_prc_line(prev_line);
   }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   // Now validate the signature and free the SSL structures.
   if (!_signature.empty()) {
     PrcKeyRegistry *pkr = PrcKeyRegistry::get_global_ptr();
@@ -221,7 +221,7 @@ read_prc(istream &in) {
 #else
   delete (EVP_MD_CTX *)_md_ctx;
 #endif
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   bool failed = (in.fail() && !in.eof());
 
@@ -381,11 +381,11 @@ read_prc_line(const string &line) {
     return;
   }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   // Accumulate any line that's not itself a signature into the hash,
   // so we can validate the signature at the end.
   EVP_VerifyUpdate((EVP_MD_CTX *)_md_ctx, line.data(), line.size());
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   // Separate the line into a variable and a value.
   size_t p = 0;

@@ -23,7 +23,7 @@
 // the OpenSSL library to manage keys and to sign and validate
 // signatures.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/pem.h>
 
@@ -183,4 +183,4 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

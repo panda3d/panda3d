@@ -86,6 +86,7 @@ make_variable(const string &name) {
 
   _variables_by_name[name] = variable;
   _variables.push_back(variable);
+
   return variable;
 }
 

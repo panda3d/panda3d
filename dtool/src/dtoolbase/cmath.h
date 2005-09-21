@@ -19,28 +19,34 @@
 #ifndef CMATH_H
 #define CMATH_H
 
-#include "dtoolbase.h"
-
-#include <math.h>
-
 // This file declares a number of C++-style overloading wrappers
 // around the standard math library functions, so we can use
 // overloading to differentiate on type instead of having to know
 // explicitly whether we need to call, for instance, sqrtf() or
 // sqrt().
 
+#include "dtoolbase.h"
+
+#include <math.h>
+
+// Windows defines isnan() in a different place and with a different
+// name than everyone else.  Sheesh.
+#ifdef _WIN32
+#include <float.h>
+#endif
+
 INLINE float csqrt(float v);
 INLINE float csin(float v);
 INLINE float ccos(float v);
 INLINE float ctan(float v);
-INLINE void  csincos(float v, float *pSinResult, float *pCosResult);  // does both at once (faster on x86)
+INLINE void csincos(float v, float *sin_result, float *cos_result);
 INLINE float csin_over_x(float v);
 INLINE float cabs(float v);
 INLINE float catan(float v);
 INLINE float catan2(float y, float x);
 INLINE float casin(float v);
-//INLINE float cfloor(float f);
-//INLINE float cceil(float f);
+INLINE float cacos(float v);
+INLINE float cmod(float x, float y);
 
 INLINE double cfloor(double f);
 INLINE double cceil(double f);
@@ -48,15 +54,19 @@ INLINE double csqrt(double v);
 INLINE double csin(double v);
 INLINE double ccos(double v);
 INLINE double ctan(double v);
-INLINE void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
+INLINE void csincos(double v, double *sin_result, double *cos_result);
 INLINE double cabs(double v);
 INLINE double catan(double v);
 INLINE double catan2(double y, double x);
-INLINE double casin(double y, double x);
+INLINE double casin(double v);
+INLINE double cacos(double v);
+INLINE double cmod(double x, double y);
 
 // Returns true if the number is nan, false if it's a genuine number
 // or infinity.
 INLINE bool cnan(double v);
+
+INLINE int cmod(int x, int y);
 
 #include "cmath.I"
 

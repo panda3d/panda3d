@@ -362,12 +362,12 @@
 #define HAVE_STL_HASH
 
 // Is OpenSSL installed, and where?
-#define SSL_IPATH /usr/local/ssl/include
-#define SSL_LPATH /usr/local/ssl/lib
-#define SSL_LIBS ssl crypto
-#defer HAVE_SSL $[libtest $[SSL_LPATH],$[SSL_LIBS]]
+#define OPENSSL_IPATH /usr/local/ssl/include
+#define OPENSSL_LPATH /usr/local/ssl/lib
+#define OPENSSL_LIBS ssl crypto
+#defer HAVE_OPENSSL $[libtest $[OPENSSL_LPATH],$[OPENSSL_LIBS]]
 // Define this nonempty if your version of OpenSSL is 0.9.7 or better.
-#define SSL_097
+#define OPENSSL_097
 
 // Define this true to include the OpenSSL code to report verbose
 // error messages when they occur.
@@ -511,10 +511,10 @@
 #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
 // Is OpenCV installed, and where?
-#define CV_IPATH /usr/local/include/opencv
-#define CV_LPATH /usr/local/lib
-#define CV_LIBS $[if $[WINDOWS_PLATFORM],cv.lib highgui.lib cxcore.lib,cv highgui cxcore]
-#defer HAVE_CV $[libtest $[CV_LPATH],$[CV_LIBS]]
+#define OPENCV_IPATH /usr/local/include/opencv
+#define OPENCV_LPATH /usr/local/lib
+#define OPENCV_LIBS $[if $[WINDOWS_PLATFORM],cv.lib highgui.lib cxcore.lib,cv highgui cxcore]
+#defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may

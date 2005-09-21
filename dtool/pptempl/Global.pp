@@ -104,11 +104,11 @@
   #define nspr_libs $[NSPR_LIBS]
 #endif
 
-#if $[HAVE_SSL]
-  #define ssl_ipath $[wildcard $[SSL_IPATH]]
-  #define ssl_lpath $[wildcard $[SSL_LPATH]]
-  #define ssl_cflags $[SSL_CFLAGS]
-  #define ssl_libs $[SSL_LIBS]
+#if $[HAVE_OPENSSL]
+  #define openssl_ipath $[wildcard $[OPENSSL_IPATH]]
+  #define openssl_lpath $[wildcard $[OPENSSL_LPATH]]
+  #define openssl_cflags $[OPENSSL_CFLAGS]
+  #define openssl_libs $[OPENSSL_LIBS]
 #endif
 
 #if $[HAVE_ZLIB]
@@ -160,11 +160,11 @@
   #define dx_libs $[DX_LIBS]
 #endif
 
-#if $[HAVE_CV]
-  #define cv_ipath $[wildcard $[CV_IPATH]]
-  #define cv_lpath $[wildcard $[CV_LPATH]]
-  #define cv_cflags $[CV_CFLAGS]
-  #define cv_libs $[CV_LIBS]
+#if $[HAVE_OPENCV]
+  #define opencv_ipath $[wildcard $[OPENCV_IPATH]]
+  #define opencv_lpath $[wildcard $[OPENCV_LPATH]]
+  #define opencv_cflags $[OPENCV_CFLAGS]
+  #define opencv_libs $[OPENCV_LIBS]
 #endif
 
 #if $[HAVE_JPEG]

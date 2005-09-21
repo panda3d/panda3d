@@ -86,11 +86,11 @@ private:
 
   string _signature;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   // This maintains the hash of the prc file as we are scanning it, so
   // we can compare its signature which we discover at the end.
   void *_md_ctx;
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   static ConfigPage *_default_page;
   static ConfigPage *_local_page;

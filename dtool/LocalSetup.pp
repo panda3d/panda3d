@@ -16,7 +16,7 @@
 #else
 #print - Did not find NSPR
 #endif
-#if $[HAVE_SSL]
+#if $[HAVE_OPENSSL]
 #print + OpenSSL
 #else
 #print - Did not find OpenSSL
@@ -86,7 +86,7 @@
 #else
 #print - Did not find DirectX
 #endif
-#if $[HAVE_CV]
+#if $[HAVE_OPENCV]
 #print + OpenCV
 #else
 #print - Did not find OpenCV
@@ -144,8 +144,8 @@ $[cdefine HAVE_SOFTIMAGE]
 $[cdefine HAVE_NSPR]
 
 /* Define if we have OpenSSL installed.  */
-$[cdefine HAVE_SSL]
-$[cdefine SSL_097]
+$[cdefine HAVE_OPENSSL]
+$[cdefine OPENSSL_097]
 $[cdefine REPORT_OPENSSL_ERRORS]
 
 /* Define if we have libjpeg installed.  */
@@ -182,7 +182,7 @@ $[cdefine HAVE_ZLIB]
 $[cdefine HAVE_GL]
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
-$[cdefine HAVE_CV]
+$[cdefine HAVE_OPENCV]
 
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
