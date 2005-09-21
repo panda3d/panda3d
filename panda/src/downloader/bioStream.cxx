@@ -19,7 +19,7 @@
 #include "bioStream.h"
 
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IBioStream::is_closed
@@ -104,4 +104,4 @@ close() {
   _buf.close();
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

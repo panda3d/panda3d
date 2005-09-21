@@ -18,7 +18,7 @@
 
 #include "httpCookie.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "ctype.h"
 #include "httpChannel.h"
@@ -218,4 +218,4 @@ parse_cookie_param(const string &param, bool first_param) {
   return true;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

@@ -327,21 +327,6 @@ bind_anim(AnimBundle *anim, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::advance_time
-//       Access: Public
-//  Description: Calls advance_time() on all AnimControls currently
-//               in effect.
-////////////////////////////////////////////////////////////////////
-void PartBundle::
-advance_time(double time) {
-  ChannelBlend::const_iterator cbi;
-  for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
-    AnimControl *control = (*cbi).first;
-    control->advance_time(time);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::update
 //       Access: Public
 //  Description: Updates all the parts in the bundle to reflect the

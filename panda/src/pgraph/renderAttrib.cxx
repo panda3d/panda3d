@@ -126,6 +126,38 @@ lower_attrib_can_override() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool RenderAttrib::
+has_cull_callback() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.
+//
+//               This is called each time the RenderAttrib is
+//               discovered applied to a Geom in the traversal.  It
+//               should return true if the Geom is visible, false if
+//               it should be omitted.
+////////////////////////////////////////////////////////////////////
+bool RenderAttrib::
+cull_callback(CullTraverser *, const CullTraverserData &) const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::output
 //       Access: Published, Virtual
 //  Description: 

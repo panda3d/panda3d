@@ -18,7 +18,7 @@
 
 #include "bioStreamPtr.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BioStreamPtr::Destructor
@@ -33,4 +33,4 @@ BioStreamPtr::
   }
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

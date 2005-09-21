@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "socketStream.h"
 #include "bioStreamBuf.h"
@@ -94,7 +94,7 @@ private:
 
 #include "bioStream.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 
 #endif

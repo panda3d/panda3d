@@ -57,7 +57,8 @@
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
     vertexSlider.I vertexSlider.h \
-    vertexTransform.I vertexTransform.h
+    vertexTransform.I vertexTransform.h \
+    videoTexture.I videoTexture.h
     
   #define INCLUDED_SOURCES \
     boundedObject.cxx \
@@ -104,7 +105,8 @@
     userVertexTransform.cxx \
     vertexBufferContext.cxx \
     vertexSlider.cxx \
-    vertexTransform.cxx
+    vertexTransform.cxx \
+    videoTexture.cxx
 
   #define INSTALL_HEADERS \
     boundedObject.I boundedObject.h \
@@ -156,7 +158,8 @@
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
     vertexSlider.I vertexSlider.h \
-    vertexTransform.I vertexTransform.h
+    vertexTransform.I vertexTransform.h \
+    videoTexture.I videoTexture.h
 
 
   #define IGATESCAN all

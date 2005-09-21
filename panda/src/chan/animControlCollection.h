@@ -52,11 +52,6 @@ PUBLISHED:
   string get_anim_name(int n) const;
   void clear_anims();
 
-  INLINE void set_stop_event(const CPT_Event &stop_event);
-  INLINE void clear_stop_event();
-  INLINE bool has_stop_event() const;
-  INLINE CPT_Event get_stop_event() const;
-
   // The following functions are convenience functions that vector
   // directly into the AnimControl's functionality by anim name.
 
@@ -100,7 +95,6 @@ private:
   typedef pmap<string, size_t> ControlsByName;
   ControlsByName _controls_by_name;
 
-  CPT_Event _stop_event;
   AnimControl *_last_started_control;
 };
 

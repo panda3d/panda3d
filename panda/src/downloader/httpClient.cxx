@@ -28,7 +28,7 @@
 #include "httpDigestAuthorization.h"
 #include "globPattern.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/rand.h>
 #include <openssl/err.h>
@@ -1629,4 +1629,4 @@ ssl_msg_callback(int write_p, int version, int content_type,
 }
 #endif  // defined(SSL_097) && !defined(NDEBUG)
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

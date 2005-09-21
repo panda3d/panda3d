@@ -1,0 +1,379 @@
+// Filename: animInterface.cxx
+// Created by:  drose (20Sep05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "animInterface.h"
+#include "clockObject.h"
+
+TypeHandle AnimInterface::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+AnimInterface::
+AnimInterface() :
+  _frame_rate(0.0),
+  _num_frames(0),
+  _play_mode(PM_pose),
+  _start_time(0.0),
+  _start_frame(0.0),
+  _play_frames(0.0),
+  _from_frame(0),
+  _to_frame(0),
+  _play_rate(1.0),
+  _effective_frame_rate(0.0),
+  _paused(true),
+  _paused_f(0.0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+AnimInterface::
+AnimInterface(const AnimInterface &copy) :
+  _frame_rate(copy._frame_rate),
+  _num_frames(copy._num_frames),
+  _play_mode(copy._play_mode),
+  _start_time(copy._start_time),
+  _start_frame(copy._start_frame),
+  _play_frames(copy._play_frames),
+  _from_frame(copy._from_frame),
+  _to_frame(copy._to_frame),
+  _play_rate(copy._play_rate),
+  _effective_frame_rate(copy._effective_frame_rate),
+  _paused(copy._paused),
+  _paused_f(copy._paused_f)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::Destructor
+//       Access: Published, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+AnimInterface::
+~AnimInterface() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::play
+//       Access: Published
+//  Description: Runs the animation from the frame "from" to and
+//               including the frame "to", at which point the
+//               animation is stopped.  Both "from" and "to" frame
+//               numbers may be outside the range (0,
+//               get_num_frames()) and the animation will follow the
+//               range correctly, reporting numbers modulo
+//               get_num_frames().  For instance, play(0,
+//               get_num_frames() * 2) will play the animation twice
+//               and then stop.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+play(double from, double to) {
+  if (from >= to) {
+    pose(from);
+    return;
+  }
+
+  _play_mode = PM_play;
+  _start_time = ClockObject::get_global_clock()->get_frame_time();
+  _start_frame = from;
+  _play_frames = to - from + 1.0;
+  _from_frame = (int)floor(from);
+  _to_frame = (int)floor(to);
+  _paused_f = 0.0;
+
+  if (_effective_frame_rate < 0.0) {
+    // If we'll be playing backward, start at the end.
+    _start_time -= _play_frames / _effective_frame_rate;
+  }
+
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::loop
+//       Access: Published
+//  Description: Loops the animation from the frame "from" to and
+//               including the frame "to", indefinitely.  If restart
+//               is true, the animation is restarted from the
+//               beginning; otherwise, it continues from the current
+//               frame.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+loop(bool restart, double from, double to) {
+  if (from >= to) {
+    pose(from);
+    return;
+  }
+
+  double fframe = get_full_fframe();
+
+  _play_mode = PM_loop;
+  _start_time = ClockObject::get_global_clock()->get_frame_time();
+  _start_frame = from;
+  _play_frames = to - from + 1.0;
+  _from_frame = (int)floor(from);
+  _to_frame = (int)floor(to);
+  _paused_f = 0.0;
+
+  if (!restart) {
+    if (_paused) {
+      _paused_f = fframe - _start_frame;
+    } else {
+      _start_time -= fframe / _effective_frame_rate;
+    }
+  }
+
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::pingpong
+//       Access: Published
+//  Description: Loops the animation from the frame "from" to and
+//               including the frame "to", and then back in the
+//               opposite direction, indefinitely.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+pingpong(bool restart, double from, double to) {
+  if (from >= to) {
+    pose(from);
+    return;
+  }
+
+  double fframe = get_full_fframe();
+
+  _play_mode = PM_pingpong;
+  _start_time = ClockObject::get_global_clock()->get_frame_time();
+  _start_frame = from;
+  _play_frames = to - from + 1.0;
+  _from_frame = (int)floor(from);
+  _to_frame = (int)floor(to);
+  _paused_f = 0.0;
+
+  if (!restart) {
+    if (_paused) {
+      _paused_f = fframe - _start_frame;
+    } else {
+      _start_time -= fframe / _effective_frame_rate;
+    }
+  }
+
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::pose
+//       Access: Published
+//  Description: Sets the animation to the indicated frame and holds
+//               it there.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+pose(int frame) {
+  _play_mode = PM_pose;
+  _start_time = ClockObject::get_global_clock()->get_frame_time();
+  _start_frame = (double)frame;
+  _play_frames = 0.0;
+  _from_frame = frame;
+  _to_frame = frame;
+  _paused_f = 0.0;
+
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_full_frame
+//       Access: Published
+//  Description: Returns the current integer frame number.
+//
+//               Unlike the value returned by get_frame(), this frame
+//               number may extend beyond the range of
+//               get_num_frames() if the frame range passed to play(),
+//               loop(), etc. did.
+//
+//               Unlike the value returned by get_full_fframe(), this
+//               return value will never exceed the value passed to
+//               to_frame in the play() method.
+////////////////////////////////////////////////////////////////////
+int AnimInterface::
+get_full_frame() const {
+  int frame = (int)floor(get_full_fframe());
+  if (_play_mode == PM_play) {
+    // In play mode, we never let the return value exceed
+    // (_from_frame, _to_frame).
+    frame = min(max(frame, _from_frame), _to_frame);
+  }
+  return frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_full_fframe
+//       Access: Published
+//  Description: Returns the current floating-point frame number.
+//
+//               Unlike the value returned by get_frame(), this frame
+//               number may extend beyond the range of
+//               get_num_frames() if the frame range passed to play(),
+//               loop(), etc. did.
+//
+//               Unlike the value returned by get_full_frame(), this
+//               return value may equal (to_frame + 1.0), when the
+//               animation has played to its natural end.  However, in
+//               this case the return value of get_full_frame() will
+//               be to_frame, not (to_frame + 1).
+////////////////////////////////////////////////////////////////////
+double AnimInterface::
+get_full_fframe() const {
+  switch (_play_mode) {
+  case PM_pose:
+    return _start_frame;
+
+  case PM_play:
+    return min(max(get_f(), 0.0), _play_frames) + _start_frame;
+
+  case PM_loop:
+    return cmod(get_f(), _play_frames) + _start_frame;
+
+  case PM_pingpong:
+    {
+      double f = cmod(get_f(), _play_frames * 2.0);
+      if (f > _play_frames) {
+	return (_play_frames * 2.0 - f) + _start_frame;
+      } else {
+	return f + _start_frame;
+      }
+    }
+  }
+
+  return _start_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::is_playing
+//       Access: Published
+//  Description: Returns true if the animation is currently playing,
+//               false if it is stopped (e.g. because stop() or pose()
+//               was called, or because it reached the end of the
+//               animation after play() was called).
+////////////////////////////////////////////////////////////////////
+bool AnimInterface::
+is_playing() const {
+  switch (_play_mode) {
+  case PM_pose:
+    return false;
+
+  case PM_play:
+    return get_f() < _play_frames;
+
+  case PM_loop:
+  case PM_pingpong:
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+output(ostream &out) const {
+  switch (_play_mode) {
+  case PM_pose:
+    out << "pose, frame " << get_frame();
+    return;
+
+  case PM_play:
+    out << "play, frame " << get_frame();
+    return;
+
+  case PM_loop:
+    out << "loop, frame " << get_frame();
+    return;
+
+  case PM_pingpong:
+    out << "pingpong, frame " << get_frame();
+    return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::animation_activated
+//       Access: Protected, Virtual
+//  Description: This is provided as a callback method for when the
+//               user calls one of the play/loop/pose type methods to
+//               start the animation playing.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+animation_activated() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_f
+//       Access: Private
+//  Description: Returns the current floating-point frame number,
+//               elapsed since _start_frame.
+////////////////////////////////////////////////////////////////////
+double AnimInterface::
+get_f() const {
+  if (_paused) {
+    return _paused_f;
+
+  } else {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    double elapsed = now - _start_time;
+    return (elapsed * _effective_frame_rate);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::internal_set_rate
+//       Access: Private
+//  Description: Called internally to adjust either or both of the
+//               frame_rate or play_rate without changing the current
+//               frame number if the animation is already playing.
+////////////////////////////////////////////////////////////////////
+void AnimInterface::
+internal_set_rate(double frame_rate, double play_rate) {
+  double f = get_f();
+  
+  _frame_rate = frame_rate;
+  _play_rate = play_rate;
+  _effective_frame_rate = frame_rate * play_rate;
+
+  if (_effective_frame_rate == 0.0) {
+    _paused_f = f;
+    _paused = true;
+
+  } else {
+    // Compute a new _start_time that will keep f the same value with
+    // the new play_rate.
+    double new_elapsed = f / _effective_frame_rate;
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    _start_time = now - new_elapsed;
+    _paused = false;
+  }
+}

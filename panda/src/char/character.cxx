@@ -160,10 +160,8 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 
   PStatTimer timer(_joints_pcollector);
 
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  get_bundle()->advance_time(now);
-
   if (char_cat.is_spam()) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
     char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
   }
 
@@ -183,10 +181,8 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 ////////////////////////////////////////////////////////////////////
 void Character::
 update_to_now() {
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  get_bundle()->advance_time(now);
-
   if (char_cat.is_spam()) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
     char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
   }
 

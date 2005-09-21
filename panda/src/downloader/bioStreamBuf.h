@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #define OPENSSL_NO_KRB5
 
 #include "bioPtr.h"
@@ -58,6 +58,6 @@ private:
   friend class BioStream;
 };
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif

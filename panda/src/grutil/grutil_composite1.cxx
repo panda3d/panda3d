@@ -2,5 +2,5 @@
 #include "config_grutil.cxx"
 #include "lineSegs.cxx"
 #include "frameRateMeter.cxx"
-#include "aviTexture.cxx"
+#include "openCVTexture.cxx"
 

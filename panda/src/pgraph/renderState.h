@@ -75,6 +75,9 @@ PUBLISHED:
   INLINE const RenderAttrib *get_attrib(int n) const;
   INLINE int get_override(int n) const;
 
+  INLINE bool has_cull_callback() const;
+  bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
+
   int find_attrib(TypeHandle type) const;
 
   static CPT(RenderState) make_empty();
@@ -181,6 +184,7 @@ private:
   void determine_render_mode();
   void determine_clip_plane();
   void determine_shader();
+  void determine_cull_callback();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -282,19 +286,21 @@ private:
   const ShaderAttrib *_shader;
   
   enum Flags {
-    F_checked_bin_index    = 0x0001,
-    F_checked_fog          = 0x0002,
-    F_checked_bin          = 0x0004,
-    F_checked_transparency = 0x0008,
-    F_checked_color        = 0x0010,
-    F_checked_color_scale  = 0x0020,
-    F_checked_texture      = 0x0040,
-    F_checked_tex_gen      = 0x0080,
-    F_checked_tex_matrix   = 0x0100,
-    F_checked_render_mode  = 0x0200,
-    F_checked_clip_plane   = 0x0400,
-    F_checked_shader       = 0x0800,
-    F_is_destructing       = 0x8000,
+    F_checked_bin_index     = 0x0001,
+    F_checked_fog           = 0x0002,
+    F_checked_bin           = 0x0004,
+    F_checked_transparency  = 0x0008,
+    F_checked_color         = 0x0010,
+    F_checked_color_scale   = 0x0020,
+    F_checked_texture       = 0x0040,
+    F_checked_tex_gen       = 0x0080,
+    F_checked_tex_matrix    = 0x0100,
+    F_checked_render_mode   = 0x0200,
+    F_checked_clip_plane    = 0x0400,
+    F_checked_shader        = 0x0800,
+    F_checked_cull_callback = 0x1000,
+    F_has_cull_callback     = 0x2000,
+    F_is_destructing        = 0x8000,
   };
   unsigned short _flags;
 

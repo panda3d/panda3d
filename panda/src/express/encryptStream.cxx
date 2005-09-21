@@ -18,7 +18,7 @@
 
 #include "encryptStream.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: encrypt_string
 //       Access: Published
@@ -66,4 +66,4 @@ decrypt_string(const string &source, const string &password) {
   return output.str();
 }
 
-#endif // HAVE_SSL
+#endif // HAVE_OPENSSL

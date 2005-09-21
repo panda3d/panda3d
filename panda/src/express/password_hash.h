@@ -23,7 +23,7 @@
 
 // The functions defined within this file rely on algorithms defined
 // within OpenSSL.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 BEGIN_PUBLISH
 
@@ -32,6 +32,6 @@ string password_hash(const string &password, const string &salt,
 
 END_PUBLISH
 
-#endif // HAVE_SSL
+#endif // HAVE_OPENSSL
 
 #endif

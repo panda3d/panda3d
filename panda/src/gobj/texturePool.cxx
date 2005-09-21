@@ -20,6 +20,7 @@
 #include "config_gobj.h"
 #include "config_util.h"
 #include "config_express.h"
+#include "string_utils.h"
 #include "virtualFileSystem.h"
 
 
@@ -35,7 +36,79 @@ TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 write(ostream &out) {
-  get_ptr()->ns_list_contents(out);
+  get_global_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::register_texture_type
+//       Access: Public
+//  Description: Records a factory function that makes a Texture
+//               object of the appropriate type for one or more
+//               particular filename extensions.  The string
+//               extensions may be a string that contains
+//               space-separated list of extensions, case-insensitive.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+register_texture_type(MakeTextureFunc *func, const string &extensions) {
+  vector_string words;
+  extract_words(downcase(extensions), words);
+
+  vector_string::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    _type_registry[*wi] = func;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::make_texture
+//       Access: Public
+//  Description: Creates a new Texture object of the appropriate type
+//               for the indicated filename extension, according to
+//               the types that have been registered via
+//               register_texture_type().
+////////////////////////////////////////////////////////////////////
+PT(Texture) TexturePool::
+make_texture(const string &extension) {
+  string c = downcase(extension);
+  TypeRegistry::const_iterator ti;
+  ti = _type_registry.find(extension);
+  if (ti != _type_registry.end()) {
+    return (*ti).second();
+  }
+  return new Texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::get_global_ptr
+//       Access: Public, Static
+//  Description: Initializes and/or returns the global pointer to the
+//               one TexturePool object in the system.
+////////////////////////////////////////////////////////////////////
+TexturePool *TexturePool::
+get_global_ptr() {
+  if (_global_ptr == (TexturePool *)NULL) {
+    _global_ptr = new TexturePool;
+  }
+  return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::Constructor
+//       Access: Private
+//  Description: The constructor is not intended to be called
+//               directly; there's only supposed to be one TexturePool
+//               in the universe and it constructs itself.
+////////////////////////////////////////////////////////////////////
+TexturePool::
+TexturePool() {
+  ConfigVariableString fake_texture_image
+    ("fake-texture-image", "",
+     PRC_DESC("Set this to enable a speedy-load mode in which you don't care "
+	      "what the world looks like, you just want it to load in minimal "
+	      "time.  This causes all texture loads via the TexturePool to use "
+	      "the same texture file, which will presumably only be loaded "
+	      "once."));
+  _fake_texture_image = fake_texture_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +164,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
 
   gobj_cat.info()
     << "Loading texture " << filename << "\n";
-  PT(Texture) tex = new Texture;
+  PT(Texture) tex = make_texture(filename.get_extension());
   if (!tex->read(filename, 0, primary_file_num_channels)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
@@ -139,7 +212,7 @@ ns_load_texture(const Filename &orig_filename,
   gobj_cat.info()
     << "Loading texture " << filename << " and alpha component "
     << alpha_filename << endl;
-  PT(Texture) tex = new Texture;
+  PT(Texture) tex = make_texture(filename.get_extension());
   if (!tex->read(filename, alpha_filename, 0, primary_file_num_channels,
                  alpha_file_channel)) {
     // This texture was not found or could not be read.
@@ -186,7 +259,7 @@ ns_load_3d_texture(const HashFilename &filename_template) {
 
   gobj_cat.info()
     << "Loading 3-d texture " << hash_filename << "\n";
-  PT(Texture) tex = new Texture;
+  PT(Texture) tex = make_texture(hash_filename.get_extension());
   tex->setup_3d_texture();
   if (!tex->read_pages(hash_filename)) {
     // This texture was not found or could not be read.
@@ -231,7 +304,7 @@ ns_load_cube_map(const HashFilename &filename_template) {
 
   gobj_cat.info()
     << "Loading cube map texture " << hash_filename << "\n";
-  PT(Texture) tex = new Texture;
+  PT(Texture) tex = make_texture(hash_filename.get_extension());
   tex->setup_cube_map();
   if (!tex->read_pages(hash_filename)) {
     // This texture was not found or could not be read.
@@ -391,18 +464,4 @@ report_texture_unreadable(const Filename &filename) const {
     gobj_cat.error()
       << "Texture \"" << filename << "\" exists but cannot be read.\n";
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::get_ptr
-//       Access: Private, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one TexturePool object in the system.
-////////////////////////////////////////////////////////////////////
-TexturePool *TexturePool::
-get_ptr() {
-  if (_global_ptr == (TexturePool *)NULL) {
-    _global_ptr = new TexturePool;
-  }
-  return _global_ptr;
 }

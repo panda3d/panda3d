@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_util.h"
+#include "animInterface.h"
 #include "bamReaderParam.h"
 #include "cachedTypedWritableReferenceCount.h"
 #include "clockObject.h"
@@ -67,6 +68,7 @@ ConfigVariableSearchPath sound_path
  PRC_DESC("The directories to search for sound and music files to be loaded."));
 
 ConfigureFn(config_util) {
+  AnimInterface::init_type();
   BamReaderParam::init_type();
   CachedTypedWritableReferenceCount::init_type();
   Configurable::init_type();

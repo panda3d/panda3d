@@ -18,7 +18,9 @@
 
 #include "config_grutil.h"
 #include "frameRateMeter.h"
-#include "aviTexture.h"
+#include "openCVTexture.h"
+#include "pandaSystem.h"
+#include "texturePool.h"
 
 #include "dconfig.h"
 
@@ -63,8 +65,13 @@ init_libgrutil() {
 
   FrameRateMeter::init_type();
 
-#ifdef HAVE_CV
-  AviTexture::init_type();
-#endif // HAVE_CV
+#ifdef HAVE_OPENCV
+  OpenCVTexture::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("OpenCV");
+  TexturePool *ts = TexturePool::get_global_ptr();
+  ts->register_texture_type(OpenCVTexture::make_texture, "avi");
+#endif // HAVE_OPENCV
 }
 

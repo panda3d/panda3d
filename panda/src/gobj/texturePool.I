@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool TexturePool::
 has_texture(const string &filename) {
-  return get_ptr()->ns_has_texture(filename);
+  return get_global_ptr()->ns_has_texture(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ verify_texture(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_texture(const string &filename, int primary_file_num_channels) {
-  return get_ptr()->ns_load_texture(filename, primary_file_num_channels);
+  return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ load_texture(const string &filename, int primary_file_num_channels) {
 INLINE Texture *TexturePool::
 load_texture(const string &filename, const string &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel) {
-  return get_ptr()->ns_load_texture(filename, alpha_filename, 
+  return get_global_ptr()->ns_load_texture(filename, alpha_filename, 
                                     primary_file_num_channels,
                                     alpha_file_channel);
 }
@@ -85,7 +85,7 @@ load_texture(const string &filename, const string &alpha_filename,
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_3d_texture(const string &filename_template) {
-  return get_ptr()->ns_load_3d_texture(filename_template);
+  return get_global_ptr()->ns_load_3d_texture(filename_template);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ load_3d_texture(const string &filename_template) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_cube_map(const string &filename_template) {
-  return get_ptr()->ns_load_cube_map(filename_template);
+  return get_global_ptr()->ns_load_cube_map(filename_template);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ load_cube_map(const string &filename_template) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 get_normalization_cube_map(int size) {
-  return get_ptr()->ns_get_normalization_cube_map(size);
+  return get_global_ptr()->ns_get_normalization_cube_map(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ get_normalization_cube_map(int size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 add_texture(Texture *texture) {
-  get_ptr()->ns_add_texture(texture);
+  get_global_ptr()->ns_add_texture(texture);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ add_texture(Texture *texture) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 release_texture(Texture *texture) {
-  get_ptr()->ns_release_texture(texture);
+  get_global_ptr()->ns_release_texture(texture);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ release_texture(Texture *texture) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 release_all_textures() {
-  get_ptr()->ns_release_all_textures();
+  get_global_ptr()->ns_release_all_textures();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 INLINE int TexturePool::
 garbage_collect() {
-  return get_ptr()->ns_garbage_collect();
+  return get_global_ptr()->ns_garbage_collect();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +182,7 @@ garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 list_contents(ostream &out) {
-  get_ptr()->ns_list_contents(out);
+  get_global_ptr()->ns_list_contents(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ list_contents(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 set_fake_texture_image(const string &filename) {
-  get_ptr()->_fake_texture_image = filename;
+  get_global_ptr()->_fake_texture_image = filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,17 +226,5 @@ has_fake_texture_image() {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &TexturePool::
 get_fake_texture_image() {
-  return get_ptr()->_fake_texture_image;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::Constructor
-//       Access: Private
-//  Description: The constructor is not intended to be called
-//               directly; there's only supposed to be one TexturePool
-//               in the universe and it constructs itself.
-////////////////////////////////////////////////////////////////////
-INLINE TexturePool::
-TexturePool() {
-  _fake_texture_image = fake_texture_image;
+  return get_global_ptr()->_fake_texture_image;
 }

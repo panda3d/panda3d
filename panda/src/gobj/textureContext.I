@@ -86,6 +86,7 @@ clear_dirty_flags(int flags_to_clear) {
 ////////////////////////////////////////////////////////////////////
 INLINE int TextureContext::
 get_dirty_flags() const {
+  _texture->reconsider_dirty();
   return _dirty_flags;
 }
 

@@ -84,6 +84,9 @@ public:
   virtual void output(ostream &out) const;
   virtual void store_into_slot(AttribSlots *slots) const;
 
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
+
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;

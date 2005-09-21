@@ -18,60 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::set_stop_event
-//       Access: Public
-//  Description: Sets the event that will be thrown when the next
-//               animation that is played eventually comes to a stop.
-//               Setting this does not affect any stop event that is
-//               pending from a previously-started animation.
-////////////////////////////////////////////////////////////////////
-INLINE void AnimControlCollection::
-set_stop_event(const CPT_Event &stop_event) {
-  _stop_event = stop_event;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::clear_stop_event
-//       Access: Public
-//  Description: Indicates that the next-started animation will not
-//               throw a stop event when it comes to a stop.  This
-//               does not affect any already-started animations.
-////////////////////////////////////////////////////////////////////
-INLINE void AnimControlCollection::
-clear_stop_event() {
-  _stop_event = (const Event *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::has_stop_event
-//       Access: Public
-//  Description: Returns true if a stop event has been established via
-//               set_stop_event().  If true, this means that
-//               animations that are to be started in the future will
-//               throw this event when they stop.  However, it does
-//               not necessarily mean that the currently-playing
-//               animation will throw this event.
-////////////////////////////////////////////////////////////////////
-INLINE bool AnimControlCollection::
-has_stop_event() const {
-  return (_stop_event != (const Event *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::get_stop_event
-//       Access: Public
-//  Description: Returns the event that has been established via
-//               set_stop_event().  This is the event that will be
-//               thrown by animations that are started in the future
-//               when they stop.  However, this may or may not be
-//               associated with any currently-playing animations.
-////////////////////////////////////////////////////////////////////
-INLINE CPT_Event AnimControlCollection::
-get_stop_event() const {
-  return _stop_event;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::play
 //       Access: Public
 //  Description: Starts the named animation playing.
@@ -83,7 +29,7 @@ play(const string &anim_name) {
     return false;
   }
   _last_started_control = control;
-  control->play(_stop_event);
+  control->play();
   return true;
 }
 
@@ -99,7 +45,7 @@ play(const string &anim_name, int from, int to) {
     return false;
   }
   _last_started_control = control;
-  control->play(from, to, _stop_event);
+  control->play(from, to);
   return true;
 }
 

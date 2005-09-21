@@ -22,14 +22,14 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #define OPENSSL_NO_KRB5
 
 #include <openssl/ssl.h>
 
 EXPCL_PANDAEXPRESS void notify_ssl_errors();
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif
 

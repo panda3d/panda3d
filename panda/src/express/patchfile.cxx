@@ -18,7 +18,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "config_express.h"
 #include "error_utils.h"
@@ -981,4 +981,4 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   return true;
 }
 
-#endif // HAVE_SSL
+#endif // HAVE_OPENSSL

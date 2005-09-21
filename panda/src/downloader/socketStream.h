@@ -29,7 +29,7 @@
 // available, since the only current use for it is to implement
 // OpenSSL-defined constructs (like ISocketStream).
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SSReader
@@ -168,7 +168,7 @@ PUBLISHED:
 
 #include "socketStream.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 
 #endif

@@ -846,12 +846,12 @@ open_read_subfile(int index) {
                    subfile->_data_start + (streampos)subfile->_data_length); 
   
   if ((subfile->_flags & SF_encrypted) != 0) {
-#ifndef HAVE_SSL
+#ifndef HAVE_OPENSSL
     express_cat.error()
       << "OpenSSL not compiled in; cannot read encrypted multifiles.\n";
     delete stream;
     return NULL;
-#else  // HAVE_SSL
+#else  // HAVE_OPENSSL
     // The subfile is encrypted.  So actually, return an
     // IDecryptStream that wraps around the ISubStream.
     IDecryptStream *wrapper = 
@@ -869,7 +869,7 @@ open_read_subfile(int index) {
       delete stream;
       return NULL;
     }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
   }
 
   if ((subfile->_flags & SF_compressed) != 0) {
@@ -1182,11 +1182,11 @@ add_new_subfile(Subfile *subfile, int compression_level) {
 #endif  // HAVE_ZLIB
   }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   if (_encryption_flag) {
     subfile->_flags |= SF_encrypted;
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
   if (_next_index != (streampos)0) {
     // If we're adding a Subfile to an already-existing Multifile, we
@@ -1566,7 +1566,7 @@ write_data(ostream &write, istream *read, streampos fpos,
     ostream *putter = &write;
     bool delete_putter = false;
 
-#ifndef HAVE_SSL
+#ifndef HAVE_OPENSSL
     // Without OpenSSL, we can't support encryption.  The flag had
     // better not be set.
     nassertr((_flags & SF_encrypted) == 0, fpos);

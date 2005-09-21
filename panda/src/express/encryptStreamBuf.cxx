@@ -21,7 +21,7 @@
 #include "streamReader.h"
 #include "streamWriter.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/rand.h>
 
@@ -477,4 +477,4 @@ write_chars(const char *start, size_t length) {
   }
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

@@ -62,6 +62,23 @@ get_override(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::has_cull_callback
+//       Access: Published
+//  Description: Returns true if any of the RenderAttribs in this
+//               state request a cull_callback(), false if none of
+//               them do.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+has_cull_callback() const {
+  if ((_flags & F_checked_cull_callback) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal shader cache.
+    ((RenderState *)this)->determine_cull_callback();
+  }
+  return (_flags & F_has_cull_callback) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::cache_ref
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.

@@ -91,7 +91,7 @@ parse_upto(string &result, string pattern, bool include) {
   GlobPattern endpat(pattern);
   int start = _parse;
   int last = _parse;
-  while (_parse < _text.size()) {
+  while (_parse < (int)_text.size()) {
     string t;
     parse_line(t, true, true);
     if (endpat.matches(t)) break;

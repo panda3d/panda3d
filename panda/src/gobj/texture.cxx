@@ -72,6 +72,44 @@ Texture(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::Copy Constructor
+//       Access: Protected
+//  Description: Use Texture::make_copy() to make a duplicate copy of
+//               an existing Texture.
+////////////////////////////////////////////////////////////////////
+Texture::
+Texture(const Texture &copy) :
+  Namable(copy),
+  _filename(copy._filename),
+  _alpha_filename(copy._alpha_filename),
+  _fullpath(copy._fullpath),
+  _alpha_fullpath(copy._alpha_fullpath),
+  _primary_file_num_channels(copy._primary_file_num_channels),
+  _alpha_file_channel(copy._alpha_file_channel),
+  _x_size(copy._x_size),
+  _y_size(copy._y_size),
+  _z_size(copy._z_size),
+  _num_components(copy._num_components),
+  _component_width(copy._component_width),
+  _texture_type(copy._texture_type),
+  _format(copy._format),
+  _component_type(copy._component_type),
+  _loaded_from_disk(copy._loaded_from_disk),
+  _wrap_u(copy._wrap_u),
+  _wrap_v(copy._wrap_v),
+  _wrap_w(copy._wrap_w),
+  _minfilter(copy._minfilter),
+  _magfilter(copy._magfilter),
+  _anisotropic_degree(copy._anisotropic_degree),
+  _keep_ram_image(copy._keep_ram_image),
+  _border_color(copy._border_color),
+  _match_framebuffer_format(copy._match_framebuffer_format),
+  _all_dirty_flags(0),
+  _image(copy._image)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::Destructor
 //       Access: Published, Virtual
 //  Description:
@@ -79,6 +117,24 @@ Texture(const string &name) :
 Texture::
 ~Texture() {
   release_all();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_copy
+//       Access: Published, Virtual
+//  Description: Returns a new copy of the same Texture.  This copy,
+//               if applied to geometry, will be copied into texture
+//               as a separate texture from the original, so it will
+//               be duplicated in texture memory (and may be
+//               independently modified if desired).
+//               
+//               If the Texture is an AviTexture, the resulting
+//               duplicate may be animated independently of the
+//               original.
+////////////////////////////////////////////////////////////////////
+PT(Texture) Texture::
+make_copy() {
+  return new Texture(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,7 +277,7 @@ generate_normalization_cube_map(int size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::read
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Reads the texture from the indicated filename.  If
 //               num_channels is not 0, it specifies the number of
 //               components to downgrade the image to if it is greater
@@ -262,7 +318,7 @@ read(const Filename &fullpath, int z, int primary_file_num_channels) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::read
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Combine a 3-component image with a grayscale image
 //               to get a 4-component image
 //
@@ -477,7 +533,7 @@ write_pages(const HashFilename &fullpath_template) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::load
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Fills the texture system RAM data from the
 //               already-read PNMImage.
 //
@@ -496,85 +552,21 @@ write_pages(const HashFilename &fullpath_template) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 load(const PNMImage &pnmimage, int z) {
-  if (z >= _z_size) {
-    // If we're loading a page past _z_size, treat it as an implicit
-    // request to enlarge _z_size.  However, this is only legal if
-    // this is, in fact, a 3-d texture (cube maps always have z_size
-    // 6, and other types have z_size 1).
-    nassertr(_texture_type == Texture::TT_3d_texture, false);
-
-    _z_size = z + 1;
-    // Increase the size of the data buffer to make room for the new
-    // texture level.
-    size_t new_size = get_expected_ram_image_size();
-    if (!_image.is_null() && new_size > _image.size()) {
-      _image.insert(_image.end(), new_size - _image.size(), 0);
-      nassertr(_image.size() == new_size, false);
-    }
+  if (!reconsider_z_size(z)) {
+    return false;
   }
-
   nassertr(z >= 0 && z < _z_size, false);
 
-  int num_components = pnmimage.get_num_channels();
   ComponentType component_type = T_unsigned_byte;
-
   xelval maxval = pnmimage.get_maxval();
   if (maxval > 255) {
     component_type = T_unsigned_short;
   }
 
-  if (!_loaded_from_disk || num_components != _num_components) {
-    // Come up with a default format based on the number of channels.
-    // But only do this the first time the file is loaded, or if the
-    // number of channels in the image changes on subsequent loads.
-
-    switch (pnmimage.get_color_type()) {
-    case PNMImage::CT_grayscale:
-      _format = F_luminance;
-      break;
-      
-    case PNMImage::CT_two_channel:
-      _format = F_luminance_alpha;
-      break;
-      
-    case PNMImage::CT_color:
-      _format = F_rgb;
-      break;
-      
-    case PNMImage::CT_four_channel:
-      _format = F_rgba;
-      break;
-      
-    default:
-      // Eh?
-      nassertr(false, false);
-      _format = F_rgb;
-    }
-  }
-
-  if (!_loaded_from_disk) {
-#ifndef NDEBUG
-    if (_texture_type == TT_1d_texture) {
-      nassertr(pnmimage.get_y_size() == 1, false);
-    } else if (_texture_type == TT_cube_map) {
-      nassertr(pnmimage.get_x_size() == pnmimage.get_y_size(), false);
-    }
-#endif
-    _x_size = pnmimage.get_x_size();
-    _y_size = pnmimage.get_y_size();
-    _num_components = num_components;
-    set_component_type(component_type);
-
-  } else {
-    if (_x_size != pnmimage.get_x_size() ||
-        _y_size != pnmimage.get_y_size() ||
-        _num_components != num_components ||
-        _component_type != component_type) {
-      gobj_cat.error()
-        << "Texture properties have changed for texture " << get_name()
-        << " level " << z << ".\n";
-      return false;
-    }
+  if (!reconsider_image_properties(pnmimage.get_x_size(), pnmimage.get_y_size(),
+				   pnmimage.get_num_channels(), component_type,
+				   z)) {
+    return false;
   }
 
   _loaded_from_disk = true;
@@ -857,6 +849,39 @@ set_border_color(const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_ram_image
+//       Access: Published, Virtual
+//  Description: Returns true if the Texture has its image contents
+//               available in main RAM, false if it exists only in
+//               texture memory or in the prepared GSG context.
+//
+//               Note that this has nothing to do with whether
+//               get_ram_image() will fail or not.  Even if
+//               has_ram_image() returns false, get_ram_image() may
+//               still return a valid RAM image, because
+//               get_ram_image() will automatically load the texture
+//               from disk if necessary.  The only thing
+//               has_ram_image() tells you is whether the texture is
+//               available right now without hitting the disk first.
+//
+//               Note also that if an application uses only one GSG,
+//               it may appear that has_ram_image() returns true if
+//               the texture has not yet been loaded by the GSG, but
+//               this correlation is not true in general and should
+//               not be depended on.  Specifically, if an application
+//               ever uses multiple GSG's in its lifetime (for
+//               instance, by opening more than one window, or by
+//               closing its window and opening another one later),
+//               then has_ram_image() may well return false on
+//               textures that have never been loaded on the current
+//               GSG.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+has_ram_image() const {
+  return !_image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_image
 //       Access: Published
 //  Description: Returns the system-RAM image data associated with the
@@ -886,19 +911,8 @@ set_border_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 CPTA_uchar Texture::
 get_ram_image() {
-  if (_loaded_from_disk && !has_ram_image() && has_filename() &&
-      (_texture_type == TT_1d_texture || _texture_type == TT_2d_texture)) {
-    // Now we have to reload the texture image.
-    gobj_cat.info()
-      << "Reloading texture " << get_name() << "\n";
-
-    make_ram_image();
-    if (has_alpha_fullpath()) {
-      read(get_fullpath(), get_alpha_fullpath(),
-           0, _primary_file_num_channels, _alpha_file_channel);
-    } else {
-      read(get_fullpath(), 0, _primary_file_num_channels);
-    }
+  if (_loaded_from_disk && !has_ram_image() && has_filename()) {
+    reload_ram_image();
   }
 
   return _image;
@@ -914,7 +928,7 @@ get_ram_image() {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 modify_ram_image() {
-  if (!has_ram_image()) {
+  if (_image.empty()) {
     make_ram_image();
   }
 
@@ -966,6 +980,19 @@ set_ram_image(PTA_uchar image) {
 void Texture::
 clear_ram_image() {
   _image.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_keep_ram_image
+//       Access: Published, Virtual
+//  Description: Returns the flag that indicates whether this Texture
+//               is eligible to have its main RAM copy of the texture
+//               memory dumped when the texture is prepared for
+//               rendering.  See set_keep_ram_image().
+////////////////////////////////////////////////////////////////////
+bool Texture::
+get_keep_ram_image() const {
+  return _keep_ram_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1219,6 +1246,38 @@ mark_dirty(int flags_to_set) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+has_cull_callback() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.
+//
+//               This is called each time the Texture is discovered
+//               applied to a Geom in the traversal.  It should return
+//               true if the Geom is visible, false if it should be
+//               omitted.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+cull_callback(CullTraverser *, const CullTraverserData &) const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::string_wrap_mode
 //       Access: Public
 //  Description: Returns the WrapMode value associated with the given
@@ -1272,6 +1331,41 @@ string_filter_type(const string &string) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::reconsider_dirty
+//       Access: Protected, Virtual
+//  Description: Called by TextureContext to give the Texture a chance
+//               to mark itself dirty before rendering, if necessary.
+////////////////////////////////////////////////////////////////////
+void Texture::
+reconsider_dirty() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::reload_ram_image
+//       Access: Protected, Virtual
+//  Description: Called when the Texture image is required but the ram
+//               image is not available, this will reload it from disk
+//               or otherwise do whatever is required to make it
+//               available, if possible.
+////////////////////////////////////////////////////////////////////
+void Texture::
+reload_ram_image() {
+  if (_texture_type == TT_1d_texture || _texture_type == TT_2d_texture) {
+    gobj_cat.info()
+      << "Reloading texture " << get_name() << "\n";
+    
+    make_ram_image();
+    if (has_alpha_fullpath()) {
+      read(get_fullpath(), get_alpha_fullpath(),
+           0, _primary_file_num_channels, _alpha_file_channel);
+    } else {
+      read(get_fullpath(), 0, _primary_file_num_channels);
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::up_to_power_2
 //       Access: Protected, Static
 //  Description: Returns the smallest power of 2 greater than or equal
@@ -1302,6 +1396,102 @@ down_to_power_2(int value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::reconsider_z_size
+//       Access: Protected
+//  Description: Considers whether the z_size should automatically be
+//               adjusted when the user loads a new page.  Returns
+//               true if the z size is valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+reconsider_z_size(int z) {
+  if (z >= _z_size) {
+    // If we're loading a page past _z_size, treat it as an implicit
+    // request to enlarge _z_size.  However, this is only legal if
+    // this is, in fact, a 3-d texture (cube maps always have z_size
+    // 6, and other types have z_size 1).
+    nassertr(_texture_type == Texture::TT_3d_texture, false);
+
+    _z_size = z + 1;
+    // Increase the size of the data buffer to make room for the new
+    // texture level.
+    size_t new_size = get_expected_ram_image_size();
+    if (!_image.is_null() && new_size > _image.size()) {
+      _image.insert(_image.end(), new_size - _image.size(), 0);
+      nassertr(_image.size() == new_size, false);
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::reconsider_image_properties
+//       Access: Protected
+//  Description: Resets the internal Texture properties when a new
+//               image file is loaded.  Returns true if the new image
+//               is valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+reconsider_image_properties(int x_size, int y_size, int num_components,
+			    Texture::ComponentType component_type, int z) {
+  if (!_loaded_from_disk || num_components != _num_components) {
+    // Come up with a default format based on the number of channels.
+    // But only do this the first time the file is loaded, or if the
+    // number of channels in the image changes on subsequent loads.
+
+    switch (num_components) {
+    case 1:
+      _format = F_luminance;
+      break;
+      
+    case 2:
+      _format = F_luminance_alpha;
+      break;
+      
+    case 3:
+      _format = F_rgb;
+      break;
+      
+    case 4:
+      _format = F_rgba;
+      break;
+      
+    default:
+      // Eh?
+      nassertr(false, false);
+      _format = F_rgb;
+    }
+  }
+
+  if (!_loaded_from_disk) {
+#ifndef NDEBUG
+    if (_texture_type == TT_1d_texture) {
+      nassertr(y_size == 1, false);
+    } else if (_texture_type == TT_cube_map) {
+      nassertr(x_size == y_size, false);
+    }
+#endif
+    _x_size = x_size;
+    _y_size = y_size;
+    _num_components = num_components;
+    set_component_type(component_type);
+
+  } else {
+    if (_x_size != x_size ||
+        _y_size != y_size ||
+        _num_components != num_components ||
+        _component_type != component_type) {
+      gobj_cat.error()
+        << "Texture properties have changed for texture " << get_name()
+        << " level " << z << ".\n";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_prepared
 //       Access: Private
 //  Description: Removes the indicated PreparedGraphicsObjects table
@@ -1322,6 +1512,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     nassertv(false);
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::consider_rescale
@@ -1444,7 +1635,7 @@ make_Texture(const FactoryParams &params) {
   if (has_rawdata) {
     // If the raw image data is included, then just create a Texture
     // and don't load from the file.
-    me = new Texture;
+    me = new Texture("");
 
   } else {
     if (filename.empty()) {
@@ -1473,7 +1664,7 @@ make_Texture(const FactoryParams &params) {
     // Oops, we couldn't load the texture; we'll just return NULL.
     // But we do need a dummy texture to read in and ignore all of the
     // attributes.
-    PT(Texture) dummy = new Texture;
+    PT(Texture) dummy = new Texture("");
     dummy->fillin(scan, manager, has_rawdata);
 
   } else {

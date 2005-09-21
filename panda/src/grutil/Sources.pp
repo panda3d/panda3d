@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
-#define USE_PACKAGES cv
+#define USE_PACKAGES opencv
 
 #begin lib_target
   #define TARGET grutil
@@ -16,13 +16,13 @@
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
-    aviTexture.h aviTexture.I 
+    openCVTexture.h openCVTexture.I 
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
-    aviTexture.cxx \    	 
+    openCVTexture.cxx \    	 
     lineSegs.cxx 
     
 
@@ -31,7 +31,7 @@
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
-    aviTexture.I aviTexture.h
+    openCVTexture.I openCVTexture.h
 
   #define IGATESCAN all
 

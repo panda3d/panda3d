@@ -1,3 +1,4 @@
+#include "animInterface.cxx"
 #include "bamEndian.cxx"
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"

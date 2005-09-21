@@ -31,7 +31,7 @@ class FactoryParams;
 // available, since in that case socketStream.h is not compiled
 // either.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SocketStreamRecorder
@@ -104,6 +104,6 @@ private:
 
 #include "socketStreamRecorder.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif  // SOCKETSTREAMRECORDER_H

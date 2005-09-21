@@ -391,6 +391,54 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool TextureAttrib::
+has_cull_callback() const {
+  OnTextures::const_iterator nti;
+  for (nti = _on_textures.begin(); nti != _on_textures.end(); ++nti) {
+    Texture *texture = (*nti).second;
+    if (texture->has_cull_callback()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.
+//
+//               This is called each time the RenderAttrib is
+//               discovered applied to a Geom in the traversal.  It
+//               should return true if the Geom is visible, false if
+//               it should be omitted.
+////////////////////////////////////////////////////////////////////
+bool TextureAttrib::
+cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
+  OnTextures::const_iterator nti;
+  for (nti = _on_textures.begin(); nti != _on_textures.end(); ++nti) {
+    Texture *texture = (*nti).second;
+    if (!texture->cull_callback(trav, data)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived TextureAttrib

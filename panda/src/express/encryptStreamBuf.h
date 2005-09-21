@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/evp.h>
 
@@ -84,6 +84,6 @@ private:
 
 #include "encryptStreamBuf.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif

@@ -202,7 +202,7 @@ read_stream(StreamReader &source) {
   _hv[3] = source.get_uint32();
 }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::hash_ramfile
 //       Access: Published
@@ -228,7 +228,7 @@ INLINE void HashVal::
 hash_string(const string &data) {
   return hash_buffer(data.data(), data.length());
 }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::tohex

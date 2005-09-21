@@ -20,7 +20,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SSReader::Destructor
@@ -209,4 +209,4 @@ send_datagram(const Datagram &dg) {
   return !is_closed();
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

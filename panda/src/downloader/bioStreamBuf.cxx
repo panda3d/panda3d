@@ -21,7 +21,7 @@
 #include "ssl_utils.h"
 #include <errno.h>
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -275,4 +275,4 @@ write_chars(const char *start, size_t length) {
   return length;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

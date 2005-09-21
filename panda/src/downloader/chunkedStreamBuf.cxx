@@ -21,7 +21,7 @@
 #include <ctype.h>
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -249,4 +249,4 @@ http_getline(string &str) {
   return false;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

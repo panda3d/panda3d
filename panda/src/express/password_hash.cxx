@@ -20,7 +20,7 @@
 
 // The functions defined within this file rely on algorithms defined
 // within OpenSSL.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/evp.h>
 
@@ -75,5 +75,5 @@ password_hash(const string &password, const string &salt,
 
 
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 

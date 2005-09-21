@@ -43,7 +43,7 @@ ConfigureFn(config_recorder) {
   RecorderHeader::register_with_read_factory();
   RecorderTable::register_with_read_factory();
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   SocketStreamRecorder::init_type();
   SocketStreamRecorder::register_with_read_factory();
 #endif

@@ -19,7 +19,7 @@
 #include "ssl_utils.h"
 #include "config_downloader.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #ifdef REPORT_OPENSSL_ERRORS
 #include <openssl/err.h>
@@ -53,4 +53,4 @@ void notify_ssl_errors() {
 #endif  //  REPORT_OPENSSL_ERRORS
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

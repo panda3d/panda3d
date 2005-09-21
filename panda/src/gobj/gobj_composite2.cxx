@@ -26,3 +26,4 @@
 #include "vertexBufferContext.cxx"
 #include "vertexSlider.cxx"
 #include "vertexTransform.cxx"
+#include "videoTexture.cxx"

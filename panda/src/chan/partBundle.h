@@ -123,7 +123,6 @@ public:
   // interface; they're just public so we don't have to declare a
   // bunch of friends.
 
-  void advance_time(double time);
   bool update();
   bool force_update();
   virtual void control_activated(AnimControl *control);

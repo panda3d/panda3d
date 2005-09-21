@@ -19,7 +19,7 @@
 #include "bioPtr.h"
 #include "urlSpec.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BioPtr::Constructor
@@ -55,4 +55,4 @@ BioPtr::
   }
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

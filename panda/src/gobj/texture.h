@@ -32,6 +32,8 @@ class TextureContext;
 class FactoryParams;
 class PreparedGraphicsObjects;
 class HashFilename;
+class CullTraverser;
+class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
@@ -133,7 +135,12 @@ PUBLISHED:
 
 PUBLISHED:
   Texture(const string &name = string());
+protected:
+  Texture(const Texture &copy);
+PUBLISHED:
   virtual ~Texture();
+
+  virtual PT(Texture) make_copy();
 
   void setup_texture(TextureType texture_type,
                      int x_size, int y_size, int z_size,
@@ -154,17 +161,17 @@ PUBLISHED:
 
   void generate_normalization_cube_map(int size);
 
-  bool read(const Filename &fullpath, int z = 0,
-            int primary_file_num_channels = 0);
-  bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
-            int z = 0,
-            int primary_file_num_channels = 0, int alpha_file_channel = 0);
+  virtual bool read(const Filename &fullpath, int z = 0,
+		    int primary_file_num_channels = 0);
+  virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
+		    int z = 0,
+		    int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath, int z = 0) const;
 
   bool read_pages(const HashFilename &fullpath_template, int z_size = 0);
   bool write_pages(const HashFilename &fullpath_template);
 
-  bool load(const PNMImage &pnmimage, int z = 0);
+  virtual bool load(const PNMImage &pnmimage, int z = 0);
   bool store(PNMImage &pnmimage, int z = 0) const;
 
   INLINE bool has_filename() const;
@@ -203,7 +210,7 @@ PUBLISHED:
   INLINE Colorf get_border_color() const;
   INLINE bool uses_mipmaps() const;
 
-  INLINE bool has_ram_image() const;
+  virtual bool has_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
   INLINE size_t get_expected_ram_image_size() const;
@@ -214,7 +221,7 @@ PUBLISHED:
   void set_ram_image(PTA_uchar image);
   void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
-  INLINE bool get_keep_ram_image() const;
+  virtual bool get_keep_ram_image() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -240,6 +247,7 @@ PUBLISHED:
   void set_format(Format format);
   void set_component_type(ComponentType component_type);
   INLINE void set_loaded_from_disk();
+  INLINE bool get_loaded_from_disk() const;
 
 public:
   INLINE bool get_match_framebuffer_format() const;
@@ -263,16 +271,25 @@ public:
 
   void mark_dirty(int flags_to_set);
 
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
+
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
 
 protected:
+  virtual void reconsider_dirty();
+  virtual void reload_ram_image();
+
   static int up_to_power_2(int value);
   static int down_to_power_2(int value);
+  bool reconsider_z_size(int z);
+  bool reconsider_image_properties(int x_size, int y_size, int num_components,
+				   ComponentType component_type, int z);
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
-  
+
   void consider_rescale(PNMImage &pnmimage);
   void consider_downgrade(PNMImage &pnmimage, int num_channels);
 
@@ -283,7 +300,7 @@ private:
   INLINE double get_unsigned_byte(int &index) const;
   INLINE double get_unsigned_short(int &index) const;
 
-private:
+protected:
   Filename _filename;
   Filename _alpha_filename;
   Filename _fullpath;

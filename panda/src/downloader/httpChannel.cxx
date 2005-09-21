@@ -27,7 +27,7 @@
 #include "clockObject.h"
 #include "ramfile.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #include <openssl/x509.h>
 
 #ifdef WIN32_VC
@@ -3498,4 +3498,4 @@ operator << (ostream &out, HTTPChannel::State state) {
 #endif  // NDEBUG
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

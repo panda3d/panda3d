@@ -167,7 +167,7 @@ init_libdownloader() {
   }
   initialized = true;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   HTTPChannel::init_type();
 
   // We need to define this here, rather than above, to guarantee that
@@ -194,5 +194,5 @@ init_libdownloader() {
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenSSL");
-#endif
+#endif  // HAVE_OPENSSL
 }

@@ -27,6 +27,8 @@
 
 class AttribSlots;
 class GraphicsStateGuardianBase;
+class CullTraverser;
+class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderAttrib
@@ -72,6 +74,9 @@ public:
 
   INLINE bool always_reissue() const;
   virtual void store_into_slot(AttribSlots *slots) const=0;
+
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
 PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;

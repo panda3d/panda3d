@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "socketStream.h"
 #include "chunkedStreamBuf.h"
@@ -55,7 +55,7 @@ private:
 
 #include "chunkedStream.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif
 

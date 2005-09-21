@@ -66,12 +66,12 @@ PUBLISHED:
   INLINE void write_stream(StreamWriter &destination) const;
   INLINE void read_stream(StreamReader &source);
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
   bool hash_file(const Filename &filename);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const string &data);
   void hash_buffer(const char *buffer, int length);
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 private:
   static void encode_hex(PN_uint32 val, char *buffer);

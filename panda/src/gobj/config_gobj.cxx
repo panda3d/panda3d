@@ -50,6 +50,7 @@
 #include "userVertexTransform.h"
 #include "vertexTransform.h"
 #include "vertexSlider.h"
+#include "videoTexture.h"
 #include "geomContext.h"
 #include "vertexBufferContext.h"
 #include "indexBufferContext.h"
@@ -187,14 +188,6 @@ ConfigVariableEnum<AutoTextureScale> textures_square
           "a square aspect ratio when they are loaded from disk.  Set this "
           "to 'none', 'down', or 'up'.  See textures-power-2."));
 
-ConfigVariableString fake_texture_image
-("fake-texture-image", "",
- PRC_DESC("Set this to enable a speedy-load mode in which you don't care "
-          "what the world looks like, you just want it to load in minimal "
-          "time.  This causes all texture loads via the TexturePool to use "
-          "the same texture file, which will presumably only be loaded "
-          "once."));
-
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
  PRC_DESC("Specifies the maximum number of entries in the cache "
@@ -264,6 +257,7 @@ ConfigureFn(config_gobj) {
   UserVertexTransform::init_type();
   VertexTransform::init_type();
   VertexSlider::init_type();
+  VideoTexture::init_type();
   InternalName::init_type();
 
   //Registration of writeable object's creation

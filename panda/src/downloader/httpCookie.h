@@ -26,7 +26,7 @@
 // the OpenSSL library to portably handle all of the socket
 // communications.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "httpDate.h"
 #include "urlSpec.h"
@@ -88,6 +88,6 @@ INLINE ostream &operator << (ostream &out, const HTTPCookie &cookie);
 
 #include "httpCookie.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif

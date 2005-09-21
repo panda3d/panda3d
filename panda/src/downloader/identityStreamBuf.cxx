@@ -19,7 +19,7 @@
 #include "identityStreamBuf.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -180,4 +180,4 @@ read_chars(char *start, size_t length) {
   return read_count;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

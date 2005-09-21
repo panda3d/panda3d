@@ -26,7 +26,7 @@
 // the OpenSSL library to portably handle all of the socket
 // communications.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #define OPENSSL_NO_KRB5
 
 #include "httpClient.h"
@@ -429,7 +429,7 @@ ostream &operator << (ostream &out, HTTPChannel::State state);
 
 #include "httpChannel.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif
 

@@ -92,13 +92,13 @@ get_scale_factor() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Multifile::
 set_encryption_flag(bool flag) {
-#ifndef HAVE_SSL
+#ifndef HAVE_OPENSSL
   if (flag) {
     express_cat.warning()
       << "OpenSSL not compiled in; cannot generated encrypted multifiles.\n";
     flag = false;
   }
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
   _encryption_flag = flag;
 }
 

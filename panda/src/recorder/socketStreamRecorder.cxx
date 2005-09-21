@@ -21,7 +21,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 TypeHandle SocketStreamRecorder::_type_handle;
 
@@ -159,4 +159,4 @@ fillin_recorder(DatagramIterator &scan, BamReader *manager) {
   RecorderBase::fillin_recorder(scan, manager);
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

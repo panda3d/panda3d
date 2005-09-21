@@ -18,7 +18,7 @@
 
 #include "httpDigestAuthorization.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include <openssl/ssl.h>
 #include <openssl/md5.h>
@@ -371,4 +371,4 @@ operator << (ostream &out, HTTPDigestAuthorization::Qop qop) {
   return out;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

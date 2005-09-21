@@ -18,7 +18,7 @@
 
 #include "httpEnum.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPEnum::Method::output operator
@@ -63,4 +63,4 @@ operator << (ostream &out, HTTPEnum::Method method) {
   return out;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

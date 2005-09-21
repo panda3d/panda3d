@@ -5700,6 +5700,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
+#ifdef DO_PSTATS
+    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
+#endif
     switch (target) {
     case GL_TEXTURE_1D:
       GLP(TexSubImage1D)(target, 0, 0, width, 

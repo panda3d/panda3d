@@ -214,7 +214,12 @@ traverse_below(CullTraverserData &data) {
       _geoms_pcollector.add_level(num_geoms);
       for (int i = 0; i < num_geoms; i++) {
         CullableObject *object = new CullableObject(data, geom_node, i);
-        _cull_handler->record_object(object, this);
+	if (object->_state->has_cull_callback() &&
+	    !object->_state->cull_callback(this, data)) {
+	  delete object;
+	} else {
+	  _cull_handler->record_object(object, this);
+	}
       }
     }
 
@@ -533,7 +538,14 @@ start_decal(const CullTraverserData &data) {
   int num_geoms = geom_node->get_num_geoms();
   _geoms_pcollector.add_level(num_geoms);
   for (int i = num_geoms - 1; i >= 0; i--) {
-    object = new CullableObject(data, geom_node, i, object);
+    CullableObject *next_object = 
+      new CullableObject(data, geom_node, i, object);
+    if (next_object->_state->has_cull_callback() &&
+	!next_object->_state->cull_callback(this, data)) {
+      delete next_object;
+    } else {
+      object = next_object;
+    }
   }
 
   if (object != separator) {
@@ -591,7 +603,14 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
       int num_geoms = geom_node->get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
       for (int i = num_geoms - 1; i >= 0; i--) {
-        decals = new CullableObject(data, geom_node, i, decals);
+	CullableObject *next_decals = 
+	  new CullableObject(data, geom_node, i, decals);
+	if (next_decals->_state->has_cull_callback() &&
+	    !next_decals->_state->cull_callback(this, data)) {
+	  delete next_decals;
+	} else {
+	  decals = next_decals;
+	}
       }
     }
   }

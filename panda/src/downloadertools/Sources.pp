@@ -4,7 +4,7 @@
 
 #begin bin_target
   #define TARGET apply_patch
-  #define BUILD_TARGET $[HAVE_SSL]
+  #define BUILD_TARGET $[HAVE_OPENSSL]
 
   #define SOURCES \
     apply_patch.cxx
@@ -15,7 +15,7 @@
 
 #begin bin_target
   #define TARGET build_patch
-  #define BUILD_TARGET $[HAVE_SSL]
+  #define BUILD_TARGET $[HAVE_OPENSSL]
 
   #define SOURCES \
     build_patch.cxx
@@ -24,7 +24,7 @@
 
 #begin bin_target
   #define TARGET show_ddb
-  #define BUILD_TARGET $[HAVE_SSL]
+  #define BUILD_TARGET $[HAVE_OPENSSL]
 
   #define SOURCES \
     show_ddb.cxx
@@ -53,8 +53,8 @@
 
 #begin bin_target
   #define TARGET check_md5
-  #define BUILD_TARGET $[HAVE_SSL]
-  #define USE_PACKAGES $[USE_PACKAGES] ssl
+  #define BUILD_TARGET $[HAVE_OPENSSL]
+  #define USE_PACKAGES $[USE_PACKAGES] openssl
 
   #define SOURCES \
     check_md5.cxx
@@ -91,8 +91,8 @@
 
 #begin bin_target
   #define TARGET pencrypt
-  #define BUILD_TARGET $[HAVE_SSL]
-  #define USE_PACKAGES $[USE_PACKAGES] ssl
+  #define BUILD_TARGET $[HAVE_OPENSSL]
+  #define USE_PACKAGES $[USE_PACKAGES] openssl
 
   #define SOURCES \
     pencrypt.cxx
@@ -101,8 +101,8 @@
 
 #begin bin_target
   #define TARGET pdecrypt
-  #define BUILD_TARGET $[HAVE_SSL]
-  #define USE_PACKAGES $[USE_PACKAGES] ssl
+  #define BUILD_TARGET $[HAVE_OPENSSL]
+  #define USE_PACKAGES $[USE_PACKAGES] openssl
 
   #define SOURCES \
     pdecrypt.cxx

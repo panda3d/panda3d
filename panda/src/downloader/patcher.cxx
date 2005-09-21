@@ -18,7 +18,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "config_downloader.h"
 #include "patcher.h"
@@ -89,4 +89,4 @@ run() {
   return _patchfile->run();
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

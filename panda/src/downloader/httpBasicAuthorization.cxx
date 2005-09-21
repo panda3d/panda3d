@@ -18,7 +18,7 @@
 
 #include "httpBasicAuthorization.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 const string HTTPBasicAuthorization::_mechanism = "basic";
 
@@ -68,4 +68,4 @@ generate(HTTPEnum::Method, const string &,
   return "Basic " + base64_encode(username);
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

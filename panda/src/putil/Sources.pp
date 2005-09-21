@@ -8,6 +8,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
   
   #define SOURCES \
+    animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
     bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
@@ -60,6 +61,7 @@
     writableParam.I writableParam.h 
     
  #define INCLUDED_SOURCES \
+    animInterface.cxx \
     bamEndian.cxx \
     bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
@@ -96,6 +98,7 @@
     writableConfigurable.cxx writableParam.cxx 
 
   #define INSTALL_HEADERS \
+    animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamWriter.I bamWriter.h bitMask.I bitMask.h \

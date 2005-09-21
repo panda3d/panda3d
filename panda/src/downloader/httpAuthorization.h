@@ -25,7 +25,7 @@
 // actually use any OpenSSL code, because it is a support module for
 // HTTPChannel, which *does* use OpenSSL code.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "referenceCount.h"
 #include "httpEnum.h"
@@ -81,7 +81,7 @@ protected:
 
 #include "httpAuthorization.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif
 

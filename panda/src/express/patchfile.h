@@ -20,7 +20,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "typedef.h"
 #include "notify.h"
@@ -136,6 +136,6 @@ protected:
 
 #include "patchfile.I"
 
-#endif // HAVE_SSL
+#endif // HAVE_OPENSSL
 
 #endif

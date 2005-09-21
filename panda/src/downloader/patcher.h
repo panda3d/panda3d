@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "filename.h"
 #include "buffer.h"
@@ -50,6 +50,6 @@ private:
 
 #include "patcher.I"
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif

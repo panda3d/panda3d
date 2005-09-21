@@ -21,9 +21,9 @@
 
 #include <ctype.h>
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #include <openssl/md5.h>
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 
 ////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ set_from_hex(const string &text) {
   return !strm.fail();
 }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::hash_file
 //       Access: Published
@@ -234,7 +234,7 @@ hash_buffer(const char *buffer, int length) {
   _hv[3] = (md[12] << 24) | (md[13] << 16) | (md[14] << 8) | (md[15]);
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 
 ////////////////////////////////////////////////////////////////////

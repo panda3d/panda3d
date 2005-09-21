@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #include "httpChannel.h"
 #include "bioStreamPtr.h"
@@ -60,6 +60,6 @@ private:
   friend class IChunkedStream;
 };
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL
 
 #endif

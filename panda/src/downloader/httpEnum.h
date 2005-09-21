@@ -26,7 +26,7 @@
 // the OpenSSL library to portably handle all of the socket
 // communications.
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPEnum
@@ -57,7 +57,7 @@ PUBLISHED:
 
 ostream &operator << (ostream &out, HTTPEnum::Method method);
 
-#endif // HAVE_SSL
+#endif // HAVE_OPENSSL
 
 #endif
 

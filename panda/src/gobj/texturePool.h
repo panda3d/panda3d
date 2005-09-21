@@ -68,8 +68,16 @@ PUBLISHED:
   
   static void write(ostream &out);
 
+public:
+  typedef PT(Texture) MakeTextureFunc();
+  void register_texture_type(MakeTextureFunc *func, const string &extensions);
+
+  PT(Texture) make_texture(const string &extension);
+
+  static TexturePool *get_global_ptr();
+
 private:
-  INLINE TexturePool();
+  TexturePool();
 
   bool ns_has_texture(const Filename &orig_filename);
   Texture *ns_load_texture(const Filename &orig_filename, int primary_file_num_channels);
@@ -89,14 +97,15 @@ private:
 
   void report_texture_unreadable(const Filename &filename) const;
 
-  static TexturePool *get_ptr();
-
   static TexturePool *_global_ptr;
   typedef phash_map<string,  PT(Texture), string_hash> Textures;
   Textures _textures;
   string _fake_texture_image;
 
   PT(Texture) _normalization_cube_map;
+
+  typedef pmap<string, MakeTextureFunc *> TypeRegistry;
+  TypeRegistry _type_registry;
 };
 
 #include "texturePool.I"

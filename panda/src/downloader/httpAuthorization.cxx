@@ -20,7 +20,7 @@
 #include "httpChannel.h"
 #include "urlSpec.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 static const char base64_table[64] = {
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
@@ -346,4 +346,4 @@ scan_quoted_or_unquoted_string(string &result, const string &source,
   return start;
 }
 
-#endif  // HAVE_SSL
+#endif  // HAVE_OPENSSL

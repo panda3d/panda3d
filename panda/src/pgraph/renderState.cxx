@@ -136,6 +136,26 @@ operator < (const RenderState &other) const {
                                  CompareTo<Attribute>());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::cull_callback
+//       Access: Published
+//  Description: Calls cull_callback() on each attrib.  If any attrib
+//               returns false, interrupts the list and returns false
+//               immediately; otherwise, completes the list and
+//               returns true.
+////////////////////////////////////////////////////////////////////
+bool RenderState::
+cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    const Attribute &attrib = *ai;
+    if (!attrib._attrib->cull_callback(trav, data)) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::find_attrib
@@ -1568,6 +1588,25 @@ determine_shader() {
     _shader = DCAST(ShaderAttrib, attrib);
   }
   _flags |= F_checked_shader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_cull_callback
+//       Access: Private
+//  Description: This is the private implementation of has_cull_callback().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_cull_callback() {
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    const Attribute &attrib = *ai;
+    if (attrib._attrib->has_cull_callback()) {
+      _flags |= F_has_cull_callback;
+      break;
+    }
+  }
+
+  _flags |= F_checked_cull_callback;
 }
 
 ////////////////////////////////////////////////////////////////////
