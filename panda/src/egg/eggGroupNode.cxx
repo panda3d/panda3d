@@ -422,7 +422,6 @@ has_absolute_pathnames() const {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 resolve_filenames(const DSearchPath &searchpath) {
-  cerr << "resolve_filenames " << get_name() << "\n";
   Children::iterator ci;
   for (ci = _children.begin();
        ci != _children.end();
