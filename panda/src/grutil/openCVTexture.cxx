@@ -98,9 +98,6 @@ from_camera(int camera_index, int z) {
     return false;
   }
 
-  int width = cvGetCaptureProperty(page._color._capture, CV_CAP_PROP_FRAME_WIDTH);
-  int height = cvGetCaptureProperty(page._color._capture, CV_CAP_PROP_FRAME_HEIGHT);
-
   if (!reconsider_video_properties(page._color, 3, z)) {
     page._color.clear();
     return false;
@@ -269,6 +266,11 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   if (stream.is_from_file()) {
     frame_rate = cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FPS);
     num_frames = (int)cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FRAME_COUNT);
+    if (grutil_cat.is_debug()) {
+      grutil_cat.debug()
+        << "Loaded " << stream._filename << ", " << num_frames << " frames at "
+        << frame_rate << " fps\n";
+    }
   }
   int width = (int)cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FRAME_WIDTH);
   int height = (int)cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FRAME_HEIGHT);
@@ -279,6 +281,13 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   if (get_power_2()) {
     x_size = up_to_power_2(width);
     y_size = up_to_power_2(height);
+  }
+
+  if (grutil_cat.is_debug()) {
+    grutil_cat.debug()
+      << "Video stream is " << width << " by " << height 
+      << " pixels; fitting in texture " << x_size << " by "
+      << y_size << " texels.\n";
   }
 
   if (!reconsider_image_properties(x_size, y_size, num_components,

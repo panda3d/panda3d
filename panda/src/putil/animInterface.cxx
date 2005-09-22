@@ -252,10 +252,12 @@ get_full_fframe() const {
     return min(max(get_f(), 0.0), _play_frames) + _start_frame;
 
   case PM_loop:
+    nassertr(_play_frames >= 0.0, 0.0);
     return cmod(get_f(), _play_frames) + _start_frame;
 
   case PM_pingpong:
     {
+      nassertr(_play_frames >= 0.0, 0.0);
       double f = cmod(get_f(), _play_frames * 2.0);
       if (f > _play_frames) {
 	return (_play_frames * 2.0 - f) + _start_frame;

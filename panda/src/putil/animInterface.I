@@ -126,6 +126,9 @@ get_num_frames() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int AnimInterface::
 get_frame() const {
+  if (get_num_frames() <= 0) {
+    return 0;
+  }
   return cmod(get_full_frame(), get_num_frames());
 }
 
