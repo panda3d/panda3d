@@ -637,6 +637,7 @@ class ShowBase(DirectObject.DirectObject):
         # it's simplest (and seems to be easier on graphics drivers)
         # if the 2-d scene has been cleared first.
 
+        self.render2d.setDepthTest(0)
         self.render2d.setDepthWrite(0)
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
