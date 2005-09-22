@@ -46,7 +46,7 @@ get_filename_index(int index) const {
 //     Function: HashFilename::set_hash_to_end
 //       Access: Published
 //  Description: Replaces the part of the filename from the beginning
-//               of the has sequence to the end of the filename.
+//               of the hash sequence to the end of the filename.
 ////////////////////////////////////////////////////////////////////
 void HashFilename::
 set_hash_to_end(const string &s) {
@@ -55,6 +55,91 @@ set_hash_to_end(const string &s) {
   locate_basename();
   locate_extension();
   locate_hash();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashFilename::resolve_filename
+//       Access: Published
+//  Description: Searches the given search path for the filename.  If
+//               it is found, updates the filename to the full
+//               pathname found and returns true; otherwise, returns
+//               false.
+////////////////////////////////////////////////////////////////////
+bool HashFilename::
+resolve_filename(const DSearchPath &searchpath,
+                 const string &default_extension) {
+  if (!has_hash()) {
+    return Filename::resolve_filename(searchpath, default_extension);
+  }
+
+  Filename file0 = get_filename_index(0);
+  if (!file0.resolve_filename(searchpath, default_extension)) {
+    return false;
+  }
+
+  int change = file0.length() - length();
+
+  if (file0.length() < _hash_start || _hash_end + change < 0 ||
+      file0.substr(_hash_end + change) != substr(_hash_end)) {
+    // Hmm, somehow the suffix part of the filename--everything after
+    // the hash sequence--was changed by the above resolve operation.
+    // Abandon ship.
+    return false;
+  }
+
+  // Replace the prefix part of the filename--everything before the
+  // hash sequence.
+  _filename = file0.substr(0, _hash_start + change) + substr(_hash_start);
+  _hash_start += change;
+  _hash_end += change;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashFilename::find_on_searchpath
+//       Access: Published
+//  Description: Performs the reverse of the resolve_filename()
+//               operation: assuming that the current filename is
+//               fully-specified pathname (i.e. beginning with '/'),
+//               look on the indicated search path for a directory
+//               under which the file can be found.  When found,
+//               adjust the Filename to be relative to the indicated
+//               directory name.
+//
+//               Returns the index of the directory on the searchpath
+//               at which the file was found, or -1 if it was not
+//               found.
+////////////////////////////////////////////////////////////////////
+int HashFilename::
+find_on_searchpath(const DSearchPath &searchpath) {
+  if (!has_hash()) {
+    return Filename::find_on_searchpath(searchpath);
+  }
+
+  Filename file0 = get_filename_index(0);
+  int index = file0.find_on_searchpath(searchpath);
+  if (index == -1) {
+    return -1;
+  }
+
+  int change = file0.length() - length();
+
+  if (file0.length() < _hash_start || _hash_end + change < 0 ||
+      file0.substr(_hash_end + change) != substr(_hash_end)) {
+    // Hmm, somehow the suffix part of the filename--everything after
+    // the hash sequence--was changed by the above resolve operation.
+    // Abandon ship.
+    return false;
+  }
+
+  // Replace the prefix part of the filename--everything before the
+  // hash sequence.
+  _filename = file0.substr(0, _hash_start + change) + substr(_hash_start);
+  _hash_start += change;
+  _hash_end += change;
+
+  return index;
 }
 
 ////////////////////////////////////////////////////////////////////

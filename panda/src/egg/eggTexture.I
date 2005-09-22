@@ -18,6 +18,41 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_hash_filename
+//       Access: Published
+//  Description: Returns true if the texture filename is expected to
+//               contain a hash mark standing in for a sequence
+//               number, or false if the filename is a literal
+//               filename.  This will be true only if TextureType is
+//               TT_3d_texture or TT_cube_map.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_hash_filename() const {
+  return (_texture_type == TT_3d_texture ||
+	  _texture_type == TT_cube_map);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_texture_type
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_texture_type(TextureType texture_type) {
+  _texture_type = texture_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_texture_type
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture::TextureType EggTexture::
+get_texture_type() const {
+  return _texture_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_format
 //       Access: Published
 //  Description:
@@ -116,13 +151,47 @@ get_wrap_v() const {
 //     Function: EggTexture::determine_wrap_v
 //       Access: Published
 //  Description: Determines the appropriate wrap in the V direction.
-//               This is different from get_wrap_v() in that if the U
+//               This is different from get_wrap_v() in that if the V
 //               wrap is unspecified, it returns the overall wrap
 //               value.
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::WrapMode EggTexture::
 determine_wrap_v() const {
   return (_wrap_v == WM_unspecified) ? get_wrap_mode() : get_wrap_v();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_wrap_w
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_wrap_w(WrapMode mode) {
+  _wrap_w = mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_wrap_w
+//       Access: Published
+//  Description: Returns the amount specified for W wrap.  This may be
+//               unspecified, even if there is an overall wrap value.
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture::WrapMode EggTexture::
+get_wrap_w() const {
+  return _wrap_w;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::determine_wrap_w
+//       Access: Published
+//  Description: Determines the appropriate wrap in the W direction.
+//               This is different from get_wrap_w() in that if the W
+//               wrap is unspecified, it returns the overall wrap
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture::WrapMode EggTexture::
+determine_wrap_w() const {
+  return (_wrap_w == WM_unspecified) ? get_wrap_mode() : get_wrap_w();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -344,7 +344,15 @@ texture_body:
   double value = $<_number>5;
   string strval = $<_string>5;
 
-  if (cmp_nocase_uh(name, "format") == 0) {
+  if (cmp_nocase_uh(name, "type") == 0) {
+    EggTexture::TextureType tt = EggTexture::string_texture_type(strval);
+    if (tt == EggTexture::TT_unspecified) {
+      eggyywarning("Unknown texture texture_type " + strval);
+    } else {
+      texture->set_texture_type(tt);
+    }
+
+  } else if (cmp_nocase_uh(name, "format") == 0) {
     EggTexture::Format f = EggTexture::string_format(strval);
     if (f == EggTexture::F_unspecified) {
       eggyywarning("Unknown texture format " + strval);

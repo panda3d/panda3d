@@ -35,10 +35,12 @@ EggTexture::
 EggTexture(const string &tref_name, const string &filename)
   : EggFilenameNode(tref_name, filename)
 {
+  _texture_type = TT_unspecified;
   _format = F_unspecified;
   _wrap_mode = WM_unspecified;
   _wrap_u = WM_unspecified;
   _wrap_v = WM_unspecified;
+  _wrap_w = WM_unspecified;
   _minfilter = FT_unspecified;
   _magfilter = FT_unspecified;
   _anisotropic_degree = 0;
@@ -75,10 +77,12 @@ operator = (const EggTexture &copy) {
   EggRenderMode::operator = (copy);
   EggTransform::operator = (copy);
 
+  _texture_type = copy._texture_type;
   _format = copy._format;
   _wrap_mode = copy._wrap_mode;
   _wrap_u = copy._wrap_u;
   _wrap_v = copy._wrap_v;
+  _wrap_w = copy._wrap_w;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
   _anisotropic_degree = copy._anisotropic_degree;
@@ -136,6 +140,11 @@ write(ostream &out, int indent_level) const {
       << get_alpha_file_channel() << " }\n";
   }
 
+  if (get_texture_type() != TT_unspecified) {
+    indent(out, indent_level + 2)
+      << "<Scalar> texture_type { " << get_texture_type() << " }\n";
+  }
+
   if (get_format() != F_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> format { " << get_format() << " }\n";
@@ -154,6 +163,11 @@ write(ostream &out, int indent_level) const {
   if (get_wrap_v() != WM_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> wrapv { " << get_wrap_v() << " }\n";
+  }
+
+  if (get_wrap_w() != WM_unspecified) {
+    indent(out, indent_level + 2)
+      << "<Scalar> wrapw { " << get_wrap_w() << " }\n";
   }
 
   if (get_minfilter() != FT_unspecified) {
@@ -331,10 +345,12 @@ is_equivalent_to(const EggTexture &other, int eq) const {
 
   if (eq & E_attributes) {
     //cout << "compared by attributes" << endl;
-    if (_format != other._format ||
+    if (_texture_type != other._texture_type ||
+	_format != other._format ||
         _wrap_mode != other._wrap_mode ||
         _wrap_u != other._wrap_u ||
         _wrap_v != other._wrap_v ||
+        _wrap_w != other._wrap_w ||
         _minfilter != other._minfilter ||
         _magfilter != other._magfilter ||
         _env_type != other._env_type) {
@@ -407,6 +423,9 @@ sorts_less_than(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_attributes) {
+    if (_texture_type != other._texture_type) {
+      return (int)_texture_type < (int)other._texture_type;
+    }
     if (_format != other._format) {
       return (int)_format < (int)other._format;
     }
@@ -418,6 +437,9 @@ sorts_less_than(const EggTexture &other, int eq) const {
     }
     if (_wrap_v != other._wrap_v) {
       return (int)_wrap_v < (int)other._wrap_v;
+    }
+    if (_wrap_w != other._wrap_w) {
+      return (int)_wrap_w < (int)other._wrap_w;
     }
     if (_minfilter != other._minfilter) {
       return (int)_minfilter < (int)other._minfilter;
@@ -558,6 +580,40 @@ multitexture_over(EggTexture *other) {
   nassertr(get_multitexture_sort() > other->get_multitexture_sort(), false);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::string_texture_type
+//       Access: Published, Static
+//  Description: Returns the Texture_ype value associated with the given
+//               string representation, or TT_unspecified if the string
+//               does not match any known TextureType value.
+////////////////////////////////////////////////////////////////////
+EggTexture::TextureType EggTexture::
+string_texture_type(const string &string) {
+  if (cmp_nocase_uh(string, "1d") == 0 ||
+      cmp_nocase_uh(string, "1dtexture") == 0 ||
+      cmp_nocase_uh(string, "1d_texture") == 0) {
+    return TT_1d_texture;
+
+  } else if (cmp_nocase_uh(string, "2d") == 0 ||
+	     cmp_nocase_uh(string, "2dtexture") == 0 ||
+	     cmp_nocase_uh(string, "2d_texture") == 0) {
+    return TT_2d_texture;
+
+  } else if (cmp_nocase_uh(string, "3d") == 0 ||
+	     cmp_nocase_uh(string, "3dtexture") == 0 ||
+	     cmp_nocase_uh(string, "3d_texture") == 0) {
+    return TT_2d_texture;
+
+  } else if (cmp_nocase_uh(string, "cube") == 0 ||
+	     cmp_nocase_uh(string, "cubemap") == 0 ||
+	     cmp_nocase_uh(string, "cube_map") == 0) {
+    return TT_cube_map;
+
+  } else {
+    return TT_unspecified;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -909,6 +965,33 @@ r_min_multitexture_sort(int sort, EggTexture::MultiTextures &cycle_detector) {
   }
 
   return no_cycles;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &operator << (ostream &out, EggTexture::TextureType texture_type) {
+  switch (texture_type) {
+  case EggTexture::TT_unspecified:
+    return out << "unspecified";
+
+  case EggTexture::TT_1d_texture:
+    return out << "1d";
+
+  case EggTexture::TT_2d_texture:
+    return out << "2d";
+
+  case EggTexture::TT_3d_texture:
+    return out << "3d";
+
+  case EggTexture::TT_cube_map:
+    return out << "cube-map";
+  }
+
+  nassertr(false, out);
+  return out << "(**invalid**)";
 }
 
 

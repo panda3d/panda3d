@@ -43,6 +43,18 @@ HashFilename(const HashFilename &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HashFilename::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE HashFilename::
+HashFilename(const Filename &copy) :
+  Filename(copy)
+{
+  locate_hash();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HashFilename::Copy Assignment Operator
 //       Access: Published
 //  Description: 

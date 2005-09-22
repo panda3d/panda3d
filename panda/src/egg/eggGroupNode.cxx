@@ -33,6 +33,7 @@
 #include "pt_EggMaterial.h"
 #include "config_egg.h"
 
+#include "hashFilename.h"
 #include "dSearchPath.h"
 #include "deg_2_rad.h"
 #include "dcast.h"
@@ -421,6 +422,7 @@ has_absolute_pathnames() const {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 resolve_filenames(const DSearchPath &searchpath) {
+  cerr << "resolve_filenames " << get_name() << "\n";
   Children::iterator ci;
   for (ci = _children.begin();
        ci != _children.end();
@@ -428,14 +430,27 @@ resolve_filenames(const DSearchPath &searchpath) {
     EggNode *child = *ci;
     if (child->is_of_type(EggTexture::get_class_type())) {
       EggTexture *tex = DCAST(EggTexture, child);
-      Filename tex_filename = tex->get_filename();
-      tex_filename.resolve_filename(searchpath);
-      tex->set_filename(tex_filename);
+      if (tex->has_hash_filename()) {
+	HashFilename tex_filename = tex->get_filename();
+	tex_filename.resolve_filename(searchpath);
+	tex->set_filename(tex_filename);
+	
+	if (tex->has_alpha_filename()) {
+	  HashFilename alpha_filename = tex->get_alpha_filename();
+	  alpha_filename.resolve_filename(searchpath);
+	  tex->set_alpha_filename(alpha_filename);
+	}
 
-      if (tex->has_alpha_filename()) {
-        Filename alpha_filename = tex->get_alpha_filename();
-        alpha_filename.resolve_filename(searchpath);
-        tex->set_alpha_filename(alpha_filename);
+      } else {
+	Filename tex_filename = tex->get_filename();
+	tex_filename.resolve_filename(searchpath);
+	tex->set_filename(tex_filename);
+	
+	if (tex->has_alpha_filename()) {
+	  Filename alpha_filename = tex->get_alpha_filename();
+	  alpha_filename.resolve_filename(searchpath);
+	  tex->set_alpha_filename(alpha_filename);
+	}
       }
 
     } else if (child->is_of_type(EggFilenameNode::get_class_type())) {

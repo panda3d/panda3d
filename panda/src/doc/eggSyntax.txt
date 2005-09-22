@@ -171,12 +171,39 @@ appear before they are referenced.
   <Scalar> wrap { repeat-definition }
   <Scalar> wrapu { repeat-definition }
   <Scalar> wrapv { repeat-definition }
+  <Scalar> wrapw { repeat-definition }
 
     This defines the behavior of the texture image outside of the
     normal (u,v) range 0.0 - 1.0.  It is "REPEAT" to repeat the
     texture to infinity, "CLAMP" not to.  The wrapping behavior may be
     specified independently for each axis via "wrapu" and "wrapv", or
     it may be specified for both simultaneously via "wrap".
+
+    Although less often used, for 3-d textures wrapw may also be
+    specified, and it behaves similarly to wrapu and wrapv.
+
+  <Scalar> type { texture-type }
+
+    This may be one of the following attributes:
+
+      1D
+      2D
+      3D
+      CUBE_MAP
+
+    The default is "2D", which specifies a normal, 2-d texture.  If
+    any of the other types is specified instead, a texture image of
+    the corresponding type is loaded.
+
+    If 3D or CUBE_MAP is specified, then a series of texture images
+    must be loaded to make up the complete texture; in this case, the
+    texture filename is expected to include a sequence of one or more
+    hash mark ("#") characters, which will be filled in with the
+    sequence number.  The first image in the sequence must be numbered
+    0, and there must be no gaps in the sequence.  In this case, a
+    separate alpha-file designation is ignored; the alpha channel, if
+    present, must be included in the same image with the color
+    channel(s).
 
   <Scalar> minfilter { filter-type }
   <Scalar> magfilter { filter-type }

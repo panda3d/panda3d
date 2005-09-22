@@ -58,6 +58,10 @@ PUBLISHED:
 
   bool has_alpha_channel(int num_components) const;
 
+  enum TextureType {
+    TT_unspecified, TT_1d_texture,
+    TT_2d_texture, TT_3d_texture, TT_cube_map
+  };
   enum Format {
     F_unspecified,
     F_rgba, F_rgbm, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
@@ -146,6 +150,11 @@ PUBLISHED:
     TG_point_sprite,
   };
 
+  INLINE bool has_hash_filename() const;
+
+  INLINE void set_texture_type(TextureType texture_type);
+  INLINE TextureType get_texture_type() const;
+
   INLINE void set_format(Format format);
   INLINE Format get_format() const;
 
@@ -159,6 +168,10 @@ PUBLISHED:
   INLINE void set_wrap_v(WrapMode mode);
   INLINE WrapMode get_wrap_v() const;
   INLINE WrapMode determine_wrap_v() const;
+
+  INLINE void set_wrap_w(WrapMode mode);
+  INLINE WrapMode get_wrap_w() const;
+  INLINE WrapMode determine_wrap_w() const;
 
   INLINE void set_minfilter(FilterType type);
   INLINE FilterType get_minfilter() const;
@@ -234,6 +247,7 @@ PUBLISHED:
   bool multitexture_over(EggTexture *other);
   INLINE int get_multitexture_sort() const;
 
+  static TextureType string_texture_type(const string &string);
   static Format string_format(const string &string);
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
@@ -265,8 +279,9 @@ private:
     F_has_alpha_scale        = 0x0200,
   };
 
+  TextureType _texture_type;
   Format _format;
-  WrapMode _wrap_mode, _wrap_u, _wrap_v;
+  WrapMode _wrap_mode, _wrap_u, _wrap_v, _wrap_w;
   FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
   EnvType _env_type;
@@ -344,6 +359,7 @@ INLINE ostream &operator << (ostream &out, const EggTexture &n) {
   return out << n.get_filename();
 }
 
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::TextureType texture_type);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::Format format);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::WrapMode mode);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::FilterType type);

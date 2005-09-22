@@ -90,7 +90,7 @@ AnimInterface::
 void AnimInterface::
 play(double from, double to) {
   if (from >= to) {
-    pose(from);
+    pose((int)from);
     return;
   }
 
@@ -122,7 +122,7 @@ play(double from, double to) {
 void AnimInterface::
 loop(bool restart, double from, double to) {
   if (from >= to) {
-    pose(from);
+    pose((int)from);
     return;
   }
 
@@ -157,7 +157,7 @@ loop(bool restart, double from, double to) {
 void AnimInterface::
 pingpong(bool restart, double from, double to) {
   if (from >= to) {
-    pose(from);
+    pose((int)from);
     return;
   }
 

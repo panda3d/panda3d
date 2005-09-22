@@ -38,6 +38,7 @@ class EXPCL_PANDA HashFilename : public Filename {
 PUBLISHED:
   INLINE HashFilename(const string &filename_pattern = string());
   INLINE HashFilename(const HashFilename &copy);
+  INLINE HashFilename(const Filename &copy);
   INLINE void operator = (const HashFilename &copy);
   INLINE void operator = (const Filename &copy);
   INLINE ~HashFilename();
@@ -47,6 +48,10 @@ PUBLISHED:
 
   INLINE string get_hash_to_end() const;
   void set_hash_to_end(const string &s);
+
+  bool resolve_filename(const DSearchPath &searchpath,
+                        const string &default_extension = string());
+  int find_on_searchpath(const DSearchPath &searchpath);
   
 private:
   void locate_hash();

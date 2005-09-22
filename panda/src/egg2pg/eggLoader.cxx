@@ -852,16 +852,31 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     break;
   }
 
-  Texture *tex;
-  if (egg_tex->has_alpha_filename() && wanted_alpha) {
-    tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                    egg_tex->get_alpha_fullpath(),
-                                    wanted_channels,
-                                    egg_tex->get_alpha_file_channel());
-  } else {
-    tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                    wanted_channels);
+  PT(Texture) tex;
+  switch (egg_tex->get_texture_type()) {
+  case EggTexture::TT_unspecified:
+  case EggTexture::TT_1d_texture:
+  case EggTexture::TT_2d_texture:
+    if (egg_tex->has_alpha_filename() && wanted_alpha) {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+				      egg_tex->get_alpha_fullpath(),
+				      wanted_channels,
+				      egg_tex->get_alpha_file_channel());
+    } else {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+				      wanted_channels);
+    }
+    break;
+
+  case EggTexture::TT_3d_texture:
+    tex = TexturePool::load_3d_texture(HashFilename(egg_tex->get_fullpath()));
+    break;
+
+  case EggTexture::TT_cube_map:
+    tex = TexturePool::load_cube_map(HashFilename(egg_tex->get_fullpath()));
+    break;
   }
+
   if (tex == (Texture *)NULL) {
     return false;
   }
@@ -939,6 +954,30 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     egg2pg_cat.warning()
       << "Unexpected texture wrap flag: "
       << (int)egg_tex->determine_wrap_v() << "\n";
+  }
+
+  switch (egg_tex->determine_wrap_w()) {
+  case EggTexture::WM_repeat:
+    tex->set_wrap_w(Texture::WM_repeat);
+    break;
+
+  case EggTexture::WM_clamp:
+    if (egg_ignore_clamp) {
+      egg2pg_cat.warning()
+        << "Ignoring clamp request\n";
+      tex->set_wrap_w(Texture::WM_repeat);
+    } else {
+      tex->set_wrap_w(Texture::WM_clamp);
+    }
+    break;
+
+  case EggTexture::WM_unspecified:
+    break;
+
+  default:
+    egg2pg_cat.warning()
+      << "Unexpected texture wrap flag: "
+      << (int)egg_tex->determine_wrap_w() << "\n";
   }
 
   switch (egg_tex->get_minfilter()) {
