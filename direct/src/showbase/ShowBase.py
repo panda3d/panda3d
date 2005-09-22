@@ -1540,7 +1540,7 @@ class ShowBase(DirectObject.DirectObject):
         return 1
 
     def movie(self, namePrefix = 'movie', duration = 1.0, fps = 30,
-              format = 'rgb', sd = 4):
+              format = 'rgb', sd = 4, source = None):
         """
         movie(namePrefix = 'movie', duration=1.0, fps=30, format='rgb', sd=4)
 
@@ -1552,12 +1552,17 @@ class ShowBase(DirectObject.DirectObject):
         - format specifies output file format (e.g. rgb, bmp)
         - sd specifies number of significant digits for frame count in the
           output file name (e.g. if sd = 4, movie_0001.rgb)
+        - source is the Window, Buffer, DisplayRegion, or Texture from which
+          to save the resulting images.  The default is the main window.
         """
+        if source == None:
+            source = self.win
         globalClock.setMode(ClockObject.MNonRealTime)
         globalClock.setDt(1.0/float(fps))
         t = taskMgr.add(self._movieTask, namePrefix + '_task')
         t.endT = globalClock.getFrameTime() + duration
         t.frameIndex = 1
+        t.source = source
         t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format
         t.uponDeath = lambda state: globalClock.setMode(ClockObject.MNormal)
 
@@ -1568,7 +1573,14 @@ class ShowBase(DirectObject.DirectObject):
         else:
             frameName = state.outputString % state.frameIndex
             self.notify.info("Capturing frame: " + frameName)
-            self.win.saveScreenshot(Filename(frameName))
+            if isinstance(state.source, Texture):
+                if state.source.getZSize() > 1:
+                    state.source.writePages(HashFilename(frameName))
+                else:
+                    state.source.write(Filename(frameName))
+            else:
+                state.source.saveScreenshot(Filename(frameName))
+                
             state.frameIndex += 1
             return Task.cont
 
