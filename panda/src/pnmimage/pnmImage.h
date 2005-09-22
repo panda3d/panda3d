@@ -87,9 +87,11 @@ PUBLISHED:
   INLINE void alpha_fill(double alpha = 0.0);
   void alpha_fill_val(xelval alpha = 0);
 
-  bool read(const Filename &filename, PNMFileType *type = NULL);
+  bool read(const Filename &filename, PNMFileType *type = NULL,
+	    bool report_unknown_type = true);
   bool read(istream &data, const string &filename = string(), 
-            PNMFileType *type = NULL);
+            PNMFileType *type = NULL,
+	    bool report_unknown_type = true);
   bool read(PNMReader *reader);
 
   bool write(const Filename &filename, PNMFileType *type = NULL) const;

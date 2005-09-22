@@ -58,7 +58,8 @@ read_header(const Filename &filename, PNMFileType *type) {
 //               needed.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
-make_reader(const Filename &filename, PNMFileType *type) const {
+make_reader(const Filename &filename, PNMFileType *type,
+	    bool report_unknown_type) const {
   if (pnmimage_cat.is_debug()) {
     pnmimage_cat.debug()
       << "Reading image from " << filename << "\n";
@@ -88,7 +89,8 @@ make_reader(const Filename &filename, PNMFileType *type) const {
     return NULL;
   }
 
-  return make_reader(file, owns_file, filename, string(), type);
+  return make_reader(file, owns_file, filename, string(), type, 
+		     report_unknown_type);
 }
 
 
@@ -123,7 +125,8 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
 make_reader(istream *file, bool owns_file, const Filename &filename,
-            string magic_number, PNMFileType *type) const {
+            string magic_number, PNMFileType *type,
+	    bool report_unknown_type) const {
   if (type == (PNMFileType *)NULL) {
     if (!read_magic_number(file, magic_number, 2)) {
       // No magic number.  No image.
@@ -188,7 +191,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
 
   if (type == (PNMFileType *)NULL) {
     // We can't figure out what type the file is; give up.
-    if (pnmimage_cat.is_error()) {
+    if (report_unknown_type && pnmimage_cat.is_error()) {
       pnmimage_cat.error()
         << "Cannot determine type of image file " << filename << ".\n"
         << "Currently supported image types:\n";

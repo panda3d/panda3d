@@ -71,8 +71,10 @@ PUBLISHED:
 public:
   typedef PT(Texture) MakeTextureFunc();
   void register_texture_type(MakeTextureFunc *func, const string &extensions);
-
-  PT(Texture) make_texture(const string &extension);
+  
+  MakeTextureFunc *get_texture_type(const string &extension) const;
+  PT(Texture) make_texture(const string &extension) const;
+  void write_texture_types(ostream &out, int indent_level) const;
 
   static TexturePool *get_global_ptr();
 

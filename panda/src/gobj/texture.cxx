@@ -289,7 +289,7 @@ bool Texture::
 read(const Filename &fullpath, int z, int primary_file_num_channels) {
   PNMImage image;
 
-  if (!image.read(fullpath)) {
+  if (!image.read(fullpath, NULL, false)) {
     gobj_cat.error()
       << "Texture::read() - couldn't read: " << fullpath << endl;
     return false;
@@ -328,14 +328,14 @@ bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int z, int primary_file_num_channels, int alpha_file_channel) {
   PNMImage image;
-  if (!image.read(fullpath)) {
+  if (!image.read(fullpath, NULL, false)) {
     gobj_cat.error()
       << "Texture::read() - couldn't read: " << fullpath << endl;
     return false;
   }
 
   PNMImage alpha_image;
-  if (!alpha_image.read(alpha_fullpath)) {
+  if (!alpha_image.read(alpha_fullpath, NULL, true)) {
     gobj_cat.error()
       << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
     return false;
@@ -1328,6 +1328,17 @@ string_filter_type(const string &string) {
   } else {
     return FT_invalid;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_texture
+//       Access: Public, Static
+//  Description: A factory function to make a new Texture, used to
+//               pass to the TexturePool.
+////////////////////////////////////////////////////////////////////
+PT(Texture) Texture::
+make_texture() {
+  return new Texture;
 }
 
 ////////////////////////////////////////////////////////////////////

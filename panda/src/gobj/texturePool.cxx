@@ -22,6 +22,7 @@
 #include "config_express.h"
 #include "string_utils.h"
 #include "virtualFileSystem.h"
+#include "pnmFileTypeRegistry.h"
 
 
 TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
@@ -60,6 +61,36 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::get_texture_type
+//       Access: Public
+//  Description: Returns the factory function to construct a new
+//               texture of the type appropriate for the indicated
+//               filename extension, if any, or NULL if the extension
+//               is not one of the extensions for a texture file.
+////////////////////////////////////////////////////////////////////
+TexturePool::MakeTextureFunc *TexturePool::
+get_texture_type(const string &extension) const {
+  string c = downcase(extension);
+  TypeRegistry::const_iterator ti;
+  ti = _type_registry.find(extension);
+  if (ti != _type_registry.end()) {
+    return (*ti).second;
+  }
+
+  // Check the PNM type registry.
+  PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
+  PNMFileType *type = pnm_reg->get_type_from_extension(extension);
+  if (type != (PNMFileType *)NULL) {
+    // This is a known image type; create an ordinary Texture.
+    ((TexturePool *)this)->_type_registry[extension] = Texture::make_texture;
+    return Texture::make_texture;
+  }
+
+  // This is an unknown texture type.
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::make_texture
 //       Access: Public
 //  Description: Creates a new Texture object of the appropriate type
@@ -68,14 +99,45 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
 //               register_texture_type().
 ////////////////////////////////////////////////////////////////////
 PT(Texture) TexturePool::
-make_texture(const string &extension) {
-  string c = downcase(extension);
-  TypeRegistry::const_iterator ti;
-  ti = _type_registry.find(extension);
-  if (ti != _type_registry.end()) {
-    return (*ti).second();
+make_texture(const string &extension) const {
+  MakeTextureFunc *func = get_texture_type(extension);
+  if (func != NULL) {
+    return func();
   }
+
+  // We don't know what kind of file type this is; return an ordinary
+  // Texture in case it's an image file with no extension.
   return new Texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::write_texture_types
+//       Access: Public
+//  Description: Outputs a list of the available texture types to the
+//               indicated output stream.  This is mostly the list of
+//               available image types, with maybe a few additional
+//               ones for video textures.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+write_texture_types(ostream &out, int indent_level) const {
+  PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
+  pnm_reg->write(out, indent_level);
+
+  // Also output any of the additional texture types, that aren't
+  // strictly images (these are typically video textures).
+  TypeRegistry::const_iterator ti;
+  for (ti = _type_registry.begin(); ti != _type_registry.end(); ++ti) {
+    string extension = (*ti).first;
+    MakeTextureFunc *func = (*ti).second;
+
+    if (pnm_reg->get_type_from_extension(extension) == NULL) {
+      PT(Texture) tex = func();
+      string name = tex->get_type().get_name();
+      indent(out, indent_level) << name;
+      indent(out, max(30 - (int)name.length(), 0))
+	<< "  ." << extension << "\n";
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,5 +525,14 @@ report_texture_unreadable(const Filename &filename) const {
     // The file exists, but it couldn't be read for some reason.
     gobj_cat.error()
       << "Texture \"" << filename << "\" exists but cannot be read.\n";
+
+    // Maybe the filename extension is unknown.
+    MakeTextureFunc *func = get_texture_type(filename.get_extension());
+    if (func == (MakeTextureFunc *)NULL) {
+      gobj_cat.error()
+	<< "Texture extension \"" << filename.get_extension() 
+	<< "\" is unknown.  Supported texture types:\n";
+      write_texture_types(gobj_cat.error(false), 2);
+    }
   }
 }

@@ -158,10 +158,11 @@ alpha_fill_val(xelval alpha) {
 //               is.  Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
-read(const Filename &filename, PNMFileType *type) {
+read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   clear();
 
-  PNMReader *reader = PNMImageHeader::make_reader(filename, type);
+  PNMReader *reader = PNMImageHeader::make_reader(filename, type,
+						  report_unknown_type);
   if (reader == (PNMReader *)NULL) {
     return false;
   }
@@ -174,18 +175,21 @@ read(const Filename &filename, PNMFileType *type) {
 //  Description: Reads the image data from the indicated stream.  
 //
 //               The filename is advisory only, and may be used
-//               suggest a type if it has a known extension.
+//               to suggest a type if it has a known extension.
 //
 //               If type is non-NULL, it is a suggestion for the type
-//               of file it is.  Returns true if successful, false on
-//               error.
+//               of file it is (and a non-NULL type will override any
+//               magic number test or filename extension lookup).
+//
+//               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
-read(istream &data, const string &filename, PNMFileType *type) {
+read(istream &data, const string &filename, PNMFileType *type,
+     bool report_unknown_type) {
   clear();
 
   PNMReader *reader = PNMImageHeader::make_reader
-    (&data, false, filename, string(), type);
+    (&data, false, filename, string(), type, report_unknown_type);
   if (reader == (PNMReader *)NULL) {
     return false;
   }

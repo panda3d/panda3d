@@ -277,6 +277,8 @@ public:
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
 
+  static PT(Texture) make_texture();
+
 protected:
   virtual void reconsider_dirty();
   virtual void reload_ram_image();

@@ -49,9 +49,9 @@
 #include "pgTop.h"
 #include "geomNode.h"
 #include "texture.h"
-#include "pnmImage.h"
+#include "videoTexture.h"
+#include "texturePool.h"
 #include "loaderFileTypeRegistry.h"
-#include "pnmFileTypeRegistry.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
 
@@ -562,12 +562,10 @@ load_model(const NodePath &parent, Filename filename) {
       reg->get_type_from_extension(extension);
     if (model_type == (LoaderFileType *)NULL) {
       // The extension isn't a known model file type, is it a known
-      // image extension?
-      PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
-      PNMFileType *image_type =
-        reg->get_type_from_extension(extension);
-      if (image_type != (PNMFileType *)NULL) {
-        // It is a known image extension.
+      // texture extension?
+      TexturePool *texture_pool = TexturePool::get_global_ptr();
+      if (texture_pool->get_texture_type(extension) != NULL) {
+        // It is a known texture extension.
         is_image = true;
       }
     }
@@ -981,20 +979,35 @@ setup_lights() {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) WindowFramework::
 load_image_as_model(const Filename &filename) {
-  PNMImageHeader header;
-  if (!header.read_header(filename)) {
+  PT(Texture) tex = TexturePool::load_texture(filename);
+  if (tex == NULL) {
     return NULL;
   }
 
-  int x_size = header.get_x_size();
-  int y_size = header.get_y_size();
-  bool has_alpha = header.has_alpha();
+  int x_size = tex->get_x_size();
+  int y_size = tex->get_y_size();
+  bool has_alpha = false;
+  LVecBase2f tex_scale(1.0f, 1.0f);
+
+  if (tex->is_of_type(VideoTexture::get_class_type())) {
+    // Get the size from the video stream.
+    VideoTexture *vtex = DCAST(VideoTexture, tex);
+    x_size = vtex->get_video_width();
+    y_size = vtex->get_video_height();
+    tex_scale = vtex->get_tex_scale();
+
+  } else {
+    // Get the size from the original image (the texture may have
+    // scaled it to make a power of 2).
+    PNMImageHeader header;
+    if (header.read_header(filename)) {
+      x_size = header.get_x_size();
+      y_size = header.get_y_size();
+      has_alpha = header.has_alpha();
+    }
+  }
 
   // Yes, it is an image file; make a texture out of it.
-  PT(Texture) tex = new Texture;
-  if (!tex->read(filename)) {
-    return NULL;
-  }
   tex->set_minfilter(Texture::FT_linear_mipmap_linear);
   tex->set_magfilter(Texture::FT_linear);
 
@@ -1024,10 +1037,10 @@ load_image_as_model(const Filename &filename) {
   vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
   vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
   
-  texcoord.add_data2f(0.0f, 1.0f);
+  texcoord.add_data2f(0.0f, tex_scale[1]);
   texcoord.add_data2f(0.0f, 0.0f);
-  texcoord.add_data2f(1.0f, 1.0f);
-  texcoord.add_data2f(1.0f, 0.0f);
+  texcoord.add_data2f(tex_scale[0], tex_scale[1]);
+  texcoord.add_data2f(tex_scale[0], 0.0f);
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   strip->add_consecutive_vertices(0, 4);
