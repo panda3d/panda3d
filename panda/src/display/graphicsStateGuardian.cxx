@@ -753,6 +753,10 @@ end_scene() {
   // Put the state into the 'unknown' state, forcing a reload.
   _last_state = 0;
   _state.clear_to_zero();
+
+  // We need to reset this to force a dynamic texture to be reloaded
+  // next frame even if it is the only texture in the scene.
+  _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
 }
 
 ////////////////////////////////////////////////////////////////////
