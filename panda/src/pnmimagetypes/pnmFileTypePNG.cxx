@@ -734,7 +734,7 @@ write_data(xel *array, xelval *alpha_data) {
         pi++;
       }
 
-    } else if (png_bit_depth > 255) {
+    } else if (png_bit_depth > 8) {
       for (int xi = 0; xi < _x_size; xi++) {
         if (save_color) {
           xelval red = PPM_GETR(array[pi]);
