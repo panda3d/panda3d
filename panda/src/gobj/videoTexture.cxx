@@ -33,7 +33,6 @@ VideoTexture::
 VideoTexture(const string &name) : 
   Texture(name) 
 {
-  _power_2 = (textures_power_2 != ATS_none);
   _video_width = 0;
   _video_height = 0;
 
@@ -50,7 +49,6 @@ VideoTexture::
 VideoTexture(const VideoTexture &copy) : 
   Texture(copy),
   AnimInterface(copy),
-  _power_2(copy._power_2),
   _video_width(copy._video_width),
   _video_height(copy._video_height),
   _last_frame_update(copy._last_frame_update),

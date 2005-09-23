@@ -18,40 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::set_power_2
-//       Access: Published
-//  Description: Sets the flag that indicates whether a newly-loaded
-//               VideoTexture will be constrained to dimensions that are
-//               a power of 2 or not.  If true, then a newly-loaded
-//               video stream will be set within the smallest power of
-//               2 texture that will fit it; if false, a newly-loaded
-//               video stream will be set within a texture that
-//               exactly fits it, even if that means creating a
-//               texture whose dimensions are not a power of 2.
-//
-//               This must be set before the first call to read().
-//               The default value is false if the Config.prc variable
-//               textures-power-2 is "none", true otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE void VideoTexture::
-set_power_2(bool power_2) {
-  _power_2 = power_2;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::get_power_2
-//       Access: Published
-//  Description: Returns the flag that indicates whether a
-//               newly-loaded VideoTexture will be constrained to
-//               dimensions that are a power of 2 or not.  See
-//               set_power_2().
-////////////////////////////////////////////////////////////////////
-INLINE bool VideoTexture::
-get_power_2() const {
-  return _power_2;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::get_video_width
 //       Access: Published
 //  Description: Returns the width in texels of the source video

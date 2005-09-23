@@ -498,6 +498,9 @@ read_pages(Filename fullpath_pattern, int z_size) {
     }
   }
 
+  set_fullpath(fullpath_pattern);
+  clear_alpha_fullpath();
+
   return true;
 }
 
@@ -1614,16 +1617,16 @@ consider_downgrade(PNMImage &pnmimage, int num_channels) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_Texture);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::make_Texture
-//       Access: Protected
+//     Function: Texture::make_from_bam
+//       Access: Protected, Static
 //  Description: Factory method to generate a Texture object
 ////////////////////////////////////////////////////////////////////
 TypedWritable *Texture::
-make_Texture(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   // The process of making a texture is slightly different than making
   // other TypedWritable objects.  That is because all creation of
   // Textures should be done through calls to TexturePool, which
@@ -1634,7 +1637,8 @@ make_Texture(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
 
-  // Get the filenames so we can look up the file on disk first.
+  // Get the filenames and texture type so we can look up the file on
+  // disk first.
   string name = scan.get_string();
   Filename filename = scan.get_string();
   Filename alpha_filename = scan.get_string();
@@ -1642,6 +1646,7 @@ make_Texture(const FactoryParams &params) {
   int primary_file_num_channels = scan.get_uint8();
   int alpha_file_channel = scan.get_uint8();
   bool has_rawdata = scan.get_bool();
+  TextureType texture_type = (TextureType)scan.get_uint8();
 
   Texture *me = NULL;
   if (has_rawdata) {
@@ -1659,15 +1664,34 @@ make_Texture(const FactoryParams &params) {
     } else {
       // This texture does have a filename, so try to load it from disk.
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-      if (!manager->get_filename().empty())
-        vfs->resolve_filename(filename,manager->get_filename().get_dirname());
-      if (alpha_filename.empty()) {
-        me = TexturePool::load_texture(filename, primary_file_num_channels);
-      } else {
-        if (!manager->get_filename().empty())
-          vfs->resolve_filename(alpha_filename, manager->get_filename().get_dirname());
-        me = TexturePool::load_texture(filename, alpha_filename, 
-                                       primary_file_num_channels, alpha_file_channel);
+      if (!manager->get_filename().empty()) {
+	// If texture filename was given relative to the bam filename,
+	// expand it now.
+	DSearchPath bam_dir = manager->get_filename().get_dirname();
+        vfs->resolve_filename(filename, bam_dir);
+	if (!alpha_filename.empty()) {
+	  vfs->resolve_filename(alpha_filename, bam_dir);
+	}
+      }
+
+      switch (texture_type) {
+      case TT_1d_texture:
+      case TT_2d_texture:
+	if (alpha_filename.empty()) {
+	  me = TexturePool::load_texture(filename, primary_file_num_channels);
+	} else {
+	  me = TexturePool::load_texture(filename, alpha_filename, 
+					 primary_file_num_channels, alpha_file_channel);
+	}
+	break;
+
+      case TT_3d_texture:
+	me = TexturePool::load_3d_texture(filename);
+	break;
+
+      case TT_cube_map:
+	me = TexturePool::load_cube_map(filename);
+	break;
       }
     }
   }
@@ -1697,8 +1721,6 @@ make_Texture(const FactoryParams &params) {
 void Texture::
 fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   // We have already read in the filenames; don't read them again.
-
-  _texture_type = (TextureType)scan.get_uint8();
   _wrap_u = (WrapMode)scan.get_uint8();
   _wrap_v = (WrapMode)scan.get_uint8();
   _wrap_w = (WrapMode)scan.get_uint8();
@@ -1804,9 +1826,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_uint8(_primary_file_num_channels);
   me.add_uint8(_alpha_file_channel);
   me.add_bool(has_rawdata);
+  me.add_uint8(_texture_type);
 
   // The data beginning at this point is handled by fillin().
-  me.add_uint8(_texture_type);
   me.add_uint8(_wrap_u);
   me.add_uint8(_wrap_v);
   me.add_uint8(_wrap_w);

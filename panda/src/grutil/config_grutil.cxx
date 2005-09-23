@@ -67,6 +67,7 @@ init_libgrutil() {
 
 #ifdef HAVE_OPENCV
   OpenCVTexture::init_type();
+  OpenCVTexture::register_with_read_factory();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenCV");

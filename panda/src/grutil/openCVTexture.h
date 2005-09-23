@@ -101,6 +101,9 @@ private:
   Pages _pages;
 
 public:
+  static void register_with_read_factory();
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

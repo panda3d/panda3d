@@ -278,7 +278,7 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   int x_size = width;
   int y_size = height;
 
-  if (get_power_2()) {
+  if (textures_power_2 != ATS_none) {
     x_size = up_to_power_2(width);
     y_size = up_to_power_2(height);
   }
@@ -407,6 +407,27 @@ update_frame(int frame) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenCVTexture::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a Texture object
+////////////////////////////////////////////////////////////////////
+void OpenCVTexture::
+register_with_read_factory() {
+  // Since Texture is such a funny object that is reloaded from the
+  // TexturePool each time, instead of actually being read fully from
+  // the bam file, and since the VideoTexture and OpenCVTexture
+  // classes don't really add any useful data to the bam record, we
+  // don't need to define make_from_bam(), fillin(), or
+  // write_datagram() in this class--we just inherit the same
+  // functions from Texture.
+
+  // We do, however, have to register this class with the BamReader,
+  // to avoid warnings about creating the wrong kind of object from
+  // the bam file.
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -298,6 +298,7 @@ ns_load_texture(const Filename &orig_filename,
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern) {
   Filename filename(filename_pattern);
+  filename.set_pattern(true);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(filename, get_texture_path()) ||
@@ -317,6 +318,7 @@ ns_load_3d_texture(const Filename &filename_pattern) {
   if (!tex->read_pages(filename)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
+    return NULL;
   }
 
   // Set the original filename, before we searched along the path.
@@ -334,6 +336,7 @@ ns_load_3d_texture(const Filename &filename_pattern) {
 Texture *TexturePool::
 ns_load_cube_map(const Filename &filename_pattern) {
   Filename filename(filename_pattern);
+  filename.set_pattern(true);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(filename, get_texture_path()) ||
@@ -353,6 +356,7 @@ ns_load_cube_map(const Filename &filename_pattern) {
   if (!tex->read_pages(filename)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
+    return NULL;
   }
 
   // Set the original filename, before we searched along the path.

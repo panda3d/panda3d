@@ -37,9 +37,6 @@ protected:
   VideoTexture(const VideoTexture &copy);
 
 PUBLISHED:
-  INLINE void set_power_2(bool power_2);
-  INLINE bool get_power_2() const;
-
   virtual bool has_ram_image() const;
   virtual bool get_keep_ram_image() const;
 
@@ -62,7 +59,6 @@ protected:
   virtual void update_frame(int frame)=0;
 
 private:
-  bool _power_2;
   int _video_width;
   int _video_height;
   int _last_frame_update;
