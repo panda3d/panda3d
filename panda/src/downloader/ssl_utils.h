@@ -25,7 +25,7 @@
 #ifdef HAVE_OPENSSL
 #define OPENSSL_NO_KRB5
 
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 EXPCL_PANDAEXPRESS void notify_ssl_errors();
 

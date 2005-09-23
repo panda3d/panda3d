@@ -41,7 +41,7 @@
 #include "pointerTo.h"
 #include "config_downloader.h"
 #include "filename.h"
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 class Ramfile;
 class HTTPClient;

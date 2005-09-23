@@ -20,8 +20,8 @@
 
 #ifdef HAVE_OPENSSL
 
-#include <openssl/ssl.h>
-#include <openssl/md5.h>
+#include "openssl/ssl.h"
+#include "openssl/md5.h"
 #include <time.h>
 
 const string HTTPDigestAuthorization::_mechanism = "digest";

@@ -24,7 +24,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
-#include <openssl/evp.h>
+#include "openssl/evp.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EncryptStreamBuf

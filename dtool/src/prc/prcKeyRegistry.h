@@ -28,7 +28,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "pvector.h"
-#include <openssl/evp.h>
+#include "openssl/evp.h"
 
 // Some versions of OpenSSL appear to define this as a macro.  Yucky.
 #undef set_key

@@ -28,7 +28,7 @@
 #include "ramfile.h"
 
 #ifdef HAVE_OPENSSL
-#include <openssl/x509.h>
+#include "openssl/x509.h"
 
 #ifdef WIN32_VC
   #include <windows.h>  // for select()

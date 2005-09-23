@@ -22,7 +22,7 @@
 #include <ctype.h>
 
 #ifdef HAVE_OPENSSL
-#include <openssl/md5.h>
+#include "openssl/md5.h"
 #endif  // HAVE_OPENSSL
 
 

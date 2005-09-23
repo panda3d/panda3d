@@ -26,7 +26,7 @@
 #define OPENSSL_NO_KRB5
 
 #include "referenceCount.h"
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 class URLSpec;
 

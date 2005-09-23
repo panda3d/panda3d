@@ -27,7 +27,7 @@
 
 #include "bioStream.h"
 #include "referenceCount.h"
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BioStreamPtr

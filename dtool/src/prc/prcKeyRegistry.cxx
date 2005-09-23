@@ -25,7 +25,7 @@
 
 #ifdef HAVE_OPENSSL
 
-#include <openssl/pem.h>
+#include "openssl/pem.h"
 
 PrcKeyRegistry *PrcKeyRegistry::_global_ptr = NULL;
 

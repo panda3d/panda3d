@@ -22,7 +22,7 @@
 #ifdef HAVE_OPENSSL
 
 #ifdef REPORT_OPENSSL_ERRORS
-#include <openssl/err.h>
+#include "openssl/err.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////

@@ -39,7 +39,7 @@
 #include "pmap.h"
 #include "pset.h"
 
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 // Windows may define this macro inappropriately.
 #ifdef X509_NAME

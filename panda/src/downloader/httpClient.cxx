@@ -30,8 +30,8 @@
 
 #ifdef HAVE_OPENSSL
 
-#include <openssl/rand.h>
-#include <openssl/err.h>
+#include "openssl/rand.h"
+#include "openssl/err.h"
 
 // Windows may define this macro inappropriately.
 #ifdef X509_NAME

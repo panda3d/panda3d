@@ -26,7 +26,7 @@
 #include <ctype.h>
 
 #ifdef HAVE_OPENSSL
-#include <openssl/evp.h>
+#include "openssl/evp.h"
 #endif
 
 ConfigPage *ConfigPage::_default_page = NULL;

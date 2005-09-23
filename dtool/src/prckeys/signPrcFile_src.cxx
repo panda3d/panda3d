@@ -27,11 +27,11 @@
 
 #include <time.h>
 
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <openssl/rand.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
+#include "openssl/err.h"
+#include "openssl/pem.h"
+#include "openssl/rand.h"
+#include "openssl/bio.h"
+#include "openssl/evp.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"

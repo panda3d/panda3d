@@ -22,7 +22,7 @@
 // within OpenSSL.
 #ifdef HAVE_OPENSSL
 
-#include <openssl/evp.h>
+#include "openssl/evp.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: password_hash

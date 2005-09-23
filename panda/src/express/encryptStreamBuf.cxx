@@ -23,7 +23,7 @@
 
 #ifdef HAVE_OPENSSL
 
-#include <openssl/rand.h>
+#include "openssl/rand.h"
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us

@@ -27,7 +27,7 @@
 
 #include "bioPtr.h"
 #include "pointerTo.h"
-#include <openssl/ssl.h>
+#include "openssl/ssl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BioStreamBuf
