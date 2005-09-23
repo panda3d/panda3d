@@ -43,6 +43,7 @@ public:
 PUBLISHED:
   virtual VirtualFileSystem *get_file_system() const=0;
   virtual Filename get_filename() const=0;
+  INLINE const Filename &get_original_filename() const;
 
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
@@ -59,6 +60,7 @@ PUBLISHED:
   virtual streampos get_file_size(istream *stream) const;
 
 public:
+  INLINE void set_original_filename(const Filename &filename);
   bool read_file(string &result) const;
   static bool read_file(istream *stream, string &result);
   static bool read_file(istream *stream, string &result, size_t max_bytes);
@@ -70,6 +72,8 @@ protected:
 
 private:
   void r_ls_all(ostream &out, const Filename &root) const;
+
+  Filename _original_filename;
 
 
 public:

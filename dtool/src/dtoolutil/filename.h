@@ -58,6 +58,7 @@ public:
     F_type            = 0x0f,
     F_binary          = 0x10,
     F_text            = 0x20,
+    F_pattern         = 0x40,
   };
 
 PUBLISHED:
@@ -74,6 +75,8 @@ PUBLISHED:
   INLINE static Filename binary_filename(const string &filename);
   INLINE static Filename dso_filename(const string &filename);
   INLINE static Filename executable_filename(const string &filename);
+
+  INLINE static Filename pattern_filename(const string &filename);
 
   static Filename from_os_specific(const string &os_specific,
                                    Type type = T_general);
@@ -123,6 +126,15 @@ PUBLISHED:
 
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
+
+  INLINE void set_pattern(bool pattern);
+  INLINE bool get_pattern() const;
+
+  INLINE bool has_hash() const;
+  Filename get_filename_index(int index) const;
+
+  INLINE string get_hash_to_end() const;
+  void set_hash_to_end(const string &s);
 
   void extract_components(vector_string &components) const;
   void standardize();
@@ -176,6 +188,7 @@ PUBLISHED:
 protected:
   void locate_basename();
   void locate_extension();
+  void locate_hash();
   size_t get_common_prefix(const string &other) const;
   static int count_slashes(const string &str);
   bool r_make_canonical(const Filename &cwd);
@@ -187,6 +200,8 @@ protected:
   size_t _basename_start;
   size_t _basename_end;
   size_t _extension_start;
+  size_t _hash_start;
+  size_t _hash_end;
 
   int _flags;
 };

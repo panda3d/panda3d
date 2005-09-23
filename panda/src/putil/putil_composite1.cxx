@@ -18,7 +18,6 @@
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"
 #include "globalPointerRegistry.cxx"
-#include "hashFilename.cxx"
 #include "ioPtaDatagramFloat.cxx"
 #include "ioPtaDatagramInt.cxx"
 #include "ioPtaDatagramShort.cxx"

@@ -54,7 +54,7 @@ public:
     }
   };
 
-private:
+protected:
   Filename _filename;
   Filename _fullpath;
 

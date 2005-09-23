@@ -150,8 +150,6 @@ PUBLISHED:
     TG_point_sprite,
   };
 
-  INLINE bool has_hash_filename() const;
-
   INLINE void set_texture_type(TextureType texture_type);
   INLINE TextureType get_texture_type() const;
 

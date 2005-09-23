@@ -869,11 +869,11 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     break;
 
   case EggTexture::TT_3d_texture:
-    tex = TexturePool::load_3d_texture(HashFilename(egg_tex->get_fullpath()));
+    tex = TexturePool::load_3d_texture(egg_tex->get_fullpath());
     break;
 
   case EggTexture::TT_cube_map:
-    tex = TexturePool::load_cube_map(HashFilename(egg_tex->get_fullpath()));
+    tex = TexturePool::load_cube_map(egg_tex->get_fullpath());
     break;
   }
 

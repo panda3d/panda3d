@@ -18,21 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::has_hash_filename
-//       Access: Published
-//  Description: Returns true if the texture filename is expected to
-//               contain a hash mark standing in for a sequence
-//               number, or false if the filename is a literal
-//               filename.  This will be true only if TextureType is
-//               TT_3d_texture or TT_cube_map.
-////////////////////////////////////////////////////////////////////
-INLINE bool EggTexture::
-has_hash_filename() const {
-  return (_texture_type == TT_3d_texture ||
-	  _texture_type == TT_cube_map);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_texture_type
 //       Access: Published
 //  Description:
@@ -40,6 +25,12 @@ has_hash_filename() const {
 INLINE void EggTexture::
 set_texture_type(TextureType texture_type) {
   _texture_type = texture_type;
+
+  bool pattern_filename = 
+    (_texture_type == TT_3d_texture || _texture_type == TT_cube_map);
+
+  _filename.set_pattern(pattern_filename);
+  _fullpath.set_pattern(pattern_filename);
 }
 
 ////////////////////////////////////////////////////////////////////

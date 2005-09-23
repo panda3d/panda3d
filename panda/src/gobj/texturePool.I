@@ -84,8 +84,8 @@ load_texture(const string &filename, const string &alpha_filename,
 //               filled in with the index number of each level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_3d_texture(const string &filename_template) {
-  return get_global_ptr()->ns_load_3d_texture(filename_template);
+load_3d_texture(const string &filename_pattern) {
+  return get_global_ptr()->ns_load_3d_texture(filename_pattern);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,8 +98,8 @@ load_3d_texture(const string &filename_template) {
 //               the index number of each pagee.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_cube_map(const string &filename_template) {
-  return get_global_ptr()->ns_load_cube_map(filename_template);
+load_cube_map(const string &filename_pattern) {
+  return get_global_ptr()->ns_load_cube_map(filename_pattern);
 }
 
 ////////////////////////////////////////////////////////////////////

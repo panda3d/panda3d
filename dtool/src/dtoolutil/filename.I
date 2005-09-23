@@ -23,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const string &filename) {
-  (*this) = filename;
   _flags = 0;
+  (*this) = filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,8 +34,8 @@ Filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const char *filename) {
-  (*this) = filename;
   _flags = 0;
+  (*this) = filename;
 }
 
 
@@ -45,13 +45,15 @@ Filename(const char *filename) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
-Filename(const Filename &copy)
-  : _filename(copy._filename),
-    _dirname_end(copy._dirname_end),
-    _basename_start(copy._basename_start),
-    _basename_end(copy._basename_end),
-    _extension_start(copy._extension_start),
-    _flags(copy._flags)
+Filename(const Filename &copy) :
+  _filename(copy._filename),
+  _dirname_end(copy._dirname_end),
+  _basename_start(copy._basename_start),
+  _basename_end(copy._basename_end),
+  _extension_start(copy._extension_start),
+  _hash_start(copy._hash_start),
+  _hash_end(copy._hash_end),
+  _flags(copy._flags)
 {
 }
 
@@ -104,6 +106,19 @@ executable_filename(const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::pattern_filename named constructor
+//       Access: Published
+//  Description: Constructs a filename that represents a sequence of
+//               numbered files.  See set_pattern().
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
+pattern_filename(const string &filename) {
+  Filename result(filename);
+  result.set_pattern(true);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::Destructor
 //       Access: Published
 //  Description:
@@ -124,6 +139,7 @@ operator = (const string &filename) {
 
   locate_basename();
   locate_extension();
+  locate_hash();
   return *this;
 }
 
@@ -150,6 +166,8 @@ operator = (const Filename &copy) {
   _basename_start = copy._basename_start;
   _basename_end = copy._basename_end;
   _extension_start = copy._extension_start;
+  _hash_start = copy._hash_start;
+  _hash_end = copy._hash_end;
   _flags = copy._flags;
   return *this;
 }
@@ -386,6 +404,75 @@ set_type(Filename::Type type) {
 INLINE Filename::Type Filename::
 get_type() const {
   return (Type)(_flags & (int)F_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::set_pattern
+//       Access: Published
+//  Description: Sets the flag indicating whether this is a filename
+//               pattern.  When this is true, the filename is
+//               understood to be a placeholder for a numbered
+//               sequence of filename, such as an image sequence.  In
+//               this case, a sequence of one or more hash characters
+//               ("#") should appear in the filename string; these
+//               characters will be filled in with the corresponding
+//               number (or more) of digits representing the sequence
+//               number.  Sequence numbers always begin counting at 0.
+//
+//               When this is true, methods like has_hash() and
+//               get_hash_to_end() and get_filename_index() may be
+//               called.  Methods like is_exists() will implicitly
+//               test for existance of filename sequence 0.
+////////////////////////////////////////////////////////////////////
+INLINE void Filename::
+set_pattern(bool pattern) {
+  if (pattern != get_pattern()) {
+    if (pattern) {
+      _flags |= F_pattern;
+    } else {
+      _flags &= ~F_pattern;
+    }
+    locate_hash();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_pattern
+//       Access: Published
+//  Description: Returns the flag indicating whether this is a
+//               filename pattern.  See set_pattern().
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+get_pattern() const {
+  return (_flags & F_pattern) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::has_hash
+//       Access: Published
+//  Description: Returns true if the filename is indicated to be a
+//               filename pattern (that is, set_pattern(true) was
+//               called), and the filename pattern did include a
+//               sequence of hash marks, or false if it was not a
+//               filename pattern or did not include hash marks.  If
+//               this is true, then get_filename_index() will return a
+//               different filename each time.
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+has_hash() const {
+  return (_hash_start != _hash_end);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_hash_to_end
+//       Access: Published
+//  Description: Returns the part of the filename beginning at the
+//               hash sequence (if any), and continuing to the end of
+//               the filename.
+////////////////////////////////////////////////////////////////////
+INLINE string Filename::
+get_hash_to_end() const {
+  return _filename.substr(_hash_start);
 }
 
 ////////////////////////////////////////////////////////////////////

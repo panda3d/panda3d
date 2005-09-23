@@ -29,7 +29,6 @@
 #include "preparedGraphicsObjects.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
-#include "hashFilename.h"
 
 #include <stddef.h>
 
@@ -450,10 +449,11 @@ write(const Filename &name, int z) const {
 //               corresponding number of digits.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read_pages(const HashFilename &fullpath_template, int z_size) {
-  if (!fullpath_template.has_hash()) {
+read_pages(Filename fullpath_pattern, int z_size) {
+  fullpath_pattern.set_pattern(true);
+  if (!fullpath_pattern.has_hash()) {
     gobj_cat.error()
-      << "Template " << fullpath_template << " contains no hash marks.\n";
+      << "Template " << fullpath_pattern << " contains no hash marks.\n";
     return false;
   }
 
@@ -478,7 +478,7 @@ read_pages(const HashFilename &fullpath_template, int z_size) {
   if (z_size != 0) {
     set_z_size(z_size);
     for (int z = 0; z < z_size; z++) {
-      if (!read(fullpath_template.get_filename_index(z), z)) {
+      if (!read(fullpath_pattern.get_filename_index(z), z)) {
         return false;
       }
     }
@@ -487,14 +487,14 @@ read_pages(const HashFilename &fullpath_template, int z_size) {
     int z = 0;
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-    Filename file = fullpath_template.get_filename_index(z);
+    Filename file = fullpath_pattern.get_filename_index(z);
     while (vfs->exists(file)) {
       if (!read(file, z)) {
         return false;
       }
       ++z;
 
-      file = fullpath_template.get_filename_index(z);
+      file = fullpath_pattern.get_filename_index(z);
     }
   }
 
@@ -515,15 +515,16 @@ read_pages(const HashFilename &fullpath_template, int z_size) {
 //               corresponding number of digits.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-write_pages(const HashFilename &fullpath_template) {
-  if (!fullpath_template.has_hash()) {
+write_pages(Filename fullpath_pattern) {
+  fullpath_pattern.set_pattern(true);
+  if (!fullpath_pattern.has_hash()) {
     gobj_cat.error()
-      << "Template " << fullpath_template << " contains no hash marks.\n";
+      << "Template " << fullpath_pattern << " contains no hash marks.\n";
     return false;
   }
 
   for (int z = 0; z < _z_size; z++) {
-    if (!write(fullpath_template.get_filename_index(z), z)) {
+    if (!write(fullpath_pattern.get_filename_index(z), z)) {
       return false;
     }
   }

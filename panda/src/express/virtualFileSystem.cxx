@@ -290,7 +290,7 @@ get_file(const Filename &filename) const {
     pathname = Filename(_cwd, filename);
   }
   pathname.standardize();
-  string strpath = pathname.get_fullpath().substr(1);
+  string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
 
   // Now scan all the mount points, from the back (since later mounts
   // override more recent ones), until a match is found.
@@ -304,14 +304,14 @@ get_file(const Filename &filename) const {
     if (strpath == mount_point) {
       // Here's an exact match on the mount point.  This filename is
       // the root directory of this mount object.
-      if (found_match(found_file, composite_file, mount, "")) {
+      if (found_match(found_file, composite_file, mount, "", pathname)) {
         return found_file;
       }
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
       if (mount->has_file(strpath)) {
         // Bingo!
-        if (found_match(found_file, composite_file, mount, strpath)) {
+        if (found_match(found_file, composite_file, mount, strpath, pathname)) {
           return found_file;
         }
       }            
@@ -322,7 +322,7 @@ get_file(const Filename &filename) const {
       Filename local_filename = strpath.substr(mount_point.length() + 1);
       if (mount->has_file(local_filename)) {
         // Bingo!
-        if (found_match(found_file, composite_file, mount, local_filename)) {
+        if (found_match(found_file, composite_file, mount, local_filename, pathname)) {
           return found_file;
         }
       }            
@@ -381,7 +381,7 @@ resolve_filename(Filename &filename,
   PT(VirtualFile) found;
 
   if (filename.is_local()) {
-    found = find_file(filename.get_fullpath(), searchpath);
+    found = find_file(filename, searchpath);
 
     if (found.is_null()) {
       // We didn't find it with the given extension; can we try the
@@ -389,7 +389,7 @@ resolve_filename(Filename &filename,
       if (filename.get_extension().empty() && !default_extension.empty()) {
         Filename try_ext = filename;
         try_ext.set_extension(default_extension);
-        found = find_file(try_ext.get_fullpath(), searchpath);
+        found = find_file(try_ext, searchpath);
       }
     }
   } else {
@@ -408,7 +408,7 @@ resolve_filename(Filename &filename,
   }
 
   if (!found.is_null()) {
-    filename = found->get_filename();
+    filename = found->get_original_filename();
     return true;
   }
 
@@ -670,10 +670,12 @@ normalize_mount_point(const string &mount_point) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-            VirtualFileMount *mount, const string &local_filename) const {
+            VirtualFileMount *mount, const string &local_filename,
+            const Filename &original_filename) const {
   if (found_file == (VirtualFile *)NULL) {
     // This was our first match.  Save it.
     found_file = new VirtualFileSimple(mount, local_filename);
+    found_file->set_original_filename(original_filename);
     if (!mount->is_directory(local_filename)) {
       // If it's not a directory, we're done.
       return true;
@@ -690,7 +692,8 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
     // need a composite directory.
     if (composite_file == (VirtualFileComposite *)NULL) {
       composite_file =
-        new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_filename());
+        new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_original_filename());
+      composite_file->set_original_filename(original_filename);
       composite_file->add_component(found_file);
       found_file = composite_file;
     }

@@ -94,7 +94,8 @@ public:
 private:
   Filename normalize_mount_point(const string &mount_point) const;
   bool found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-                   VirtualFileMount *mount, const string &local_filename) const;
+                   VirtualFileMount *mount, const string &local_filename,
+                   const Filename &original_filename) const;
   static void parse_option(const string &option,
                            int &flags, string &password);
 

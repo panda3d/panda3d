@@ -296,42 +296,33 @@ ns_load_texture(const Filename &orig_filename,
 //  Description: The nonstatic implementation of load_3d_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_3d_texture(const HashFilename &filename_template) {
-  // Look up filename 0 on the model path.
-  Filename filename = filename_template.get_filename_index(0);
-  if (!_fake_texture_image.empty()) {
-    filename = _fake_texture_image;
-  }
+ns_load_3d_texture(const Filename &filename_pattern) {
+  Filename filename(filename_pattern);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(filename, get_texture_path()) ||
     vfs->resolve_filename(filename, get_model_path());
 
-  // Then, replace everything before the hash code with the directory
-  // we've found.
-  string hash = filename_template.get_hash_to_end();
-  HashFilename hash_filename(filename.substr(0, filename.length() - hash.length()) + hash);
-
   Textures::const_iterator ti;
-  ti = _textures.find(hash_filename);
+  ti = _textures.find(filename);
   if (ti != _textures.end()) {
     // This texture was previously loaded.
     return (*ti).second;
   }
 
   gobj_cat.info()
-    << "Loading 3-d texture " << hash_filename << "\n";
-  PT(Texture) tex = make_texture(hash_filename.get_extension());
+    << "Loading 3-d texture " << filename << "\n";
+  PT(Texture) tex = make_texture(filename.get_extension());
   tex->setup_3d_texture();
-  if (!tex->read_pages(hash_filename)) {
+  if (!tex->read_pages(filename)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
   }
 
   // Set the original filename, before we searched along the path.
-  tex->set_filename(filename_template);
+  tex->set_filename(filename_pattern);
 
-  _textures[hash_filename] = tex;
+  _textures[filename] = tex;
   return tex;
 }
 
@@ -341,42 +332,33 @@ ns_load_3d_texture(const HashFilename &filename_template) {
 //  Description: The nonstatic implementation of load_cube_map().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_cube_map(const HashFilename &filename_template) {
-  // Look up filename 0 on the model path.
-  Filename filename = filename_template.get_filename_index(0);
-  if (!_fake_texture_image.empty()) {
-    filename = _fake_texture_image;
-  }
+ns_load_cube_map(const Filename &filename_pattern) {
+  Filename filename(filename_pattern);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(filename, get_texture_path()) ||
     vfs->resolve_filename(filename, get_model_path());
 
-  // Then, replace everything before the hash code with the directory
-  // we've found.
-  string hash = filename_template.get_hash_to_end();
-  HashFilename hash_filename(filename.substr(0, filename.length() - hash.length()) + hash);
-
   Textures::const_iterator ti;
-  ti = _textures.find(hash_filename);
+  ti = _textures.find(filename);
   if (ti != _textures.end()) {
     // This texture was previously loaded.
     return (*ti).second;
   }
 
   gobj_cat.info()
-    << "Loading cube map texture " << hash_filename << "\n";
-  PT(Texture) tex = make_texture(hash_filename.get_extension());
+    << "Loading cube map texture " << filename << "\n";
+  PT(Texture) tex = make_texture(filename.get_extension());
   tex->setup_cube_map();
-  if (!tex->read_pages(hash_filename)) {
+  if (!tex->read_pages(filename)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
   }
 
   // Set the original filename, before we searched along the path.
-  tex->set_filename(filename_template);
+  tex->set_filename(filename_pattern);
 
-  _textures[hash_filename] = tex;
+  _textures[filename] = tex;
   return tex;
 }
 

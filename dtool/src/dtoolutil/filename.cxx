@@ -284,6 +284,7 @@ Filename(const Filename &dirname, const Filename &basename) {
   if (dirname.empty()) {
     (*this) = basename;
   } else {
+    _flags = basename._flags;
     string dirpath = dirname.get_fullpath();
     if (dirpath[dirpath.length() - 1] == '/') {
       (*this) = dirpath + basename.get_fullpath();
@@ -291,7 +292,6 @@ Filename(const Filename &dirname, const Filename &basename) {
       (*this) = dirpath + "/" + basename.get_fullpath();
     }
   }
-  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -494,6 +494,7 @@ set_dirname(const string &s) {
       _extension_start += length_change;
     }
   }
+  locate_hash();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -507,6 +508,7 @@ void Filename::
 set_basename(const string &s) {
   _filename.replace(_basename_start, string::npos, s);
   locate_extension();
+  locate_hash();
 }
 
 
@@ -526,6 +528,7 @@ set_fullpath_wo_extension(const string &s) {
     _basename_end += length_change;
     _extension_start += length_change;
   }
+  locate_hash();
 }
 
 
@@ -548,6 +551,7 @@ set_basename_wo_extension(const string &s) {
     _basename_end += length_change;
     _extension_start += length_change;
   }
+  locate_hash();
 }
 
 
@@ -578,6 +582,51 @@ set_extension(const string &s) {
     // Replace an existing extension.
     _filename.replace(_extension_start, string::npos, s);
   }
+  locate_hash();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_filename_index
+//       Access: Published
+//  Description: If the pattern flag is set for this Filename and the
+//               filename string actually includes a sequence of hash
+//               marks, then this returns a new Filename with the
+//               sequence of hash marks replaced by the indicated
+//               index number.
+//
+//               If the pattern flag is not set for this Filename or
+//               it does not contain a sequence of hash marks, this
+//               quietly returns the original filename.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+get_filename_index(int index) const {
+  Filename file(*this);
+
+  if (_hash_end != _hash_start) {
+    ostringstream strm;
+    strm << _filename.substr(0, _hash_start) 
+	 << setw(_hash_end - _hash_start) << setfill('0') << index
+	 << _filename.substr(_hash_end);
+    file.set_fullpath(strm.str());
+  }
+  file.set_pattern(false);
+
+  return file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::set_hash_to_end
+//       Access: Published
+//  Description: Replaces the part of the filename from the beginning
+//               of the hash sequence to the end of the filename.
+////////////////////////////////////////////////////////////////////
+void Filename::
+set_hash_to_end(const string &s) {
+  _filename.replace(_hash_start, string::npos, s);
+
+  locate_basename();
+  locate_extension();
+  locate_hash();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -705,7 +754,9 @@ make_absolute() {
 void Filename::
 make_absolute(const Filename &start_directory) {
   if (is_local()) {
-    (*this) = Filename(start_directory, _filename);
+    Filename new_filename(start_directory, _filename);
+    new_filename._flags = _flags;
+    (*this) = new_filename;
   }
 
   standardize();
@@ -748,7 +799,6 @@ make_canonical() {
     return true;
   }
 
-  // Temporarily save the current working directory.
   Filename cwd = ExecutionEnvironment::get_cwd();
   return r_make_canonical(cwd);
 }
@@ -772,6 +822,8 @@ make_canonical() {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_true_case() {
+  assert(!get_pattern());
+
   if (empty()) {
     return true;
   }
@@ -828,6 +880,8 @@ make_true_case() {
 ////////////////////////////////////////////////////////////////////
 string Filename::
 to_os_specific() const {
+  assert(!get_pattern());
+
   if (empty()) {
     return string();
   }
@@ -865,6 +919,8 @@ to_os_specific() const {
 ////////////////////////////////////////////////////////////////////
 string Filename::
 to_os_generic() const {
+  assert(!get_pattern());
+
 #ifdef WIN32
   return back_to_front_slash(to_os_specific());
 #else // WIN32
@@ -882,7 +938,7 @@ to_os_generic() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 exists() const {
-  string os_specific = to_os_specific();
+  string os_specific = get_filename_index(0).to_os_specific();
 
 #ifdef WIN32_VC
   bool exists = false;
@@ -913,7 +969,7 @@ exists() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_regular_file() const {
-  string os_specific = to_os_specific();
+  string os_specific = get_filename_index(0).to_os_specific();
 
 #ifdef WIN32_VC
   bool isreg = false;
@@ -943,7 +999,7 @@ is_regular_file() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_directory() const {
-  string os_specific = to_os_specific();
+  string os_specific = get_filename_index(0).to_os_specific();
 
 #ifdef WIN32_VC
   bool isdir = false;
@@ -981,7 +1037,7 @@ is_executable() const {
   }
 
 #else /* WIN32_VC */
-  string os_specific = to_os_specific();
+  string os_specific = get_filename_index(0).to_os_specific();
   if (access(os_specific.c_str(), X_OK) == 0) {
     return true;
   }
@@ -1008,8 +1064,8 @@ int Filename::
 compare_timestamps(const Filename &other,
                    bool this_missing_is_old,
                    bool other_missing_is_old) const {
-  string os_specific = to_os_specific();
-  string other_os_specific = other.to_os_specific();
+  string os_specific = get_filename_index(0).to_os_specific();
+  string other_os_specific = other.get_filename_index(0).to_os_specific();
 
 #ifdef WIN32_VC
   struct _stat this_buf;
@@ -1085,7 +1141,7 @@ resolve_filename(const DSearchPath &searchpath,
   string found;
 
   if (is_local()) {
-    found = searchpath.find_file(get_fullpath());
+    found = searchpath.find_file(*this);
 
     if (found.empty()) {
       // We didn't find it with the given extension; can we try the
@@ -1093,7 +1149,7 @@ resolve_filename(const DSearchPath &searchpath,
       if (get_extension().empty() && !default_extension.empty()) {
         Filename try_ext = *this;
         try_ext.set_extension(default_extension);
-        found = searchpath.find_file(try_ext.get_fullpath());
+        found = searchpath.find_file(try_ext);
       }
     }
   } else {
@@ -1234,6 +1290,8 @@ find_on_searchpath(const DSearchPath &searchpath) {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 scan_directory(vector_string &contents) const {
+  assert(!get_pattern());
+
 #if defined(WIN32_VC)
   // Use Windows' FindFirstFile() / FindNextFile() to walk through the
   // list of files in a directory.
@@ -1374,6 +1432,7 @@ scan_directory(vector_string &contents) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_read(ifstream &stream) const {
+  assert(!get_pattern());
   assert(is_text() || is_binary());
 
   ios_openmode open_mode = ios::in;
@@ -1409,6 +1468,7 @@ open_read(ifstream &stream) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_write(ofstream &stream, bool truncate) const {
+  assert(!get_pattern());
   assert(is_text() || is_binary());
 
   ios_openmode open_mode = ios::out;
@@ -1459,6 +1519,7 @@ open_write(ofstream &stream, bool truncate) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_append(ofstream &stream) const {
+  assert(!get_pattern());
   assert(is_text() || is_binary());
 
   ios_openmode open_mode = ios::app;
@@ -1495,6 +1556,7 @@ open_append(ofstream &stream) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_read_write(fstream &stream) const {
+  assert(!get_pattern());
   assert(is_text() || is_binary());
 
   ios_openmode open_mode = ios::out | ios::in;
@@ -1534,6 +1596,7 @@ open_read_write(fstream &stream) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 touch() const {
+  assert(!get_pattern());
 #ifdef WIN32_VC
   // In Windows, we have to use the Windows API to do this reliably.
 
@@ -1616,6 +1679,7 @@ touch() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 unlink() const {
+  assert(!get_pattern());
   string os_specific = to_os_specific();
   return (::unlink(os_specific.c_str()) == 0);
 }
@@ -1631,6 +1695,7 @@ unlink() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 rename_to(const Filename &other) const {
+  assert(!get_pattern());
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
   return (rename(os_specific.c_str(),
@@ -1652,6 +1717,7 @@ rename_to(const Filename &other) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_dir() const {
+  assert(!get_pattern());
   if (empty()) {
     return false;
   }
@@ -1785,6 +1851,39 @@ locate_extension() {
 
   // _extension_start is the character after the last dot, or npos if
   // there is no dot.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::locate_hash
+//       Access: Protected
+//  Description: Identifies the part of the filename that contains the
+//               sequence of hash marks, if any.
+////////////////////////////////////////////////////////////////////
+void Filename::
+locate_hash() {
+  if (!get_pattern()) {
+    // If it's not a pattern-type filename, these are always set to
+    // the end of the string.
+    _hash_end = string::npos;
+    _hash_start = string::npos;
+
+  } else {
+    // If it is a pattern-type filename, we must search for the hash
+    // marks, which could be anywhere (but are usually toward the
+    // end).
+    _hash_end = _filename.rfind('#');
+    if (_hash_end == string::npos) {
+      _hash_end = string::npos;
+      _hash_start = string::npos;
+      
+    } else {
+      _hash_start = _hash_end;
+      ++_hash_end;
+      while (_hash_start > 0 && _filename[_hash_start - 1] == '#') {
+        --_hash_start;
+      }
+    }
+  }
 }
 
 

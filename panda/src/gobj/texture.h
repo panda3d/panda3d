@@ -31,7 +31,6 @@ class PNMImage;
 class TextureContext;
 class FactoryParams;
 class PreparedGraphicsObjects;
-class HashFilename;
 class CullTraverser;
 class CullTraverserData;
 
@@ -168,8 +167,8 @@ PUBLISHED:
 		    int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath, int z = 0) const;
 
-  bool read_pages(const HashFilename &fullpath_template, int z_size = 0);
-  bool write_pages(const HashFilename &fullpath_template);
+  bool read_pages(Filename fullpath_pattern, int z_size = 0);
+  bool write_pages(Filename fullpath_pattern);
 
   virtual bool load(const PNMImage &pnmimage, int z = 0);
   bool store(PNMImage &pnmimage, int z = 0) const;
