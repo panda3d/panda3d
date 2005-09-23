@@ -79,9 +79,6 @@ class DirectScrolledFrame(DirectFrame):
     def setAutoHideScrollBars(self):
         self.guiItem.setAutoHide(self['autoHideScrollBars'])
 
-    def destroy(self):
-        DirectFrame.destroy(self)
-
     def commandFunc(self):
         if self['command']:
             apply(self['command'], self['extraArgs'])
@@ -91,5 +88,5 @@ class DirectScrolledFrame(DirectFrame):
         for child in self.canvas.getChildrenAsList():
             childGui = self.guiDict.get(child.getName())
             if childGui: childGui.destroy()
-        DirectFrame.DirectFrame.destroy(self)
+        DirectFrame.destroy(self)
         
