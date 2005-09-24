@@ -195,7 +195,7 @@ class ClientRepository(ConnectionRepository):
         if wantOtpServer:
             parentId = di.getUint32()
             zoneId = di.getUint32()
-            assert parentId == 4617 or parentId in self.doId2do
+            assert parentId == self.GameGlobalsId or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -214,7 +214,7 @@ class ClientRepository(ConnectionRepository):
         if wantOtpServer:
             parentId = di.getUint32()
             zoneId = di.getUint32()
-            assert parentId == 4617 or parentId == 4618 or parentId in self.doId2do
+            assert parentId == self.GameGlobalsId or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -482,44 +482,8 @@ class ClientRepository(ConnectionRepository):
                 " is not in dictionary, ownerView=%s" % ownerView)
 
     def handleDelete(self, di):
-        if wantOtpServer:
-            assert 0
-        # Get the DO Id
-        doId = di.getUint32()
-        self.deleteObject(doId)
-
-    def deleteObject(self, doId, ownerView=False):
-        """
-        Removes the object from the client's view of the world.  This
-        should normally not be called except in the case of error
-        recovery, since the server will normally be responsible for
-        deleting and disabling objects as they go out of scope.
-
-        After this is called, future updates by server on this object
-        will be ignored (with a warning message).  The object will
-        become valid again the next time the server sends a generate
-        message for this doId.
-
-        This is not a distributed message and does not delete the
-        object on the server or on any other client.
-        """
-        if wantOtpServer:
-            assert 0
-        if self.doId2do.has_key(doId):
-            # If it is in the dictionary, remove it.
-            obj = self.doId2do[doId]
-            # Remove it from the dictionary
-            del self.doId2do[doId]
-            # Disable, announce, and delete the object itself...
-            # unless delayDelete is on...
-            obj.deleteOrDelay()
-        elif self.cache.contains(doId):
-            # If it is in the cache, remove it.
-            self.cache.delete(doId)
-        else:
-            # Otherwise, ignore it
-            ClientRepository.notify.warning(
-                "Asked to delete non-existent DistObj " + str(doId))
+        # overridden by ToontownClientRepository
+        assert 0
 
     def handleUpdateField(self, di):
         """
@@ -623,7 +587,6 @@ class ClientRepository(ConnectionRepository):
             elif msgType == CLIENT_OBJECT_DISABLE_OWNER:
                 self.handleDisable(di, ownerView=True)
             elif msgType == CLIENT_OBJECT_DELETE_RESP:
-                assert 0
                 self.handleDelete(di)
             elif msgType == CLIENT_DONE_INTEREST_RESP:
                 self.handleInterestDoneMessage(di)
