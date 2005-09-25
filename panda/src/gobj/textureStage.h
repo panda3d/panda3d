@@ -101,9 +101,9 @@ PUBLISHED:
 
   INLINE bool operator < (const TextureStage &other) const;
 
-  INLINE void set_texcoord_name(const InternalName *name);
+  INLINE void set_texcoord_name(InternalName *name);
   INLINE void set_texcoord_name(const string &texcoord_name);
-  INLINE const InternalName *get_texcoord_name() const;
+  INLINE InternalName *get_texcoord_name() const;
 
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
@@ -177,7 +177,7 @@ private:
   string _name;
   int _sort;
   int _priority;
-  CPT(InternalName) _texcoord_name;
+  PT(InternalName) _texcoord_name;
   Mode _mode;
   Colorf _color;
   int _rgb_scale;
