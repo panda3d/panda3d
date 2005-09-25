@@ -1344,9 +1344,9 @@ update_standard_vertex_arrays()
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages = 
-      _current_texture->get_on_stages();
+      _state._texture->get_on_stages();
     const Geom::NoTexCoordStages &no_texcoords = 
-      _current_tex_gen->get_no_texcoords();
+      _state._tex_gen->get_no_texcoords();
     
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
@@ -1440,9 +1440,9 @@ update_standard_vertex_arrays()
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages = 
-      _current_texture->get_on_stages();
+      _state._texture->get_on_stages();
     const Geom::NoTexCoordStages &no_texcoords = 
-      _current_tex_gen->get_no_texcoords();
+      _state._tex_gen->get_no_texcoords();
     
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
@@ -4583,7 +4583,14 @@ set_state_and_transform(const RenderState *target,
   _target.clear_to_defaults();
   target->store_into_slots(&_target);
   _state_rs = 0;
-  
+
+  // There might be some physical limits to the actual target
+  // attributes we issue.  Impose them now.
+  _target._texture = _target._texture->filter_to_max(_max_texture_stages);
+
+  bool needs_tex_gen = false;
+  bool needs_tex_mat = false;
+
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
@@ -4655,14 +4662,13 @@ set_state_and_transform(const RenderState *target,
   }
   
   if (_target._tex_gen != _state._tex_gen) {
-    _current_tex_gen = _target._tex_gen;
-    _needs_tex_gen = true;
+    _state._tex_gen = _target._tex_gen;
+    needs_tex_gen = true;
     _state._tex_gen = _target._tex_gen;
   }
   
   if (_target._tex_matrix != _state._tex_matrix) {
-    _current_tex_mat = _target._tex_matrix;
-    _needs_tex_mat = true;
+    needs_tex_mat = true;
     _state._tex_matrix = _target._tex_matrix;
   }
   
@@ -4678,6 +4684,11 @@ set_state_and_transform(const RenderState *target,
   if (_target._texture != _state._texture) {
     do_issue_texture();
     _state._texture = _target._texture;
+
+    // Changing the set of texture stages will require us to reissue the
+    // texgen and texmat attribs.
+    needs_tex_gen = true;
+    needs_tex_mat = true;
   }
 
   if (_target._material != _state._material) {
@@ -4693,26 +4704,23 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-  if (_tex_gen_modifies_mat &&
-      (_needs_tex_mat || _needs_tex_gen)) {
-    _needs_tex_mat = true;
-    _needs_tex_gen = true;
+  if (_tex_gen_modifies_mat && (needs_tex_mat || needs_tex_gen)) {
+    needs_tex_mat = true;
+    needs_tex_gen = true;
   }
 
   // Apply the texture matrix, if needed.
-  if (_needs_tex_mat) {
-    _needs_tex_mat = false;
-
-    int num_stages = _current_texture->get_num_on_stages();
+  if (needs_tex_mat) {
+    int num_stages = _state._texture->get_num_on_stages();
     nassertv(num_stages <= _max_texture_stages);
     
     for (int i = 0; i < num_stages; i++) {
-      TextureStage *stage = _current_texture->get_on_stage(i);
+      TextureStage *stage = _state._texture->get_on_stage(i);
       _glActiveTexture(GL_TEXTURE0 + i);
       
       GLP(MatrixMode)(GL_TEXTURE);
-      if (_current_tex_mat->has_stage(stage)) {
-        GLP(LoadMatrixf)(_current_tex_mat->get_mat(stage).get_data());
+      if (_state._tex_matrix->has_stage(stage)) {
+        GLP(LoadMatrixf)(_state._tex_matrix->get_mat(stage).get_data());
       } else {
         GLP(LoadIdentity)();
 
@@ -4728,11 +4736,10 @@ set_state_and_transform(const RenderState *target,
     report_my_gl_errors();
   }
 
-  if (_needs_tex_gen) {
-    _needs_tex_gen = false;
+  if (needs_tex_gen) {
     bool force_normal = false;
 
-    int num_stages = _current_texture->get_num_on_stages();
+    int num_stages = _state._texture->get_num_on_stages();
     nassertv(num_stages <= _max_texture_stages);
     
     // These are passed in for the four OBJECT_PLANE or EYE_PLANE
@@ -4750,7 +4757,7 @@ set_state_and_transform(const RenderState *target,
     bool got_point_sprites = false;
     
     for (int i = 0; i < num_stages; i++) {
-      TextureStage *stage = _current_texture->get_on_stage(i);
+      TextureStage *stage = _state._texture->get_on_stage(i);
       _glActiveTexture(GL_TEXTURE0 + i);
       GLP(Disable)(GL_TEXTURE_GEN_S);
       GLP(Disable)(GL_TEXTURE_GEN_T);
@@ -4760,7 +4767,7 @@ set_state_and_transform(const RenderState *target,
         GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
       }
 
-      TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
+      TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
       switch (mode) {
       case TexGenAttrib::M_off:
       case TexGenAttrib::M_light_vector:
@@ -5026,10 +5033,11 @@ void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  CPT(TextureAttrib) new_texture = _target._texture->filter_to_max(_max_texture_stages);
-  
-  int num_stages = new_texture->get_num_on_stages();
-  int num_old_stages = _current_texture->get_num_on_stages();
+  int num_stages = _target._texture->get_num_on_stages();
+  int num_old_stages = 0;
+  if (_state._texture != (TextureAttrib *)NULL) {
+    num_old_stages = _state._texture->get_num_on_stages();
+  }
 
   nassertv(num_stages <= _max_texture_stages && 
            num_old_stages <= _max_texture_stages);
@@ -5040,13 +5048,13 @@ do_issue_texture() {
   int last_stage = -1;
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = new_texture->get_on_stage(i);
-    Texture *texture = new_texture->get_on_texture(stage);
+    TextureStage *stage = _target._texture->get_on_stage(i);
+    Texture *texture = _target._texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
     
     if (i >= num_old_stages ||
-        stage != _current_texture->get_on_stage(i) ||
-        texture != _current_texture->get_on_texture(stage) ||
+        stage != _state._texture->get_on_stage(i) ||
+        texture != _state._texture->get_on_texture(stage) ||
         stage->involves_color_scale()) {
       // Stage i has changed.  Issue the texture on this stage.
       _glActiveTexture(GL_TEXTURE0 + i);
@@ -5189,8 +5197,8 @@ do_issue_texture() {
       }
 
       GLP(MatrixMode)(GL_TEXTURE);
-      if (_current_tex_mat->has_stage(stage)) {
-        GLP(LoadMatrixf)(_current_tex_mat->get_mat(stage).get_data());
+      if (_state._tex_matrix->has_stage(stage)) {
+        GLP(LoadMatrixf)(_state._tex_matrix->get_mat(stage).get_data());
       } else {
         GLP(LoadIdentity)();
       }
@@ -5220,13 +5228,6 @@ do_issue_texture() {
     }
   }
 
-  _current_texture = new_texture;
-
-  // Changing the set of texture stages will require us to reissue the
-  // texgen and texmat attribs.
-  _needs_tex_gen = true;
-  _needs_tex_mat = true;
-  
   report_my_gl_errors();
 }
 

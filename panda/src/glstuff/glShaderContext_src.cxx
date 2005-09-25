@@ -284,7 +284,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         int texslot = _cg_varying[i].append_uv;
         if (texslot >= 0) {
           const Geom::ActiveTextureStages &active_stages = 
-            gsg->_current_texture->get_on_stages();
+            gsg->_state._texture->get_on_stages();
           if (texslot < (int)active_stages.size()) {
             TextureStage *stage = active_stages[texslot];
             name = name->append(stage->get_texcoord_name()->get_name());

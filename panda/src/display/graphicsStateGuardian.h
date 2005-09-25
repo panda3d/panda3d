@@ -328,11 +328,6 @@ protected:
   Colorf _material_force_color;
   LVecBase4f _light_color_scale;
 
-  CPT(TextureAttrib) _current_texture;
-  CPT(TexMatrixAttrib) _current_tex_mat;
-  bool _needs_tex_mat;
-  CPT(TexGenAttrib) _current_tex_gen;
-  bool _needs_tex_gen;
   bool _tex_gen_modifies_mat;
   bool _tex_gen_point_sprite;
   int _last_max_stage_index;

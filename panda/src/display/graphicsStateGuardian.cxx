@@ -303,11 +303,6 @@ reset() {
   _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
 
-  _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
-  _current_tex_mat = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-  _needs_tex_mat = false;
-  _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
-  _needs_tex_gen = false;
   _tex_gen_modifies_mat = false;
   _last_max_stage_index = 0;
 
@@ -744,10 +739,6 @@ end_scene() {
   // Put the state into the 'unknown' state, forcing a reload.
   _state_rs = 0;
   _state.clear_to_zero();
-
-  // We need to reset this to force a dynamic texture to be reloaded
-  // next frame even if it is the only texture in the scene.
-  _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
 }
 
 ////////////////////////////////////////////////////////////////////

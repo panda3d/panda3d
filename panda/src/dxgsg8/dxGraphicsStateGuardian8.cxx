@@ -1989,6 +1989,10 @@ set_state_and_transform(const RenderState *target,
   _target.clear_to_defaults();
   target->store_into_slots(&_target);
   _state_rs = 0;
+
+  // There might be some physical limits to the actual target
+  // attributes we issue.  Impose them now.
+  _target._texture = _target._texture->filter_to_max(_max_texture_stages);
   
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
@@ -2061,14 +2065,11 @@ set_state_and_transform(const RenderState *target,
   }
   
   if (_target._tex_gen != _state._tex_gen) {
-    _current_tex_gen = _target._tex_gen;
     _state._texture = 0;
     _state._tex_gen = _target._tex_gen;
   }
   
   if (_target._tex_matrix != _state._tex_matrix) {
-    _current_tex_mat = _target._tex_matrix;
-    _needs_tex_mat = true;
     _state._tex_matrix = _target._tex_matrix;
   }
   
@@ -2339,10 +2340,11 @@ void DXGraphicsStateGuardian8::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  CPT(TextureAttrib) new_texture = _target._texture->filter_to_max(_max_texture_stages);
-
-  int num_stages = new_texture->get_num_on_stages();
-  int num_old_stages = _current_texture->get_num_on_stages();
+  int num_stages = _target._texture->get_num_on_stages();
+  int num_old_stages = 0;
+  if (_state._texture != (TextureAttrib *)NULL) {
+    num_old_stages = _state._texture->get_num_on_stages();
+  }
 
   nassertv(num_stages <= _max_texture_stages &&
            num_old_stages <= _max_texture_stages);
@@ -2359,8 +2361,8 @@ do_issue_texture() {
 
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = new_texture->get_on_stage(i);
-    Texture *texture = new_texture->get_on_texture(stage);
+    TextureStage *stage = _target._texture->get_on_stage(i);
+    Texture *texture = _target._texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
     const InternalName *name = stage->get_texcoord_name();
@@ -2381,12 +2383,12 @@ do_issue_texture() {
     bool texcoords_3d = false;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
-    if (_current_tex_mat->has_stage(stage)) {
-      tex_mat = _current_tex_mat->get_transform(stage);
+    if (_state._tex_matrix->has_stage(stage)) {
+      tex_mat = _state._tex_matrix->get_transform(stage);
     }
     
     // Issue the texgen mode.
-    TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
+    TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
     switch (mode) {
@@ -2515,8 +2517,6 @@ do_issue_texture() {
   for (i = num_stages; i < num_old_stages; i++) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
   }
-
-  _current_texture = new_texture;
 }
 
 ////////////////////////////////////////////////////////////////////
