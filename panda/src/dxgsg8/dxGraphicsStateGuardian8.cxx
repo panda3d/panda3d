@@ -1965,12 +1965,12 @@ do_issue_shade_model() {
 //               state is already stored in _target.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-set_state_and_transform(const RenderState *state,
+set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
-    gsg_cat.spam() << "Setting GSG state to " << (void *)state << ":\n";
-    state->write(gsg_cat.spam(false), 2);
+    gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";
+    target->write(gsg_cat.spam(false), 2);
   }
 #endif
   _state_pcollector.add_level(1);
@@ -1982,15 +1982,13 @@ set_state_and_transform(const RenderState *state,
     do_issue_transform();
   }
   
-  if (state) {
-    if (state == _last_state) {
-      return;
-    }
-    _target.clear_to_defaults();
-    state->store_into_slots(&_target);
+  if (target == _state_rs) {
+    return;
   }
-  _last_state = state;
-  
+  _target_rs = target;
+  _target.clear_to_defaults();
+  target->store_into_slots(&_target);
+  _state_rs = 0;
   
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
@@ -2097,6 +2095,8 @@ set_state_and_transform(const RenderState *state,
     do_issue_light();
     _state._light = _target._light;
   }
+
+  _state_rs = _target_rs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2724,7 +2724,7 @@ free_nondx_resources() {
 void DXGraphicsStateGuardian8::
 free_d3d_device() {
   // dont want a full reset of gsg, just a state clear
-  _last_state = 0;
+  _state_rs = 0;
   _state.clear_to_zero();
   // want gsg to pass all state settings through
 

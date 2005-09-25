@@ -39,6 +39,9 @@ PT(InternalName) InternalName::_transform_blend;
 PT(InternalName) InternalName::_transform_weight;
 PT(InternalName) InternalName::_transform_index;
 PT(InternalName) InternalName::_index;
+PT(InternalName) InternalName::_world;
+PT(InternalName) InternalName::_camera;
+PT(InternalName) InternalName::_model;
 
 TypeHandle InternalName::_type_handle;
 TypeHandle InternalName::_texcoord_type_handle;

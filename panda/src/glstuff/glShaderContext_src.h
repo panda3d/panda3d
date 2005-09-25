@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#include "shaderContext.h"
 #ifdef HAVE_CGGL
 #include "Cg/cgGL.h"
 #endif
 #include "string_utils.h"
+#include "internalName.h"
+#include "shaderExpansion.h"
+#include "shaderContext.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -32,15 +34,15 @@ class CLP(GraphicsStateGuardian);
 
 class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
-  CLP(ShaderContext)(Shader *s);
+  CLP(ShaderContext)(ShaderExpansion *s);
   ~CLP(ShaderContext)();
   typedef CLP(GraphicsStateGuardian) GSG;
 
   INLINE bool valid(void);
-  void bind(ShaderMode *mode, GSG *gsg);
+  void bind(GSG *gsg);
   void unbind();
-  void issue_parameters(ShaderMode *mode, GSG *gsg);
-  void issue_transform(ShaderMode *mode, GSG *gsg);
+  void issue_parameters(GSG *gsg);
+  void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
 
@@ -54,12 +56,12 @@ private:
   };
   struct ShaderArgBind {
     CGparameter parameter;
-    int argindex;
+    PT(InternalName) name;
   };
   struct ShaderTransBind {
     CGparameter parameter;
-    int src_argindex;
-    int rel_argindex;
+    PT(InternalName) src_name;
+    PT(InternalName) rel_name;
     int trans_piece;
   };
   struct ShaderVarying {
@@ -82,7 +84,7 @@ private:
   vector <ShaderTransBind> _cg_parameter_bind;
   vector <ShaderVarying> _cg_varying;
   
-  void bind_cg_transform(const ShaderTransBind &stb, ShaderMode *m,
+  void bind_cg_transform(const ShaderTransBind &stb,
                          CLP(GraphicsStateGuardian) *gsg);
   
   bool compile_cg_parameter(CGparameter p);

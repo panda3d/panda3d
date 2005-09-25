@@ -561,6 +561,26 @@ compare_to(const Attribute &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_shader_expansion
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderExpansion *RenderState::
+get_shader_expansion() const {
+  return _shader_expansion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::set_shader_expansion
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+set_shader_expansion(ShaderExpansion *exp) {
+  _shader_expansion = exp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::CompositionCycleDescEntry::Constructor
 //       Access: Public
 //  Description: 

@@ -38,8 +38,6 @@
 #include "pmap.h"
 #include "geomVertexArrayData.h"
 #include "pmutex.h"
-#include "shader.h"
-#include "shaderMode.h"
 
 class PlaneNode;
 class Light;
@@ -104,9 +102,9 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual ShaderContext *prepare_shader(Shader *shader);
+  virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
   virtual void release_shader(ShaderContext *sc);
-
+  
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -308,10 +306,10 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
   
-  PT(ShaderMode) _current_shader_mode;
-  CLP(ShaderContext) *_current_shader_context;
-  PT(ShaderMode) _vertex_array_shader_mode;
-  CLP(ShaderContext) *_vertex_array_shader_context;
+  PT(ShaderExpansion)  _current_shader_expansion;
+  CLP(ShaderContext)  *_current_shader_context;
+  PT(ShaderExpansion)  _vertex_array_shader_expansion;
+  CLP(ShaderContext)  *_vertex_array_shader_context;
   
   CPT(DisplayRegion) _actual_display_region;
 

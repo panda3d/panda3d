@@ -37,6 +37,7 @@
 #include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "shaderAttrib.h"
 #include "billboardEffect.h"
 #include "compassEffect.h"
 #include "showBoundsEffect.h"
@@ -56,6 +57,8 @@
 #include "textureCollection.h"
 #include "textureStageCollection.h"
 #include "globPattern.h"
+#include "shader.h"
+#include "shaderInput.h"
 #include "config_gobj.h"
 #include "bamFile.h"
 #include "preparedGraphicsObjects.h"
@@ -3056,6 +3059,229 @@ get_texture(TextureStage *stage) const {
   }
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader(Shader *sha, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ShaderAttrib::get_class_type()));
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->set_shader(sha, priority));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    node()->set_attrib(sa->set_shader(sha, priority));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_off
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_off(int priority) {
+  set_shader(NULL, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_shader
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_shader() {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->clear_shader());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shader
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const Shader *NodePath::
+get_shader() const {
+  nassertr_always(!is_empty(), NULL);
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    return sa->get_shader();
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const ShaderInput *inp) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->add_input(inp));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    node()->set_attrib(sa->add_input(inp));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const ShaderInput *NodePath::
+get_shader_input(InternalName *id) const {
+  nassertr_always(!is_empty(), NULL);
+  
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    return sa->get_input(id);
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_shader_input(InternalName *id) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->clear_input(id));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(InternalName *id, Texture *tex, int priority) {
+  set_shader_input(new ShaderInput(id,tex,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(InternalName *id, const NodePath &np, int priority) {
+  set_shader_input(new ShaderInput(id,np,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(InternalName *id, const LVector4f &v, int priority) {
+  set_shader_input(new ShaderInput(id,v,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(InternalName *id, double n1, double n2, double n3, double n4, int priority) {
+  set_shader_input(new ShaderInput(id,LVector4f(n1,n2,n3,n4),priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const string &id, Texture *tex, int priority) {
+  set_shader_input(new ShaderInput(InternalName::make(id),tex,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const string &id, const NodePath &np, int priority) {
+  set_shader_input(new ShaderInput(InternalName::make(id),np,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const string &id, const LVector4f &v, int priority) {
+  set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const string &id, double n1, double n2, double n3, double n4, int priority) {
+  set_shader_input(new ShaderInput(InternalName::make(id),LVector4f(n1,n2,n3,n4),priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const ShaderInput *NodePath::
+get_shader_input(const string &id) const {
+  return get_shader_input(InternalName::make(id));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_shader_input(const string &id) {
+  clear_shader_input(InternalName::make(id));
 }
 
 ////////////////////////////////////////////////////////////////////

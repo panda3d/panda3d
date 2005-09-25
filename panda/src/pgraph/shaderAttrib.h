@@ -1,5 +1,5 @@
 // Filename: shaderAttrib.h
-// Created by:  sshodhan (10Jul04)
+// Created by: jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -20,45 +20,54 @@
 #define SHADERATTRIB_H
 
 #include "pandabase.h"
-#include "luse.h"
-#include "pmap.h"
-#include "shader.h"
 #include "renderAttrib.h"
-#include "typedObject.h"
-#include "typedReferenceCount.h"
 #include "pointerTo.h"
-#include "factoryParam.h"
-#include "dcast.h"
-#include "shaderMode.h"
+#include "shaderInput.h"
+#include "shader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderAttrib
-// Description : fill me in
+// Description : 
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDA ShaderAttrib: public RenderAttrib {
 
 private:
   INLINE ShaderAttrib();
+  INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(ShaderMode *sm);
+  static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_off();
 
-  INLINE bool is_off() const;
-  INLINE ShaderMode *get_shader_mode() const;
-
+  INLINE bool               has_shader() const;
+  INLINE int                get_shader_priority() const;
+  INLINE const Shader      *get_shader() const;
+  INLINE const ShaderInput *get_input(const InternalName *id) const;
+  
+  CPT(RenderAttrib)  clear_shader() const;
+  CPT(RenderAttrib)  set_shader(const Shader *s, int priority=0) const;
+  CPT(RenderAttrib)  set_shader_off(int priority=0) const;
+  
+  CPT(RenderAttrib)  add_input(const ShaderInput *input) const;
+  CPT(RenderAttrib)  clear_input(const InternalName *id) const;
+  
   static void register_with_read_factory();
-
+  
 public:
   virtual void store_into_slot(AttribSlots *slots) const;
 
 protected:
   virtual RenderAttrib *make_default_impl() const;
   virtual int compare_to_impl(const RenderAttrib *other) const;
-
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
+  
 private:
-  PT(ShaderMode) _shader_mode;
+  CPT(Shader) _shader;
+  int         _shader_priority;
+  bool        _has_shader;
+  typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
+  Inputs _inputs;
 
 public:
   static TypeHandle get_class_type() {

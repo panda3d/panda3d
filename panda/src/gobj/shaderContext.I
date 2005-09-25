@@ -22,8 +22,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderContext::
-ShaderContext(Shader *s) :
-  _shader(s)
+ShaderContext(ShaderExpansion *se) :
+  _shader_expansion(se)
 {
 }
 

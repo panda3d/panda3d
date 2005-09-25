@@ -1,0 +1,69 @@
+// Filename: shader.I
+// Created by: jyelon (01Sep05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_file
+//       Access: Published
+//  Description: Returns null string if shader was not loaded from
+//               a source file.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &Shader::
+get_file() const {
+  return _file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_body
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const string &Shader::
+get_body() const {
+  return _body;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_name
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const string &Shader::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_loaded
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool Shader::
+get_loaded() const {
+  return _loaded;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_preprocessor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int Shader::
+get_preprocessor() const {
+  return _preprocessor;
+}
+

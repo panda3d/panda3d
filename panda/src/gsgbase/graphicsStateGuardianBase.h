@@ -61,9 +61,8 @@ class PreparedGraphicsObjects;
 class GraphicsOutput;
 class Texture;
 class TextureContext;
-class Shader;
 class ShaderContext;
-class ShaderMode;
+class ShaderExpansion;
 class RenderState;
 class TransformState;
 class Material;
@@ -90,7 +89,6 @@ class ShadeModelAttrib;
 class TransparencyAttrib;
 class FogAttrib;
 class DepthOffsetAttrib;
-class ShaderAttrib;
 
 class PointLight;
 class DirectionalLight;
@@ -139,7 +137,7 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
 
-  virtual ShaderContext *prepare_shader(Shader *shader)=0;
+  virtual ShaderContext *prepare_shader(ShaderExpansion *shader)=0;
   virtual void release_shader(ShaderContext *sc)=0;
   
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;

@@ -35,23 +35,7 @@
 #include "pointLight.h"
 #include "spotlight.h"
 #include "planeNode.h"
-#include "textureAttrib.h"
-#include "lightAttrib.h"
-#include "cullFaceAttrib.h"
-#include "transparencyAttrib.h"
-#include "alphaTestAttrib.h"
-#include "depthTestAttrib.h"
-#include "depthWriteAttrib.h"
-#include "colorWriteAttrib.h"
-#include "texMatrixAttrib.h"
-#include "texGenAttrib.h"
-#include "materialAttrib.h"
-#include "renderModeAttrib.h"
-#include "rescaleNormalAttrib.h"
-#include "fogAttrib.h"
-#include "depthOffsetAttrib.h"
-#include "shadeModelAttrib.h"
-#include "shaderAttrib.h"
+#include "attribSlots.h"
 #include "fog.h"
 #include "clockObject.h"
 #include "string_utils.h"
@@ -65,8 +49,6 @@
 #include "mutexHolder.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
-#include "shader.h"
-#include "shaderMode.h"
 
 #include <algorithm>
 
@@ -771,9 +753,9 @@ reset() {
 
   _texgen_forced_normal = false;
 
-  _current_shader_mode = (ShaderMode *)NULL;
+  _current_shader_expansion = (ShaderExpansion *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
-  _vertex_array_shader_mode = (ShaderMode *)NULL;
+  _vertex_array_shader_expansion = (ShaderExpansion *)NULL;
   _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
   
   // Count the max number of lights
@@ -863,18 +845,14 @@ do_clear(const RenderBuffer &buffer) {
                     _color_clear_value[1],
                     _color_clear_value[2],
                     _color_clear_value[3]);
-    _target._color_write = AttribSlots::get_defaults()._color_write;
     mask |= GL_COLOR_BUFFER_BIT;
-
+    _target._color_write = AttribSlots::get_defaults()._color_write;
     set_draw_buffer(buffer);
   }
-
+  
   if (buffer_type & RenderBuffer::T_depth) {
     GLP(ClearDepth)(_depth_clear_value);
     mask |= GL_DEPTH_BUFFER_BIT;
-
-    // In order to clear the depth buffer, the depth mask must enable
-    // writing to the depth buffer.
     _target._depth_write = AttribSlots::get_defaults()._depth_write;
   }
 
@@ -908,7 +886,19 @@ do_clear(const RenderBuffer &buffer) {
     GLCAT.spam(false) << ")" << endl;
   }
   
-  set_state_and_transform(NULL, _external_transform);
+  if (_target._depth_write != _state._depth_write) {
+    do_issue_depth_write();
+    _state._depth_write = _target._depth_write;
+  }
+  if ((_target._transparency != _state._transparency)||
+      (_target._color_write != _state._color_write)||
+      (_target._color_blend != _state._color_blend)) {
+    do_issue_blending();
+    _state._transparency = _target._transparency;
+    _state._color_write = _target._color_write;
+    _state._color_blend = _target._color_blend;
+  }
+  _state_rs = 0;
   
   GLP(Clear)(mask);
   report_my_gl_errors();
@@ -1312,7 +1302,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
         update_shader_vertex_arrays(_vertex_array_shader_context,this);
     }
   }
-  _vertex_array_shader_mode = _current_shader_mode;
+  _vertex_array_shader_expansion = _current_shader_expansion;
   _vertex_array_shader_context = _current_shader_context;
   
   report_my_gl_errors();
@@ -2008,8 +1998,8 @@ release_geom(GeomContext *gc) {
 //  Description: yadda.
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
-prepare_shader(Shader *shader) {
-  CLP(ShaderContext) *result = new CLP(ShaderContext)(shader);
+prepare_shader(ShaderExpansion *se) {
+  CLP(ShaderContext) *result = new CLP(ShaderContext)(se);
   if (result->valid()) return result;
   delete result;
   return NULL;
@@ -2438,7 +2428,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   report_my_gl_errors();
 
   // Force reload of texture state, since we've just monkeyed with it.
-  _last_state = 0;
+  _state_rs = 0;
   _state._texture = 0;
 }
 
@@ -2464,7 +2454,11 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
   _target._texture = AttribSlots::get_defaults()._texture;
-  set_state_and_transform(NULL, _external_transform);
+  if (_target._texture != _state._texture) {
+    do_issue_texture();
+    _state._texture = _target._texture;
+  }
+  _state_rs = 0;
   
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -2641,7 +2635,7 @@ do_issue_transform() {
   }
 
   if (_current_shader_context)
-    _current_shader_context->issue_transform(_current_shader_mode, this);
+    _current_shader_context->issue_transform(this);
   
   report_my_gl_errors();
 }
@@ -2670,28 +2664,30 @@ do_issue_shade_model() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shader
 //       Access: Protected
-//  Description: Bind a shader.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
-  const ShaderAttrib *attrib = _target._shader;
-  ShaderMode *mode = attrib->get_shader_mode();
-  if (mode == 0) {
-    if (_current_shader_context != 0) {
-      _current_shader_context->unbind();
-      _current_shader_mode = 0;
-      _current_shader_context = 0;
+  CLP(ShaderContext) *context = 0;
+  ShaderExpansion *expansion = _target_rs->get_shader_expansion();
+  if (expansion == 0) {
+    if (_target._shader->get_shader() != 0) {
+      expansion = _target._shader->get_shader()->macroexpand(_target_rs);
+      // I am casting away the const-ness of this pointer, because
+      // the 'shader-expansion' field is just a cache.
+      ((RenderState *)((const RenderState*)_target_rs))->
+        set_shader_expansion(expansion);
     }
-    return;
   }
   
-  Shader *shader = mode->get_shader();
-  CLP(ShaderContext) *context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
+  if (expansion) {
+    context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
+  }
 
   if (context == 0) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind();
-      _current_shader_mode = 0;
+      _current_shader_expansion = 0;
       _current_shader_context = 0;
     }
     return;
@@ -2703,19 +2699,18 @@ do_issue_shader() {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind();
       _current_shader_context = 0;
+      _current_shader_expansion = 0;
     }
     if (context != 0) {
-      context->bind(mode, this);
-      _current_shader_mode = mode;
+      context->bind(this);
+      _current_shader_expansion = expansion;
       _current_shader_context = context;
     }
   } else {
     // Use the same shader as before, but with new input arguments.
-    _current_shader_mode = mode;
-    _current_shader_context = context;
-    context->issue_parameters(mode, this);
+    context->issue_parameters(this);
   }
-
+  
   report_my_gl_errors();
 }
 
@@ -3060,6 +3055,128 @@ do_issue_material() {
   GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
   report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_blending
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_blending() {
+
+  // Handle the color_write attrib.  If color_write is off, then
+  // all the other blending-related stuff doesn't matter.  If the
+  // device doesn't support color-write, we use blending tricks
+  // to effectively disable color write.
+  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
+    if (_target._color_write != _state._color_write) {
+      enable_multisample_alpha_one(false);
+      enable_multisample_alpha_mask(false);
+      if (CLP(color_mask)) {
+        enable_blend(false);
+        GLP(ColorMask)(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      } else {
+        enable_blend(true);
+        _glBlendEquation(GL_FUNC_ADD);
+        GLP(BlendFunc)(GL_ZERO, GL_ONE);
+      }
+    }
+    return;
+  } else {
+    if (_target._color_write != _state._color_write) {
+      if (CLP(color_mask)) {
+        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      }
+    }
+  }
+  
+  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
+  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
+  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
+
+  _color_blend_involves_color_scale = color_blend->involves_color_scale();
+
+  // Is there a color blend set?
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(get_blend_equation_type(color_blend_mode));
+    GLP(BlendFunc)(get_blend_func(color_blend->get_operand_a()),
+                   get_blend_func(color_blend->get_operand_b()));
+
+    if (_color_blend_involves_color_scale) {
+      // Apply the current color scale to the blend mode.
+      _glBlendColor(_current_color_scale[0], _current_color_scale[1], 
+                    _current_color_scale[2], _current_color_scale[3]);
+      
+    } else {
+      Colorf c = color_blend->get_color();
+      _glBlendColor(c[0], c[1], c[2], c[3]);
+    }
+    return;
+  }
+
+  // No color blend; is there a transparency set?
+  switch (transparency_mode) {
+  case TransparencyAttrib::M_none:
+  case TransparencyAttrib::M_binary:
+    break;
+    
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_dual:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return;
+    
+  case TransparencyAttrib::M_multisample:
+    // We need to enable *both* of these in M_multisample case.
+    enable_multisample_alpha_one(true);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    return;
+    
+  case TransparencyAttrib::M_multisample_mask:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    return;
+    
+  default:
+    GLCAT.error()
+      << "invalid transparency mode " << (int)transparency_mode << endl;
+    break;
+  }
+
+  if (_line_smooth_enabled || _point_smooth_enabled) {
+    // If we have either of these turned on, we also need to have
+    // blend mode enabled in order to see it.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return;
+  }
+
+  // For best polygon smoothing, we need:
+  // (1) a frame buffer that supports alpha
+  // (2) sort polygons front-to-back
+  // (3) glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
+  //
+  // Since these modes have other implications for the application, we
+  // don't attempt to do this by default.  If you really want good
+  // polygon smoothing (and you don't have multisample support), do
+  // all this yourself.
+
+  // Nothing's set, so disable blending.
+  enable_multisample_alpha_one(false);
+  enable_multisample_alpha_mask(false);
+  enable_blend(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4430,128 +4547,6 @@ end_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_blending
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-do_issue_blending() {
-
-  // If necessary, we disable writing to the color buffer using
-  // blending.  This case is only used if we can't use GLP(ColorMask)
-  // to disable the color writing for some reason (usually a driver
-  // problem).
-  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
-    if (_target._color_write != _state._color_write) {
-      enable_multisample_alpha_one(false);
-      enable_multisample_alpha_mask(false);
-      if (CLP(color_mask)) {
-        enable_blend(false);
-        GLP(ColorMask)(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-      } else {
-        enable_blend(true);
-        _glBlendEquation(GL_FUNC_ADD);
-        GLP(BlendFunc)(GL_ZERO, GL_ONE);
-      }
-    }
-    return;
-  } else {
-    if (_target._color_write != _state._color_write) {
-      if (CLP(color_mask)) {
-        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      }
-    }
-  }
-  
-  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
-  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
-  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
-
-  _color_blend_involves_color_scale = color_blend->involves_color_scale();
-
-  // Is there a color blend set?
-  if (color_blend_mode != ColorBlendAttrib::M_none) {
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    _glBlendEquation(get_blend_equation_type(color_blend_mode));
-    GLP(BlendFunc)(get_blend_func(color_blend->get_operand_a()),
-                   get_blend_func(color_blend->get_operand_b()));
-
-    if (_color_blend_involves_color_scale) {
-      // Apply the current color scale to the blend mode.
-      _glBlendColor(_current_color_scale[0], _current_color_scale[1], 
-                    _current_color_scale[2], _current_color_scale[3]);
-      
-    } else {
-      Colorf c = color_blend->get_color();
-      _glBlendColor(c[0], c[1], c[2], c[3]);
-    }
-    return;
-  }
-
-  // No color blend; is there a transparency set?
-  switch (transparency_mode) {
-  case TransparencyAttrib::M_none:
-  case TransparencyAttrib::M_binary:
-    break;
-    
-  case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_dual:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    _glBlendEquation(GL_FUNC_ADD);
-    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    return;
-    
-  case TransparencyAttrib::M_multisample:
-    // We need to enable *both* of these in M_multisample case.
-    enable_multisample_alpha_one(true);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    return;
-    
-  case TransparencyAttrib::M_multisample_mask:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    return;
-    
-  default:
-    GLCAT.error()
-      << "invalid transparency mode " << (int)transparency_mode << endl;
-    break;
-  }
-
-  if (_line_smooth_enabled || _point_smooth_enabled) {
-    // If we have either of these turned on, we also need to have
-    // blend mode enabled in order to see it.
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    _glBlendEquation(GL_FUNC_ADD);
-    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    return;
-  }
-
-  // For best polygon smoothing, we need:
-  // (1) a frame buffer that supports alpha
-  // (2) sort polygons front-to-back
-  // (3) glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
-  //
-  // Since these modes have other implications for the application, we
-  // don't attempt to do this by default.  If you really want good
-  // polygon smoothing (and you don't have multisample support), do
-  // all this yourself.
-
-  // Nothing's set, so disable blending.
-  enable_multisample_alpha_one(false);
-  enable_multisample_alpha_mask(false);
-  enable_blend(false);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_state_and_transform
 //       Access: Public, Virtual
 //  Description: Simultaneously resets the render state and the
@@ -4562,17 +4557,14 @@ do_issue_blending() {
 //               space; internally, it will be pretransformed by
 //               get_cs_transform() to express it in the GSG's
 //               internal coordinate space.
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_state_and_transform(const RenderState *state,
+set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
-    gsg_cat.spam() << "Setting GSG state to " << (void *)state << ":\n";
-    state->write(gsg_cat.spam(false), 2);
+    gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";
+    target->write(gsg_cat.spam(false), 2);
   }
 #endif
   _state_pcollector.add_level(1);
@@ -4584,15 +4576,13 @@ set_state_and_transform(const RenderState *state,
     do_issue_transform();
   }
   
-  if (state) {
-    if (state == _last_state) {
-      return;
-    }
-    _target.clear_to_defaults();
-    state->store_into_slots(&_target);
+  if (target == _state_rs) {
+    return;
   }
-  _last_state = state;
-  
+  _target_rs = target;
+  _target.clear_to_defaults();
+  target->store_into_slots(&_target);
+  _state_rs = 0;
   
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
@@ -4978,6 +4968,8 @@ set_state_and_transform(const RenderState *state,
 
     report_my_gl_errors();
   }
+
+  _state_rs = _target_rs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5234,7 +5226,7 @@ do_issue_texture() {
   // texgen and texmat attribs.
   _needs_tex_gen = true;
   _needs_tex_mat = true;
-
+  
   report_my_gl_errors();
 }
 

@@ -1,4 +1,4 @@
-// Filename: shader.h
+// Filename: shaderExpansion.h
 // Created by:  jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,19 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-//
-// Current Loose Ends:
-//   - BAM reading/writing not implemented on most classes.
-//   - ShaderPool not implemented.
-//   - compilation of shaders for OpenGL not implemented.
-//   - compilation of shaders for DirectX8 not implemented.
-//   - compilation of shaders for DirectX9 not implemented.
-//
-////////////////////////////////////////////////////////////////////
-
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef SHADEREXPANSION_H
+#define SHADEREXPANSION_H
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
@@ -37,31 +26,27 @@
 #include "internalName.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Shader
-//      Summary: The Shader object contains the string which 
-//               is the shader's text, a filename that indicates
-//               where the shader came from (optional), and an
-//               argument-name to argument-index allocator.  The
-//               allocator is there so that all the Shader and
-//               ShaderContext objects associated with this Shader
-//               can refer to arguments by index instead of by name,
-//               which could make the bind process significantly
-//               faster.
+//       Class : ShaderExpansion
+//      Summary: A shader can contain context-sensitive macros.
+//               A ShaderExpansion is the output you get when you
+//               run the macro preprocessor on a shader.
+//               The ShaderExpansion contains the shader's 
+//               macroexpanded text, and a map of ShaderContext
+//               objects.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA Shader: public TypedWritableReferenceCount {
+class EXPCL_PANDA ShaderExpansion: public TypedReferenceCount {
 
 PUBLISHED:
-  Shader(const string &text, const string &file);
-  ~Shader();
-
-  INLINE const string   &get_text();
-  INLINE const Filename &get_file();
+  static PT(ShaderExpansion) make(const string &name, const string &body);
+  
+  INLINE const string &get_name() const;
+  INLINE const string &get_text() const;
   
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
-
+  
 PUBLISHED:
   // These routines help split the shader into sections,
   // for those shader implementations that need to do so.
@@ -73,28 +58,27 @@ PUBLISHED:
   bool parse_eof();
   
 public:
+  ~ShaderExpansion();
 
-  INLINE int arg_count();
-  int        arg_index(const string &id);
-
+  string         _name;
   string         _text;
-  Filename       _file;
   int            _parse;
-  vector<string> _args;
   
-  typedef pmap<PreparedGraphicsObjects *, ShaderContext *> Contexts;
-  Contexts _contexts;
-
-  static void register_with_read_factory();
+  typedef pair < string, string > ExpansionKey;
+  typedef pmap < ExpansionKey, ShaderExpansion * > ExpansionCache;
+  static ExpansionCache _expansion_cache;
 
   friend class ShaderContext;
   friend class PreparedGraphicsObjects;
 
+  typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
+  Contexts _contexts;
+  
   ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                              GraphicsStateGuardianBase *gsg);
-
+  
 private:  
-  void parse();
+  ShaderExpansion();
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
 public:
@@ -102,9 +86,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "Shader",
-                  TypedWritableReferenceCount::get_class_type());
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "ShaderExpansion",
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -115,6 +99,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "shader.I"
+#include "shaderExpansion.I"
 
 #endif

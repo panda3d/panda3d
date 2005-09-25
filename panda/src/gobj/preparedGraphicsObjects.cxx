@@ -24,7 +24,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
-#include "shader.h"
+#include "shaderExpansion.h"
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
@@ -83,7 +83,7 @@ PreparedGraphicsObjects::
        sci != _prepared_shaders.end();
        ++sci) {
     ShaderContext *sc = (*sci);
-    sc->_shader->clear_prepared(this);
+    sc->_shader_expansion->clear_prepared(this);
   }
 
   _prepared_shaders.clear();
@@ -410,10 +410,10 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
 //               do this (presumably at the next frame).
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-enqueue_shader(Shader *shader) {
+enqueue_shader(ShaderExpansion *se) {
   MutexHolder holder(_lock);
 
-  _enqueued_shaders.insert(shader);
+  _enqueued_shaders.insert(se);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -431,10 +431,10 @@ enqueue_shader(Shader *shader) {
 //               queued.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-dequeue_shader(Shader *shader) {
+dequeue_shader(ShaderExpansion *se) {
   MutexHolder holder(_lock);
 
-  EnqueuedShaders::iterator qi = _enqueued_shaders.find(shader);
+  EnqueuedShaders::iterator qi = _enqueued_shaders.find(se);
   if (qi != _enqueued_shaders.end()) {
     _enqueued_shaders.erase(qi);
     return true;
@@ -459,12 +459,12 @@ void PreparedGraphicsObjects::
 release_shader(ShaderContext *sc) {
   MutexHolder holder(_lock);
 
-  sc->_shader->clear_prepared(this);
+  sc->_shader_expansion->clear_prepared(this);
 
   // We have to set the Shader pointer to NULL at this point, since
   // the Shader itself might destruct at any time after it has been
   // released.
-  sc->_shader = (Shader *)NULL;
+  sc->_shader_expansion = (ShaderExpansion *)NULL;
 
   bool removed = (_prepared_shaders.erase(sc) != 0);
   nassertv(removed);
@@ -491,8 +491,8 @@ release_all_shaders() {
        sci != _prepared_shaders.end();
        ++sci) {
     ShaderContext *sc = (*sci);
-    sc->_shader->clear_prepared(this);
-    sc->_shader = (Shader *)NULL;
+    sc->_shader_expansion->clear_prepared(this);
+    sc->_shader_expansion = (ShaderExpansion *)NULL;
 
     _released_shaders.insert(sc);
   }
@@ -525,14 +525,14 @@ release_all_shaders() {
 //               ShaderContext will be deleted.
 ////////////////////////////////////////////////////////////////////
 ShaderContext *PreparedGraphicsObjects::
-prepare_shader_now(Shader *shader, GraphicsStateGuardianBase *gsg) {
+prepare_shader_now(ShaderExpansion *se, GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new ShaderContext.  There might
   // be several GSG's sharing the same set of shaders; if so, it
   // doesn't matter which of them creates the context (since they're
   // all shared anyway).
-  ShaderContext *sc = gsg->prepare_shader(shader);
+  ShaderContext *sc = gsg->prepare_shader(se);
 
   if (sc != (ShaderContext *)NULL) {
     bool prepared = _prepared_shaders.insert(sc).second;
@@ -930,7 +930,7 @@ update(GraphicsStateGuardianBase *gsg) {
   for (qsi = _enqueued_shaders.begin();
        qsi != _enqueued_shaders.end();
        ++qsi) {
-    Shader *shader = (*qsi);
+    ShaderExpansion *shader = (*qsi);
     shader->prepare_now(this, gsg);
   }
 

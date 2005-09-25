@@ -375,6 +375,53 @@ get_index() {
   return _index;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_world
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "world".  This is
+//               used as a keyword in the shader subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_world() {
+  if (_world == (InternalName *)NULL) {
+    _world = InternalName::make("world");
+  }
+  return _world;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_camera
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "camera".  This is
+//               used as a keyword in the shader subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_camera() {
+  if (_camera == (InternalName *)NULL) {
+    _camera = InternalName::make("camera");
+  }
+  return _camera;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_model
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "model".  This is
+//               used as a keyword in the shader subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_model() {
+  if (_model == (InternalName *)NULL) {
+    _model = InternalName::make("model");
+  }
+  return _model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::output operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE ostream &
 operator << (ostream &out, const InternalName &tcn) {
   tcn.output(out);

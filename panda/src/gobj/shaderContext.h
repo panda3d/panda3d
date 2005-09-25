@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "internalName.h"
 #include "savedContext.h"
-#include "shader.h"
+#include "shaderExpansion.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderContext
@@ -38,9 +38,9 @@
 
 class EXPCL_PANDA ShaderContext: public SavedContext {
 public:
-  INLINE ShaderContext(Shader *shader);
+  INLINE ShaderContext(ShaderExpansion *se);
   
-  Shader *_shader;
+  ShaderExpansion *_shader_expansion;
   
 public:
   // The following declarations represent useful routines
@@ -50,11 +50,6 @@ public:
     SHADER_type_vert=0,
     SHADER_type_frag=1,
     SHADER_type_both=2,
-  };
-  enum {
-    SHADER_arg_world = -1,
-    SHADER_arg_camera = -2,
-    SHADER_arg_model = -3,
   };
   enum {
     SHADER_data_matrix,

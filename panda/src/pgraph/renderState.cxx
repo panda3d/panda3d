@@ -39,6 +39,7 @@
 RenderState::States *RenderState::_states = NULL;
 CPT(RenderState) RenderState::_empty_state;
 UpdateSeq RenderState::_last_cycle_detect;
+
 PStatCollector RenderState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector RenderState::_state_compose_pcollector("*:State Cache:Compose State");
 PStatCollector RenderState::_state_invert_pcollector("*:State Cache:Invert State");
@@ -287,6 +288,7 @@ make(const AttribSlots *slots, int override) {
     }
   }
   state->_attributes.reserve(state->_attributes.size());
+  state->_attributes.sort();
   return return_new(state);
 }
 

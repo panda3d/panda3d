@@ -44,20 +44,27 @@ def updatefiledate(path):
     except: date = 0
     FileDateCache[path] = date
 
-def youngest(files):
+def chkolder(file,date,files):
     if type(files) == str:
         source = filedate(files)
         if (source==0):
             sys.exit("Error: source file not readable: "+files)
-        return source
-    result = 0
+        if (date < source):
+            print "AGE: "+file+" older than "+files
+            return 1
+        return 0
     for sfile in files:
-        source = youngest(sfile)
-        if (source > result): result = source
-    return result
+        if (chkolder(file,date,sfile)):
+            return 1
+    return 0
 
 def older(file,others):
-    return filedate(file)<youngest(others)
+    date = filedate(file)
+    if (date == 0):
+        print "AGE: "+file+" doesn't exist."
+        return 1
+    else:
+        return chkolder(file, date, others)
 
 def xpaths(prefix,base,suffix):
     if type(base) == str:
@@ -211,8 +218,8 @@ VERSION="0.0.0"
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
-          "BISON","FLEX"]
+          "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
+          "BISON","FLEX","PANDATOOL","PANDAAPP"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -221,6 +228,12 @@ MAXSDK = {}
 MAXSDKCS = {}
 PYTHONSDK=0
 STARTTIME=time.time()
+
+TIMEINTERROGATE=0
+TIMEINTERROGATEMODULE=0
+TIMECOMPILEC=0
+TIMECOMPILELIB=0
+TIMECOMPILELINK=0
 
 try:
     # If there is a makepandaPreferences.py, import it:
@@ -354,7 +367,7 @@ DTOOLDEFAULTS=[
     ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
@@ -1241,13 +1254,16 @@ def CompileFlex(pre,dst,src,dashi):
 ########################################################################
 
 def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
-    global VERBOSE
+
+    global TIMECOMPILEC
+    TIMECOMPILEC = TIMECOMPILEC - time.time()
+
     if ((obj==0)|(src==0)): sys.exit("syntax error in CompileC directive")
     ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0): sys.exit("Cannot find source file "+src)
     dep = CxxCalcDependencies(fullsrc, ipath, []) + xdep
-
+    
     if (COMPILER=="MSVC7"):
         wobj = PREFIX+"/tmp/"+obj
         if (older(wobj, dep)):
@@ -1300,6 +1316,8 @@ def CompileC(obj=0,src=0,ipath=[],opts=[],xdep=[]):
             cmd = cmd + ' ' + fullsrc
             oscmd(cmd)
             updatefiledate(wobj)
+    
+    TIMECOMPILEC = TIMECOMPILEC + time.time()
 
 
 ########################################################################
@@ -1316,6 +1334,17 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, als
     if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         sys.exit("syntax error in Interrogate directive")
 
+    # interrogate them.
+    ALLIN.append(outd)
+    outd = PREFIX+"/pandac/input/"+outd
+    outc = PREFIX+"/tmp/"+outc
+    if (OMIT.count("PYTHON")):
+        ConditionalWriteFile(outc,"")
+        return
+
+    global TIMEINTERROGATE
+    TIMEINTERROGATE = TIMEINTERROGATE - time.time()
+
     # generate list of files to interrogate.
     dirlisting = os.listdir(src)
     files = fnmatch.filter(dirlisting,"*.h")
@@ -1326,13 +1355,6 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, als
             if (files.count(x)!=0): files.remove(x)
     for x in also: files.append(x)
 
-    # interrogate them.
-    ALLIN.append(outd)
-    outd = PREFIX+"/pandac/input/"+outd
-    outc = PREFIX+"/tmp/"+outc
-    if (OMIT.count("PYTHON")):
-        ConditionalWriteFile(outc,"")
-        return
     ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
     paths = xpaths(src+"/",files,"")
     dep = CxxCalcDependenciesAll(paths, ipath)
@@ -1382,6 +1404,8 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, als
         updatefiledate(outd)
         updatefiledate(outc)
 
+    TIMEINTERROGATE = TIMEINTERROGATE + time.time()
+
 ########################################################################
 ##
 ## InterrogateModule
@@ -1391,16 +1415,20 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, als
 ########################################################################
 
 def InterrogateModule(outc=0, module=0, library=0, files=0):
+
     if ((outc==0)|(module==0)|(library==0)|(files==0)):
         sys.exit("syntax error in InterrogateModule directive")
     outc = PREFIX+"/tmp/"+outc
     if (OMIT.count("PYTHON")):
         ConditionalWriteFile(outc,"")
         return
+
+    global TIMEINTERROGATEMODULE
+    TIMEINTERROGATEMODULE = TIMEINTERROGATEMODULE - time.time()
+
     files = xpaths(PREFIX+"/pandac/input/",files,"")
     dep = files + [PREFIX+"/tmp/dtool_have_python.dat"]
     if (older(outc, dep)):
-        global VERBOSE
         if VERBOSE >= 1:
             print "Generating Python-stub cxx file for %s"%(library,)
         if (COMPILER=="MSVC7"):
@@ -1412,6 +1440,8 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
         oscmd(cmd)
         updatefiledate(outc)
 
+    TIMEINTERROGATEMODULE = TIMEINTERROGATEMODULE + time.time()
+
 ########################################################################
 ##
 ## CompileLIB
@@ -1422,6 +1452,9 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
 
 def CompileLIB(lib=0, obj=[], opts=[]):
     if (lib==0): sys.exit("syntax error in CompileLIB directive")
+
+    global TIMECOMPILELIB
+    TIMECOMPILELIB = TIMECOMPILELIB - time.time()
 
     if (COMPILER=="MSVC7"):
         if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".lib"
@@ -1446,6 +1479,8 @@ def CompileLIB(lib=0, obj=[], opts=[]):
             oscmd(cmd)
             updatefiledate(wlib)
 
+    TIMECOMPILELIB = TIMECOMPILELIB + time.time()
+
 ########################################################################
 ##
 ## CompileLink
@@ -1456,6 +1491,9 @@ def CompileLIB(lib=0, obj=[], opts=[]):
 
 def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
     if (dll==0): sys.exit("Syntax error in CompileLink directive")
+
+    global TIMECOMPILELINK
+    TIMECOMPILELINK = TIMECOMPILELINK - time.time()
 
     if (COMPILER=="MSVC7"):
         lib = PREFIX+"/lib/"+dll[:-4]+".lib"
@@ -1529,9 +1567,9 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/stlport_vc7.lib'
             if (PkgSelected(opts,"NSPR")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/nspr4.lib'
-            if (PkgSelected(opts,"SSL")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libpandassl.lib'
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libpandaeay.lib'
+            if (PkgSelected(opts,"OPENSSL")):
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/openssl/lib/libpandassl.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/openssl/lib/libpandaeay.lib'
             if (PkgSelected(opts,"FREETYPE")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/freetype.lib'
             if (PkgSelected(opts,"FFTW")):
@@ -1587,13 +1625,15 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
             if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
             if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
-            if (PkgSelected(opts,"SSL")):      cmd = cmd + " -lssl"
+            if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
             if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
             if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/vrpn/lib -lvrpn -lquat'
             if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fftw/lib -lrfftw -lfftw'
             if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
             oscmd(cmd)
             updatefiledate(wdll)
+
+    TIMECOMPILELINK = TIMECOMPILELINK + time.time()
 
 ##########################################################################################
 #
@@ -1918,7 +1958,7 @@ CompileLIB(lib='libcppParser.ilb', obj=[
 #
 
 IPATH=['dtool/src/prc']
-OPTS=['BUILDING_DTOOLCONFIG', 'SSL', 'NSPR']
+OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL', 'NSPR']
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='prc_composite1.cxx', obj='prc_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='prc_composite2.cxx', obj='prc_composite2.obj')
@@ -1953,7 +1993,7 @@ if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
 CompileC(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=[PREFIX+"/tmp/dtool_have_python.dat"])
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='libdtoolconfig.dll', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='libdtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
              'interrogatedb_composite1.obj',
@@ -1986,7 +2026,7 @@ OPTS=['NSPR']
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_composite1.cxx', obj='interrogate_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_composite2.cxx', obj='interrogate_composite2.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate.exe', obj=[
              'interrogate_composite1.obj',
              'interrogate_composite2.obj',
              'libcppParser.ilb',
@@ -1996,7 +2036,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate.exe', obj=[
 ])
 
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate_module.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
              'libcppParser.ilb',
              'libpystub.dll',
@@ -2005,7 +2045,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate_module.exe', obj=[
 ])
 
 CompileC(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='parse_file.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
              'libcppParser.ilb',
              'libpystub.dll',
@@ -2017,17 +2057,17 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='parse_file.exe', obj=[
 # DIRECTORY: dtool/src/prckeys/
 #
 
-if (OMIT.count("SSL")==0):
-  IPATH=['dtool/src/prckeys']
-  OPTS=['SSL', 'NSPR']
-  CopyAllHeaders(IPATH[0])
-  CompileC(ipath=IPATH, opts=OPTS, src='makePrcKey.cxx', obj='make-prc-key_makePrcKey.obj')
-  CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='make-prc-key.exe', obj=[
-               'make-prc-key_makePrcKey.obj',
-               'libpystub.dll',
-               'libdtool.dll',
-               'libdtoolconfig.dll',
-               ])
+if (OMIT.count("OPENSSL")==0):
+    IPATH=['dtool/src/prckeys']
+    OPTS=['OPENSSL', 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='makePrcKey.cxx', obj='make-prc-key_makePrcKey.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='make-prc-key.exe', obj=[
+                 'make-prc-key_makePrcKey.obj',
+                 'libpystub.dll',
+                 'libdtool.dll',
+                 'libdtoolconfig.dll',
+                 ])
 
 #
 # DIRECTORY: dtool/src/test_interrogate/
@@ -2037,7 +2077,7 @@ IPATH=['dtool/src/test_interrogate']
 OPTS=['NSPR']
 CopyAllHeaders(IPATH[0], skip="ALL")
 CompileC(ipath=IPATH, opts=OPTS, src='test_interrogate.cxx', obj='test_interrogate_test_interrogate.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='test_interrogate.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='test_interrogate.exe', obj=[
              'test_interrogate_test_interrogate.obj',
              'libpystub.dll',
              'libdtoolconfig.dll',
@@ -2058,7 +2098,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='pandabase.cxx', obj='pandabase_pandabase.o
 #
 
 IPATH=['panda/src/express']
-OPTS=['BUILDING_PANDAEXPRESS', 'SSL', 'ZLIB', 'NSPR']
+OPTS=['BUILDING_PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'NSPR']
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='express_composite1.cxx', obj='express_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='express_composite2.cxx', obj='express_composite2.obj')
@@ -2072,7 +2112,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='libexpress_igate.cxx', obj='libexpress_iga
 #
 
 IPATH=['panda/src/downloader']
-OPTS=['BUILDING_PANDAEXPRESS', 'SSL', 'ZLIB', 'NSPR']
+OPTS=['BUILDING_PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'NSPR']
 CopyAllHeaders(IPATH[0])
 CompileC(ipath=IPATH, opts=OPTS, src='downloader_composite1.cxx', obj='downloader_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='downloader_composite2.cxx', obj='downloader_composite2.obj')
@@ -2092,7 +2132,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='pandaexpress.cxx', obj='pandaexpress_panda
 InterrogateModule(outc='libpandaexpress_module.cxx', module='pandaexpress', library='libpandaexpress',
                   files=['libdownloader.in', 'libexpress.in'])
 CompileC(ipath=IPATH, opts=OPTS, src='libpandaexpress_module.cxx', obj='libpandaexpress_module.obj')
-CompileLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'SSL', 'ZLIB'], dll='libpandaexpress.dll', obj=[
+CompileLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'OPENSSL', 'ZLIB'], dll='libpandaexpress.dll', obj=[
              'pandaexpress_pandaexpress.obj',
              'libpandaexpress_module.obj',
              'downloader_composite1.obj',
@@ -2539,6 +2579,10 @@ if (OMIT.count("HELIX")==0):
 # DIRECTORY: panda/metalibs/panda/
 #
 
+CopyAllHeaders('panda/src/glgsg')
+CopyAllHeaders('panda/src/wgldisplay')
+CopyAllHeaders('panda/src/physics')
+CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW',
       'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
@@ -2645,12 +2689,12 @@ CompileC(ipath=IPATH, opts=OPTS, src='libdistort_igate.cxx', obj='libdistort_iga
 #
 # DIRECTORY: panda/src/downloadertools/
 #
-# There's something funny about this OMIT.count('SSL')... check it out.
+# There's something funny about this OMIT.count('OPENSSL')... check it out.
 #
 
-if OMIT.count("SSL")==0:
+if OMIT.count("OPENSSL")==0:
     IPATH=['panda/src/downloadertools']
-    OPTS=['SSL', 'ZLIB', 'NSPR']
+    OPTS=['OPENSSL', 'ZLIB', 'NSPR']
     LIBS=['libpandaexpress.dll', 'libpanda.dll', 'libdtoolconfig.dll', 'libdtool.dll', 'libpystub.dll']
     CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
@@ -2662,7 +2706,7 @@ if OMIT.count("SSL")==0:
     CompileC(ipath=IPATH, opts=OPTS, src='check_crc.cxx', obj='check_crc_check_crc.obj')
     CompileLink(dll='check_crc.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['check_crc_check_crc.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
-    CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=['check_md5_check_md5.obj']+LIBS)
+    CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=['check_md5_check_md5.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
     CompileLink(dll='multify.exe', opts=['ADVAPI', 'NSPR'], obj=['multify_multify.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='pcompress.cxx', obj='pcompress_pcompress.obj')
@@ -2670,9 +2714,9 @@ if OMIT.count("SSL")==0:
     CompileC(ipath=IPATH, opts=OPTS, src='pdecompress.cxx', obj='pdecompress_pdecompress.obj')
     CompileLink(dll='pdecompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['pdecompress_pdecompress.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
-    CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=['pdecrypt_pdecrypt.obj']+LIBS)
+    CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=['pdecrypt_pdecrypt.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
-    CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=['pencrypt_pencrypt.obj']+LIBS)
+    CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=['pencrypt_pencrypt.obj']+LIBS)
     CompileC(ipath=IPATH, opts=OPTS, src='show_ddb.cxx', obj='show_ddb_show_ddb.obj')
     CompileLink(dll='show_ddb.exe', opts=['ADVAPI', 'NSPR'], obj=['show_ddb_show_ddb.obj']+LIBS)
 
@@ -3097,7 +3141,7 @@ if (OMIT.count("PYTHON")==0):
 
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/distributed', 'direct/src/dcparser']
-    OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'SSL', 'NSPR']
+    OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'OPENSSL', 'NSPR']
     CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='config_distributed.cxx', obj='distributed_config_distributed.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distributed_cConnectionRepository.obj')
@@ -3148,7 +3192,7 @@ if (OMIT.count("PYTHON")==0):
     InterrogateModule(outc='libdirect_module.cxx', module='direct', library='libdirect',
                       files=['libdcparser.in', 'libshowbase.in', 'libdeadrec.in', 'libinterval.in', 'libdistributed.in'])
     CompileC(ipath=IPATH, opts=OPTS, src='libdirect_module.cxx', obj='libdirect_module.obj')
-    CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
+    CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
                  'direct_direct.obj',
                  'libdirect_module.obj',
                  'directbase_directbase.obj',
@@ -3212,192 +3256,202 @@ if (OMIT.count("PYTHON")==0):
 # DIRECTORY: pandatool/src/pandatoolbase/
 #
 
-IPATH=['pandatool/src/pandatoolbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='pandatoolbase_composite1.cxx', obj='pandatoolbase_composite1.obj')
-CompileLIB(lib='libpandatoolbase.lib', obj=['pandatoolbase_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/pandatoolbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='pandatoolbase_composite1.cxx', obj='pandatoolbase_composite1.obj')
+    CompileLIB(lib='libpandatoolbase.lib', obj=['pandatoolbase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/converter/
 #
 
-IPATH=['pandatool/src/converter']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='somethingToEggConverter.cxx', obj='converter_somethingToEggConverter.obj')
-CompileLIB(lib='libconverter.lib', obj=['converter_somethingToEggConverter.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/converter']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='somethingToEggConverter.cxx', obj='converter_somethingToEggConverter.obj')
+    CompileLIB(lib='libconverter.lib', obj=['converter_somethingToEggConverter.obj'])
 
 #
 # DIRECTORY: pandatool/src/progbase/
 #
 
-IPATH=['pandatool/src/progbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='progbase_composite1.cxx', obj='progbase_composite1.obj')
-CompileLIB(lib='libprogbase.lib', obj=['progbase_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/progbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='progbase_composite1.cxx', obj='progbase_composite1.obj')
+    CompileLIB(lib='libprogbase.lib', obj=['progbase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/eggbase/
 #
 
-IPATH=['pandatool/src/eggbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggbase_composite1.cxx', obj='eggbase_composite1.obj')
-CompileLIB(lib='libeggbase.lib', obj=['eggbase_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/eggbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggbase_composite1.cxx', obj='eggbase_composite1.obj')
+    CompileLIB(lib='libeggbase.lib', obj=['eggbase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/bam/
 #
 
-IPATH=['pandatool/src/bam']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='bamInfo.cxx', obj='bam-info_bamInfo.obj')
-CompileLink(dll='bam-info.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'bam-info_bamInfo.obj',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='bamToEgg.cxx', obj='bam2egg_bamToEgg.obj')
-CompileLink(dll='bam2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'bam2egg_bamToEgg.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggToBam.cxx', obj='egg2bam_eggToBam.obj')
-CompileLink(dll='egg2bam.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'egg2bam_eggToBam.obj',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libconverter.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/bam']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='bamInfo.cxx', obj='bam-info_bamInfo.obj')
+    CompileLink(dll='bam-info.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'bam-info_bamInfo.obj',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='bamToEgg.cxx', obj='bam2egg_bamToEgg.obj')
+    CompileLink(dll='bam2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'bam2egg_bamToEgg.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToBam.cxx', obj='egg2bam_eggToBam.obj')
+    CompileLink(dll='egg2bam.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'egg2bam_eggToBam.obj',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    
 #
 # DIRECTORY: pandatool/src/cvscopy/
 #
 
-IPATH=['pandatool/src/cvscopy']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='cvscopy_composite1.cxx', obj='cvscopy_composite1.obj')
-CompileLIB(lib='libcvscopy.lib', obj=['cvscopy_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/cvscopy']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='cvscopy_composite1.cxx', obj='cvscopy_composite1.obj')
+    CompileLIB(lib='libcvscopy.lib', obj=['cvscopy_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/dxf/
 #
 
-IPATH=['pandatool/src/dxf']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='dxf_composite1.cxx', obj='dxf_composite1.obj')
-CompileLIB(lib='libdxf.lib', obj=['dxf_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/dxf']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='dxf_composite1.cxx', obj='dxf_composite1.obj')
+    CompileLIB(lib='libdxf.lib', obj=['dxf_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/dxfegg/
 #
 
-IPATH=['pandatool/src/dxfegg']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='dxfToEggConverter.cxx', obj='dxfegg_dxfToEggConverter.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dxfToEggLayer.cxx', obj='dxfegg_dxfToEggLayer.obj')
-CompileLIB(lib='libdxfegg.lib', obj=[
-             'dxfegg_dxfToEggConverter.obj',
-             'dxfegg_dxfToEggLayer.obj',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/dxfegg']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='dxfToEggConverter.cxx', obj='dxfegg_dxfToEggConverter.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dxfToEggLayer.cxx', obj='dxfegg_dxfToEggLayer.obj')
+    CompileLIB(lib='libdxfegg.lib', obj=[
+                 'dxfegg_dxfToEggConverter.obj',
+                 'dxfegg_dxfToEggLayer.obj',
+    ])
 
 #
 # DIRECTORY: pandatool/src/dxfprogs/
 #
 
-IPATH=['pandatool/src/dxfprogs']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='dxfPoints.cxx', obj='dxf-points_dxfPoints.obj')
-CompileLink(dll='dxf-points.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'dxf-points_dxfPoints.obj',
-             'libprogbase.lib',
-             'libdxf.lib',
-             'libpandatoolbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='dxfToEgg.cxx', obj='dxf2egg_dxfToEgg.obj')
-CompileLink(dll='dxf2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'dxf2egg_dxfToEgg.obj',
-             'libdxfegg.lib',
-             'libdxf.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggToDXF.cxx', obj='egg2dxf_eggToDXF.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='eggToDXFLayer.cxx', obj='egg2dxf_eggToDXFLayer.obj')
-CompileLink(dll='egg2dxf.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
-             'egg2dxf_eggToDXF.obj',
-             'egg2dxf_eggToDXFLayer.obj',
-             'libdxf.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/dxfprogs']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='dxfPoints.cxx', obj='dxf-points_dxfPoints.obj')
+    CompileLink(dll='dxf-points.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'dxf-points_dxfPoints.obj',
+                 'libprogbase.lib',
+                 'libdxf.lib',
+                 'libpandatoolbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='dxfToEgg.cxx', obj='dxf2egg_dxfToEgg.obj')
+    CompileLink(dll='dxf2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'dxf2egg_dxfToEgg.obj',
+                 'libdxfegg.lib',
+                 'libdxf.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToDXF.cxx', obj='egg2dxf_eggToDXF.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToDXFLayer.cxx', obj='egg2dxf_eggToDXFLayer.obj')
+    CompileLink(dll='egg2dxf.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
+                 'egg2dxf_eggToDXF.obj',
+                 'egg2dxf_eggToDXFLayer.obj',
+                 'libdxf.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/palettizer/
 #
 
-IPATH=['pandatool/src/palettizer']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='palettizer_composite1.cxx', obj='palettizer_composite1.obj')
-CompileLIB(lib='libpalettizer.lib', obj=['palettizer_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/palettizer']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='palettizer_composite1.cxx', obj='palettizer_composite1.obj')
+    CompileLIB(lib='libpalettizer.lib', obj=['palettizer_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/egg-mkfont/
 #
 
-if OMIT.count("FREETYPE")==0:
+if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/egg-mkfont', 'pandatool/src/palettizer']
     OPTS=['NSPR', 'FREETYPE']
     CopyAllHeaders(IPATH[0])
@@ -3425,431 +3479,444 @@ if OMIT.count("FREETYPE")==0:
 # DIRECTORY: pandatool/src/eggcharbase/
 #
 
-IPATH=['pandatool/src/eggcharbase']
-OPTS=['ZLIB', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggcharbase_composite1.cxx', obj='eggcharbase_composite1.obj')
-CompileLIB(lib='libeggcharbase.lib', obj=['eggcharbase_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/eggcharbase']
+    OPTS=['ZLIB', 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggcharbase_composite1.cxx', obj='eggcharbase_composite1.obj')
+    CompileLIB(lib='libeggcharbase.lib', obj=['eggcharbase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/egg-optchar/
 #
 
-IPATH=['pandatool/src/egg-optchar']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='config_egg_optchar.cxx', obj='egg-optchar_config_egg_optchar.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='eggOptchar.cxx', obj='egg-optchar_eggOptchar.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='eggOptcharUserData.cxx', obj='egg-optchar_eggOptcharUserData.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vertexMembership.cxx', obj='egg-optchar_vertexMembership.obj')
-CompileLink(dll='egg-optchar.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-optchar_config_egg_optchar.obj',
-             'egg-optchar_eggOptchar.obj',
-             'egg-optchar_eggOptcharUserData.obj',
-             'egg-optchar_vertexMembership.obj',
-             'libeggcharbase.lib',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/egg-optchar']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='config_egg_optchar.cxx', obj='egg-optchar_config_egg_optchar.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='eggOptchar.cxx', obj='egg-optchar_eggOptchar.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='eggOptcharUserData.cxx', obj='egg-optchar_eggOptcharUserData.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vertexMembership.cxx', obj='egg-optchar_vertexMembership.obj')
+    CompileLink(dll='egg-optchar.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-optchar_config_egg_optchar.obj',
+                 'egg-optchar_eggOptchar.obj',
+                 'egg-optchar_eggOptcharUserData.obj',
+                 'egg-optchar_vertexMembership.obj',
+                 'libeggcharbase.lib',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/egg-palettize/
 #
 
-IPATH=['pandatool/src/egg-palettize', 'pandatool/src/palettizer']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggPalettize.cxx', obj='egg-palettize_eggPalettize.obj')
-CompileLink(dll='egg-palettize.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-palettize_eggPalettize.obj',
-             'libpalettizer.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/egg-palettize', 'pandatool/src/palettizer']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggPalettize.cxx', obj='egg-palettize_eggPalettize.obj')
+    CompileLink(dll='egg-palettize.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-palettize_eggPalettize.obj',
+                 'libpalettizer.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/egg-qtess/
 #
 
-IPATH=['pandatool/src/egg-qtess']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='egg-qtess_composite1.cxx', obj='egg-qtess_composite1.obj')
-CompileLink(dll='egg-qtess.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-qtess_composite1.obj',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libconverter.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/egg-qtess']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='egg-qtess_composite1.cxx', obj='egg-qtess_composite1.obj')
+    CompileLink(dll='egg-qtess.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-qtess_composite1.obj',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    
 #
 # DIRECTORY: pandatool/src/eggprogs/
 #
 
-IPATH=['pandatool/src/eggprogs']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggCrop.cxx', obj='egg-crop_eggCrop.obj')
-CompileLink(dll='egg-crop.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-crop_eggCrop.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggMakeTube.cxx', obj='egg-make-tube_eggMakeTube.obj')
-CompileLink(dll='egg-make-tube.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-make-tube_eggMakeTube.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggTextureCards.cxx', obj='egg-texture-cards_eggTextureCards.obj')
-CompileLink(dll='egg-texture-cards.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-texture-cards_eggTextureCards.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggTopstrip.cxx', obj='egg-topstrip_eggTopstrip.obj')
-CompileLink(dll='egg-topstrip.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-topstrip_eggTopstrip.obj',
-             'libeggcharbase.lib',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggTrans.cxx', obj='egg-trans_eggTrans.obj')
-CompileLink(dll='egg-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg-trans_eggTrans.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='eggToC.cxx', obj='egg2c_eggToC.obj')
-CompileLink(dll='egg2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg2c_eggToC.obj',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/eggprogs']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggCrop.cxx', obj='egg-crop_eggCrop.obj')
+    CompileLink(dll='egg-crop.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-crop_eggCrop.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggMakeTube.cxx', obj='egg-make-tube_eggMakeTube.obj')
+    CompileLink(dll='egg-make-tube.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-make-tube_eggMakeTube.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggTextureCards.cxx', obj='egg-texture-cards_eggTextureCards.obj')
+    CompileLink(dll='egg-texture-cards.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-texture-cards_eggTextureCards.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggTopstrip.cxx', obj='egg-topstrip_eggTopstrip.obj')
+    CompileLink(dll='egg-topstrip.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-topstrip_eggTopstrip.obj',
+                 'libeggcharbase.lib',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggTrans.cxx', obj='egg-trans_eggTrans.obj')
+    CompileLink(dll='egg-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-trans_eggTrans.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToC.cxx', obj='egg2c_eggToC.obj')
+    CompileLink(dll='egg2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg2c_eggToC.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/flt/
 #
 
-IPATH=['pandatool/src/flt']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='fltVectorRecord.cxx', obj='flt_fltVectorRecord.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='flt_composite1.cxx', obj='flt_composite1.obj')
-CompileLIB(lib='libflt.lib', obj=['flt_fltVectorRecord.obj', 'flt_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/flt']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltVectorRecord.cxx', obj='flt_fltVectorRecord.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='flt_composite1.cxx', obj='flt_composite1.obj')
+    CompileLIB(lib='libflt.lib', obj=['flt_fltVectorRecord.obj', 'flt_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/fltegg/
 #
 
-IPATH=['pandatool/src/fltegg']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='fltToEggConverter.cxx', obj='fltegg_fltToEggConverter.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='fltToEggLevelState.cxx', obj='fltegg_fltToEggLevelState.obj')
-CompileLIB(lib='libfltegg.lib', obj=['fltegg_fltToEggConverter.obj', 'fltegg_fltToEggLevelState.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/fltegg']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltToEggConverter.cxx', obj='fltegg_fltToEggConverter.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='fltToEggLevelState.cxx', obj='fltegg_fltToEggLevelState.obj')
+    CompileLIB(lib='libfltegg.lib', obj=['fltegg_fltToEggConverter.obj', 'fltegg_fltToEggLevelState.obj'])
 
 #
 # DIRECTORY: pandatool/src/fltprogs/
 #
 
-IPATH=['pandatool/src/fltprogs', 'pandatool/src/flt', 'pandatool/src/cvscopy']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggToFlt.cxx', obj='egg2flt_eggToFlt.obj')
-CompileLink(dll='egg2flt.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg2flt_eggToFlt.obj',
-             'libflt.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libconverter.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='fltInfo.cxx', obj='flt-info_fltInfo.obj')
-CompileLink(dll='flt-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'flt-info_fltInfo.obj',
-             'libprogbase.lib',
-             'libflt.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='fltTrans.cxx', obj='flt-trans_fltTrans.obj')
-CompileLink(dll='flt-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'flt-trans_fltTrans.obj',
-             'libprogbase.lib',
-             'libflt.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='fltToEgg.cxx', obj='flt2egg_fltToEgg.obj')
-CompileLink(dll='flt2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'flt2egg_fltToEgg.obj',
-             'libflt.lib',
-             'libfltegg.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libconverter.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='fltCopy.cxx', obj='fltcopy_fltCopy.obj')
-CompileLink(dll='fltcopy.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'fltcopy_fltCopy.obj',
-             'libcvscopy.lib',
-             'libflt.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/fltprogs', 'pandatool/src/flt', 'pandatool/src/cvscopy']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToFlt.cxx', obj='egg2flt_eggToFlt.obj')
+    CompileLink(dll='egg2flt.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg2flt_eggToFlt.obj',
+                 'libflt.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltInfo.cxx', obj='flt-info_fltInfo.obj')
+    CompileLink(dll='flt-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'flt-info_fltInfo.obj',
+                 'libprogbase.lib',
+                 'libflt.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltTrans.cxx', obj='flt-trans_fltTrans.obj')
+    CompileLink(dll='flt-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'flt-trans_fltTrans.obj',
+                 'libprogbase.lib',
+                 'libflt.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltToEgg.cxx', obj='flt2egg_fltToEgg.obj')
+    CompileLink(dll='flt2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'flt2egg_fltToEgg.obj',
+                 'libflt.lib',
+                 'libfltegg.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='fltCopy.cxx', obj='fltcopy_fltCopy.obj')
+    CompileLink(dll='fltcopy.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'fltcopy_fltCopy.obj',
+                 'libcvscopy.lib',
+                 'libflt.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/imagebase/
 #
 
-IPATH=['pandatool/src/imagebase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='imagebase_composite1.cxx', obj='imagebase_composite1.obj')
-CompileLIB(lib='libimagebase.lib', obj=['imagebase_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/imagebase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='imagebase_composite1.cxx', obj='imagebase_composite1.obj')
+    CompileLIB(lib='libimagebase.lib', obj=['imagebase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/imageprogs/
 #
 
-IPATH=['pandatool/src/imageprogs']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='imageInfo.cxx', obj='image-info_imageInfo.obj')
-CompileLink(dll='image-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'image-info_imageInfo.obj',
-             'libimagebase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='imageResize.cxx', obj='image-resize_imageResize.obj')
-CompileLink(dll='image-resize.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'image-resize_imageResize.obj',
-             'libimagebase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='imageTrans.cxx', obj='image-trans_imageTrans.obj')
-CompileLink(dll='image-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'image-trans_imageTrans.obj',
-             'libimagebase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/imageprogs']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='imageInfo.cxx', obj='image-info_imageInfo.obj')
+    CompileLink(dll='image-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'image-info_imageInfo.obj',
+                 'libimagebase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    
+    CompileC(ipath=IPATH, opts=OPTS, src='imageResize.cxx', obj='image-resize_imageResize.obj')
+    CompileLink(dll='image-resize.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'image-resize_imageResize.obj',
+                 'libimagebase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    
+    CompileC(ipath=IPATH, opts=OPTS, src='imageTrans.cxx', obj='image-trans_imageTrans.obj')
+    CompileLink(dll='image-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'image-trans_imageTrans.obj',
+                 'libimagebase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/lwo/
 #
 
-IPATH=['pandatool/src/lwo']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='lwo_composite1.cxx', obj='lwo_composite1.obj')
-CompileLIB(lib='liblwo.lib', obj=['lwo_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/lwo']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='lwo_composite1.cxx', obj='lwo_composite1.obj')
+    CompileLIB(lib='liblwo.lib', obj=['lwo_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/lwoegg/
 #
 
-IPATH=['pandatool/src/lwoegg']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='lwoegg_composite1.cxx', obj='lwoegg_composite1.obj')
-CompileLIB(lib='liblwoegg.lib', obj=['lwoegg_composite1.obj'])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/lwoegg']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='lwoegg_composite1.cxx', obj='lwoegg_composite1.obj')
+    CompileLIB(lib='liblwoegg.lib', obj=['lwoegg_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/lwoprogs/
 #
 
-IPATH=['pandatool/src/lwoprogs', 'pandatool/src/lwo']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='lwoScan.cxx', obj='lwo-scan_lwoScan.obj')
-CompileLink(dll='lwo-scan.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'lwo-scan_lwoScan.obj',
-             'liblwo.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='lwoToEgg.cxx', obj='lwo2egg_lwoToEgg.obj')
-CompileLink(dll='lwo2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'lwo2egg_lwoToEgg.obj',
-             'liblwo.lib',
-             'liblwoegg.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/lwoprogs', 'pandatool/src/lwo']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='lwoScan.cxx', obj='lwo-scan_lwoScan.obj')
+    CompileLink(dll='lwo-scan.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'lwo-scan_lwoScan.obj',
+                 'liblwo.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    
+    CompileC(ipath=IPATH, opts=OPTS, src='lwoToEgg.cxx', obj='lwo2egg_lwoToEgg.obj')
+    CompileLink(dll='lwo2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'lwo2egg_lwoToEgg.obj',
+                 'liblwo.lib',
+                 'liblwoegg.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/maya/
 #
 
 for VER in ["5","6","65"]:
-  if (OMIT.count("MAYA"+VER)==0):
+  if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
     CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='maya_composite1.cxx',    obj='maya'+VER+'_composite1.obj')
     CompileLIB(lib='libmaya'+VER+'.lib', obj=[ 'maya'+VER+'_composite1.obj' ])
-
+    
 #
 # DIRECTORY: pandatool/src/mayaegg/
 #
-# 
-# for VER in ["5","6","65"]:
-#   if (OMIT.count("MAYA"+VER)==0):
-#     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
-#     OPTS=['MAYA'+VER, 'NSPR']
-#     CopyAllHeaders(IPATH[0])
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx', obj='mayaegg'+VER+'_loader.obj')
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
-#     CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
+
+for VER in ["5","6","65"]:
+  if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
+    OPTS=['MAYA'+VER, 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx', obj='mayaegg'+VER+'_loader.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
+    CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
 
 #
 # DIRECTORY: pandatool/src/maxegg/
 #
 
 for VER in ["6", "7"]:
-  if (OMIT.count("MAX"+VER)==0):
+  if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders(IPATH[0])
@@ -3871,13 +3938,12 @@ for VER in ["6", "7"]:
                 'libpystub.dll'
                ])
 
-
 #
 # DIRECTORY: pandatool/src/maxprogs/
 #
 
 for VER in ["6", "7"]:
-  if (OMIT.count("MAX"+VER)==0):
+  if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxprogs']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders(IPATH[0])
@@ -3899,227 +3965,234 @@ for VER in ["6", "7"]:
 # DIRECTORY: pandatool/src/vrml/
 #
 
-CompileBison(pre='vrmlyy', dstc='vrmlParser.cxx', dsth='vrmlParser.h', src='pandatool/src/vrml/vrmlParser.yxx')
-CompileFlex(pre='vrmlyy', dst='vrmlLexer.cxx', src='pandatool/src/vrml/vrmlLexer.lxx', dashi=0)
-IPATH=['pandatool/src/vrml']
-OPTS=['ZLIB', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='parse_vrml.cxx', obj='pvrml_parse_vrml.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='standard_nodes.cxx', obj='pvrml_standard_nodes.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlNode.cxx', obj='pvrml_vrmlNode.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlNodeType.cxx', obj='pvrml_vrmlNodeType.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlParser.cxx', obj='pvrml_vrmlParser.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlLexer.cxx', obj='pvrml_vrmlLexer.obj')
-CompileLIB(lib='libpvrml.lib', obj=[
-             'pvrml_parse_vrml.obj',
-             'pvrml_standard_nodes.obj',
-             'pvrml_vrmlNode.obj',
-             'pvrml_vrmlNodeType.obj',
-             'pvrml_vrmlParser.obj',
-             'pvrml_vrmlLexer.obj',
-])
+if (OMIT.count("PANDATOOL")==0):
+    CompileBison(pre='vrmlyy', dstc='vrmlParser.cxx', dsth='vrmlParser.h', src='pandatool/src/vrml/vrmlParser.yxx')
+    CompileFlex(pre='vrmlyy', dst='vrmlLexer.cxx', src='pandatool/src/vrml/vrmlLexer.lxx', dashi=0)
+    IPATH=['pandatool/src/vrml']
+    OPTS=['ZLIB', 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='parse_vrml.cxx', obj='pvrml_parse_vrml.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='standard_nodes.cxx', obj='pvrml_standard_nodes.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlNode.cxx', obj='pvrml_vrmlNode.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlNodeType.cxx', obj='pvrml_vrmlNodeType.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlParser.cxx', obj='pvrml_vrmlParser.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlLexer.cxx', obj='pvrml_vrmlLexer.obj')
+    CompileLIB(lib='libpvrml.lib', obj=[
+                 'pvrml_parse_vrml.obj',
+                 'pvrml_standard_nodes.obj',
+                 'pvrml_vrmlNode.obj',
+                 'pvrml_vrmlNodeType.obj',
+                 'pvrml_vrmlParser.obj',
+                 'pvrml_vrmlLexer.obj',
+    ])
 
 #
 # DIRECTORY: pandatool/src/vrmlegg/
 #
 
-IPATH=['pandatool/src/vrmlegg', 'pandatool/src/vrml']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='indexedFaceSet.cxx', obj='vrmlegg_indexedFaceSet.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlAppearance.cxx', obj='vrmlegg_vrmlAppearance.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlToEggConverter.cxx', obj='vrmlegg_vrmlToEggConverter.obj')
-CompileLIB(lib='libvrmlegg.lib', obj=[
-             'vrmlegg_indexedFaceSet.obj',
-             'vrmlegg_vrmlAppearance.obj',
-             'vrmlegg_vrmlToEggConverter.obj',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/vrmlegg', 'pandatool/src/vrml']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='indexedFaceSet.cxx', obj='vrmlegg_indexedFaceSet.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlAppearance.cxx', obj='vrmlegg_vrmlAppearance.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlToEggConverter.cxx', obj='vrmlegg_vrmlToEggConverter.obj')
+    CompileLIB(lib='libvrmlegg.lib', obj=[
+                 'vrmlegg_indexedFaceSet.obj',
+                 'vrmlegg_vrmlAppearance.obj',
+                 'vrmlegg_vrmlToEggConverter.obj',
+    ])
 
 #
 # DIRECTORY: pandatool/src/xfile/
 #
 
-CompileBison(pre='xyy', dstc='xParser.cxx', dsth='xParser.h', src='pandatool/src/xfile/xParser.yxx')
-CompileFlex(pre='xyy', dst='xLexer.cxx', src='pandatool/src/xfile/xLexer.lxx', dashi=1)
-IPATH=['pandatool/src/xfile']
-OPTS=['ZLIB', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='xfile_composite1.cxx', obj='xfile_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='xParser.cxx', obj='xfile_xParser.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='xLexer.cxx', obj='xfile_xLexer.obj')
-CompileLIB(lib='libxfile.lib', obj=[
-             'xfile_composite1.obj',
-             'xfile_xParser.obj',
-             'xfile_xLexer.obj',
-])
+if (OMIT.count("PANDATOOL")==0):
+    CompileBison(pre='xyy', dstc='xParser.cxx', dsth='xParser.h', src='pandatool/src/xfile/xParser.yxx')
+    CompileFlex(pre='xyy', dst='xLexer.cxx', src='pandatool/src/xfile/xLexer.lxx', dashi=1)
+    IPATH=['pandatool/src/xfile']
+    OPTS=['ZLIB', 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='xfile_composite1.cxx', obj='xfile_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='xParser.cxx', obj='xfile_xParser.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='xLexer.cxx', obj='xfile_xLexer.obj')
+    CompileLIB(lib='libxfile.lib', obj=[
+                 'xfile_composite1.obj',
+                 'xfile_xParser.obj',
+                 'xfile_xLexer.obj',
+    ])
 
 #
 # DIRECTORY: pandatool/src/xfileegg/
 #
 
-IPATH=['pandatool/src/xfileegg', 'pandatool/src/xfile']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='xfileegg_composite1.cxx', obj='xfileegg_composite1.obj')
-CompileLIB(lib='libxfileegg.lib', obj=[
-             'xfileegg_composite1.obj',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/xfileegg', 'pandatool/src/xfile']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='xfileegg_composite1.cxx', obj='xfileegg_composite1.obj')
+    CompileLIB(lib='libxfileegg.lib', obj=[
+                 'xfileegg_composite1.obj',
+    ])
 
 #
 # DIRECTORY: pandatool/src/ptloader/
 #
 
-IPATH=['pandatool/src/ptloader', 'pandatool/src/flt', 'pandatool/src/lwo', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
-OPTS=['BUILDING_PTLOADER', 'NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='config_ptloader.cxx', obj='ptloader_config_ptloader.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='loaderFileTypePandatool.cxx', obj='ptloader_loaderFileTypePandatool.obj')
-CompileLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
-             'ptloader_config_ptloader.obj',
-             'ptloader_loaderFileTypePandatool.obj',
-             'libfltegg.lib',
-             'libflt.lib',
-             'liblwoegg.lib',
-             'liblwo.lib',
-             'libdxfegg.lib',
-             'libdxf.lib',
-             'libvrmlegg.lib',
-             'libpvrml.lib',
-             'libxfileegg.lib',
-             'libxfile.lib',
-             'libconverter.lib',
-             'libpandatoolbase.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/ptloader', 'pandatool/src/flt', 'pandatool/src/lwo', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
+    OPTS=['BUILDING_PTLOADER', 'NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='config_ptloader.cxx', obj='ptloader_config_ptloader.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='loaderFileTypePandatool.cxx', obj='ptloader_loaderFileTypePandatool.obj')
+    CompileLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
+                 'ptloader_config_ptloader.obj',
+                 'ptloader_loaderFileTypePandatool.obj',
+                 'libfltegg.lib',
+                 'libflt.lib',
+                 'liblwoegg.lib',
+                 'liblwo.lib',
+                 'libdxfegg.lib',
+                 'libdxf.lib',
+                 'libvrmlegg.lib',
+                 'libpvrml.lib',
+                 'libxfileegg.lib',
+                 'libxfile.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-# for VER in ["5","6","65"]:
-#   if (OMIT.count('MAYA'+VER)==0):
-#     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
-#            'pandatool/src/cvscopy']
-#     OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx', obj='mayaeggimport'+VER+'_mayaeggimport.obj')
-#     CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
-#                 'mayaegg'+VER+'_loader.obj',
-#                 'mayaeggimport'+VER+'_mayaeggimport.obj',
-#                 'libpandaegg.dll',
-#                 'libpanda.dll',
-#                 'libpandaexpress.dll',
-#                 'libdtoolconfig.dll',
-#                 'libdtool.dll',
-#                 'libpystub.dll'
-#                ])
-#     CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
-#     CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayaloader'+VER+'_config_mayaloader.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libptloader.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libfltegg.lib',
-#                  'libflt.lib',
-#                  'liblwoegg.lib',
-#                  'liblwo.lib',
-#                  'libdxfegg.lib',
-#                  'libdxf.lib',
-#                  'libvrmlegg.lib',
-#                  'libpvrml.lib',
-#                  'libxfileegg.lib',
-#                  'libxfile.lib',
-#                  'libeggbase.lib',
-#                  'libprogbase.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#     ])
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
-#     CompileLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayapview'+VER+'_mayaPview.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libpandaegg.dll',
-#                  'libframework.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-#     OPTS=['MAYA'+VER, 'NSPR']
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
-#     CompileLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'maya2egg'+VER+'_mayaToEgg.obj',
-#                  'libmayaegg'+VER+'.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libeggbase.lib',
-#                  'libprogbase.lib',
-#                  'libconverter.lib',
-#                  'libpandatoolbase.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-#     CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
-#     CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                  'mayacopy'+VER+'_mayaCopy.obj',
-#                  'libcvscopy.lib',
-#                  'libmaya'+VER+'.lib',
-#                  'libprogbase.lib',
-#                  'libpandatoolbase.lib',
-#                  'libconverter.lib',
-#                  'libpandaegg.dll',
-#                  'libpanda.dll',
-#                  'libpandaexpress.dll',
-#                  'libdtoolconfig.dll',
-#                  'libdtool.dll',
-#                  'libpystub.dll',
-#     ])
-# #    CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-# #    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-# #                 'mayasavepview'+VER+'_mayaSavePview.obj',
-# #    ])
+for VER in ["5","6","65"]:
+  if (OMIT.count('MAYA'+VER)==0) and (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
+           'pandatool/src/cvscopy']
+    OPTS=['BUILDING_MISC', 'MAYA'+VER, 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggImport.cxx', obj='mayaeggimport'+VER+'_mayaeggimport.obj')
+    CompileLink(opts=OPTS, dll='mayaeggimport'+VER+'.mll', obj=[
+                'mayaegg'+VER+'_loader.obj',
+                'mayaeggimport'+VER+'_mayaeggimport.obj',
+                'libpandaegg.dll',
+                'libpanda.dll',
+                'libpandaexpress.dll',
+                'libdtoolconfig.dll',
+                'libdtool.dll',
+                'libpystub.dll'
+               ])
+    CompileC(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
+    CompileLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayaloader'+VER+'_config_mayaloader.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libptloader.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libmaya'+VER+'.lib',
+                 'libfltegg.lib',
+                 'libflt.lib',
+                 'liblwoegg.lib',
+                 'liblwo.lib',
+                 'libdxfegg.lib',
+                 'libdxf.lib',
+                 'libvrmlegg.lib',
+                 'libpvrml.lib',
+                 'libxfileegg.lib',
+                 'libxfile.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
+    CompileLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayapview'+VER+'_mayaPview.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libmaya'+VER+'.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libframework.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    OPTS=['MAYA'+VER, 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
+    CompileLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'maya2egg'+VER+'_mayaToEgg.obj',
+                 'libmayaegg'+VER+'.lib',
+                 'libmaya'+VER+'.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libconverter.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
+    CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayacopy'+VER+'_mayaCopy.obj',
+                 'libcvscopy.lib',
+                 'libmaya'+VER+'.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+#    CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
+#    CompileLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+#                 'mayasavepview'+VER+'_mayaSavePview.obj',
+#    ])
+
 
 #
 # DIRECTORY: pandatool/src/miscprogs/
 #
 
-IPATH=['pandatool/src/miscprogs']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='binToC.cxx', obj='bin2c_binToC.obj')
-CompileLink(dll='bin2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'bin2c_binToC.obj',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/miscprogs']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='binToC.cxx', obj='bin2c_binToC.obj')
+    CompileLink(dll='bin2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'bin2c_binToC.obj',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/pstatserver/
 #
 
-if OMIT.count("NSPR")==0:
+if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/pstatserver']
     OPTS=['NSPR']
     CopyAllHeaders(IPATH[0])
@@ -4130,29 +4203,30 @@ if OMIT.count("NSPR")==0:
 # DIRECTORY: pandatool/src/softprogs/
 #
 
-IPATH=['pandatool/src/softprogs']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='softCVS.cxx', obj='softcvs_softCVS.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='softFilename.cxx', obj='softcvs_softFilename.obj')
-CompileLink(opts=['ADVAPI', 'NSPR'], dll='softcvs.exe', obj=[
-             'softcvs_softCVS.obj',
-             'softcvs_softFilename.obj',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/softprogs']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='softCVS.cxx', obj='softcvs_softCVS.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='softFilename.cxx', obj='softcvs_softFilename.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR'], dll='softcvs.exe', obj=[
+                 'softcvs_softCVS.obj',
+                 'softcvs_softFilename.obj',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/text-stats/
 #
 
-if OMIT.count("NSPR")==0:
+if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/text-stats']
     OPTS=['NSPR']
     CopyAllHeaders(IPATH[0])
@@ -4176,44 +4250,44 @@ if OMIT.count("NSPR")==0:
 # DIRECTORY: pandatool/src/vrmlprogs/
 #
 
-IPATH=['pandatool/src/vrmlprogs', 'pandatool/src/vrml', 'pandatool/src/vrmlegg']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlTrans.cxx', obj='vrml-trans_vrmlTrans.obj')
-CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml-trans.exe', obj=[
-             'vrml-trans_vrmlTrans.obj',
-             'libprogbase.lib',
-             'libpvrml.lib',
-             'libpandatoolbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='vrmlToEgg.cxx', obj='vrml2egg_vrmlToEgg.obj')
-CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
-             'vrml2egg_vrmlToEgg.obj',
-             'libvrmlegg.lib',
-             'libpvrml.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/vrmlprogs', 'pandatool/src/vrml', 'pandatool/src/vrmlegg']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlTrans.cxx', obj='vrml-trans_vrmlTrans.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml-trans.exe', obj=[
+                 'vrml-trans_vrmlTrans.obj',
+                 'libprogbase.lib',
+                 'libpvrml.lib',
+                 'libpandatoolbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='vrmlToEgg.cxx', obj='vrml2egg_vrmlToEgg.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
+                 'vrml2egg_vrmlToEgg.obj',
+                 'libvrmlegg.lib',
+                 'libpvrml.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/win-stats/
 #
 
-if (OMIT.count("NSPR")==0) and (sys.platform == "win32"):
+if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0) and (sys.platform == "win32"):
     IPATH=['pandatool/src/win-stats']
     OPTS=['NSPR']
     CopyAllHeaders(IPATH[0])
@@ -4235,77 +4309,77 @@ if (OMIT.count("NSPR")==0) and (sys.platform == "win32"):
 # DIRECTORY: pandatool/src/xfileprogs/
 #
 
-IPATH=['pandatool/src/xfileprogs', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='eggToX.cxx', obj='egg2x_eggToX.obj')
-CompileLink(dll='egg2x.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'egg2x_eggToX.obj',
-             'libxfileegg.lib',
-             'libxfile.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='xFileTrans.cxx', obj='x-trans_xFileTrans.obj')
-CompileLink(dll='x-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'x-trans_xFileTrans.obj',
-             'libprogbase.lib',
-             'libxfile.lib',
-             'libpandatoolbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='xFileToEgg.cxx', obj='x2egg_xFileToEgg.obj')
-CompileLink(opts=['ADVAPI', 'NSPR'], dll='x2egg.exe', obj=[
-             'x2egg_xFileToEgg.obj',
-             'libxfileegg.lib',
-             'libxfile.lib',
-             'libconverter.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if (OMIT.count("PANDATOOL")==0):
+    IPATH=['pandatool/src/xfileprogs', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='eggToX.cxx', obj='egg2x_eggToX.obj')
+    CompileLink(dll='egg2x.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg2x_eggToX.obj',
+                 'libxfileegg.lib',
+                 'libxfile.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='xFileTrans.cxx', obj='x-trans_xFileTrans.obj')
+    CompileLink(dll='x-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'x-trans_xFileTrans.obj',
+                 'libprogbase.lib',
+                 'libxfile.lib',
+                 'libpandatoolbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='xFileToEgg.cxx', obj='x2egg_xFileToEgg.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR'], dll='x2egg.exe', obj=[
+                 'x2egg_xFileToEgg.obj',
+                 'libxfileegg.lib',
+                 'libxfile.lib',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandaapp/src/pandaappbase/
 #
 
-IPATH=['pandaapp/src/pandaappbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='pandaappbase.cxx', obj='pandaappbase_pandaappbase.obj')
-CompileLIB(lib='libpandaappbase.lib', obj=['pandaappbase_pandaappbase.obj'])
+if (OMIT.count("PANDAAPP")==0):
+    IPATH=['pandaapp/src/pandaappbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='pandaappbase.cxx', obj='pandaappbase_pandaappbase.obj')
+    CompileLIB(lib='libpandaappbase.lib', obj=['pandaappbase_pandaappbase.obj'])
 
 #
 # DIRECTORY: pandaapp/src/httpbackup/
 #
 
-if OMIT.count("SSL")==0:
+if (OMIT.count("OPENSSL")==0) and (OMIT.count("PANDAAPP")==0):
     IPATH=['pandaapp/src/httpbackup', 'pandaapp/src/pandaappbase']
-    OPTS=['SSL', 'NSPR']
+    OPTS=['OPENSSL', 'NSPR']
     CopyAllHeaders(IPATH[0])
     CompileC(ipath=IPATH, opts=OPTS, src='backupCatalog.cxx', obj='httpbackup_backupCatalog.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='httpBackup.cxx', obj='httpbackup_httpBackup.obj')
-    CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='httpbackup.exe', obj=[
+    CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='httpbackup.exe', obj=[
                  'httpbackup_backupCatalog.obj',
                  'httpbackup_httpBackup.obj',
                  'libpandaappbase.lib',
@@ -4322,7 +4396,7 @@ if OMIT.count("SSL")==0:
 # DIRECTORY: pandaapp/src/indexify/
 #
 
-if OMIT.count("FREETYPE")==0:
+if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDAAPP")==0):
     IPATH=['pandaapp/src/indexify']
     OPTS=['NSPR', 'FREETYPE']
     CopyAllHeaders(IPATH[0])
@@ -4339,7 +4413,6 @@ if OMIT.count("FREETYPE")==0:
                  'libpandatoolbase.lib',
                  'libpystub.dll',
     ])
-
     CompileC(ipath=IPATH, opts=OPTS, src='default_index_icons.cxx', obj='indexify_default_index_icons.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='indexify_default_font.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='indexImage.cxx', obj='indexify_indexImage.obj')
@@ -4368,77 +4441,60 @@ if OMIT.count("FREETYPE")==0:
 # DIRECTORY: pandaapp/src/stitchbase/
 #
 
-CompileBison(pre='stitchyy', dstc='stitchParser.cxx', dsth='stitchParser.h', src='pandaapp/src/stitchbase/stitchParser.yxx')
-CompileFlex(pre='stitchyy', dst='stitchLexer.cxx', src='pandaapp/src/stitchbase/stitchLexer.lxx', dashi=1)
-IPATH=['pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite1.cxx', obj='stitchbase_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite2.cxx', obj='stitchbase_composite2.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchParser.cxx', obj='stitchbase_stitchParser.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchLexer.cxx', obj='stitchbase_stitchLexer.obj')
-CompileLIB(lib='libstitchbase.lib', obj=[
-             'stitchbase_composite1.obj',
-             'stitchbase_composite2.obj',
-             'stitchbase_stitchParser.obj',
-             'stitchbase_stitchLexer.obj',
-])
+if (OMIT.count("PANDAAPP")==0):
+    CompileBison(pre='stitchyy', dstc='stitchParser.cxx', dsth='stitchParser.h', src='pandaapp/src/stitchbase/stitchParser.yxx')
+    CompileFlex(pre='stitchyy', dst='stitchLexer.cxx', src='pandaapp/src/stitchbase/stitchLexer.lxx', dashi=1)
+    IPATH=['pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite1.cxx', obj='stitchbase_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite2.cxx', obj='stitchbase_composite2.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchParser.cxx', obj='stitchbase_stitchParser.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchLexer.cxx', obj='stitchbase_stitchLexer.obj')
+    CompileLIB(lib='libstitchbase.lib', obj=[
+                 'stitchbase_composite1.obj',
+                 'stitchbase_composite2.obj',
+                 'stitchbase_stitchParser.obj',
+                 'stitchbase_stitchLexer.obj',
+    ])
 
 #
 # DIRECTORY: pandaapp/src/stitch/
 #
 
-IPATH=['pandaapp/src/stitch', 'pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
-OPTS=['NSPR']
-CopyAllHeaders(IPATH[0])
-CompileC(ipath=IPATH, opts=OPTS, src='stitchCommandProgram.cxx', obj='stitch-command_stitchCommandProgram.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-command.exe', obj=[
-             'stitch-command_stitchCommandProgram.obj',
-             'libstitchbase.lib',
-             'libpandaappbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpystub.dll',
-])
-
-CompileC(ipath=IPATH, opts=OPTS, src='stitchImageProgram.cxx', obj='stitch-image_stitchImageProgram.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
-             'stitch-image_stitchImageProgram.obj',
-             'libstitchbase.lib',
-             'libpandaappbase.lib',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpystub.dll',
-])
-
-#
-# DIRECTORY: panda/src/gsgmisc/
-#
-#
-#IPATH=['panda/src/gsgmisc']
-#OPTS=['BUILDING_PANDA', 'NSPR']
-#CopyAllHeaders(IPATH[0])
-#CompileC(ipath=IPATH, opts=OPTS, src='geomIssuer.cxx', obj='gsgmisc_geomIssuer.obj')
-
-#
-# DIRECTORY: panda/src/builder/
-#
-# 
-# IPATH=['panda/src/builder']
-# OPTS=['BUILDING_PANDAEGG', 'NSPR']
-# CopyAllHeaders(IPATH[0])
-# CompileC(ipath=IPATH, opts=OPTS, src='builder_composite1.cxx', obj='builder_composite1.obj')
-# CompileC(ipath=IPATH, opts=OPTS, src='builder_composite2.cxx', obj='builder_composite2.obj')
+if (OMIT.count("PANDAAPP")==0):
+    IPATH=['pandaapp/src/stitch', 'pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
+    OPTS=['NSPR']
+    CopyAllHeaders(IPATH[0])
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchCommandProgram.cxx', obj='stitch-command_stitchCommandProgram.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-command.exe', obj=[
+                 'stitch-command_stitchCommandProgram.obj',
+                 'libstitchbase.lib',
+                 'libpandaappbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpystub.dll',
+    ])
+    
+    CompileC(ipath=IPATH, opts=OPTS, src='stitchImageProgram.cxx', obj='stitch-image_stitchImageProgram.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
+                 'stitch-image_stitchImageProgram.obj',
+                 'libstitchbase.lib',
+                 'libpandaappbase.lib',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpystub.dll',
+    ])
 
 ##########################################################################################
 #
@@ -4630,5 +4686,11 @@ if (INSTALLER != 0):
 ##########################################################################################
 
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
+WARNINGS.append("Time(CompileC): "+PrettyTime(TIMECOMPILEC))
+WARNINGS.append("Time(CompileLib): "+PrettyTime(TIMECOMPILELIB))
+WARNINGS.append("Time(CompileLink): "+PrettyTime(TIMECOMPILELINK))
+WARNINGS.append("Time(Interrogate): "+PrettyTime(TIMEINTERROGATE))
+WARNINGS.append("Time(InterrogateModule): "+PrettyTime(TIMEINTERROGATEMODULE))
+
 printStatus("Makepanda Final Status Report", WARNINGS)
 

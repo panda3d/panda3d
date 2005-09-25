@@ -31,6 +31,7 @@
 #include "texMatrixAttrib.h"
 #include "geomMunger.h"
 #include "weakPointerTo.h"
+#include "shaderExpansion.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -148,6 +149,8 @@ public:
   void store_into_slots(AttribSlots *slots) const;
   
   static void bin_removed(int bin_index);
+  INLINE ShaderExpansion *get_shader_expansion() const;
+  INLINE void set_shader_expansion(ShaderExpansion *exp);
 
 private:
   class CompositionCycleDescEntry {
@@ -271,6 +274,11 @@ private:
   int _bin_index;
   int _draw_order;
 
+  // If this renderstate contains a Shader, then the macroexpansion
+  // of the shader needs to be cached (to avoid having to regenerate
+  // it each time this RenderState is applied).
+  PT(ShaderExpansion) _shader_expansion;
+  
   // We also cache the pointer to some critical attribs stored in the
   // state, if they exist.
   const FogAttrib *_fog;

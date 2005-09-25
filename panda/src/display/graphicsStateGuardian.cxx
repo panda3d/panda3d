@@ -23,17 +23,7 @@
 #include "vertexBufferContext.h"
 #include "indexBufferContext.h"
 #include "renderBuffer.h"
-#include "colorAttrib.h"
-#include "colorScaleAttrib.h"
-#include "lightAttrib.h"
-#include "textureAttrib.h"
-#include "texGenAttrib.h"
-#include "renderState.h"
-#include "depthWriteAttrib.h"
-#include "colorWriteAttrib.h"
-#include "textureAttrib.h"
-#include "lightAttrib.h"
-#include "clipPlaneAttrib.h"
+#include "attribSlots.h"
 #include "light.h"
 #include "planeNode.h"
 #include "ambientLight.h"
@@ -279,7 +269,8 @@ reset() {
   _frame_buffer_stack_level = 0;
   _lens_stack_level = 0;
 
-  _last_state = NULL;
+  _state_rs = NULL;
+  _target_rs = NULL;
   _state.clear_to_zero();
   _target.clear_to_defaults();
   _external_transform = TransformState::make_identity();
@@ -430,7 +421,7 @@ release_geom(GeomContext *) {
 //  Description: Compile a vertex/fragment shader body.
 ////////////////////////////////////////////////////////////////////
 ShaderContext *GraphicsStateGuardian::
-prepare_shader(Shader *shader) {
+prepare_shader(ShaderExpansion *shader) {
   return (ShaderContext *)NULL;
 }
 
@@ -672,7 +663,7 @@ begin_frame() {
   // have changed properties since last time without changing
   // attribute pointers--like textures, lighting, or fog--will still
   // be accurately updated.
-  _last_state = 0;
+  _state_rs = 0;
   _state.clear_to_zero();
   
   return true;
@@ -751,7 +742,7 @@ end_scene() {
   }
 
   // Put the state into the 'unknown' state, forcing a reload.
-  _last_state = 0;
+  _state_rs = 0;
   _state.clear_to_zero();
 
   // We need to reset this to force a dynamic texture to be reloaded
@@ -1033,15 +1024,15 @@ do_issue_color_scale() {
   _current_color_scale = attrib->get_scale();
   
   if (_color_blend_involves_color_scale) {
-    _last_state = 0;
+    _state_rs = 0;
     _state._transparency = 0;
   }
   if (_texture_involves_color_scale) {
-    _last_state = 0;
+    _state_rs = 0;
     _state._texture = 0;
   }
   if (_color_scale_via_lighting) {
-    _last_state = 0;
+    _state_rs = 0;
     _state._light = 0;
     _state._material = 0;
 
@@ -1090,7 +1081,7 @@ do_issue_color() {
   }
 
   if (_color_scale_via_lighting) {
-    _last_state = 0;
+    _state_rs = 0;
     _state._light = 0;
     _state._material = 0;
 

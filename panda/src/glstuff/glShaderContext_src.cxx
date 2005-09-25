@@ -24,7 +24,7 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
-CLP(ShaderContext)(Shader *s) : ShaderContext(s) {
+CLP(ShaderContext)(ShaderExpansion *s) : ShaderContext(s) {
   string header;
   s->parse_init();
   s->parse_line(header, true, true);
@@ -58,13 +58,13 @@ CLP(ShaderContext)(Shader *s) : ShaderContext(s) {
     _cg_program[0] =
       cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                       _cg_profile[0], "vshader", (const char**)NULL);
-    print_cg_compile_errors(s->_file, _cg_context);
+    print_cg_compile_errors(s->get_name(), _cg_context);
 
     cgGetError();
     _cg_program[1] =
       cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                       _cg_profile[1], "fshader", (const char**)NULL);
-    print_cg_compile_errors(s->_file, _cg_context);
+    print_cg_compile_errors(s->get_name(), _cg_context);
 
     if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
       release_resources();
@@ -88,12 +88,12 @@ CLP(ShaderContext)(Shader *s) : ShaderContext(s) {
     cgGLLoadProgram(_cg_program[SHADER_type_vert]);
     cgGLLoadProgram(_cg_program[SHADER_type_frag]);
     
-    cerr << s->_file << ": compiled ok.\n";
+    cerr << s->get_name() << ": compiled ok.\n";
     return;
   }
 #endif
   
-  cerr << s->_file << ": unrecognized shader language " << header << "\n";
+  cerr << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,13 +134,13 @@ release_resources() {
 //               input parameters.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-bind(ShaderMode *m, GSG *gsg) {
+bind(GSG *gsg) {
 #ifdef HAVE_CGGL
   if (_cg_context != 0) {
 
     // Pass in k-parameters and transform-parameters
-    issue_parameters(m, gsg);
-    issue_transform(m, gsg);
+    issue_parameters(gsg);
+    issue_transform(gsg);
     
     // Bind the shaders.
     cgGLEnableProfile(_cg_profile[SHADER_type_vert]);
@@ -171,39 +171,42 @@ unbind()
 //     Function: GLShaderContext::issue_parameters
 //       Access: Public
 //  Description: This function is to be called whenever
-//               the ShaderMode has changed, but the Shader
-//               itself has not changed.  It loads the new
-//               input parameters into the already-bound shader.
+//               the RenderState has changed, but the ShaderExpansion
+//               has not changed.  It loads the new input parameters
+//               into the already-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_parameters(ShaderMode *m, GSG *gsg)
+issue_parameters(GSG *gsg)
 {
 #ifdef HAVE_CGGL
   if (_cg_context != 0) {
     // Pass in k-float parameters.
     for (int i=0; i<(int)_cg_fbind.size(); i++) {
-      int index = _cg_fbind[i].argindex;
-      if (index >= (int)m->_args.size()) continue;
-      if (m->_args[index]._type != ShaderModeArg::SAT_FLOAT) continue;
-      cgGLSetParameter4dv(_cg_fbind[i].parameter, m->_args[index]._fvalue.get_data());
+      InternalName *id = _cg_fbind[i].name;
+      const ShaderInput *input = gsg->_target._shader->get_input(id);
+      cgGLSetParameter4fv(_cg_fbind[i].parameter, input->get_vector().get_data());
     }
-
+    
     // Pass in k-float4x4 parameters.
     for (int i=0; i<(int)_cg_npbind.size(); i++) {
-      int index = _cg_npbind[i].argindex;
-      if (index >= (int)m->_args.size()) continue;
-      if (m->_args[index]._type != ShaderModeArg::SAT_NODEPATH) continue;
-      const float *dat = m->_args[index]._nvalue.node()->get_transform()->get_mat().get_data();
+      InternalName *id = _cg_npbind[i].name;
+      const ShaderInput *input = gsg->_target._shader->get_input(id);
+      const float *dat;
+      if (input->get_nodepath().is_empty()) {
+        dat = LMatrix4f::ident_mat().get_data();
+      } else {
+        dat = input->get_nodepath().node()->get_transform()->get_mat().get_data();
+      }
       cgGLSetMatrixParameterfc(_cg_npbind[i].parameter, dat);
     }
     
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
     for (int i=0; i<(int)_cg_parameter_bind.size(); i++)
-      bind_cg_transform(_cg_parameter_bind[i], m, gsg);
+      bind_cg_transform(_cg_parameter_bind[i], gsg);
 
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
     for (int i=0; i<(int)_cg_transform_bind.size(); i++)
-      bind_cg_transform(_cg_transform_bind[i], m, gsg);
+      bind_cg_transform(_cg_transform_bind[i], gsg);
   }
 #endif
 }
@@ -213,11 +216,11 @@ issue_parameters(ShaderMode *m, GSG *gsg)
 //       Access: Public
 //  Description: This function is to be called whenever
 //               the external_transform has changed, but the
-//               Shader itself has not changed.  It loads the 
+//               ShaderExpansion itself has not changed.  It loads the 
 //               new transform into the already-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_transform(ShaderMode *m, GSG *gsg)
+issue_transform(GSG *gsg)
 {
 #ifdef HAVE_CGGL
   if (_cg_context != 0) {
@@ -229,7 +232,7 @@ issue_transform(ShaderMode *m, GSG *gsg)
     
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
     for (int i=0; i<(int)_cg_transform_bind.size(); i++)
-      bind_cg_transform(_cg_transform_bind[i], m, gsg);
+      bind_cg_transform(_cg_transform_bind[i], gsg);
   }
 #endif
 }
@@ -284,8 +287,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             gsg->_current_texture->get_on_stages();
           if (texslot < (int)active_stages.size()) {
             TextureStage *stage = active_stages[texslot];
-            const InternalName *slotname = stage->get_texcoord_name();
-            name = name->append(slotname->get_name());
+            name = name->append(stage->get_texcoord_name()->get_name());
           }
         }
         if (gsg->_vertex_data->get_array_info(name,
@@ -309,42 +311,43 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::bind_cg_transform
 //       Access: Public
-//  Description: Should deallocate all system resources (such as
-//               vertex program handles or Cg contexts).
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-bind_cg_transform(const ShaderTransBind &stb, ShaderMode *m, GSG *gsg)
+bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 {
   CPT(TransformState) src;
   CPT(TransformState) rel;
   
-  if (stb.src_argindex < 0) {
-    if (stb.src_argindex == SHADER_arg_camera)
-      src = TransformState::make_identity();
-    else if (stb.src_argindex == SHADER_arg_model)
-      src = gsg->get_transform();
-    else
-      src = gsg->get_scene()->get_world_transform();
+  if (stb.src_name == InternalName::get_camera()) {
+    src = TransformState::make_identity();
+  } else if (stb.src_name == InternalName::get_model()) {
+    src = gsg->get_transform();
+  } else if (stb.src_name == InternalName::get_world()) {
+    src = gsg->get_scene()->get_world_transform();
   } else {
-    if ((int)m->_args.size() > stb.src_argindex) {
-      ShaderModeArg *arg = &(m->_args[stb.src_argindex]);
-      if (arg->_type == ShaderModeArg::SAT_NODEPATH)
-        src = gsg->get_scene()->get_world_transform()->compose(arg->_nvalue.get_net_transform());
+    const ShaderInput *input = gsg->_target._shader->get_input(stb.src_name);
+    if (input->get_nodepath().is_empty()) {
+      src = gsg->get_scene()->get_world_transform();
+    } else {
+      src = gsg->get_scene()->get_world_transform()->
+        compose(input->get_nodepath().get_net_transform());
     }
   }
 
-  if (stb.rel_argindex < 0) {
-    if (stb.rel_argindex == SHADER_arg_camera)
-      rel = TransformState::make_identity();
-    else if (stb.rel_argindex == SHADER_arg_model)
-      rel = gsg->get_transform();
-    else
-      rel = gsg->get_scene()->get_world_transform();
+  if (stb.rel_name == InternalName::get_camera()) {
+    rel = TransformState::make_identity();
+  } else if (stb.rel_name == InternalName::get_model()) {
+    rel = gsg->get_transform();
+  } else if (stb.rel_name == InternalName::get_world()) {
+    rel = gsg->get_scene()->get_world_transform();
   } else {
-    if ((int)m->_args.size() > stb.rel_argindex) {
-      ShaderModeArg *arg = &(m->_args[stb.rel_argindex]);
-      if (arg->_type == ShaderModeArg::SAT_NODEPATH)
-        rel = gsg->get_scene()->get_world_transform()->compose(arg->_nvalue.get_net_transform());
+    const ShaderInput *input = gsg->_target._shader->get_input(stb.rel_name);
+    if (input->get_nodepath().is_empty()) {
+      rel = gsg->get_scene()->get_world_transform();
+    } else {
+      rel = gsg->get_scene()->get_world_transform()->
+        compose(input->get_nodepath().get_net_transform());
     }
   }
   
@@ -526,7 +529,7 @@ errchk_cg_output(CGparameter p, const string &msg)
   const char *ts = cgGetTypeString(cgGetParameterType(p));
   
   string err;
-  string fn = _shader->_file;
+  string fn = _shader_expansion->get_name();
   err = fn + ": " + msg + " (" + vstr + dstr + ts + " " + cgGetParameterName(p) + ")\n";
   cerr << err << "\n";
 }
@@ -656,14 +659,8 @@ compile_cg_parameter(CGparameter p)
     else if (pieces[0]=="col2") bind.trans_piece = SHADER_data_col2;
     else if (pieces[0]=="col3") bind.trans_piece = SHADER_data_col3;
 
-    if      (pieces[1] == "world")  bind.src_argindex = SHADER_arg_world;
-    else if (pieces[1] == "camera") bind.src_argindex = SHADER_arg_camera;
-    else if (pieces[1] == "model")  bind.src_argindex = SHADER_arg_model;
-    else bind.src_argindex = _shader->arg_index(pieces[1]);
-    if      (pieces[3] == "world")  bind.rel_argindex = SHADER_arg_world;
-    else if (pieces[3] == "camera") bind.rel_argindex = SHADER_arg_camera;
-    else if (pieces[3] == "model")  bind.rel_argindex = SHADER_arg_model;
-    else bind.rel_argindex = _shader->arg_index(pieces[3]);
+    bind.src_name = InternalName::make(pieces[1]);
+    bind.rel_name = InternalName::make(pieces[3]);
 
     if ((bind.trans_piece == SHADER_data_matrix)||(bind.trans_piece == SHADER_data_transpose)) {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4x4)) return false;
@@ -672,8 +669,8 @@ compile_cg_parameter(CGparameter p)
     }
 
     _cg_parameter_bind.push_back(bind);
-    if ((bind.src_argindex == SHADER_arg_model) ||
-        (bind.rel_argindex == SHADER_arg_model)) {
+    if ((bind.src_name == InternalName::get_model()) ||
+        (bind.rel_name == InternalName::get_model())) {
       _cg_transform_bind.push_back(bind);
     }
     return true;
@@ -692,17 +689,14 @@ compile_cg_parameter(CGparameter p)
     ShaderTransBind bind;
     bind.parameter = p;
     
-    if      (pieces[0]=="wstrans") { bind.rel_argindex = SHADER_arg_world;  bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="cstrans") { bind.rel_argindex = SHADER_arg_camera; bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="mstrans") { bind.rel_argindex = SHADER_arg_model;  bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="wspos")   { bind.rel_argindex = SHADER_arg_world;  bind.trans_piece = SHADER_data_row3; }
-    else if (pieces[0]=="cspos")   { bind.rel_argindex = SHADER_arg_camera; bind.trans_piece = SHADER_data_row3; }
-    else if (pieces[0]=="mspos")   { bind.rel_argindex = SHADER_arg_model;  bind.trans_piece = SHADER_data_row3; }
-    
-    if      (pieces[1] == "world")  bind.src_argindex = SHADER_arg_world;
-    else if (pieces[1] == "camera") bind.src_argindex = SHADER_arg_camera;
-    else if (pieces[1] == "model")  bind.src_argindex = SHADER_arg_model;
-    else bind.src_argindex = _shader->arg_index(pieces[1]);
+    if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_matrix; }
+    else if (pieces[0]=="cstrans") { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_matrix; }
+    else if (pieces[0]=="mstrans") { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_matrix; }
+    else if (pieces[0]=="wspos")   { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_row3; }
+    else if (pieces[0]=="cspos")   { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_row3; }
+    else if (pieces[0]=="mspos")   { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_row3; }
+
+    bind.src_name = InternalName::make(pieces[1]);
     
     if ((bind.trans_piece == SHADER_data_matrix)||(bind.trans_piece == SHADER_data_transpose)) {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4x4)) return false;
@@ -710,9 +704,10 @@ compile_cg_parameter(CGparameter p)
       if (!errchk_cg_parameter_type(p, CG_FLOAT4)) return false;
     }
     _cg_parameter_bind.push_back(bind);
-    if ((bind.src_argindex == SHADER_arg_model) ||
-        (bind.rel_argindex == SHADER_arg_model))
+    if ((bind.src_name == InternalName::get_model()) ||
+        (bind.rel_name == InternalName::get_model())) {
       _cg_transform_bind.push_back(bind);
+    }
     return true;
   }
 
@@ -760,7 +755,7 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderArgBind bind;
     bind.parameter = p;
-    bind.argindex = _shader->arg_index(pieces[1]);
+    bind.name = InternalName::make(pieces[1]);
     switch (cgGetParameterType(p)) {
     case CG_FLOAT4:    _cg_fbind.push_back(bind); break;
     case CG_SAMPLER2D: _cg_tbind2d.push_back(bind); break;
@@ -772,17 +767,17 @@ compile_cg_parameter(CGparameter p)
     }
     return true;
   }
-
+  
   if (pieces[0] == "l") {
     // IMPLEMENT THE ERROR CHECKING
     return true; // Cg handles this automatically.
   }
-
+  
   if (pieces[0] == "o") {
     // IMPLEMENT THE ERROR CHECKING
     return true; // Cg handles this automatically.
   }
-
+  
   errchk_cg_output(p, "unrecognized parameter name");
   return false;
 }

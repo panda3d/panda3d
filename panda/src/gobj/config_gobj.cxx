@@ -42,7 +42,7 @@
 #include "texture.h"
 #include "textureStage.h"
 #include "textureContext.h"
-#include "shader.h"
+#include "shaderExpansion.h"
 #include "shaderContext.h"
 #include "transformBlendTable.h"
 #include "transformTable.h"
@@ -249,7 +249,7 @@ ConfigureFn(config_gobj) {
   Texture::init_type();
   dDrawable::init_type();
   TextureStage::init_type();
-  Shader::init_type();
+  ShaderExpansion::init_type();
   ShaderContext::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();
@@ -278,7 +278,6 @@ ConfigureFn(config_gobj) {
   MatrixLens::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
   SliderTable::register_with_read_factory();
-  Shader::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
   TransformBlendTable::register_with_read_factory();

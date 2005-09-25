@@ -81,6 +81,9 @@ PUBLISHED:
   INLINE static PT(InternalName) get_transform_index();
   INLINE static PT(InternalName) get_morph(InternalName *column, const string &slider);
   INLINE static PT(InternalName) get_index();
+  INLINE static PT(InternalName) get_world();
+  INLINE static PT(InternalName) get_camera();
+  INLINE static PT(InternalName) get_model();
 
 private:
   PT(InternalName) _parent;
@@ -105,6 +108,9 @@ private:
   static PT(InternalName) _transform_weight;
   static PT(InternalName) _transform_index;
   static PT(InternalName) _index;
+  static PT(InternalName) _world;
+  static PT(InternalName) _camera;
+  static PT(InternalName) _model;
   
 public:
   // Datagram stuff

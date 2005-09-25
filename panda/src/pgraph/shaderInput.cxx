@@ -1,5 +1,5 @@
-// Filename: shaderMode.I
-// Heavily Modified:  jyelon (01Sep05)
+// Filename: shaderInput.cxx
+// Created by: jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "shaderInput.h"
+
+TypeHandle ShaderInput::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
-//  Function: ShaderModeArg::Constructor
-//  Access: Public
-//  Description: initialize a shader arg storage structure.
+//     Function: ShaderInput::get_blank
+//       Access: Public, Static
+//  Description: Returns a static ShaderInput object with
+//               name NULL, priority zero, type INVALID, and
+//               all value-fields cleared.
 ////////////////////////////////////////////////////////////////////
-INLINE ShaderModeArg::
-ShaderModeArg() {
-  _type = SAT_INVALID;
+const ShaderInput *ShaderInput::
+get_blank() {
+  static CPT(ShaderInput) blank;
+  if (blank == 0) {
+    blank = new ShaderInput(NULL, 0);
+  }
+  return blank;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
-//  Function: ShaderModeArg::Destructor
-//  Access: Public
-//  Description: delete a shader arg storage structure.
+//     Function: ShaderInput::register_with_read_factory
+//       Access: Public, Static
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ShaderModeArg::
-~ShaderModeArg() {
-}
- 
-////////////////////////////////////////////////////////////////////
-//  Function: ShaderMode::get_shader
-//  Access: Public
-//  Description: Return the Shader associated with this shader mode.
-////////////////////////////////////////////////////////////////////
-INLINE Shader *ShaderMode::
-get_shader() {
-  return _shader;
+void ShaderInput::
+register_with_read_factory() {
+  // IMPLEMENT ME
 }
 

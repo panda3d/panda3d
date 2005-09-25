@@ -27,7 +27,6 @@
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
 #include "nodePathComponent.h"
-
 #include "pointerTo.h"
 #include "referenceCount.h"
 #include "notify.h"
@@ -46,6 +45,8 @@ class Material;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
+class Shader;
+class ShaderInput;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with
@@ -553,6 +554,24 @@ PUBLISHED:
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
 
+  void set_shader(Shader *sha, int priority = 0);
+  void set_shader_off(int priority = 0);
+  void clear_shader();
+  const Shader *get_shader() const;
+  void set_shader_input(const ShaderInput *inp);
+  const ShaderInput *get_shader_input(InternalName *id) const;
+  void clear_shader_input(InternalName *id);
+  void set_shader_input(InternalName *id, Texture *tex,       int priority=0);
+  void set_shader_input(InternalName *id, const NodePath &np, int priority=0);
+  void set_shader_input(InternalName *id, const LVector4f &v, int priority=0);
+  void set_shader_input(InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1, int priority=0);
+  void set_shader_input(const string &id, Texture *tex,       int priority=0);
+  void set_shader_input(const string &id, const NodePath &np, int priority=0);
+  void set_shader_input(const string &id, const LVector4f &v, int priority=0);
+  void set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1, int priority=0);
+  const ShaderInput *get_shader_input(const string &id) const;
+  void clear_shader_input(const string &id);
+  
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
   void clear_tex_transform();
   void clear_tex_transform(TextureStage *stage);

@@ -137,9 +137,8 @@ make_default_impl() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DepthOffsetAttrib::store_into_slot
 //       Access: Public, Virtual
-//  Description: When attribs are stored in a slot-based attrib array,
-//               this returns the index of the appropriate slot
-//               for this attrib type.
+//  Description: Stores this attrib into the appropriate slot of
+//               an object of class AttribSlots.
 ////////////////////////////////////////////////////////////////////
 void DepthOffsetAttrib::
 store_into_slot(AttribSlots *slots) const {

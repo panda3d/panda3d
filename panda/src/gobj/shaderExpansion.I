@@ -1,4 +1,4 @@
-// Filename: shader.I
+// Filename: shaderExpansion.I
 // Heavily Modified:  jyelon (Sep05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -17,22 +17,22 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_text
+//  Function: ShaderExpansion::get_name
 //  Access: Public
-//  Description: Return the shader's text.
+//  Description: Return the ShaderExpansion's text.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &Shader::
-get_text() {
-  return _text;
+INLINE const string &ShaderExpansion::
+get_name() const {
+  return _name;
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_file
+//  Function: ShaderExpansion::get_text
 //  Access: Public
-//  Description: Return the shader's filename, or null string.
+//  Description: Return the ShaderExpansion's text.
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename &Shader::
-get_file() {
-  return _file;
+INLINE const string &ShaderExpansion::
+get_text() const {
+  return _text;
 }
 

@@ -132,7 +132,7 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual ShaderContext *prepare_shader(Shader *shader);
+  virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
   virtual void release_shader(ShaderContext *sc);
   
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -281,9 +281,10 @@ protected:
   PT(SceneSetup) _scene_null;
   PT(SceneSetup) _scene_setup;
   
-  CPT(RenderState) _last_state;
   AttribSlots _state;
   AttribSlots _target;
+  CPT(RenderState) _state_rs;
+  CPT(RenderState) _target_rs;
   CPT(TransformState) _external_transform;
   CPT(TransformState) _internal_transform;
   CPT(GeomMunger) _munger;
