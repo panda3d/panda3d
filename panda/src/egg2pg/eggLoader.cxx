@@ -1341,7 +1341,7 @@ make_texture_stage(const EggTexture *egg_tex) {
 
 
   if (egg_tex->has_uv_name()) {
-    CPT(InternalName) name = 
+    PT(InternalName) name = 
       InternalName::get_texcoord_name(egg_tex->get_uv_name());
     stage->set_texcoord_name(name);
   }
