@@ -91,7 +91,9 @@
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
+    shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
+    shaderInput.I shaderInput.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
@@ -192,7 +194,9 @@
     selectiveChildNode.cxx \
     sequenceNode.cxx \
     shadeModelAttrib.cxx \
+    shader.cxx \
     shaderAttrib.cxx \
+    shaderInput.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
     stateMunger.cxx \
@@ -289,7 +293,9 @@
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
+    shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
+    shaderInput.I shaderInput.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
