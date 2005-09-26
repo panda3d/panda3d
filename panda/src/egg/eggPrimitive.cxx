@@ -352,9 +352,23 @@ unify_attributes(EggPrimitive::Shading shading) {
     shading = get_shading();
   }
 
-  // Not having a color is implicitly white.
+  // Does the primitive have an explicit color?
   if (!has_color() && shading != S_overall) {
-    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    if (shading != S_per_vertex) {
+      // If there is no color set, first we check the vertices.  If the
+      // vertices have a color, we inherit the color from there.
+      iterator pi;
+      for (pi = begin(); pi != end() && !has_color(); ++pi) {
+        EggVertex *vertex = (*pi);
+        if (vertex->has_color()) {
+          set_color(vertex->get_color());
+        }
+      }
+    }
+    if (!has_color()) {
+      // If we still don't have a color, the implicit color is white.
+      set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    }
   }
 
   switch (shading) {
