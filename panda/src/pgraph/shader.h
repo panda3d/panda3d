@@ -90,4 +90,4 @@ private:
 
 #include "shader.I"
 
-#endif SHADER_H
+#endif  // SHADER_H

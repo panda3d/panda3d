@@ -33,8 +33,8 @@ INLINE ShaderInput::
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
 ShaderInput(InternalName *name, int priority) :
-  _type(M_invalid),
   _name(name),
+  _type(M_invalid),
   _priority(priority),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
@@ -49,8 +49,8 @@ ShaderInput(InternalName *name, int priority) :
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
 ShaderInput(InternalName *name, Texture *tex, int priority) :
-  _type(M_texture),
   _name(name),
+  _type(M_texture),
   _priority(priority),
   _stored_texture(tex),
   _stored_nodepath(NodePath()),
@@ -65,8 +65,8 @@ ShaderInput(InternalName *name, Texture *tex, int priority) :
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
 ShaderInput(InternalName *name, const NodePath &np, int priority) :
-  _type(M_nodepath),
   _name(name),
+  _type(M_nodepath),
   _priority(priority),
   _stored_texture(NULL),
   _stored_nodepath(np),
@@ -81,8 +81,8 @@ ShaderInput(InternalName *name, const NodePath &np, int priority) :
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
 ShaderInput(InternalName *name, const LVector4f &vec, int priority) :
-  _type(M_vector),
   _name(name),
+  _type(M_vector),
   _priority(priority),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
