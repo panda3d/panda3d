@@ -43,12 +43,6 @@ extern std::string EXPORT_IMPORT_PREFEX;
 #define         INSTANCE_PREFEX "Dtool_"
 #define         BASE_INSTANCE_NAME "Dtool_PyInstDef"
 
-#ifdef WIN32
-#define MAX_COMMENT_SIZE  1024
-#else
-#define MAX_COMMENT_SIZE  6144
-#endif
-
 
 /////////////////////////////////////////////////////////
 // Name Remaper...
@@ -1691,6 +1685,8 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     FunctionComment += "\n";
   }
 
+  bool constructor = false;
+
   if (MapSets.size() > 1) {
     string expected_params;
       
@@ -1704,14 +1700,14 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
       
     indent(out,4) << "switch(parameter_count)\n";
     indent(out,4) << "{\n";
-    bool constructor = false;
-    for(mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
+    for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
       indent(out,4) << "case(" << mii->first << "):\n";
       indent(out,8) << "{\n";
         
       write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
-      if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
+      if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
+      }
         
         
       indent(out,8)<< "}\n";       
@@ -1773,11 +1769,11 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
 
   } else {
     string expected_params = "";
-    bool constructor = false;
-    for(mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
+    for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
       write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
-      if((*mii->second.begin())->_type == FunctionRemap::T_constructor)
+      if((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
+      }
     }
 
     out << "    if(!PyErr_Occurred())\n";
@@ -1790,25 +1786,31 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     else
       indent(out,4) << "return (PyObject *) NULL; \n";
       
-    if(!expected_params.empty() && FunctionComment1.empty())
+    if (!expected_params.empty() && FunctionComment1.empty()) {
       FunctionComment1 += "C++ Interface:\n";
+    }
       
     FunctionComment1 += expected_params;
   }
 
   out << "}\n\n";
 
-  if(!FunctionComment1.empty())
+  if (!FunctionComment1.empty()) {
     FunctionComment = FunctionComment1 + "\n" + FunctionComment;
+  }
 
-
-  out << "#ifndef NDEBUG\n";
-  out << "static char * " << func->_name << "_comment =\n";
-  output_quoted(out, 4, FunctionComment);
-  out << ";\n";
-  out << "#else\n";
-  out << "static char * " << func->_name << "_comment = \"\";\n";
-  out << "#endif\n";
+  if (!constructor) {
+    // Write out the function doc string.  We only do this if it is
+    // not a constructor, since we don't have a place to put the
+    // constructor doc string.
+    out << "#ifndef NDEBUG\n";
+    out << "static char * " << func->_name << "_comment =\n";
+    output_quoted(out, 4, FunctionComment);
+    out << ";\n";
+    out << "#else\n";
+    out << "static char * " << func->_name << "_comment = NULL;\n";
+    out << "#endif\n";
+  }
 
   out << "\n";
 
