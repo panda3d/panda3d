@@ -70,16 +70,20 @@ class OnscreenGeom(PandaObject, NodePath):
 
     def setGeom(self, geom,
                 parent = NodePath(),
-                transform = TransformState.makeIdentity(),
+                transform = None,
                 sort = 0,
                 color = None):
         # Get the original parent, transform, and sort, if any, so we can
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            transform = self.getTransform()
+            if transform == None:
+                # If we're replacing a previous image, we throw away
+                # the new image's transform in favor of the original
+                # image's transform.
+                transform = self.getTransform()
             sort = self.getSort()
-            if self.hasColor():
+            if color == None and self.hasColor():
                 color = self.getColor()
 
         self.removeNode()
@@ -92,7 +96,8 @@ class OnscreenGeom(PandaObject, NodePath):
             self.reparentTo(parent, sort)
 
         if not self.isEmpty():
-            self.setTransform(transform)
+            if transform:
+                self.setTransform(transform.compose(self.getTransform()))
 
             # Set color, if specified
             if color:

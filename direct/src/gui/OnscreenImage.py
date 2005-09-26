@@ -75,13 +75,17 @@ class OnscreenImage(PandaObject, NodePath):
 
     def setImage(self, image,
                  parent = NodePath(),
-                 transform = TransformState.makeIdentity(),
+                 transform = None,
                  sort = 0):
         # Get the original parent, transform, and sort, if any, so we can
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            transform = self.getTransform()
+            if transform == None:
+                # If we're replacing a previous image, we throw away
+                # the new image's transform in favor of the original
+                # image's transform.
+                transform = self.getTransform()
             sort = self.getSort()
 
         self.removeNode()
@@ -113,7 +117,7 @@ class OnscreenImage(PandaObject, NodePath):
             else:
                 print 'OnscreenImage: model %s not found' % image[0]
 
-        if not self.isEmpty():
+        if transform and not self.isEmpty():
             self.setTransform(transform)
 
     def getImage(self):
