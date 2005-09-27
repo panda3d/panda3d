@@ -2341,7 +2341,7 @@ do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
   int num_stages = _target._texture->get_num_on_stages();
-  int num_old_stages = 0;
+  int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
   }
