@@ -5053,6 +5053,7 @@ do_issue_texture() {
     nassertv(texture != (Texture *)NULL);
     
     if (i >= num_old_stages ||
+	_state._texture == (TextureAttrib *)NULL ||
         stage != _state._texture->get_on_stage(i) ||
         texture != _state._texture->get_on_texture(stage) ||
         stage->involves_color_scale()) {
