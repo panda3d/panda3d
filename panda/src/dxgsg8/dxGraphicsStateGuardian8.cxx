@@ -201,12 +201,17 @@ apply_texture(int i, TextureContext *tc) {
   }
 
   Texture *tex = tc->_texture;
-  Texture::WrapMode wrap_u, wrap_v;
+  Texture::WrapMode wrap_u, wrap_v, wrap_w;
   wrap_u = tex->get_wrap_u();
   wrap_v = tex->get_wrap_v();
+  wrap_w = tex->get_wrap_w();
 
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrap_u));
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
+  _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSW, get_texture_wrap_mode(wrap_w));
+
+  _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR, 
+				    Colorf_to_D3DCOLOR(tex->get_border_color()));
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
