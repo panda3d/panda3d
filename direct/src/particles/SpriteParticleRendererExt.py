@@ -36,8 +36,10 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         t = loader.loadTexture(fileName)
         if (t != None):
             self.setTexture(t,fileName)
+            return True
         else:
             print "Couldn't find rendererSpriteTexture file: %s" % fileName
+            return False
 
     def addTextureFromFile(self, fileName = None):
         if(self.getNumAnims == 0):
@@ -50,8 +52,10 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         t = loader.loadTexture(fileName)
         if (t != None):
             self.addTexture(t,fileName)
+            return True
         else:
             print "Couldn't find rendererSpriteTexture file: %s" % fileName
+            return False
 
     def getSourceFileName(self):
         if self.sourceFileName == None:
@@ -90,16 +94,17 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         m = loader.loadModelOnce(modelName)
         if (m == None):
             print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName 
-            return None
+            return False
         nodeName = self.getSourceNodeName()
         np = m.find(nodeName)
         if np.isEmpty():
             print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
             m.removeNode()
-            return None
+            return False
 
         self.setFromNode(np, modelName, nodeName, sizeFromTexels)
         m.removeNode()
+        return True
         
     def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
         if(self.getNumAnims == 0):
@@ -116,13 +121,16 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         m = loader.loadModelOnce(modelName)
         if (m == None):
             print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName 
-            return None
+            return False
 
         np = m.find(nodeName)
         if np.isEmpty():
             print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
             m.removeNode()
-            return None
+            return False
+        
         self.addFromNode(np, modelName, nodeName, sizeFromTexels)
         m.removeNode()
+
+        return True
         
