@@ -29,6 +29,26 @@ play() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::play
+//       Access: Published
+//  Description: Runs the animation from the frame "from" to and
+//               including the frame "to", at which point the
+//               animation is stopped.  Both "from" and "to" frame
+//               numbers may be outside the range (0,
+//               get_num_frames()) and the animation will follow the
+//               range correctly, reporting numbers modulo
+//               get_num_frames().  For instance, play(0,
+//               get_num_frames() * 2) will play the animation twice
+//               and then stop.
+////////////////////////////////////////////////////////////////////
+INLINE void AnimInterface::
+play(double from, double to) {
+  CDWriter cdata(_cycler);
+  cdata->play(from, to);
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimInterface::loop
 //       Access: Published
 //  Description: Starts the entire animation looping.  If restart is
@@ -38,6 +58,22 @@ play() {
 INLINE void AnimInterface::
 loop(bool restart) {
   loop(restart, 0, get_num_frames() - 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::loop
+//       Access: Published
+//  Description: Loops the animation from the frame "from" to and
+//               including the frame "to", indefinitely.  If restart
+//               is true, the animation is restarted from the
+//               beginning; otherwise, it continues from the current
+//               frame.
+////////////////////////////////////////////////////////////////////
+INLINE void AnimInterface::
+loop(bool restart, double from, double to) {
+  CDWriter cdata(_cycler);
+  cdata->loop(restart, from, to);
+  animation_activated();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +91,20 @@ pingpong(bool restart) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::pingpong
+//       Access: Published
+//  Description: Loops the animation from the frame "from" to and
+//               including the frame "to", and then back in the
+//               opposite direction, indefinitely.
+////////////////////////////////////////////////////////////////////
+INLINE void AnimInterface::
+pingpong(bool restart, double from, double to) {
+  CDWriter cdata(_cycler);
+  cdata->pingpong(restart, from, to);
+  animation_activated();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimInterface::stop
 //       Access: Published
 //  Description: Stops a currently playing or looping animation right
@@ -64,6 +114,19 @@ pingpong(bool restart) {
 INLINE void AnimInterface::
 stop() {
   pose(get_frame());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::pose
+//       Access: Published
+//  Description: Sets the animation to the indicated frame and holds
+//               it there.
+////////////////////////////////////////////////////////////////////
+INLINE void AnimInterface::
+pose(int frame) {
+  CDWriter cdata(_cycler);
+  cdata->pose(frame);
+  animation_activated();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +140,8 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 set_play_rate(double play_rate) {
-  internal_set_rate(_frame_rate, play_rate);
+  CDWriter cdata(_cycler);
+  cdata->internal_set_rate(cdata->_frame_rate, play_rate);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +152,8 @@ set_play_rate(double play_rate) {
 ////////////////////////////////////////////////////////////////////
 INLINE double AnimInterface::
 get_play_rate() const {
-  return _play_rate;
+  CDReader cdata(_cycler);
+  return cdata->_play_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,19 +167,8 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double AnimInterface::
 get_frame_rate() const {
-  return _frame_rate;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimInterface::get_num_frames
-//       Access: Published
-//  Description: Returns the number of frames in the animation.  This
-//               is a fixed property of the animation and may not be
-//               adjusted by the user.
-////////////////////////////////////////////////////////////////////
-INLINE int AnimInterface::
-get_num_frames() const {
-  return _num_frames;
+  CDReader cdata(_cycler);
+  return cdata->_frame_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,10 +180,11 @@ get_num_frames() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int AnimInterface::
 get_frame() const {
-  if (get_num_frames() <= 0) {
+  int num_frames = get_num_frames();
+  if (num_frames <= 0) {
     return 0;
   }
-  return cmod(get_full_frame(), get_num_frames());
+  return cmod(get_full_frame(), num_frames);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +200,64 @@ get_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double AnimInterface::
 get_frac() const {
-  return get_full_fframe() - (double)get_full_frame();
+  CDReader cdata(_cycler);
+  return cdata->get_frac();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_full_frame
+//       Access: Published
+//  Description: Returns the current integer frame number.
+//
+//               Unlike the value returned by get_frame(), this frame
+//               number may extend beyond the range of
+//               get_num_frames() if the frame range passed to play(),
+//               loop(), etc. did.
+//
+//               Unlike the value returned by get_full_fframe(), this
+//               return value will never exceed the value passed to
+//               to_frame in the play() method.
+////////////////////////////////////////////////////////////////////
+INLINE int AnimInterface::
+get_full_frame() const {
+  CDReader cdata(_cycler);
+  return cdata->get_full_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_full_fframe
+//       Access: Published
+//  Description: Returns the current floating-point frame number.
+//
+//               Unlike the value returned by get_frame(), this frame
+//               number may extend beyond the range of
+//               get_num_frames() if the frame range passed to play(),
+//               loop(), etc. did.
+//
+//               Unlike the value returned by get_full_frame(), this
+//               return value may equal (to_frame + 1.0), when the
+//               animation has played to its natural end.  However, in
+//               this case the return value of get_full_frame() will
+//               be to_frame, not (to_frame + 1).
+////////////////////////////////////////////////////////////////////
+INLINE double AnimInterface::
+get_full_fframe() const {
+  CDReader cdata(_cycler);
+  return cdata->get_full_fframe();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::is_playing
+//       Access: Published
+//  Description: Returns true if the animation is currently playing,
+//               false if it is stopped (e.g. because stop() or pose()
+//               was called, or because it reached the end of the
+//               animation after play() was called).
+////////////////////////////////////////////////////////////////////
+INLINE bool AnimInterface::
+is_playing() const {
+  CDReader cdata(_cycler);
+  return cdata->is_playing();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +269,8 @@ get_frac() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 set_frame_rate(double frame_rate) {
-  internal_set_rate(frame_rate, _play_rate);
+  CDWriter cdata(_cycler);
+  cdata->internal_set_rate(frame_rate, cdata->_play_rate);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,6 +285,22 @@ set_frame_rate(double frame_rate) {
 INLINE void AnimInterface::
 set_num_frames(int num_frames) {
   _num_frames = num_frames;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::CData::get_frac
+//       Access: Published
+//  Description: Returns the fractional part of the current frame.
+//               Normally, this is in the range 0.0 <= f < 1.0, but in
+//               the one special case of an animation playing to its
+//               end frame and stopping, it might exactly equal 1.0.
+//
+//               It will always be true that get_full_frame() +
+//               get_frac() == get_full_fframe().
+////////////////////////////////////////////////////////////////////
+INLINE double AnimInterface::CData::
+get_frac() const {
+  return get_full_fframe() - (double)get_full_frame();
 }
 
 INLINE ostream &

@@ -23,13 +23,30 @@
 TypeHandle SequenceNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::CData::make_copy
-//       Access: Public, Virtual
+//     Function: SequenceNode::Copy Constructor
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CycleData *SequenceNode::CData::
-make_copy() const {
-  return new CData(*this);
+SequenceNode::
+SequenceNode(const SequenceNode &copy) :
+  SelectiveChildNode(copy),
+  AnimInterface(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::get_num_frames
+//       Access: Published, Virtual
+//  Description: Returns the number of frames in the animation.  This
+//               is a property of the animation and may not be
+//               directly adjusted by the user (although it may change
+//               without warning with certain kinds of animations,
+//               since this is a virtual method that may be
+//               overridden).
+////////////////////////////////////////////////////////////////////
+int SequenceNode::
+get_num_frames() const {
+  return get_num_children();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,49 +62,6 @@ make_copy() const {
 bool SequenceNode::
 safe_to_combine() const {
   return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void SequenceNode::CData::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  dg.add_float32(_cycle_rate);
-
-  float now = ClockObject::get_global_clock()->get_frame_time();
-  float frame = (now - _start_time) * _cycle_rate + _frame_offset;
-  dg.add_float32(frame);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SequenceNode.
-////////////////////////////////////////////////////////////////////
-void SequenceNode::CData::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  _cycle_rate = scan.get_float32();
-  _frame_offset = scan.get_float32();
-
-  float now = ClockObject::get_global_clock()->get_frame_time();
-  _start_time = now;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-SequenceNode::
-SequenceNode(const SequenceNode &copy) :
-  SelectiveChildNode(copy),
-  _cycler(copy._cycler)
-{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +112,7 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool SequenceNode::
 cull_callback(CullTraverser *, CullTraverserData &) {
-  select_child(get_visible_child());
+  select_child(get_frame());
   return true;
 }
 
@@ -164,21 +138,14 @@ has_single_child_visibility() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::get_visible_child
+//     Function: SequenceNode::output
 //       Access: Published, Virtual
-//  Description: Returns the index of the child that should be visible
-//               for this particular frame, if there are any children.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-int SequenceNode::
-get_visible_child() const {
-  int num_children = get_num_children();
-  if (num_children == 0) {
-    return 0;
-  }
-
-  float frame = calc_frame();
-
-  return ((int)frame) % num_children;
+void SequenceNode::
+output(ostream &out) const {
+  out << get_type() << " " << get_name() << ": ";
+  AnimInterface::output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +168,7 @@ register_with_read_factory() {
 void SequenceNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   SelectiveChildNode::write_datagram(manager, dg);
-  manager->write_cdata(dg, _cycler);
+  AnimInterface::write_datagram(manager, dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,7 +181,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *SequenceNode::
 make_from_bam(const FactoryParams &params) {
-  SequenceNode *node = new SequenceNode(0.0f, "");
+  SequenceNode *node = new SequenceNode("");
   DatagramIterator scan;
   BamReader *manager;
 
@@ -234,5 +201,12 @@ make_from_bam(const FactoryParams &params) {
 void SequenceNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   SelectiveChildNode::fillin(scan, manager);
-  manager->read_cdata(scan, _cycler);
+  if (manager->get_file_minor_ver() < 4) {
+    float cycle_rate = scan.get_float32();
+    scan.get_float32();
+    set_frame_rate(cycle_rate);
+    loop(true);
+  } else {
+    AnimInterface::fillin(scan, manager);
+  }
 }

@@ -22,6 +22,15 @@
 #include "pandabase.h"
 #include "typeHandle.h"
 #include "register_type.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
+
+class BamWriter;
+class BamReader;
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimInterface
@@ -39,24 +48,24 @@ protected:
 PUBLISHED:
   virtual ~AnimInterface();
   INLINE void play();
-  void play(double from, double to);
+  INLINE void play(double from, double to);
   INLINE void loop(bool restart);
-  void loop(bool restart, double from, double to);
+  INLINE void loop(bool restart, double from, double to);
   INLINE void pingpong(bool restart);
-  void pingpong(bool restart, double from, double to);
+  INLINE void pingpong(bool restart, double from, double to);
   INLINE void stop();
-  void pose(int frame);
+  INLINE void pose(int frame);
 
   INLINE void set_play_rate(double play_rate);
   INLINE double get_play_rate() const;
   INLINE double get_frame_rate() const;
-  INLINE int get_num_frames() const;
+  virtual int get_num_frames() const;
 
   INLINE int get_frame() const;
   INLINE double get_frac() const;
-  int get_full_frame() const;
-  double get_full_fframe() const;
-  bool is_playing() const;
+  INLINE int get_full_frame() const;
+  INLINE double get_full_fframe() const;
+  INLINE bool is_playing() const;
 
   virtual void output(ostream &out) const;
 
@@ -66,10 +75,6 @@ protected:
   virtual void animation_activated();
 
 private:
-  double get_f() const;
-  void internal_set_rate(double frame_rate, double play_rate);
-
-private:
   enum PlayMode {
     PM_pose,
     PM_play,
@@ -77,20 +82,57 @@ private:
     PM_pingpong,
   };
 
-  double _frame_rate;
+  // This data is not cycled, because it is a semi-permanent part of
+  // the interface.  Also, some derivatives of AnimInterface don't
+  // even use it.
   int _num_frames;
 
-  PlayMode _play_mode;
-  double _start_time;
-  double _start_frame;
-  double _play_frames;
-  int _from_frame;
-  int _to_frame;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-  double _play_rate;
-  double _effective_frame_rate;
-  bool _paused;
-  double _paused_f;
+    void play(double from, double to);
+    void loop(bool restart, double from, double to);
+    void pingpong(bool restart, double from, double to);
+    void pose(int frame);
+
+    INLINE double get_frac() const;
+    int get_full_frame() const;
+    double get_full_fframe() const;
+    bool is_playing() const;
+
+    virtual void output(ostream &out) const;
+
+    void internal_set_rate(double frame_rate, double play_rate);
+    double get_f() const;
+
+    double _frame_rate;
+
+    PlayMode _play_mode;
+    double _start_time;
+    double _start_frame;
+    double _play_frames;
+    int _from_frame;
+    int _to_frame;
+    
+    double _play_rate;
+    double _effective_frame_rate;
+    bool _paused;
+    double _paused_f;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

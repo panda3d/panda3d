@@ -202,6 +202,7 @@ build_graph() {
   make_node(_data, _root);
 
   reparent_decals();
+  start_sequences();
 
   apply_deferred_nodes(_root, DeferredNodeProperty());
 }
@@ -217,7 +218,7 @@ build_graph() {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 reparent_decals() {
-  Decals::const_iterator di;
+  ExtraNodes::const_iterator di;
   for (di = _decals.begin(); di != _decals.end(); ++di) {
     PandaNode *node = (*di);
     nassertv(node != (PandaNode *)NULL);
@@ -268,6 +269,24 @@ reparent_decals() {
       // Finally, set the DecalEffect on the base geometry.
       geom_parent.node()->set_effect(DecalEffect::make());
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::start_sequences
+//       Access: Public
+//  Description: Starts all of the SequenceNodes we created looping.
+//               We have to wait until the entire graph is built up to
+//               do this, because the SequenceNode needs its full set
+//               of children before it can know how many frames to
+//               loop.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+start_sequences() {
+  ExtraNodes::const_iterator ni;
+  for (ni = _sequences.begin(); ni != _sequences.end(); ++ni) {
+    SequenceNode *node = DCAST(SequenceNode, (*ni));
+    node->loop(true);
   }
 }
 
@@ -1593,8 +1612,9 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
   } else if (egg_group->get_switch_flag()) {
     if (egg_group->get_switch_fps() != 0.0) {
       // Create a sequence node.
-      node = new SequenceNode(egg_group->get_switch_fps(), 
-                              egg_group->get_name());
+      node = new SequenceNode(egg_group->get_name());
+      ((SequenceNode *)node.p())->set_frame_rate(egg_group->get_switch_fps());
+      _sequences.insert(node);
     } else {
       // Create a switch node.
       node = new SwitchNode(egg_group->get_name());

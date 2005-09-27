@@ -75,6 +75,7 @@ public:
 
   void build_graph();
   void reparent_decals();
+  void start_sequences();
 
   void make_polyset(EggBin *egg_bin, PandaNode *parent, 
                     const LMatrix4d *transform, bool is_dynamic,
@@ -212,8 +213,9 @@ private:
   Materials _materials;
   Materials _materials_bface;
 
-  typedef pset<PandaNode *> Decals;
-  Decals _decals;
+  typedef pset<PandaNode *> ExtraNodes;
+  ExtraNodes _decals;
+  ExtraNodes _sequences;
 
   class VertexPoolTransform {
   public:

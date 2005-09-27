@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "selectiveChildNode.h"
+#include "animInterface.h"
 #include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -29,13 +30,18 @@
 // Description : A node that automatically cycles through rendering
 //               each one of its children according to its frame rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SequenceNode : public SelectiveChildNode {
+class EXPCL_PANDA SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
-  INLINE SequenceNode(float cycle_rate, const string &name);
+  INLINE SequenceNode(const string &name);
 
-public:
+protected:
   SequenceNode(const SequenceNode &copy);
 
+PUBLISHED:
+  virtual int get_num_frames() const;
+  INLINE void set_frame_rate(double frame_rate);
+
+public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
 
@@ -43,33 +49,7 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_single_child_visibility() const;
 
-PUBLISHED:
-  INLINE void set_cycle_rate(float cycle_rate);
-  INLINE float get_cycle_rate() const;
-
-  INLINE void set_visible_child(int index);
-  virtual int get_visible_child() const;
-
-private:
-  INLINE float calc_frame(float now) const;
-  INLINE float calc_frame() const;
-
-  class EXPCL_PANDA CData : public CycleData {
-  public:
-    INLINE CData();
-    INLINE CData(const CData &copy);
-    virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual void fillin(DatagramIterator &scan, BamReader *manager);
-
-    float _cycle_rate;
-    float _frame_offset;
-    float _start_time;
-  };
-
-  PipelineCycler<CData> _cycler;
-  typedef CycleDataReader<CData> CDReader;
-  typedef CycleDataWriter<CData> CDWriter;
+  virtual void output(ostream &out) const;
 
 public:
   static void register_with_read_factory();
@@ -85,8 +65,10 @@ public:
   }
   static void init_type() {
     SelectiveChildNode::init_type();
+    AnimInterface::init_type();
     register_type(_type_handle, "SequenceNode",
-                  SelectiveChildNode::get_class_type());
+                  SelectiveChildNode::get_class_type(),
+		  AnimInterface::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
