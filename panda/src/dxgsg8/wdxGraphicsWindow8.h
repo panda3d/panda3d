@@ -65,7 +65,7 @@ private:
   };
   typedef pvector<DXDeviceInfo> DXDeviceInfoVec;
 
-  bool create_screen_buffers_and_device(DXScreenData &Display,
+  bool create_screen_buffers_and_device(DXScreenData &display,
                                         bool force_16bpp_zbuffer);
 
   bool choose_device();

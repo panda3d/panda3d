@@ -41,7 +41,9 @@ public:
   INLINE IDirect3DVolumeTexture8 *get_d3d_volume_texture() const;
   INLINE IDirect3DCubeTexture8 *get_d3d_cube_texture() const;
 
-  static HRESULT d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result);
+  static HRESULT d3d_surface_to_texture(RECT &source_rect, 
+					IDirect3DSurface8 *d3d_surface, 
+					bool inverted, Texture *result);
 
 private:
   HRESULT fill_d3d_texture_pixels();

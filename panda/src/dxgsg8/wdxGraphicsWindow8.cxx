@@ -469,7 +469,7 @@ do_fullscreen_resize(int x_size, int y_size) {
 //               Sets _depth_buffer_bpp appropriately.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
-create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer) {
+create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer) {
   wdxGraphicsPipe8 *dxpipe;
   DCAST_INTO_R(dxpipe, _pipe, false);
 
@@ -478,12 +478,12 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   // auto-res-select in any future init sequence.
   dx_pick_best_screenres = false;
 
-  DWORD dwRenderWidth = Display._display_mode.Width;
-  DWORD dwRenderHeight = Display._display_mode.Height;
+  DWORD dwRenderWidth = display._display_mode.Width;
+  DWORD dwRenderHeight = display._display_mode.Height;
   DWORD dwBehaviorFlags = 0x0;
-  LPDIRECT3D8 _d3d8 = Display._d3d8;
-  D3DCAPS8 *pD3DCaps = &Display._d3dcaps;
-  D3DPRESENT_PARAMETERS* presentation_params = &Display._presentation_params;
+  LPDIRECT3D8 _d3d8 = display._d3d8;
+  D3DCAPS8 *pD3DCaps = &display._d3dcaps;
+  D3DPRESENT_PARAMETERS* presentation_params = &display._presentation_params;
   RECT view_rect;
   HRESULT hr;
 
@@ -498,7 +498,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   assert(_d3d8 != NULL);
   assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
 
-  presentation_params->BackBufferFormat = Display._display_mode.Format;  // dont need dest alpha, so just use adapter format
+  presentation_params->BackBufferFormat = display._display_mode.Format;  // dont need dest alpha, so just use adapter format
 
   bool do_sync = sync_video;
 
@@ -509,28 +509,28 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   }
 
   // verify the rendertarget fmt one last time
-  if (FAILED(_d3d8->CheckDeviceFormat(Display._card_id, D3DDEVTYPE_HAL, Display._display_mode.Format, D3DUSAGE_RENDERTARGET,
+  if (FAILED(_d3d8->CheckDeviceFormat(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
                                       D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
-    wdxdisplay8_cat.error() << "device #" << Display._card_id << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
+    wdxdisplay8_cat.error() << "device #" << display._card_id << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
     goto Fallback_to_16bpp_buffers;
   }
 
-  if (FAILED(_d3d8->CheckDeviceType(Display._card_id, D3DDEVTYPE_HAL, Display._display_mode.Format, presentation_params->BackBufferFormat,
+  if (FAILED(_d3d8->CheckDeviceType(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, presentation_params->BackBufferFormat,
                                     is_fullscreen()))) {
-    wdxdisplay8_cat.error() << "device #" << Display._card_id << " CheckDeviceType failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
+    wdxdisplay8_cat.error() << "device #" << display._card_id << " CheckDeviceType failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
     goto Fallback_to_16bpp_buffers;
   }
 
-  if (Display._presentation_params.EnableAutoDepthStencil) {
-    if (!dxpipe->find_best_depth_format(Display, Display._display_mode,
-                                        &Display._presentation_params.AutoDepthStencilFormat,
+  if (display._presentation_params.EnableAutoDepthStencil) {
+    if (!dxpipe->find_best_depth_format(display, display._display_mode,
+                                        &display._presentation_params.AutoDepthStencilFormat,
                                         bWantStencil, false)) {
       wdxdisplay8_cat.error()
         << "find_best_depth_format failed in CreateScreenBuffers for device #"
-        << Display._card_id << endl;
+        << display._card_id << endl;
       goto Fallback_to_16bpp_buffers;
     }
-    _depth_buffer_bpp = D3DFMT_to_DepthBits(Display._presentation_params.AutoDepthStencilFormat);
+    _depth_buffer_bpp = D3DFMT_to_DepthBits(display._presentation_params.AutoDepthStencilFormat);
   } else {
     _depth_buffer_bpp = 0;
   }
@@ -539,18 +539,18 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   if (dx_multisample_antialiasing_level>1) {
     // need to check both rendertarget and zbuffer fmts
-    hr = _d3d8->CheckDeviceMultiSampleType(Display._card_id, D3DDEVTYPE_HAL, Display._display_mode.Format,
+    hr = _d3d8->CheckDeviceMultiSampleType(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format,
                                            is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()));
     if (FAILED(hr)) {
-      wdxdisplay8_cat.fatal() << "device #" << Display._card_id << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(Display._display_mode.Format) << endl;
+      wdxdisplay8_cat.fatal() << "device #" << display._card_id << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(display._display_mode.Format) << endl;
       return false;
     }
 
-    if (Display._presentation_params.EnableAutoDepthStencil) {
-      hr = _d3d8->CheckDeviceMultiSampleType(Display._card_id, D3DDEVTYPE_HAL, Display._presentation_params.AutoDepthStencilFormat,
+    if (display._presentation_params.EnableAutoDepthStencil) {
+      hr = _d3d8->CheckDeviceMultiSampleType(display._card_id, D3DDEVTYPE_HAL, display._presentation_params.AutoDepthStencilFormat,
                                              is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()));
       if (FAILED(hr)) {
-        wdxdisplay8_cat.fatal() << "device #" << Display._card_id << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(Display._presentation_params.AutoDepthStencilFormat) << endl;
+        wdxdisplay8_cat.fatal() << "device #" << display._card_id << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(display._presentation_params.AutoDepthStencilFormat) << endl;
         return false;
       }
     }
@@ -558,14 +558,14 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
     presentation_params->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value());
 
     if (wdxdisplay8_cat.is_info())
-      wdxdisplay8_cat.info() << "device #" << Display._card_id << " using multisample antialiasing level " << dx_multisample_antialiasing_level << endl;
+      wdxdisplay8_cat.info() << "device #" << display._card_id << " using multisample antialiasing level " << dx_multisample_antialiasing_level << endl;
   }
 
   presentation_params->BackBufferCount = 1;
   presentation_params->Flags = 0x0;
-  presentation_params->hDeviceWindow = Display._window;
-  presentation_params->BackBufferWidth = Display._display_mode.Width;
-  presentation_params->BackBufferHeight = Display._display_mode.Height;
+  presentation_params->hDeviceWindow = display._window;
+  presentation_params->BackBufferWidth = display._display_mode.Width;
+  presentation_params->BackBufferHeight = display._display_mode.Height;
 
   if (_wcontext._is_tnl_device) {
     dwBehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
@@ -587,22 +587,22 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   // false, causing us to go into a 'wait-for WM_ACTIVATEAPP true'
   // loop, and the event never comes so we hang in fullscreen wait.
   // also doing this for windowed mode since it was requested.
-  if (!SetForegroundWindow(Display._window)) {
+  if (!SetForegroundWindow(display._window)) {
     wdxdisplay8_cat.warning() << "SetForegroundWindow() failed!\n";
   }
 
   if (is_fullscreen()) {
     presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
     presentation_params->FullScreen_PresentationInterval = (do_sync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
-    presentation_params->FullScreen_RefreshRateInHz = Display._display_mode.RefreshRate;
+    presentation_params->FullScreen_RefreshRateInHz = display._display_mode.RefreshRate;
 
-    ClearToBlack(Display._window, get_properties());
+    ClearToBlack(display._window, get_properties());
 
-    hr = _d3d8->CreateDevice(Display._card_id, D3DDEVTYPE_HAL, _hWnd,
-                             dwBehaviorFlags, presentation_params, &Display._d3d_device);
+    hr = _d3d8->CreateDevice(display._card_id, D3DDEVTYPE_HAL, _hWnd,
+                             dwBehaviorFlags, presentation_params, &display._d3d_device);
 
     if (FAILED(hr)) {
-      wdxdisplay8_cat.fatal() << "D3D CreateDevice failed for device #" << Display._card_id << ", " << D3DERRORSTRING(hr);
+      wdxdisplay8_cat.fatal() << "D3D CreateDevice failed for device #" << display._card_id << ", " << D3DERRORSTRING(hr);
 
       if (hr == D3DERR_OUTOFVIDEOMEMORY)
         goto Fallback_to_16bpp_buffers;
@@ -616,7 +616,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   else {          // CREATE WINDOWED BUFFERS
 
     D3DDISPLAYMODE dispmode;
-    hr = Display._d3d8->GetAdapterDisplayMode(Display._card_id, &dispmode);
+    hr = display._d3d8->GetAdapterDisplayMode(display._card_id, &dispmode);
 
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal() << "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
@@ -642,15 +642,15 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     //assert((dwRenderWidth == presentation_params->BackBufferWidth)&&(dwRenderHeight == presentation_params->BackBufferHeight));
 
-    hr = _d3d8->CreateDevice(Display._card_id, D3DDEVTYPE_HAL, _hWnd,
-                             dwBehaviorFlags, presentation_params, &Display._d3d_device);
+    hr = _d3d8->CreateDevice(display._card_id, D3DDEVTYPE_HAL, _hWnd,
+                             dwBehaviorFlags, presentation_params, &display._d3d_device);
 
     if (FAILED(hr)) {
       wdxdisplay8_cat.warning() << "presentation_params->BackBufferWidth : " << presentation_params->BackBufferWidth << endl;
       wdxdisplay8_cat.warning() << "presentation_params->BackBufferHeight : " << presentation_params->BackBufferHeight << endl;
       wdxdisplay8_cat.warning() << "presentation_params->BackBufferFormat : " << presentation_params->BackBufferFormat << endl;
       wdxdisplay8_cat.warning() << "presentation_params->BackBufferCount : " << presentation_params->BackBufferCount << endl;
-      wdxdisplay8_cat.warning() << "D3D CreateDevice failed for device #" << Display._card_id << D3DERRORSTRING(hr);
+      wdxdisplay8_cat.warning() << "D3D CreateDevice failed for device #" << display._card_id << D3DERRORSTRING(hr);
       goto Fallback_to_16bpp_buffers;
     }
   }  // end create windowed buffers
@@ -673,26 +673,26 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
  Fallback_to_16bpp_buffers:
 
   if ((!IS_16BPP_DISPLAY_FORMAT(presentation_params->BackBufferFormat)) &&
-      (Display._supported_screen_depths_mask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
+      (display._supported_screen_depths_mask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
     // fallback strategy, if we trying >16bpp, fallback to 16bpp buffers
 
-    Display._display_mode.Format = ((Display._supported_screen_depths_mask & R5G6B5_FLAG) ? D3DFMT_R5G6B5 : D3DFMT_X1R5G5B5);
+    display._display_mode.Format = ((display._supported_screen_depths_mask & R5G6B5_FLAG) ? D3DFMT_R5G6B5 : D3DFMT_X1R5G5B5);
 
     if (wdxdisplay8_cat.info()) {
       wdxdisplay8_cat.info()
         << "CreateDevice failed with out-of-vidmem or invalid BackBufferFormat, retrying w/16bpp buffers on device #"
-        << Display._card_id << endl;
+        << display._card_id << endl;
     }
-    return create_screen_buffers_and_device(Display, true);
+    return create_screen_buffers_and_device(display, true);
     //return;
 
   } else if (!((dwRenderWidth == 640)&&(dwRenderHeight == 480))) {
     if (wdxdisplay8_cat.info())
-      wdxdisplay8_cat.info() << "CreateDevice failed w/out-of-vidmem, retrying at 640x480 w/16bpp buffers on device #" << Display._card_id << endl;
+      wdxdisplay8_cat.info() << "CreateDevice failed w/out-of-vidmem, retrying at 640x480 w/16bpp buffers on device #" << display._card_id << endl;
     // try final fallback to 640x480x16
-    Display._display_mode.Width = 640;
-    Display._display_mode.Height = 480;
-    return create_screen_buffers_and_device(Display, true);
+    display._display_mode.Width = 640;
+    display._display_mode.Height = 480;
+    return create_screen_buffers_and_device(display, true);
     //return;
 
   } else {

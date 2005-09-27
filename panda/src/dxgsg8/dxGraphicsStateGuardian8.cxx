@@ -1347,15 +1347,15 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
     return;
   }
 
-  RECT SrcRect;
+  RECT src_rect;
 
-  SrcRect.left = xo;
-  SrcRect.right = xo+w;
-  SrcRect.top = yo;
-  SrcRect.bottom = yo+h;
+  src_rect.left = xo;
+  src_rect.right = xo+w;
+  src_rect.top = yo;
+  src_rect.bottom = yo+h;
 
   // now copy from fb to tex
-  hr = _d3d_device->CopyRects(render_target, &SrcRect, 1, tex_level_0, 0);
+  hr = _d3d_device->CopyRects(render_target, &src_rect, 1, tex_level_0, 0);
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
@@ -1392,73 +1392,105 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   rect.left = xo;
   rect.right = xo + w;
   rect.bottom = yo + h;
+  bool copy_inverted = false;
 
-  IDirect3DSurface8 *framebuffer;
+  IDirect3DSurface8 *temp_surface = NULL;
   HRESULT hr;
 
+  // Note if you try to grab the backbuffer and full-screen
+  // anti-aliasing is on, the backbuffer might be larger than the
+  // window size.  For screenshots it's safer to get the front buffer.
   if (_cur_read_pixel_buffer & RenderBuffer::T_back) {
-    hr = _d3d_device->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &framebuffer);
+    IDirect3DSurface8 *backbuffer = NULL;
+    // GetRenderTarget() seems to be a little more reliable than
+    // GetBackBuffer().  Might just be related to the swap_chain
+    // thing.
+    hr = _d3d_device->GetRenderTarget(&backbuffer);
 
     if (FAILED(hr)) {
-      dxgsg8_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
+      dxgsg8_cat.error() << "GetRenderTarget failed" << D3DERRORSTRING(hr);
       return false;
     }
 
-    // note if you try to grab the backbuffer and full-screen
-    // anti-aliasing is on, the backbuffer might be larger than the
-    // window size.  for screenshots its safer to get the front
-    // buffer.
+    // Since we might not be able to Lock the back buffer, we will
+    // need to copy it to a temporary surface of the appropriate type
+    // first.
+    hr = _d3d_device->CreateImageSurface(w, h, _screen->_display_mode.Format, 
+					 &temp_surface);
+    if (FAILED(hr)) {
+      dxgsg8_cat.error()
+	<< "CreateImageSurface failed in copy_pixel_buffer()"
+	<< D3DERRORSTRING(hr);
+      backbuffer->Release();
+      return false;
+    }
+
+    // Now we must copy from the backbuffer to our temporary surface.
+    hr = _d3d_device->CopyRects(backbuffer, &rect, 1, temp_surface, NULL);
+    if (FAILED(hr)) {
+      dxgsg8_cat.error() << "CopyRects failed" << D3DERRORSTRING(hr);
+      temp_surface->Release();
+      backbuffer->Release();
+      return false;
+    }
+
+    RELEASE(backbuffer, dxgsg8, "backbuffer", RELEASE_ONCE);
 
   } else if (_cur_read_pixel_buffer & RenderBuffer::T_front) {
-    // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to
-    // copy to
-
-    DWORD temp_x_size, temp_y_size;
 
     if (_screen->_presentation_params.Windowed) {
-      // GetFrontBuffer retrieves the entire desktop for a monitor, so
-      // need space for that
-
+      // GetFrontBuffer() retrieves the entire desktop for a monitor,
+      // so we need to reserve space for that.
+      
+      // We have to use GetMonitorInfo(), since this GSG may not be
+      // for the primary monitor.
       MONITORINFO minfo;
       minfo.cbSize = sizeof(MONITORINFO);
-      GetMonitorInfo(_screen->_monitor, &minfo);   // have to use GetMonitorInfo, since this gsg may not be for primary monitor
-
-      temp_x_size = RECT_XSIZE(minfo.rcMonitor);
-      temp_y_size = RECT_YSIZE(minfo.rcMonitor);
-
+      GetMonitorInfo(_screen->_monitor, &minfo);
+      
+      w = RECT_XSIZE(minfo.rcMonitor);
+      h = RECT_YSIZE(minfo.rcMonitor);
+      
       // set rect to client area of window in scrn coords
       ClientToScreen(_screen->_window, (POINT*)&rect.left);
       ClientToScreen(_screen->_window, (POINT*)&rect.right);
-
-    } else {
-      RECT wind_rect;
-      GetWindowRect(_screen->_window, &wind_rect);
-      temp_x_size = RECT_XSIZE(wind_rect);
-      temp_y_size = RECT_YSIZE(wind_rect);
     }
-
-    hr = _d3d_device->CreateImageSurface(temp_x_size, temp_y_size, D3DFMT_A8R8G8B8, &framebuffer);
+    
+    // For GetFrontBuffer(), we need a temporary surface of type
+    // A8R8G8B8.  Unlike GetBackBuffer(), GetFrontBuffer() implicitly
+    // performs a copy.
+    hr = _d3d_device->CreateImageSurface(w, h, D3DFMT_A8R8G8B8, &temp_surface);
     if (FAILED(hr)) {
-      dxgsg8_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
+      dxgsg8_cat.error()
+	<< "CreateImageSurface failed in copy_pixel_buffer()"
+	<< D3DERRORSTRING(hr);
       return false;
     }
 
-    hr = _d3d_device->GetFrontBuffer(framebuffer);
+    hr = _d3d_device->GetFrontBuffer(temp_surface);
 
     if (hr == D3DERR_DEVICELOST) {
-      framebuffer->Release();
-      dxgsg8_cat.error() << "copy_pixel_buffer failed: device lost\n";
+      dxgsg8_cat.error()
+	<< "copy_pixel_buffer failed: device lost\n";
+      temp_surface->Release();
       return false;
     }
 
+    // For some reason the front buffer comes out inverted, but the
+    // back buffer does not.
+    copy_inverted = true;
+
   } else {
-    dxgsg8_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
+    dxgsg8_cat.error()
+      << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
+    temp_surface->Release();
     return false;
   }
 
-  DXTextureContext8::d3d_surface_to_texture(rect, framebuffer, tex);
+  DXTextureContext8::d3d_surface_to_texture(rect, temp_surface, 
+					    copy_inverted, tex);
 
-  RELEASE(framebuffer, dxgsg8, "framebuffer", RELEASE_ONCE);
+  RELEASE(temp_surface, dxgsg8, "temp_surface", RELEASE_ONCE);
 
   nassertr(tex->has_ram_image(), false);
   return true;

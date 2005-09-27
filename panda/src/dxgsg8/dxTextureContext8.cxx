@@ -710,7 +710,8 @@ delete_texture() {
 //               texture
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext8::
-d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Texture *result) {
+d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface,
+		       bool inverted, Texture *result) {
   // still need custom conversion since d3d/d3dx has no way to convert
   // arbitrary fmt to ARGB in-memory user buffer
 
@@ -722,7 +723,8 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
   nassertr((num_components == 3) || (num_components == 4), E_FAIL);  // cant handle anything else now
   nassertr(IS_VALID_PTR(d3d_surface), E_FAIL);
 
-  BYTE *buf = result->modify_ram_image().p();
+  PTA_uchar ram_image = result->modify_ram_image();
+  BYTE *buf = ram_image.p();
 
   if (IsBadWritePtr(d3d_surface, sizeof(DWORD))) {
     dxgsg8_cat.error()
@@ -748,12 +750,15 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
 
   if (!((copy_width == result->get_x_size()) && (copy_height <= (DWORD)result->get_y_size()))) {
     dxgsg8_cat.error()
-      << "d3d_surface_to_texture, Texture size too small to hold display surface!\n";
+      << "d3d_surface_to_texture, Texture size (" << result->get_x_size()
+      << ", " << result->get_y_size()
+      << ") too small to hold display surface ("
+      << copy_width << ", " << copy_height << ")\n";
     nassertr(false, E_FAIL);
     return E_FAIL;
   }
 
-  hr = d3d_surface->LockRect(&locked_rect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
+  hr = d3d_surface->LockRect(&locked_rect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE));
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
@@ -771,16 +776,24 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
 
   //buf contains raw ARGB in Texture byteorder
 
-  DWORD byte_pitch = locked_rect.Pitch;
+  int byte_pitch = locked_rect.Pitch;
   BYTE *surface_bytes = (BYTE *)locked_rect.pBits;
+
+  if (inverted) {
+    surface_bytes += byte_pitch * (y_window_offset + copy_height - 1);
+    byte_pitch = -byte_pitch;
+  } else {
+    surface_bytes += byte_pitch * y_window_offset;
+  }
 
   // writes out last line in DDSurf first in PixelBuf, so Y line order
   // precedes inversely
 
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "d3d_surface_to_texture converting " << D3DFormatStr(surface_desc.Format) 
-      << "bpp DDSurf to " <<  num_components << "-channel panda Texture\n";
+      << "d3d_surface_to_texture converting "
+      << D3DFormatStr(surface_desc.Format) 
+      << " DDSurf to " <<  num_components << "-channel panda Texture\n";
   }
 
   DWORD *dest_word = (DWORD *)buf;
@@ -793,20 +806,19 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
       DWORD *source_word;
       BYTE *dest_line = (BYTE*)dest_word;
 
-      surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_word = ((DWORD*)surface_bytes)+x_window_offset;
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_word = ((DWORD*)surface_bytes) + x_window_offset;
         memcpy(dest_line, source_word, byte_pitch);
         dest_line += byte_pitch;
+	surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
       DWORD *source_word;
-      surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_word = ((DWORD*)surface_bytes)+x_window_offset;
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_word = ((DWORD*)surface_bytes) + x_window_offset;
 
-        for (DWORD x = 0; x<copy_width; x++, source_word++) {
+        for (DWORD x = 0; x < copy_width; x++) {
           BYTE r, g, b;
           DWORD pixel = *source_word;
 
@@ -814,10 +826,12 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
           g = (BYTE)((pixel>> 8) & g_LowByteMask);
           b = (BYTE)((pixel    ) & g_LowByteMask);
 
-          *dest_byte += b;
-          *dest_byte += g;
-          *dest_byte += r;
+          *dest_byte++ = b;
+          *dest_byte++ = g;
+          *dest_byte++ = r;
+	  source_word++;
         }
+	surface_bytes += byte_pitch;
       }
     }
     break;
@@ -825,12 +839,11 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
 
   case D3DFMT_R8G8B8: {
     BYTE *source_byte;
-    surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
 
     if (num_components == 4) {
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_byte = surface_bytes+x_window_offset*3*sizeof(BYTE);
-        for (DWORD x = 0; x<copy_width; x++, dest_word++) {
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_byte = surface_bytes + x_window_offset * 3 * sizeof(BYTE);
+        for (DWORD x = 0; x < copy_width; x++) {
           DWORD r, g, b;
 
           b = *source_byte++;
@@ -838,14 +851,17 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
           r = *source_byte++;
 
           *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
+	  dest_word++;
         }
+	surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_byte = surface_bytes+x_window_offset*3*sizeof(BYTE);
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_byte = surface_bytes + x_window_offset * 3 * sizeof(BYTE);
         memcpy(dest_byte, source_byte, byte_pitch);
         dest_byte += byte_pitch;
+	surface_bytes += byte_pitch;
       }
     }
     break;
@@ -884,7 +900,6 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
       blueshift = 3;
     }
 
-    surface_bytes += byte_pitch*(y_window_offset+copy_height-1);
     if (num_components == 4) {
       // Note: these 16bpp loops ignore input alpha completely (alpha
       // is set to fully opaque in texture!)
@@ -892,9 +907,9 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
       // if we need to capture alpha, probably need to make separate
       // loops for diff 16bpp fmts for best speed
 
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_word = ((WORD*)surface_bytes)+x_window_offset;
-        for (DWORD x = 0; x<copy_width; x++, source_word++, dest_word++) {
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_word = ((WORD*)surface_bytes) + x_window_offset;
+        for (DWORD x = 0; x < copy_width; x++) {
           WORD pixel = *source_word;
           BYTE r, g, b;
 
@@ -905,13 +920,16 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
           // alpha is just set to 0xFF
 
           *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
+	  source_word++; 
+	  dest_word++;
         }
+	surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
-      for (DWORD y = 0; y<copy_height; y++, surface_bytes -= byte_pitch) {
-        source_word = ((WORD*)surface_bytes)+x_window_offset;
-        for (DWORD x = 0; x<copy_width; x++, source_word++) {
+      for (DWORD y = 0; y < copy_height; y++) {
+        source_word = ((WORD*)surface_bytes) + x_window_offset;
+        for (DWORD x = 0; x < copy_width; x++) {
           WORD pixel = *source_word;
           BYTE r, g, b;
 
@@ -922,7 +940,9 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface, Textur
           *dest_byte += b;
           *dest_byte += g;
           *dest_byte += r;
+	  source_word++;
         }
+	surface_bytes += byte_pitch;
       }
     }
     break;
