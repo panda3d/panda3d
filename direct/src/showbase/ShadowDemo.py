@@ -145,14 +145,14 @@ def avatarShadow():
 def piratesAvatarShadow():
     a = avatarShadow()
     # Force the lod to be 0 at all times
-    base.localAvatar.getGeomNode().getChild(1).node().forceSwitch(0)
+    base.localAvatar.getGeomNode().getChild(0).node().forceSwitch(0)
     return a
     
 def arbitraryShadow(node):
     # Turn off the existing drop shadow, if any
     if hasattr(node, "dropShadow"):
         # stash it so that when the game hides and shows it, it will still be gone
-        base.localAvatar.dropShadow.stash()
+        node.dropShadow.stash()
 
     # Set up a new node to hold the "light": this is an abitrary point
     # somewhere above the node, looking down, as if from the sun.
