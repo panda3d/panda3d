@@ -2026,8 +2026,7 @@ OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT4']
 CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt.c',             obj='dtoolutil_gnu_getopt.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt1.c',            obj='dtoolutil_gnu_getopt1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite1.cxx', obj='dtoolutil_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite2.cxx', obj='dtoolutil_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite.cxx',  obj='dtoolutil_composite.obj')
 
 #
 # DIRECTORY: dtool/metalibs/dtool/
@@ -2041,8 +2040,7 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libdtool.dll', obj=[
              'dtool_dtool.obj',
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
-             'dtoolutil_composite1.obj',
-             'dtoolutil_composite2.obj',
+             'dtoolutil_composite.obj',
              'dtoolbase_dtoolbase.obj',
              'dtoolbase_indent.obj',
 ])
@@ -2055,11 +2053,9 @@ CopyAllHeaders('dtool/src/cppparser', skip="ALL")
 IPATH=['dtool/src/cppparser']
 OPTS=['NSPR','OPT4']
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='cppyy', src='cppBison.yxx', dsth='cppBison.h', obj='cppParser_cppBison.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite1.cxx', obj='cppParser_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite2.cxx', obj='cppParser_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite.cxx', obj='cppParser_composite.obj')
 EnqueueLib(lib='libcppParser.ilb', obj=[
-             'cppParser_composite1.obj',
-             'cppParser_composite2.obj',
+             'cppParser_composite.obj',
              'cppParser_cppBison.obj',
 ])
 
@@ -2070,8 +2066,7 @@ EnqueueLib(lib='libcppParser.ilb', obj=[
 CopyAllHeaders('dtool/src/prc')
 IPATH=['dtool/src/prc']
 OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL', 'NSPR', 'OPT4']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite1.cxx', obj='prc_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite2.cxx', obj='prc_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite.cxx', obj='prc_composite.obj')
 
 #
 # DIRECTORY: dtool/src/dconfig/
@@ -2080,7 +2075,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite2.cxx', obj='prc_composite2
 CopyAllHeaders('dtool/src/dconfig')
 IPATH=['dtool/src/dconfig']
 OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite1.cxx', obj='dconfig_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite.cxx', obj='dconfig_composite.obj')
 
 #
 # DIRECTORY: dtool/src/interrogatedb/
@@ -2089,8 +2084,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite1.cxx', obj='dconfig_co
 CopyAllHeaders('dtool/src/interrogatedb')
 IPATH=['dtool/src/interrogatedb']
 OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite1.cxx', obj='interrogatedb_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite2.cxx', obj='interrogatedb_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite.cxx', obj='interrogatedb_composite.obj')
 
 #
 # DIRECTORY: dtool/metalibs/dtoolconfig/
@@ -2106,11 +2100,9 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', x
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='libdtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
-             'interrogatedb_composite1.obj',
-             'interrogatedb_composite2.obj',
-             'dconfig_composite1.obj',
-             'prc_composite1.obj',
-             'prc_composite2.obj',
+             'interrogatedb_composite.obj',
+             'dconfig_composite.obj',
+             'prc_composite.obj',
              'libdtool.dll',
 ])
 
@@ -2134,11 +2126,9 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libpystub.dll', obj=[
 CopyAllHeaders('dtool/src/interrogate')
 IPATH=['dtool/src/interrogate', 'dtool/src/cppparser', 'dtool/src/interrogatedb']
 OPTS=['NSPR', 'OPT4']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite1.cxx', obj='interrogate_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite2.cxx', obj='interrogate_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite.cxx', obj='interrogate_composite.obj')
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='interrogate.exe', obj=[
-             'interrogate_composite1.obj',
-             'interrogate_composite2.obj',
+             'interrogate_composite.obj',
              'libcppParser.ilb',
              'libpystub.dll',
              'libdtoolconfig.dll',
@@ -2223,11 +2213,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libexpress.in', obj='libexpress_igate
 CopyAllHeaders('panda/src/downloader')
 IPATH=['panda/src/downloader']
 OPTS=['BUILDING_PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'NSPR']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='downloader_composite1.cxx', obj='downloader_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='downloader_composite2.cxx', obj='downloader_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='downloader_composite.cxx', obj='downloader_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdownloader.in', obj='libdownloader_igate.obj',
             src='panda/src/downloader',  module='pandaexpress', library='libdownloader',
-            skip=[], also=["downloader_composite1.cxx", "downloader_composite2.cxx"])
+            skip=[], also=["downloader_composite.cxx"])
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -2243,8 +2232,7 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaexpress_module.obj',
 EnqueueLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'OPENSSL', 'ZLIB'], dll='libpandaexpress.dll', obj=[
              'pandaexpress_pandaexpress.obj',
              'libpandaexpress_module.obj',
-             'downloader_composite1.obj',
-             'downloader_composite2.obj',
+             'downloader_composite.obj',
              'libdownloader_igate.obj',
              'express_composite1.obj',
              'express_composite2.obj',
@@ -2274,7 +2262,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libputil.in', obj='libputil_igate.obj
 IPATH=['panda/src/audio']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/audio')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='audio_composite1.cxx', obj='audio_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='audio_composite.cxx', obj='audio_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libaudio.in', obj='libaudio_igate.obj',
             src='panda/src/audio',  module='panda', library='libaudio',
             skip="ALL", also=["audio.h"])
@@ -2286,10 +2274,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libaudio.in', obj='libaudio_igate.obj
 IPATH=['panda/src/event']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/event')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='event_composite1.cxx', obj='event_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='event_composite.cxx', obj='event_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libevent.in', obj='libevent_igate.obj',
             src='panda/src/event',  module='panda', library='libevent',
-            skip=[], also=["event_composite1.cxx"])
+            skip=[], also=["event_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/linmath/
@@ -2298,12 +2286,11 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libevent.in', obj='libevent_igate.obj
 IPATH=['panda/src/linmath']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/linmath')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='linmath_composite1.cxx', obj='linmath_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='linmath_composite2.cxx', obj='linmath_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='linmath_composite.cxx', obj='linmath_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblinmath.in', obj='liblinmath_igate.obj',
             src='panda/src/linmath',  module='panda', library='liblinmath',
             skip=['lmat_ops_src.h', 'cast_to_double.h', 'lmat_ops.h', 'cast_to_float.h'],
-            also=["linmath_composite1.cxx","linmath_composite2.cxx"])
+            also=["linmath_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/mathutil/
@@ -2312,11 +2299,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblinmath.in', obj='liblinmath_igate
 IPATH=['panda/src/mathutil']
 OPTS=['BUILDING_PANDA', 'FFTW', 'NSPR']
 CopyAllHeaders('panda/src/mathutil')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='mathutil_composite1.cxx', obj='mathutil_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='mathutil_composite2.cxx', obj='mathutil_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='mathutil_composite.cxx', obj='mathutil_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmathutil.in', obj='libmathutil_igate.obj',
             src='panda/src/mathutil',  module='panda', library='libmathutil',
-            skip=['mathHelpers.h'], also=["mathutil_composite1.cxx","mathutil_composite2.cxx"])
+            skip=['mathHelpers.h'], also=["mathutil_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/gsgbase/
@@ -2325,10 +2311,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmathutil.in', obj='libmathutil_iga
 IPATH=['panda/src/gsgbase']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/gsgbase')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='gsgbase_composite1.cxx', obj='gsgbase_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='gsgbase_composite.cxx', obj='gsgbase_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgsgbase.in', obj='libgsgbase_igate.obj',
             src='panda/src/gsgbase',  module='panda', library='libgsgbase',
-            skip=[], also=["gsgbase_composite1.cxx"])
+            skip=[], also=["gsgbase_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pnmimage/
@@ -2337,11 +2323,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgsgbase.in', obj='libgsgbase_igate
 IPATH=['panda/src/pnmimage']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/pnmimage')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimage_composite1.cxx', obj='pnmimage_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimage_composite2.cxx', obj='pnmimage_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimage_composite.cxx', obj='pnmimage_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpnmimage.in', obj='libpnmimage_igate.obj',
             src='panda/src/pnmimage',  module='panda', library='libpnmimage',
-            skip=[], also=["pnmimage_composite1.cxx", "pnmimage_composite2.cxx"])
+            skip=[], also=["pnmimage_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/net/
@@ -2351,11 +2336,10 @@ if (OMIT.count("NSPR")==0):
     IPATH=['panda/src/net']
     OPTS=['BUILDING_PANDA', 'NSPR']
     CopyAllHeaders('panda/src/net')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='net_composite1.cxx', obj='net_composite1.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='net_composite2.cxx', obj='net_composite2.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='net_composite.cxx', obj='net_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libnet.in', obj='libnet_igate.obj',
                 src='panda/src/net',  module='panda', library='libnet',
-                skip=["datagram_ui.h"], also=["net_composite1.cxx", "net_composite2.cxx"])
+                skip=["datagram_ui.h"], also=["net_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pstatclient/
@@ -2364,11 +2348,10 @@ if (OMIT.count("NSPR")==0):
 IPATH=['panda/src/pstatclient']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/pstatclient')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pstatclient_composite1.cxx', obj='pstatclient_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pstatclient_composite2.cxx', obj='pstatclient_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pstatclient_composite.cxx', obj='pstatclient_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclient_igate.obj',
             src='panda/src/pstatclient',  module='panda', library='libpstatclient',
-            skip=[], also=["pstatclient_composite1.cxx", "pstatclient_composite2.cxx"])
+            skip=[], also=["pstatclient_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/gobj/
@@ -2390,10 +2373,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgobj.in', obj='libgobj_igate.obj',
 IPATH=['panda/src/lerp']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/lerp')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='lerp_composite1.cxx', obj='lerp_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='lerp_composite.cxx', obj='lerp_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblerp.in', obj='liblerp_igate.obj',
             src='panda/src/lerp',  module='panda', library='liblerp',
-            skip=["lerp_headers.h","lerpchans.h"], also=["lerp_composite1.cxx"])
+            skip=["lerp_headers.h","lerpchans.h"], also=["lerp_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pgraph/
@@ -2421,11 +2404,11 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgraph.in', obj='libpgraph_igate.o
 IPATH=['panda/src/effects']
 OPTS=['BUILDING_PANDAFX', 'NSPR', 'NVIDIACG']
 CopyAllHeaders('panda/src/effects')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='effects_composite1.cxx', obj='effects_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='effects_composite.cxx', obj='effects_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libeffects.in', obj='libeffects_igate.obj',
             src='panda/src/effects',  module='pandafx', library='libeffects',
             skip=["cgShader.h", "cgShaderAttrib.h", "cgShaderContext.h"],
-            also=["effects_composite1.cxx"])
+            also=["effects_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/chan/
@@ -2434,12 +2417,11 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libeffects.in', obj='libeffects_igate
 IPATH=['panda/src/chan']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/chan')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='chan_composite1.cxx', obj='chan_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='chan_composite2.cxx', obj='chan_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='chan_composite.cxx', obj='chan_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchan.in', obj='libchan_igate.obj',
             src='panda/src/chan',  module='panda', library='libchan',
             skip=['movingPart.h', 'chan_headers.h', 'animChannelFixed.h'],
-            also=["chan_composite1.cxx", "chan_composite2.cxx"])
+            also=["chan_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/char/
@@ -2448,11 +2430,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchan.in', obj='libchan_igate.obj',
 IPATH=['panda/src/char']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/char')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='char_composite1.cxx', obj='char_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='char_composite2.cxx', obj='char_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='char_composite.cxx', obj='char_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchar.in', obj='libchar_igate.obj',
             src='panda/src/char',  module='panda', library='libchar',
-            skip=[], also=["char_composite1.cxx", "char_composite2.cxx"])
+            skip=[], also=["char_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/dgraph/
@@ -2461,11 +2442,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchar.in', obj='libchar_igate.obj',
 IPATH=['panda/src/dgraph']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/dgraph')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dgraph_composite1.cxx', obj='dgraph_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dgraph_composite2.cxx', obj='dgraph_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='dgraph_composite.cxx', obj='dgraph_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdgraph.in', obj='libdgraph_igate.obj',
             src='panda/src/dgraph',  module='panda', library='libdgraph',
-            skip=[], also=["dgraph_composite1.cxx", "dgraph_composite2.cxx"])
+            skip=[], also=["dgraph_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/display/
@@ -2474,11 +2454,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdgraph.in', obj='libdgraph_igate.o
 IPATH=['panda/src/display']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/display')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='display_composite1.cxx', obj='display_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='display_composite2.cxx', obj='display_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='display_composite.cxx', obj='display_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdisplay.in', obj='libdisplay_igate.obj',
             src='panda/src/display',  module='panda', library='libdisplay',
-            skip=['renderBuffer.h'], also=["display_composite1.cxx", "display_composite2.cxx"])
+            skip=['renderBuffer.h'], also=["display_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/device/
@@ -2487,11 +2466,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdisplay.in', obj='libdisplay_igate
 IPATH=['panda/src/device']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/device')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='device_composite1.cxx', obj='device_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='device_composite2.cxx', obj='device_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='device_composite.cxx', obj='device_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdevice.in', obj='libdevice_igate.obj',
             src='panda/src/device',  module='panda', library='libdevice',
-            skip=[], also=["device_composite1.cxx", "device_composite2.cxx"])
+            skip=[], also=["device_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pnmtext/
@@ -2513,11 +2491,10 @@ if (OMIT.count("FREETYPE")==0):
 IPATH=['panda/src/text']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'NSPR', 'FREETYPE']
 CopyAllHeaders('panda/src/text')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='text_composite1.cxx', obj='text_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='text_composite2.cxx', obj='text_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='text_composite.cxx', obj='text_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
             src='panda/src/text',  module='panda', library='libtext',
-            skip=[], also=["text_composite1.cxx", "text_composite2.cxx"])
+            skip=[], also=["text_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/grutil/
@@ -2527,10 +2504,10 @@ IPATH=['panda/src/grutil']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/grutil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite1.cxx', obj='grutil_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.obj',
             src='panda/src/grutil',  module='panda', library='libgrutil',
-            skip=[], also=["multitexReducer.cxx","grutil_composite1.cxx"])
+            skip=[], also=["multitexReducer.cxx","grutil_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/tform/
@@ -2539,11 +2516,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.o
 IPATH=['panda/src/tform']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/tform')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='tform_composite1.cxx', obj='tform_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='tform_composite2.cxx', obj='tform_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='tform_composite.cxx', obj='tform_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtform.in', obj='libtform_igate.obj',
             src='panda/src/tform',  module='panda', library='libtform',
-            skip=[], also=["tform_composite1.cxx", "tform_composite2.cxx"])
+            skip=[], also=["tform_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/collide/
@@ -2552,11 +2528,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtform.in', obj='libtform_igate.obj
 IPATH=['panda/src/collide']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/collide')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='collide_composite1.cxx', obj='collide_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='collide_composite2.cxx', obj='collide_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='collide_composite.cxx', obj='collide_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcollide.in', obj='libcollide_igate.obj',
             src='panda/src/collide',  module='panda', library='libcollide',
-            skip=["collide_headers.h"], also=["collide_composite1.cxx", "collide_composite2.cxx"])
+            skip=["collide_headers.h"], also=["collide_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/parametrics/
@@ -2565,11 +2540,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcollide.in', obj='libcollide_igate
 IPATH=['panda/src/parametrics']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/parametrics')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='parametrics_composite1.cxx', obj='parametrics_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='parametrics_composite2.cxx', obj='parametrics_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='parametrics_composite.cxx', obj='parametrics_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparametrics.in', obj='libparametrics_igate.obj',
             src='panda/src/parametrics',  module='panda', library='libparametrics',
-            skip=['nurbsPPCurve.h'], also=["parametrics_composite1.cxx", "parametrics_composite2.cxx"])
+            skip=['nurbsPPCurve.h'], also=["parametrics_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pgui/
@@ -2578,11 +2552,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparametrics.in', obj='libparametri
 IPATH=['panda/src/pgui']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/pgui')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgui_composite1.cxx', obj='pgui_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgui_composite2.cxx', obj='pgui_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgui_composite.cxx', obj='pgui_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgui.in', obj='libpgui_igate.obj',
             src='panda/src/pgui',  module='panda', library='libpgui',
-            skip=[], also=["pgui_composite1.cxx", "pgui_composite2.cxx"])
+            skip=[], also=["pgui_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/pnmimagetypes/
@@ -2593,8 +2566,7 @@ OPTS=['BUILDING_PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB', 'NSPR', 'JPEG', 'TIFF']
 CopyAllHeaders('panda/src/pnmimagetypes')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypePNG.cxx', obj='pnmimagetypes_pnmFileTypePNG.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypeTIFF.cxx', obj='pnmimagetypes_pnmFileTypeTIFF.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite1.cxx', obj='pnmimagetypes_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite2.cxx', obj='pnmimagetypes_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite.cxx', obj='pnmimagetypes_composite.obj')
 
 #
 # DIRECTORY: panda/src/recorder/
@@ -2603,11 +2575,10 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite2.cxx', obj='pnmi
 IPATH=['panda/src/recorder']
 OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/recorder')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='recorder_composite1.cxx', obj='recorder_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='recorder_composite2.cxx', obj='recorder_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='recorder_composite.cxx', obj='recorder_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='librecorder.in', obj='librecorder_igate.obj',
             src='panda/src/recorder',  module='panda', library='librecorder',
-            skip=[], also=["recorder_composite1.cxx", "recorder_composite2.cxx"])
+            skip=[], also=["recorder_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/vrpn/
@@ -2617,10 +2588,10 @@ if (OMIT.count("VRPN")==0):
     IPATH=['panda/src/vrpn']
     OPTS=['BUILDING_PANDA', 'NSPR', 'VRPN']
     CopyAllHeaders('panda/src/vrpn')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrpn_composite1.cxx', obj='pvrpn_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrpn_composite.cxx', obj='pvrpn_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpvrpn.in', obj='libpvrpn_igate.obj',
                 src='panda/src/vrpn',  module='panda', library='libpvrpn',
-                skip=[], also=["vrpn_composite1.cxx"])
+                skip=[], also=["vrpn_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/helix/
@@ -2672,40 +2643,42 @@ INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpst
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
          'libpnmimage.in', 'libtext.in', 'libtform.in', 'liblerp.in', 'libputil.in', 'libaudio.in',
          'libpgui.in']
-OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
-          'recorder_composite2.obj', 'librecorder_igate.obj',
-          'pgraph_nodePath.obj', 'libpgraph_igate.obj',
-          'pgraph_composite1.obj', 'pgraph_composite2.obj', 'pgraph_composite3.obj', 'pgraph_composite4.obj',
-          'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'libgrutil_igate.obj',
-          'chan_composite1.obj', 'chan_composite2.obj', 'libchan_igate.obj', 'pstatclient_composite1.obj',
-          'pstatclient_composite2.obj', 'libpstatclient_igate.obj', 'char_composite1.obj',
-          'char_composite2.obj', 'libchar_igate.obj', 'collide_composite1.obj', 'collide_composite2.obj',
-          'libcollide_igate.obj', 'device_composite1.obj', 'device_composite2.obj', 'libdevice_igate.obj',
-          'dgraph_composite1.obj', 'dgraph_composite2.obj', 'libdgraph_igate.obj', 'display_composite1.obj',
-          'display_composite2.obj', 'libdisplay_igate.obj', 'event_composite1.obj', 'libevent_igate.obj',
-          'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj', 'gsgbase_composite1.obj',
-          'libgsgbase_igate.obj', 'linmath_composite1.obj',
-          'linmath_composite2.obj', 'liblinmath_igate.obj',
-          'mathutil_composite1.obj', 'mathutil_composite2.obj', 'libmathutil_igate.obj',
-          'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
-          'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj', 'pnmimagetypes_composite1.obj',
-          'pnmimagetypes_composite2.obj', 'pnmimage_composite1.obj', 'pnmimage_composite2.obj', 'libpnmimage_igate.obj',
-          'text_composite1.obj', 'text_composite2.obj', 'libtext_igate.obj',
-          'tform_composite1.obj', 'tform_composite2.obj',
-          'libtform_igate.obj', 'lerp_composite1.obj', 'liblerp_igate.obj',
+OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
+          'recorder_composite.obj', 'librecorder_igate.obj',
+          'pgraph_nodePath.obj', 
+          'pgraph_composite1.obj', 'pgraph_composite2.obj', 'pgraph_composite3.obj', 'pgraph_composite4.obj', 'libpgraph_igate.obj',
+          'grutil_multitexReducer.obj', 'grutil_composite.obj', 'libgrutil_igate.obj',
+          'chan_composite.obj', 'libchan_igate.obj',
+          'pstatclient_composite.obj', 'libpstatclient_igate.obj',
+          'char_composite.obj', 'libchar_igate.obj',
+          'collide_composite.obj', 'libcollide_igate.obj',
+          'device_composite.obj', 'libdevice_igate.obj',
+          'dgraph_composite.obj', 'libdgraph_igate.obj',
+          'display_composite.obj', 'libdisplay_igate.obj',
+          'event_composite.obj', 'libevent_igate.obj',
+          'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj',
+          'gsgbase_composite.obj', 'libgsgbase_igate.obj',
+          'linmath_composite.obj', 'liblinmath_igate.obj',
+          'mathutil_composite.obj', 'libmathutil_igate.obj',
+          'parametrics_composite.obj', 'libparametrics_igate.obj',
+          'pnmimagetypes_composite.obj', 'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj',
+          'pnmimage_composite.obj', 'libpnmimage_igate.obj',
+          'text_composite.obj', 'libtext_igate.obj',
+          'tform_composite.obj', 'libtform_igate.obj',
+          'lerp_composite.obj', 'liblerp_igate.obj',
           'putil_composite1.obj', 'putil_composite2.obj', 'libputil_igate.obj',
-          'audio_composite1.obj', 'libaudio_igate.obj', 'pgui_composite1.obj', 'pgui_composite2.obj',
-          'libpgui_igate.obj', 'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libdtoolconfig.dll', 'libdtool.dll']
+          'audio_composite.obj', 'libaudio_igate.obj',
+          'pgui_composite.obj', 'libpgui_igate.obj',
+          'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libdtoolconfig.dll', 'libdtool.dll']
 if OMIT.count("HELIX")==0:
     OBJFILES.append("libhelix.ilb")
     INFILES.append("libhelix.in")
 if OMIT.count("VRPN")==0:
-    OBJFILES.append("pvrpn_composite1.obj")
+    OBJFILES.append("pvrpn_composite.obj")
     OBJFILES.append("libpvrpn_igate.obj")
     INFILES.append("libpvrpn.in")
 if OMIT.count("NSPR")==0:
-    OBJFILES.append("net_composite1.obj")
-    OBJFILES.append("net_composite2.obj")
+    OBJFILES.append("net_composite.obj")
     OBJFILES.append("libnet_igate.obj")
     INFILES.append("libnet.in")
 if OMIT.count("FREETYPE")==0:
@@ -2732,9 +2705,9 @@ if OMIT.count("FMOD") == 0:
   IPATH=['panda/src/audiotraits']
   OPTS=['BUILDING_FMOD_AUDIO', 'NSPR', 'FMOD']
   CopyAllHeaders('panda/src/audiotraits')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='fmod_audio_composite1.cxx', obj='fmod_audio_fmod_audio_composite1.obj')
+  EnqueueCxx(ipath=IPATH, opts=OPTS, src='fmod_audio_composite.cxx', obj='fmod_audio_fmod_audio_composite.obj')
   EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMOD', 'NSPR'], dll='libfmod_audio.dll', obj=[
-               'fmod_audio_fmod_audio_composite1.obj',
+               'fmod_audio_fmod_audio_composite.obj',
                'libpanda.dll',
                'libpandaexpress.dll',
                'libdtoolconfig.dll',
@@ -2745,9 +2718,9 @@ if OMIT.count("MILES") == 0:
   IPATH=['panda/src/audiotraits']
   OPTS=['BUILDING_MILES_AUDIO', 'NSPR', 'MILES']
   CopyAllHeaders('panda/src/audiotraits')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='miles_audio_composite1.cxx', obj='miles_audio_miles_audio_composite1.obj')
+  EnqueueCxx(ipath=IPATH, opts=OPTS, src='miles_audio_composite.cxx', obj='miles_audio_miles_audio_composite.obj')
   EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'MILES', 'NSPR'], dll='libmiles_audio.dll', obj=[
-               'miles_audio_miles_audio_composite1.obj',
+               'miles_audio_miles_audio_composite.obj',
                'libpanda.dll',
                'libpandaexpress.dll',
                'libdtoolconfig.dll',
@@ -2761,10 +2734,10 @@ if OMIT.count("MILES") == 0:
 IPATH=['panda/src/distort']
 OPTS=['BUILDING_PANDAFX', 'NSPR']
 CopyAllHeaders('panda/src/distort')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='distort_composite1.cxx', obj='distort_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='distort_composite.cxx', obj='distort_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistort.in', obj='libdistort_igate.obj',
             src='panda/src/distort',  module='pandafx', library='libdistort',
-            skip=[], also=["distort_composite1.cxx"])
+            skip=[], also=["distort_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/downloadertools/
@@ -2831,7 +2804,7 @@ if (sys.platform == "win32"):
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
 #     CopyAllHeaders('panda/src/dxgsg7')
 #     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg7_composite1.cxx', obj='dxgsg7_composite1.obj')
+#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg7_composite.cxx', obj='dxgsg7_composite.obj')
 # 
 #     IPATH=['panda/metalibs/pandadx7']
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
@@ -2840,7 +2813,7 @@ if (sys.platform == "win32"):
 #     EnqueueLink(dll='libpandadx7.dll', opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
 #       'pandadx7_pandadx7.obj',
 #       'dxgsg7_dxGraphicsStateGuardian7.obj',
-#       'dxgsg7_composite1.obj',
+#       'dxgsg7_composite.obj',
 #       'libpanda.dll',
 #       'libpandaexpress.dll',
 #       'libwindisplay.dll',
@@ -2858,7 +2831,7 @@ if (sys.platform == "win32"):
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CopyAllHeaders('panda/src/dxgsg8')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg8_composite1.cxx', obj='dxgsg8_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg8_composite.cxx', obj='dxgsg8_composite.obj')
 
     IPATH=['panda/metalibs/pandadx8']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
@@ -2868,7 +2841,7 @@ if (sys.platform == "win32"):
       opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
       'pandadx8_pandadx8.obj',
       'dxgsg8_dxGraphicsStateGuardian8.obj',
-      'dxgsg8_composite1.obj',
+      'dxgsg8_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
       'libwindisplay.dll',
@@ -2885,7 +2858,7 @@ if (sys.platform == "win32"):
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
 #     CopyAllHeaders('panda/src/dxgsg9')
 #     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite1.cxx', obj='dxgsg9_composite1.obj')
+#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite.cxx', obj='dxgsg9_composite.obj')
 # 
 #     IPATH=['panda/metalibs/pandadx9']
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
@@ -2895,7 +2868,7 @@ if (sys.platform == "win32"):
 #       opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR'], obj=[
 #       'pandadx9_pandadx9.obj',
 #       'dxgsg9_dxGraphicsStateGuardian9.obj',
-#       'dxgsg9_composite1.obj',
+#       'dxgsg9_composite.obj',
 #       'libpanda.dll',
 #       'libpandaexpress.dll',
 #       'libwindisplay.dll',
@@ -2926,8 +2899,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg.in', obj='libegg_igate.obj',
 IPATH=['panda/src/egg2pg']
 OPTS=['BUILDING_PANDAEGG', 'NSPR']
 CopyAllHeaders('panda/src/egg2pg')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg2pg_composite1.cxx', obj='egg2pg_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg2pg_composite2.cxx', obj='egg2pg_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg2pg_composite.cxx', obj='egg2pg_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg2pg.in', obj='libegg2pg_igate.obj',
             src='panda/src/egg2pg',  module='pandaegg', library='libegg2pg',
             skip="ALL", also=['load_egg_file.h'])
@@ -2966,9 +2938,9 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandafx_module.obj',
 EnqueueLink(dll='libpandafx.dll', opts=['ADVAPI', 'NSPR', 'NVIDIACG'], obj=[
              'pandafx_pandafx.obj',
              'libpandafx_module.obj',
-             'distort_composite1.obj',
+             'distort_composite.obj',
              'libdistort_igate.obj',
-             'effects_composite1.obj',
+             'effects_composite.obj',
              'libeffects_igate.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
@@ -3017,8 +2989,7 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaegg_module.obj',
 EnqueueLink(dll='libpandaegg.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'pandaegg_pandaegg.obj',
              'libpandaegg_module.obj',
-             'egg2pg_composite1.obj',
-             'egg2pg_composite2.obj',
+             'egg2pg_composite.obj',
              'libegg2pg_igate.obj',
              'egg_composite1.obj',
              'egg_composite2.obj',
@@ -3039,7 +3010,7 @@ if (sys.platform != "win32"):
     IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
     OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/src/glxdisplay')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='glxdisplay_composite1.cxx',     obj='glxdisplay_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='glxdisplay_composite.cxx', obj='glxdisplay_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libglxdisplay.in', obj='libglxdisplay_igate.obj',
                 src='panda/src/glxdisplay',  module='pandagl', library='libglxdisplay',
                 skip="ALL", also=['glxGraphicsPipe.h'])
@@ -3052,7 +3023,7 @@ if (sys.platform != "win32"):
       'pandagl_pandagl.obj',
       'glgsg_config_glgsg.obj',
       'glgsg_glgsg.obj',
-      'glxdisplay_composite1.obj',
+      'glxdisplay_composite.obj',
       'libglxdisplay_igate.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
@@ -3070,7 +3041,7 @@ if (sys.platform == "win32"):
     IPATH=['panda/src/wgldisplay', 'panda/src/glstuff', 'panda/src/gobj']
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/src/wgldisplay')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='wgldisplay_composite1.cxx', obj='wgldisplay_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='wgldisplay_composite.cxx', obj='wgldisplay_composite.obj')
 
     IPATH=['panda/metalibs/pandagl']
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
@@ -3081,7 +3052,7 @@ if (sys.platform == "win32"):
       'pandagl_pandagl.obj',
       'glgsg_config_glgsg.obj',
       'glgsg_glgsg.obj',
-      'wgldisplay_composite1.obj',
+      'wgldisplay_composite.obj',
       'libwindisplay.dll',
       'libpanda.dll',
       'libpandaexpress.dll',
@@ -3098,11 +3069,10 @@ if (sys.platform == "win32"):
 IPATH=['panda/src/physics']
 OPTS=['BUILDING_PANDAPHYSICS', 'NSPR']
 CopyAllHeaders('panda/src/physics')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='physics_composite1.cxx', obj='physics_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='physics_composite2.cxx', obj='physics_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='physics_composite.cxx', obj='physics_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libphysics.in', obj='libphysics_igate.obj',
             src='panda/src/physics',  module='pandaphysics', library='libphysics',
-            skip=["forces.h"], also=["physics_composite1.cxx", "physics_composite2.cxx"])
+            skip=["forces.h"], also=["physics_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/particlesystem/
@@ -3111,12 +3081,11 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libphysics.in', obj='libphysics_igate
 IPATH=['panda/src/particlesystem']
 OPTS=['BUILDING_PANDAPHYSICS', 'NSPR']
 CopyAllHeaders('panda/src/particlesystem')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='particlesystem_composite1.cxx', obj='particlesystem_composite1.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='particlesystem_composite2.cxx', obj='particlesystem_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='particlesystem_composite.cxx', obj='particlesystem_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparticlesystem.in', obj='libparticlesystem_igate.obj',
             src='panda/src/particlesystem',  module='pandaphysics', library='libparticlesystem',
             skip=['orientedParticle.h', 'orientedParticleFactory.h', 'particlefactories.h', 'emitters.h', 'particles.h'],
-            also=["particlesystem_composite1.cxx", "particlesystem_composite2.cxx"])
+            also=["particlesystem_composite.cxx"])
 
 #
 # DIRECTORY: panda/metalibs/pandaphysics/
@@ -3132,11 +3101,9 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaphysics_module.obj',
 EnqueueLink(dll='libpandaphysics.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'pandaphysics_pandaphysics.obj',
              'libpandaphysics_module.obj',
-             'physics_composite1.obj',
-             'physics_composite2.obj',
+             'physics_composite.obj',
              'libphysics_igate.obj',
-             'particlesystem_composite1.obj',
-             'particlesystem_composite2.obj',
+             'particlesystem_composite.obj',
              'libparticlesystem_igate.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
@@ -3191,12 +3158,11 @@ if (OMIT.count("PYTHON")==0):
     CopyAllHeaders('direct/src/dcparser')
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcParser.yxx', dsth='dcParser.h', obj='dcparser_dcParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcLexer.lxx', obj='dcparser_dcLexer.obj', dashi=0)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparser_composite1.cxx', obj='dcparser_composite1.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparser_composite2.cxx', obj='dcparser_composite2.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparser_composite.cxx', obj='dcparser_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', obj='libdcparser_igate.obj',
                 src='direct/src/dcparser',  module='direct', library='libdcparser',
                 skip=['dcmsgtypes.h'],
-                also=["dcparser_composite1.cxx", "dcparser_composite2.cxx"])
+                also=["dcparser_composite.cxx"])
 
 #
 # DIRECTORY: direct/src/deadrec/
@@ -3206,10 +3172,10 @@ if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/deadrec']
     OPTS=['BUILDING_DIRECT', 'NSPR']
     CopyAllHeaders('direct/src/deadrec')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='deadrec_composite1.cxx', obj='deadrec_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='deadrec_composite.cxx', obj='deadrec_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdeadrec.in', obj='libdeadrec_igate.obj',
                 src='direct/src/deadrec',  module='direct', library='libdeadrec',
-                skip=[], also=["deadrec_composite1.cxx"])
+                skip=[], also=["deadrec_composite.cxx"])
 
 #
 # DIRECTORY: direct/src/distributed/
@@ -3234,10 +3200,10 @@ if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/interval']
     OPTS=['BUILDING_DIRECT', 'NSPR']
     CopyAllHeaders('direct/src/interval')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='interval_composite1.cxx', obj='interval_composite1.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='interval_composite.cxx', obj='interval_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libinterval.in', obj='libinterval_igate.obj',
                 src='direct/src/interval',  module='direct', library='libinterval',
-                skip=[], also=["interval_composite1.cxx"])
+                skip=[], also=["interval_composite.cxx"])
 
 #
 # DIRECTORY: direct/src/showbase/
@@ -3269,17 +3235,16 @@ if (OMIT.count("PYTHON")==0):
                  'direct_direct.obj',
                  'libdirect_module.obj',
                  'directbase_directbase.obj',
-                 'dcparser_composite1.obj',
-                 'dcparser_composite2.obj',
+                 'dcparser_composite.obj',
                  'dcparser_dcParser.obj',
                  'dcparser_dcLexer.obj',
                  'libdcparser_igate.obj',
                  'showbase_showBase.obj',
                  'showbase_mersenne.obj',
                  'libshowbase_igate.obj',
-                 'deadrec_composite1.obj',
+                 'deadrec_composite.obj',
                  'libdeadrec_igate.obj',
-                 'interval_composite1.obj',
+                 'interval_composite.obj',
                  'libinterval_igate.obj',
                  'distributed_config_distributed.obj',
                  'distributed_cConnectionRepository.obj',
