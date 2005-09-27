@@ -122,12 +122,17 @@ class DistributedObjectAI(DirectObject):
                 barrier.cleanup()
             self.__barriers = {}
 
-            # Asad: As per Roger's suggestion, turn off the following block until a solution is
-            # Thought out of how to prevent this delete message or to handle this message better
-##             if not hasattr(self, "doNotDeallocateChannel"):
-##                 if self.air:
-##                     self.air.deallocateChannel(self.doId)
-##             self.air = None
+            # DCR: I've re-enabled this block of code so that Toontown's AI won't leak channels.
+            # Let me know if it causes trouble.
+            ### Asad: As per Roger's suggestion, turn off the following block until a solution is
+            ### Thought out of how to prevent this delete message or to handle this message better
+            # TODO: do we still need this check?
+            if not hasattr(self, "doNotDeallocateChannel"):
+                if self.air:
+                    if self.air.minChannel <= self.doId <= self.air.maxChannel:
+                        self.air.deallocateChannel(self.doId)
+            self.air = None
+
             if hasattr(self, 'parentId'):
                 del self.parentId
             if hasattr(self, 'zoneId'):
