@@ -30,8 +30,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex, const string &tex_path, float texels_per_unit) {
-  set_texture(tex,texels_per_unit);
-  get_last_anim()->set_source_info(tex_path);
+  set_texture(tex,texels_per_unit);  
+  
+  //moved to "set_texture(Texture *tex, float texels_per_unit)" for backwards compatibility
+  //get_last_anim()->set_source_info(tex_path); 
 }
 
 INLINE void SpriteParticleRenderer::
@@ -46,6 +48,8 @@ set_texture(Texture *tex, float texels_per_unit) {
     // We scale the particle size by the size of the texture.
     set_size(tex->get_x_size() / texels_per_unit,
              tex->get_y_size() / texels_per_unit);
+
+    get_last_anim()->set_source_info(tex->get_filename());    
   }
   init_geoms();
 }
@@ -60,8 +64,12 @@ set_texture(Texture *tex, float texels_per_unit) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 add_texture(Texture *tex, const string &tex_path, float texels_per_unit, bool resize) {
+  int anim_count = _anims.size();
   add_texture(tex,texels_per_unit,resize);
-  get_last_anim()->set_source_info(tex_path);
+  if (anim_count < (int)_anims.size()) {
+    get_last_anim()->set_source_info(tex_path);
+  }
+
 }
 
 INLINE void SpriteParticleRenderer::
