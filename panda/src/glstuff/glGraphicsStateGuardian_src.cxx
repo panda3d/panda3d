@@ -3087,10 +3087,10 @@ do_issue_blending() {
     if (_target._color_write != _state._color_write) {
       if (CLP(color_mask)) {
 	unsigned int channels = _target._color_write->get_channels();
-        GLP(ColorMask)(channels & ColorWriteAttrib::C_red,
-		       channels & ColorWriteAttrib::C_green,
-		       channels & ColorWriteAttrib::C_blue,
-		       channels & ColorWriteAttrib::C_alpha);
+        GLP(ColorMask)((channels & ColorWriteAttrib::C_red) != 0,
+                       (channels & ColorWriteAttrib::C_green) != 0,
+                       (channels & ColorWriteAttrib::C_blue) != 0,
+                       (channels & ColorWriteAttrib::C_alpha) != 0);
       }
     }
   }
