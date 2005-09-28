@@ -34,18 +34,24 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorWriteAttrib : public RenderAttrib {
 PUBLISHED:
-  enum Mode {
-    M_off,
-    M_on
+  enum Channels {
+    // By coincidence, these bits are the same as those for
+    // D3DCOLORWRITEENABLE_RED, _GREEN, _BLUE, and _ALPHA.
+    C_off    = 0x000,
+    C_red    = 0x001,
+    C_green  = 0x002,
+    C_blue   = 0x004,
+    C_alpha  = 0x008,
+    C_all    = 0x00f,
   };
 
 private:
-  INLINE ColorWriteAttrib(Mode mode = M_on);
+  INLINE ColorWriteAttrib(unsigned int channels = C_all);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode);
+  static CPT(RenderAttrib) make(unsigned int channels);
 
-  INLINE Mode get_mode() const;
+  INLINE unsigned int get_channels() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -56,7 +62,7 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  Mode _mode;
+  int _channels;
 
 public:
   static void register_with_read_factory();

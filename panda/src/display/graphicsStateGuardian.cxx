@@ -865,7 +865,7 @@ begin_decal_base_second() {
   static CPT(RenderState) decal_base_second;
   if (decal_base_second == (const RenderState *)NULL) {
     decal_base_second = RenderState::make
-      (ColorWriteAttrib::make(ColorWriteAttrib::M_off),
+      (ColorWriteAttrib::make(ColorWriteAttrib::C_off),
        // On reflection, we need to leave texturing on so the alpha
        // test mechanism can work (if it is enabled, e.g. we are
        // rendering an object with M_dual transparency).

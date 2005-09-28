@@ -38,7 +38,7 @@ initialize_defvals() {
   _defvals._color          = DCAST(ColorAttrib,ColorAttrib::make_off());
   _defvals._color_blend    = DCAST(ColorBlendAttrib,ColorBlendAttrib::make_off());
   _defvals._color_scale    = DCAST(ColorScaleAttrib,ColorScaleAttrib::make_off());
-  _defvals._color_write    = DCAST(ColorWriteAttrib,ColorWriteAttrib::make(ColorWriteAttrib::M_on));
+  _defvals._color_write    = DCAST(ColorWriteAttrib,ColorWriteAttrib::make(ColorWriteAttrib::C_all));
   _defvals._cull_bin       = DCAST(CullBinAttrib,CullBinAttrib::make("",0));
   _defvals._cull_face      = DCAST(CullFaceAttrib,CullFaceAttrib::make(CullFaceAttrib::M_cull_counter_clockwise));
   _defvals._depth_offset   = DCAST(DepthOffsetAttrib,DepthOffsetAttrib::make(0));

@@ -24,17 +24,18 @@
 //               ColorWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE ColorWriteAttrib::
-ColorWriteAttrib(ColorWriteAttrib::Mode mode) :
-  _mode(mode)
+ColorWriteAttrib(unsigned int channels) :
+  _channels(channels)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorWriteAttrib::get_mode
+//     Function: ColorWriteAttrib::get_channels
 //       Access: Published
-//  Description: Returns the color write mode.
+//  Description: Returns the mask of color channels that are enabled
+//               by this attrib.
 ////////////////////////////////////////////////////////////////////
-INLINE ColorWriteAttrib::Mode ColorWriteAttrib::
-get_mode() const {
-  return _mode;
+INLINE unsigned int ColorWriteAttrib::
+get_channels() const {
+  return _channels;
 }

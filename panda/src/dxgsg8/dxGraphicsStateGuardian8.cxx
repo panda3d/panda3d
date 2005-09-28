@@ -2663,7 +2663,11 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 void DXGraphicsStateGuardian8::
 do_issue_blending() {
 
-  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
+  // Handle the color_write attrib.  If color_write is off, then
+  // all the other blending-related stuff doesn't matter.  If the
+  // device doesn't support color-write, we use blending tricks
+  // to effectively disable color write.
+  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
         enable_blend(false);
@@ -2677,7 +2681,7 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0xFFFFFFFF);
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
       }
     }
   }

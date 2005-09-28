@@ -33,8 +33,8 @@ TypeHandle ColorWriteAttrib::_type_handle;
 //  Description: Constructs a new ColorWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorWriteAttrib::
-make(ColorWriteAttrib::Mode mode) {
-  ColorWriteAttrib *attrib = new ColorWriteAttrib(mode);
+make(unsigned int channels) {
+  ColorWriteAttrib *attrib = new ColorWriteAttrib(channels);
   return return_new(attrib);
 }
 
@@ -46,13 +46,21 @@ make(ColorWriteAttrib::Mode mode) {
 void ColorWriteAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  switch (get_mode()) {
-  case M_off:
+  if (_channels == 0) {
     out << "off";
-    break;
-  case M_on:
-    out << "on";
-    break;
+  } else {
+    if ((_channels & C_red) != 0) {
+      out << "r";
+    }
+    if ((_channels & C_green) != 0) {
+      out << "g";
+    }
+    if ((_channels & C_blue) != 0) {
+      out << "b";
+    }
+    if ((_channels & C_alpha) != 0) {
+      out << "a";
+    }
   }
 }
 
@@ -75,7 +83,7 @@ int ColorWriteAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ColorWriteAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)_mode - (int)ta->_mode;
+  return (int)_channels - (int)ta->_channels;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,7 +134,7 @@ void ColorWriteAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  dg.add_int8(_mode);
+  dg.add_uint8(_channels);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,5 +168,5 @@ void ColorWriteAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  _mode = (Mode)scan.get_int8();
+  _channels = scan.get_uint8();
 }

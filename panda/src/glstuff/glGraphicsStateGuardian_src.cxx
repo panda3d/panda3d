@@ -3069,7 +3069,7 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  if (_target._color_write->get_mode() == ColorWriteAttrib::M_off) {
+  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       enable_multisample_alpha_one(false);
       enable_multisample_alpha_mask(false);
@@ -3086,7 +3086,11 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (CLP(color_mask)) {
-        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	unsigned int channels = _target._color_write->get_channels();
+        GLP(ColorMask)(channels & ColorWriteAttrib::C_red,
+		       channels & ColorWriteAttrib::C_green,
+		       channels & ColorWriteAttrib::C_blue,
+		       channels & ColorWriteAttrib::C_alpha);
       }
     }
   }
