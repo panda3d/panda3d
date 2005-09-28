@@ -30,12 +30,12 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def setTextureFromFile(self, fileName = None):
         if fileName == None:
             fileName = self.getSourceTextureName()
-        else:
-            self.setSourceTextureName(fileName)
+        
 
         t = loader.loadTexture(fileName)
         if (t != None):
             self.setTexture(t,fileName)
+            self.setSourceTextureName(fileName)
             return True
         else:
             print "Couldn't find rendererSpriteTexture file: %s" % fileName
@@ -43,8 +43,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
     def addTextureFromFile(self, fileName = None):
         if(self.getNumAnims == 0):
-            self.setTextureFromFile(fileName)
-            return
+            return self.setTextureFromFile(fileName)            
         
         if fileName == None:
             fileName = self.getSourceTextureName()
@@ -82,13 +81,9 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
         if modelName == None:
             modelName = self.getSourceFileName()
-        else:
-            self.setSourceFileName(modelName)
             
         if nodeName == None:
             nodeName = self.getSourceNodeName()
-        else:
-            self.setSourceNodeName(nodeName)
             
         # Load model and get texture
         m = loader.loadModelOnce(modelName)
@@ -103,13 +98,14 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             return False
 
         self.setFromNode(np, modelName, nodeName, sizeFromTexels)
+        self.setSourceFileName(modelName)
+        self.setSourceNodeName(nodeName)
         m.removeNode()
         return True
         
     def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
         if(self.getNumAnims == 0):
-            self.setTextureFromNode(modelName,nodeName,sizeFromTexels)
-            return
+            return self.setTextureFromNode(modelName,nodeName,sizeFromTexels)
 
         if modelName == None:
             modelName = self.getSourceFileName()
