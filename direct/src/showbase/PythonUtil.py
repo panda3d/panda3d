@@ -1681,6 +1681,7 @@ class Enum:
     if __debug__:
         # chars that cannot appear within an item string.
         InvalidChars = string.whitespace
+        @staticmethod
         def _checkValidIdentifier(item):
             invalidChars = string.whitespace+string.punctuation
             invalidChars = invalidChars.replace('_','')
@@ -1695,7 +1696,6 @@ class Enum:
                             "Enum\n'%s'\ncontains illegal char '%s'" %
                             (item, char))
             return 1
-        _checkValidIdentifier = staticmethod(_checkValidIdentifier)
 
     def __init__(self, items, start=0):
         if type(items) == types.StringType:
