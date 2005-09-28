@@ -663,26 +663,8 @@ class ParticlePanel(AppShell):
         rendererSpriteScalePage = rendererSpriteNotebook.add('Scale')
         rendererSpriteBlendPage = rendererSpriteNotebook.add('Blend')
         rendererSpriteInterpolationPage = rendererSpriteNotebook.add('Interpolate')
-
-#        p = Frame(rendererSpriteTexturePage)        
-#        p.pack(fill = X)
-#        Label(p, width = 12, text = 'Texture Type:').pack(side = LEFT)
-#        self.rendererSpriteSourceType = IntVar()
-#        self.rendererSpriteSourceType.set(0)
-#        self.rendererSpriteSTTexture = self.createRadiobutton(
-#            p, 'left',
-#            'Sprite Renderer', 'Texture Type',
-#            'Sprite particle renderer created from texture file',
-#            self.rendererSpriteSourceType, 0,
-#            self.setSpriteSourceType)
-#        self.rendererSpriteSTTexture = self.createRadiobutton(
-#            p, 'left',
-#            'Sprite Renderer', 'NodePath Type',
-#            'Sprite particle renderer created from node path',
-#            self.rendererSpriteSourceType, 1,
-#            self.setSpriteSourceType)
-#        self.rendererSpriteSTTexture.pack(side = LEFT, expand = 1, fill = X)
 ##################################################################################
+
         p = Frame(rendererSpriteTexturePage)
         p.pack(fill = BOTH, expand = 1)
 
@@ -1829,13 +1811,13 @@ class ParticlePanel(AppShell):
         parent = self.rendererSpriteAnimationFrame
 
         if ren.addTextureFromFile():
-            animId = len(self.rendererSpriteAnimationWidgetList)
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = ren.getAnim(animId)
         
             self.rendererSpriteAnimationWidgetList.append(
                 self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
         else:
-            animId = len(self.rendererSpriteAnimationWidgetList)
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STTexture
             self.rendererSpriteAnimationWidgetList.append(
                 self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
@@ -1845,13 +1827,13 @@ class ParticlePanel(AppShell):
         parent = self.rendererSpriteAnimationFrame
 
         if ren.addTextureFromNode():
-            animId = len(self.rendererSpriteAnimationWidgetList)
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = ren.getAnim(animId)
             
             self.rendererSpriteAnimationWidgetList.append(
                 self.createSpriteAnimationNodeWidget(parent,anim,`animId`))
         else:
-            animId = len(self.rendererSpriteAnimationWidgetList)
+            animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STFromNode
             self.rendererSpriteAnimationWidgetList.append(
                 self.createSpriteAnimationNodeWidget(parent,anim,`animId`))
@@ -2202,14 +2184,14 @@ class ParticlePanel(AppShell):
 
         if(anim == SpriteAnim.STTexture or
            anim == SpriteAnim.STFromNode):
-            frame.ready = False
+            frame.valid = False
             frame.animSourceType = anim
             if(anim == SpriteAnim.STTexture):
                 type = 'Texture'
             else:
                 type = 'From Node'
         else:
-            frame.ready = True
+            frame.valid = True
             
             if(anim.getSourceType()==SpriteAnim.STTexture):
                 frame.animSourceType = SpriteAnim.STTexture
@@ -2234,7 +2216,7 @@ class ParticlePanel(AppShell):
         Label(f, text = 'Texture: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
         strVar = StringVar()
         entry = Entry(f,textvariable = strVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
-        if frame.ready:
+        if frame.valid:
             strVar.set(anim.getTexSource())
         else:
             strVar.set('Base model path: ' + `getModelPath().getValue()`)
@@ -2242,7 +2224,9 @@ class ParticlePanel(AppShell):
         def checkForTexture(strVar = strVar):
             tex = loader.loadTexture(strVar.get())
             if tex:
-                frame.ready = True
+                frame.valid = True
+            else:
+                frame.valid = False
             self.writeSpriteRendererAnimations()
 
         Button(f, text = 'Update',
@@ -2263,7 +2247,7 @@ class ParticlePanel(AppShell):
         Label(lf, text = 'Model: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
         mStrVar = StringVar()
         entry = Entry(lf,textvariable = mStrVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
-        if frame.ready:
+        if frame.valid:
             mStrVar.set(anim.getModelSource())
         else:
             mStrVar.set('Base model path: ' + `getModelPath().getValue()`)
@@ -2278,7 +2262,7 @@ class ParticlePanel(AppShell):
         Label(lf, text = 'Node: ', font = ('MSSansSerif',12), width=7).pack(side = LEFT)
         nStrVar = StringVar()
         entry = Entry(lf,textvariable = nStrVar).pack(padx=3, pady=3,side=LEFT,fill=X,expand=1)
-        if frame.ready:
+        if frame.valid:
             nStrVar.set(anim.getNodeSource())
         else:
             nStrVar.set('**/*')
@@ -2292,7 +2276,12 @@ class ParticlePanel(AppShell):
             if mod:
                 node = mod.find(nodeStrVar.get())
                 if node:
-                    frame.ready = True
+                    frame.valid = True
+                else:
+                    frame.valid = False
+            else:
+                frame.valid = False
+                
             self.writeSpriteRendererAnimations()
 
         Button(mlf, text = 'Update',
@@ -2302,6 +2291,7 @@ class ParticlePanel(AppShell):
 
         return frame
 
+    # get animation info from renderer into panel
     def readSpriteRendererAnimations(self):
         ren = self.particles.getRenderer()
 
@@ -2318,28 +2308,30 @@ class ParticlePanel(AppShell):
             else:
                 w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame,anim,`len(self.rendererSpriteAnimationWidgetList)`)
             self.rendererSpriteAnimationWidgetList.append(w)
-        
+            
+    # set animation info from panel into renderer
     def writeSpriteRendererAnimations(self):
         ren = self.particles.getRenderer()
 
         for x in range(ren.getNumAnims()):
             ren.removeAnimation(0)
 
-        widgetList = [x for x in self.rendererSpriteAnimationWidgetList if x and x.ready]
-        for x in range(len(widgetList)):
-            if(self.rendererSpriteAnimationWidgetList[x].animSourceType == SpriteAnim.STTexture):
-                texSource = self.getVariable('Sprite Renderer', `x` + ' Anim Texture').get()
-                if(x == 0):
-                    ren.setTextureFromFile(texSource)
+        for x in range(len(self.rendererSpriteAnimationWidgetList)):
+            widget = self.rendererSpriteAnimationWidgetList[x]
+            if(widget and widget.valid):
+                if(widget.animSourceType == SpriteAnim.STTexture):
+                    texSource = self.getVariable('Sprite Renderer', `x` + ' Anim Texture').get()
+                    if(x == 0):
+                        ren.setTextureFromFile(texSource)
+                    else:
+                        ren.addTextureFromFile(texSource)
                 else:
-                    ren.addTextureFromFile(texSource)
-            else:
-                modelSource = self.getVariable('Sprite Renderer', `x` + ' Anim Model').get()
-                nodeSource = self.getVariable('Sprite Renderer', `x` + ' Anim Node').get()
-                if(x == 0):
-                    ren.setTextureFromNode(modelSource,nodeSource)
-                else:
-                    ren.addTextureFromNode(modelSource,nodeSource)
+                    modelSource = self.getVariable('Sprite Renderer', `x` + ' Anim Model').get()
+                    nodeSource = self.getVariable('Sprite Renderer', `x` + ' Anim Node').get()
+                    if(x == 0):
+                        ren.setTextureFromNode(modelSource,nodeSource)
+                    else:
+                        ren.addTextureFromNode(modelSource,nodeSource)
     
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
