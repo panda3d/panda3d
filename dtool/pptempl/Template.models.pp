@@ -83,18 +83,18 @@
 #endif
 
 #define build_flt_eggs \
-   $[SOURCES(flt_egg):%.flt=%.egg]
+   $[forscopes flt_egg,$[patsubst %.flt,%$[EGG_SUFFIX].egg,$[SOURCES]]]
 
 #define build_lwo_eggs \
-   $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]]
+   $[forscopes lwo_egg,$[patsubst %.lwo %.LWO,%$[EGG_SUFFIX].egg,$[SOURCES]]]
 
 #define build_maya_eggs \
-   $[patsubst %.ma %.mb,%.egg,$[SOURCES(maya_egg)]] \
-   $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
+   $[forscopes maya_egg,$[patsubst %.ma %.mb,%$[EGG_SUFFIX].egg,$[SOURCES]]] \
+   $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg]] \
    $[forscopes maya_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_soft_eggs \
-   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
+   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg]] \
    $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_eggs \
