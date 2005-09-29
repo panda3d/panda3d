@@ -488,7 +488,7 @@ get_geom_munger(const RenderState *state) {
   // the only GSG in the world anyway.
   if (!state->_mungers.empty()) {
     RenderState::Mungers::const_iterator mi = state->_last_mi;
-    if ((*mi).first == this && !(*mi).first.was_deleted()) {
+    if (!(*mi).first.was_deleted() && (*mi).first == this) {
       return (*mi).second;
     }
   }
