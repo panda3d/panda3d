@@ -130,8 +130,9 @@ def traceFunctionCall(frame):
         r+='='
         if dict.has_key(name):
             v=str(dict[name])
-            if len(v)>200:
-                r+="<too big for debug>"
+            if len(v)>2000:
+                # r+="<too big for debug>"
+                r += (str(dict[name])[:2000] + "...")
             else:
                 r+=str(dict[name])
         else: r+="*** undefined ***"
