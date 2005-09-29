@@ -45,6 +45,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "directionalLight.h"
+#include "drawMaskAttrib.h"
 #include "fadeLodNode.h"
 #include "fadeLodNodeData.h"
 #include "fog.h"
@@ -287,6 +288,7 @@ init_libpgraph() {
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
   DirectionalLight::init_type();
+  DrawMaskAttrib::init_type();
   FadeLODNode::init_type();
   FadeLODNodeData::init_type();
   Fog::init_type();
@@ -362,6 +364,7 @@ init_libpgraph() {
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
+  DrawMaskAttrib::register_with_read_factory();
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();

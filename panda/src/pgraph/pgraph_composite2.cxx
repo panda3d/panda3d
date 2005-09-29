@@ -20,6 +20,7 @@
 #include "alphaTestAttrib.cxx"
 #include "directionalLight.cxx"
 #include "drawCullHandler.cxx"
+#include "drawMaskAttrib.cxx"
 #include "fadeLodNode.cxx"
 #include "fadeLodNodeData.cxx"
 #include "findApproxPath.cxx"

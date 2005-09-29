@@ -2417,7 +2417,7 @@ do_issue_texture() {
     apply_texture(i, tc);
     set_texture_blend_mode(i, stage);
 
-    bool texcoords_3d = false;
+    int texcoord_dimensions = 0;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
     if (_state._tex_matrix->has_stage(stage)) {
@@ -2432,7 +2432,6 @@ do_issue_texture() {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
-      texcoords_3d = false;
       break;
       
     case TexGenAttrib::M_eye_sphere_map:
@@ -2448,7 +2447,7 @@ do_issue_texture() {
                                              0.0f, 0.0f, 1.0f, 0.0f,
                                              0.5f, 0.5f, 0.0f, 1.0f));
         tex_mat = tex_mat->compose(sphere_map);
-        texcoords_3d = true;
+        texcoord_dimensions = 3;
       }
       break;
 
@@ -2460,7 +2459,7 @@ do_issue_texture() {
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
-        texcoords_3d = true;
+        texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
         tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
       }
@@ -2470,7 +2469,7 @@ do_issue_texture() {
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
       tex_mat = tex_mat->compose(_inv_cs_transform);
-      texcoords_3d = true;
+      texcoord_dimensions = 3;
       break;
 
     case TexGenAttrib::M_world_normal:
@@ -2481,7 +2480,7 @@ do_issue_texture() {
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
-        texcoords_3d = true;
+        texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
         tex_mat = tex_mat->compose(camera_transform->set_pos(LVecBase3f::zero()));
       }
@@ -2490,7 +2489,7 @@ do_issue_texture() {
     case TexGenAttrib::M_eye_normal:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
-      texcoords_3d = true;
+      texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
 
@@ -2501,7 +2500,7 @@ do_issue_texture() {
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
-        texcoords_3d = true;
+        texcoord_dimensions = 4;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
         tex_mat = tex_mat->compose(camera_transform);
       }
@@ -2510,7 +2509,7 @@ do_issue_texture() {
     case TexGenAttrib::M_eye_position:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
-      texcoords_3d = true;
+      texcoord_dimensions = 4;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
       
@@ -2523,7 +2522,7 @@ do_issue_texture() {
     _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
-      if (tex_mat->is_2d() && !texcoords_3d) {
+      if (tex_mat->is_2d() && texcoord_dimensions <= 2) {
         // For 2-d texture coordinates, we have to reorder the matrix.
         LMatrix4f m = tex_mat->get_mat();
         m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
@@ -2536,8 +2535,12 @@ do_issue_texture() {
       } else {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
+	DWORD transform_flags = texcoord_dimensions;
+	if (m.get_col3(3) != LVecBase3f::zero()) {
+	  transform_flags |= D3DTTFF_PROJECTED;
+	}
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
-                                          D3DTTFF_COUNT3);
+                                          transform_flags);
       }
 
     } else {
