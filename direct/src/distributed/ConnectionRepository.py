@@ -88,13 +88,12 @@ class ConnectionRepository(
                         value = unpacker.unpackObject()
                         unpacker.endUnpack()
                     if value is not None:
-                        try:
-                            function = getattr(distObj, field.getName())
+                        function = getattr(distObj, field.getName())
+                        if function is not None:
                             function(*value)
-                        except AttributeError:
+                        else:
                             self.notify.error("\n\n\nNot able to find %s.%s"%(
                                 distObj.__class__.__name__, field.getName()))
-                            pass
             
         # Look up the dclass
         dclass = self.dclassesByName.get(dcname+self.dcSuffix)
