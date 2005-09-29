@@ -62,7 +62,7 @@ void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 //
 /////////////////////////////////////////////////////////////////////
 
-#elseif defined(USE_MEMORY_PTMALLOC2)
+#elif defined(USE_MEMORY_PTMALLOC2)
 
 #define USE_DL_PREFIX 1
 #include "ptmalloc2_smp.c"
