@@ -1254,6 +1254,13 @@ GROUPING ENTRIES
     ignored.
 
 
+  <Tag> key { value }
+
+    This attribute defines the indicated tag (as a key/value pair),
+    retrievable via NodePath::get_tag() and related interfaces, on
+    this node.
+
+
   <Collide> name { type [flags] }
 
     This entry indicates that geometry defined at this group level is
