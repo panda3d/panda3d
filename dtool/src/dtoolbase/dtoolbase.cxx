@@ -18,8 +18,81 @@
 
 #include "dtoolbase.h"
 
+/////////////////////////////////////////////////////////////////////
+//
+// Memory manager: DLMALLOC
+//
+// This is Doug Lea's memory manager.  It is very fast,
+// but it is not thread-safe.
+//
+/////////////////////////////////////////////////////////////////////
 
-#ifndef NDEBUG
+#if defined(USE_MEMORY_DLMALLOC)
+
+#define USE_DL_PREFIX 1
+#define NO_MALLINFO 1
+#include "dlmalloc.h"
+#include "dlmalloc.c"
+
+void *default_operator_new(size_t size) {
+  void *ptr = dlmalloc(size);
+  if (ptr == (void *)NULL) {
+    cerr << "Out of memory!\n";
+    abort();
+  }
+  return ptr;
+}
+
+void default_operator_delete(void *ptr) {
+  dlfree(ptr);
+}
+
+void *(*global_operator_new)(size_t size) = &default_operator_new;
+void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+
+/////////////////////////////////////////////////////////////////////
+//
+// Memory manager: PTMALLOC2
+//
+// Ptmalloc2 is a derivative of Doug Lea's memory manager that was 
+// made thread-safe by Wolfram Gloger, then was ported to windows by
+// Niall Douglas.  It is not quite as fast as dlmalloc (because the
+// thread-safety constructs take a certain amount of CPU time), but
+// it's still much faster than the windows allocator.
+//
+/////////////////////////////////////////////////////////////////////
+
+#elseif defined(USE_MEMORY_PTMALLOC2)
+
+#define USE_DL_PREFIX 1
+#include "ptmalloc2_smp.c"
+
+void *default_operator_new(size_t size) {
+  void *ptr = dlmalloc(size);
+  if (ptr == (void *)NULL) {
+    cerr << "Out of memory!\n";
+    abort();
+  }
+  return ptr;
+}
+
+void default_operator_delete(void *ptr) {
+  dlfree(ptr);
+}
+
+void *(*global_operator_new)(size_t size) = &default_operator_new;
+void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+
+/////////////////////////////////////////////////////////////////////
+//
+// Memory manager: NONE
+//
+// This option uses the built-in system allocator.  This is a good
+// choice on linux, but it's a terrible choice on windows.
+//
+/////////////////////////////////////////////////////////////////////
+
+#else
 
 void *default_operator_new(size_t size) {
   void *ptr = malloc(size);
@@ -34,9 +107,7 @@ void default_operator_delete(void *ptr) {
   free(ptr);
 }
 
-// We absolutely depend on the static initialization of these pointers
-// to happen at load time, before any static constructors are called.
 void *(*global_operator_new)(size_t size) = &default_operator_new;
 void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 
-#endif  // NDEBUG
+#endif
