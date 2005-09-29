@@ -239,7 +239,6 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["cvMgr"] = ConfigVariableManager.getGlobalPtr()
         __builtins__["pandaSystem"] = PandaSystem.getGlobalPtr()
         __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
-        __builtins__["wantOtpServer"] = base.config.GetBool('want-otp-server', 0)
         __builtins__["wantUberdog"] = base.config.GetBool('want-uberdog', 1)
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")

@@ -32,10 +32,9 @@ class ClientRepository(ConnectionRepository):
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
-        if wantOtpServer:
-            # this is used to imulate the old setzone behavior
-            # with set locationa and set interest
-            self.old_setzone_interest_handle = None
+        # this is used to emulate the old setzone behavior
+        # with set locationa and set interest
+        self.old_setzone_interest_handle = None
 
         self.readDCFile()
         self.cache=CRCache.CRCache()
@@ -192,10 +191,9 @@ class ClientRepository(ConnectionRepository):
         return time.time() + self.serverDelta
 
     def handleGenerateWithRequired(self, di):
-        if wantOtpServer:
-            parentId = di.getUint32()
-            zoneId = di.getUint32()
-            assert parentId == self.GameGlobalsId or parentId in self.doId2do
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        assert parentId == self.GameGlobalsId or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -204,17 +202,13 @@ class ClientRepository(ConnectionRepository):
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
-        if wantOtpServer:
-            distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
-        else:
-            distObj = self.generateWithRequiredFields(dclass, doId, di)
+        distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
     def handleGenerateWithRequiredOther(self, di):
-        if wantOtpServer:
-            parentId = di.getUint32()
-            zoneId = di.getUint32()
-            assert parentId == self.GameGlobalsId or parentId in self.doId2do
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        assert parentId == self.GameGlobalsId or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -223,14 +217,10 @@ class ClientRepository(ConnectionRepository):
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
-        if wantOtpServer:
-            distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
-        else:
-            distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+        distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
     def handleGenerateWithRequiredOtherOwner(self, di):
-        assert wantOtpServer
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -247,10 +237,9 @@ class ClientRepository(ConnectionRepository):
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
-        if wantOtpServer:
-            parentId = di.getUint32()
-            zoneId = di.getUint32()
-            assert parentId in self.doId2do
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        assert parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -258,49 +247,32 @@ class ClientRepository(ConnectionRepository):
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
-        # If the class is a neverDisable class (which implies uberzone) we
-        # should go ahead and generate it even though we are in the quiet zone
-        if not wantOtpServer:
-            if dclass.getClassDef().neverDisable:
-                # Create a new distributed object, and put it in the dictionary
-                distObj = self.generateWithRequiredFields(dclass, doId, di)
-        else:
-            distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
+        distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
-        if wantOtpServer:
-            parentId = di.getUint32()
-            zoneId = di.getUint32()
-            assert parentId in self.doId2do
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        assert parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
-        # If the class is a neverDisable class (which implies uberzone) we
-        # should go ahead and generate it even though we are in the quiet zone
         dclass.startGenerate()
-        if not wantOtpServer:
-            if dclass.getClassDef().neverDisable:
-                # Create a new distributed object, and put it in the dictionary
-                distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
-        else:
-            distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
+        distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
-    # wantOtpServer: remove the None defaults when we remove this config variable
-    def generateWithRequiredFields(self, dclass, doId, di, parentId = None, zoneId = None):
+    def generateWithRequiredFields(self, dclass, doId, di, parentId, zoneId):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         elif self.cache.contains(doId):
@@ -312,8 +284,7 @@ class ClientRepository(ConnectionRepository):
             self.doId2do[doId] = distObj
             # and update it.
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         else:
@@ -331,12 +302,10 @@ class ClientRepository(ConnectionRepository):
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
-            if wantOtpServer:
-                print "New DO:%s, dclass:%s"%(doId, dclass.getName())
+            print "New DO:%s, dclass:%s"%(doId, dclass.getName())
         return distObj
 
     ## def generateGlobalObject(self, doId, dcname):
@@ -359,11 +328,10 @@ class ClientRepository(ConnectionRepository):
         ## # Update the required fields
         ## distObj.generateInit()  # Only called when constructed
         ## distObj.generate()
-        ## if wantOtpServer:
-            ## # TODO: ROGER: where should we get parentId and zoneId?
-            ## parentId = None
-            ## zoneId = None
-            ## distObj.setLocation(parentId, zoneId)
+        ## # TODO: ROGER: where should we get parentId and zoneId?
+        ## parentId = None
+        ## zoneId = None
+        ## distObj.setLocation(parentId, zoneId)
         ## # updateRequiredFields calls announceGenerate
         ## return  distObj
 
@@ -375,8 +343,7 @@ class ClientRepository(ConnectionRepository):
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         elif self.cache.contains(doId):
@@ -388,8 +355,7 @@ class ClientRepository(ConnectionRepository):
             self.doId2do[doId] = distObj
             # and update it.
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         else:
@@ -407,8 +373,7 @@ class ClientRepository(ConnectionRepository):
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
+            distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         return distObj
@@ -573,45 +538,26 @@ class ClientRepository(ConnectionRepository):
             self.handleServerHeartbeat(di)
         elif msgType == CLIENT_SYSTEM_MESSAGE:
             self.handleSystemMessage(di)
-        elif wantOtpServer:
-            if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
-                self.handleGenerateWithRequired(di)
-            elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
-                self.handleGenerateWithRequiredOther(di)
-            elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER_OWNER:
-                self.handleGenerateWithRequiredOtherOwner(di)
-            elif msgType == CLIENT_OBJECT_UPDATE_FIELD:
-                self.handleUpdateField(di)
-            elif msgType == CLIENT_OBJECT_DISABLE:
-                self.handleDisable(di)
-            elif msgType == CLIENT_OBJECT_DISABLE_OWNER:
-                self.handleDisable(di, ownerView=True)
-            elif msgType == CLIENT_OBJECT_DELETE_RESP:
-                self.handleDelete(di)
-            elif msgType == CLIENT_DONE_INTEREST_RESP:
-                self.handleInterestDoneMessage(di)
-            elif msgType == CLIENT_QUERY_ONE_FIELD_RESP:
-                self.handleQueryOneFieldResp(di)
-            elif msgType == CLIENT_OBJECT_LOCATION:
-                self.handleObjectLocation(di)
-            else:
-                currentLoginState = self.loginFSM.getCurrentState()
-                if currentLoginState:
-                    currentLoginStateName = currentLoginState.getName()
-                else:
-                    currentLoginStateName = "None"
-                currentGameState = self.gameFSM.getCurrentState()
-                if currentGameState:
-                    currentGameStateName = currentGameState.getName()
-                else:
-                    currentGameStateName = "None"
-                ClientRepository.notify.warning(
-                    "Ignoring unexpected message type: " +
-                    str(msgType) +
-                    " login state: " +
-                    currentLoginStateName +
-                    " game state: " +
-                    currentGameStateName)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED:
+            self.handleGenerateWithRequired(di)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+            self.handleGenerateWithRequiredOther(di)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER_OWNER:
+            self.handleGenerateWithRequiredOtherOwner(di)
+        elif msgType == CLIENT_OBJECT_UPDATE_FIELD:
+            self.handleUpdateField(di)
+        elif msgType == CLIENT_OBJECT_DISABLE:
+            self.handleDisable(di)
+        elif msgType == CLIENT_OBJECT_DISABLE_OWNER:
+            self.handleDisable(di, ownerView=True)
+        elif msgType == CLIENT_OBJECT_DELETE_RESP:
+            self.handleDelete(di)
+        elif msgType == CLIENT_DONE_INTEREST_RESP:
+            self.handleInterestDoneMessage(di)
+        elif msgType == CLIENT_QUERY_ONE_FIELD_RESP:
+            self.handleQueryOneFieldResp(di)
+        elif msgType == CLIENT_OBJECT_LOCATION:
+            self.handleObjectLocation(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
@@ -695,16 +641,6 @@ class ClientRepository(ConnectionRepository):
         # send the message
         self.send(datagram)
 
-    if not wantOtpServer:
-        def sendSetShardMsg(self, shardId):
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_SET_SHARD)
-            # Add shard id
-            datagram.addUint32(shardId)
-            # send the message
-            self.send(datagram)
-
     def getObjectsOfClass(self, objClass):
         """ returns dict of doId:object, containing all objects
         that inherit from 'class'. returned dict is safely mutable. """
@@ -724,72 +660,45 @@ class ClientRepository(ConnectionRepository):
                 doDict[doId] = do
         return doDict
 
-    if wantOtpServer:
-        def sendEmulateSetZoneMsg(self, zoneId, visibleZoneList=None,
-                                  parentIdin=None, event=None):
-            """
-            This Will Move The avatar and set an interest to that location ..
-            """
-            parentId = parentIdin
-            if parentId is None:
-                parentId = base.localAvatar.defaultShard
+    def sendEmulateSetZoneMsg(self, zoneId, visibleZoneList=None,
+                              parentIdin=None, event=None):
+        """
+        This Will Move The avatar and set an interest to that location ..
+        """
+        parentId = parentIdin
+        if parentId is None:
+            parentId = base.localAvatar.defaultShard
 
-            # move the avatar
-            self.sendSetLocation(base.localAvatar.doId,parentId,zoneId)
+        # move the avatar
+        self.sendSetLocation(base.localAvatar.doId,parentId,zoneId)
 
-            # move the interest
-            InterestZones = zoneId
-            if visibleZoneList is not None:
-                InterestZones = visibleZoneList
+        # move the interest
+        InterestZones = zoneId
+        if visibleZoneList is not None:
+            InterestZones = visibleZoneList
 
-            if(self.old_setzone_interest_handle == None):
-                self.old_setzone_interest_handle = self.addInterest(
-                    parentId, InterestZones, "OldSetZone Imulator", event)
-            else:
-                self.alterInterest(self.old_setzone_interest_handle,
-                    parentId, InterestZones, "OldSetZone Imulator", event)
+        if(self.old_setzone_interest_handle == None):
+            self.old_setzone_interest_handle = self.addInterest(
+                parentId, InterestZones, "OldSetZone Imulator", event)
+        else:
+            self.alterInterest(self.old_setzone_interest_handle,
+                parentId, InterestZones, "OldSetZone Imulator", event)
 
-        def sendEmulateSetZoneOff(self):
-            MyAvID = base.localAvatar.doId
-            self.sendSetLocation(MyAvID,0,0)
-            if self.old_setzone_interest_handle is not None:
-                self.removeInterest(self.old_setzone_interest_handle)
-                self.old_setzone_interest_handle = None
+    def sendEmulateSetZoneOff(self):
+        MyAvID = base.localAvatar.doId
+        self.sendSetLocation(MyAvID,0,0)
+        if self.old_setzone_interest_handle is not None:
+            self.removeInterest(self.old_setzone_interest_handle)
+            self.old_setzone_interest_handle = None
 
 
-        def sendSetLocation(self,doId,parentId,zoneId):
-            datagram = PyDatagram()
-            datagram.addUint16(CLIENT_OBJECT_LOCATION)
-            datagram.addUint32(doId)
-            datagram.addUint32(parentId)
-            datagram.addUint32(zoneId)
-            self.send(datagram)
-
-    else:
-        def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_SET_ZONE)
-            # Add zone id
-            datagram.addUint32(zoneId)
-
-            # if we have an explicit list of visible zones, add them
-            if visibleZoneList is not None:
-                vzl = list(visibleZoneList)
-                vzl.sort()
-                assert PythonUtil.uniqueElements(vzl)
-                for zone in vzl:
-                    datagram.addUint32(zone)
-
-            # send the message
-            self.send(datagram)
-
-            assert self.setZonesRequested >= self.setZonesReceived
-            self.setZonesRequested += 1
-
-        # override if desired
-        def handleSetZoneDone(self):
-            pass
+    def sendSetLocation(self,doId,parentId,zoneId):
+        datagram = PyDatagram()
+        datagram.addUint16(CLIENT_OBJECT_LOCATION)
+        datagram.addUint32(doId)
+        datagram.addUint32(parentId)
+        datagram.addUint32(zoneId)
+        self.send(datagram)
 
     def handleDatagram(self, di):
         if self.notify.getDebug():
@@ -798,10 +707,6 @@ class ClientRepository(ConnectionRepository):
 
 
         msgType = self.getMsgType()
-
-        if not wantOtpServer:
-            if msgType == CLIENT_DONE_SET_ZONE_RESP:
-                self.handleSetZoneDone()
 
         if self.handler == None:
             self.handleMessageType(msgType, di)

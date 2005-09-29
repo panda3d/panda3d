@@ -29,11 +29,7 @@ CLIENT_OBJECT_DISABLE_OWNER =                26
 CLIENT_OBJECT_DISABLE_OWNER_RESP =           26
 CLIENT_OBJECT_DELETE =                       27
 CLIENT_OBJECT_DELETE_RESP =                  27
-if not wantOtpServer:        
-    CLIENT_SET_ZONE =                            29
 CLIENT_REMOVE_ZONE =                         30
-if not wantOtpServer:
-    CLIENT_SET_SHARD =                           31
 CLIENT_SET_AVATAR =                          32
 CLIENT_CREATE_OBJECT_REQUIRED =              34
 CLIENT_CREATE_OBJECT_REQUIRED_RESP =         34
@@ -49,10 +45,7 @@ CLIENT_DISCONNECT =                          37
 CLIENT_CHANGE_IP_ADDRESS_RESP =              45
 CLIENT_GET_STATE =                           46
 CLIENT_GET_STATE_RESP =                      47
-if wantOtpServer:        
-    CLIENT_DONE_INTEREST_RESP =                  48
-else:
-    CLIENT_DONE_SET_ZONE_RESP =                  48
+CLIENT_DONE_INTEREST_RESP =                  48
     
 CLIENT_DELETE_AVATAR =                       49
 
@@ -89,14 +82,13 @@ CLIENT_GET_PET_DETAILS =                     81
 CLIENT_GET_PET_DETAILS_RESP =                82
 
 # (Proposed new message): CLIENT_SET_WORLD_POS =                       83
-if wantOtpServer:        
-    CLIENT_ADD_INTEREST =                        97
-    # This is no longer supported. Alter just calls ADD_INTEREST
-    # CLIENT_ALTER_INTEREST =                      98
-    CLIENT_REMOVE_INTEREST =                     99
-    CLIENT_QUERY_ONE_FIELD =                    101
-    CLIENT_OBJECT_LOCATION =                    102
-    CLIENT_QUERY_ONE_FIELD_RESP =               103
+CLIENT_ADD_INTEREST =                        97
+# This is no longer supported. Alter just calls ADD_INTEREST
+# CLIENT_ALTER_INTEREST =                      98
+CLIENT_REMOVE_INTEREST =                     99
+CLIENT_QUERY_ONE_FIELD =                    101
+CLIENT_OBJECT_LOCATION =                    102
+CLIENT_QUERY_ONE_FIELD_RESP =               103
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [

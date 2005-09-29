@@ -34,7 +34,7 @@ PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Gener
 #endif  // CPPPARSER
 
 ConfigVariableBool dc_multiple_inheritance
-("dc-multiple-inheritance", false,
+("dc-multiple-inheritance", true,
  PRC_DESC("Set this true to support multiple inheritance in the dc file.  "
           "If this is false, the old way, multiple inheritance is not "
           "supported, but field numbers will be numbered sequentially, "
@@ -977,7 +977,7 @@ ai_format_generate(PyObject *distobj, int do_id,
   // Parent is a bit overloaded; this parent is not about inheritance,
   // this one is about the visibility container parent, i.e. the zone
   // parent:
-  if (parent_id) { // if wantOtpServer:
+  if (parent_id) {
     packer.raw_pack_uint32(parent_id);
   }
   packer.raw_pack_uint32(zone_id);

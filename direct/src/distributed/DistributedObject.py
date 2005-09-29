@@ -183,10 +183,9 @@ class DistributedObject(PandaObject):
         if self.activeState != ESDisabled:
             self.activeState = ESDisabled
             self.__callbacks = {}
-            if wantOtpServer:
-                #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
-                self.setLocation(None, None)
-                # TODO: disable my children
+            #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
+            self.setLocation(None, None)
+            # TODO: disable my children
 
     def isDisabled(self):
         """
@@ -371,86 +370,85 @@ class DistributedObject(PandaObject):
         else:
             assert(self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name)))
 
-    if wantOtpServer:
-        def addInterest(self, zoneId, note="", event=None):
-            self.cr.addInterest(self.getDoId(), zoneId, note, event)
+    def addInterest(self, zoneId, note="", event=None):
+        self.cr.addInterest(self.getDoId(), zoneId, note, event)
 
-        def b_setLocation(self, parentId, zoneId):
-            self.d_setLocation(parentId, zoneId)
-            self.setLocation(parentId, zoneId)
+    def b_setLocation(self, parentId, zoneId):
+        self.d_setLocation(parentId, zoneId)
+        self.setLocation(parentId, zoneId)
 
-        def d_setLocation(self, parentId, zoneId):
-            self.cr.sendSetLocation(self.doId, parentId, zoneId)
-            
-        def setLocation(self, parentId, zoneId):
-            # Prevent Duplicate SetLocations for being Called
-            if (self.parentId == parentId) and (self.zoneId == zoneId):
-                return
+    def d_setLocation(self, parentId, zoneId):
+        self.cr.sendSetLocation(self.doId, parentId, zoneId)
 
-            #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
-            # parentId can be 'None', e.g. when an object is being disabled
-            oldParentId = self.parentId
-            oldZoneId = self.zoneId
-            parentIsNew = (oldParentId != parentId)
+    def setLocation(self, parentId, zoneId):
+        # Prevent Duplicate SetLocations for being Called
+        if (self.parentId == parentId) and (self.zoneId == zoneId):
+            return
 
-            # notify any existing parent that we're moving away
-            if (oldParentId is not None) and parentIsNew:
-                oldParentObj = self.cr.doId2do.get(oldParentId)
-                if oldParentObj:
-                    oldParentObj.handleChildLeave(self, oldZoneId)
+        #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
+        # parentId can be 'None', e.g. when an object is being disabled
+        oldParentId = self.parentId
+        oldZoneId = self.zoneId
+        parentIsNew = (oldParentId != parentId)
 
-            # The store must run first so we know the old location
-            self.parentId = parentId
-            self.zoneId = zoneId
-            self.cr.storeObjectLocation(self.doId, parentId, zoneId)
+        # notify any existing parent that we're moving away
+        if (oldParentId is not None) and parentIsNew:
+            oldParentObj = self.cr.doId2do.get(oldParentId)
+            if oldParentObj:
+                oldParentObj.handleChildLeave(self, oldZoneId)
 
-            # Give the parent a chance to run code when a new child
-            # sets location to it. For example, the parent may want to
-            # scene graph reparent the child to some subnode it owns.
-            if (self.parentId is not None) and parentIsNew:
-                parentObj = self.cr.doId2do.get(parentId)
-                if parentObj:
-                    parentObj.handleChildArrive(self, zoneId)
-            
-        def getLocation(self):
-            try:
-                if self.parentId == 0 and self.zoneId == 0:
-                    return None
-                # This is a -1 stuffed into a uint32
-                if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
-                    return None
-                return (self.parentId, self.zoneId)
-            except AttributeError:
+        # The store must run first so we know the old location
+        self.parentId = parentId
+        self.zoneId = zoneId
+        self.cr.storeObjectLocation(self.doId, parentId, zoneId)
+
+        # Give the parent a chance to run code when a new child
+        # sets location to it. For example, the parent may want to
+        # scene graph reparent the child to some subnode it owns.
+        if (self.parentId is not None) and parentIsNew:
+            parentObj = self.cr.doId2do.get(parentId)
+            if parentObj:
+                parentObj.handleChildArrive(self, zoneId)
+
+    def getLocation(self):
+        try:
+            if self.parentId == 0 and self.zoneId == 0:
                 return None
-
-        def handleChildArrive(self, childObj, zoneId):
-            self.notify.debugCall()
-            # A new child has just setLocation beneath us.  Give us a
-            # chance to run code when a new child sets location to us. For
-            # example, we may want to scene graph reparent the child to
-            # some subnode we own.
-            ## zone=self.children.setdefault(zoneId, {})
-            ## zone[childObj.doId]=childObj
-            
-            # Inheritors should override
-            pass
-
-        def handleChildLeave(self, childObj, zoneId):
-            self.notify.debugCall()
-            # A child is about to setLocation away from us.  Give us a
-            # chance to run code just before a child sets location away from us.
-            ## zone=self.children[zoneId]
-            ## del zone[childObj.doId]
-            ## if not len(zone):
-            ##     del self.children[zoneId]
-            
-            # Inheritors should override
-            pass
-
-        def getParentObj(self):
-            if self.parentId is None:
+            # This is a -1 stuffed into a uint32
+            if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
                 return None
-            return self.cr.doId2do.get(self.parentId)
+            return (self.parentId, self.zoneId)
+        except AttributeError:
+            return None
+
+    def handleChildArrive(self, childObj, zoneId):
+        self.notify.debugCall()
+        # A new child has just setLocation beneath us.  Give us a
+        # chance to run code when a new child sets location to us. For
+        # example, we may want to scene graph reparent the child to
+        # some subnode we own.
+        ## zone=self.children.setdefault(zoneId, {})
+        ## zone[childObj.doId]=childObj
+
+        # Inheritors should override
+        pass
+
+    def handleChildLeave(self, childObj, zoneId):
+        self.notify.debugCall()
+        # A child is about to setLocation away from us.  Give us a
+        # chance to run code just before a child sets location away from us.
+        ## zone=self.children[zoneId]
+        ## del zone[childObj.doId]
+        ## if not len(zone):
+        ##     del self.children[zoneId]
+
+        # Inheritors should override
+        pass
+
+    def getParentObj(self):
+        if self.parentId is None:
+            return None
+        return self.cr.doId2do.get(self.parentId)
 
     def isLocal(self):
         # This returns true if the distributed object is "local,"

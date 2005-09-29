@@ -175,71 +175,55 @@ class DistributedObjectAI(DirectObject):
         self.__generated = True
         messenger.send(self.uniqueName("generate"), [self])
 
-    if wantOtpServer:
-        def addInterest(self, zoneId, note="", event=None):
-            self.air.addInterest(self.getDoId(), zoneId, note, event)
+    def addInterest(self, zoneId, note="", event=None):
+        self.air.addInterest(self.getDoId(), zoneId, note, event)
 
-        def b_setLocation(self, parentId, zoneId):
-            self.d_setLocation(parentId, zoneId)
-            self.setLocation(parentId, zoneId)
+    def b_setLocation(self, parentId, zoneId):
+        self.d_setLocation(parentId, zoneId)
+        self.setLocation(parentId, zoneId)
 
-        def d_setLocation(self, parentId, zoneId):
-            self.air.sendSetLocation(self, parentId, zoneId)
+    def d_setLocation(self, parentId, zoneId):
+        self.air.sendSetLocation(self, parentId, zoneId)
 
-        def setLocation(self, parentId, zoneId):
-            # Prevent Duplicate SetLocations for being Called
-            if (self.parentId == parentId) and (self.zoneId == zoneId):
-                return
+    def setLocation(self, parentId, zoneId):
+        # Prevent Duplicate SetLocations for being Called
+        if (self.parentId == parentId) and (self.zoneId == zoneId):
+            return
 
-            oldParentId = self.parentId
-            oldZoneId = self.zoneId
-            if ((oldParentId != parentId) or
-                (oldZoneId != zoneId)):
-                #print "%s location is now %s, %s (%s)"%(self.doId, parentId, zoneId, self)
-                self.zoneId = zoneId
-                self.parentId = parentId
-                self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
-                messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
-                # if we are not going into the quiet zone, send a 'logical' zone
-                # change message
-                if zoneId != DistributedObjectAI.QuietZone:
-                    lastLogicalZone = oldZoneId
-                    if oldZoneId == DistributedObjectAI.QuietZone:
-                        lastLogicalZone = self.lastNonQuietZone
-                    self.handleLogicalZoneChange(zoneId, lastLogicalZone)
-                    self.lastNonQuietZone = zoneId
-            self.air.storeObjectLocation(self.doId, parentId, zoneId)
-
-        # Set the initial values of parentId,zoneId
-        def setInitLocation(self, parentId, zoneId):
-            self.parentId=parentId
-            self.zoneId=zoneId
-            
-        def getLocation(self):
-            try:
-                if self.parentId <= 0 and self.zoneId <= 0:
-                    return None
-                # This is a -1 stuffed into a uint32
-                if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
-                    return None
-                return (self.parentId, self.zoneId)
-            except AttributeError:
-                return None
-
-    else:
-        # NON OTP
-        def handleZoneChange(self, newZoneId, oldZoneId):
-            self.zoneId = newZoneId
-            self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
-            messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
-            # if we are not going into the quiet zone, send a 'logical' zone change
-            # message
-            if newZoneId != DistributedObjectAI.QuietZone:
+        oldParentId = self.parentId
+        oldZoneId = self.zoneId
+        if ((oldParentId != parentId) or
+            (oldZoneId != zoneId)):
+            #print "%s location is now %s, %s (%s)"%(self.doId, parentId, zoneId, self)
+            self.zoneId = zoneId
+            self.parentId = parentId
+            self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
+            messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
+            # if we are not going into the quiet zone, send a 'logical' zone
+            # change message
+            if zoneId != DistributedObjectAI.QuietZone:
                 lastLogicalZone = oldZoneId
                 if oldZoneId == DistributedObjectAI.QuietZone:
                     lastLogicalZone = self.lastNonQuietZone
-                self.handleLogicalZoneChange(newZoneId, lastLogicalZone)
-                self.lastNonQuietZone = newZoneId
+                self.handleLogicalZoneChange(zoneId, lastLogicalZone)
+                self.lastNonQuietZone = zoneId
+        self.air.storeObjectLocation(self.doId, parentId, zoneId)
+
+    # Set the initial values of parentId,zoneId
+    def setInitLocation(self, parentId, zoneId):
+        self.parentId=parentId
+        self.zoneId=zoneId
+
+    def getLocation(self):
+        try:
+            if self.parentId <= 0 and self.zoneId <= 0:
+                return None
+            # This is a -1 stuffed into a uint32
+            if self.parentId == 0xffffffff and self.zoneId == 0xffffffff:
+                return None
+            return (self.parentId, self.zoneId)
+        except AttributeError:
+            return None
 
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -300,113 +284,78 @@ class DistributedObjectAI(DirectObject):
         if self.air:
             self.air.sendUpdate(self, fieldName, args)
 
-    if wantOtpServer:
-        def GetPuppetConnectionChannel(self, doId):
-            return doId + (1L << 32)
+    def GetPuppetConnectionChannel(self, doId):
+        return doId + (1L << 32)
 
-        def GetAccountIDFromChannelCode(self, channel):
-            return channel >> 32
+    def GetAccountIDFromChannelCode(self, channel):
+        return channel >> 32
 
-        def GetAvatarIDFromChannelCode(self, channel):
-            return channel & 0xffffffffL
+    def GetAvatarIDFromChannelCode(self, channel):
+        return channel & 0xffffffffL
 
-        def sendUpdateToAvatarId(self, avId, fieldName, args):
-            assert self.notify.debugStateCall(self)
-            channelId = self.GetPuppetConnectionChannel(avId)
-            self.sendUpdateToChannel(channelId, fieldName, args)
-    else:
-        def sendUpdateToAvatarId(self, avId, fieldName, args):
-            assert self.notify.debugStateCall(self)
-            channelId = avId + 1
-            self.sendUpdateToChannel(channelId, fieldName, args)
+    def sendUpdateToAvatarId(self, avId, fieldName, args):
+        assert self.notify.debugStateCall(self)
+        channelId = self.GetPuppetConnectionChannel(avId)
+        self.sendUpdateToChannel(channelId, fieldName, args)
 
     def sendUpdateToChannel(self, channelId, fieldName, args):
         assert self.notify.debugStateCall(self)
         if self.air:
             self.air.sendUpdateToChannel(self, channelId, fieldName, args)
 
-    if wantOtpServer:
-        def generateWithRequired(self, zoneId, optionalFields=[]):
-            assert self.notify.debugStateCall(self)
-            # have we already allocated a doId?
-            if self.__preallocDoId:
-                self.__preallocDoId = 0
-                return self.generateWithRequiredAndId(
-                    self.doId, zoneId, optionalFields)
+    def generateWithRequired(self, zoneId, optionalFields=[]):
+        assert self.notify.debugStateCall(self)
+        # have we already allocated a doId?
+        if self.__preallocDoId:
+            self.__preallocDoId = 0
+            return self.generateWithRequiredAndId(
+                self.doId, zoneId, optionalFields)
 
-            # The repository is the one that really does the work
-            parentId = self.air.districtId
-            self.parentId = parentId
-            self.zoneId = zoneId
-            self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
-            self.generate()
-    else:
-        def generateWithRequired(self, zoneId, optionalFields=[]):
-            assert self.notify.debugStateCall(self)
-            # have we already allocated a doId?
-            if self.__preallocDoId:
-                self.__preallocDoId = 0
-                return self.generateWithRequiredAndId(
-                    self.doId, zoneId, optionalFields)
-
-            # The repository is the one that really does the work
-            self.air.generateWithRequired(self, zoneId, optionalFields)
-            self.zoneId = zoneId
-            self.generate()
+        # The repository is the one that really does the work
+        parentId = self.air.districtId
+        self.parentId = parentId
+        self.zoneId = zoneId
+        self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
+        self.generate()
 
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
-    if wantOtpServer:
-        def generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields=[]):
-            assert self.notify.debugStateCall(self)
-            # have we already allocated a doId?
-            if self.__preallocDoId:
-                assert doId == self.__preallocDoId
-                self.__preallocDoId = 0
+    def generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields=[]):
+        assert self.notify.debugStateCall(self)
+        # have we already allocated a doId?
+        if self.__preallocDoId:
+            assert doId == self.__preallocDoId
+            self.__preallocDoId = 0
 
-            # The repository is the one that really does the work
-            self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
-            self.parentId = parentId
-            self.zoneId = zoneId
-            self.generate()
-            self.announceGenerate()
-    else:
-        def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
-            assert self.notify.debugStateCall(self)
-            # have we already allocated a doId?
-            if self.__preallocDoId:
-                assert doId == self.__preallocDoId
-                self.__preallocDoId = 0
+        # The repository is the one that really does the work
+        self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
+        self.parentId = parentId
+        self.zoneId = zoneId
+        self.generate()
+        self.announceGenerate()
 
-            # The repository is the one that really does the work
-            self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
-            self.zoneId = zoneId
-            self.generate()
-            self.announceGenerate()
+    def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
+        assert self.notify.debugStateCall(self)
+        # have we already allocated a doId?
+        if self.__preallocDoId:
+            assert doId is None or doId == self.__preallocDoId
+            doId=self.__preallocDoId
+            self.__preallocDoId = 0
 
-    if wantOtpServer:
-        def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
-            assert self.notify.debugStateCall(self)
-            # have we already allocated a doId?
-            if self.__preallocDoId:
-                assert doId is None or doId == self.__preallocDoId
-                doId=self.__preallocDoId
-                self.__preallocDoId = 0
+        # Assign it an id
+        if doId is None:
+            self.doId = self.air.allocateChannel()
+        else:
+            self.doId = doId
+        # Put the new DO in the dictionaries
+        self.air.addDOToTables(self, location=(parentId,zoneId))
+        # Send a generate message
+        self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 
-            # Assign it an id
-            if doId is None:
-                self.doId = self.air.allocateChannel()
-            else:
-                self.doId = doId
-            # Put the new DO in the dictionaries
-            self.air.addDOToTables(self, location=(parentId,zoneId))
-            # Send a generate message
-            self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
-
-            assert not hasattr(self, 'parentId') or self.parentId is None
-            self.parentId = parentId
-            self.zoneId = zoneId
-            self.generate()
+        assert not hasattr(self, 'parentId') or self.parentId is None
+        self.parentId = parentId
+        self.zoneId = zoneId
+        self.generate()
 
     def generate(self):
         """
@@ -414,39 +363,30 @@ class DistributedObjectAI(DirectObject):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        if wantOtpServer:
-            self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
+        self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
 
-    if wantOtpServer:
-        def generateInit(self, repository=None):
-            """
-            First generate (not from cache).
-            """
-            assert self.notify.debugStateCall(self)
+    def generateInit(self, repository=None):
+        """
+        First generate (not from cache).
+        """
+        assert self.notify.debugStateCall(self)
 
-        def generateTargetChannel(self, repository):
-            """
-            Who to send this to for generate messages
-            """
-            if hasattr(self, "dbObject"):
-                return self.doId
-            return repository.serverId
+    def generateTargetChannel(self, repository):
+        """
+        Who to send this to for generate messages
+        """
+        if hasattr(self, "dbObject"):
+            return self.doId
+        return repository.serverId
 
     def sendGenerateWithRequired(self, repository, parentId, zoneId, optionalFields=[]):
         assert self.notify.debugStateCall(self)
-        if not wantOtpServer:
-            dg = self.dclass.aiFormatGenerate(
-                    self, self.doId, 0, zoneId,
-                    repository.districtId,
-                    repository.ourChannel,
-                    optionalFields)
-        else:
-            dg = self.dclass.aiFormatGenerate(
-                    self, self.doId, parentId, zoneId,
-                    #repository.serverId,
-                    self.generateTargetChannel(repository),
-                    repository.ourChannel,
-                    optionalFields)
+        dg = self.dclass.aiFormatGenerate(
+            self, self.doId, parentId, zoneId,
+            #repository.serverId,
+            self.generateTargetChannel(repository),
+            repository.ourChannel,
+            optionalFields)
         repository.send(dg)
 
     def initFromServerResponse(self, valDict):
