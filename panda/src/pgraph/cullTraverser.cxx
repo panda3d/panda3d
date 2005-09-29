@@ -542,6 +542,7 @@ start_decal(const CullTraverserData &data) {
       new CullableObject(data, geom_node, i, object);
     if (next_object->_state->has_cull_callback() &&
 	!next_object->_state->cull_callback(this, data)) {
+      next_object->_next = NULL;
       delete next_object;
     } else {
       object = next_object;
@@ -553,6 +554,9 @@ start_decal(const CullTraverserData &data) {
     // processing.  The first Geom in the node now represents the
     // overall state.
     _cull_handler->record_object(object, this);
+  } else {
+    // Never mind; there's nothing to render.
+    delete object;
   }
 }
 
@@ -607,6 +611,7 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
 	  new CullableObject(data, geom_node, i, decals);
 	if (next_decals->_state->has_cull_callback() &&
 	    !next_decals->_state->cull_callback(this, data)) {
+          next_decals->_next = NULL;
 	  delete next_decals;
 	} else {
 	  decals = next_decals;
