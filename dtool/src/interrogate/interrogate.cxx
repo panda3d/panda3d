@@ -39,6 +39,7 @@ CPPParser parser;
 Filename output_code_filename;
 Filename output_include_filename;
 Filename output_data_filename;
+Filename source_file_directory;
 string output_data_basename;
 bool output_module_specific = false;
 bool output_function_pointers = false;
@@ -67,6 +68,7 @@ static const char *short_options = "I:S:D:F:vh";
 enum CommandOptions {
   CO_oc = 256,
   CO_od,
+  CO_srcdir,
   CO_module,
   CO_library,
   CO_do_module,
@@ -92,6 +94,7 @@ enum CommandOptions {
 static struct option long_options[] = {
   { "oc", required_argument, NULL, CO_oc },
   { "od", required_argument, NULL, CO_od },
+  { "srcdir", required_argument, NULL, CO_srcdir },
   { "module", required_argument, NULL, CO_module },
   { "library", required_argument, NULL, CO_library },
   { "do-module", no_argument, NULL, CO_do_module },
@@ -154,6 +157,10 @@ void show_help() {
     << "        above with this data.  This file will be opened and read at runtime\n"
     << "        when the scripting language first calls some interrogate query\n"
     << "        function.\n\n"
+
+    << "  -srcdir directory\n"
+    << "        Specify the name of the directory to which the source filenames are\n"
+    << "        relative.\n\n"
 
     << "  -module module_name\n"
     << "        Defines the name of the module this data is associated with.  This\n"
@@ -344,6 +351,10 @@ main(int argc, char *argv[]) {
       output_data_filename = Filename::from_os_specific(optarg);
       break;
 
+    case CO_srcdir:
+      source_file_directory = Filename::from_os_specific(optarg);
+      break;
+
     case CO_module:
       module_name = optarg;
       break;
@@ -468,7 +479,7 @@ main(int argc, char *argv[]) {
   for (i = 1; i < argc; ++i) 
   {
     Filename filename = Filename::from_os_specific(argv[i]);
-    if (!parser.parse_file(Filename::from_os_specific(filename))) 
+    if (!parser.parse_file(Filename(source_file_directory, filename)))
     {
       cerr << "Error parsing file: '" << argv[i] << "'\n";
       exit(1);
