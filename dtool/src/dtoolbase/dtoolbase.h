@@ -100,11 +100,11 @@
 #include <sys/types.h>
 #endif
 
-/*
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
 
+/*
 #ifdef HAVE_SYS_MALLOC_H
 #include <sys/malloc.h>
 #endif
