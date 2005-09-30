@@ -2536,7 +2536,8 @@ do_issue_texture() {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
 	DWORD transform_flags = texcoord_dimensions;
-	if (m.get_col3(3) != LVecBase3f::zero()) {
+	//if (m.get_col3(3) != LVecBase3f::zero()) 
+	{
 	  transform_flags |= D3DTTFF_PROJECTED;
 	}
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
