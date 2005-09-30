@@ -193,7 +193,7 @@ close_read_file(istream *stream) const {
     // the stream pointer does not call the appropriate global delete
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
-#ifndef NDEBUG
+#ifndef USE_MEMORY_NOWRAPPERS
     stream->~istream();
     (*global_operator_delete)(stream);
 #else
