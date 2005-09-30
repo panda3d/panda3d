@@ -184,8 +184,8 @@ write_datagram(BamWriter *, Datagram &dg) const {
   dg.add_float32(_start_time);
   dg.add_float32(_start_frame);
   dg.add_float32(_play_frames);
-  dg.add_float32(_from_frame);
-  dg.add_float32(_to_frame);
+  dg.add_int32(_from_frame);
+  dg.add_int32(_to_frame);
   dg.add_float32(_play_rate);
   dg.add_bool(_paused);
   dg.add_float32(_paused_f);
@@ -205,8 +205,8 @@ fillin(DatagramIterator &scan, BamReader *) {
   _start_time = scan.get_float32();
   _start_frame = scan.get_float32();
   _play_frames = scan.get_float32();
-  _from_frame = scan.get_float32();
-  _to_frame = scan.get_float32();
+  _from_frame = scan.get_int32();
+  _to_frame = scan.get_int32();
   _play_rate = scan.get_float32();
   _effective_frame_rate = _frame_rate * _play_rate;
   _paused = scan.get_bool();
