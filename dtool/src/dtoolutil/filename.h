@@ -163,7 +163,7 @@ PUBLISHED:
                         const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
-
+  
   bool scan_directory(vector_string &contents) const;
 
   bool open_read(ifstream &stream) const;
@@ -171,8 +171,8 @@ PUBLISHED:
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 
+  bool chdir() const;
   bool touch() const;
-
   bool unlink() const;
   bool rename_to(const Filename &other) const;
 

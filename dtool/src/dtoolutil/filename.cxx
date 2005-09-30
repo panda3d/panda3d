@@ -1670,6 +1670,18 @@ touch() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::chdir
+//       Access: Published
+//  Description: Changes directory to the specified location.
+//               Returns true if successful, false if failure.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+chdir() const {
+  Filename os_specific = to_os_specific();
+  return (::chdir(os_specific.c_str()) >= 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::unlink
 //       Access: Published
 //  Description: Permanently deletes the file associated with the
@@ -1964,13 +1976,13 @@ r_make_canonical(const Filename &cwd) {
   // First, try to cd to the filename directly.
   string os_specific = to_os_specific();
 
-  if (chdir(os_specific.c_str()) >= 0) {
+  if (::chdir(os_specific.c_str()) >= 0) {
     // That worked, save the full path string.
     (*this) = ExecutionEnvironment::get_cwd();
 
     // And restore the current working directory.
     string osdir = cwd.to_os_specific();
-    if (chdir(osdir.c_str()) < 0) {
+    if (::chdir(osdir.c_str()) < 0) {
       cerr << "Error!  Cannot change back to " << cwd << "\n";
     }
     return true;

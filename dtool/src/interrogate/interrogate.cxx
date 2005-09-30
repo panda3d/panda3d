@@ -316,6 +316,7 @@ main(int argc, char *argv[]) {
     command_line += string(argv[i]) + " ";
   }
 
+  Filename fn;
   extern char *optarg;
   extern int optind;
   int flag;
@@ -324,11 +325,15 @@ main(int argc, char *argv[]) {
   while (flag != EOF) {
     switch (flag) {
     case 'I':
-      parser._include_path.append_directory(optarg);
+      fn = Filename::from_os_specific(optarg);
+      fn.make_absolute();
+      parser._include_path.append_directory(fn);
       break;
 
     case 'S':
-      parser._system_include_path.append_directory(optarg);
+      fn = Filename::from_os_specific(optarg);
+      fn.make_absolute();
+      parser._system_include_path.append_directory(fn);
       break;
 
     case 'D':
@@ -345,14 +350,17 @@ main(int argc, char *argv[]) {
 
     case CO_oc:
       output_code_filename = Filename::from_os_specific(optarg);
+      output_code_filename.make_absolute();
       break;
 
     case CO_od:
       output_data_filename = Filename::from_os_specific(optarg);
+      output_data_filename.make_absolute();
       break;
 
     case CO_srcdir:
       source_file_directory = Filename::from_os_specific(optarg);
+      source_file_directory.make_absolute();
       break;
 
     case CO_module:
@@ -450,6 +458,13 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
+  // If requested, change directory to the source-file directory.
+  if (source_file_directory != "") {
+    if (!source_file_directory.chdir()) {
+      cerr << "Could not change directory to " << source_file_directory << "\n";
+      exit(1);
+    }
+  }
 
 //  if(!output_code_filename.empty())
 //  {
@@ -479,8 +494,7 @@ main(int argc, char *argv[]) {
   for (i = 1; i < argc; ++i) 
   {
     Filename filename = Filename::from_os_specific(argv[i]);
-    if (!parser.parse_file(Filename(source_file_directory, filename)))
-    {
+    if (!parser.parse_file(filename)) {
       cerr << "Error parsing file: '" << argv[i] << "'\n";
       exit(1);
     }
@@ -495,7 +509,8 @@ main(int argc, char *argv[]) {
 
   // Now look for the .N files.
   for (i = 1; i < argc; ++i) {
-    Filename nfilename = Filename::from_os_specific(argv[i]);
+    Filename filename = Filename::from_os_specific(argv[i]);
+    Filename nfilename = filename;
     nfilename.set_extension("N");
     nfilename.set_text();
     ifstream nfile;
@@ -503,7 +518,6 @@ main(int argc, char *argv[]) {
       builder.read_command_file(nfile);
     }
   }
-
 
   builder.build();
 
