@@ -3,6 +3,7 @@
 
 #ifdef USE_MEMORY_DLMALLOC
 #define USE_DL_PREFIX 1
+#define mallinfo dlmallinfo
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
