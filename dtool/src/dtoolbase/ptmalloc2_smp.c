@@ -1,3 +1,12 @@
+/* drose: Note that this file is released under an unrestricted
+   license as well as the LGPL, in spite of the comments below.  See
+   http://www.malloc.de . */
+
+#include "dtoolbase.h"
+
+#if defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
+#define USE_DL_PREFIX 1
+
 /* Malloc implementation for multiple threads without lock contention.
    Copyright (C) 1996,1997,1998,1999,2000,01,02 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
@@ -2239,7 +2248,7 @@ struct malloc_chunk {
 };
 
 
-typedef struct malloc_chunk* mchunkptr;
+/*typedef struct malloc_chunk* mchunkptr;*/
 
 /*
    malloc_chunk details:
@@ -2859,7 +2868,7 @@ struct malloc_par {
   char*            sbrk_base;
 };
 
-typedef struct malloc_state *mstate;
+/*typedef struct malloc_state *mstate;*/
 
 /* There are several instances of this struct ("arenas") in this
    malloc.  If you are adapting this malloc in a way that does NOT use
@@ -5311,6 +5320,9 @@ mremap_chunk(p, new_size) mchunkptr p; size_t new_size;
   /* Note the extra SIZE_SZ overhead as in mmap_chunk(). */
   new_size = (new_size + offset + SIZE_SZ + page_mask) & ~page_mask;
 
+#ifndef MREMAP_MAYMOVE
+#define MREMAP_MAYMOVE 1  /* terrible hack--drose */
+#endif
   cp = (char *)mremap((char *)p - offset, size + offset, new_size,
                       MREMAP_MAYMOVE);
 
@@ -8207,3 +8219,6 @@ History:
          structure of old version,  but most details differ.)
 
 */
+
+#endif  // USE_MEMORY_PTMALLOC2
+

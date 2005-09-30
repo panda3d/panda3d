@@ -102,7 +102,16 @@ InputFile() {
 CPPPreprocessor::InputFile::
 ~InputFile() {
   if (_in != NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#ifndef USE_MEMORY_NOWRAPPERS
+    _in->~istream();
+    (*global_operator_delete)(_in);
+#else
     delete _in;
+#endif
   }
 }
 

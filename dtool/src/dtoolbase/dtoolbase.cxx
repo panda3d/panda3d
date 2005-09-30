@@ -36,7 +36,6 @@
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #include "dlmalloc.h"
-#include "dlmalloc.c"
 
 void *default_operator_new(size_t size) {
   void *ptr = dlmalloc(size);
@@ -66,10 +65,14 @@ void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 //
 /////////////////////////////////////////////////////////////////////
 
-#elif defined(USE_MEMORY_PTMALLOC2)
+#elif defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
+// This doesn't appear to work in Linux; perhaps it is clashing with
+// the system library.  On Linux, fall through to the next case
+// instead.
 
 #define USE_DL_PREFIX 1
-#include "ptmalloc2_smp.c"
+#define NO_MALLINFO 1
+#include "dlmalloc.h"
 
 void *default_operator_new(size_t size) {
   void *ptr = dlmalloc(size);
@@ -96,7 +99,7 @@ void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 //
 /////////////////////////////////////////////////////////////////////
 
-#elif defined(USE_MEMORY_MALLOC)
+#elif defined(USE_MEMORY_MALLOC) || defined(USE_MEMORY_PTMALLOC2)
 
 void *default_operator_new(size_t size) {
   void *ptr = malloc(size);

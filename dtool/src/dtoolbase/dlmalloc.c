@@ -1,3 +1,9 @@
+
+#include "dtoolbase.h"
+
+#ifdef USE_MEMORY_DLMALLOC
+#define USE_DL_PREFIX 1
+
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
   Doug Lea and released to the public domain, as explained at
@@ -5059,3 +5065,5 @@ History:
          structure of old version,  but most details differ.)
  
 */
+
+#endif  // USE_MEMORY_DLMALLOC

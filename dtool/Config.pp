@@ -333,8 +333,10 @@
 // ptmalloc2 anyway).  We always define this by default on Windows; on
 // Linux, we define it by default only when DO_MEMORY_USAGE is enabled
 // (since in that case, we'll be paying the overhead for the extra
-// call anyway).
-#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE]]
+// call anyway) or when HAVE_THREADS is not defined (since the
+// non-thread-safe dlmalloc is a tiny bit faster than the system
+// library).
+#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE],$[not $[HAVE_THREADS]]]
 
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
