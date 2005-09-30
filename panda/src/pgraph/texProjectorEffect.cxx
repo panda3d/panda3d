@@ -168,8 +168,8 @@ output(ostream &out) const {
   for (mi = _stages.begin(); mi != _stages.end(); ++mi) {
     TextureStage *stage = (*mi).first;
     const StageDef &def = (*mi).second;
-    out << " " << stage->get_name() << "(" << def._to.get_name()
-        << ", " << def._from.get_name() << ")";
+    out << " " << stage->get_name() << "(" << def._to
+        << ", " << def._from << ")";
   }
 }
 
