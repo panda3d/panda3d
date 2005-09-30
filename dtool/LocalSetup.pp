@@ -431,6 +431,34 @@ $[cdefine HAVE_RTTI]
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
+/* Which memory allocation scheme should we use? */
+#define USE_MEMORY_DLMALLOC
+#define USE_MEMORY_PTMALLOC2
+#define USE_MEMORY_MALLOC
+#define USE_MEMORY_NOWRAPPERS
+#if $[ALTERNATIVE_MALLOC]
+  #if $[HAVE_THREADS]
+    // A fast thread-safe alternative implementation.
+    #set USE_MEMORY_PTMALLOC2 1
+  #else
+    // A faster, but non-thread-safe, alternative implementation.
+    #set USE_MEMORY_DLMALLOC 1
+  #endif
+#else
+  #if $[DO_MEMORY_USAGE]
+    // Redefine new and delete to malloc(), and also provide hooks for
+    // the benefit of the MemoryUsage class.
+    #set USE_MEMORY_MALLOC 1
+  #else
+    // Don't redefine new and delete at all.
+    #set USE_MEMORY_NOWRAPPERS 1
+  #endif
+#endif
+$[cdefine USE_MEMORY_DLMALLOC]
+$[cdefine USE_MEMORY_PTMALLOC2]
+$[cdefine USE_MEMORY_MALLOC]
+$[cdefine USE_MEMORY_NOWRAPPERS]
+
 /* What style STL allocator should we declare? */
 #define OLD_STYLE_ALLOCATOR
 #define GNU_STYLE_ALLOCATOR

@@ -139,7 +139,7 @@ typedef ios::seekdir ios_seekdir;
 // Now redefine global operators new and delete so we can optionally
 // provide custom handlers for them.  The MemoryUsage class in Panda
 // takes advantage of this to track the size of allocated pointers.
-
+#ifndef USE_MEMORY_NOWRAPPERS
 EXPCL_DTOOL void *default_operator_new(size_t size);
 EXPCL_DTOOL void default_operator_delete(void *ptr);
 
@@ -183,5 +183,6 @@ INLINE void operator delete[](void *ptr) {
 }
 
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+#endif  // USE_MEMORY_NOWRAPPERS
 
 #endif

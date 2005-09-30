@@ -29,6 +29,10 @@
 
 #if defined(USE_MEMORY_DLMALLOC)
 
+#ifdef HAVE_THREADS
+#error Cannot use dlmalloc library with threading enabled!
+#endif
+
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #include "dlmalloc.h"
@@ -85,14 +89,14 @@ void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 
 /////////////////////////////////////////////////////////////////////
 //
-// Memory manager: NONE
+// Memory manager: MALLOC
 //
 // This option uses the built-in system allocator.  This is a good
 // choice on linux, but it's a terrible choice on windows.
 //
 /////////////////////////////////////////////////////////////////////
 
-#else
+#elif defined(USE_MEMORY_MALLOC)
 
 void *default_operator_new(size_t size) {
   void *ptr = malloc(size);
@@ -109,5 +113,18 @@ void default_operator_delete(void *ptr) {
 
 void *(*global_operator_new)(size_t size) = &default_operator_new;
 void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+
+/////////////////////////////////////////////////////////////////////
+//
+// Memory manager: NOWRAPPERS
+//
+// Not only do we use the built-in system definitions for new and
+// delete, but we don't even wrap them.  This removes a tiny bit of
+// extra overhead from the above option, but prevents Panda's
+// MemoryUsage class from being able to track memory allocations.
+//
+/////////////////////////////////////////////////////////////////////
+
+#else
 
 #endif
