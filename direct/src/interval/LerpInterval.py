@@ -607,7 +607,7 @@ class LerpFunctionInterval(Interval.Interval):
     # create LerpFunctionInterval DirectNotify category
     notify = directNotify.newCategory('LerpFunctionInterval')
     # Class methods
-    def __init__(self, function, fromData = 0, toData = 1, duration = 0.0,
+    def __init__(self, function, duration = 0.0, fromData = 0, toData = 1,
                  blendType = 'noBlend', extraArgs = [], name = None):
         """__init__(function, duration, fromData, toData, name)
         """
