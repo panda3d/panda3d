@@ -81,6 +81,20 @@ ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
+#ifndef HAVE_THREADS
+  // Although this code is written to use thread-locking primitives
+  // regardless of the definition of HAVE_THREADS, it is not safe to
+  // spawn multiple threads when HAVE_THREADS is not true, since we
+  // might be using a non-thread-safe malloc scheme.
+#ifndef NDEBUG
+  if (num_threads != 0) {
+    net_cat.error()
+      << "Threading support is not available.\n";
+  }
+#endif  // NDEBUG
+  num_threads = 0;
+#endif  // HAVE_THREADS
+
   _raw_mode = false;
   _tcp_header_size = datagram_tcp16_header_size;
   _polling = (num_threads <= 0);

@@ -35,7 +35,11 @@
 ////////////////////////////////////////////////////////////////////
 PStatReader::
 PStatReader(PStatServer *manager, PStatMonitor *monitor) :
+#ifdef HAVE_THREADS
   ConnectionReader(manager, monitor->is_thread_safe() ? 1 : 0),
+#else  // HAVE_THREADS
+  ConnectionReader(manager, 0),
+#endif  // HAVE_THREADS
   _manager(manager),
   _monitor(monitor),
   _writer(manager, 0)
