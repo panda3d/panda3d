@@ -396,6 +396,10 @@ MemoryUsage() {
   _count_memory_usage = false;
 #endif
 
+#ifdef USE_MEMORY_NOWRAPPERS
+#error Cannot compile MemoryUsage without malloc wrappers!
+#endif
+
   if (_track_memory_usage) {
     // Redefine the global pointers for operator new and operator
     // delete (these pointers are defined up in DTOOL) to vector into
