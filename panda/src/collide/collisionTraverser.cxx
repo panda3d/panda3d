@@ -243,28 +243,6 @@ clear_colliders() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::add_collider
-//       Access: Published
-//  Description: This method is deprecated and will shortly be removed
-//               in favor of the newer NodePath-based method, above.
-////////////////////////////////////////////////////////////////////
-void CollisionTraverser::
-add_collider(CollisionNode *node, CollisionHandler *handler) {
-  add_collider(NodePath(node), handler);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::remove_collider
-//       Access: Published
-//  Description: This method is deprecated and will shortly be removed
-//               in favor of the newer NodePath-based method, above.
-////////////////////////////////////////////////////////////////////
-bool CollisionTraverser::
-remove_collider(CollisionNode *node) {
-  return remove_collider(NodePath(node));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::traverse
 //       Access: Published
 //  Description:

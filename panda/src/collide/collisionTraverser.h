@@ -65,11 +65,6 @@ PUBLISHED:
   CollisionHandler *get_handler(const NodePath &collider) const;
   void clear_colliders();
 
-  // The following methods are deprecated and exist only as a temporary
-  // transition to the above new NodePath-based methods.
-  void add_collider(CollisionNode *node, CollisionHandler *handler);
-  bool remove_collider(CollisionNode *node);
-
   void traverse(const NodePath &root);
   void reset_prev_transform(const NodePath &root);
 
