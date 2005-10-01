@@ -314,7 +314,7 @@ class DialWidget(Pmw.MegaWidget):
         delta = self['delta']
         factors = divmod(value - self['base'], delta)
         self.rollCount = factors[0]
-        self.updateIndicatorRadians( (factors[1]/delta) * TWO_PI )
+        self.updateIndicatorRadians((factors[1]/delta) * TWO_PI)
 
     def updateIndicatorDegrees(self, degAngle):
         self.updateIndicatorRadians(degAngle * (math.pi/180.0))

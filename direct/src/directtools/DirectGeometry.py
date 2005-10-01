@@ -34,7 +34,7 @@ class LineNodePath(NodePath):
         apply(self.lineSegs.drawTo, _args)
 
     def create(self, frameAccurate = 0):
-        self.lineSegs.create( self.lineNode, frameAccurate )
+        self.lineSegs.create(self.lineNode, frameAccurate)
 
     def reset(self):
         self.lineSegs.reset()
@@ -53,7 +53,7 @@ class LineNodePath(NodePath):
         apply(self.lineSegs.setVertex, _args)
 
     def setVertexColor(self, vertex, *_args):
-        apply( self.lineSegs.setVertexColor, (vertex,) + _args )
+        apply(self.lineSegs.setVertexColor, (vertex,) + _args)
 
     def getCurrentPosition(self):
         return self.lineSegs.getCurrentPosition()

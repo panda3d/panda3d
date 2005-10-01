@@ -418,13 +418,13 @@ class Signature:
             l = []
             for arg in self.ordinary_args():
                 if defaults.has_key(arg):
-                    l.append( arg + '=' + str(defaults[arg]) )
+                    l.append(arg + '=' + str(defaults[arg]))
                 else:
-                    l.append( arg )
+                    l.append(arg)
             if specials.has_key('positional'):
-                l.append( '*' + specials['positional'] )
+                l.append('*' + specials['positional'])
             if specials.has_key('keyword'):
-                l.append( '**' + specials['keyword'] )
+                l.append('**' + specials['keyword'])
             return "%s(%s)" % (self.name, string.join(l, ', '))
         else:
             return "%s(?)" % self.name

@@ -204,7 +204,7 @@ class EntryScale(Pmw.MegaWidget):
         self.set(string.atof(strVal))
         """
         # Update entry to reflect formatted value
-        self.entryValue.set( self.entryFormat % self.value )
+        self.entryValue.set(self.entryFormat % self.value)
         self.entry.checkentry()
         if self['command']:
             self['command'](self.value)
@@ -212,9 +212,9 @@ class EntryScale(Pmw.MegaWidget):
 
     def _entryCommand(self, event = None):
         try:
-            val = string.atof( self.entryValue.get() )
+            val = string.atof(self.entryValue.get())
             apply(self.onReturn,self['callbackData'])
-            self.set( val )
+            self.set(val)
             apply(self.onReturnRelease,self['callbackData'])
         except ValueError:
             pass
@@ -223,7 +223,7 @@ class EntryScale(Pmw.MegaWidget):
         sd = self['numDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
         # And reset value to reflect change
-        self.entryValue.set( self.entryFormat % self.value)
+        self.entryValue.set(self.entryFormat % self.value)
 
     def get(self):
         return self.value
@@ -245,12 +245,12 @@ class EntryScale(Pmw.MegaWidget):
         # Update scale's position
         self.scale.set(newVal)
         # Update entry to reflect formatted value
-        self.entryValue.set( self.entryFormat % self.value )
+        self.entryValue.set(self.entryFormat % self.value)
         self.entry.checkentry()
         
         # execute command
         if fCommand and (self['command'] is not None):
-            self['command']( newVal )
+            self['command'](newVal)
 
     def onReturn(self, *args):
         """ User redefinable callback executed on <Return> in entry """

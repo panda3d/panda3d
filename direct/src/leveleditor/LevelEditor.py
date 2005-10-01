@@ -2368,7 +2368,7 @@ class LevelEditor(NodePath, PandaObject):
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
         handlesToCam = direct.widget.getPos(direct.camera)
-        handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
+        handlesToCam = handlesToCam * (direct.dr.near/handlesToCam[1])
         if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.remove('manipulateCamera')

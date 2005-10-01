@@ -732,7 +732,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         extensionFileName = self.getExtensionModuleName()
         extensionFilePath = os.path.join(extensionsDir, extensionFileName)
         if os.path.exists(extensionFilePath):
-            FFIConstants.notify.info( 'Found extensions for class: ' + self.foreignTypeName)
+            FFIConstants.notify.info('Found extensions for class: ' + self.foreignTypeName)
             extensionFile = open(extensionFilePath)
             indent(file, nesting+1, '\n')
             indent(file, nesting+1, '##################################################\n')

@@ -792,14 +792,14 @@ class FFIInterrogateDatabase:
 
         self.updateBindings(CModuleName)
         
-        FFIConstants.notify.info( 'Generating type code...')
+        FFIConstants.notify.info('Generating type code...')
         for type in self.environment.types.values():
             # Do not generate code for nested types at the top level
             if (not type.isNested):
                 type.generateGlobalCode(codeDir, extensionsDir)
 
 
-        FFIConstants.notify.info( 'Generating global downcast code...')
+        FFIConstants.notify.info('Generating global downcast code...')
         downcastFile = constructDowncastFile(codeDir, CModuleName)
         # Output all the imports based on this list of functions
         outputGlobalFileImports(downcastFile,
@@ -808,7 +808,7 @@ class FFIInterrogateDatabase:
         for type in self.environment.downcastFunctions:
             type.generateGlobalDowncastCode(downcastFile)
             
-        FFIConstants.notify.info( 'Generating global code...')
+        FFIConstants.notify.info('Generating global code...')
         globalFile = constructGlobalFile(codeDir, CModuleName)
 
         # Make a list of all the global functions. This includes the normal
@@ -836,35 +836,35 @@ class FFIInterrogateDatabase:
             treeColl = FFIOverload.FFIMethodArgumentTreeCollection(None, methodSpecList)
             treeColl.generateCode(globalFile, -1)
 
-        FFIConstants.notify.info( 'Generating global values...')
+        FFIConstants.notify.info('Generating global values...')
         for type in self.environment.globalValues:
             type.generateGlobalCode(globalFile)
             
-        FFIConstants.notify.info( 'Generating global functions...')
+        FFIConstants.notify.info('Generating global functions...')
         for type in self.environment.globalFunctions:
             type.generateGlobalCode(globalFile)
 
-        FFIConstants.notify.info( 'Generating manifests...')
+        FFIConstants.notify.info('Generating manifests...')
         for type in self.environment.manifests:
             type.generateGlobalCode(globalFile)
 
         globalFile.close()
 
-        FFIConstants.notify.info( 'Generating import code...')
+        FFIConstants.notify.info('Generating import code...')
         importFile = constructImportFile(codeDir, CModuleName)
         outputImportFileImports(importFile, self.environment.types.values(), CModuleName)
 
     def updateBindings(self, CModuleName):
-        FFIConstants.notify.info( 'Updating Bindings')
-        FFIConstants.notify.info( 'Adding Types...')
+        FFIConstants.notify.info('Updating Bindings')
+        FFIConstants.notify.info('Adding Types...')
         self.addTypes(CModuleName)
-        FFIConstants.notify.info( 'Adding global values...')
+        FFIConstants.notify.info('Adding global values...')
         self.addGlobalValues(CModuleName)
-        FFIConstants.notify.info( 'Adding global functions...')
+        FFIConstants.notify.info('Adding global functions...')
         self.addGlobalFunctions(CModuleName)
-        FFIConstants.notify.info( 'Adding manifests symbols...')
+        FFIConstants.notify.info('Adding manifests symbols...')
         self.addManifestSymbols()
-        FFIConstants.notify.info( 'Adding environment types...')
+        FFIConstants.notify.info('Adding environment types...')
         self.addEnvironmentTypes()
 
 

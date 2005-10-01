@@ -141,13 +141,13 @@ class FSMInspector(AppShell):
         # Compute offset fromState point
         newFromPt = map(operator.__add__,
                         fromCenter,
-                        self.computePoint( fromState.radius,
+                        self.computePoint(fromState.radius,
                                            angle + DELTA))
         
         # Compute offset toState point
         newToPt = map(operator.__sub__,
                       toCenter,
-                      self.computePoint( toState.radius,
+                      self.computePoint(toState.radius,
                                          angle - DELTA))
         return newFromPt + newToPt
         

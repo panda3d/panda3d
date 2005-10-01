@@ -858,10 +858,10 @@ class Actor(PandaObject, NodePath):
         root under the given lod.
         """
         # check to see if we are working within an lod
-        if (lodName != None):
+        if lodName != None:
             # find the named lod node
             lodRoot = self.find("**/" + str(lodName))
-            if (root == None):
+            if root == None:
                 # no need to look further
                 root = lodRoot
             else:
@@ -869,10 +869,10 @@ class Actor(PandaObject, NodePath):
                 root = lodRoot.find("**/" + root)
         else:
             # start search from self if no root and no lod given
-            if (root == None):
+            if root == None:
                 root = self
 
-        frontParts = root.findAllMatches( "**/" + frontPartName)
+        frontParts = root.findAllMatches("**/" + frontPartName)
                 
         if mode > 0:
             # Use the 'fixed' bin instead of reordering the scene
