@@ -73,7 +73,7 @@ except ImportError:
 ########################################################################
 
 def exit(msg):
-    print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
+    print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
     print msg
     sys.stdout.flush()
     sys.stderr.flush()
