@@ -30,9 +30,8 @@
 #include "dconfig.h"
 
 Configure(config_dxgsg8);
-//NotifyCategoryDef(dxgsg8, ":display:gsg");  dont want to merge this with the regular parent class dbg output
-NotifyCategoryDef(dxgsg8, "dxgsg");
-NotifyCategoryDef(wdxdisplay8, "windisplay");
+NotifyCategoryDef(dxgsg8, ":display:gsg");
+NotifyCategoryDef(wdxdisplay8, "display");
 
 // Configure this variable true to cause the DXGSG to show each
 // transform space it renders by drawing a little unit axis.  This

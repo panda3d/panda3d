@@ -26,7 +26,7 @@
 #include "pandaSystem.h"
 
 Configure(config_wgldisplay);
-NotifyCategoryDef(wgldisplay, "windisplay");
+NotifyCategoryDef(wgldisplay, "display");
 
 ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
