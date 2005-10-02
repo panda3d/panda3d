@@ -2393,10 +2393,6 @@ if (OMIT.count("FREETYPE")==0):
     OPTS=['BUILDING_PANDA', 'NSPR', 'FREETYPE']
     CopyAllHeaders('panda/src/pnmtext')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmtext_composite.cxx', obj='pnmtext_composite.obj')
-#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_pnmtext.cxx', obj='pnmtext_config_pnmtext.obj')
-#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='freetypeFont.cxx', obj='pnmtext_freetypeFont.obj')
-#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextGlyph.cxx', obj='pnmtext_pnmTextGlyph.obj')
-#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextMaker.cxx', obj='pnmtext_pnmTextMaker.obj')
 
 #
 # DIRECTORY: panda/src/text/
@@ -2696,14 +2692,10 @@ if (sys.platform == "win32"):
     IPATH=['panda/src/windisplay']
     OPTS=['BUILDING_PANDAWIN', 'NSPR']
     CopyAllHeaders('panda/src/windisplay')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='winGraphicsWindow.cxx', obj='windisplay_winGraphicsWindow.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_windisplay.cxx', obj='windisplay_config_windisplay.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='winGraphicsPipe.cxx', obj='windisplay_winGraphicsPipe.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='windisplay_composite.cxx', obj='windisplay_composite.obj')
     EnqueueLink(opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
                 dll='libwindisplay.dll', obj=[
-      'windisplay_winGraphicsWindow.obj',
-      'windisplay_config_windisplay.obj',
-      'windisplay_winGraphicsPipe.obj',
+      'windisplay_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
       'libdtoolconfig.dll',
@@ -2742,15 +2734,12 @@ if (sys.platform == "win32"):
 #
 
 if (sys.platform == "win32"):
-    IPATH=['panda/src/dxgsg8']
+    IPATH=['panda/src/dxgsg8', 'panda/metalibs/pandadx8']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CopyAllHeaders('panda/src/dxgsg8')
+    CopyAllHeaders('panda/metalibs/pandadx8')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg8_composite.cxx', obj='dxgsg8_composite.obj')
-
-    IPATH=['panda/metalibs/pandadx8']
-    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-    CopyAllHeaders('panda/metalibs/pandadx8')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx8.cxx', obj='pandadx8_pandadx8.obj')
     EnqueueLink(dll='libpandadx8.dll',
       opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
@@ -2834,19 +2823,6 @@ EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'libdtoolconfig.dll',
              'libdtool.dll',
              ])
-
-# EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_framework.cxx', obj='framework_config_framework.obj')
-# EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaFramework.cxx', obj='framework_pandaFramework.obj')
-# EnqueueCxx(ipath=IPATH, opts=OPTS, src='windowFramework.cxx', obj='framework_windowFramework.obj')
-# EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
-#              'framework_config_framework.obj',
-#              'framework_pandaFramework.obj',
-#              'framework_windowFramework.obj',
-#              'libpanda.dll',
-#              'libpandaexpress.dll',
-#              'libdtoolconfig.dll',
-#              'libdtool.dll',
-#              ])
 
 #
 # DIRECTORY: panda/metalibs/pandafx/
@@ -2966,7 +2942,6 @@ if (sys.platform == "win32"):
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/src/wgldisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='wgldisplay_composite.cxx', obj='wgldisplay_composite.obj')
-
     IPATH=['panda/metalibs/pandagl']
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/metalibs/pandagl')
@@ -4471,7 +4446,7 @@ if (OMIT.count("PANDATOOL")==0):
     EnqueueBam("../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
     EnqueueBam("../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
     EnqueueBam("../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
-    #EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+    EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
     
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
