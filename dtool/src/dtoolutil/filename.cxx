@@ -138,7 +138,7 @@ get_panda_root() {
       panda_root = "c:/cygwin";
     }
 
-    if (panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
+    if (!panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
       panda_root += '\\';
     }
 
