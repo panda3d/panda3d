@@ -189,7 +189,7 @@ read_surface_shader(MObject shader) {
 
     MayaShaderColorDef *color_p = new MayaShaderColorDef;
     for (size_t i = 0; i < color_pa.length(); i++) {
-      maya_cat.spam() << "color_pa[" << i << "]:" << color_pa[i].name() << endl;
+      maya_cat.spam() << "color_pa[" << i << "]:" << color_pa[i].name().asChar() << endl;
       color_p->read_surface_color(this, color_pa[0].node());
     }
 

@@ -17,17 +17,60 @@ from glob import glob
 
 ########################################################################
 ##
-## Utility Routines
+## PARSING THE COMMAND LINE OPTIONS
 ##
-## filedate(f) - returns the last modified date of the specified file.
-## youngest(f1,f2...) - returns date of most recently modified file.
-## older(f,f1,f2...) - return true if f is older than all the others.
-## xpaths(pre,pathlist,suf) - appends prefix and suffix to every path.
+## You might be tempted to change the defaults by editing them
+## here.  Don't do it.  Instead, create a script that compiles
+## panda with your preferred options.  Or, create
+## a 'makepandaPreferences' file and put it into your python path.
 ##
 ########################################################################
 
-global FileDateCache
-FileDateCache = {}
+if (sys.platform == "win32"): COMPILERS=["MSVC7"]
+if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
+COMPILER=COMPILERS[0]
+OPTIMIZE="3"
+INSTALLER=0
+GENMAN=0
+VERSION=0
+VERBOSE=1
+COMPRESSOR="zlib"
+PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
+          "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
+          "BISON","FLEX","PANDATOOL","PANDAAPP"]
+OMIT=PACKAGES[:]
+WARNINGS=[]
+DIRECTXSDK = None
+MAYASDK = {}
+MAXSDK = {}
+MAXSDKCS = {}
+PYTHONSDK=0
+STARTTIME=time.time()
+BUILTANYTHING=0
+SLAVEFILE=0
+DEPENDENCYQUEUE=[]
+FILEDATECACHE = {}
+CXXINCLUDECACHE = {}
+ALLIN=[]
+SLAVEBUILD=0
+THREADCOUNT=0
+
+##########################################################################################
+#
+# If there is a makepandaPreferences.py, import it
+#
+##########################################################################################
+
+try:
+    from makepandaPreferences import *
+except ImportError:
+    pass
+
+########################################################################
+##
+## Utility Routines
+##
+########################################################################
 
 def exit(msg):
     print msg
@@ -36,19 +79,17 @@ def exit(msg):
     os._exit(1)
 
 def filedate(path):
-    global FileDateCache
-    if FileDateCache.has_key(path):
-        return FileDateCache[path]
+    if FILEDATECACHE.has_key(path):
+        return FILEDATECACHE[path]
     try: date = os.path.getmtime(path)
     except: date = 0
-    FileDateCache[path] = date
+    FILEDATECACHE[path] = date
     return date
 
 def updatefiledate(path):
-    global FileDateCache
     try: date = os.path.getmtime(path)
     except: date = 0
-    FileDateCache[path] = date
+    FILEDATECACHE[path] = date
 
 def chkolder(file,date,files):
     if type(files) == str:
@@ -95,22 +136,20 @@ if sys.platform == "win32":
 def oscmd(cmd):
     print cmd
     sys.stdout.flush()
-    res = os.system(cmd)
-    if res != 0: exit("")
-
-def replaceInFile(srcPath, dstPath, replaceA, withB):
-    global VERBOSE
-    if VERBOSE >= 1:
-        print "Replacing '%s' in \"%s\" with '%s' and writing it to \"%s\""%(
-            replaceA, srcPath, withB, dstPath)
-    f=file(srcPath, "rb")
-    data=f.read()
-    f.close()
-    data=data.replace(replaceA, withB)
-    f=file(dstPath, "wb")
-    f.write(data)
-    f.close()
-
+    if sys.platform == "win32":
+        exe = cmd.split()[0]+".exe"
+        if os.path.isfile(exe)==0:
+            for i in os.environ["PATH"].split(";"):
+                if os.path.isfile(os.path.join(i, exe)):
+                    exe = os.path.join(i, exe)
+                    break
+            if os.path.isfile(exe)==0:
+                exit("Cannot find "+exe+" on search path")
+        res = os.spawnl(os.P_WAIT, exe, cmd)
+    else:
+        res = os.system(cmd)
+    if res != 0:
+	exit("")
 
 def getbuilding(opts):
     building = 0
@@ -120,7 +159,9 @@ def getbuilding(opts):
 
 def getoptlevel(opts,defval):
     for x in opts:
-        if (x[:3]=="OPT"): return int(x[3:])
+        if (x[:3]=="OPT"):
+            n = int(x[3:])
+            if (n > defval): defval = n
     return defval
 
 def PrettyTime(t):
@@ -175,189 +216,13 @@ def SetDifference(add, sub):
             del set[x]
     return set.keys()
 
+def PkgSelected(pkglist, pkg):
+    if (pkglist.count(pkg)==0): return 0
+    if (OMIT.count(pkg)): return 0
+    return 1
 
-########################################################################
-##
-## Default options:
-##
-## You might be tempted to change the defaults by editing them
-## here.  Don't do it.  Instead, create a script that compiles
-## panda with your preferred options.  Or, create
-## a 'makepandaPreferences' file and put it into your python path.
-##
-########################################################################
-
-if (sys.platform == "win32"): COMPILERS=["MSVC7"]
-if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
-PREFIX="built"
-COMPILER=COMPILERS[0]
-OPTIMIZE="3"
-INSTALLER=0
-GENMAN=0
-THIRDPARTY="thirdparty"
-VERSION="0.0.0"
-VERBOSE=1
-COMPRESSOR="zlib"
-PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
-          "BISON","FLEX","PANDATOOL","PANDAAPP"]
-OMIT=PACKAGES[:]
-WARNINGS=[]
-DIRECTXSDK = None
-MAYASDK = {}
-MAXSDK = {}
-MAXSDKCS = {}
-PYTHONSDK=0
-STARTTIME=time.time()
-BUILTANYTHING=0
-WORKERCOUNT=1
-DEPENDENCYQUEUE=[]
-
-try:
-    # If there is a makepandaPreferences.py, import it:
-    from makepandaPreferences import *
-except ImportError:
-    # If it's not there, no problem:
-    pass
-
-##########################################################################################
-#
-# Read the default version number out of dtool/PandaVersion.pp
-#
-##########################################################################################
-
-try:
-    f = file("dtool/PandaVersion.pp","r")
-    pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
-    for line in f:
-        match = pattern.match(line,0)
-        if (match):
-            VERSION = match.group(1)+"."+match.group(2)+"."+match.group(3)
-            break
-    f.close()
-except: pass
-
-##########################################################################################
-#
-# Initialize DTOOLCONFIG based on platform (Win/Unix)
-#
-# These are the defaults for the two broad classes of operating system.
-# Subsequent analysis will cause these values to be tweaked.
-#
-##########################################################################################
-
-DTOOLDEFAULTS=[
-    #_Variable_________________________Windows___________________Unix__________
-    ("HAVE_PYTHON",                    '1',                      '1'),
-    ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
-    ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
-    ("HAVE_MAYA",                      '1',                      '1'),
-    ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
-    ("SSL_097",                        'UNDEF',                  'UNDEF'),
-    ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
-    ("HAVE_GL",                        '1',                      '1'),
-    ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
-    ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_GLX",                       'UNDEF',                  '1'),
-    ("HAVE_WGL",                       '1',                      'UNDEF'),
-    ("HAVE_DX",                        '1',                      'UNDEF'),
-    ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_AUDIO",                     '1',                      '1'),
-    ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
-    ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
-    ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
-    ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
-    ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
-    ("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
-    ("EXPORT_TEMPLATES",               'yes',                    'yes'),
-    ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
-    ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
-    ("DEFAULT_PATHSEP",                '";"',                    '":"'),
-    ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
-    ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
-    ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-    ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
-    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
-    ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
-    ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
-    ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
-    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-    ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
-    ("HAVE_NAMESPACE",                 '1',                      '1'),
-    ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
-    ("HAVE_WCHAR_T",                   '1',                      '1'),
-    ("HAVE_WSTRING",                   '1',                      '1'),
-    ("HAVE_TYPENAME",                  '1',                      '1'),
-    ("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
-    ("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
-    ("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
-    ("HAVE_GETOPT",                    'UNDEF',                  '1'),
-    ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
-    ("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
-    ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
-    ("HAVE_STREAMSIZE",                '1',                      '1'),
-    ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
-    ("HAVE_IOS_BINARY",                '1',                      '1'),
-    ("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
-    ("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
-    ("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
-    ("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
-    ("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
-    ("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
-    ("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
-    ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
-    ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
-    ("HAVE_IO_H",                      '1',                      'UNDEF'),
-    ("HAVE_IOSTREAM",                  '1',                      '1'),
-    ("HAVE_MALLOC_H",                  '1',                      '1'),
-    ("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
-    ("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
-    ("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
-    ("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
-    ("HAVE_SSTREAM",                   '1',                      '1'),
-    ("HAVE_NEW",                       '1',                      '1'),
-    ("HAVE_SYS_TYPES_H",               '1',                      '1'),
-    ("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
-    ("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
-    ("HAVE_UTIME_H",                   'UNDEF',                  '1'),
-    ("HAVE_GLOB_H",                    'UNDEF',                  '1'),
-    ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
-    ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
-    ("HAVE_RTTI",                      '1',                      '1'),
-    ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
-    ("OLD_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
-    ("GNU_STYLE_ALLOCATOR",            'UNDEF',                  '1'),
-    ("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
-    ("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
-    ("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
-    ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
-    ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
-    ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
-    ]
-
-DTOOLCONFIG={}
-if (sys.platform == "win32"):
-    for key,win,unix in DTOOLDEFAULTS:
-        DTOOLCONFIG[key] = win
-else:
-    for key,win,unix in DTOOLDEFAULTS:
-        DTOOLCONFIG[key] = unix
+def DependencyQueue(fn, args, targets, sources):
+    DEPENDENCYQUEUE.append([fn,args,targets,sources])
 
 ########################################################################
 ##
@@ -376,13 +241,9 @@ def packageInfo():
     MAX5      3D Studio Max version 5
     MAX6      3D Studio Max version 6
     MAX7      3D Studio Max version 7
-              "uri?"
-              (for .??? files)
 
     MAYA5     Maya version 5
     MAYA6     Maya version 6
-              "uri?"
-              (for .??? files)
 
   Audio playback:
     FMOD      f mod
@@ -425,11 +286,6 @@ def packageInfo():
               (.tiff files)
 
   Misc libraries:
-    HELIX
-              "uri?"
-              (for .??? files)
-              A ??? library.
-
     FFTW      Fast Fourier Transform (in the West)
               "http://www.fftw.org/"
               A library for computing DFT in one or more dimensions.
@@ -473,16 +329,15 @@ def usage(problem):
     print ""
     print "  --help            (print the help message you're reading now)"
     print "  --package-info    (help info about the optional packages)"
-    print "  --prefix X        (install into prefix dir, default \"built\")"
     print "  --compiler X      (currently, compiler can only be MSVC7,LINUXA)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
-    print "  --thirdparty X    (directory containing third-party software)"
     print "  --installer       (build an installer)"
     print "  --v1 X            (set the major version number)"
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
     print "  --lzma            (use lzma compression when building installer)"
-    print "  --pmake X         (parallel make: try 3 on dual-core CPUs)"
+    print "  --slaves X        (use the distributed build system. see manual)"
+    print "  --threads N       (use the multithreaded build system. see manual)"
     print ""
     for pkg in PACKAGES:
         p = pkg.lower()
@@ -501,12 +356,12 @@ def usage(problem):
     exit("")
 
 def parseopts(args):
-    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,GENMAN
-    global VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE,WORKERCOUNT
+    global COMPILER,OPTIMIZE,OMIT,INSTALLER,GENMAN,SLAVEBUILD
+    global VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE,SLAVEFILE,THREADCOUNT
     longopts = [
-        "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
+        "help","package-info","compiler=","directx-sdk=","slavebuild=",
         "optimize=","everything","nothing","installer","quiet","verbose",
-        "version=","lzma","no-python","pmake="]
+        "version=","lzma","no-python","slaves=","threads="]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
     for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
@@ -515,10 +370,8 @@ def parseopts(args):
         for option,value in opts:
             if (option=="--help"): raise "usage"
             elif (option=="--package-info"): raise "package-info"
-            elif (option=="--prefix"): PREFIX=value
             elif (option=="--compiler"): COMPILER=value
             elif (option=="--directx-sdk"): DIRECTXSDK=value
-            elif (option=="--thirdparty"): THIRDPARTY=value
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
@@ -526,7 +379,9 @@ def parseopts(args):
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
-            elif (option=="--pmake"): WORKERCOUNT=int(value)
+            elif (option=="--slaves"): SLAVEFILE=value
+            elif (option=="--threads"): THREADCOUNT=int(value)
+            elif (option=="--slavebuild"): SLAVEBUILD=value
             elif (option=="--version"):
                 VERSION=value
                 if (len(VERSION.split(".")) != 3): raise "usage"
@@ -552,28 +407,6 @@ def parseopts(args):
     if (COMPILERS.count(COMPILER)==0): usage("Invalid setting for COMPILER: "+COMPILER)
 
 parseopts(sys.argv[1:])
-
-########################################################################
-#
-# Avoid trouble by not allowing weird --prefix or --thirdparty
-#
-# One of my goals for makepanda was for it to be maintainable.
-# I found that trying to support arbitrary pathnames for "prefix"
-# and "thirdparty" required the use of lots of backslashes and
-# quotation marks, which were quite frankly hard to get right.
-# I think it's better to simply rule out weird pathnames.
-#
-########################################################################
-
-PREFIX     = PREFIX.replace("\\","/")
-THIRDPARTY = THIRDPARTY.replace("\\","/")
-
-if (PREFIX.count(" ")  or THIRDPARTY.count(" ")):
-  exit("The --prefix and --thirdparty may not contain spaces")
-if (PREFIX.count('"')  or THIRDPARTY.count('"')):
-  exit("The --prefix and --thirdparty may not contain quotation marks")
-if (INSTALLER) and (OMIT.count("PYTHON")):
-  exit("Cannot build installer without python")
 
 ########################################################################
 #
@@ -725,8 +558,9 @@ def AddToVisualStudioPath(path,add):
 def LocateVisualStudio():
 
     # Try to use the Visual Toolkit 2003
-    if (os.environ.has_key("VCTOOLKITINSTALLDIR")):
-        vcdir = os.environ["VCTOOLKITINSTALLDIR"]
+    vcdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","VCToolkitInstallDir")
+    if (vcdir != 0) or (os.environ.has_key("VCTOOLKITINSTALLDIR")):
+        if (vcdir == 0): vcdir = os.environ["VCTOOLKITINSTALLDIR"]
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
                                "Install Dir")
         if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
@@ -738,7 +572,7 @@ def LocateVisualStudio():
         AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
         AddToVisualStudioPath("LIB",     platsdk + "\\lib")
         AddToVisualStudioPath("LIB",     vcdir + "\\lib")
-        AddToVisualStudioPath("LIB",     THIRDPARTY + "\\win-libs-vc7\\extras\\lib")
+        AddToVisualStudioPath("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
         AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
         return
 
@@ -773,7 +607,7 @@ if (COMPILER == "MSVC7"):
 
 ##########################################################################################
 #
-# Disable Helix unless running under Windows
+# Disable Helix
 #
 ##########################################################################################
 
@@ -788,7 +622,7 @@ if (OMIT.count("HELIX")==0):
 #
 ##########################################################################################
 
-if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
+if (os.path.isdir(os.path.join("thirdparty", "win-libs-vc7", "miles"))==0):
     if (OMIT.count("MILES")==0):
         WARNINGS.append("You do not have a copy of MILES sound system")
         WARNINGS.append("I have automatically added this command-line option: --no-miles")
@@ -796,50 +630,14 @@ if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
 
 ##########################################################################################
 #
-# Enable or Disable runtime debugging mechanisms based on optimize level.
-#
-##########################################################################################
-
-for x in PACKAGES:
-    if (OMIT.count(x)==0):
-        if (DTOOLCONFIG.has_key("HAVE_"+x)):
-            DTOOLCONFIG["HAVE_"+x] = '1'
-
-DTOOLCONFIG["HAVE_NET"] = DTOOLCONFIG["HAVE_NSPR"]
-
-if (OMIT.count("NVIDIACG")==0):
-    DTOOLCONFIG["HAVE_CG"] = '1'
-    DTOOLCONFIG["HAVE_CGGL"] = '1'
-
-if (OPTIMIZE <= 3):
-    if (DTOOLCONFIG["HAVE_NET"] != 'UNDEF'):
-        DTOOLCONFIG["DO_PSTATS"] = '1'
-
-if (OPTIMIZE <= 3):
-    DTOOLCONFIG["DO_COLLISION_RECORDING"] = '1'
-
-#if (OPTIMIZE <= 2):
-#    DTOOLCONFIG["TRACK_IN_INTERPRETER"] = '1'
-
-if (OPTIMIZE <= 3):
-    DTOOLCONFIG["DO_MEMORY_USAGE"] = '1'
-
-#if (OPTIMIZE <= 1):
-#    DTOOLCONFIG["DO_PIPELINING"] = '1'
-
-if (OPTIMIZE <= 3):
-    DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
-
-##########################################################################################
-#
-# Verify that LD_LIBRARY_PATH contains the PREFIX/lib directory.
+# Verify that LD_LIBRARY_PATH contains the built/lib directory.
 #
 # If not, add it on a temporary basis, and issue a warning.
 #
 ##########################################################################################
 
 if (sys.platform != "win32"):
-    BUILTLIB = os.path.abspath(PREFIX+"/lib")
+    BUILTLIB = os.path.abspath("built/lib")
     try:
         LDPATH = []
         f = file("/etc/ld.so.conf","r")
@@ -849,12 +647,48 @@ if (sys.platform != "win32"):
     if (os.environ.has_key("LD_LIBRARY_PATH")):
         LDPATH = LDPATH + os.environ["LD_LIBRARY_PATH"].split(":")
     if (LDPATH.count(BUILTLIB)==0):
-        WARNINGS.append("Caution: the "+PREFIX+"/lib directory is not in LD_LIBRARY_PATH")
+        WARNINGS.append("Caution: the built/lib directory is not in LD_LIBRARY_PATH")
         WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
         if (os.environ.has_key("LD_LIBRARY_PATH")):
             os.environ["LD_LIBRARY_PATH"] = BUILTLIB + ":" + os.environ["LD_LIBRARY_PATH"]
         else:
             os.environ["LD_LIBRARY_PATH"] = BUILTLIB
+
+#######################################################################
+#
+# Ensure that bison can find its skeleton file
+#
+#######################################################################
+
+if (sys.platform == "win32"):
+     os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
+
+########################################################################
+##
+## Choose a version number for the installer
+##
+########################################################################
+
+if (VERSION == 0):
+    try:
+        f = file("dtool/PandaVersion.pp","r")
+        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
+        for line in f:
+            match = pattern.match(line,0)
+            if (match):
+                VERSION = match.group(1)+"."+match.group(2)+"."+match.group(3)
+                break
+        f.close()
+    except: VERSION="0.0.0"
+
+########################################################################
+#
+# Sanity check some command-line arguments.
+#
+########################################################################
+
+if (INSTALLER) and (OMIT.count("PYTHON")):
+    exit("Cannot build installer without python")
 
 ########################################################################
 ##
@@ -873,12 +707,10 @@ def printStatus(header,warnings):
         for x in PACKAGES:
             if (OMIT.count(x)==0): tkeep = tkeep + x + " "
             else:                  tomit = tomit + x + " "
-        print "Makepanda: Prefix Directory:",PREFIX
         print "Makepanda: Compiler:",COMPILER
         print "Makepanda: Optimize:",OPTIMIZE
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
-        print "Makepanda: Thirdparty dir:",THIRDPARTY
         print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
         if (GENMAN): print "Makepanda: Generate API reference manual"
@@ -892,53 +724,9 @@ def printStatus(header,warnings):
         print ""
         sys.stdout.flush()
 
-printStatus("Makepanda Initial Status Report", WARNINGS)
+if (SLAVEBUILD==0):
+    printStatus("Makepanda Initial Status Report", WARNINGS)
 
-
-##########################################################################################
-#
-# Create the directory tree
-#
-##########################################################################################
-
-MakeDirectory(PREFIX)
-MakeDirectory(PREFIX+"/bin")
-MakeDirectory(PREFIX+"/lib")
-MakeDirectory(PREFIX+"/etc")
-MakeDirectory(PREFIX+"/plugins")
-MakeDirectory(PREFIX+"/include")
-MakeDirectory(PREFIX+"/include/parser-inc")
-MakeDirectory(PREFIX+"/include/parser-inc/openssl")
-MakeDirectory(PREFIX+"/include/parser-inc/Cg")
-MakeDirectory(PREFIX+"/include/openssl")
-MakeDirectory(PREFIX+"/tmp")
-
-if (OMIT.count("PYTHON")==0):
-    MakeDirectory(PREFIX+"/direct")
-    MakeDirectory(PREFIX+"/pandac")
-    MakeDirectory(PREFIX+"/pandac/input")
-
-########################################################################
-##
-## PkgSelected(package-list,package)
-##
-## This function returns true if the package-list contains the
-## package, AND the OMIT list does not contain the package.
-##
-########################################################################
-
-def PkgSelected(pkglist, pkg):
-    if (pkglist.count(pkg)==0): return 0
-    if (OMIT.count(pkg)): return 0
-    return 1
-
-########################################################################
-##
-## These two globals accumulate a global list of everything compiled.
-##
-########################################################################
-
-ALLIN=[]
 
 ########################################################################
 ##
@@ -960,13 +748,11 @@ ALLIN=[]
 ##
 ########################################################################
 
-global CxxIncludeCache
-CxxIncludeCache = {}
-iCachePath=PREFIX+"/tmp/makepanda-icache"
+iCachePath="built/tmp/makepanda-icache"
 try: icache = open(iCachePath,'rb')
 except: icache = 0
 if (icache!=0):
-    CxxIncludeCache = cPickle.load(icache)
+    CXXINCLUDECACHE = cPickle.load(icache)
     icache.close()
 
 ########################################################################
@@ -982,8 +768,8 @@ CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$'
 
 def CxxGetIncludes(path):
     date = filedate(path)
-    if (CxxIncludeCache.has_key(path)):
-        cached = CxxIncludeCache[path]
+    if (CXXINCLUDECACHE.has_key(path)):
+        cached = CXXINCLUDECACHE[path]
         if (cached[0]==date): return cached[1]
     try: sfile = open(path, 'rb')
     except: exit("Cannot open source file \""+path+"\" for reading.")
@@ -994,7 +780,7 @@ def CxxGetIncludes(path):
             incname = match.group(1)
             include.append(incname)
     sfile.close()
-    CxxIncludeCache[path] = [date, include]
+    CXXINCLUDECACHE[path] = [date, include]
     return include
 
 ########################################################################
@@ -1058,6 +844,7 @@ CxxIgnoreHeader = {}
 CxxDependencyCache = {}
 
 def CxxCalcDependencies(srcfile, ipath, ignore):
+    if (SLAVEBUILD!=0): return []
     if (CxxDependencyCache.has_key(srcfile)):
         return CxxDependencyCache[srcfile]
     if (ignore.count(srcfile)): return []
@@ -1128,6 +915,7 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
                 CopyFile(dstdir+x, srcdir+x)
 
 def CopyAllHeaders(dir, skip=[]):
+    if (SLAVEBUILD!=0): return
     # get a list of headers
     dirlist = os.listdir(dir)
     dirlist.sort()
@@ -1140,7 +928,7 @@ def CopyAllHeaders(dir, skip=[]):
         for filename in files:
             if (skip.count(filename)==0):
                 srcfile = dir + "/" + filename
-                dstfile = PREFIX + "/include/" + filename
+                dstfile = "built/include/" + filename
                 if (older([dstfile],srcfile)):
                     copied.append(filename)
                     WriteFile(dstfile,ReadFile(srcfile))
@@ -1161,98 +949,10 @@ def CopyAllHeaders(dir, skip=[]):
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
-    if (COMPILER=="MSVC7"): cmd = 'xcopy.exe /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+    if (COMPILER=="MSVC7"): cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
     if (COMPILER=="LINUXA"): cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
     oscmd(cmd)
     updatefiledate(dstdir)
-
-##########################################################################################
-#
-# Dependency-Based Multithreaded Build System.
-#
-##########################################################################################
-
-def BuildWorker(taskqueue, donequeue):
-    while (1):
-        task = taskqueue.get()
-        sys.stdout.flush()
-        if (task == 0): return
-        try: apply(task[0], task[1])
-        except: exit("Makepanda contains a bug. Re-run makepanda single-threaded to find it.")
-        donequeue.put(task)
-
-def AllSourcesReady(task, pending):
-    sources = task[3]
-    for x in sources:
-        if (pending.has_key(x)):
-            return 0
-    return 1
-
-def ParDependencyQueue(tasklist):
-    global BUILTANYTHING
-    # create the communication queues.
-    donequeue=Queue.Queue()
-    taskqueue=Queue.Queue()
-    # build up a table listing all the pending targets
-    pending = {}
-    for task in tasklist:
-        for target in task[2]:
-            pending[target] = 1
-    # create the workers
-    for i in range(WORKERCOUNT):
-        th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue])
-        th.setDaemon(1)
-        th.start()
-    # feed tasks to the workers.
-    tasksqueued = 0
-    while (1):
-        print "tasks queued: "+str(tasksqueued)
-        if (tasksqueued < WORKERCOUNT*2):
-            extras = []
-            for task in tasklist:
-                if (tasksqueued < WORKERCOUNT*5) & (AllSourcesReady(task, pending)):
-                    if (older(task[2], task[3])):
-                        tasksqueued += 1
-                        BUILTANYTHING=1
-                        taskqueue.put(task)
-                    else:
-                        for target in task[2]:
-                            del pending[target]
-                else:
-                    extras.append(task)
-            tasklist = extras
-        sys.stdout.flush()
-        if (tasksqueued == 0): break
-        donetask = donequeue.get()
-        sys.stdout.flush()
-        tasksqueued -= 1
-        for target in donetask[2]:
-            updatefiledate(target)
-            del pending[target]
-    # kill the workers.
-    for i in range(WORKERCOUNT):
-        taskqueue.put(0)
-    # make sure there aren't any unsatisfied tasks
-    if (len(tasklist)>0):
-        exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
-
-def SeqDependencyQueue(tasklist):
-    global BUILTANYTHING
-    for task in tasklist:
-        if (older(task[2], task[3])):
-            BUILTANYTHING=1
-            apply(task[0], task[1])
-            for target in task[2]:
-                updatefiledate(target)
-
-def RunDependencyQueue(tasklist):
-    if (WORKERCOUNT>1):
-        ParDependencyQueue(tasklist)
-    else:
-        SeqDependencyQueue(tasklist)
-
-def DependencyBuild(fn, args, targets, sources):
-    DEPENDENCYQUEUE.append([fn,args,targets,sources])
 
 ########################################################################
 ##
@@ -1261,8 +961,8 @@ def DependencyBuild(fn, args, targets, sources):
 ########################################################################
 
 def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
-    cmd = "cl.exe /Fo" + wobj + " /nologo /c"
-    if (OMIT.count("PYTHON")==0): cmd = cmd + " /I" + PREFIX + "/python/include"
+    cmd = "cl /Fo" + wobj + " /nologo /c"
+    if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ibuilt/python/include"
     if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
     for ver in ["MAYA5","MAYA6","MAYA65"]:
       if (opts.count(ver)): cmd = cmd + ' /I"' + MAYASDK[ver] + '/include"'
@@ -1271,17 +971,17 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
             cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
     for pkg in PACKAGES:
         if (pkg[:4] != "MAYA") and PkgSelected(opts,pkg):
-            cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
+            cmd = cmd + " /Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
     for x in ipath: cmd = cmd + " /I" + x
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
     if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
+    if (opts.count("PTMALLOC2")): cmd = cmd + ' /DUSE_MEMORY_PTMALLOC2'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
     if (optlevel==2): cmd = cmd + " /MD /Zi "
     if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
     if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /GL "
-    # if (OPTIMIZE!=1): cmd = cmd + " /DNDEBUG"
     cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
     building = getbuilding(opts)
     if (building): cmd = cmd + " /DBUILDING_" + building
@@ -1292,11 +992,11 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (fullsrc[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
     else:                    cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
     if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/vrpn/include'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fftw/include'
-    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fmod/include'
-    if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nvidiacg/include'
-    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nspr/include'
+    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/vrpn/include'
+    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fftw/include'
+    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fmod/include'
+    if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -Ithirdparty/linux-libs-a/nvidiacg/include'
+    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/nspr/include'
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
     for x in ipath: cmd = cmd + ' -I' + x
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -1312,16 +1012,18 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
 
 def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
     if ((obj==0)|(src==0)): exit("syntax error in EnqueueCxx directive")
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
+    if (COMPILER=="MSVC7"):
+        wobj = "built/tmp/"+obj
+        fn = CompileCxxMSVC7
+    if (COMPILER=="LINUXA"):
+        wobj = "built/tmp/" + obj[:-4] + ".o"
+        fn = CompileCxxLINUXA
+    if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
+    ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0): exit("Cannot find source file "+src)
     dep = CxxCalcDependencies(fullsrc, ipath, []) + xdep
-    if (COMPILER=="MSVC7"):
-        wobj = PREFIX+"/tmp/"+obj
-        DependencyBuild(CompileCxxMSVC7, [wobj,fullsrc,ipath,opts], [wobj], dep)
-    if (COMPILER=="LINUXA"):
-        wobj = PREFIX+"/tmp/" + obj[:-4] + ".o"
-        DependencyBuild(CompileCxxLINUXA, [wobj,fullsrc,ipath,opts], [wobj], dep)
+    DependencyQueue(fn, [wobj,fullsrc,ipath,opts], [wobj], dep)
 
 ########################################################################
 ##
@@ -1330,46 +1032,41 @@ def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 ########################################################################
 
 def CompileBisonMSVC7(pre, dsth, dstc, wobj, ipath, opts, src):
-    fn = os.path.basename(src)
-    CopyFile(PREFIX+"/tmp/", src)
-    CopyFile(PREFIX+"/tmp/", "thirdparty/win-util/bison.simple")
-    bisonFullPath=os.path.abspath("thirdparty/win-util/bison.exe")
-    cmd = "cd "+PREFIX+"/tmp & "+bisonFullPath
-    cmd = cmd.replace("/","\\")
-    oscmd(cmd + " -y -d -p " + pre + " " + fn)
-    CopyFile(dstc, PREFIX+"/tmp/y_tab.c")
-    CopyFile(dsth, PREFIX+"/tmp/y_tab.h")
+#   CopyFile(".", "thirdparty/win-util/bison.simple")
+    oscmd('thirdparty/win-util/bison -y -d -o built/tmp/y_tab.c -p '+pre+' '+src)
+    CopyFile(dstc, "built/tmp/y_tab.c")
+    CopyFile(dsth, "built/tmp/y_tab.h")
     CompileCxxMSVC7(wobj,dstc,ipath,opts)
 
 def CompileBisonLINUXA(pre, dsth, dstc, wobj, ipath, opts, src):
-    fn = os.path.basename(src)
-    CopyFile(PREFIX+"/tmp/", src)
-    oscmd("cd "+PREFIX+"/tmp ; bison -y -d -p "+pre+" "+fn)
-    CopyFile(dstc, PREFIX+"/tmp/y.tab.c")
-    CopyFile(dsth, PREFIX+"/tmp/y.tab.h")
+    oscmd("bison -y -d -o built/tmp/y.tab.c -p "+pre+" "+src)
+    CopyFile(dstc, "built/tmp/y.tab.c")
+    CopyFile(dsth, "built/tmp/y.tab.h")
     CompileCxxLINUXA(wobj,dstc,ipath,opts)
 
 def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(dsth==0)|(src==0)):
         exit("syntax error in EnqueueBison directive")
-    dstc=obj[:-4]+".cxx"
+    if (COMPILER=="MSVC7"):
+        wobj="built/tmp/"+obj
+        fn = CompileBisonMSVC7
+    if (COMPILER=="LINUXA"):
+        wobj="built/tmp/"+obj[:-4]+".o"
+        fn = CompileBisonLINUXA
+    if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    fullsrc = CxxFindSource(src, ipath)
     if (OMIT.count("BISON")):
-        dir = os.path.dirname(src)
-        CopyFile(PREFIX+"/tmp/"+dstc, dir+"/"+dstc+".prebuilt")
-        CopyFile(PREFIX+"/tmp/"+dsth, dir+"/"+dsth+".prebuilt")
+        dir = os.path.dirname(fullsrc)
+        CopyFile("built/tmp/"+dstc, dir+"/"+dstc+".prebuilt")
+        CopyFile("built/tmp/"+dsth, dir+"/"+dsth+".prebuilt")
         EnqueueCxx(ipath=ipath,opts=opts,obj=obj,src=dstc)
         return()
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
-    fullsrc = CxxFindSource(src, ipath)
+    dstc=obj[:-4]+".cxx"
     if (fullsrc == 0): exit("Cannot find source file "+src)
-    dstc=PREFIX+"/tmp/"+dstc
-    dsth=PREFIX+"/tmp/"+dsth
-    if (COMPILER=="MSVC7"):
-        wobj=PREFIX+"/tmp/"+obj
-        DependencyBuild(CompileBisonMSVC7,  [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [dsth, wobj], [fullsrc])
-    if (COMPILER=="LINUXA"):
-        wobj=PREFIX+"/tmp/"+obj[:-4]+".o"
-        DependencyBuild(CompileBisonLINUXA, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [dsth, wobj], [fullsrc])
+    dstc="built/tmp/"+dstc
+    dsth="built/tmp/"+dsth
+    DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc])
 
 ########################################################################
 ##
@@ -1378,46 +1075,36 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
 ########################################################################
 
 def CompileFlexMSVC7(pre,dst,src,wobj,ipath,opts,dashi):
-    sys.stdout.flush()
-    fn = os.path.basename(src)
-    CopyFile(PREFIX+"/tmp/", src)
-    flexFullPath=os.path.abspath("thirdparty/win-util/flex.exe")
-    flexFullPath=flexFullPath.replace("/","\\")
-    cmd = "cd "+PREFIX+"/tmp & "+flexFullPath
-    cmd = cmd.replace("/","\\")
-    if (dashi): oscmd(cmd +" -i -P" + pre + " -olex.yy.c " + fn)
-    else:       oscmd(cmd +"    -P" + pre + " -olex.yy.c " + fn)
-    replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
+    if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+dst+" "+src)
+    else:       oscmd("thirdparty/win-util/flex    -P" + pre + " -o"+dst+" "+src)
     CompileCxxMSVC7(wobj,dst,ipath,opts)
 
 def CompileFlexLINUXA(pre,dst,src,wobj,ipath,opts,dashi):
-    fn = os.path.basename(src)
-    CopyFile(PREFIX+"/tmp/", src)
-    if (dashi): oscmd("cd "+PREFIX+"/tmp ; flex -i -P" + pre + " -olex.yy.c " + fn)
-    else:       oscmd("cd "+PREFIX+"/tmp ; flex    -P" + pre + " -olex.yy.c " + fn)
-    oscmd('cp '+PREFIX+'/tmp/lex.yy.c '+dst)
+    if (dashi): oscmd("flex -i -P" + pre + " -o "+dst+" "+src)
+    else:       oscmd("flex    -P" + pre + " -o "+dst+" "+src)
     CompileCxxLINUXA(wobj,dst,ipath,opts)
 
 def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(src==0)):
         exit("syntax error in EnqueueFlex directive")
-    dst=obj[:-4]+".cxx"
+    if (COMPILER=="MSVC7"):
+        wobj="built/tmp/"+obj[:-4]+".obj"
+        dst="built/tmp/"+obj[:-4]+".cxx"
+        fn=CompileFlexMSVC7
+    if (COMPILER=="LINUX"):
+        wobj="built/tmp/"+obj[:-4]+".o"
+        dst="built/tmp/"+obj[:-4]+".cxx"
+        fn=CompileFlexLINUXA
+    if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    fullsrc = CxxFindSource(src, ipath)
     if (OMIT.count("FLEX")):
-        dir = os.path.dirname(src)
-        CopyFile(PREFIX+"/tmp/"+dst, dir+"/"+dst+".prebuilt")
+        dir = os.path.dirname(fullsrc)
+        CopyFile("built/tmp/"+dst, dir+"/"+dst+".prebuilt")
         EnqueueCxx(ipath=IPATH, opts=OPTS, obj=obj, src=dst)
         return()
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
-    fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0): exit("Cannot find source file "+src)
-    if (COMPILER=="MSVC7"):
-        wobj=PREFIX+"/tmp/"+dst[:-4]+".obj"
-        dst=PREFIX+"/tmp/"+dst
-        DependencyBuild(CompileFlexMSVC7, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc])
-    if (COMPILER=="LINUX"):
-        wobj=PREFIX+"/tmp/"+dst[:-4]+".o"
-        dst=PREFIX+"/tmp/"+dst
-        DependencyBuild(CompileFlexLINUXA, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc])
+    DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc])
 
 ########################################################################
 ##
@@ -1429,10 +1116,7 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
-        dotdots = ""
-        for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
-        cmd = "cd "+src+" & "+dotdots + PREFIX + "/bin/interrogate.exe"
-        cmd = cmd.replace("/","\\")
+        cmd = "built/bin/interrogate -srcdir "+src+" -I"+src
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
         optlevel=getoptlevel(opts,OPTIMIZE)
@@ -1440,14 +1124,14 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (optlevel==2): cmd = cmd + ' '
         if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
         if (optlevel==4): cmd = cmd + ' -DFORCE_INLINING'
-        cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc'
-        cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+        cmd = cmd + ' -Sbuilt/include/parser-inc'
+        cmd = cmd + ' -Ibuilt/python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
-                cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
-        cmd = cmd + ' -oc ' + dotdots + outc + ' -od ' + dotdots + outd
+                cmd = cmd + " -Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
+        cmd = cmd + ' -oc ' + outc + ' -od ' + outd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in ipath: cmd = cmd + ' -I' + dotdots + x
+        for x in ipath: cmd = cmd + ' -I' + x
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
@@ -1463,23 +1147,21 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
-        dotdots = ""
-        for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
-        cmd = "cd "+src+" ; "+dotdots + PREFIX + '/bin/interrogate'
+        cmd = 'built/bin/interrogate -srcdir '+src
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + ' '
         if (optlevel==2): cmd = cmd + ' '
         if (optlevel==3): cmd = cmd + ' '
         if (optlevel==4): cmd = cmd + ' '
-        cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc -S/usr/include'
-        cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+        cmd = cmd + ' -Sbuilt/include/parser-inc -S/usr/include'
+        cmd = cmd + ' -Ibuilt/python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
-                cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/linux-libs-a/" + pkg.lower() + "/include"
-        cmd = cmd + ' -oc ' + dotdots + outc + ' -od ' + dotdots + outd
+                cmd = cmd + " -Ithirdparty/linux-libs-a/" + pkg.lower() + "/include"
+        cmd = cmd + ' -oc ' + outc + ' -od ' + outd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in ipath: cmd = cmd + ' -I' + dotdots + x
+        for x in ipath: cmd = cmd + ' -I' + x
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
@@ -1494,10 +1176,17 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
 def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, also=0, skip=0):
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
+    if (COMPILER=="MSVC7"):
+        dep = "built/bin/interrogate.exe"
+        wobj = "built/tmp/"+obj
+        fn = CompileIgateMSVC7
+    if (COMPILER=="LINUXA"):
+        dep = "built/bin/interrogate"
+        wobj = "built/tmp/"+outc[:-4]+".o"
+        fn = CompileIgateLINUXA
+    if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
     ALLIN.append(outd)
-    outd = PREFIX+"/pandac/input/"+outd
-
-    # generate list of files to interrogate.
+    outd = 'built/pandac/input/'+outd
     dirlisting = os.listdir(src)
     files = fnmatch.filter(dirlisting,"*.h")
     if (skip=='ALL'): files=[]
@@ -1506,20 +1195,11 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
         for x in skip:
             if (files.count(x)!=0): files.remove(x)
     for x in also: files.append(x)
-    # calculate dependencies
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
-    dep = CxxCalcDependenciesAll(xpaths(src+"/",files,""), ipath)
-    dep.append(PREFIX+"/tmp/dtool_have_python.dat")
-    if (COMPILER=="MSVC7"):
-        dep.append(PREFIX+"/bin/interrogate.exe")
-        wobj = PREFIX+"/tmp/"+obj
-        outc = obj[:-4]+".cxx"
-        DependencyBuild(CompileIgateMSVC7, [ipath,opts,outd,outc,wobj,src,module,library,files], [outd, wobj], dep)
-    if (COMPILER=="LINUXA"):
-        dep.append(PREFIX+"/bin/interrogate")
-        wobj = PREFIX+"/tmp/"+outc[:-4]+".o"
-        outc = obj[:-2]+".cxx"
-        DependencyBuild(CompileIgateLINUXA, [ipath,opts,outd,outc,wobj,src,module,library,files], [outd, wobj], dep)
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    dep = [dep, "built/tmp/dtool_have_python.dat"]
+    dep = dep + CxxCalcDependenciesAll(xpaths(src+"/",files,""), ipath)
+    outc = "built/tmp/"+obj[:-4]+".cxx"
+    DependencyQueue(fn, [ipath,opts,outd,outc,wobj,src,module,library,files], [wobj, outd], dep)
 
 ########################################################################
 ##
@@ -1531,8 +1211,7 @@ def CompileImodMSVC7(outc, wobj, module, library, ipath, opts, files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
-        cmd = PREFIX + '/bin/interrogate_module.exe '
-        cmd = cmd.replace("/","\\")
+        cmd = 'built/bin/interrogate_module '
         cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
@@ -1542,7 +1221,7 @@ def CompileImodLINUXA(outc, wobj, module, library, ipath, opts, files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
-        cmd = PREFIX + '/bin/interrogate_module '
+        cmd = 'built/bin/interrogate_module '
         cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
@@ -1551,16 +1230,18 @@ def CompileImodLINUXA(outc, wobj, module, library, ipath, opts, files):
 def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
-    ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
-    outc = PREFIX+"/tmp/"+obj[:-4]+".cxx"
-    files = xpaths(PREFIX+"/pandac/input/",files,"")
-    dep = files + [PREFIX+"/tmp/dtool_have_python.dat"]
     if (COMPILER=="MSVC7"):
-        wobj = PREFIX+"/tmp/"+obj[:-4]+".obj"
-        DependencyBuild(CompileImodMSVC7, [outc, wobj, module, library, ipath, opts, files], [wobj], dep)
+        wobj = "built/tmp/"+obj[:-4]+".obj"
+        fn = CompileImodMSVC7
     if (COMPILER=="LINUXA"):
-        wobj = PREFIX+"/tmp/"+obj[:-4]+".o"
-        DependencyBuild(CompileImodLINUXA, [outc, wobj, module, library, ipath, opts, files], [wobj], dep)
+        wobj = "built/tmp/"+obj[:-4]+".o"
+        fn = CompileImodLINUXA
+    if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    outc = "built/tmp/"+obj[:-4]+".cxx"
+    files = xpaths("built/pandac/input/",files,"")
+    dep = files + ["built/tmp/dtool_have_python.dat"]
+    DependencyQueue(fn, [outc, wobj, module, library, ipath, opts, files], [wobj], dep)
 
 ########################################################################
 ##
@@ -1569,7 +1250,7 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
 ########################################################################
 
 def CompileLibMSVC7(wlib, wobj, opts):
-    cmd = 'link.exe /lib /nologo /OUT:' + wlib
+    cmd = 'link /lib /nologo /OUT:' + wlib
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==4): cmd = cmd + " /LTCG "
     for x in wobj: cmd = cmd + ' ' + x
@@ -1584,17 +1265,19 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
     if (lib==0): exit("syntax error in EnqueueLib directive")
 
     if (COMPILER=="MSVC7"):
-        if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".lib"
-        else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".lib"
-        wobj = xpaths(PREFIX+"/tmp/",obj,"")
-        DependencyBuild(CompileLibMSVC7, [wlib, wobj, opts], [wlib], wobj)
+        if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".lib"
+        else:                  wlib = "built/lib/" + lib[:-4] + ".lib"
+        if (SLAVEBUILD!=0) and (SLAVEBUILD!=wlib): return
+        wobj = xpaths("built/tmp/",obj,"")
+        DependencyQueue(CompileLibMSVC7, [wlib, wobj, opts], [wlib], wobj)
 
     if (COMPILER=="LINUXA"):
-        if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".a"
-        else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".a"
+        if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".a"
+        else:                  wlib = "built/lib/" + lib[:-4] + ".a"
+        if (SLAVEBUILD!=0) and (SLAVEBUILD!=wlib): return
         wobj = []
-        for x in obj: wobj.append(PREFIX + "/tmp/" + x[:-4] + ".o")
-        DependencyBuild(CompileLibLINUXA, [wlib, wobj, opts], [wlib], wobj)
+        for x in obj: wobj.append("built/tmp/" + x[:-4] + ".o")
+        DependencyQueue(CompileLibLINUXA, [wlib, wobj, opts], [wlib], wobj)
 
 ########################################################################
 ##
@@ -1603,7 +1286,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ########################################################################
 
 def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
-    cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
+    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:LINES /MAPINFO:EXPORTS"
@@ -1614,7 +1297,7 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
     if (ldef!=0): cmd = cmd + ' /DEF:"' + ldef + '"'
     cmd = cmd + ' /OUT:' + wdll
     if (wlib != 0): cmd = cmd + ' /IMPLIB:' + wlib
-    if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:' + PREFIX + '/python/libs '
+    if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:built/python/libs '
     for x in wobj: cmd = cmd + ' ' + x
     if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
     if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
@@ -1637,38 +1320,38 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
     if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
     if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
     if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/zlib/lib/libpandazlib1.lib'
-    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/png/lib/libpandapng13.lib'
-    if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/jpeg/lib/libpandajpeg.lib'
-    if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/tiff/lib/libpandatiff.lib'
+    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' thirdparty/win-libs-vc7/zlib/lib/libpandazlib1.lib'
+    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' thirdparty/win-libs-vc7/png/lib/libpandapng13.lib'
+    if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' thirdparty/win-libs-vc7/jpeg/lib/libpandajpeg.lib'
+    if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' thirdparty/win-libs-vc7/tiff/lib/libpandatiff.lib'
     if (PkgSelected(opts,"VRPN")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/vrpn.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/quat.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/vrpn.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/quat.lib'
     if (PkgSelected(opts,"FMOD")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fmod/lib/fmod.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/fmod/lib/fmod.lib'
     if (PkgSelected(opts,"MILES")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/miles/lib/mss32.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/miles/lib/mss32.lib'
     if (PkgSelected(opts,"NVIDIACG")):
         if (opts.count("CGGL")):
-            cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nvidiacg/lib/cgGL.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nvidiacg/lib/cg.lib'
+            cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgGL.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cg.lib'
     if (PkgSelected(opts,"HELIX")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/runtlib.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/syslib.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/contlib.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/debuglib.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/utillib.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/stlport_vc7.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/runtlib.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/syslib.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/contlib.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/debuglib.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/utillib.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/stlport_vc7.lib'
     if (PkgSelected(opts,"NSPR")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/nspr4.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/nspr/lib/nspr4.lib'
     if (PkgSelected(opts,"OPENSSL")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/openssl/lib/libpandassl.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/openssl/lib/libpandaeay.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/openssl/lib/libpandassl.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/openssl/lib/libpandaeay.lib'
     if (PkgSelected(opts,"FREETYPE")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/freetype.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/freetype/lib/freetype.lib'
     if (PkgSelected(opts,"FFTW")):
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
-        cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/rfftw.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/fftw.lib'
     for maya in ["MAYA5","MAYA6","MAYA65"]:
         if (PkgSelected(opts,maya)):
             cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
@@ -1686,31 +1369,30 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
     oscmd(cmd)
 
 def CompileLinkLINUXA(wdll, wobj, opts, ldef):
-    if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -L' + PREFIX + '/lib -L/usr/X11R6/lib'
-    else:                  cmd = 'g++ -shared -o ' + wdll + ' -L' + PREFIX + '/lib -L/usr/X11R6/lib'
+    if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+    else:                  cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
     for x in obj:
         suffix = x[-4:]
-        if   (suffix==".obj"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.o'
+        if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
         elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
-        elif (suffix==".lib"): cmd = cmd + ' ' + PREFIX + '/lib/' + x[:-4] + '.a'
-        elif (suffix==".ilb"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.a'
-    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fmod/lib -lfmod-3.74'
+        elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
+        elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
+    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
-        cmd = cmd + ' -L' + THIRDPARTY + 'nvidiacg/lib '
+        cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
         if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
         cmd = cmd + " -lCg"
-    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/nspr/lib -lpandanspr4'
+    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/nspr/lib -lpandanspr4'
     if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
     if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
     if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
     if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
     if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/vrpn/lib -lvrpn -lquat'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fftw/lib -lrfftw -lfftw'
+    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/vrpn/lib -lvrpn -lquat'
+    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fftw/lib -lrfftw -lfftw'
     if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
     oscmd(cmd)
-
 
 def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
     if (dll==0): exit("syntax error in EnqueueLink directive")
@@ -1719,35 +1401,61 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
         wobj = []
         for x in obj:
             suffix = x[-4:]
-            if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x)
-            elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".lib")
-            elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x)
-            elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".lib")
+            if   (suffix==".obj"): wobj.append("built/tmp/"+x)
+            elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".lib")
+            elif (suffix==".lib"): wobj.append("built/lib/"+x)
+            elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".lib")
             else: exit("unknown suffix in object list.")
         if (dll[-4:]==".exe"):
-            wdll = PREFIX+"/bin/"+dll
-            DependencyBuild(CompileLinkMSVC7, [wdll, 0, wobj, opts, ldef], [wdll], wobj)
+            wdll = "built/bin/"+dll
+            if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, ldef], [wdll], wobj)
         elif (dll[-4:]==".dll"):
-            wdll = PREFIX+"/bin/"+dll
-            wlib = PREFIX+"/lib/"+dll[:-4]+".lib"
-            DependencyBuild(CompileLinkMSVC7, [wdll, wlib, wobj, opts, ldef], [wdll, wlib], wobj)
+            wdll = "built/bin/"+dll
+            wlib = "built/lib/"+dll[:-4]+".lib"
+            if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
+            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, ldef], [wdll, wlib], wobj)
         else:
-            wdll = PREFIX+"/plugins/"+dll
-            DependencyBuild(CompileLinkMSVC7, [wdll, 0, wobj, opts, ldef], [wdll], wobj)
+            wdll = "built/plugins/"+dll
+            if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, ldef], [wdll], wobj)
 
     if (COMPILER=="LINUXA"):
-        if (dll[-4:]==".exe"): wdll = PREFIX+"/bin/"+dll[:-4]
-        else: wdll = PREFIX+"/lib/"+dll[:-4]+".so"
+        if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
+        else: wdll = "built/lib/"+dll[:-4]+".so"
         wobj = []
         for x in obj:
             suffix = x[-4:]
-            if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".o")
-            elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".so")
-            elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x[:-4]+".a")
-            elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".a")
+            if   (suffix==".obj"): wobj.append("built/tmp/"+x[:-4]+".o")
+            elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".so")
+            elif (suffix==".lib"): wobj.append("built/lib/"+x[:-4]+".a")
+            elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
             else: exit("unknown suffix in object list.")
-        DependencyBuild(CompileLinkLINUXA, [wdll, wobj, opts, ldef], [wdll], wobj)
+        if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
+        DependencyQueue(CompileLinkLINUXA, [wdll, wobj, opts, ldef], [wdll], wobj)
 
+
+##########################################################################################
+#
+# EnqueueBam
+#
+##########################################################################################
+
+def CompileBam(preconv, bam, egg):
+    if (egg[-4:] == ".flt"):
+        oscmd("built/bin/flt2egg -pr " + preconv + " -o built/tmp/tmp.egg" + " " + egg)
+        oscmd("built/bin/egg2bam -o " + bam + " built/tmp/tmp.egg")
+    else:
+        oscmd("built/bin/egg2bam -pr " + preconv + " -o " + bam + " " + egg)
+
+def EnqueueBam(preconv, bam, egg):
+    if (sys.platform == "win32"):
+        flt2egg = "built/bin/flt2egg.exe"
+        egg2bam = "built/bin/egg2bam.exe"
+    else:
+        flt2egg = "built/bin/flt2egg"
+        egg2bam = "built/bin/egg2bam"
+    DependencyQueue(CompileBam, [preconv, bam, egg], [bam], [egg, flt2egg, egg2bam])
 
 ##########################################################################################
 #
@@ -1827,16 +1535,227 @@ CxxIgnoreHeader["algorithm"] = 1
 
 ##########################################################################################
 #
+# Create the directory tree
+#
+##########################################################################################
+
+MakeDirectory("built")
+MakeDirectory("built/bin")
+MakeDirectory("built/lib")
+MakeDirectory("built/etc")
+MakeDirectory("built/plugins")
+MakeDirectory("built/include")
+MakeDirectory("built/include/parser-inc")
+MakeDirectory("built/include/parser-inc/openssl")
+MakeDirectory("built/include/parser-inc/Cg")
+MakeDirectory("built/include/openssl")
+MakeDirectory("built/tmp")
+MakeDirectory("built/models")
+MakeDirectory("built/models/audio")
+MakeDirectory("built/models/audio/sfx")
+MakeDirectory("built/models/icons")
+MakeDirectory("built/models/maps")
+MakeDirectory("built/models/misc")
+MakeDirectory("built/models/gui")
+
+if (OMIT.count("PYTHON")==0):
+    MakeDirectory("built/direct")
+    MakeDirectory("built/pandac")
+    MakeDirectory("built/pandac/input")
+
+########################################################################
+#
+# If using the Master-Slave build system,
+# receive command-line arguments from master to slave
+#
+########################################################################
+
+if (SLAVEBUILD!=0):
+    try:
+        slavectrl=open("built/tmp/slave-control","rb")
+        OMIT     = cPickle.load(slavectrl)
+        OPTIMIZE = cPickle.load(slavectrl)
+        slavectrl.close()
+    except: exit("Cannot read from built/tmp/slave-control")
+
+if (SLAVEFILE!=0):
+    try:
+        slavectrl=open("built/tmp/slave-control","wb")
+        cPickle.dump(OMIT,     slavectrl, 1)
+        cPickle.dump(OPTIMIZE, slavectrl, 1)
+        slavectrl.close()
+    except: exit("Cannot write to built/tmp/slave-control")
+
+##########################################################################################
+#
+# Generate dtool_config.h and dtool_have_xxx.dat
+#
+##########################################################################################
+
+DTOOLDEFAULTS=[
+    #_Variable_________________________Windows___________________Unix__________
+    ("HAVE_PYTHON",                    '1',                      '1'),
+    ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
+    ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
+    ("HAVE_MAYA",                      '1',                      '1'),
+    ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
+    ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
+    ("SSL_097",                        'UNDEF',                  'UNDEF'),
+    ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
+    ("HAVE_GL",                        '1',                      '1'),
+    ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
+    ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
+    ("HAVE_GLX",                       'UNDEF',                  '1'),
+    ("HAVE_WGL",                       '1',                      'UNDEF'),
+    ("HAVE_DX",                        '1',                      'UNDEF'),
+    ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
+    ("HAVE_AUDIO",                     '1',                      '1'),
+    ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
+    ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
+    ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
+    ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
+    ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
+    ("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
+    ("EXPORT_TEMPLATES",               'yes',                    'yes'),
+    ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
+    ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
+    ("DEFAULT_PATHSEP",                '";"',                    '":"'),
+    ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
+    ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
+    ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
+    ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
+    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+    ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
+    ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
+    ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
+    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+    ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
+    ("HAVE_NAMESPACE",                 '1',                      '1'),
+    ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
+    ("HAVE_WCHAR_T",                   '1',                      '1'),
+    ("HAVE_WSTRING",                   '1',                      '1'),
+    ("HAVE_TYPENAME",                  '1',                      '1'),
+    ("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
+    ("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
+    ("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
+    ("HAVE_GETOPT",                    'UNDEF',                  '1'),
+    ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
+    ("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
+    ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
+    ("HAVE_STREAMSIZE",                '1',                      '1'),
+    ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
+    ("HAVE_IOS_BINARY",                '1',                      '1'),
+    ("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
+    ("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
+    ("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
+    ("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
+    ("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
+    ("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
+    ("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
+    ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
+    ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
+    ("HAVE_IO_H",                      '1',                      'UNDEF'),
+    ("HAVE_IOSTREAM",                  '1',                      '1'),
+    ("HAVE_MALLOC_H",                  '1',                      '1'),
+    ("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
+    ("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
+    ("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
+    ("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
+    ("HAVE_SSTREAM",                   '1',                      '1'),
+    ("HAVE_NEW",                       '1',                      '1'),
+    ("HAVE_SYS_TYPES_H",               '1',                      '1'),
+    ("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
+    ("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
+    ("HAVE_UTIME_H",                   'UNDEF',                  '1'),
+    ("HAVE_GLOB_H",                    'UNDEF',                  '1'),
+    ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
+    ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
+    ("HAVE_RTTI",                      '1',                      '1'),
+    ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
+    ("OLD_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+    ("GNU_STYLE_ALLOCATOR",            'UNDEF',                  '1'),
+    ("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+    ("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
+    ("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
+    ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
+    ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
+    ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
+    ]
+
+def CalculateDtoolConfig():
+    dtoolconfig={}
+    if (sys.platform == "win32"):
+        for key,win,unix in DTOOLDEFAULTS:
+            dtoolconfig[key] = win
+    else:
+        for key,win,unix in DTOOLDEFAULTS:
+            dtoolconfig[key] = unix
+    
+    for x in PACKAGES:
+        if (OMIT.count(x)==0):
+            if (dtoolconfig.has_key("HAVE_"+x)):
+                dtoolconfig["HAVE_"+x] = '1'
+    
+    dtoolconfig["HAVE_NET"] = dtoolconfig["HAVE_NSPR"]
+    
+    if (OMIT.count("NVIDIACG")==0):
+        dtoolconfig["HAVE_CG"] = '1'
+        dtoolconfig["HAVE_CGGL"] = '1'
+    
+    if (OPTIMIZE <= 3):
+        if (dtoolconfig["HAVE_NET"] != 'UNDEF'):
+            dtoolconfig["DO_PSTATS"] = '1'
+    
+    if (OPTIMIZE <= 3):
+        dtoolconfig["DO_COLLISION_RECORDING"] = '1'
+    
+    #if (OPTIMIZE <= 2):
+    #    dtoolconfig["TRACK_IN_INTERPRETER"] = '1'
+    
+    if (OPTIMIZE <= 3):
+        dtoolconfig["DO_MEMORY_USAGE"] = '1'
+    
+    #if (OPTIMIZE <= 1):
+    #    dtoolconfig["DO_PIPELINING"] = '1'
+    
+    if (OPTIMIZE <= 3):
+        dtoolconfig["NOTIFY_DEBUG"] = '1'
+    
+    conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
+    for key,win,unix in DTOOLDEFAULTS:
+        val = dtoolconfig[key]
+        if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
+        else:                conf = conf + "#define " + key + " " + val + "\n"
+    return conf
+
+if (SLAVEBUILD==0):
+    for x in PACKAGES:
+        if (OMIT.count(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
+        else:               ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
+    ConditionalWriteFile('built/include/dtool_config.h', CalculateDtoolConfig())
+
+##########################################################################################
+#
 # Generate pandaVersion.h, pythonversion, null.cxx
 #
 ##########################################################################################
 
-VERSION1=int(VERSION.split(".")[0])
-VERSION2=int(VERSION.split(".")[1])
-VERSION3=int(VERSION.split(".")[2])
-NVERSION=VERSION1*1000000+VERSION2*1000+VERSION3
-
-conf="""
+PANDAVERSION_H="""
 #define PANDA_MAJOR_VERSION VERSION1
 #define PANDA_MINOR_VERSION VERSION2
 #define PANDA_SEQUENCE_VERSION VERSION2
@@ -1846,26 +1765,12 @@ conf="""
 #define PANDA_DISTRIBUTOR "makepanda"
 """
 
-conf = conf.replace("VERSION1",str(VERSION1))
-conf = conf.replace("VERSION2",str(VERSION2))
-conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(NVERSION))
-
-ConditionalWriteFile(PREFIX+'/include/pandaVersion.h',conf)
-
-conf="""
+CHECKPANDAVERSION_CXX="""
 # include "dtoolbase.h"
 EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3 = 0;
 """
 
-conf = conf.replace("VERSION1",str(VERSION1))
-conf = conf.replace("VERSION2",str(VERSION2))
-conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(NVERSION))
-
-ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.cxx',conf)
-
-conf="""
+CHECKPANDAVERSION_H="""
 # include "dtoolbase.h"
 extern EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3;
 # ifndef WIN32
@@ -1877,17 +1782,36 @@ static int check_panda_version = panda_version_VERSION1_VERSION2_VERSION3;
 # endif
 """
 
-conf = conf.replace("VERSION1",str(VERSION1))
-conf = conf.replace("VERSION2",str(VERSION2))
-conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(NVERSION))
+def CreatePandaVersionFiles():
+    version1=int(VERSION.split(".")[0])
+    version2=int(VERSION.split(".")[1])
+    version3=int(VERSION.split(".")[2])
+    nversion=version1*1000000+version2*1000+version3
+    
+    pandaversion_h = PANDAVERSION_H.replace("VERSION1",str(version1))
+    pandaversion_h = pandaversion_h.replace("VERSION2",str(version2))
+    pandaversion_h = pandaversion_h.replace("VERSION3",str(version3))
+    pandaversion_h = pandaversion_h.replace("NVERSION",str(nversion))
+    
+    checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("VERSION1",str(version1))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION2",str(version2))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION3",str(version3))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("NVERSION",str(nversion))
+    
+    checkpandaversion_h = CHECKPANDAVERSION_H.replace("VERSION1",str(version1))
+    checkpandaversion_h = checkpandaversion_h.replace("VERSION2",str(version2))
+    checkpandaversion_h = checkpandaversion_h.replace("VERSION3",str(version3))
+    checkpandaversion_h = checkpandaversion_h.replace("NVERSION",str(nversion))
 
-ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
+    ConditionalWriteFile('built/include/pandaVersion.h',        pandaversion_h)
+    ConditionalWriteFile('built/include/checkPandaVersion.cxx', checkpandaversion_cxx)
+    ConditionalWriteFile('built/include/checkPandaVersion.h',   checkpandaversion_h)
+    if (OMIT.count("PYTHON")==0):
+        ConditionalWriteFile("built/tmp/pythonversion", os.path.basename(PYTHONSDK))
+    ConditionalWriteFile("built/tmp/null.cxx","")
 
-if (OMIT.count("PYTHON")==0):
-    ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PYTHONSDK))
 
-ConditionalWriteFile(PREFIX+"/tmp/null.cxx","")
+if (SLAVEBUILD==0): CreatePandaVersionFiles()
 
 ##########################################################################################
 #
@@ -1903,31 +1827,9 @@ if    (os.path.isdir(srcdir1)): __path__[0] = srcdir1
 elif  (os.path.isdir(srcdir2)): __path__[0] = srcdir2
 else: exit("Cannot find the 'direct' tree")
 """
-if (OMIT.count("PYTHON")==0):
-    ConditionalWriteFile(PREFIX+'/direct/__init__.py', DIRECTINIT)
 
-##########################################################################################
-#
-# Generate dtool_have_xxx.dat
-#
-##########################################################################################
-
-for x in PACKAGES:
-    if (OMIT.count(x)): ConditionalWriteFile(PREFIX+'/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-    else:               ConditionalWriteFile(PREFIX+'/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
-
-##########################################################################################
-#
-# Generate dtool_config.h
-#
-##########################################################################################
-
-conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
-for key,win,unix in DTOOLDEFAULTS:
-    val = DTOOLCONFIG[key]
-    if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-    else:                conf = conf + "#define " + key + " " + val + "\n"
-ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
+if (SLAVEBUILD==0) and (OMIT.count("PYTHON")==0):
+    ConditionalWriteFile('built/direct/__init__.py', DIRECTINIT)
 
 ##########################################################################################
 #
@@ -1935,19 +1837,20 @@ ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 #
 ##########################################################################################
 
-CONFAUTOPRC=ReadFile("makepanda/confauto.in")
-if (os.path.isfile("makepanda/myconfig.in")):
-  CONFIGPRC=ReadFile("makepanda/myconfig.in")
-else:
-  CONFIGPRC=ReadFile("makepanda/config.in")
-
-if (sys.platform != "win32"):
-    CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx9","")
-    CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx8","")
-    CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx7","")
-
-ConditionalWriteFile(PREFIX + "/etc/Confauto.prc", CONFAUTOPRC)
-ConditionalWriteFile(PREFIX + "/etc/Config.prc", CONFIGPRC)
+if (SLAVEBUILD==0):
+    confautoprc=ReadFile("makepanda/confauto.in")
+    if (os.path.isfile("makepanda/myconfig.in")):
+      configprc=ReadFile("makepanda/myconfig.in")
+    else:
+      configprc=ReadFile("makepanda/config.in")
+    
+    if (sys.platform != "win32"):
+        confautoprc = confautoprc.replace("aux-display pandadx9","")
+        confautoprc = confautoprc.replace("aux-display pandadx8","")
+        confautoprc = confautoprc.replace("aux-display pandadx7","")
+    
+    ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
+    ConditionalWriteFile("built/etc/Config.prc", configprc)
 
 ##########################################################################################
 #
@@ -1955,19 +1858,19 @@ ConditionalWriteFile(PREFIX + "/etc/Config.prc", CONFIGPRC)
 #
 ##########################################################################################
 
-for pkg in (PACKAGES + ["extras"]):
-    if (OMIT.count(pkg)==0):
-        if (COMPILER == "MSVC7"):
-            if (os.path.exists(THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin")):
-                CopyAllFiles(PREFIX+"/bin/",THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin/")
-        if (COMPILER == "LINUXA"):
-            if (os.path.exists(THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib")):
-                CopyAllFiles(PREFIX+"/lib/",THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib/")
-
-if (sys.platform == "win32"):
-    CopyFile(PREFIX+'/bin/', 'thirdparty/win-python/python22.dll')
-    if (OMIT.count("PYTHON")==0):
-        CopyTree(PREFIX+'/python', 'thirdparty/win-python')
+if (SLAVEBUILD==0):
+    for pkg in (PACKAGES + ["extras"]):
+        if (OMIT.count(pkg)==0):
+            if (COMPILER == "MSVC7"):
+                if (os.path.exists("thirdparty/win-libs-vc7/"+pkg.lower()+"/bin")):
+                    CopyAllFiles("built/bin/","thirdparty/win-libs-vc7/"+pkg.lower()+"/bin/")
+            if (COMPILER == "LINUXA"):
+                if (os.path.exists("thirdparty/linux-libs-a/"+pkg.lower()+"/lib")):
+                    CopyAllFiles("built/lib/","thirdparty/linux-libs-a/"+pkg.lower()+"/lib/")
+    if (sys.platform == "win32"):
+        CopyFile('built/bin/', 'thirdparty/win-python/python24.dll')
+        if (OMIT.count("PYTHON")==0):
+            CopyTree('built/python', 'thirdparty/win-python')
 
 ########################################################################
 ##
@@ -1975,16 +1878,16 @@ if (sys.platform == "win32"):
 ##
 ########################################################################
 
-CopyFile(PREFIX+"/", "doc/LICENSE")
-CopyFile(PREFIX+"/", "doc/ReleaseNotes")
-CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".mel")
-CopyAllFiles(PREFIX+"/plugins/",  "pandatool/src/scripts/", ".ms")
-if (OMIT.count("PYTHON")==0):
-    CopyTree(PREFIX+'/Pmw',         'thirdparty/Pmw')
-    CopyTree(PREFIX+'/epydoc',      'thirdparty/epydoc')
-    CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
-
-ConditionalWriteFile(PREFIX+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
+if (SLAVEBUILD==0):
+    CopyFile("built/", "doc/LICENSE")
+    CopyFile("built/", "doc/ReleaseNotes")
+    CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
+    CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
+    if (OMIT.count("PYTHON")==0):
+        CopyTree('built/Pmw',         'thirdparty/Pmw')
+        CopyTree('built/epydoc',      'thirdparty/epydoc')
+        CopyTree('built/SceneEditor', 'SceneEditor')
+    ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
 #
@@ -1992,10 +1895,11 @@ ConditionalWriteFile(PREFIX+'/include/ctl3d.h', '/* dummy file to make MAX happy
 #
 ########################################################################
 
-CopyAllFiles(PREFIX+'/include/parser-inc/','dtool/src/parser-inc/')
-CopyAllFiles(PREFIX+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
-CopyFile(PREFIX+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
-CopyFile(PREFIX+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
+if (SLAVEBUILD==0):
+    CopyAllFiles('built/include/parser-inc/','dtool/src/parser-inc/')
+    CopyAllFiles('built/include/parser-inc/openssl/','dtool/src/parser-inc/')
+    CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
+    CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 
 ########################################################################
 #
@@ -2003,8 +1907,9 @@ CopyFile(PREFIX+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 #
 ########################################################################
 
-print "Generating dependencies and checking file dates..."
-sys.stdout.flush()
+if (SLAVEBUILD==0):
+    print "Generating dependencies..."
+    sys.stdout.flush()
 
 #
 # DIRECTORY: dtool/src/dtoolbase/
@@ -2012,9 +1917,16 @@ sys.stdout.flush()
 
 CopyAllHeaders('dtool/src/dtoolbase')
 IPATH=['dtool/src/dtoolbase']
-OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT4']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
+OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
+if (sys.platform == "win32"):
+    OPTS.append("PTMALLOC2")
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='ptmalloc2_smp.c', obj='dtoolbase_allocator.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
+else:
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='null.cxx', obj='dtoolbase_allocator.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
+
 
 #
 # DIRECTORY: dtool/src/dtoolutil/
@@ -2022,8 +1934,8 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.ob
 
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
 IPATH=['dtool/src/dtoolutil']
-OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT4']
-CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_src.cxx')
+OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
+CopyFile('built/include/','dtool/src/dtoolutil/vector_src.cxx')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt.c',             obj='dtoolutil_gnu_getopt.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt1.c',            obj='dtoolutil_gnu_getopt1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite.cxx',  obj='dtoolutil_composite.obj')
@@ -2034,14 +1946,15 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite.cxx',  obj='dtooluti
 
 CopyAllHeaders('dtool/metalibs/dtool')
 IPATH=['dtool/metalibs/dtool']
-OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtool.cxx', obj='dtool_dtool.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libdtool.dll', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libdtool.dll', obj=[
              'dtool_dtool.obj',
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
              'dtoolutil_composite.obj',
              'dtoolbase_dtoolbase.obj',
+             'dtoolbase_allocator.obj',
              'dtoolbase_indent.obj',
 ])
 
@@ -2051,7 +1964,7 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libdtool.dll', obj=[
 
 CopyAllHeaders('dtool/src/cppparser', skip="ALL")
 IPATH=['dtool/src/cppparser']
-OPTS=['NSPR','OPT4']
+OPTS=['NSPR','OPT3']
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='cppyy', src='cppBison.yxx', dsth='cppBison.h', obj='cppParser_cppBison.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite.cxx', obj='cppParser_composite.obj')
 EnqueueLib(lib='libcppParser.ilb', obj=[
@@ -2065,7 +1978,7 @@ EnqueueLib(lib='libcppParser.ilb', obj=[
 
 CopyAllHeaders('dtool/src/prc')
 IPATH=['dtool/src/prc']
-OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite.cxx', obj='prc_composite.obj')
 
 #
@@ -2074,7 +1987,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite.cxx', obj='prc_composite.o
 
 CopyAllHeaders('dtool/src/dconfig')
 IPATH=['dtool/src/dconfig']
-OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite.cxx', obj='dconfig_composite.obj')
 
 #
@@ -2083,7 +1996,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite.cxx', obj='dconfig_com
 
 CopyAllHeaders('dtool/src/interrogatedb')
 IPATH=['dtool/src/interrogatedb']
-OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite.cxx', obj='interrogatedb_composite.obj')
 
 #
@@ -2092,12 +2005,12 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite.cxx', obj='inter
 
 CopyAllHeaders('dtool/metalibs/dtoolconfig')
 IPATH=['dtool/metalibs/dtoolconfig']
-OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT3']
 SRCFILE="pydtool.cxx"
 if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=[PREFIX+"/tmp/dtool_have_python.dat"])
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='libdtoolconfig.dll', obj=[
+EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=["built/tmp/dtool_have_python.dat"])
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='libdtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
              'interrogatedb_composite.obj',
@@ -2112,9 +2025,9 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='libdtoolconfig.dll'
 
 CopyAllHeaders('dtool/src/pystub')
 IPATH=['dtool/src/pystub']
-OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT4']
+OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pystub.cxx', obj='pystub_pystub.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libpystub.dll', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libpystub.dll', obj=[
              'pystub_pystub.obj',
              'libdtool.dll',
 ])
@@ -2125,9 +2038,9 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT4'], dll='libpystub.dll', obj=[
 
 CopyAllHeaders('dtool/src/interrogate')
 IPATH=['dtool/src/interrogate', 'dtool/src/cppparser', 'dtool/src/interrogatedb']
-OPTS=['NSPR', 'OPT4']
+OPTS=['NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite.cxx', obj='interrogate_composite.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='interrogate.exe', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='interrogate.exe', obj=[
              'interrogate_composite.obj',
              'libcppParser.ilb',
              'libpystub.dll',
@@ -2136,7 +2049,7 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='interrogate.exe', o
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='interrogate_module.exe', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
              'libcppParser.ilb',
              'libpystub.dll',
@@ -2145,7 +2058,7 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='interrogate_module.
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT4'], dll='parse_file.exe', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
              'libcppParser.ilb',
              'libpystub.dll',
@@ -2479,10 +2392,11 @@ if (OMIT.count("FREETYPE")==0):
     IPATH=['panda/src/pnmtext']
     OPTS=['BUILDING_PANDA', 'NSPR', 'FREETYPE']
     CopyAllHeaders('panda/src/pnmtext')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_pnmtext.cxx', obj='pnmtext_config_pnmtext.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='freetypeFont.cxx', obj='pnmtext_freetypeFont.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextGlyph.cxx', obj='pnmtext_pnmTextGlyph.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextMaker.cxx', obj='pnmtext_pnmTextMaker.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmtext_composite.cxx', obj='pnmtext_composite.obj')
+#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_pnmtext.cxx', obj='pnmtext_config_pnmtext.obj')
+#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='freetypeFont.cxx', obj='pnmtext_freetypeFont.obj')
+#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextGlyph.cxx', obj='pnmtext_pnmTextGlyph.obj')
+#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmTextMaker.cxx', obj='pnmtext_pnmTextMaker.obj')
 
 #
 # DIRECTORY: panda/src/text/
@@ -2682,19 +2596,20 @@ if OMIT.count("NSPR")==0:
     OBJFILES.append("libnet_igate.obj")
     INFILES.append("libnet.in")
 if OMIT.count("FREETYPE")==0:
-    OBJFILES.append("pnmtext_config_pnmtext.obj")
-    OBJFILES.append("pnmtext_freetypeFont.obj")
-    OBJFILES.append("pnmtext_pnmTextGlyph.obj")
-    OBJFILES.append("pnmtext_pnmTextMaker.obj")
+    OBJFILES.append("pnmtext_composite.obj")
+#    OBJFILES.append("pnmtext_config_pnmtext.obj")
+#    OBJFILES.append("pnmtext_freetypeFont.obj")
+#    OBJFILES.append("pnmtext_pnmTextGlyph.obj")
+#    OBJFILES.append("pnmtext_pnmTextMaker.obj")
 CopyAllHeaders('panda/metalibs/panda')
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpanda_module.obj',
             module='panda', library='libpanda', files=INFILES)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
-        PREFIX+'/tmp/dtool_have_helix.dat',
-        PREFIX+'/tmp/dtool_have_vrpn.dat',
-        PREFIX+'/tmp/dtool_have_nspr.dat',
-        PREFIX+'/tmp/dtool_have_freetype.dat',
+        'built/tmp/dtool_have_helix.dat',
+        'built/tmp/dtool_have_vrpn.dat',
+        'built/tmp/dtool_have_nspr.dat',
+        'built/tmp/dtool_have_freetype.dat',
 ])
 
 #
@@ -2911,18 +2826,27 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg2pg.in', obj='libegg2pg_igate.o
 IPATH=['panda/src/framework']
 OPTS=['BUILDING_FRAMEWORK', 'NSPR']
 CopyAllHeaders('panda/src/framework')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_framework.cxx', obj='framework_config_framework.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaFramework.cxx', obj='framework_pandaFramework.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='windowFramework.cxx', obj='framework_windowFramework.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='framework_composite.cxx', obj='framework_composite.obj')
 EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
-             'framework_config_framework.obj',
-             'framework_pandaFramework.obj',
-             'framework_windowFramework.obj',
+             'framework_composite.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
              'libdtoolconfig.dll',
              'libdtool.dll',
              ])
+
+# EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_framework.cxx', obj='framework_config_framework.obj')
+# EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaFramework.cxx', obj='framework_pandaFramework.obj')
+# EnqueueCxx(ipath=IPATH, opts=OPTS, src='windowFramework.cxx', obj='framework_windowFramework.obj')
+# EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
+#              'framework_config_framework.obj',
+#              'framework_pandaFramework.obj',
+#              'framework_windowFramework.obj',
+#              'libpanda.dll',
+#              'libpandaexpress.dll',
+#              'libdtoolconfig.dll',
+#              'libdtool.dll',
+#              ])
 
 #
 # DIRECTORY: panda/metalibs/pandafx/
@@ -3958,7 +3882,7 @@ for VER in ["6", "7"]:
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders('pandatool/src/maxegg')
-    CopyFile(PREFIX+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
+    CopyFile("built/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxEggLoader.cxx',obj='maxegg'+VER+'_loader.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     EnqueueLink(opts=OPTS, dll='maxegg'+VER+'.dlo', ldef="pandatool/src/maxegg/maxEgg.def", obj=[
@@ -3985,7 +3909,7 @@ for VER in ["6", "7"]:
     IPATH=['pandatool/src/maxprogs']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyAllHeaders('pandatool/src/maxprogs')
-    CopyFile(PREFIX+"/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
+    CopyFile("built/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxprogs'+VER+'_maxeggimport.obj')
     EnqueueLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxprogs/maxEggImport.def", obj=[
                 'maxegg'+VER+'_loader.obj',
@@ -4164,7 +4088,6 @@ for VER in ["5","6","65"]:
                  'libdtool.dll',
                  'libpystub.dll',
     ])
-    OPTS=['MAYA'+VER, 'NSPR']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
     EnqueueLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'maya2egg'+VER+'_mayaToEgg.obj',
@@ -4196,10 +4119,10 @@ for VER in ["5","6","65"]:
                  'libdtool.dll',
                  'libpystub.dll',
     ])
-#    EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-#    EnqueueLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
-#                 'mayasavepview'+VER+'_mayaSavePview.obj',
-#    ])
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
+    EnqueueLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+                 'mayasavepview'+VER+'_mayaSavePview.obj',
+    ])
 
 
 #
@@ -4529,6 +4452,151 @@ if (OMIT.count("PANDAAPP")==0):
     ])
 
 
+#
+# Generate the models directory
+#
+
+if (OMIT.count("PANDATOOL")==0):
+    EnqueueBam("../=", "built/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+    EnqueueBam("../=", "built/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
+    EnqueueBam("../=", "built/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
+    EnqueueBam("../=", "built/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
+    EnqueueBam("../=", "built/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
+    EnqueueBam("../=", "built/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
+    EnqueueBam("../=", "built/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
+    EnqueueBam("../=", "built/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
+    EnqueueBam("../=", "built/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
+    EnqueueBam("../=", "built/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
+    EnqueueBam("../=", "built/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
+    EnqueueBam("../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
+    EnqueueBam("../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
+    EnqueueBam("../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
+    #EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+    
+    CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+    CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
+    
+    CopyAllFiles("built/models/",            "models/",                ".egg")
+    CopyAllFiles("built/models/",            "models/",                ".bam")
+    
+    CopyAllFiles("built/models/maps/",       "models/maps/",           ".jpg")
+    CopyAllFiles("built/models/maps/",       "models/maps/",           ".png")
+    CopyAllFiles("built/models/maps/",       "models/maps/",           ".rgb")
+    CopyAllFiles("built/models/maps/",       "models/maps/",           ".rgba")
+    
+    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".jpg")
+    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".png")
+    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgb")
+    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgba")
+
+##########################################################################################
+#
+# Dependency-Based Distributed Build System.
+#
+##########################################################################################
+
+if (SLAVEBUILD!=0):
+    for task in DEPENDENCYQUEUE:
+        targets=task[2]
+        if (targets.count(SLAVEBUILD)):
+            apply(task[0], task[1])
+    sys.exit(0)
+
+def BuildWorker(taskqueue, donequeue, slave):
+    print "Slave online: "+slave
+    while (1):
+        task = taskqueue.get()
+        sys.stdout.flush()
+        if (task == 0): return
+        if (slave=="local"):
+            apply(task[0],task[1])
+        else:
+            targetzero = task[2][0]
+            
+            oscmd(slave.replace("OPTIONS","--slavebuild "+targetzero))
+        donequeue.put(task)
+
+def AllSourcesReady(task, pending):
+    sources = task[3]
+    for x in sources:
+        if (pending.has_key(x)):
+            return 0
+    return 1
+
+def ParallelMake(tasklist):
+    global BUILTANYTHING
+    # Read the slave-file.
+    slaves = []
+    if (SLAVEFILE!=0):
+        try:
+            slavefile = open(SLAVEFILE, "r")
+            for line in slavefile:
+                line = line.strip(" \t\r\n")
+                if (line != ""): slaves.append(line)
+        except: exit("Could not read slave-file")
+    else:
+        for i in range(THREADCOUNT):
+            slaves.append("local")
+    # create the communication queues.
+    donequeue=Queue.Queue()
+    taskqueue=Queue.Queue()
+    # build up a table listing all the pending targets
+    pending = {}
+    for task in tasklist:
+        for target in task[2]:
+            pending[target] = 1
+    # create the workers
+    for slave in slaves:
+        th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue,slave])
+        th.setDaemon(1)
+        th.start()
+    # feed tasks to the workers.
+    tasksqueued = 0
+    while (1):
+        if (tasksqueued < len(slaves)*2):
+            extras = []
+            for task in tasklist:
+                if (tasksqueued < len(slaves)*3) & (AllSourcesReady(task, pending)):
+                    if (older(task[2], task[3])):
+                        tasksqueued += 1
+                        BUILTANYTHING=1
+                        taskqueue.put(task)
+                    else:
+                        for target in task[2]:
+                            del pending[target]
+                else:
+                    extras.append(task)
+            tasklist = extras
+        sys.stdout.flush()
+        if (tasksqueued == 0): break
+        donetask = donequeue.get()
+        sys.stdout.flush()
+        tasksqueued -= 1
+        for target in donetask[2]:
+            updatefiledate(target)
+            del pending[target]
+    # kill the workers.
+    for slave in slaves:
+        taskqueue.put(0)
+    # make sure there aren't any unsatisfied tasks
+    if (len(tasklist)>0):
+        exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
+
+def SequentialMake(tasklist):
+    global BUILTANYTHING
+    for task in tasklist:
+        if (older(task[2], task[3])):
+            BUILTANYTHING=1
+            apply(task[0], task[1])
+            for target in task[2]:
+                updatefiledate(target)
+
+def RunDependencyQueue(tasklist):
+    if (SLAVEFILE!=0) or (THREADCOUNT!=0):
+        ParallelMake(tasklist)
+    else:
+        SequentialMake(tasklist)
+
 RunDependencyQueue(DEPENDENCYQUEUE)
 
 ##########################################################################################
@@ -4537,59 +4605,6 @@ RunDependencyQueue(DEPENDENCYQUEUE)
 #
 ##########################################################################################
 
-def CompileBAM(preconv, bam, egg):
-    FLT2EGG = PREFIX+"/bin/flt2egg"
-    EGG2BAM = PREFIX+"/bin/egg2bam"
-    if (sys.platform == "win32"):
-        FLT2EGG=FLT2EGG.replace("/","\\")+".exe"
-        EGG2BAM=EGG2BAM.replace("/","\\")+".exe"
-    if (older([bam], egg)):
-        if (egg[-4:]==".flt"):
-            oscmd(FLT2EGG + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
-            oscmd(EGG2BAM + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
-        else:
-            oscmd(EGG2BAM + " -pr " + preconv + " -o " + bam + " " + egg)
-
-MakeDirectory(PREFIX+"/models")
-MakeDirectory(PREFIX+"/models/audio")
-MakeDirectory(PREFIX+"/models/audio/sfx")
-MakeDirectory(PREFIX+"/models/icons")
-MakeDirectory(PREFIX+"/models/maps")
-MakeDirectory(PREFIX+"/models/misc")
-MakeDirectory(PREFIX+"/models/gui")
-
-CopyAllFiles(PREFIX+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
-CopyAllFiles(PREFIX+"/models/icons/",      "dmodels/src/icons/",     ".gif")
-
-CopyAllFiles(PREFIX+"/models/",            "models/",                ".egg")
-CopyAllFiles(PREFIX+"/models/",            "models/",                ".bam")
-
-CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".jpg")
-CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".png")
-CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgb")
-CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgba")
-
-CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
-CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".png")
-CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
-CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
-
-CompileBAM("../=", PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
-
-CompileBAM("../=", PREFIX+"/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
-CompileBAM("../=", PREFIX+"/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
-CompileBAM("../=", PREFIX+"/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
-CompileBAM("../=", PREFIX+"/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
-CompileBAM("../=", PREFIX+"/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
-CompileBAM("../=", PREFIX+"/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
-CompileBAM("../=", PREFIX+"/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
-CompileBAM("../=", PREFIX+"/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
-CompileBAM("../=", PREFIX+"/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
-CompileBAM("../=", PREFIX+"/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
-CompileBAM("../=", PREFIX+"/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
-CompileBAM("../=", PREFIX+"/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
-CompileBAM("../=", PREFIX+"/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
-CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
 
 ##########################################################################################
 #
@@ -4598,16 +4613,10 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 ##########################################################################################
 
 if (OMIT.count("PYTHON")==0):
-    if (older([PREFIX+'/pandac/PandaModules.py'],xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
-        if (sys.platform=="win32"):
-            if (GENMAN): cmd = PREFIX+"/bin/genpycode.exe -m"
-            else       : cmd = PREFIX+"/bin/genpycode.exe"
-            oscmd(cmd.replace("/","\\"))
-        else:
-            if (GENMAN): cmd = PREFIX+"/bin/genpycode -m"
-            else       : cmd = PREFIX+"/bin/genpycode"
-            oscmd(cmd.replace("/","\\"))
-        updatefiledate(PREFIX+'/pandac/PandaModules.py')
+    if (older(['built/pandac/PandaModules.py'],xpaths("built/pandac/input/",ALLIN,""))):
+        if (GENMAN): oscmd("built/bin/genpycode -m")
+        else       : oscmd("built/bin/genpycode")
+        updatefiledate('built/pandac/PandaModules.py')
 
 ########################################################################
 ##
@@ -4618,7 +4627,7 @@ if (OMIT.count("PYTHON")==0):
 try: icache = open(iCachePath,'wb')
 except: icache = 0
 if (icache!=0):
-    cPickle.dump(CxxIncludeCache, icache, 1)
+    cPickle.dump(CXXINCLUDECACHE, icache, 1)
     icache.close()
 
 ##########################################################################################
@@ -4640,7 +4649,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
     psource=os.path.abspath(".")
-    panda=os.path.abspath(PREFIX)
+    panda=os.path.abspath("built")
     cmd="thirdparty/win-nsis/makensis.exe /V2 "
     cmd=cmd+'/DCOMPRESSOR="'+COMPRESSOR+'" '
     cmd=cmd+'/DNAME="'+fullname+'" '
@@ -4656,7 +4665,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     cmd=cmd+'/DPSOURCE="'+psource+'" '
     cmd=cmd+'/DPYEXTRAS="'+psource+'\\thirdparty\\win-extras" '
     cmd=cmd+'"'+psource+'\\direct\\src\\directscripts\\packpanda.nsi"'
-    oscmd(cmd)
+    oscmd( cmd)
     os.rename("nsis-output.exe", file)
 
 def MakeInstallerDPKG(file):
@@ -4674,7 +4683,7 @@ Description: The panda3D free 3D engine
 """
     import compileall
     PYTHONV=os.path.basename(PYTHONSDK)
-    if (os.path.isdir("debtmp")): oscmd("chmod -R 755 debtmp")
+    if (os.path.isdir("debtmp")): oscmd( "chmod -R 755 debtmp")
     oscmd("rm -rf debtmp data.tar.gz control.tar.gz ")
     oscmd("mkdir -p debtmp/usr/bin")
     oscmd("mkdir -p debtmp/usr/include")

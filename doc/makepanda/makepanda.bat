@@ -9,8 +9,8 @@ REM
 if not exist makepanda\makepanda.py goto :missing1
 if not exist thirdparty\win-python\python.exe goto :missing2
 thirdparty\win-python\python.exe makepanda\makepanda.py %*
+if errorlevel 1 if x%1 == x--slavebuild exit 1
 goto done
-
 
 :missing1
   echo You need to change directory to the root of the panda source tree

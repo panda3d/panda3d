@@ -1657,7 +1657,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     //return;
   }
   for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
-    mayaegg_cat.debug() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui] << endl;
+    mayaegg_cat.debug() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
     uvset_names.push_back(maya_uvset_names[ui].asChar());
   }
 

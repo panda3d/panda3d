@@ -248,7 +248,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       _texture_filename = Filename::from_os_specific(filename);
       if (_texture_filename.is_directory()) {
         maya_cat.warning()
-          << "Shader " << shader->get_name() 
+          << "Shader " << shader->get_name()
           << " references texture filename " << filename
           << " which is a directory; clearing.\n";
         _has_texture = false;
@@ -334,14 +334,14 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         string pla_name = pla[j].name().asChar();
         // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
         if (pla_name.find("outAlpha") != string::npos) {
-          maya_cat.debug() << pl.name() << " ignoring: " << pla_name << endl;
+          maya_cat.debug() << pl.name().asChar() << " ignoring: " << pla_name << endl;
           // In this case the artist is wanting to retain alpha at the result
           // So make sure that this alpha is not thrown out by the egg file
           _alpha_is_luminance = true;
           continue;
         }
         if (!first) {
-          maya_cat.debug() << pl.name() << " next:connectedTo: " << pla_name << endl;
+          maya_cat.debug() << pl.name().asChar() << " next:connectedTo: " << pla_name << endl;
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->read_surface_color(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
@@ -352,7 +352,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
         }
         else {
-          maya_cat.debug() << pl.name() << " first:connectedTo: " << pla_name << endl;
+          maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
           size_t loc = _texture_name.find('.',0);
@@ -367,7 +367,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         MPlug pl_temp = pla[j];
         MPlugArray pla_temp;
         pl_temp.connectedTo(pla_temp, true, false);
-        maya_cat.debug() << pl_temp.name() << " connectedTo:" << pla_temp.length() << " plugs\n";
+        maya_cat.debug() << pl_temp.name().asChar() << " connectedTo:" << pla_temp.length() << " plugs\n";
       }
       /*
       string blah;

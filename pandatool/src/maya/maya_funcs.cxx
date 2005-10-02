@@ -545,9 +545,9 @@ describe_compound_attribute(MObject &node) {
       if (status) {
         MString blah;
         status = enu.getDefault(blah);
-        maya_cat.info() << "found a string :" << blah << endl;
+        maya_cat.info() << "found a string :" << blah.asChar() << endl;
         MPlug plug = MPlug(node, child);
-        maya_cat.info() << "plug name" << plug.name() << endl;
+        maya_cat.info() << "plug name" << plug.name().asChar() << endl;
       }
     }
   }
