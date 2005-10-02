@@ -977,7 +977,7 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
     if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
-    if (opts.count("PTMALLOC2")): cmd = cmd + ' /DUSE_MEMORY_PTMALLOC2'
+    if (opts.count("USEPTMALLOC2")): cmd = cmd + ' /DUSE_MEMORY_PTMALLOC2'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
     if (optlevel==2): cmd = cmd + " /MD /Zi "
@@ -1001,6 +1001,7 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
     for x in ipath: cmd = cmd + ' -I' + x
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
+    if (opts.count("USEMALLOC")): cmd = cmd + ' -DUSE_MEMORY_MALLOC'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " -g"
     if (optlevel==2): cmd = cmd + " -O1"
@@ -1066,7 +1067,7 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     dstc=obj[:-4]+".cxx"
     if (fullsrc == 0): exit("Cannot find source file "+src)
     dstc="built/tmp/"+dstc
-    dsth="built/tmp/"+dsth
+    dsth="built/include/"+dsth
     DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc])
 
 ########################################################################
@@ -1081,8 +1082,8 @@ def CompileFlexMSVC7(pre,dst,src,wobj,ipath,opts,dashi):
     CompileCxxMSVC7(wobj,dst,ipath,opts)
 
 def CompileFlexLINUXA(pre,dst,src,wobj,ipath,opts,dashi):
-    if (dashi): oscmd("flex -i -P" + pre + " -o "+dst+" "+src)
-    else:       oscmd("flex    -P" + pre + " -o "+dst+" "+src)
+    if (dashi): oscmd("flex -i -P" + pre + " -o"+dst+" "+src)
+    else:       oscmd("flex    -P" + pre + " -o"+dst+" "+src)
     CompileCxxLINUXA(wobj,dst,ipath,opts)
 
 def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
@@ -1092,7 +1093,7 @@ def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
         wobj="built/tmp/"+obj[:-4]+".obj"
         dst="built/tmp/"+obj[:-4]+".cxx"
         fn=CompileFlexMSVC7
-    if (COMPILER=="LINUX"):
+    if (COMPILER=="LINUXA"):
         wobj="built/tmp/"+obj[:-4]+".o"
         dst="built/tmp/"+obj[:-4]+".cxx"
         fn=CompileFlexLINUXA
@@ -1183,7 +1184,7 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
         fn = CompileIgateMSVC7
     if (COMPILER=="LINUXA"):
         dep = "built/bin/interrogate"
-        wobj = "built/tmp/"+outc[:-4]+".o"
+        wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileIgateLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
     ALLIN.append(outd)
@@ -1286,7 +1287,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ##
 ########################################################################
 
-def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
+def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
@@ -1369,15 +1370,10 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, ldef):
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
 
-def CompileLinkLINUXA(wdll, wobj, opts, ldef):
+def CompileLinkLINUXA(wdll, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
     else:                  cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-    for x in obj:
-        suffix = x[-4:]
-        if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
-        elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
-        elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
-        elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
+    for x in wobj: cmd = cmd+' '+x
     if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
@@ -1419,7 +1415,7 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
         else:
             wdll = "built/plugins/"+dll
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, ldef], [wdll], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj)
 
     if (COMPILER=="LINUXA"):
         if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
@@ -1433,7 +1429,7 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
             else: exit("unknown suffix in object list.")
         if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-        DependencyQueue(CompileLinkLINUXA, [wdll, wobj, opts, ldef], [wdll], wobj)
+        DependencyQueue(CompileLinkLINUXA, [wdll, wobj, opts, dll, ldef], [wdll], wobj)
 
 
 ##########################################################################################
@@ -1921,10 +1917,11 @@ IPATH=['dtool/src/dtoolbase']
 OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
 if (sys.platform == "win32"):
-    OPTS.append("PTMALLOC2")
+    OPTS.append("USEPTMALLOC2")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='ptmalloc2_smp.c', obj='dtoolbase_allocator.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 else:
+    OPTS.append("USEMALLOC")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='null.cxx', obj='dtoolbase_allocator.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 
@@ -2912,12 +2909,7 @@ if (sys.platform != "win32"):
     OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/src/glxdisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='glxdisplay_composite.cxx', obj='glxdisplay_composite.obj')
-    EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libglxdisplay.in', obj='libglxdisplay_igate.obj',
-                src='panda/src/glxdisplay',  module='pandagl', library='libglxdisplay',
-                skip="ALL", also=['glxGraphicsPipe.h'])
-
     IPATH=['panda/metalibs/pandagl']
-    OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/metalibs/pandagl')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
     EnqueueLink(opts=['GLUT', 'NVIDIACG', 'CGGL', 'NSPR'], dll='libpandagl.dll', obj=[
@@ -2925,7 +2917,6 @@ if (sys.platform != "win32"):
       'glgsg_config_glgsg.obj',
       'glgsg_glgsg.obj',
       'glxdisplay_composite.obj',
-      'libglxdisplay_igate.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
       'libglstuff.dll',
@@ -2944,7 +2935,6 @@ if (sys.platform == "win32"):
     CopyAllHeaders('panda/src/wgldisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='wgldisplay_composite.cxx', obj='wgldisplay_composite.obj')
     IPATH=['panda/metalibs/pandagl']
-    OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CopyAllHeaders('panda/metalibs/pandagl')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
     EnqueueLink(opts=['WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR', 'NVIDIACG', 'CGGL'],
