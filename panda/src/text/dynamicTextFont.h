@@ -84,14 +84,10 @@ PUBLISHED:
   INLINE void set_anisotropic_degree(int anisotropic_degree);
   INLINE int get_anisotropic_degree() const;
 
-  INLINE static void set_update_cleared_glyphs(bool update_cleared_glyphs);
-  INLINE static bool get_update_cleared_glyphs();
-
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
 
   int garbage_collect();
-  void update_texture_memory();
   void clear();
 
   virtual void write(ostream &out, int indent_level) const;
@@ -102,15 +98,14 @@ public:
 private:
   void initialize();
   void update_filters();
-  DynamicTextGlyph *make_glyph(int glyph_index);
+  DynamicTextGlyph *make_glyph(int character, int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
-  DynamicTextGlyph *slot_glyph(int x_size, int y_size);
+  DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
 
   int _texture_margin;
   float _poly_margin;
   int _page_x_size, _page_y_size;
-  static bool _update_cleared_glyphs;
 
   Texture::FilterType _minfilter;
   Texture::FilterType _magfilter;

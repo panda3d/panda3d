@@ -54,9 +54,13 @@ class PreparedGraphicsObjects;
 class EXPCL_PANDA Geom : public TypedWritableReferenceCount, public BoundedObject, public GeomEnums {
 PUBLISHED:
   Geom(const GeomVertexData *data);
+protected:
   Geom(const Geom &copy);
+PUBLISHED:
   void operator = (const Geom &copy);
   virtual ~Geom();
+
+  virtual Geom *make_copy() const;
 
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;
@@ -87,7 +91,7 @@ PUBLISHED:
   void rotate_in_place();
   void unify_in_place();
 
-  bool copy_primitives_from(const Geom *other);
+  virtual bool copy_primitives_from(const Geom *other);
 
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
@@ -98,8 +102,8 @@ PUBLISHED:
   // Temporarily virtual.
   virtual bool check_valid() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
   void clear_cache();
 

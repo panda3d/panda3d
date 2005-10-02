@@ -692,7 +692,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
-  PT(Geom) new_geom = new Geom(*geom);
+  PT(Geom) new_geom = geom->make_copy();
 
   GeomVertexRewriter vertex(new_geom->modify_vertex_data(), 
                               InternalName::get_vertex());

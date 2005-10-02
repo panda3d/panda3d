@@ -41,8 +41,8 @@ Geom(const GeomVertexData *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::Copy Constructor
-//       Access: Published
-//  Description: 
+//       Access: Protected
+//  Description: Use make_copy() to duplicate a Geom.
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const Geom &copy) :
@@ -92,6 +92,19 @@ Geom::
   }
 
   release_all();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated Geom that is a shallow copy
+//               of this one.  It will be a different Geom pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Geom.
+////////////////////////////////////////////////////////////////////
+Geom *Geom::
+make_copy() const {
+  return new Geom(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -510,12 +523,14 @@ unify_in_place() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::copy_primitives_from
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Copies the primitives from the indicated Geom into
 //               this one.  This does require that both Geoms contain
 //               the same fundamental type primitives, both have a
 //               compatible shade model, and both use the same
-//               GeomVertexData.
+//               GeomVertexData.  Both Geoms must also be the same
+//               specific class type (i.e. if one is a GeomTextGlyph,
+//               they both must be.)
 //
 //               Returns true if the copy is successful, or false
 //               otherwise (because the Geoms were mismatched).
@@ -527,6 +542,9 @@ copy_primitives_from(const Geom *other) {
     return false;
   }
   if (get_vertex_data() != other->get_vertex_data()) {
+    return false;
+  }
+  if (get_type() != other->get_type()) {
     return false;
   }
 
@@ -636,7 +654,7 @@ check_valid() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::output
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -654,7 +672,7 @@ output(ostream &out) const {
     types.insert((*pi)->get_type());
   }
 
-  out << "Geom [";
+  out << get_type() << " [";
   pset<TypeHandle>::iterator ti;
   for (ti = types.begin(); ti != types.end(); ++ti) {
     out << " " << (*ti);
@@ -664,7 +682,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::write
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::

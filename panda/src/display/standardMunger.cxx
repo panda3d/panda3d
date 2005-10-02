@@ -197,7 +197,7 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
     }
     if ((unsupported_bits & Geom::GR_indexed_bits) != 0) {
       // Convert indexed geometry to nonindexed geometry.
-      PT(Geom) new_geom = new Geom(*geom);
+      PT(Geom) new_geom = geom->make_copy();
       new_geom->make_nonindexed(false);
       geom = new_geom;
     }

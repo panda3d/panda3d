@@ -24,8 +24,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
-DynamicTextGlyph(DynamicTextPage *page, int x, int y,
+DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
                  int x_size, int y_size, int margin) :
+  TextGlyph(character),
   _page(page),
   _x(x), _y(y),
   _x_size(x_size), _y_size(y_size),
@@ -42,7 +43,8 @@ DynamicTextGlyph(DynamicTextPage *page, int x, int y,
 //               and no Geom.
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
-DynamicTextGlyph(float advance) :
+DynamicTextGlyph(int character, float advance) :
+  TextGlyph(character),
   _page((DynamicTextPage *)NULL),
   _x(0), _y(0),
   _x_size(0), _y_size(0),
@@ -58,7 +60,10 @@ DynamicTextGlyph(float advance) :
 //  Description: Copying DynamicTextGlyph objects is not allowed.
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
-DynamicTextGlyph(const DynamicTextGlyph &) {
+DynamicTextGlyph(const DynamicTextGlyph &) :
+  TextGlyph(0)
+{
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,6 +73,7 @@ DynamicTextGlyph(const DynamicTextGlyph &) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextGlyph::
 operator = (const DynamicTextGlyph &) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////

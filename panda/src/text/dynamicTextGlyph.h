@@ -36,9 +36,10 @@ class DynamicTextPage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicTextGlyph : public TextGlyph {
 public:
-  INLINE DynamicTextGlyph(DynamicTextPage *page, int x, int y,
-                          int x_size, int y_size, int margin);
-  INLINE DynamicTextGlyph(float advance);
+  INLINE DynamicTextGlyph(int character, DynamicTextPage *page,
+			  int x, int y, int x_size, int y_size, 
+			  int margin);
+  INLINE DynamicTextGlyph(int character, float advance);
 private:
   INLINE DynamicTextGlyph(const DynamicTextGlyph &copy);
   INLINE void operator = (const DynamicTextGlyph &copy);

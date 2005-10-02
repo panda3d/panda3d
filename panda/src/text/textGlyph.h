@@ -34,17 +34,20 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextGlyph : public ReferenceCount {
 public:
-  INLINE TextGlyph();
-  INLINE TextGlyph(const Geom *geom, const RenderState *state, float advance);
+  INLINE TextGlyph(int character);
+  INLINE TextGlyph(int character, const Geom *geom, 
+		   const RenderState *state, float advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
+  INLINE int get_character() const;
   INLINE PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
   INLINE const RenderState *get_state() const;
   INLINE float get_advance() const;
 
 protected:
+  int _character;
   CPT(Geom) _geom;
   CPT(RenderState) _state;
   float _advance;

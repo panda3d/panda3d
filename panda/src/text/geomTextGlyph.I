@@ -16,33 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTextGlyph::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE GeomTextGlyph::
-GeomTextGlyph(DynamicTextGlyph *glyph, const GeomVertexData *data) :
-  Geom(data),
-  _glyph(glyph)
-{
-  if (_glyph != (DynamicTextGlyph *)NULL) {
-    _glyph->_geom_count++;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTextGlyph::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE GeomTextGlyph::
-GeomTextGlyph(const GeomTextGlyph &copy) :
-  Geom(copy),
-  _glyph(copy._glyph)
-{
-  if (_glyph != (DynamicTextGlyph *)NULL) {
-    _glyph->_geom_count++;
-  }
-}

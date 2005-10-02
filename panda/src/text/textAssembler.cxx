@@ -1469,7 +1469,7 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
   Pieces::const_iterator pi;
   for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
     const Geom *geom = (*pi)._geom;
-    PT(Geom) new_geom = new Geom(*geom);
+    PT(Geom) new_geom = geom->make_copy();
     new_geom->transform_vertices(new_xform);
     geom_node->add_geom(new_geom, state->compose((*pi)._state));
   }

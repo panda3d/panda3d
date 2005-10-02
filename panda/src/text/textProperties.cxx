@@ -38,7 +38,7 @@ TextProperties::
 TextProperties() {
   _specified = 0;
 
-  _small_caps = false;
+  _small_caps = text_small_caps;
   _small_caps_scale = text_small_caps_scale;
   _slant = 0.0f;
   _align = A_left;

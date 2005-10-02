@@ -22,9 +22,45 @@
 
 #include "datagramIterator.h"
 #include "bamReader.h"
+#include "indent.h"
 
 TypeHandle GeomTextGlyph::_type_handle;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GeomTextGlyph::
+GeomTextGlyph(DynamicTextGlyph *glyph, const GeomVertexData *data) :
+  Geom(data)
+{
+  // Initially, there is only one glyph in the Geom.  There might be
+  // additional Glyphs later when we flatten the graph and call
+  // Geom::unify().
+  _glyphs.reserve(1);
+  _glyphs.push_back(glyph);
+  if (glyph != (DynamicTextGlyph *)NULL) {
+    glyph->_geom_count++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GeomTextGlyph::
+GeomTextGlyph(const GeomTextGlyph &copy) :
+  Geom(copy),
+  _glyphs(copy._glyphs)
+{
+  Glyphs::iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    (*gi)->_geom_count++;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTextGlyph::Copy Assignment Operator
@@ -34,14 +70,15 @@ TypeHandle GeomTextGlyph::_type_handle;
 void GeomTextGlyph::
 operator = (const GeomTextGlyph &copy) {
   Geom::operator = (copy);
-  if (_glyph != copy._glyph) {
-    if (_glyph != (DynamicTextGlyph *)NULL) {
-      _glyph->_geom_count--;
-    }
-    _glyph = copy._glyph;
-    if (_glyph != (DynamicTextGlyph *)NULL) {
-      _glyph->_geom_count++;
-    }
+  
+  Glyphs::iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    (*gi)->_geom_count--;
+    nassertv((*gi)->_geom_count >= 0);
+  }
+  _glyphs = copy._glyphs;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    (*gi)->_geom_count++;
   }
 }
 
@@ -52,8 +89,10 @@ operator = (const GeomTextGlyph &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomTextGlyph::
 ~GeomTextGlyph() {
-  if (_glyph != (DynamicTextGlyph *)NULL) {
-    _glyph->_geom_count--;
+  Glyphs::iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    (*gi)->_geom_count--;
+    nassertv((*gi)->_geom_count >= 0);
   }
 }
 
@@ -68,6 +107,72 @@ GeomTextGlyph::
 Geom *GeomTextGlyph::
 make_copy() const {
   return new GeomTextGlyph(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::copy_primitives_from
+//       Access: Public, Virtual
+//  Description: Copies the primitives from the indicated Geom into
+//               this one.  This does require that both Geoms contain
+//               the same fundamental type primitives, both have a
+//               compatible shade model, and both use the same
+//               GeomVertexData.  Both Geoms must also be the same
+//               specific class type (i.e. if one is a GeomTextGlyph,
+//               they both must be.)
+//
+//               Returns true if the copy is successful, or false
+//               otherwise (because the Geoms were mismatched).
+////////////////////////////////////////////////////////////////////
+bool GeomTextGlyph::
+copy_primitives_from(const Geom *other) {
+  if (!Geom::copy_primitives_from(other)) {
+    return false;
+  }
+
+  const GeomTextGlyph *tother;
+  DCAST_INTO_R(tother, other, false);
+
+  // Also copy the glyph pointers.
+  Glyphs::const_iterator gi;
+  for (gi = tother->_glyphs.begin(); gi != tother->_glyphs.end(); ++gi) {
+    _glyphs.push_back(*gi);
+    (*gi)->_geom_count++;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomTextGlyph::
+output(ostream &out) const {
+  Geom::output(out);
+  out << ", glyphs: [";
+  Glyphs::const_iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    out << " " << (*gi)->get_character();
+  }
+  out << " ]";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomTextGlyph::
+write(ostream &out, int indent_level) const {
+  Geom::write(out, indent_level);
+  indent(out, indent_level)
+    << "Glyphs: [";
+  Glyphs::const_iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    out << " " << (*gi)->get_character();
+  }
+  out << " ]\n";
 }
 
 ////////////////////////////////////////////////////////////////////

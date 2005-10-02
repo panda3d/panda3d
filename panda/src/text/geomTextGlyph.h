@@ -37,16 +37,21 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomTextGlyph : public Geom {
 public:
-  INLINE GeomTextGlyph(DynamicTextGlyph *glyph,
-		       const GeomVertexData *data);
-  INLINE GeomTextGlyph(const GeomTextGlyph &copy);
+  GeomTextGlyph(DynamicTextGlyph *glyph,
+		const GeomVertexData *data);
+  GeomTextGlyph(const GeomTextGlyph &copy);
   void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();
 
   virtual Geom *make_copy() const;
+  virtual bool copy_primitives_from(const Geom *other);
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  PT(DynamicTextGlyph) _glyph;
+  typedef pvector< PT(DynamicTextGlyph) > Glyphs;
+  Glyphs _glyphs;
 
 public:
   static void register_with_read_factory();

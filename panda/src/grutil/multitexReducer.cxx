@@ -554,7 +554,7 @@ determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
     const GeomInfo &geom_info = (*gi);
     
     PT(Geom) geom = 
-      new Geom(*geom_info._geom_node->get_geom(geom_info._index));
+      geom_info._geom_node->get_geom(geom_info._index)->make_copy();
 
     CPT(GeomVertexData) vdata = geom->get_vertex_data();
     CPT(GeomVertexFormat) format = vdata->get_format();
@@ -811,7 +811,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
 
     // Copy the Geom.  This actually performs just a pointer copy of
     // the original GeomVertexData and other associated structures.
-    PT(Geom) geom = new Geom(*orig_geom);
+    PT(Geom) geom = orig_geom->make_copy();
 
     // Ensure that any vertex animation has been applied.
     geom->set_vertex_data(geom->get_vertex_data()->animate_vertices());

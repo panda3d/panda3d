@@ -23,7 +23,9 @@
 //  Description: This constructor makes an invalid glyph.
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
-TextGlyph() {
+TextGlyph(int character) :
+  _character(character)
+{
   _geom = (Geom *)NULL;
   _advance = 0.0f;
 }
@@ -34,8 +36,12 @@ TextGlyph() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
-TextGlyph(const Geom *geom, const RenderState *state, float advance) :
-  _geom(geom), _state(state), _advance(advance) 
+TextGlyph(int character, const Geom *geom, 
+	  const RenderState *state, float advance) :
+  _character(character),
+  _geom(geom), 
+  _state(state),
+  _advance(advance) 
 { 
   if (_state == (RenderState *)NULL) {
     _state = RenderState::make_empty();
@@ -49,6 +55,7 @@ TextGlyph(const Geom *geom, const RenderState *state, float advance) :
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
 TextGlyph(const TextGlyph &copy) :
+  _character(copy._character),
   _geom(copy._geom),
   _state(copy._state),
   _advance(copy._advance) 
@@ -62,9 +69,21 @@ TextGlyph(const TextGlyph &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void TextGlyph::
 operator = (const TextGlyph &copy) {
+  _character = copy._character;
   _geom = copy._geom;
   _state = copy._state;
   _advance = copy._advance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::get_character
+//       Access: Public
+//  Description: Returns the Unicode value that corresponds to the
+//               character this glyph represents.
+////////////////////////////////////////////////////////////////////
+INLINE int TextGlyph::
+get_character() const {
+  return _character;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +101,7 @@ get_geom(Geom::UsageHint usage_hint) const {
   // to modify its vertices without fear of stomping on other copies;
   // it is also critical for the DynamicTextGlyph, which depends on
   // this behavior to properly count references to this glyph.
-  PT(Geom) new_geom = new Geom(*_geom);
+  PT(Geom) new_geom = _geom->make_copy();
   new_geom->set_usage_hint(usage_hint);
   if (new_geom->get_vertex_data()->get_usage_hint() != usage_hint) {
     new_geom->modify_vertex_data()->set_usage_hint(usage_hint);

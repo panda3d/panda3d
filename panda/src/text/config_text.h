@@ -33,12 +33,10 @@ class DSearchPath;
 NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
 
 extern ConfigVariableBool text_flatten;
-extern ConfigVariableBool text_update_cleared_glyphs;
 extern ConfigVariableInt text_anisotropic_degree;
 extern ConfigVariableInt text_texture_margin;
 extern ConfigVariableDouble text_poly_margin;
-extern ConfigVariableInt text_page_x_size;
-extern ConfigVariableInt text_page_y_size;
+extern ConfigVariableInt text_page_size;
 extern ConfigVariableBool text_small_caps;
 extern ConfigVariableDouble text_small_caps_scale;
 extern ConfigVariableFilename text_default_font;

@@ -41,7 +41,8 @@ class EXPCL_PANDA DynamicTextPage : public Texture {
 public:
   DynamicTextPage(DynamicTextFont *font, int page_number);
 
-  DynamicTextGlyph *slot_glyph(int x_size, int y_size, int margin);
+  DynamicTextGlyph *slot_glyph(int character, 
+			       int x_size, int y_size, int margin);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;

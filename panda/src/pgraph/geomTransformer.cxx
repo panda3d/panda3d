@@ -131,7 +131,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
     if (transform_vertices(new_geom, mat)) {
       node->mark_bound_stale();
       entry._geom = new_geom;
@@ -219,7 +219,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
     if (transform_texcoords(new_geom, from_name, to_name, mat)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -278,7 +278,7 @@ set_color(GeomNode *node, const Colorf &color) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
     if (set_color(new_geom, color)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -340,7 +340,7 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
     if (transform_colors(new_geom, scale)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -613,7 +613,7 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
     entry._geom = new_geom;
 
     if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&

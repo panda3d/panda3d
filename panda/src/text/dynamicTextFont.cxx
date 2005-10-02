@@ -25,8 +25,6 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 
-bool DynamicTextFont::_update_cleared_glyphs = text_update_cleared_glyphs;
-
 TypeHandle DynamicTextFont::_type_handle;
 
 
@@ -140,28 +138,6 @@ garbage_collect() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::update_texture_memory
-//       Access: Published
-//  Description: Marks all of the pages dirty so they will be reloaded
-//               into texture memory.  This is necessary only if
-//               set_update_cleared_glyphs() is false, and some
-//               textures have recently been removed from the pages
-//               (for instance, after a call to garbage_collect()).
-//
-//               Calling this just ensures that what you see when you
-//               apply the texture page to a polygon represents what
-//               is actually stored on the page.
-////////////////////////////////////////////////////////////////////
-void DynamicTextFont::
-update_texture_memory() {
-  Pages::iterator pi;
-  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
-    DynamicTextPage *page = (*pi);
-    page->mark_dirty(Texture::DF_image);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::clear
 //       Access: Published
 //  Description: Drops all the glyphs out of the cache and frees any
@@ -245,7 +221,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
   if (ci != _cache.end()) {
     glyph = (*ci).second;
   } else {
-    DynamicTextGlyph *dynamic_glyph = make_glyph(glyph_index);
+    DynamicTextGlyph *dynamic_glyph = make_glyph(character, glyph_index);
     _cache.insert(Cache::value_type(glyph_index, dynamic_glyph));
     glyph = dynamic_glyph;
   }
@@ -263,8 +239,8 @@ void DynamicTextFont::
 initialize() {
   _texture_margin = text_texture_margin;
   _poly_margin = text_poly_margin;
-  _page_x_size = text_page_x_size;
-  _page_y_size = text_page_y_size;
+  _page_x_size = text_page_size[0];
+  _page_y_size = text_page_size[1];
 
   // We don't necessarily want to use mipmaps, since we don't want to
   // regenerate those every time the texture changes, but we probably
@@ -307,7 +283,7 @@ update_filters() {
 //               glyph cannot be created for some reason.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-make_glyph(int glyph_index) {
+make_glyph(int character, int glyph_index) {
   if (!load_glyph(glyph_index)) {
     return (DynamicTextGlyph *)NULL;
   }
@@ -320,7 +296,7 @@ make_glyph(int glyph_index) {
   if (bitmap.width == 0 || bitmap.rows == 0) {
     // If we got an empty bitmap, it's a special case.
     PT(DynamicTextGlyph) glyph = 
-      new DynamicTextGlyph(advance / _font_pixels_per_unit);
+      new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
     _empty_glyphs.push_back(glyph);
     return glyph;
 
@@ -334,7 +310,7 @@ make_glyph(int glyph_index) {
       // If the bitmap produced from the font doesn't require scaling
       // before it goes to the texture, we can just copy it directly
       // into the texture.
-      glyph = slot_glyph(bitmap.width, bitmap.rows);
+      glyph = slot_glyph(character, bitmap.width, bitmap.rows);
       copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
@@ -346,7 +322,7 @@ make_glyph(int glyph_index) {
       int int_y_size = (int)ceil(tex_y_size);
       int bmp_x_size = (int)(int_x_size * _scale_factor + 0.5f);
       int bmp_y_size = (int)(int_y_size * _scale_factor + 0.5f);
-      glyph = slot_glyph(int_x_size, int_y_size);
+      glyph = slot_glyph(character, int_x_size, int_y_size);
       
       PNMImage image(bmp_x_size, bmp_y_size, PNMImage::CT_grayscale);
       copy_bitmap_to_pnmimage(bitmap, image);
@@ -356,8 +332,6 @@ make_glyph(int glyph_index) {
       copy_pnmimage_to_texture(reduced, glyph);
     }
       
-    glyph->_page->mark_dirty(Texture::DF_image);
-    
     glyph->make_geom(slot->bitmap_top, slot->bitmap_left,
                      advance, _poly_margin,
                      tex_x_size, tex_y_size,
@@ -460,7 +434,7 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
 //               filled in yet except with its size.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-slot_glyph(int x_size, int y_size) {
+slot_glyph(int character, int x_size, int y_size) {
   // Increase the indicated size by the current margin.
   x_size += _texture_margin * 2;
   y_size += _texture_margin * 2;
@@ -475,7 +449,7 @@ slot_glyph(int x_size, int y_size) {
 
     do {
       DynamicTextPage *page = _pages[pi];
-      DynamicTextGlyph *glyph = page->slot_glyph(x_size, y_size, _texture_margin);
+      DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin);
       if (glyph != (DynamicTextGlyph *)NULL) {
         // Once we found a page to hold the glyph, that becomes our
         // new preferred page.
@@ -499,7 +473,7 @@ slot_glyph(int x_size, int y_size) {
   // glyphs?
   if (garbage_collect() != 0) {
     // Yes, we just freed up some space.  Try once more, recursively.
-    return slot_glyph(x_size, y_size);
+    return slot_glyph(character, x_size, y_size);
 
   } else {
     // No good; all recorded glyphs are actually in use.  We need to
@@ -507,7 +481,7 @@ slot_glyph(int x_size, int y_size) {
     _preferred_page = _pages.size();
     PT(DynamicTextPage) page = new DynamicTextPage(this, _preferred_page);
     _pages.push_back(page);
-    return page->slot_glyph(x_size, y_size, _texture_margin);
+    return page->slot_glyph(character, x_size, y_size, _texture_margin);
   }
 }
 

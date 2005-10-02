@@ -76,19 +76,27 @@ PUBLISHED:
     F_blue,
     F_alpha,
     F_rgb,     // any suitable RGB mode, whatever the hardware prefers
-    F_rgb5,    // specifically, 5 bits per R,G,B channel.  
-               // this is paired with T_unsigned_byte.  really T_unsigned_byte
-               // should not be specified for this one, it should use
-               // T_unsigned_5bits or something
+
+    // The following request a particular number of bits for the GSG's
+    // internal_format (as stored in the framebuffer), but this
+    // request is not related to the pixel storage within the Texture
+    // object itself, which is always get_num_components() *
+    // get_component_width().
+    F_rgb5,    // 5 bits per R,G,B channel
     F_rgb8,    // 8 bits per R,G,B channel
     F_rgb12,   // 12 bits per R,G,B channel
     F_rgb332,  // 3 bits per R & G, 2 bits for B
+
     F_rgba,    // any suitable RGBA mode, whatever the hardware prefers
+
+    // Again, the following bitdepth requests are only for the GSG;
+    // within the Texture object itself, these are all equivalent.
     F_rgbm,    // as above, but only requires 1 bit for alpha (i.e. mask)
     F_rgba4,   // 4 bits per R,G,B,A channel
     F_rgba5,   // 5 bits per R,G,B channel, 1 bit alpha
     F_rgba8,   // 8 bits per R,G,B,A channel
     F_rgba12,  // 12 bits per R,G,B,A channel
+
     F_luminance,
     F_luminance_alpha,      // 8 bits luminance, 8 bits alpha
     F_luminance_alphamask   // 8 bits luminance, only needs 1 bit of alpha

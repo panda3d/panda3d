@@ -360,43 +360,6 @@ get_anisotropic_degree() const {
   return _anisotropic_degree;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::set_update_cleared_glyphs
-//       Access: Published, Static
-//  Description: Sets the flag indicating whether texture memory
-//               should be updated immediately as old glyphs are
-//               removed.  If this is true, texture memory will be
-//               immediately updated when old glyphs are removed from
-//               the pages.  If this is false (the default), texture
-//               memory may not be updated until the page is next
-//               written to, that is, the next time a glyph is
-//               recorded on that page.
-//
-//               Most of the time, there is no reason to set this
-//               true, unless you are debugging the DynamicTextFont
-//               code and want to be able to see exactly what is in
-//               each texture map at any given time.
-//
-//               This is a global flag across all DynamicTextFont
-//               objects.
-////////////////////////////////////////////////////////////////////
-INLINE void DynamicTextFont::
-set_update_cleared_glyphs(bool update_cleared_glyphs) {
-  _update_cleared_glyphs = update_cleared_glyphs;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_update_cleared_glyphs
-//       Access: Published, Static
-//  Description: Returns the flag indicating whether texture memory
-//               should be updated immediately as old glyphs are
-//               removed.  See set_update_cleared_glyphs().
-////////////////////////////////////////////////////////////////////
-INLINE bool DynamicTextFont::
-get_update_cleared_glyphs() {
-  return _update_cleared_glyphs;
-}
-
 INLINE ostream &
 operator << (ostream &out, const DynamicTextFont &dtf) {
   return out << dtf.get_name();

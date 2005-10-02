@@ -406,7 +406,7 @@ copy_geom(const Geom *source, const Character *from,
     return (Geom *)source;
   }
   
-  PT(Geom) dest = new Geom(*source);
+  PT(Geom) dest = source->make_copy();
   PT(GeomVertexData) vdata = dest->modify_vertex_data();
   
   vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table(), joint_map, gjmap));

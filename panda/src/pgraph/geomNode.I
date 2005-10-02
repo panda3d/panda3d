@@ -92,7 +92,7 @@ modify_geom(int n) {
   nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
   Geom *geom = cdata->_geoms[n]._geom;
   if (geom->get_ref_count() > 1) {
-    geom = cdata->_geoms[n]._geom = new Geom(*geom);
+    geom = cdata->_geoms[n]._geom = geom->make_copy();
   }
 
   return geom;

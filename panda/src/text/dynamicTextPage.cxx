@@ -66,7 +66,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 //               glyph object and returns it; otherwise, returns NULL.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextPage::
-slot_glyph(int x_size, int y_size, int margin) {
+slot_glyph(int character, int x_size, int y_size, int margin) {
   int x, y;
   if (!find_hole(x, y, x_size, y_size)) {
     // No room for the glyph.
@@ -75,7 +75,8 @@ slot_glyph(int x_size, int y_size, int margin) {
 
   // The glyph can be fit at (x, y).  Slot it.
   PT(DynamicTextGlyph) glyph = 
-    new DynamicTextGlyph(this, x, y, x_size, y_size, margin);
+    new DynamicTextGlyph(character, this,
+			 x, y, x_size, y_size, margin);
   _glyphs.push_back(glyph);
   return glyph;
 }
@@ -105,12 +106,6 @@ garbage_collect() {
       removed_count++;
       glyph->erase();
     }
-  }
-
-  if (removed_count != 0 && DynamicTextFont::get_update_cleared_glyphs()) {
-    // Only mark the texture dirty if the user specifically requested
-    // an automatic texture memory update upon clearing glyphs.
-    mark_dirty(Texture::DF_image);
   }
 
   _glyphs.swap(new_glyphs);

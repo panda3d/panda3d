@@ -194,7 +194,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   GeomNode::Geoms::iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = new Geom(*entry._geom);
+    PT(Geom) new_geom = entry._geom->make_copy();
 
     AccumulatedAttribs geom_attribs = attribs;
     entry._state = geom_attribs.collect(entry._state, attrib_types);

@@ -256,7 +256,7 @@ find_characters(PandaNode *root, const RenderState *net_state) {
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
       float width = reader.get_data1f();
 
-      _glyphs[character] = new TextGlyph(ch, state, width);
+      _glyphs[character] = new TextGlyph(character, ch, state, width);
     }
 
   } else if (name == "ds") {
