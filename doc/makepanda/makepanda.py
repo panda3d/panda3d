@@ -73,6 +73,7 @@ except ImportError:
 ########################################################################
 
 def exit(msg):
+    print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
     print msg
     sys.stdout.flush()
     sys.stderr.flush()
@@ -4446,7 +4447,7 @@ if (OMIT.count("PANDATOOL")==0):
     EnqueueBam("../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
     EnqueueBam("../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
     EnqueueBam("../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
-    EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+    #EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
     
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
