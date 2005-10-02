@@ -1370,10 +1370,15 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
 
-def CompileLinkLINUXA(wdll, wobj, opts, dll, ldef):
+def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
     else:                  cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-    for x in wobj: cmd = cmd+' '+x
+    for x in obj:
+        suffix = x[-4:]
+        if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
+        elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
+        elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
+        elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
     if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
@@ -1429,7 +1434,7 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
             else: exit("unknown suffix in object list.")
         if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-        DependencyQueue(CompileLinkLINUXA, [wdll, wobj, opts, dll, ldef], [wdll], wobj)
+        DependencyQueue(CompileLinkLINUXA, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj)
 
 
 ##########################################################################################
@@ -1888,7 +1893,7 @@ if (SLAVEBUILD==0):
 
 ########################################################################
 #
-# Copy header files to the PREFIX/include/parser-inc directory.
+# Copy header files to the built/include/parser-inc directory.
 #
 ########################################################################
 
