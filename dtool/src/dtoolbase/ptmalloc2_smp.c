@@ -2,10 +2,10 @@
    license as well as the LGPL, in spite of the comments below.  See
    http://www.malloc.de . */
 
-#include "dtoolbase.h"
-
 #if defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
 #define USE_DL_PREFIX 1
+#define __STDC__ 1
+#define MREMAP_MAYMOVE 1  /* terrible hack--drose */
 
 /* Malloc implementation for multiple threads without lock contention.
    Copyright (C) 1996,1997,1998,1999,2000,01,02 Free Software Foundation, Inc.
@@ -237,14 +237,6 @@
     There are several other #defined constants and macros that you
     probably don't want to touch unless you are extending or adapting malloc.
 */
-
-/*
-  WIN32 sets up defaults for MS environment and compilers.
-  Otherwise defaults are for unix.
-*/
-
-/* #define WIN32 */
-
 
 /*************************** thread-m.h ******************************/
 
@@ -2248,7 +2240,7 @@ struct malloc_chunk {
 };
 
 
-/*typedef struct malloc_chunk* mchunkptr;*/
+typedef struct malloc_chunk* mchunkptr;
 
 /*
    malloc_chunk details:
@@ -2868,7 +2860,7 @@ struct malloc_par {
   char*            sbrk_base;
 };
 
-/*typedef struct malloc_state *mstate;*/
+typedef struct malloc_state *mstate;
 
 /* There are several instances of this struct ("arenas") in this
    malloc.  If you are adapting this malloc in a way that does NOT use
@@ -5320,9 +5312,6 @@ mremap_chunk(p, new_size) mchunkptr p; size_t new_size;
   /* Note the extra SIZE_SZ overhead as in mmap_chunk(). */
   new_size = (new_size + offset + SIZE_SZ + page_mask) & ~page_mask;
 
-#ifndef MREMAP_MAYMOVE
-#define MREMAP_MAYMOVE 1  /* terrible hack--drose */
-#endif
   cp = (char *)mremap((char *)p - offset, size + offset, new_size,
                       MREMAP_MAYMOVE);
 
@@ -7828,205 +7817,208 @@ sbrk_exit:
 
 /* mmap for windows */
 static void *mmap (void *ptr, long size, long prot, long type, long handle, long arg) {
-    static long g_pagesize;
-    static long g_regionsize;
+  static long g_pagesize;
+  static long g_regionsize;
+  DWORD alloc=MEM_RESERVE|MEM_TOP_DOWN;
+  DWORD ntprot=0;
+  long rounding=0;
 #ifdef TRACE
-    printf ("mmap %p %d %d %d\n", ptr, size, prot, type);
+  printf ("mmap %p %d %d %d\n", ptr, size, prot, type);
 #endif
-    /* Wait for spin lock */
-    slwait (&g_sl);
-    /* First time initialization */
-    if (! g_pagesize) 
-        g_pagesize = getpagesize ();
-    if (! g_regionsize) 
-        g_regionsize = getregionsize ();
-    /* Assert preconditions */
-    assert ((unsigned) ptr % g_pagesize == 0);
-    assert (size % g_pagesize == 0);
-    /* Allocate this */
-	DWORD alloc=MEM_RESERVE|MEM_TOP_DOWN, ntprot=0;
-	long rounding=0;
-	if(!(type & MAP_NORESERVE)) alloc|=MEM_COMMIT;
-	if((prot & (PROT_READ|PROT_WRITE))==(PROT_READ|PROT_WRITE)) ntprot|=PAGE_READWRITE;
-	else if(prot & PROT_READ) ntprot|=PAGE_READONLY;
-	else if(prot & PROT_WRITE) ntprot|=PAGE_READWRITE;
-	else
-	{
-		ntprot|=PAGE_NOACCESS;
-		if(size==HEAP_MAX_SIZE)
-		{
-			rounding=size;
-			size<<=1;
+  /* Wait for spin lock */
+  slwait (&g_sl);
+  /* First time initialization */
+  if (! g_pagesize) 
+    g_pagesize = getpagesize ();
+  if (! g_regionsize) 
+    g_regionsize = getregionsize ();
+  /* Assert preconditions */
+  assert ((unsigned) ptr % g_pagesize == 0);
+  assert (size % g_pagesize == 0);
+  /* Allocate this */
+  if(!(type & MAP_NORESERVE)) alloc|=MEM_COMMIT;
+  if((prot & (PROT_READ|PROT_WRITE))==(PROT_READ|PROT_WRITE)) ntprot|=PAGE_READWRITE;
+  else if(prot & PROT_READ) ntprot|=PAGE_READONLY;
+  else if(prot & PROT_WRITE) ntprot|=PAGE_READWRITE;
+  else
+    {
+      ntprot|=PAGE_NOACCESS;
+      if(size==HEAP_MAX_SIZE)
+        {
+          rounding=size;
+          size<<=1;
 #ifdef TRACE
-			printf("Rounding to multiple of %d\n", rounding);
+          printf("Rounding to multiple of %d\n", rounding);
 #endif
-		}
-		if(ptr)
-		{	/* prot==PROT_NONE also appears to be a euphemism for free */
-			MEMORY_BASIC_INFORMATION mbi;
-			DWORD read=0;
-			for(char *p=((char *)ptr)+read; read<size && VirtualQuery(p, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
-			{
-				if(mbi.State & MEM_COMMIT)
-				{
-					if(!VirtualFree((LPVOID) p, mbi.RegionSize, MEM_DECOMMIT))
-						goto mmap_exit;
+        }
+      if(ptr)
+        {       /* prot==PROT_NONE also appears to be a euphemism for free */
+          MEMORY_BASIC_INFORMATION mbi;
+          DWORD read=0;
+          char *p;
+          for(p=((char *)ptr)+read; read<size && VirtualQuery(p, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
+            {
+              if(mbi.State & MEM_COMMIT)
+                {
+                  if(!VirtualFree((LPVOID) p, mbi.RegionSize, MEM_DECOMMIT))
+                    goto mmap_exit;
 #ifdef TRACE
-					printf ("Release %p %d\n", p, mbi.RegionSize);
+                  printf ("Release %p %d\n", p, mbi.RegionSize);
 #endif
-				}
-			}
-			ptr=0; /* success */
-			goto mmap_exit;
-		}
-	}
-    ptr = VirtualAlloc (ptr, size, alloc, ntprot);
-    if (! ptr) {
-        ptr = (void *) MORECORE_FAILURE;
-        goto mmap_exit;
+                }
+            }
+          ptr=0; /* success */
+          goto mmap_exit;
+        }
     }
-	if(rounding)
-	{
-		VirtualFree(ptr, 0, MEM_RELEASE);
-		ptr=(void *)(((unsigned long)ptr + (rounding-1)) & ~(rounding-1));
-		if(!(ptr=VirtualAlloc(ptr, rounding, alloc, ntprot)))
-		{
-			ptr = (void *) MORECORE_FAILURE;
-			goto mmap_exit;
-		}
-		assert ((unsigned) ptr % rounding == 0);
-		size=rounding;
-	}
-	else
-	{
-		/* Assert postconditions */
-		assert ((unsigned) ptr % g_regionsize == 0);
-	}
+  ptr = VirtualAlloc (ptr, size, alloc, ntprot);
+  if (! ptr) {
+    ptr = (void *) MORECORE_FAILURE;
+    goto mmap_exit;
+  }
+  if(rounding)
+    {
+      VirtualFree(ptr, 0, MEM_RELEASE);
+      ptr=(void *)(((unsigned long)ptr + (rounding-1)) & ~(rounding-1));
+      if(!(ptr=VirtualAlloc(ptr, rounding, alloc, ntprot)))
+        {
+          ptr = (void *) MORECORE_FAILURE;
+          goto mmap_exit;
+        }
+      assert ((unsigned) ptr % rounding == 0);
+      size=rounding;
+    }
+  else
+    {
+      /* Assert postconditions */
+      assert ((unsigned) ptr % g_regionsize == 0);
+    }
 #ifdef TRACE
-	printf ("%s %p %d %d %d\n", (type & MAP_NORESERVE) ? "Reserve" : "Commit", ptr, size, prot, type);
+  printf ("%s %p %d %d %d\n", (type & MAP_NORESERVE) ? "Reserve" : "Commit", ptr, size, prot, type);
 #endif
-mmap_exit:
+ mmap_exit:
     /* Release spin lock */
-    slrelease (&g_sl);
-    return ptr;
+  slrelease (&g_sl);
+  return ptr;
 }
 
 /* munmap for windows */
 static long munmap (void *ptr, long size) {
-    static long g_pagesize;
-    int rc = MUNMAP_FAILURE;
+  static long g_pagesize;
+  int rc = MUNMAP_FAILURE;
 #ifdef TRACE
-    printf ("munmap %p %d\n", ptr, size);
+  printf ("munmap %p %d\n", ptr, size);
 #endif
-    /* Wait for spin lock */
-    /* slwait (&g_sl); */
-    /* First time initialization */
-    if (! g_pagesize) 
-        g_pagesize = getpagesize ();
-    /* Assert preconditions */
-    assert (size % g_pagesize == 0);
-    /* Free this */
-    if (! VirtualFree (ptr, 0, 
-                       MEM_RELEASE))
-        goto munmap_exit;
-    rc = 0;
+  /* Wait for spin lock */
+  /* slwait (&g_sl); */
+  /* First time initialization */
+  if (! g_pagesize) 
+    g_pagesize = getpagesize ();
+  /* Assert preconditions */
+  assert (size % g_pagesize == 0);
+  /* Free this */
+  if (! VirtualFree (ptr, 0, 
+                     MEM_RELEASE))
+    goto munmap_exit;
+  rc = 0;
 #ifdef TRACE
-    printf ("Release %p %d\n", ptr, size);
+  printf ("Release %p %d\n", ptr, size);
 #endif
-munmap_exit:
-    /* Release spin lock */
-    /* slrelease (&g_sl); */
-    return rc;
+ munmap_exit:
+  /* Release spin lock */
+  /* slrelease (&g_sl); */
+  return rc;
 }
 
 static int mprotect(const void *addr, long len, int prot)
 {
-    static long g_pagesize;
-    static long g_regionsize;
-    int rc = -1;
+  static long g_pagesize;
+  static long g_regionsize;
+  DWORD ntprot=0, oldntprot=0;
+  int rc = -1;
 #ifdef TRACE
-    printf ("mprotect %p %d %d\n", addr, len, prot);
+  printf ("mprotect %p %d %d\n", addr, len, prot);
 #endif
-    /* Wait for spin lock */
-    /* slwait (&g_sl); */
-    /* First time initialization */
-    if (! g_pagesize) 
-        g_pagesize = getpagesize ();
-    if (! g_regionsize) 
-        g_regionsize = getregionsize ();
-    /* Assert preconditions */
-    assert ((unsigned) addr % g_pagesize == 0);
-    assert (len% g_pagesize == 0);
-
-	DWORD ntprot=0, oldntprot=0;
-	if((prot & (PROT_READ|PROT_WRITE))==(PROT_READ|PROT_WRITE)) ntprot|=PAGE_READWRITE;
-	else if(prot & PROT_READ) ntprot|=PAGE_READONLY;
-	else if(prot & PROT_WRITE) ntprot|=PAGE_READWRITE;
-	else ntprot|=PAGE_NOACCESS;
-	if(prot)
-	{	/* Do we need to commit any? */
-		MEMORY_BASIC_INFORMATION mbi;
-		DWORD read=0;
-		for(; read<len && VirtualQuery(((char *)(addr))+read, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
-		{
-			if(!(mbi.State & MEM_COMMIT))
-			{	/* Might as well do the lot */
-				if(!VirtualAlloc((LPVOID) addr, len, MEM_COMMIT, ntprot))
-					goto mprotect_exit;
+  /* Wait for spin lock */
+  /* slwait (&g_sl); */
+  /* First time initialization */
+  if (! g_pagesize) 
+    g_pagesize = getpagesize ();
+  if (! g_regionsize) 
+    g_regionsize = getregionsize ();
+  /* Assert preconditions */
+  assert ((unsigned) addr % g_pagesize == 0);
+  assert (len% g_pagesize == 0);
+  
+  if((prot & (PROT_READ|PROT_WRITE))==(PROT_READ|PROT_WRITE)) ntprot|=PAGE_READWRITE;
+  else if(prot & PROT_READ) ntprot|=PAGE_READONLY;
+  else if(prot & PROT_WRITE) ntprot|=PAGE_READWRITE;
+  else ntprot|=PAGE_NOACCESS;
+  if(prot)
+    {	/* Do we need to commit any? */
+      MEMORY_BASIC_INFORMATION mbi;
+      DWORD read=0;
+      for(; read<len && VirtualQuery(((char *)(addr))+read, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
+        {
+          if(!(mbi.State & MEM_COMMIT))
+            {	/* Might as well do the lot */
+              if(!VirtualAlloc((LPVOID) addr, len, MEM_COMMIT, ntprot))
+                goto mprotect_exit;
 #ifdef TRACE
-				printf ("Commit (mprotect) %p %d\n", addr, len);
+              printf ("Commit (mprotect) %p %d\n", addr, len);
 #endif
-				break;
-			}
-		}
-	}
-	else
-	{	/* prot==PROT_NONE also appears to be a euphemism for free */
-		MEMORY_BASIC_INFORMATION mbi;
-		DWORD read=0;
-		for(char *p=((char *)addr)+read; read<len && VirtualQuery(p, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
-		{
-			if(mbi.State & MEM_COMMIT)
-			{
-				if(!VirtualFree((LPVOID) p, mbi.RegionSize, MEM_DECOMMIT))
-					goto mprotect_exit;
+              break;
+            }
+        }
+    }
+  else
+    {	/* prot==PROT_NONE also appears to be a euphemism for free */
+      MEMORY_BASIC_INFORMATION mbi;
+      DWORD read=0;
+      char *p;
+      for(p=((char *)addr)+read; read<len && VirtualQuery(p, &mbi, sizeof(mbi)); read+=mbi.RegionSize)
+        {
+          if(mbi.State & MEM_COMMIT)
+            {
+              if(!VirtualFree((LPVOID) p, mbi.RegionSize, MEM_DECOMMIT))
+                goto mprotect_exit;
 #ifdef TRACE
-				printf ("Release (mprotect) %p %d\n", p, mbi.RegionSize);
+              printf ("Release (mprotect) %p %d\n", p, mbi.RegionSize);
 #endif
-			}
-		}
-	}
-    /* Change */
-    if (! VirtualProtect ((LPVOID) addr, len, ntprot, &oldntprot))
-        goto mprotect_exit;
-    rc = 0;
+            }
+        }
+    }
+  /* Change */
+  if (! VirtualProtect ((LPVOID) addr, len, ntprot, &oldntprot))
+    goto mprotect_exit;
+  rc = 0;
 #ifdef TRACE
-    printf ("Protect %p %d %d\n", addr, len, prot);
+  printf ("Protect %p %d %d\n", addr, len, prot);
 #endif
-mprotect_exit:
-    /* Release spin lock */
-    /* slrelease (&g_sl); */
-    return rc;
+ mprotect_exit:
+  /* Release spin lock */
+  /* slrelease (&g_sl); */
+  return rc;
 }
 
 static void vminfo (CHUNK_SIZE_T  *free, CHUNK_SIZE_T  *reserved, CHUNK_SIZE_T  *committed) {
-    MEMORY_BASIC_INFORMATION memory_info;
-    memory_info.BaseAddress = 0;
-    *free = *reserved = *committed = 0;
-    while (VirtualQuery (memory_info.BaseAddress, &memory_info, sizeof (memory_info))) {
-        switch (memory_info.State) {
-        case MEM_FREE:
-            *free += memory_info.RegionSize;
-            break;
-        case MEM_RESERVE:
-            *reserved += memory_info.RegionSize;
-            break;
-        case MEM_COMMIT:
-            *committed += memory_info.RegionSize;
-            break;
-        }
-        memory_info.BaseAddress = (char *) memory_info.BaseAddress + memory_info.RegionSize;
+  MEMORY_BASIC_INFORMATION memory_info;
+  memory_info.BaseAddress = 0;
+  *free = *reserved = *committed = 0;
+  while (VirtualQuery (memory_info.BaseAddress, &memory_info, sizeof (memory_info))) {
+    switch (memory_info.State) {
+    case MEM_FREE:
+      *free += memory_info.RegionSize;
+      break;
+    case MEM_RESERVE:
+      *reserved += memory_info.RegionSize;
+      break;
+    case MEM_COMMIT:
+      *committed += memory_info.RegionSize;
+      break;
     }
+    memory_info.BaseAddress = (char *) memory_info.BaseAddress + memory_info.RegionSize;
+  }
 }
 
 static int cpuinfo (int whole, CHUNK_SIZE_T  *kernel, CHUNK_SIZE_T  *user) {
@@ -8220,5 +8212,4 @@ History:
 
 */
 
-#endif  // USE_MEMORY_PTMALLOC2
-
+#endif
