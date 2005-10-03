@@ -112,7 +112,6 @@ mount(const Filename &physical_filename, const string &mount_point,
     // support read-write on Multifiles.
     flags |= MF_read_only;
     if (!multifile->open_read(physical_filename)) {
-      delete multifile;
       return false;
     }
 
