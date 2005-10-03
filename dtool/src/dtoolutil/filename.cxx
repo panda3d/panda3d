@@ -321,24 +321,9 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   string result = back_to_front_slash(os_specific);
   const string &panda_root = get_panda_root();
 
-  // Does the filename begin with a drive letter?
-  if (result.size() >= 3 && isalpha(result[0]) &&
-      result[1] == ':' && result[2] == '/') {
-    result[1] = tolower(result[0]);
-    result[0] = '/';
-
-    // If there's *just* a slash following the drive letter, go ahead
-    // and trim it.
-    if (result.size() == 3) {
-      result = result.substr(0, 2);
-    }
-
-  } else if (result.substr(0, 2) == "//") {
-    // If the initial prefix is a double slash, convert it to /hosts/.
-    result = hosts_prefix + result.substr(2);
-
-  } else if (!panda_root.empty() && panda_root.length() < result.length()) { 
-    // If the initial prefix is the same as panda_root, remove it.
+  // If the initial prefix is the same as panda_root, remove it.
+  if (!panda_root.empty() && panda_root != string("\\") && 
+      panda_root.length() < result.length()) {
     bool matches = true;
     size_t p;
     for (p = 0; p < panda_root.length() && matches; ++p) {
@@ -363,6 +348,23 @@ from_os_specific(const string &os_specific, Filename::Type type) {
     }
   }
 
+  // All right, the initial prefix was not under panda_root.  But
+  // maybe it begins with a drive letter.
+  if (result.size() >= 3 && isalpha(result[0]) &&
+      result[1] == ':' && result[2] == '/') {
+    result[1] = tolower(result[0]);
+    result[0] = '/';
+
+    // If there's *just* a slash following the drive letter, go ahead
+    // and trim it.
+    if (result.size() == 3) {
+      result = result.substr(0, 2);
+    }
+
+  } else if (result.substr(0, 2) == "//") {
+    // If the initial prefix is a double slash, convert it to /hosts/.
+    result = hosts_prefix + result.substr(2);
+  }
 
   Filename filename(result);
   filename.set_type(type);
