@@ -115,6 +115,7 @@ PUBLISHED:
   GraphicsOutput *make_cube_map(const string &name, int size, bool to_ram,
                                 NodePath &camera_rig, DrawMask camera_mask);
 
+  INLINE static Filename make_screenshot_filename(const string &prefix = "screenshot");
   INLINE Filename save_screenshot_default(const string &prefix = "screenshot");
   INLINE bool save_screenshot(const Filename &filename);
   INLINE bool get_screenshot(PNMImage &image);

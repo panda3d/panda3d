@@ -97,6 +97,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  static Filename make_screenshot_filename(const string &prefix = "screenshot");
   Filename save_screenshot_default(const string &prefix = "screenshot");
   bool save_screenshot(const Filename &filename);
   bool get_screenshot(PNMImage &image);

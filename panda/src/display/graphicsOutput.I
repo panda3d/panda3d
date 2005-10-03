@@ -265,8 +265,8 @@ make_display_region(float l, float r, float b, float t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::save_screenshot_default
-//       Access: Published
+//     Function: GraphicsOutput::make_screenshot_filename
+//       Access: Published, Static
 //  Description: Saves a screenshot of the region to a default
 //               filename, and returns the filename, or empty string
 //               if the screenshot failed.  The default filename is
@@ -278,6 +278,19 @@ make_display_region(float l, float r, float b, float t) {
 //                 %~f - the frame count
 //                 %~e - the value of screenshot-extension
 //                 All other % strings in strftime().
+////////////////////////////////////////////////////////////////////
+INLINE Filename GraphicsOutput::
+make_screenshot_filename(const string &prefix) {
+  return DisplayRegion::make_screenshot_filename(prefix);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::save_screenshot_default
+//       Access: Published
+//  Description: Saves a screenshot of the region to a default
+//               filename, and returns the filename, or empty string
+//               if the screenshot failed.  The filename is generated
+//               by make_screenshot_filename().
 ////////////////////////////////////////////////////////////////////
 INLINE Filename GraphicsOutput::
 save_screenshot_default(const string &prefix) {

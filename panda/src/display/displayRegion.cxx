@@ -424,14 +424,15 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::save_screenshot_default
-//       Access: Published
-//  Description: Saves a screenshot of the region to a default
-//               filename, and returns the filename, or empty string
-//               if the screenshot failed.  The default filename is
-//               generated from the supplied prefix and from the
-//               Config variable screenshot-filename, which contains
-//               the following strings:
+//     Function: DisplayRegion::make_screenshot_filename
+//       Access: Published, Static
+//  Description: Synthesizes a suitable default filename for passing
+//               to save_screenshot().
+//
+//               The default filename is generated from the supplied
+//               prefix and from the Config variable
+//               screenshot-filename, which contains the following
+//               strings:
 //
 //                 %~p - the supplied prefix
 //                 %~f - the frame count
@@ -439,7 +440,7 @@ output(ostream &out) const {
 //                 All other % strings in strftime().
 ////////////////////////////////////////////////////////////////////
 Filename DisplayRegion::
-save_screenshot_default(const string &prefix) {
+make_screenshot_filename(const string &prefix) {
   time_t now = time(NULL);
   struct tm *ttm = localtime(&now);
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
@@ -496,7 +497,21 @@ save_screenshot_default(const string &prefix) {
     }
   }
 
-  Filename filename = filename_strm.str();
+  return Filename(filename_strm.str());
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::save_screenshot_default
+//       Access: Published
+//  Description: Saves a screenshot of the region to a default
+//               filename, and returns the filename, or empty string
+//               if the screenshot failed.  The filename is generated
+//               by make_screenshot_filename().
+////////////////////////////////////////////////////////////////////
+Filename DisplayRegion::
+save_screenshot_default(const string &prefix) {
+  Filename filename = make_screenshot_filename(prefix);
   if (save_screenshot(filename)) {
     return filename;
   }
