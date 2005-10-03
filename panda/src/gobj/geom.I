@@ -147,9 +147,9 @@ modify_primitive(int i) {
 //               returning the result.  See
 //               GeomPrimitive::decompose().
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(Geom) Geom::
+INLINE PT(Geom) Geom::
 decompose() const {
-  PT(Geom) new_geom = new Geom(*this);
+  PT(Geom) new_geom = make_copy();
   new_geom->decompose_in_place();
   return new_geom;
 }
@@ -161,9 +161,9 @@ decompose() const {
 //               returning the result.  See
 //               GeomPrimitive::rotate().
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(Geom) Geom::
+INLINE PT(Geom) Geom::
 rotate() const {
-  PT(Geom) new_geom = new Geom(*this);
+  PT(Geom) new_geom = make_copy();
   new_geom->rotate_in_place();
   return new_geom;
 }
@@ -177,9 +177,9 @@ rotate() const {
 //               the Geom contains both triangle strips and triangle
 //               fans.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(Geom) Geom::
+INLINE PT(Geom) Geom::
 unify() const {
-  PT(Geom) new_geom = new Geom(*this);
+  PT(Geom) new_geom = make_copy();
   new_geom->unify_in_place();
   return new_geom;
 }

@@ -161,21 +161,27 @@ decompose_impl() const {
       ++vi;
       bool reversed = false;
       while (vi < end) {
-        triangles->add_vertex(v0);
         int v2 = get_vertex(vi);
         ++vi;
         if (reversed) {
-          triangles->add_vertex(v2);
-          triangles->add_vertex(v1);
+          if (v0 != v1 && v0 != v2 && v1 != v2) {
+            triangles->add_vertex(v0);
+            triangles->add_vertex(v2);
+            triangles->add_vertex(v1);
+            triangles->close_primitive();
+          }
           reversed = false;
         } else {
-          triangles->add_vertex(v1);
-          triangles->add_vertex(v2);
+          if (v0 != v1 && v0 != v2 && v1 != v2) {
+            triangles->add_vertex(v0);
+            triangles->add_vertex(v1);
+            triangles->add_vertex(v2);
+            triangles->close_primitive();
+          }
           reversed = true;
         }
         v0 = v1;
         v1 = v2;
-        triangles->close_primitive();
       }
       ++li;
     }
@@ -197,21 +203,27 @@ decompose_impl() const {
       ++vi;
       bool reversed = false;
       while (vi < end) {
+        int v2 = get_vertex(vi);
         if (reversed) {
-          triangles->add_vertex(v1);
-          triangles->add_vertex(v0);
+          if (v0 != v1 && v0 != v2 && v1 != v2) {
+            triangles->add_vertex(v1);
+            triangles->add_vertex(v0);
+            triangles->add_vertex(v2);
+            triangles->close_primitive();
+          }
           reversed = false;
         } else {
-          triangles->add_vertex(v0);
-          triangles->add_vertex(v1);
+          if (v0 != v1 && v0 != v2 && v1 != v2) {
+            triangles->add_vertex(v0);
+            triangles->add_vertex(v1);
+            triangles->add_vertex(v2);
+            triangles->close_primitive();
+          }
           reversed = true;
         }
-        int v2 = get_vertex(vi);
         ++vi;
-        triangles->add_vertex(v2);
         v0 = v1;
         v1 = v2;
-        triangles->close_primitive();
       }
       ++li;
     }

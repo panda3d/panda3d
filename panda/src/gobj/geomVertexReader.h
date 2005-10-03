@@ -61,12 +61,14 @@ class EXPCL_PANDA GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(const GeomVertexData *vertex_data);
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                            const string &name);
+                          const string &name);
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                            const InternalName *name);
+                          const InternalName *name);
   INLINE GeomVertexReader(const GeomVertexArrayData *array_data);
   INLINE GeomVertexReader(const GeomVertexArrayData *array_data, 
-                            int column);
+                          int column);
+  INLINE GeomVertexReader(const GeomVertexReader &copy);
+  INLINE void operator = (const GeomVertexReader &copy);
   INLINE ~GeomVertexReader();
 
   INLINE const GeomVertexData *get_vertex_data() const;

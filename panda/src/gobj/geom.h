@@ -83,9 +83,9 @@ PUBLISHED:
   void remove_primitive(int i);
   void clear_primitives();
 
-  INLINE CPT(Geom) decompose() const;
-  INLINE CPT(Geom) rotate() const;
-  INLINE CPT(Geom) unify() const;
+  INLINE PT(Geom) decompose() const;
+  INLINE PT(Geom) rotate() const;
+  INLINE PT(Geom) unify() const;
 
   void decompose_in_place();
   void rotate_in_place();

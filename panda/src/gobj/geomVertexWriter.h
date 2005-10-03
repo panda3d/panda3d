@@ -74,12 +74,14 @@ class EXPCL_PANDA GeomVertexWriter : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexWriter(GeomVertexData *vertex_data);
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                            const string &name);
+                          const string &name);
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                            const InternalName *name);
+                          const InternalName *name);
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data);
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data, 
-                            int column);
+                          int column);
+  INLINE GeomVertexWriter(const GeomVertexWriter &copy);
+  INLINE void operator = (const GeomVertexWriter &copy);
   INLINE ~GeomVertexWriter();
 
   INLINE GeomVertexData *get_vertex_data() const;

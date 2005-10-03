@@ -88,6 +88,29 @@ GeomVertexRewriter(GeomVertexArrayData *array_data, int column) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexRewriter::
+GeomVertexRewriter(const GeomVertexRewriter &copy) :
+  GeomVertexWriter(copy),
+  GeomVertexReader(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::Copy Assignment Operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexRewriter::
+operator = (const GeomVertexRewriter &copy) {
+  GeomVertexWriter::operator = (copy);
+  GeomVertexReader::operator = (copy);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::Destructor
 //       Access: Published
 //  Description: 

@@ -44,12 +44,14 @@ class EXPCL_PANDA GeomVertexRewriter : public GeomVertexWriter, public GeomVerte
 PUBLISHED:
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data);
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data,
-                              const string &name);
+                            const string &name);
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data,
-                              const InternalName *name);
+                            const InternalName *name);
   INLINE GeomVertexRewriter(GeomVertexArrayData *array_data);
   INLINE GeomVertexRewriter(GeomVertexArrayData *array_data, 
-                              int column);
+                            int column);
+  INLINE GeomVertexRewriter(const GeomVertexRewriter &copy);
+  INLINE void operator = (const GeomVertexRewriter &copy);
   INLINE ~GeomVertexRewriter();
 
   INLINE GeomVertexData *get_vertex_data() const;

@@ -89,6 +89,43 @@ GeomVertexReader(const GeomVertexArrayData *array_data, int column) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexReader::
+GeomVertexReader(const GeomVertexReader &copy) :
+  _vertex_data(copy._vertex_data),
+  _array(copy._array),
+  _array_data(copy._array_data),
+  _packer(copy._packer),
+  _stride(copy._stride),
+  _pointer_begin(copy._pointer_begin),
+  _pointer_end(copy._pointer_end),
+  _pointer(copy._pointer),
+  _start_row(copy._start_row)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::Copy Assignment Operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexReader::
+operator = (const GeomVertexReader &copy) {
+  _vertex_data = copy._vertex_data;
+  _array = copy._array;
+  _array_data = copy._array_data;
+  _packer = copy._packer;
+  _stride = copy._stride;
+  _pointer_begin = copy._pointer_begin;
+  _pointer_end = copy._pointer_end;
+  _pointer = copy._pointer;
+  _start_row = copy._start_row;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::Destructor
 //       Access: Published
 //  Description: 
