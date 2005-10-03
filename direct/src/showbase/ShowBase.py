@@ -1610,6 +1610,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now render a frame to fill up the texture.
         rig.reparentTo(camera)
+        base.graphicsEngine.openWindows()
         base.graphicsEngine.renderFrame()
 
         tex = buffer.getTexture()
@@ -1619,6 +1620,80 @@ class ShowBase(DirectObject.DirectObject):
 
         base.graphicsEngine.removeWindow(buffer)
         rig.removeNode()
+
+        return saved
+
+    def saveSpheremap(self, namePrefix = 'spheremap.png',
+                      defaultFilename = 0, source = None,
+                      camera = None, size = 256,
+                      cameraMask = BitMask32.allOn(),
+                      numVertices = 1000):
+
+        """ This works much like saveCubemap(), and uses the graphics
+        API's hardware cubemapping ability to get a 360-degree view of
+        the world.  But then it converts the six cubemap faces into a
+        single fisheye texture, suitable for applying as a static
+        environment map (sphere map).
+
+        For static environment maps, sphere maps are often preferable
+        to static cube maps because they require only a single texture
+        and because they are supported on a broader range of hardware.
+        """
+
+        if source == None:
+            source = base.win
+
+        if camera == None:
+            if hasattr(source, "getCamera"):
+                camera = source.getCamera()
+            if camera == None:
+                camera = base.camera
+
+        if hasattr(source, "getWindow"):
+            source = source.getWindow()
+
+        # First, make an offscreen buffer to convert the cube map to a
+        # sphere map.  We make it first so we can guarantee the
+        # rendering order for the cube map.
+        toSphere = source.makeTextureBuffer(namePrefix, size, size)
+
+        # Now make the cube map buffer.
+        rig = NodePath(namePrefix)
+        buffer = toSphere.makeCubeMap(namePrefix, size, 0, rig, cameraMask)
+        if buffer == None:
+            raise StandardError, "Could not make cube map."
+
+        # Set up the scene to convert the cube map.  It's just a
+        # simple scene, with only the FisheyeMaker object in it.
+        dr = toSphere.makeDisplayRegion()
+        camNode = Camera('camNode')
+        lens = OrthographicLens()
+        lens.setFilmSize(2, 2)
+        lens.setNearFar(-1000, 1000)
+        camNode.setLens(lens)
+        root = NodePath('buffer')
+        cam = root.attachNewNode(camNode)
+        dr.setCamera(cam)
+
+        fm = FisheyeMaker('card')
+        fm.setNumVertices(numVertices)
+        fm.setSquareInscribed(1, 1.1)
+        card = root.attachNewNode(fm.generate())
+        card.setTexture(buffer.getTexture())
+        
+        # Now render a frame.  This will render out the cube map and
+        # then apply it to the the card in the toSphere buffer.
+        rig.reparentTo(camera)
+        base.graphicsEngine.openWindows()
+        base.graphicsEngine.renderFrame()
+
+        saved = self.screenshot(namePrefix = namePrefix,
+                                defaultFilename = defaultFilename,
+                                source = toSphere)
+
+        #base.graphicsEngine.removeWindow(buffer)
+        #base.graphicsEngine.removeWindow(toSphere)
+        #rig.removeNode()
 
         return saved
 
