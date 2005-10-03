@@ -1411,12 +1411,12 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
         if (dll[-4:]==".exe"):
             wdll = "built/bin/"+dll
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, ldef], [wdll], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj)
         elif (dll[-4:]==".dll"):
             wdll = "built/bin/"+dll
             wlib = "built/lib/"+dll[:-4]+".lib"
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, ldef], [wdll, wlib], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj)
         else:
             wdll = "built/plugins/"+dll
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
