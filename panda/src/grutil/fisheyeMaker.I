@@ -1,0 +1,74 @@
+// Filename: fisheyeMaker.I
+// Created by:  drose (3Oct05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FisheyeMaker::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FisheyeMaker::
+FisheyeMaker(const string &name) : Namable(name) {
+  reset();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FisheyeMaker::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FisheyeMaker::
+~FisheyeMaker() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FisheyeMaker::set_num_vertices
+//       Access: Public
+//  Description: Specifies the approximate number of vertices to be
+//               used to generate the rose.  This is the approximate
+//               number of vertices that will be located within the
+//               rose's unit circle, not counting the inscribing
+//               square (if any).  The actual number of vertices used
+//               may be +/- 25% of this value.
+////////////////////////////////////////////////////////////////////
+INLINE void FisheyeMaker::
+set_num_vertices(int num_vertices) {
+  _num_vertices = num_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FisheyeMaker::set_square_inscribed
+//       Access: Public
+//  Description: Sets the flag that indicates whether the rose should
+//               be inscribed within a square.  When this is true, an
+//               additional square is generated to inscribed the
+//               circular rose, with the indicated "radius" (the sides
+//               of the square will be 2 * square_radius).  The
+//               texture coordinates of the square will uniformly map
+//               to the back pole of the cube map.
+//
+//               This is mainly useful to provide a good uniform
+//               background color for a sphere map so that it does not
+//               have a sharp circular edge that might produce
+//               artifacts due to numerical imprecision when mapping.
+////////////////////////////////////////////////////////////////////
+INLINE void FisheyeMaker::
+set_square_inscribed(bool square_inscribed, float square_radius) {
+  _square_inscribed = true;
+  _square_radius = square_radius;
+}

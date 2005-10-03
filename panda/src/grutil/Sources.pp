@@ -12,6 +12,7 @@
 
   #define SOURCES \
     cardMaker.I cardMaker.h \
+    fisheyeMaker.I fisheyeMaker.h \
     config_grutil.h \
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
@@ -20,6 +21,7 @@
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
+    fisheyeMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
     openCVTexture.cxx \    	 
@@ -28,6 +30,7 @@
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
+    fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
