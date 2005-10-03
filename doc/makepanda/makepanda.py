@@ -222,8 +222,8 @@ def PkgSelected(pkglist, pkg):
     if (OMIT.count(pkg)): return 0
     return 1
 
-def DependencyQueue(fn, args, targets, sources):
-    DEPENDENCYQUEUE.append([fn,args,targets,sources])
+def DependencyQueue(fn, args, targets, sources, altsrc):
+    DEPENDENCYQUEUE.append([fn,args,targets,sources, altsrc])
 
 ########################################################################
 ##
@@ -1025,7 +1025,7 @@ def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0): exit("Cannot find source file "+src)
     dep = CxxCalcDependencies(fullsrc, ipath, []) + xdep
-    DependencyQueue(fn, [wobj,fullsrc,ipath,opts], [wobj], dep)
+    DependencyQueue(fn, [wobj,fullsrc,ipath,opts], [wobj], dep, [])
 
 ########################################################################
 ##
@@ -1068,7 +1068,7 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     if (fullsrc == 0): exit("Cannot find source file "+src)
     dstc="built/tmp/"+dstc
     dsth="built/include/"+dsth
-    DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc])
+    DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc], [])
 
 ########################################################################
 ##
@@ -1106,7 +1106,7 @@ def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
         EnqueueCxx(ipath=IPATH, opts=OPTS, obj=obj, src=dst)
         return()
     if (fullsrc == 0): exit("Cannot find source file "+src)
-    DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc])
+    DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc], [])
 
 ########################################################################
 ##
@@ -1179,11 +1179,11 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
     if (COMPILER=="MSVC7"):
-        dep = "built/bin/interrogate.exe"
+       	altdep = "built/bin/interrogate.exe"
         wobj = "built/tmp/"+obj
         fn = CompileIgateMSVC7
     if (COMPILER=="LINUXA"):
-        dep = "built/bin/interrogate"
+        altdep = "built/bin/interrogate"
         wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileIgateLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
@@ -1198,10 +1198,10 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
             if (files.count(x)!=0): files.remove(x)
     for x in also: files.append(x)
     ipath = ["built/tmp"] + ipath + ["built/include"]
-    dep = [dep, "built/tmp/dtool_have_python.dat"]
+    dep = ["built/tmp/dtool_have_python.dat"]
     dep = dep + CxxCalcDependenciesAll(xpaths(src+"/",files,""), ipath)
     outc = "built/tmp/"+obj[:-4]+".cxx"
-    DependencyQueue(fn, [ipath,opts,outd,outc,wobj,src,module,library,files], [wobj, outd], dep)
+    DependencyQueue(fn, [ipath,opts,outd,outc,wobj,src,module,library,files], [wobj, outd], dep, [altdep])
 
 ########################################################################
 ##
@@ -1233,9 +1233,11 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
     if (COMPILER=="MSVC7"):
+       	altdep = "built/bin/interrogate_module.exe"
         wobj = "built/tmp/"+obj[:-4]+".obj"
         fn = CompileImodMSVC7
     if (COMPILER=="LINUXA"):
+       	altdep = "built/bin/interrogate_module"
         wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileImodLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
@@ -1243,7 +1245,7 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     outc = "built/tmp/"+obj[:-4]+".cxx"
     files = xpaths("built/pandac/input/",files,"")
     dep = files + ["built/tmp/dtool_have_python.dat"]
-    DependencyQueue(fn, [outc, wobj, module, library, ipath, opts, files], [wobj], dep)
+    DependencyQueue(fn, [outc, wobj, module, library, ipath, opts, files], [wobj], dep, [altdep])
 
 ########################################################################
 ##
@@ -1271,7 +1273,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
         else:                  wlib = "built/lib/" + lib[:-4] + ".lib"
         if (SLAVEBUILD!=0) and (SLAVEBUILD!=wlib): return
         wobj = xpaths("built/tmp/",obj,"")
-        DependencyQueue(CompileLibMSVC7, [wlib, wobj, opts], [wlib], wobj)
+        DependencyQueue(CompileLibMSVC7, [wlib, wobj, opts], [wlib], wobj, [])
 
     if (COMPILER=="LINUXA"):
         if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".a"
@@ -1279,7 +1281,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
         if (SLAVEBUILD!=0) and (SLAVEBUILD!=wlib): return
         wobj = []
         for x in obj: wobj.append("built/tmp/" + x[:-4] + ".o")
-        DependencyQueue(CompileLibLINUXA, [wlib, wobj, opts], [wlib], wobj)
+        DependencyQueue(CompileLibLINUXA, [wlib, wobj, opts], [wlib], wobj, [])
 
 ########################################################################
 ##
@@ -1411,16 +1413,16 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
         if (dll[-4:]==".exe"):
             wdll = "built/bin/"+dll
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj, [])
         elif (dll[-4:]==".dll"):
             wdll = "built/bin/"+dll
             wlib = "built/lib/"+dll[:-4]+".lib"
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj, [])
         else:
             wdll = "built/plugins/"+dll
             if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj)
+            DependencyQueue(CompileLinkMSVC7, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj, [])
 
     if (COMPILER=="LINUXA"):
         if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
@@ -1434,7 +1436,7 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
             else: exit("unknown suffix in object list.")
         if (SLAVEBUILD!=0) and (SLAVEBUILD!=wdll): return
-        DependencyQueue(CompileLinkLINUXA, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj)
+        DependencyQueue(CompileLinkLINUXA, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj, [])
 
 
 ##########################################################################################
@@ -1457,7 +1459,7 @@ def EnqueueBam(preconv, bam, egg):
     else:
         flt2egg = "built/bin/flt2egg"
         egg2bam = "built/bin/egg2bam"
-    DependencyQueue(CompileBam, [preconv, bam, egg], [bam], [egg, flt2egg, egg2bam])
+    DependencyQueue(CompileBam, [preconv, bam, egg], [bam], [egg], [flt2egg, egg2bam])
 
 ##########################################################################################
 #
@@ -4490,6 +4492,10 @@ def BuildWorker(taskqueue, donequeue, slave):
 def AllSourcesReady(task, pending):
     sources = task[3]
     for x in sources:
+        if (pending.has_key(x)):
+            return 0
+    altsources = task[4]
+    for x in altsources:
         if (pending.has_key(x)):
             return 0
     return 1
