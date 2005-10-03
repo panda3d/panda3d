@@ -711,7 +711,7 @@ delete_texture() {
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext8::
 d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface,
-		       bool inverted, Texture *result) {
+		       bool inverted, Texture *result, int z) {
   // still need custom conversion since d3d/d3dx has no way to convert
   // arbitrary fmt to ARGB in-memory user buffer
 
@@ -723,8 +723,11 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface8 *d3d_surface,
   nassertr((num_components == 3) || (num_components == 4), E_FAIL);  // cant handle anything else now
   nassertr(IS_VALID_PTR(d3d_surface), E_FAIL);
 
-  PTA_uchar ram_image = result->modify_ram_image();
-  BYTE *buf = ram_image.p();
+  BYTE *buf = result->modify_ram_image();
+  if (z >= 0) {
+    nassertr(z < result->get_z_size(), E_FAIL);
+    buf += z * result->get_expected_ram_page_size();
+  }
 
   if (IsBadWritePtr(d3d_surface, sizeof(DWORD))) {
     dxgsg8_cat.error()

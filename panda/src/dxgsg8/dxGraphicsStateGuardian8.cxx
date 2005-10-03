@@ -1386,7 +1386,35 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
 
-  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgb);
+  Texture::Format format = tex->get_format();
+  Texture::ComponentType component_type = tex->get_component_type();
+
+  switch (format) {
+  case Texture::F_depth_component:
+  case Texture::F_stencil_index:
+    // Sorry, not (yet?) supported in pandadx.
+    return false;
+
+  default:
+    format = Texture::F_rgb;
+    component_type = Texture::T_unsigned_byte;
+  }
+
+  Texture::TextureType texture_type;
+  if (z >= 0) {
+    texture_type = Texture::TT_cube_map;
+  } else {
+    texture_type = Texture::TT_2d_texture;
+  }
+
+  if (tex->get_x_size() != w || tex->get_y_size() != h ||
+      tex->get_component_type() != component_type ||
+      tex->get_format() != format ||
+      tex->get_texture_type() != texture_type) {
+    // Re-setup the texture; its properties have changed.
+    tex->setup_texture(texture_type, w, h, tex->get_z_size(), 
+                       component_type, format);
+  }
 
   rect.top = yo;
   rect.left = xo;
@@ -1488,7 +1516,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   }
 
   DXTextureContext8::d3d_surface_to_texture(rect, temp_surface, 
-					    copy_inverted, tex);
+					    copy_inverted, tex, z);
 
   RELEASE(temp_surface, dxgsg8, "temp_surface", RELEASE_ONCE);
 
@@ -2500,7 +2528,7 @@ do_issue_texture() {
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
-        texcoord_dimensions = 4;
+        texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
         tex_mat = tex_mat->compose(camera_transform);
       }
@@ -2509,7 +2537,7 @@ do_issue_texture() {
     case TexGenAttrib::M_eye_position:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
-      texcoord_dimensions = 4;
+      texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
       
@@ -2536,9 +2564,10 @@ do_issue_texture() {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
 	DWORD transform_flags = texcoord_dimensions;
-	//if (m.get_col3(3) != LVecBase3f::zero()) 
-	{
-	  transform_flags |= D3DTTFF_PROJECTED;
+	if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
+	  // If we have a projected texture matrix, we also need to
+	  // set D3DTTFF_COUNT4.
+	  transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
 	}
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);

@@ -43,7 +43,8 @@ public:
 
   static HRESULT d3d_surface_to_texture(RECT &source_rect, 
 					IDirect3DSurface8 *d3d_surface, 
-					bool inverted, Texture *result);
+					bool inverted, Texture *result,
+					int z);
 
 private:
   HRESULT fill_d3d_texture_pixels();
