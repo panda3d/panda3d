@@ -1655,7 +1655,8 @@ class ShowBase(DirectObject.DirectObject):
         # First, make an offscreen buffer to convert the cube map to a
         # sphere map.  We make it first so we can guarantee the
         # rendering order for the cube map.
-        toSphere = source.makeTextureBuffer(namePrefix, size, size)
+        toSphere = source.makeTextureBuffer(namePrefix, size, size,
+                                            Texture(), 1)
 
         # Now make the cube map buffer.
         rig = NodePath(namePrefix)
@@ -1689,7 +1690,7 @@ class ShowBase(DirectObject.DirectObject):
 
         saved = self.screenshot(namePrefix = namePrefix,
                                 defaultFilename = defaultFilename,
-                                source = toSphere)
+                                source = toSphere.getTexture())
 
         #base.graphicsEngine.removeWindow(buffer)
         #base.graphicsEngine.removeWindow(toSphere)
