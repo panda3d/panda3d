@@ -1330,7 +1330,12 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
   }
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
-  nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+  if (tex->get_texture_type() != Texture::TT_2d_texture) {
+    // For a specialty texture like a cube map, go the slow route
+    // through RAM for now.
+    framebuffer_copy_to_ram(tex, z, dr, rb);
+    return;
+  }
   nassertv(dtc->get_d3d_2d_texture() != NULL);
 
   IDirect3DSurface8 *tex_level_0, *render_target;
