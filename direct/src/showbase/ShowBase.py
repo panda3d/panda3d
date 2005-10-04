@@ -1608,6 +1608,10 @@ class ShowBase(DirectObject.DirectObject):
         if buffer == None:
             raise StandardError, "Could not make cube map."
 
+        # Set the near and far planes from the default lens.
+        lens = rig.find('**/+Camera').node().getLens()
+        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
+
         # Now render a frame to fill up the texture.
         rig.reparentTo(camera)
         base.graphicsEngine.openWindows()
@@ -1662,7 +1666,12 @@ class ShowBase(DirectObject.DirectObject):
         rig = NodePath(namePrefix)
         buffer = toSphere.makeCubeMap(namePrefix, size, 0, rig, cameraMask)
         if buffer == None:
+            base.graphicsEngine.removeWindow(toSphere)
             raise StandardError, "Could not make cube map."
+
+        # Set the near and far planes from the default lens.
+        lens = rig.find('**/+Camera').node().getLens()
+        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
 
         # Set up the scene to convert the cube map.  It's just a
         # simple scene, with only the FisheyeMaker object in it.
@@ -1692,9 +1701,9 @@ class ShowBase(DirectObject.DirectObject):
                                 defaultFilename = defaultFilename,
                                 source = toSphere.getTexture())
 
-        #base.graphicsEngine.removeWindow(buffer)
-        #base.graphicsEngine.removeWindow(toSphere)
-        #rig.removeNode()
+        base.graphicsEngine.removeWindow(buffer)
+        base.graphicsEngine.removeWindow(toSphere)
+        rig.removeNode()
 
         return saved
 
