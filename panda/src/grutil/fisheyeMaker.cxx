@@ -40,6 +40,7 @@ reset() {
   _num_vertices = 1000;
   _square_inscribed = false;
   _square_radius = 1.0f;
+  set_reflection(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -363,12 +364,12 @@ add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
   if (b >= MathNumbers::pi_f) {
     // Special case: we want to stop at the back pole, not continue
     // around it.
-    texcoord.add_data3f(0, -1, 0);
+    texcoord.add_data3f(0, _reflect, 0);
 
   } else {
     float sinb, cosb;
     csincos(b, &sinb, &cosb);
-    LPoint3f tc(sinb * cosa, cosb, sinb * sina);
+    LPoint3f tc(sinb * cosa, cosb * _reflect, sinb * sina);
     texcoord.add_data3f(tc);
   }
 }
@@ -405,6 +406,6 @@ add_square_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
     vertex.add_data3f(point);
   }
 
-  texcoord.add_data3f(0, -1, 0);
+  texcoord.add_data3f(0, _reflect, 0);
 }
   

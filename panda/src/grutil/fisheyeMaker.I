@@ -69,6 +69,21 @@ set_num_vertices(int num_vertices) {
 ////////////////////////////////////////////////////////////////////
 INLINE void FisheyeMaker::
 set_square_inscribed(bool square_inscribed, float square_radius) {
-  _square_inscribed = true;
+  _square_inscribed = square_inscribed;
   _square_radius = square_radius;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FisheyeMaker::set_reflection
+//       Access: Public
+//  Description: Sets the flag indicating whether the texture image
+//               should be mirrored (true) or normal (false).  When
+//               this is true, the 3-D texture coordinates will be
+//               reversed so that the image is appropriate for a
+//               reflection.  This is the best choice for generating a
+//               sphere map from a cube map.  The default is false.
+////////////////////////////////////////////////////////////////////
+INLINE void FisheyeMaker::
+set_reflection(bool reflection) {
+  _reflect = (reflection) ? -1.0 : 1.0;
 }

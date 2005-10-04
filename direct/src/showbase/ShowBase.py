@@ -1574,7 +1574,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return saved
 
-    def saveCubemap(self, namePrefix = 'cubemap_#.png',
+    def saveCubeMap(self, namePrefix = 'cube_map_#.png',
                     defaultFilename = 0, source = None,
                     camera = None, size = 128,
                     cameraMask = BitMask32.allOn()):
@@ -1627,22 +1627,22 @@ class ShowBase(DirectObject.DirectObject):
 
         return saved
 
-    def saveSpheremap(self, namePrefix = 'spheremap.png',
+    def saveSphereMap(self, namePrefix = 'spheremap.png',
                       defaultFilename = 0, source = None,
                       camera = None, size = 256,
                       cameraMask = BitMask32.allOn(),
                       numVertices = 1000):
 
-        """ This works much like saveCubemap(), and uses the graphics
-        API's hardware cubemapping ability to get a 360-degree view of
-        the world.  But then it converts the six cubemap faces into a
-        single fisheye texture, suitable for applying as a static
-        environment map (sphere map).
+        """ This works much like saveCubeMap(), and uses the graphics
+        API's hardware cube-mapping ability to get a 360-degree view
+        of the world.  But then it converts the six cube map faces
+        into a single fisheye texture, suitable for applying as a
+        static environment map (sphere map).
 
-        For static environment maps, sphere maps are often preferable
-        to static cube maps because they require only a single texture
-        and because they are supported on a broader range of hardware.
-        """
+        For eye-relative static environment maps, sphere maps are
+        often preferable to cube maps because they require only a
+        single texture and because they are supported on a broader
+        range of hardware.  """
 
         if source == None:
             source = base.win
@@ -1688,6 +1688,7 @@ class ShowBase(DirectObject.DirectObject):
         fm = FisheyeMaker('card')
         fm.setNumVertices(numVertices)
         fm.setSquareInscribed(1, 1.1)
+        fm.setReflection(1)
         card = root.attachNewNode(fm.generate())
         card.setTexture(buffer.getTexture())
         

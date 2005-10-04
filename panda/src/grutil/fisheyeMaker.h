@@ -49,6 +49,7 @@ PUBLISHED:
   void set_fov(float fov);
   INLINE void set_num_vertices(int num_vertices);
   INLINE void set_square_inscribed(bool square_inscribed, float square_radius);
+  INLINE void set_reflection(bool reflection);
 
   PT(PandaNode) generate();
 
@@ -64,6 +65,7 @@ private:
   int _num_vertices;
   bool _square_inscribed;
   float _square_radius;
+  float _reflect;
 };
 
 #include "fisheyeMaker.I"
