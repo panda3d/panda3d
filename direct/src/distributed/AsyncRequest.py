@@ -4,8 +4,10 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 from ConnectionRepository import *
 
+DefaultTimeout = 8.0
 if __debug__:
-    BreakOnTimeout = config.GetBool("break-on-timeout", 0)
+    DefaultTimeout = config.GetInt("async-request-default-timeout", 8.0)
+    BreakOnTimeout = config.GetBool("async-request-break-on-timeout", 0)
 
 
 class AsyncRequest(DirectObject):
@@ -35,7 +37,7 @@ class AsyncRequest(DirectObject):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 
-    def __init__(self, air, replyToChannelId=None, timeout=4.0):
+    def __init__(self, air, replyToChannelId=None, timeout=DefaultTimeout):
         """
         air is the AI Respository.
         replyToChannelId may be an avatarId, an accountId, or a channelId.
@@ -86,7 +88,8 @@ class AsyncRequest(DirectObject):
         if __debug__:
             global BreakOnTimeout
             if BreakOnTimeout:
-                print "\n\nself.avatarId =", self.avatarId
+                if hasattr(self, "avatarId"):
+                    print "\n\nself.avatarId =", self.avatarId
                 print "\nself.neededObjects =", self.neededObjects
                 print "\ntimed out after %s seconds.\n\n"%(task.delayTime,)
                 import pdb; pdb.set_trace()
