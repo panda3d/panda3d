@@ -1725,17 +1725,18 @@ class ShowBase(DirectObject.DirectObject):
         globalClock.setMode(ClockObject.MNonRealTime)
         globalClock.setDt(1.0/float(fps))
         t = taskMgr.add(self._movieTask, namePrefix + '_task')
-        t.frameIndex = 1
+        t.frameIndex = 0  # Frame 0 is not captured.
         t.numFrames = int(duration * fps)
         t.source = source
         t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format
         t.uponDeath = lambda state: globalClock.setMode(ClockObject.MNormal)
 
     def _movieTask(self, state):
-        frameName = state.outputString % state.frameIndex
-        self.notify.info("Capturing frame: " + frameName)
-        self.screenshot(namePrefix = frameName, defaultFilename = 0,
-                        source = state.source)
+        if state.frameIndex != 0:
+            frameName = state.outputString % state.frameIndex
+            self.notify.info("Capturing frame: " + frameName)
+            self.screenshot(namePrefix = frameName, defaultFilename = 0,
+                            source = state.source)
                 
         state.frameIndex += 1
         if state.frameIndex > state.numFrames:
