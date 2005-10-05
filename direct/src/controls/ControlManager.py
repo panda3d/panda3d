@@ -71,28 +71,29 @@ class ControlManager:
         inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
         
         inputState.watch("jump", "control", "control-up")
+
+        if __dev__:
+            inputState.watch("slideLeft", "home", "home-up")
+            inputState.watch("slideRight", "end", "end-up")
+            inputState.watch("levitateUp", "page_up", "page_up-up")
+            inputState.watch("levitateDown", "page_down", "page_down-up")
+            inputState.watch("run", "shift", "shift-up")
         
-        inputState.watch("slideLeft", "home", "home-up")
-        inputState.watch("slideRight", "end", "end-up")
-        inputState.watch("levitateUp", "page_up", "page_up-up")
-        inputState.watch("levitateDown", "page_down", "page_down-up")
-        inputState.watch("run", "shift", "shift-up")
+            # FYI, ghost mode uses jump for slide.
+            # inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
+            inputState.watch("slide", "mouse3", "mouse3-up")
         
-        # FYI, ghost mode uses jump for slide.
-        #inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
-        inputState.watch("slide", "mouse3", "mouse3-up")
-        
-        #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
-        #inputState.watch("slideLeft", "control-arrow_left", "control-arrow_left-up")
-        #inputState.watch("slideLeft", "alt-arrow_left", "alt-arrow_left-up")
-        #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
-        #inputState.watch("slideLeft", "slide-is-disabled", "slide-is-disabled")
-        
-        #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
-        #inputState.watch("slideRight", "control-arrow_right", "control-arrow_right-up")
-        #inputState.watch("slideRight", "alt-arrow_right", "alt-arrow_right-up")
-        #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
-        #inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
+            # inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
+            # inputState.watch("slideLeft", "control-arrow_left", "control-arrow_left-up")
+            # inputState.watch("slideLeft", "alt-arrow_left", "alt-arrow_left-up")
+            # inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
+            # inputState.watch("slideLeft", "slide-is-disabled", "slide-is-disabled")
+            
+            # inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
+            # inputState.watch("slideRight", "control-arrow_right", "control-arrow_right-up")
+            # inputState.watch("slideRight", "alt-arrow_right", "alt-arrow_right-up")
+            # inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
+            # inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
 
         if self.wantWASD:
             inputState.watch("forward", "w", "w-up")

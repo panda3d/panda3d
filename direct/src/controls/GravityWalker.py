@@ -165,7 +165,7 @@ class GravityWalker(DirectObject.DirectObject):
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
-        return (self.speed, self.rotationSpeed)
+        return (self.speed, self.rotationSpeed, self.slideSpeed)
 
     def setAvatar(self, avatar):
         self.avatar = avatar
@@ -448,18 +448,16 @@ class GravityWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = 0 #hack -- was: inputState.isSet("slide")
+        slideLeft = inputState.isSet("slideLeft")
+        slideRight = inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
-        #if run and self.speed>0.0:
-        #    self.speed*=2.0 #*#
-        # Should fSlide be renamed slideButton?
-        self.slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed) or
-                (turnRight and self.avatarControlForwardSpeed))
-        self.rotationSpeed=not slide and (
+        # Use reverse speed for strafe - that should be about what you want
+        self.slideSpeed=(slideLeft and -self.avatarControlReverseSpeed or
+                         slideRight and self.avatarControlReverseSpeed)
+        self.rotationSpeed=not (slideLeft or slideRight) and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
 
