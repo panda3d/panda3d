@@ -518,7 +518,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.vel=Vec3(Vec3.forward() * distance +
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
-                if 1:
+                if 0:
                     # rotMat is the rotation matrix corresponding to
                     # our previous heading.
                     rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
@@ -532,7 +532,7 @@ class GravityWalker(DirectObject.DirectObject):
                     step=rotMat.xform(self.vel) + (self.priorParent * dt)
                     self.avatarNodePath.setFluidPos(Point3(
                             self.avatarNodePath.getPos()+step))
-                if 0:
+                if 1:
                     # rotMat is the rotation matrix corresponding to
                     # our previous heading.
                     rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
@@ -542,7 +542,7 @@ class GravityWalker(DirectObject.DirectObject):
                     headsUp(rotMat2, forward, up)
                     #rotMat2=Mat3.rotateMatNormaxis(0.0, )
                     step=rotMat2.xform(self.vel) + (self.priorParent * dt)
-                    if 1:
+                    if 0:
                         onScreenDebug.add("a getH()", self.avatarNodePath.getH())
                         onScreenDebug.add("a forward", forward.pPrintValues())
                         onScreenDebug.add("a up", up.pPrintValues())
