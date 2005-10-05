@@ -91,7 +91,8 @@ PUBLISHED:
   const TexCoord3d &get_uvw(const string &name) const;
   void set_uv(const string &name, const TexCoordd &texCoord);
   void set_uvw(const string &name, const TexCoord3d &texCoord);
-  EggVertexUV *get_uv_obj(const string &name) const;
+  const EggVertexUV *get_uv_obj(const string &name) const;
+  EggVertexUV *modify_uv_obj(const string &name);
   void set_uv_obj(EggVertexUV *vertex_uv);
   void clear_uv(const string &name);
 

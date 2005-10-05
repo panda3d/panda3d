@@ -176,6 +176,9 @@ protected:
                         CoordinateSystem coordsys);
 
 private:
+  INLINE static bool is_right(const LVector2d &v1, const LVector2d &v2);
+
+private:
   Children _children;
   const_iterator _gnc_iterator;
 
@@ -214,6 +217,7 @@ private:
     Normald _normal;
     string _uv_name;
     TexCoordd _uv;
+    bool _facing;
   };
   typedef pvector<TBNVertexReference> TBNVertexGroup;
   typedef pmap<TBNVertexValue, TBNVertexGroup> TBNVertexCollection;

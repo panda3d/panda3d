@@ -712,8 +712,8 @@ strip_normals() {
 //
 //               Like recompute_vertex_normals(), this function does
 //               not remove or adjust vertices in the vertex pool; it
-//               only adds new vertices with the normals removed.
-//               Thus, it is a good idea to call
+//               only adds new vertices with the new tangents and
+//               binormals computed.  Thus, it is a good idea to call
 //               remove_unused_vertices() after calling this.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
@@ -1781,7 +1781,15 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
               TexCoordd w1 = v1->get_uv(name);
               TexCoordd w2 = v2->get_uv(name);
               TexCoordd w3 = v3->get_uv(name);
-              
+
+              // Check the facing of the texture; we will have to
+              // split vertices whose UV's are mirrored along a seam.
+              // The facing is determined by the winding order of the
+              // texcoords on the polygon.  A front-facing polygon
+              // should not contribute to the tangent and binormal of
+              // a back-facing polygon, and vice-versa.
+	      value._facing = is_right(w1 - w2, w3 - w1);
+
               double x1 = p2[0] - p1[0];
               double x2 = p3[0] - p1[0];
               double y1 = p2[1] - p1[1];
@@ -1867,7 +1875,7 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
     EggVertexPool *pool = vertex->get_pool();
 
     EggVertex new_vertex(*vertex);
-    EggVertexUV *uv_obj = new_vertex.get_uv_obj(value._uv_name);
+    EggVertexUV *uv_obj = new_vertex.modify_uv_obj(value._uv_name);
     nassertv(uv_obj != (EggVertexUV *)NULL);
     uv_obj->set_tangent(tangent);
     uv_obj->set_binormal(binormal);

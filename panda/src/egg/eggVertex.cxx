@@ -223,14 +223,39 @@ set_uvw(const string &name, const TexCoord3d &uvw) {
 //       Access: Published
 //  Description: Returns the named EggVertexUV object, which defines
 //               both the UV coordinate pair for this name and the UV
-//               morphs.
+//               morphs.  This object might be shared between multiple
+//               vertices.  You should not attempt to modify this
+//               object; instead, call modify_uv_object to return a
+//               modifiable pointer.
 ////////////////////////////////////////////////////////////////////
-EggVertexUV *EggVertex::
+const EggVertexUV *EggVertex::
 get_uv_obj(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(name);
   if (ui != _uv_map.end()) {
     return (*ui).second;
   }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::modify_uv_obj
+//       Access: Published
+//  Description: Returns a modifiable pointer to the named EggVertexUV
+//               object, which defines both the UV coordinate pair for
+//               this name and the UV morphs.  Returns NULL if there
+//               is no such named UV object.
+////////////////////////////////////////////////////////////////////
+EggVertexUV *EggVertex::
+modify_uv_obj(const string &name) {
+  UVMap::iterator ui = _uv_map.find(name);
+  if (ui != _uv_map.end()) {
+    if ((*ui).second->get_ref_count() != 1) {
+      // Copy on write.
+      (*ui).second = new EggVertexUV(*(*ui).second);
+    }
+    return (*ui).second;
+  }
+
   return NULL;
 }
 

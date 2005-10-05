@@ -1065,7 +1065,7 @@ r_apply_texmats(EggTextureCollection &textures) {
       for (size_t i = 0; i < num_vertices; i++) {
         EggVertex *vertex = get_vertex(i);
 
-        EggVertexUV *uv_obj = vertex->get_uv_obj(uv_name);
+        const EggVertexUV *uv_obj = vertex->get_uv_obj(uv_name);
         if (uv_obj != (EggVertexUV *)NULL) {
           EggVertex new_vertex(*vertex);
           PT(EggVertexUV) new_uv_obj = new EggVertexUV(*uv_obj);
