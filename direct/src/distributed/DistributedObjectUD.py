@@ -428,7 +428,7 @@ class DistributedObjectUD(DirectObject):
         # simultaneously on different lists of avatars, although they
         # should have different names.
 
-        from toontown.ai import ToonBarrier
+        from otp.ai import Barrier
         context = self.__nextBarrierContext
         # We assume the context number is passed as a uint16.
         self.__nextBarrierContext = (self.__nextBarrierContext + 1) & 0xffff
@@ -436,7 +436,7 @@ class DistributedObjectUD(DirectObject):
         assert(self.notify.debug('beginBarrier(%s, %s, %s, %s)' % (context, name, avIds, timeout)))
 
         if avIds:
-            barrier = ToonBarrier.ToonBarrier(
+            barrier = Barrier.Barrier(
                 name, self.uniqueName(name), avIds, timeout,
                 doneFunc = PythonUtil.Functor(self.__barrierCallback, context, callback))
             self.__barriers[context] = barrier
