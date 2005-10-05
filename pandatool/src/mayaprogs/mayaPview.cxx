@@ -133,6 +133,9 @@ convert(const NodePath &parent) {
   // results.
   converter._polygon_output = true;
 
+  // We also want to get the animation if there is any.
+  converter.set_animation_convert(AC_both);
+
   PathReplace *path_replace = converter.get_path_replace();
 
   // Accept relative pathnames in the Maya file.

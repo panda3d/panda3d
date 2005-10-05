@@ -29,6 +29,8 @@
 #include "mouseAndKeyboard.h"
 #include "mouseRecorder.h"
 
+LoaderOptions PandaFramework::_loader_options;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
 //       Access: Public

@@ -19,6 +19,7 @@
 #include "loaderFileTypeBam.h"
 #include "config_pgraph.h"
 #include "bamFile.h"
+#include "loaderOptions.h"
 
 #include "dcast.h"
 
@@ -59,7 +60,8 @@ get_extension() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeBam::
-load_file(const Filename &path, bool report_errors) const {
+load_file(const Filename &path, const LoaderOptions &options) const {
+  bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
   BamFile bam_file;
   if (!bam_file.open_read(path, report_errors)) {
     return NULL;

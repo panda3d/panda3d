@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "loaderOptions.h"
 #include "notify.h"
 #include "pandaNode.h"
 #include "filename.h"
@@ -71,7 +72,8 @@ PUBLISHED:
   int find_all_files(const Filename &filename, const DSearchPath &search_path,
                      Results &results) const;
 
-  INLINE PT(PandaNode) load_sync(const Filename &filename, bool search = true) const;
+  INLINE PT(PandaNode) load_sync(const Filename &filename, 
+				 const LoaderOptions &options = LoaderOptions()) const;
 
   uint request_load(const string &event_name, const Filename &filename, bool search = true);
   bool check_load(uint id);
@@ -82,7 +84,7 @@ private:
   static bool _file_types_loaded;
 
   virtual bool process_request();
-  PT(PandaNode) load_file(const Filename &filename, bool search) const;
+  PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
 
   typedef TokenBoard<LoaderToken> LoaderTokenBoard;
   LoaderTokenBoard *_token_board;

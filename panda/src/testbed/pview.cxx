@@ -210,6 +210,10 @@ help() {
     "animations.\n\n"
 
     "Options:\n\n"
+
+    "  -a\n"
+    "      Convert and play animations, if loading an external file type\n"
+    "      (like .mb) directly and if the converter supports animations.\n\n"
     
     "  -c\n"
     "      Automatically center models within the viewing window on startup.\n"
@@ -257,11 +261,15 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "cls:Vhi";
+  static const char *optflags = "acls:Vhi";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
     switch (flag) {
+    case 'a':
+      PandaFramework::_loader_options.set_flags(PandaFramework::_loader_options.get_flags() | LoaderOptions::LF_convert_anim);
+      break;
+
     case 'c':
       auto_center = true;
       break;

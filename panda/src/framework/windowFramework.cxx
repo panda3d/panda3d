@@ -571,12 +571,19 @@ load_model(const NodePath &parent, Filename filename) {
     }
   }
   
+  LoaderOptions options = PandaFramework::_loader_options;
+  if (search) {
+    options.set_flags(options.get_flags() | LoaderOptions::LF_search);
+  } else {
+    options.set_flags(options.get_flags() & ~LoaderOptions::LF_search);
+  }
+
   Loader loader;
   PT(PandaNode) node;
   if (is_image) {
     node = load_image_as_model(filename);
   } else {
-    node = loader.load_sync(filename, search);
+    node = loader.load_sync(filename, options);
   }
 
   if (node == (PandaNode *)NULL) {

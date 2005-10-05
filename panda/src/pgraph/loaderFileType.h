@@ -27,6 +27,8 @@
 #include "pointerTo.h"
 #include "dSearchPath.h"
 
+class LoaderOptions;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileType
 // Description : This is the base class for a family of scene-graph
@@ -47,7 +49,7 @@ PUBLISHED:
   virtual string get_additional_extensions() const;
 
 public:
-  virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options) const;
 
 public:
   static TypeHandle get_class_type() {

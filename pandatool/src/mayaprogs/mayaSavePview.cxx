@@ -59,7 +59,7 @@ doIt(const MArgList &) {
   // asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
   int retval = _spawnlp(_P_DETACH, "pview", 
-                        "pview", "-cl", quoted.asChar(), NULL);
+                        "pview", "-cla", quoted.asChar(), NULL);
   if (retval == -1) {
     return MS::kFailure;
   }
@@ -68,7 +68,7 @@ doIt(const MArgList &) {
   // On non-Windows (e.g. Unix), we just use the system function,
   // which runs synchronously.  We could fork a process, but no one's
   // asked for this yet.
-  MString command = MString("pview -c \"") + filename + MString("\"");
+  MString command = MString("pview -cla \"") + filename + MString("\"");
 
   int command_result = system(command.asChar());
   if (command_result != 0) {

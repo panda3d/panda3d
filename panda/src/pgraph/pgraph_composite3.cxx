@@ -7,6 +7,7 @@
 #include "loaderFileType.cxx"
 #include "loaderFileTypeBam.cxx"
 #include "loaderFileTypeRegistry.cxx"
+#include "loaderOptions.cxx"
 #include "lodNode.cxx"
 #include "materialAttrib.cxx"
 #include "modelNode.cxx"

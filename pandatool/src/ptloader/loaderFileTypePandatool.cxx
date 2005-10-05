@@ -22,6 +22,7 @@
 #include "config_util.h"
 #include "load_egg_file.h"
 #include "eggData.h"
+#include "loaderOptions.h"
 
 TypeHandle LoaderFileTypePandatool::_type_handle;
 
@@ -96,7 +97,7 @@ resolve_filename(Filename &path) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypePandatool::
-load_file(const Filename &path, bool) const {
+load_file(const Filename &path, const LoaderOptions &options) const {
   PT(PandaNode) result;
 
   PT(EggData) egg_data = new EggData;
@@ -105,6 +106,11 @@ load_file(const Filename &path, bool) const {
   DSearchPath file_path;
   file_path.append_directory(path.get_dirname());
   _converter->get_path_replace()->_path = file_path;
+
+  if (options.get_flags() & LoaderOptions::LF_convert_anim) {
+    // Convert animation, if the converter supports it.
+    _converter->set_animation_convert(AC_both);
+  }
 
   if (_converter->convert_file(path)) {
     DistanceUnit input_units = _converter->get_input_units();

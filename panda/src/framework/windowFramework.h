@@ -32,6 +32,7 @@
 #include "pvector.h"
 #include "typedWritableReferenceCount.h"
 #include "graphicsWindow.h"
+#include "loaderOptions.h"
 
 class PandaFramework;
 class AmbientLight;

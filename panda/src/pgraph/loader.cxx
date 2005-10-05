@@ -407,9 +407,11 @@ process_request() {
 //               loaded.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
-load_file(const Filename &filename, bool search) const {
+load_file(const Filename &filename, const LoaderOptions &options) const {
   Results results;
   int num_files;
+
+  bool search = (options.get_flags() & LoaderOptions::LF_search) != 0;
 
   if (search) {
     // Look for the file along the model path.
@@ -452,7 +454,7 @@ load_file(const Filename &filename, bool search) const {
   for (int i = 0; i < num_files; ++i) {
     const Filename &path = results.get_file(i);
     LoaderFileType *type = results.get_file_type(i);
-    PT(PandaNode) result = type->load_file(path, true);
+    PT(PandaNode) result = type->load_file(path, options);
     if (result != (PandaNode *)NULL) {
       return result;
     }

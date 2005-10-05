@@ -58,7 +58,7 @@ get_extension() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeEgg::
-load_file(const Filename &path, bool) const {
+load_file(const Filename &path, const LoaderOptions &) const {
   PT(PandaNode) result = load_egg_file(path);
   return result;
 }

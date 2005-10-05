@@ -123,9 +123,9 @@ add_file(const Filename &file, LoaderFileType *type) {
 //               loaded.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(PandaNode) Loader::
-load_sync(const Filename &filename, bool search) const {
+load_sync(const Filename &filename, const LoaderOptions &options) const {
   if (!_file_types_loaded) {
     load_file_types();
   }
-  return load_file(filename, search);
+  return load_file(filename, options);
 }

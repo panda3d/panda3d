@@ -114,6 +114,9 @@ public:
   INLINE void set_exit_flag();
   INLINE void clear_exit_flag();
 
+public:
+  static LoaderOptions _loader_options;
+
 protected:
   virtual PT(WindowFramework) make_window_framework();
   virtual void make_default_pipe();

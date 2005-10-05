@@ -64,6 +64,7 @@
     loaderFileType.h \
     loaderFileTypeBam.h  \
     loaderFileTypeRegistry.h \
+    loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     modelNode.I modelNode.h \
@@ -169,6 +170,7 @@
     loaderFileType.cxx  \
     loaderFileTypeBam.cxx \
     loaderFileTypeRegistry.cxx  \
+    loaderOptions.cxx \
     lodNode.cxx \
     materialAttrib.cxx \
     modelNode.cxx \
@@ -268,6 +270,7 @@
     loaderFileType.h \
     loaderFileTypeBam.h \
     loaderFileTypeRegistry.h \
+    loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     modelNode.I modelNode.h \

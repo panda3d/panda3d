@@ -34,7 +34,7 @@ public:
   virtual string get_name() const;
   virtual string get_extension() const;
 
-  virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &optoins) const;
 
 public:
   static TypeHandle get_class_type() {

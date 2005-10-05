@@ -42,7 +42,7 @@ public:
   virtual string get_additional_extensions() const;
 
   virtual void resolve_filename(Filename &path) const;
-  virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options) const;
 
 private:
   SomethingToEggConverter *_converter;

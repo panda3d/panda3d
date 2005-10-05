@@ -57,7 +57,7 @@ get_additional_extensions() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileType::
-load_file(const Filename &path, bool report_errors) const {
+load_file(const Filename &path, const LoaderOptions &options) const {
   loader_cat.error()
     << get_type() << " cannot read PandaNode objects.\n";
   return NULL;
