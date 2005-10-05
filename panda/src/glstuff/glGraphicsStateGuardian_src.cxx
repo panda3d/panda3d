@@ -757,6 +757,8 @@ reset() {
   _current_shader_context = (CLP(ShaderContext) *)NULL;
   _vertex_array_shader_expansion = (ShaderExpansion *)NULL;
   _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  _texture_binding_shader_expansion = (ShaderExpansion *)NULL;
+  _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
   
   // Count the max number of lights
   GLint max_lights;
@@ -840,20 +842,20 @@ do_clear(const RenderBuffer &buffer) {
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
 
+  set_state_and_transform(RenderState::make_empty(), _external_transform);
+
   if (buffer_type & RenderBuffer::T_color) {
     GLP(ClearColor)(_color_clear_value[0],
                     _color_clear_value[1],
                     _color_clear_value[2],
                     _color_clear_value[3]);
     mask |= GL_COLOR_BUFFER_BIT;
-    _target._color_write = AttribSlots::get_defaults()._color_write;
     set_draw_buffer(buffer);
   }
   
   if (buffer_type & RenderBuffer::T_depth) {
     GLP(ClearDepth)(_depth_clear_value);
     mask |= GL_DEPTH_BUFFER_BIT;
-    _target._depth_write = AttribSlots::get_defaults()._depth_write;
   }
 
   if (buffer_type & RenderBuffer::T_stencil) {
@@ -885,20 +887,6 @@ do_clear(const RenderBuffer &buffer) {
     }
     GLCAT.spam(false) << ")" << endl;
   }
-  
-  if (_target._depth_write != _state._depth_write) {
-    do_issue_depth_write();
-    _state._depth_write = _target._depth_write;
-  }
-  if ((_target._transparency != _state._transparency)||
-      (_target._color_write != _state._color_write)||
-      (_target._color_blend != _state._color_blend)) {
-    do_issue_blending();
-    _state._transparency = _target._transparency;
-    _state._color_write = _target._color_write;
-    _state._color_blend = _target._color_blend;
-  }
-  _state_rs = 0;
   
   GLP(Clear)(mask);
   report_my_gl_errors();
@@ -1598,15 +1586,15 @@ draw_triangles(const GeomTriangles *primitive) {
       const unsigned char *client_pointer = setup_primitive(primitive);
       
       _glDrawRangeElements(GL_TRIANGLES, 
-			   primitive->get_min_vertex(),
-			   primitive->get_max_vertex(),
-			   primitive->get_num_vertices(),
-			   get_numeric_type(primitive->get_index_type()), 
-			   client_pointer);
+                           primitive->get_min_vertex(),
+                           primitive->get_max_vertex(),
+                           primitive->get_num_vertices(),
+                           get_numeric_type(primitive->get_index_type()), 
+                           client_pointer);
     } else {
       GLP(DrawArrays)(GL_TRIANGLES,
-		      primitive->get_first_vertex(),
-		      primitive->get_num_vertices());
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices());
     }
   }
   
@@ -1642,17 +1630,17 @@ draw_tristrips(const GeomTristrips *primitive) {
       _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
       _primitive_batches_tristrip_pcollector.add_level(1);
       if (primitive->is_indexed()) {
-	const unsigned char *client_pointer = setup_primitive(primitive);
-	_glDrawRangeElements(GL_TRIANGLE_STRIP, 
-			     primitive->get_min_vertex(),
-			     primitive->get_max_vertex(),
-			     primitive->get_num_vertices(),
-			     get_numeric_type(primitive->get_index_type()), 
-			     client_pointer);
+        const unsigned char *client_pointer = setup_primitive(primitive);
+        _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                             primitive->get_min_vertex(),
+                             primitive->get_max_vertex(),
+                             primitive->get_num_vertices(),
+                             get_numeric_type(primitive->get_index_type()), 
+                             client_pointer);
       } else {
-	GLP(DrawArrays)(GL_TRIANGLE_STRIP,
-			primitive->get_first_vertex(),
-			primitive->get_num_vertices());
+        GLP(DrawArrays)(GL_TRIANGLE_STRIP,
+                        primitive->get_first_vertex(),
+                        primitive->get_num_vertices());
       }
       
     } else {
@@ -1662,32 +1650,32 @@ draw_tristrips(const GeomTristrips *primitive) {
       
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
       if (primitive->is_indexed()) {
-	const unsigned char *client_pointer = setup_primitive(primitive);
-	int index_stride = primitive->get_index_stride();
-	GeomVertexReader mins(primitive->get_mins(), 0);
-	GeomVertexReader maxs(primitive->get_maxs(), 0);
-	nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
-		 primitive->get_maxs()->get_num_rows() == (int)ends.size());
-	
-	unsigned int start = 0;
-	for (size_t i = 0; i < ends.size(); i++) {
-	  _vertices_tristrip_pcollector.add_level(ends[i] - start);
-	  _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-			       mins.get_data1i(), maxs.get_data1i(), 
-			       ends[i] - start,
-			       get_numeric_type(primitive->get_index_type()), 
-			       client_pointer + start * index_stride);
-	  start = ends[i] + 2;
-	}
+        const unsigned char *client_pointer = setup_primitive(primitive);
+        int index_stride = primitive->get_index_stride();
+        GeomVertexReader mins(primitive->get_mins(), 0);
+        GeomVertexReader maxs(primitive->get_maxs(), 0);
+        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+                 primitive->get_maxs()->get_num_rows() == (int)ends.size());
+        
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                               mins.get_data1i(), maxs.get_data1i(), 
+                               ends[i] - start,
+                               get_numeric_type(primitive->get_index_type()), 
+                               client_pointer + start * index_stride);
+          start = ends[i] + 2;
+        }
       } else {
-	unsigned int start = 0;
-	int first_vertex = primitive->get_first_vertex();
-	for (size_t i = 0; i < ends.size(); i++) {
-	  _vertices_tristrip_pcollector.add_level(ends[i] - start);
-	  GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
-			  ends[i] - start);
-	  start = ends[i] + 2;
-	}
+        unsigned int start = 0;
+        int first_vertex = primitive->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
+                          ends[i] - start);
+          start = ends[i] + 2;
+        }
       }
     }
   }
@@ -2453,12 +2441,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // for GLP(ReadPixels)() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  _target._texture = AttribSlots::get_defaults()._texture;
-  if (_target._texture != _state._texture) {
-    do_issue_texture();
-    _state._texture = _target._texture;
-  }
-  _state_rs = 0;
+  set_state_and_transform(RenderState::make_empty(), _external_transform);
   
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -3086,7 +3069,7 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (CLP(color_mask)) {
-	unsigned int channels = _target._color_write->get_channels();
+        unsigned int channels = _target._color_write->get_channels();
         GLP(ColorMask)((channels & ColorWriteAttrib::C_red) != 0,
                        (channels & ColorWriteAttrib::C_green) != 0,
                        (channels & ColorWriteAttrib::C_blue) != 0,
@@ -3576,7 +3559,7 @@ is_at_least_version(int major_version, int minor_version,
       return false;
     } else if (_gl_version_minor == minor_version) {
       if (_gl_version_release < release_version) {
-	return false;
+        return false;
       }
     }
   }
@@ -4592,9 +4575,6 @@ set_state_and_transform(const RenderState *target,
   // attributes we issue.  Impose them now.
   _target._texture = _target._texture->filter_to_max(_max_texture_stages);
 
-  bool needs_tex_gen = false;
-  bool needs_tex_mat = false;
-
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
@@ -4660,22 +4640,6 @@ set_state_and_transform(const RenderState *target,
     _state._shade_model = _target._shade_model;
   }
   
-  if (_target._shader != _state._shader) {
-    do_issue_shader();
-    _state._shader = _target._shader;
-  }
-  
-  if (_target._tex_gen != _state._tex_gen) {
-    _state._tex_gen = _target._tex_gen;
-    needs_tex_gen = true;
-    _state._tex_gen = _target._tex_gen;
-  }
-  
-  if (_target._tex_matrix != _state._tex_matrix) {
-    needs_tex_mat = true;
-    _state._tex_matrix = _target._tex_matrix;
-  }
-  
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -4685,16 +4649,19 @@ set_state_and_transform(const RenderState *target,
     _state._color_blend = _target._color_blend;
   }
   
+  if (_target._shader != _state._shader) {
+    do_issue_shader();
+    _state._shader = _target._shader;
+    _state._texture = 0;
+  }
+  
   if (_target._texture != _state._texture) {
     do_issue_texture();
     _state._texture = _target._texture;
-
-    // Changing the set of texture stages will require us to reissue the
-    // texgen and texmat attribs.
-    needs_tex_gen = true;
-    needs_tex_mat = true;
+    _state._tex_gen = 0;
+    _state._tex_matrix = 0;
   }
-
+  
   if (_target._material != _state._material) {
     do_issue_material();
     _state._material = _target._material;
@@ -4708,278 +4675,24 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-  if (_tex_gen_modifies_mat && (needs_tex_mat || needs_tex_gen)) {
-    needs_tex_mat = true;
-    needs_tex_gen = true;
+  if (_tex_gen_modifies_mat) {
+    if ((_target._tex_gen != _state._tex_gen) ||
+        (_target._tex_matrix != _state._tex_matrix)) {
+      _state._tex_matrix = 0;
+      _state._tex_gen = 0;
+    }
   }
-
-  // Apply the texture matrix, if needed.
-  if (needs_tex_mat) {
-    int num_stages = _state._texture->get_num_on_stages();
-    nassertv(num_stages <= _max_texture_stages);
-    
-    for (int i = 0; i < num_stages; i++) {
-      TextureStage *stage = _state._texture->get_on_stage(i);
-      _glActiveTexture(GL_TEXTURE0 + i);
-      
-      GLP(MatrixMode)(GL_TEXTURE);
-      if (_state._tex_matrix->has_stage(stage)) {
-        GLP(LoadMatrixf)(_state._tex_matrix->get_mat(stage).get_data());
-      } else {
-        GLP(LoadIdentity)();
-
-        // For some reason, the glLoadIdentity() call doesn't work on
-        // my Dell laptop's IBM OpenGL driver, when used in
-        // conjunction with glTexGen(), below.  But explicitly loading
-        // an identity matrix does work.  But this buggy-driver
-        // workaround might have other performance implications, so I
-        // leave it out.
-        //GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
-      }
-    }
-    report_my_gl_errors();
+  
+  if (_target._tex_matrix != _state._tex_matrix) {
+    do_issue_tex_matrix();
+    _state._tex_matrix = _target._tex_matrix;
   }
-
-  if (needs_tex_gen) {
-    bool force_normal = false;
-
-    int num_stages = _state._texture->get_num_on_stages();
-    nassertv(num_stages <= _max_texture_stages);
-    
-    // These are passed in for the four OBJECT_PLANE or EYE_PLANE
-    // values; they effectively define an identity matrix that maps
-    // the spatial coordinates one-for-one to UV's.  If you want a
-    // mapping other than identity, use a TexMatrixAttrib (or a
-    // TexProjectorEffect).
-    static const float s_data[4] = { 1, 0, 0, 0 };
-    static const float t_data[4] = { 0, 1, 0, 0 };
-    static const float r_data[4] = { 0, 0, 1, 0 };
-    static const float q_data[4] = { 0, 0, 0, 1 };
-
-    _tex_gen_modifies_mat = false;
-
-    bool got_point_sprites = false;
-    
-    for (int i = 0; i < num_stages; i++) {
-      TextureStage *stage = _state._texture->get_on_stage(i);
-      _glActiveTexture(GL_TEXTURE0 + i);
-      GLP(Disable)(GL_TEXTURE_GEN_S);
-      GLP(Disable)(GL_TEXTURE_GEN_T);
-      GLP(Disable)(GL_TEXTURE_GEN_R);
-      GLP(Disable)(GL_TEXTURE_GEN_Q);
-      if (_supports_point_sprite) {
-        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
-      }
-
-      TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
-      switch (mode) {
-      case TexGenAttrib::M_off:
-      case TexGenAttrib::M_light_vector:
-        break;
-        
-      case TexGenAttrib::M_eye_sphere_map:
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-        GLP(Enable)(GL_TEXTURE_GEN_S);
-        GLP(Enable)(GL_TEXTURE_GEN_T);
-        force_normal = true;
-        break;
-        
-      case TexGenAttrib::M_eye_cube_map:
-        if (_supports_cube_map) {
-          // We need to rotate the normals out of GL's coordinate
-          // system and into the user's coordinate system.  We do this
-          // by composing a transform onto the texture matrix.
-          LMatrix4f mat = _inv_cs_transform->get_mat();
-          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-          GLP(MatrixMode)(GL_TEXTURE);
-          GLP(MultMatrixf)(mat.get_data());
-          
-          // Now we need to reset the texture matrix next time
-          // around to undo this.
-          _tex_gen_modifies_mat = true;
-
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          force_normal = true;
-        }
-        break;
-
-      case TexGenAttrib::M_world_cube_map:
-        if (_supports_cube_map) {
-          // We dynamically transform normals from eye space to world
-          // space by applying the appropriate rotation transform to
-          // the current texture matrix.  Unlike M_world_position, we
-          // can't achieve this effect by monkeying with the modelview
-          // transform, since the current modelview doesn't affect
-          // GL_REFLECTION_MAP.
-          CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-
-          LMatrix4f mat = camera_transform->get_mat();
-          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-          GLP(MatrixMode)(GL_TEXTURE);
-          GLP(MultMatrixf)(mat.get_data());
-          
-          // Now we need to reset the texture matrix next time
-          // around to undo this.
-          _tex_gen_modifies_mat = true;
-
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          force_normal = true;
-        }
-        break;
-        
-      case TexGenAttrib::M_eye_normal:
-        if (_supports_cube_map) {
-          // We need to rotate the normals out of GL's coordinate
-          // system and into the user's coordinate system.  We do this
-          // by composing a transform onto the texture matrix.
-          LMatrix4f mat = _inv_cs_transform->get_mat();
-          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-          GLP(MatrixMode)(GL_TEXTURE);
-          GLP(MultMatrixf)(mat.get_data());
-          
-          // Now we need to reset the texture matrix next time
-          // around to undo this.
-          _tex_gen_modifies_mat = true;
-
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          force_normal = true;
-        }
-        break;
-
-      case TexGenAttrib::M_world_normal:
-        if (_supports_cube_map) {
-          // We dynamically transform normals from eye space to world
-          // space by applying the appropriate rotation transform to
-          // the current texture matrix.  Unlike M_world_position, we
-          // can't achieve this effect by monkeying with the modelview
-          // transform, since the current modelview doesn't affect
-          // GL_NORMAL_MAP.
-          CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-
-          LMatrix4f mat = camera_transform->get_mat();
-          mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-          GLP(MatrixMode)(GL_TEXTURE);
-          GLP(MultMatrixf)(mat.get_data());
-          
-          // Now we need to reset the texture matrix next time
-          // around to undo this.
-          _tex_gen_modifies_mat = true;
-
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          force_normal = true;
-        }
-        break;
-
-      case TexGenAttrib::M_eye_position:
-        // To represent eye position correctly, we need to temporarily
-        // load the coordinate-system transform.
-        GLP(MatrixMode)(GL_MODELVIEW);
-        GLP(PushMatrix)();
-        GLP(LoadMatrixf)(_cs_transform->get_mat().get_data());
-
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        
-        GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
-        GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
-        GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
-        GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
-        
-        GLP(Enable)(GL_TEXTURE_GEN_S);
-        GLP(Enable)(GL_TEXTURE_GEN_T);
-        GLP(Enable)(GL_TEXTURE_GEN_R);
-        GLP(Enable)(GL_TEXTURE_GEN_Q);
-
-        GLP(MatrixMode)(GL_MODELVIEW);
-        GLP(PopMatrix)();
-        break;
-
-      case TexGenAttrib::M_world_position:
-        // We achieve world position coordinates by using the eye
-        // position mode, and loading the transform of the root
-        // node--thus putting the "eye" at the root.
-        {
-          GLP(MatrixMode)(GL_MODELVIEW);
-          GLP(PushMatrix)();
-          CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
-          GLP(LoadMatrixf)(root_transform->get_mat().get_data());
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-          GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        
-          GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
-          GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
-          GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
-          GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
-          
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          GLP(Enable)(GL_TEXTURE_GEN_Q);
-          
-          GLP(MatrixMode)(GL_MODELVIEW);
-          GLP(PopMatrix)();
-        }
-        break;
-
-      case TexGenAttrib::M_point_sprite:
-        nassertv(_supports_point_sprite);
-        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
-        got_point_sprites = true;
-        break;
-
-      case TexGenAttrib::M_unused:
-        break;
-      }
-    }
-
-    if (got_point_sprites != _tex_gen_point_sprite) {
-      _tex_gen_point_sprite = got_point_sprites;
-      if (_tex_gen_point_sprite) {
-        GLP(Enable)(GL_POINT_SPRITE_ARB);
-      } else {
-        GLP(Disable)(GL_POINT_SPRITE_ARB);
-      }
-    }
-
-    // Certain texgen modes (sphere_map, cube_map) require forcing the
-    // normal to be sent to the GL while the texgen mode is in effect.
-    if (force_normal != _texgen_forced_normal) {
-      if (force_normal) {
-        force_normals();
-      } else  {
-        undo_force_normals();
-      }
-      _texgen_forced_normal = force_normal;
-    }
-
-    report_my_gl_errors();
+  
+  if (_target._tex_gen != _state._tex_gen) {
+    do_issue_tex_gen();
+    _state._tex_gen = _target._tex_gen;
   }
-
+  
   _state_rs = _target_rs;
 }
 
@@ -5030,19 +4743,47 @@ do_auto_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_texture
 //       Access: Protected, Virtual
-//  Description: This is called by finish_modify_state() when the
-//               texture state has changed.
+//  Description: This is called by set_state_and_transform() when
+//               the texture state has changed.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+  
+  if (_texture_binding_shader_context==0) {
+    if (_current_shader_context==0) {
+      update_standard_texture_bindings();
+    } else {
+      disable_standard_texture_bindings();
+      _current_shader_context->update_shader_texture_bindings(NULL,this);
+    }
+  } else {
+    if (_current_shader_context==0) {
+      _texture_binding_shader_context->disable_shader_texture_bindings(this);
+      update_standard_texture_bindings();
+    } else {
+      _current_shader_context->
+        update_shader_texture_bindings(_texture_binding_shader_context,this);
+    }
+  }
+  _texture_binding_shader_expansion = _current_shader_expansion;
+  _texture_binding_shader_context = _current_shader_context;
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+update_standard_texture_bindings()
+{
   int num_stages = _target._texture->get_num_on_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
   }
-
+  
   nassertv(num_stages <= _max_texture_stages && 
            num_old_stages <= _max_texture_stages);
 
@@ -5057,7 +4798,7 @@ do_issue_texture() {
     nassertv(texture != (Texture *)NULL);
     
     if (i >= num_old_stages ||
-	_state._texture == (TextureAttrib *)NULL ||
+        _state._texture == (TextureAttrib *)NULL ||
         stage != _state._texture->get_on_stage(i) ||
         texture != _state._texture->get_on_texture(stage) ||
         stage->involves_color_scale()) {
@@ -5202,7 +4943,7 @@ do_issue_texture() {
       }
 
       GLP(MatrixMode)(GL_TEXTURE);
-      if (_state._tex_matrix->has_stage(stage)) {
+      if (_target._tex_matrix->has_stage(stage)) {
         GLP(LoadMatrixf)(_state._tex_matrix->get_mat(stage).get_data());
       } else {
         GLP(LoadIdentity)();
@@ -5233,6 +4974,313 @@ do_issue_texture() {
     }
   }
 
+  report_my_gl_errors();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+disable_standard_texture_bindings() {
+  int num_old_stages = _max_texture_stages;
+  if (_state._texture != (TextureAttrib *)NULL) {
+    num_old_stages = _state._texture->get_num_on_stages();
+  }
+
+  // Disable the texture stages that are no longer used.
+  for (int i = 0; i < num_old_stages; i++) {
+    _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Disable)(GL_TEXTURE_1D);
+    GLP(Disable)(GL_TEXTURE_2D);
+    if (_supports_3d_texture) {
+      GLP(Disable)(GL_TEXTURE_3D);
+    }
+    if (_supports_cube_map) {
+      GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+    }
+  }
+  
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_tex_matrix
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_tex_matrix() {
+  int num_stages = _target._texture->get_num_on_stages();
+  nassertv(num_stages <= _max_texture_stages);
+  
+  for (int i = 0; i < num_stages; i++) {
+    TextureStage *stage = _target._texture->get_on_stage(i);
+    _glActiveTexture(GL_TEXTURE0 + i);
+    
+    GLP(MatrixMode)(GL_TEXTURE);
+    if (_target._tex_matrix->has_stage(stage)) {
+      GLP(LoadMatrixf)(_target._tex_matrix->get_mat(stage).get_data());
+    } else {
+      GLP(LoadIdentity)();
+      
+      // For some reason, the glLoadIdentity() call doesn't work on
+      // my Dell laptop's IBM OpenGL driver, when used in
+      // conjunction with glTexGen(), below.  But explicitly loading
+      // an identity matrix does work.  But this buggy-driver
+      // workaround might have other performance implications, so I
+      // leave it out.
+      //GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
+    }
+  }
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_tex_gen
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_tex_gen() {
+  bool force_normal = false;
+
+  int num_stages = _target._texture->get_num_on_stages();
+  nassertv(num_stages <= _max_texture_stages);
+  
+  // These are passed in for the four OBJECT_PLANE or EYE_PLANE
+  // values; they effectively define an identity matrix that maps
+  // the spatial coordinates one-for-one to UV's.  If you want a
+  // mapping other than identity, use a TexMatrixAttrib (or a
+  // TexProjectorEffect).
+  static const float s_data[4] = { 1, 0, 0, 0 };
+  static const float t_data[4] = { 0, 1, 0, 0 };
+  static const float r_data[4] = { 0, 0, 1, 0 };
+  static const float q_data[4] = { 0, 0, 0, 1 };
+  
+  _tex_gen_modifies_mat = false;
+  
+  bool got_point_sprites = false;
+  
+  for (int i = 0; i < num_stages; i++) {
+    TextureStage *stage = _target._texture->get_on_stage(i);
+    _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Disable)(GL_TEXTURE_GEN_S);
+    GLP(Disable)(GL_TEXTURE_GEN_T);
+    GLP(Disable)(GL_TEXTURE_GEN_R);
+    GLP(Disable)(GL_TEXTURE_GEN_Q);
+    if (_supports_point_sprite) {
+      GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
+    }
+    
+    TexGenAttrib::Mode mode = _target._tex_gen->get_mode(stage);
+    switch (mode) {
+    case TexGenAttrib::M_off:
+    case TexGenAttrib::M_light_vector:
+      break;
+      
+    case TexGenAttrib::M_eye_sphere_map:
+      GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+      GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+      GLP(Enable)(GL_TEXTURE_GEN_S);
+      GLP(Enable)(GL_TEXTURE_GEN_T);
+      force_normal = true;
+      break;
+      
+    case TexGenAttrib::M_eye_cube_map:
+      if (_supports_cube_map) {
+        // We need to rotate the normals out of GL's coordinate
+        // system and into the user's coordinate system.  We do this
+        // by composing a transform onto the texture matrix.
+        LMatrix4f mat = _inv_cs_transform->get_mat();
+        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        GLP(MatrixMode)(GL_TEXTURE);
+        GLP(MultMatrixf)(mat.get_data());
+        
+        // Now we need to reset the texture matrix next time
+        // around to undo this.
+        _tex_gen_modifies_mat = true;
+        
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        force_normal = true;
+      }
+      break;
+      
+    case TexGenAttrib::M_world_cube_map:
+      if (_supports_cube_map) {
+        // We dynamically transform normals from eye space to world
+        // space by applying the appropriate rotation transform to
+        // the current texture matrix.  Unlike M_world_position, we
+        // can't achieve this effect by monkeying with the modelview
+        // transform, since the current modelview doesn't affect
+        // GL_REFLECTION_MAP.
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        
+        LMatrix4f mat = camera_transform->get_mat();
+        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        GLP(MatrixMode)(GL_TEXTURE);
+        GLP(MultMatrixf)(mat.get_data());
+        
+        // Now we need to reset the texture matrix next time
+        // around to undo this.
+        _tex_gen_modifies_mat = true;
+        
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        force_normal = true;
+      }
+      break;
+      
+    case TexGenAttrib::M_eye_normal:
+      if (_supports_cube_map) {
+        // We need to rotate the normals out of GL's coordinate
+        // system and into the user's coordinate system.  We do this
+        // by composing a transform onto the texture matrix.
+        LMatrix4f mat = _inv_cs_transform->get_mat();
+        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        GLP(MatrixMode)(GL_TEXTURE);
+        GLP(MultMatrixf)(mat.get_data());
+        
+        // Now we need to reset the texture matrix next time
+        // around to undo this.
+        _tex_gen_modifies_mat = true;
+        
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        force_normal = true;
+      }
+      break;
+      
+    case TexGenAttrib::M_world_normal:
+      if (_supports_cube_map) {
+        // We dynamically transform normals from eye space to world
+        // space by applying the appropriate rotation transform to
+        // the current texture matrix.  Unlike M_world_position, we
+        // can't achieve this effect by monkeying with the modelview
+        // transform, since the current modelview doesn't affect
+        // GL_NORMAL_MAP.
+        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        
+        LMatrix4f mat = camera_transform->get_mat();
+        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        GLP(MatrixMode)(GL_TEXTURE);
+        GLP(MultMatrixf)(mat.get_data());
+        
+        // Now we need to reset the texture matrix next time
+        // around to undo this.
+        _tex_gen_modifies_mat = true;
+        
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        force_normal = true;
+      }
+      break;
+      
+    case TexGenAttrib::M_eye_position:
+      // To represent eye position correctly, we need to temporarily
+      // load the coordinate-system transform.
+      GLP(MatrixMode)(GL_MODELVIEW);
+      GLP(PushMatrix)();
+      GLP(LoadMatrixf)(_cs_transform->get_mat().get_data());
+      
+      GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+      GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+      GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+      GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+      
+      GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
+      GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
+      GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
+      GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+      
+      GLP(Enable)(GL_TEXTURE_GEN_S);
+      GLP(Enable)(GL_TEXTURE_GEN_T);
+      GLP(Enable)(GL_TEXTURE_GEN_R);
+      GLP(Enable)(GL_TEXTURE_GEN_Q);
+      
+      GLP(MatrixMode)(GL_MODELVIEW);
+      GLP(PopMatrix)();
+      break;
+      
+    case TexGenAttrib::M_world_position:
+      // We achieve world position coordinates by using the eye
+      // position mode, and loading the transform of the root
+      // node--thus putting the "eye" at the root.
+      {
+        GLP(MatrixMode)(GL_MODELVIEW);
+        GLP(PushMatrix)();
+        CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
+        GLP(LoadMatrixf)(root_transform->get_mat().get_data());
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+        GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+        
+        GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
+        GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
+        GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
+        GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+        
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        GLP(Enable)(GL_TEXTURE_GEN_Q);
+        
+        GLP(MatrixMode)(GL_MODELVIEW);
+        GLP(PopMatrix)();
+      }
+      break;
+      
+    case TexGenAttrib::M_point_sprite:
+      nassertv(_supports_point_sprite);
+      GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+      got_point_sprites = true;
+      break;
+      
+    case TexGenAttrib::M_unused:
+      break;
+    }
+  }
+  
+  if (got_point_sprites != _tex_gen_point_sprite) {
+    _tex_gen_point_sprite = got_point_sprites;
+    if (_tex_gen_point_sprite) {
+      GLP(Enable)(GL_POINT_SPRITE_ARB);
+    } else {
+      GLP(Disable)(GL_POINT_SPRITE_ARB);
+    }
+  }
+  
+  // Certain texgen modes (sphere_map, cube_map) require forcing the
+  // normal to be sent to the GL while the texgen mode is in effect.
+  if (force_normal != _texgen_forced_normal) {
+    if (force_normal) {
+      force_normals();
+    } else  {
+      undo_force_normals();
+    }
+    _texgen_forced_normal = force_normal;
+  }
+  
   report_my_gl_errors();
 }
 

@@ -307,6 +307,84 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #endif // HAVE_CGGL
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::disable_shader_texture_bindings
+//       Access: Public
+//  Description: Disable all the texture bindings used by this shader.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+disable_shader_texture_bindings(GSG *gsg)
+{
+#ifdef HAVE_CGGL
+  if (_cg_context) {
+    for (int i=0; i<(int)_cg_texbind.size(); i++) {
+      int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+      GLP(Disable)(GL_TEXTURE_1D);
+      GLP(Disable)(GL_TEXTURE_2D);
+      if (gsg->_supports_3d_texture) {
+        GLP(Disable)(GL_TEXTURE_3D);
+      }
+      if (gsg->_supports_cube_map) {
+        GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+      }
+      // This is probably faster - but maybe not as safe?
+      // cgGLDisableTextureParameter(_cg_texbind[i].parameter);
+    }
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::update_shader_texture_bindings
+//       Access: Public
+//  Description: Disables all texture bindings used by the previous
+//               shader, then enables all the texture bindings needed
+//               by this shader.  Extracts the relevant vertex array
+//               data from the gsg.
+//               The current implementation is inefficient, because
+//               it may unnecessarily disable textures then immediately
+//               reenable them.  We may optimize this someday.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
+{
+  if (prev) prev->disable_shader_texture_bindings(gsg);
+#ifdef HAVE_CGGL
+  if (_cg_context) {
+    for (int i=0; i<(int)_cg_texbind.size(); i++) {
+      Texture *tex = 0;
+      InternalName *id = _cg_texbind[i].name;
+      if (id != 0) {
+        const ShaderInput *input = gsg->_target._shader->get_input(id);
+        tex = input->get_texture();
+      } else {
+        TextureStage *stage = gsg->_target._texture->get_on_stage(_cg_texbind[i].stage);
+        tex = gsg->_target._texture->get_on_texture(stage);
+      }
+      if ((tex == 0) || (tex->get_texture_type() != _cg_texbind[i].desiredtype)) {
+        continue;
+      }
+      TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
+      if (tc == (TextureContext*)NULL) {
+        continue;
+      }
+      int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+
+      GLenum target = gsg->get_texture_target(tex->get_texture_type());
+      if (target == GL_NONE) {
+        // Unsupported texture mode.
+        continue;
+      }
+      GLP(Enable)(target);
+      
+      gsg->apply_texture(tc);
+    }
+  }
+#endif
+}
+
 #ifdef HAVE_CGGL
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::bind_cg_transform
@@ -321,6 +399,8 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   
   if (stb.src_name == InternalName::get_camera()) {
     src = TransformState::make_identity();
+  } else if (stb.src_name == InternalName::get_view()) {
+    src = gsg->_cs_transform;
   } else if (stb.src_name == InternalName::get_model()) {
     src = gsg->get_transform();
   } else if (stb.src_name == InternalName::get_world()) {
@@ -337,6 +417,8 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 
   if (stb.rel_name == InternalName::get_camera()) {
     rel = TransformState::make_identity();
+  } else if (stb.src_name == InternalName::get_view()) {
+    rel = gsg->_cs_transform;
   } else if (stb.rel_name == InternalName::get_model()) {
     rel = gsg->get_transform();
   } else if (stb.rel_name == InternalName::get_world()) {
@@ -498,7 +580,10 @@ bool CLP(ShaderContext)::
 errchk_cg_parameter_sampler(CGparameter p)
 {
   CGtype t = cgGetParameterType(p);
-  if (t != CG_SAMPLER2D) {
+  if ((t!=CG_SAMPLER1D)&&
+      (t!=CG_SAMPLER2D)&&
+      (t!=CG_SAMPLER3D)&&
+      (t!=CG_SAMPLERCUBE)) {
     errchk_cg_output(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -744,8 +829,21 @@ compile_cg_parameter(CGparameter p)
         (!errchk_cg_parameter_variance(p, CG_UNIFORM)) ||
         (!errchk_cg_parameter_sampler(p)))
       return false;
-    // IMPLEMENT ME
-    return true; // Cg handles this automatically.
+    ShaderTexBind bind;
+    bind.parameter = p;
+    bind.name = 0;
+    bind.stage = atoi(pieces[1].c_str());
+    switch (cgGetParameterType(p)) {
+    case CG_SAMPLER1D:   bind.desiredtype = Texture::TT_1d_texture; break;
+    case CG_SAMPLER2D:   bind.desiredtype = Texture::TT_2d_texture; break;
+    case CG_SAMPLER3D:   bind.desiredtype = Texture::TT_3d_texture; break;
+    case CG_SAMPLERCUBE: bind.desiredtype = Texture::TT_cube_map; break;
+    default:
+      errchk_cg_output(p, "Invalid type for a tex-parameter");
+      return false;
+    }
+    _cg_texbind.push_back(bind);
+    return true;
   }
 
   if (pieces[0] == "k") {
@@ -753,14 +851,53 @@ compile_cg_parameter(CGparameter p)
         (!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_UNIFORM)))
       return false;
-    ShaderArgBind bind;
-    bind.parameter = p;
-    bind.name = InternalName::make(pieces[1]);
     switch (cgGetParameterType(p)) {
-    case CG_FLOAT4:    _cg_fbind.push_back(bind); break;
-    case CG_SAMPLER2D: _cg_tbind2d.push_back(bind); break;
-    case CG_SAMPLER3D: _cg_tbind3d.push_back(bind); break;
-    case CG_FLOAT4x4:  _cg_npbind.push_back(bind); break;
+    case CG_FLOAT4: {
+      ShaderArgBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      _cg_fbind.push_back(bind);
+      break;
+    }
+    case CG_FLOAT4x4: {
+      ShaderArgBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      _cg_npbind.push_back(bind);
+      break;
+    }
+    case CG_SAMPLER1D: { 
+      ShaderTexBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      bind.desiredtype=Texture::TT_1d_texture;
+      _cg_texbind.push_back(bind);
+      break;
+    }      
+    case CG_SAMPLER2D: {
+      ShaderTexBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      bind.desiredtype=Texture::TT_2d_texture;
+      _cg_texbind.push_back(bind);
+      break;
+    }
+    case CG_SAMPLER3D: {
+      ShaderTexBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      bind.desiredtype=Texture::TT_3d_texture;
+      _cg_texbind.push_back(bind);
+      break;
+    }
+    case CG_SAMPLERCUBE: {
+      ShaderTexBind bind;
+      bind.parameter = p;
+      bind.name = InternalName::make(pieces[1]);
+      bind.desiredtype = Texture::TT_cube_map;
+      _cg_texbind.push_back(bind);
+      break;
+    }
     default:
       errchk_cg_output(p, "Invalid type for a k-parameter");
       return false;

@@ -45,6 +45,8 @@ public:
   void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
+  void disable_shader_texture_bindings(GSG *gsg);
+  void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 
 private:
 
@@ -57,6 +59,12 @@ private:
   struct ShaderArgBind {
     CGparameter parameter;
     PT(InternalName) name;
+  };
+  struct ShaderTexBind {
+    CGparameter parameter;
+    PT(InternalName) name;
+    int stage;
+    int desiredtype;
   };
   struct ShaderTransBind {
     CGparameter parameter;
@@ -76,10 +84,9 @@ private:
   // These arrays contain lists of "bindings." They
   // tell us how to fill the shader's input parameters.
   vector <ShaderAutoBind> _cg_autobind;
-  vector <ShaderArgBind> _cg_tbind2d;
-  vector <ShaderArgBind> _cg_tbind3d;
   vector <ShaderArgBind> _cg_fbind;
   vector <ShaderArgBind> _cg_npbind;
+  vector <ShaderTexBind> _cg_texbind;
   vector <ShaderTransBind> _cg_transform_bind;
   vector <ShaderTransBind> _cg_parameter_bind;
   vector <ShaderVarying> _cg_varying;

@@ -17,8 +17,8 @@
 			ConfigurationType="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd .. &amp; makepanda\makepanda --everything --installer"
-				Output="..\built\bin\flt2egg.exe"/>
+				BuildCommandLine="cd .. &amp; makepanda\makepanda --everything"
+				Output="..\built\python\python.exe"/>
 		</Configuration>
 	</Configurations>
 	<References>

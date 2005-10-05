@@ -418,6 +418,20 @@ get_model() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_view
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "view".  This is
+//               used as a keyword in the shader subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_view() {
+  if (_view == (InternalName *)NULL) {
+    _view = InternalName::make("view");
+  }
+  return _view;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::output operator
 //       Access: Public
 //  Description: 

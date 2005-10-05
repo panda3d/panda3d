@@ -84,6 +84,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_world();
   INLINE static PT(InternalName) get_camera();
   INLINE static PT(InternalName) get_model();
+  INLINE static PT(InternalName) get_view();
 
 private:
   PT(InternalName) _parent;
@@ -111,6 +112,7 @@ private:
   static PT(InternalName) _world;
   static PT(InternalName) _camera;
   static PT(InternalName) _model;
+  static PT(InternalName) _view;
   
 public:
   // Datagram stuff

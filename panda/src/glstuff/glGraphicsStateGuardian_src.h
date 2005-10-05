@@ -177,6 +177,8 @@ protected:
   void do_issue_material();
   void do_issue_texture();
   void do_issue_blending();
+  void do_issue_tex_gen();
+  void do_issue_tex_matrix();
 
   static bool report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code, int &error_count);
@@ -249,6 +251,8 @@ protected:
 
   void disable_standard_vertex_arrays();
   void update_standard_vertex_arrays();
+  void disable_standard_texture_bindings();
+  void update_standard_texture_bindings();
 
   void do_auto_rescale_normal();
   void specify_texture(Texture *tex);
@@ -310,6 +314,8 @@ protected:
   CLP(ShaderContext)  *_current_shader_context;
   PT(ShaderExpansion)  _vertex_array_shader_expansion;
   CLP(ShaderContext)  *_vertex_array_shader_context;
+  PT(ShaderExpansion)  _texture_binding_shader_expansion;
+  CLP(ShaderContext)  *_texture_binding_shader_context;
   
   CPT(DisplayRegion) _actual_display_region;
 
