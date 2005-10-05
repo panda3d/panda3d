@@ -139,23 +139,25 @@ post_process_egg_file() {
     _data->transform(_transform);
   }
 
+  bool needs_remove = false;
+
   switch (_normals_mode) {
   case NM_strip:
     nout << "Stripping normals.\n";
     _data->strip_normals();
-    _data->remove_unused_vertices(true);
+    needs_remove = true;
     break;
 
   case NM_polygon:
     nout << "Recomputing polygon normals.\n";
     _data->recompute_polygon_normals();
-    _data->remove_unused_vertices(true);
+    needs_remove = true;
     break;
 
   case NM_vertex:
     nout << "Recomputing vertex normals.\n";
     _data->recompute_vertex_normals(_normals_threshold);
-    _data->remove_unused_vertices(true);
+    needs_remove = true;
     break;
 
   case NM_preserve:
@@ -166,6 +168,7 @@ post_process_egg_file() {
   if (_got_tbnall) {
     nout << "Computing tangent and binormal for all UV sets.\n";
     _data->recompute_tangent_binormal(GlobPattern("*"));
+    needs_remove = true;
 
   } else {
     for (vector_string::const_iterator si = _tbn_names.begin();
@@ -174,7 +177,12 @@ post_process_egg_file() {
       GlobPattern uv_name(*si);
       nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
       _data->recompute_tangent_binormal(uv_name);
+      needs_remove = true;
     }
+  }
+
+  if (needs_remove) {
+    _data->remove_unused_vertices(true);
   }
 }
 
