@@ -24,6 +24,7 @@
 #include "filename.h"
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
+#include "internalName.h"
 #include "graphicsStateGuardianBase.h"
 #include "pmap.h"
 
@@ -181,6 +182,8 @@ PUBLISHED:
   virtual bool load(const PNMImage &pnmimage, int z = 0);
   bool store(PNMImage &pnmimage, int z = 0) const;
 
+  Texture *load_related(const PT(InternalName) &suffix) const;
+  
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;
   INLINE bool has_alpha_filename() const;
@@ -352,6 +355,14 @@ protected:
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
   Contexts _contexts;
+
+  // It is common, when using normal maps, specular maps, gloss maps,
+  // and such, to use a file naming convention where the filenames
+  // of the special maps are derived by concatenating a suffix to
+  // the name of the diffuse map.  The following table enables
+  // lookup of the special maps given the diffuse map and the suffix.
+  typedef pmap<PT(InternalName), PT(Texture)> RelatedTextures;
+  RelatedTextures _related_textures;
 
   // This value represents the intersection of all the dirty flags of
   // the various TextureContexts that might be associated with this

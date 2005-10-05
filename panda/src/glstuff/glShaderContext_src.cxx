@@ -362,6 +362,13 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         TextureStage *stage = gsg->_target._texture->get_on_stage(_cg_texbind[i].stage);
         tex = gsg->_target._texture->get_on_texture(stage);
       }
+      if (_cg_texbind[i].suffix != 0) {
+        // The suffix feature is inefficient. It is a temporary hack.
+        if (tex == 0) {
+          continue;
+        }
+        tex = tex->load_related(_cg_texbind[i].suffix);
+      }
       if ((tex == 0) || (tex->get_texture_type() != _cg_texbind[i].desiredtype)) {
         continue;
       }
@@ -824,11 +831,14 @@ compile_cg_parameter(CGparameter p)
   }
 
   if (pieces[0] == "tex") {
-    if ((!errchk_cg_parameter_words(p,2)) ||
-        (!errchk_cg_parameter_direction(p, CG_IN)) ||
+    if ((!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_UNIFORM)) ||
         (!errchk_cg_parameter_sampler(p)))
       return false;
+    if ((pieces.size() != 2)&&(pieces.size() != 3)) {
+      errchk_cg_output(p, "Invalid parameter name");
+      return false;
+    }
     ShaderTexBind bind;
     bind.parameter = p;
     bind.name = 0;
@@ -841,6 +851,9 @@ compile_cg_parameter(CGparameter p)
     default:
       errchk_cg_output(p, "Invalid type for a tex-parameter");
       return false;
+    }
+    if (pieces.size()==3) {
+      bind.suffix = InternalName::make(((string)"-") + pieces[2]);
     }
     _cg_texbind.push_back(bind);
     return true;

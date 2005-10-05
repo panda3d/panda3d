@@ -65,6 +65,7 @@ private:
     PT(InternalName) name;
     int stage;
     int desiredtype;
+    PT(InternalName) suffix;
   };
   struct ShaderTransBind {
     CGparameter parameter;

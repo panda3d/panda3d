@@ -751,6 +751,45 @@ store(PNMImage &pnmimage, int z) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::load_related
+//       Access: Published
+//  Description: Loads a texture whose filename is derived by
+//               concatenating a suffix to the filename of this
+//               texture.  May return NULL, for example, if this
+//               texture doesn't have a filename.
+////////////////////////////////////////////////////////////////////
+Texture *Texture::
+load_related(const PT(InternalName) &suffix) const {
+  RelatedTextures::const_iterator ti;
+  ti = _related_textures.find(suffix);
+  if (ti != _related_textures.end()) {
+    return (*ti).second;
+  }
+  if (!has_fullpath()) {
+    return (Texture*)NULL;
+  }
+  Filename main = get_fullpath();
+  main.set_basename_wo_extension(main.get_basename_wo_extension() + 
+                                 suffix->get_name());
+  Texture *res;
+  if (has_alpha_fullpath()) {
+    Filename alph = get_alpha_fullpath();
+    alph.set_basename_wo_extension(alph.get_basename_wo_extension() +
+                                   suffix->get_name());
+    res = TexturePool::load_texture(main, alph, 
+                                    _primary_file_num_channels,
+                                    _alpha_file_channel);
+  } else {
+    res = TexturePool::load_texture(main,
+                                    _primary_file_num_channels);
+  }
+  // I'm casting away the const-ness of 'this' because this
+  // field is only a cache.
+  ((Texture *)this)->_related_textures.insert(RelatedTextures::value_type(suffix, res));
+  return res;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_wrap_u
 //       Access: Published
 //  Description:
