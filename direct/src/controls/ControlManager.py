@@ -122,6 +122,22 @@ class ControlManager:
             inputState.watch("turnRight", "alt-d", "d-up")
             inputState.watch("turnRight", "control-alt-d", "d-up")
             inputState.watch("turnRight", "shift-d", "d-up")
+            
+            inputState.watch("slideLeft", "q", "q-up")
+            inputState.watch("slideLeft", "control-q", "q-up")
+            inputState.watch("slideLeft", "shift-control-q", "q-up")
+            inputState.watch("slideLeft", "alt-q", "q-up")
+            inputState.watch("slideLeft", "control-alt-q", "q-up")
+            inputState.watch("slideLeft", "shift-q", "q-up")
+
+            inputState.watch("slideRight", "e", "e-up")
+            inputState.watch("slideRight", "control-e", "e-up")
+            inputState.watch("slideRight", "shift-control-e", "e-up")
+            inputState.watch("slideRight", "alt-e", "e-up")
+            inputState.watch("slideRight", "control-alt-e", "e-up")
+            inputState.watch("slideRight", "shift-e", "e-up")
+
+
 
     def add(self, controls, name="basic"):
         """

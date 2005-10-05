@@ -42,7 +42,7 @@ class BattleWalker(GravityWalker.GravityWalker):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = 0 #hack -- was: inputState.isSet("slide")
+        slide = inputState.isSet("slide")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.advanceSpeed=(forward and self.avatarControlForwardSpeed or 
@@ -51,7 +51,8 @@ class BattleWalker(GravityWalker.GravityWalker):
             self.advanceSpeed*=2.0 #*#
         # Should fSlide be renamed slideButton?
         self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or 
-                            turnRight and self.avatarControlForwardSpeed)
+                             turnRight and self.avatarControlForwardSpeed)
+        print 'slideSpeed: ', self.slideSpeed
         self.rotationSpeed=0
         self.speed=0
         
@@ -119,6 +120,7 @@ class BattleWalker(GravityWalker.GravityWalker):
         if self.moving:
             distance = dt * self.speed
             slideDistance = dt * self.slideSpeed
+            print 'slideDistance: ', slideDistance
             rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
