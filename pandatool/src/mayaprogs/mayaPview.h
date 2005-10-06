@@ -37,12 +37,12 @@
 class MayaPview : public MPxCommand {
 public:
   MayaPview();
-  virtual MStatus doIt(const MArgList &);
+  virtual MStatus doIt(const MArgList &args);
 
   static void *creator();
 
 private:
-  bool convert(const NodePath &parent);
+  bool convert(const NodePath &parent, bool animate);
 };
 
 EXPCL_MISC MStatus initializePlugin(MObject obj);

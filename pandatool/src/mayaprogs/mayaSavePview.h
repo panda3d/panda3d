@@ -64,7 +64,7 @@
 class MayaSavePview : public MPxCommand {
 public:
   MayaSavePview();
-  virtual MStatus doIt(const MArgList &);
+  virtual MStatus doIt(const MArgList &args);
 
   static void *creator();
 };

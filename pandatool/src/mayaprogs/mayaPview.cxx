@@ -32,6 +32,9 @@
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MFileIO.h>
+#include <maya/MArgParser.h>
+#include <maya/MArgList.h>
+#include <maya/MSyntax.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -49,13 +52,30 @@ MayaPview() {
 //  Description: Called when the plugin command is invoked.
 ////////////////////////////////////////////////////////////////////
 MStatus MayaPview::
-doIt(const MArgList &) {
+doIt(const MArgList &args) {
+  MStatus result;
+
+  // First, parse the plugin arguments.
+  MSyntax syntax;
+  syntax.addFlag("a", "animate");
+
+  MArgParser parser(syntax, args, &result);
+  if (!result) {
+    result.perror("arguments");
+    return result;
+  }
+
+  bool animate = parser.isFlagSet("a", &result);
+  if (!result) {
+    result.perror("isFlagSet");
+    return result;
+  }
+
   // Maya seems to run each invocation of the plugin in a separate
   // thread.  To minimize conflict in our
   // not-yet-completely-thread-safe Panda, we'll create a separate
   // PandaFramework for each invocation, even though in principle we
   // could be sharing one framework for all of them.
-
   int argc = 0;
   char **argv = NULL;
   PandaFramework framework;
@@ -93,7 +113,7 @@ doIt(const MArgList &) {
   window->setup_trackball();
   framework.get_models().instance_to(window->get_render());
 
-  if (!convert(framework.get_models())) {
+  if (!convert(framework.get_models(), animate)) {
     nout << "failure in conversion.\n";
     return MS::kFailure;
   }
@@ -125,7 +145,7 @@ creator() {
 //               geometry, and parents it to the indicated NodePath.
 ////////////////////////////////////////////////////////////////////
 bool MayaPview::
-convert(const NodePath &parent) {
+convert(const NodePath &parent, bool animate) {
   // Now make a converter to get all the Maya structures.
   MayaToEggConverter converter("plug-in");
 
@@ -133,8 +153,10 @@ convert(const NodePath &parent) {
   // results.
   converter._polygon_output = true;
 
-  // We also want to get the animation if there is any.
-  converter.set_animation_convert(AC_both);
+  if (animate) {
+    // We also want to get the animation if there is any.
+    converter.set_animation_convert(AC_both);
+  }
 
   PathReplace *path_replace = converter.get_path_replace();
 

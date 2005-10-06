@@ -21,6 +21,9 @@
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MFileIO.h>
+#include <maya/MArgParser.h>
+#include <maya/MArgList.h>
+#include <maya/MSyntax.h>
 
 #include <stdlib.h>
 
@@ -43,10 +46,26 @@ MayaSavePview() {
 //  Description: Called when the plugin command is invoked.
 ////////////////////////////////////////////////////////////////////
 MStatus MayaSavePview::
-doIt(const MArgList &) {
+doIt(const MArgList &args) {
   MStatus result;
+
+  // First, parse the plugin arguments.
+  MSyntax syntax;
+  syntax.addFlag("a", "animate");
+
+  MArgParser parser(syntax, args, &result);
+  if (!result) {
+    result.perror("arguments");
+    return result;
+  }
+
+  bool animate = parser.isFlagSet("a", &result);
+  if (!result) {
+    result.perror("isFlagSet");
+    return result;
+  }
   
-  // First, make sure the current buffer is saved.
+  // Now make sure the current buffer is saved.
   result = MFileIO::save(false);
   if (result != MS::kSuccess) {
     return result;
@@ -54,12 +73,17 @@ doIt(const MArgList &) {
 
   MString filename = MFileIO::currentFile();
 
+  MString pview_args = "-cl";
+  if (animate) {
+    pview_args = "-cla";
+  }
+
 #ifdef WIN32_VC
   // On Windows, we use the spawn function to run pview
   // asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
   int retval = _spawnlp(_P_DETACH, "pview", 
-                        "pview", "-cla", quoted.asChar(), NULL);
+                        "pview", pview_args.asChar(), quoted.asChar(), NULL);
   if (retval == -1) {
     return MS::kFailure;
   }
@@ -68,7 +92,7 @@ doIt(const MArgList &) {
   // On non-Windows (e.g. Unix), we just use the system function,
   // which runs synchronously.  We could fork a process, but no one's
   // asked for this yet.
-  MString command = MString("pview -cla \"") + filename + MString("\"");
+  MString command = MString("pview " + pview_args + MString(" \"") + filename + MString("\"");
 
   int command_result = system(command.asChar());
   if (command_result != 0) {
