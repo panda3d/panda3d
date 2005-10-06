@@ -78,9 +78,16 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc::
 ~SoftNodeDesc() {
+  // I think it is a mistake to try to delete this.  This was one
+  // member of an entire array allocated at once; you can't delete
+  // individual elements of an array.
+
+  // Screw cleanup, anyway--we'll just let the array leak.
+  /*
   if (_model != (SAA_Elem *)NULL) {
     delete _model;
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

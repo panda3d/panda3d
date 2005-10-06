@@ -572,6 +572,7 @@ convert_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 bool SoftToEggConverter::
 convert_soft(bool from_selection) {
+  cerr <<" startup\n";
   bool all_ok = true;
 
   _from_selection = from_selection;
@@ -629,13 +630,18 @@ convert_soft(bool from_selection) {
     softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
+    cerr << "writing egg file\n";
     _egg_data->write_egg(output_filename);
     softegg_cat.info() << "Wrote Egg file " << output_filename << endl;
+    cerr <<" done\n";
   }
   if (make_anim) {
+    cerr << "making anim\n";
     if (!convert_char_chan()) {
+      cerr << "failed to convert char\n";
       all_ok = false;
     }
+    cerr << "done convert_char_chan\n";
 
     //  reparent_decals(get_egg_data());
     softegg_cat.info() << "Converted Softimage file\n";
