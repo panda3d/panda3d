@@ -1210,10 +1210,18 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     // Before we compile or call a display list, make sure the current
     // buffers are unbound, or the nVidia drivers may crash.
     if (_current_vbuffer_index != 0) {
+      if (GLCAT.is_spam()) {
+	GLCAT.spam()
+	  << "unbinding vertex buffer\n";
+      }
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
     if (_current_ibuffer_index != 0) {
+      if (GLCAT.is_spam()) {
+	GLCAT.spam()
+	  << "unbinding index buffer\n";
+      }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
     }
@@ -2064,6 +2072,10 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
   if (_current_vbuffer_index != gvbc->_index) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+	<< "binding vertex buffer " << gvbc->_index << "\n";
+    }
     _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
     _current_vbuffer_index = gvbc->_index;
     add_to_vertex_buffer_record(gvbc);
@@ -2120,6 +2132,10 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_vbuffer_index == gvbc->_index) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+	<< "unbinding vertex buffer\n";
+    }
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
     _current_vbuffer_index = 0;
   }
@@ -2157,6 +2173,10 @@ setup_array_data(const GeomVertexArrayData *data) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_vbuffer_index != 0) {
+      if (GLCAT.is_spam()) {
+	GLCAT.spam()
+	  << "unbinding vertex buffer\n";
+      }
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
@@ -2219,6 +2239,10 @@ apply_index_buffer(IndexBufferContext *ibc) {
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
   if (_current_ibuffer_index != gibc->_index) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+	<< "binding index buffer " << gibc->_index << "\n";
+    }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
     _current_ibuffer_index = gibc->_index;
     add_to_index_buffer_record(gibc);
@@ -2275,7 +2299,11 @@ release_index_buffer(IndexBufferContext *ibc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_ibuffer_index == gibc->_index) {
-    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+	<< "unbinding index buffer\n";
+    }
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     _current_ibuffer_index = 0;
   }
 
@@ -2312,6 +2340,10 @@ setup_primitive(const GeomPrimitive *data) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
+      if (GLCAT.is_spam()) {
+	GLCAT.spam()
+	  << "unbinding index buffer\n";
+      }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
     }
