@@ -153,13 +153,14 @@ xform(const LMatrix4f &mat) {
 //       Access: Public
 //  Description: Generates geometry representing a frame of the
 //               indicated size, and parents it to the indicated node,
-//               with a scene graph sort order of -1.
+//               with the indicated scene graph sort order.
 //
 //               The return value is the generated NodePath, if any,
 //               or an empty NodePath if nothing is generated.
 ////////////////////////////////////////////////////////////////////
 NodePath PGFrameStyle::
-generate_into(const NodePath &parent, const LVecBase4f &frame) {
+generate_into(const NodePath &parent, const LVecBase4f &frame,
+	      int sort) {
   PT(PandaNode) new_node;
 
   LPoint2f center((frame[0] + frame[1]) / 2.0f,
@@ -204,7 +205,7 @@ generate_into(const NodePath &parent, const LVecBase4f &frame) {
   }
 
   // Adding the node to the parent keeps the reference count.
-  return parent.attach_new_node(new_node);
+  return parent.attach_new_node(new_node, sort);
 }
 
 ////////////////////////////////////////////////////////////////////

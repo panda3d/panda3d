@@ -75,7 +75,8 @@ PUBLISHED:
 
 public:
   bool xform(const LMatrix4f &mat);
-  NodePath generate_into(const NodePath &parent, const LVecBase4f &frame);
+  NodePath generate_into(const NodePath &parent, const LVecBase4f &frame,
+			 int sort = 0);
 
 private:
   PT(PandaNode) generate_flat_geom(const LVecBase4f &frame);

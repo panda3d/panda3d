@@ -177,7 +177,10 @@ update() {
     frac = max(min(frac, 1.0f), 0.0f);
     bar_frame[1] = bar_frame[0] + frac * (bar_frame[1] - bar_frame[0]);
     
-    _bar = _bar_style.generate_into(root, bar_frame);
+    _bar = _bar_style.generate_into(root, bar_frame, 1);
+
+    // Make sure the bar is rendered after the frame.
+    _bar.set_bin("fixed", 1);
   }
 
   // Indicate that the bar is current for this state.
