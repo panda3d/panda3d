@@ -359,6 +359,9 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         const ShaderInput *input = gsg->_target._shader->get_input(id);
         tex = input->get_texture();
       } else {
+        if (_cg_texbind[i].stage >= gsg->_target._texture->get_num_on_stages()) {
+          continue;
+        }
         TextureStage *stage = gsg->_target._texture->get_on_stage(_cg_texbind[i].stage);
         tex = gsg->_target._texture->get_on_texture(stage);
       }
