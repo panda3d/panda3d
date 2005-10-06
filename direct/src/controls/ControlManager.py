@@ -239,10 +239,12 @@ class ControlManager:
         inputState.ignore("jump")
         inputState.ignore("slideLeft")
         inputState.ignore("slideRight")
-        inputState.ignore("levitateUp")
-        inputState.ignore("levitateDown")
         inputState.ignore("run")
-        inputState.ignore("slide")
+        if __dev__:
+            inputState.ignore("slide")
+            inputState.ignore("levitateUp")
+            inputState.ignore("levitateDown")
+
         
         #self.monitorTask.remove()
     
