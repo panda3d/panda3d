@@ -92,7 +92,7 @@ fill_state(EggPrimitive *egg_prim) {
     bin = render_mode->get_bin();
   }
 
-  add_attrib(TextureAttrib::make_off());
+  //  add_attrib(TextureAttrib::make_off());
   int num_textures = egg_prim->get_num_textures();
   CPT(RenderAttrib) texture_attrib = NULL;
   CPT(RenderAttrib) tex_gen_attrib = NULL;
