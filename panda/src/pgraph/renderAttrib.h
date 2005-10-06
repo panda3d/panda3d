@@ -111,7 +111,7 @@ PUBLISHED:
 
     // Sphere maps are classic static reflection maps.  They are
     // supported on just about any hardware, and require a precomputed
-    // 180-degree fisheye image.  Sphere maps only make sense in eye
+    // 360-degree fisheye image.  Sphere maps only make sense in eye
     // coordinate space.
     M_eye_sphere_map,
 
@@ -149,14 +149,15 @@ PUBLISHED:
     // (upside-down) from Panda's usual convention, but this is what
     // the graphics card manufacturers decided to use.  You could use
     // a texture matrix to re-invert the texture, but that will
-    // probably force software rendering.  You'll have to paint your
-    // textures upside-down if you want true hardware sprites.
+    // probably force the sprites' vertices to be computed in the CPU.
+    // You'll have to paint your textures upside-down if you want true
+    // hardware sprites.
     M_point_sprite,
 
     // M_light_vector generates special 3-d texture coordinates that
     // represent the vector to a particular Light in the scene graph,
     // expressed in each vertex's tangent space.  This is used to
-    // implement bumpmapping.
+    // implement bumpmapping.  It is always computed on the CPU.
 
     // This requires a Light to be specified to the TexGenAttrib.  It
     // also requires each vertex to define a normal, as well as a
