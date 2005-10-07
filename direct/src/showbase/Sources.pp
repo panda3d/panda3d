@@ -9,7 +9,7 @@
     dtoolutil:c dtoolbase:c dtool:m
 
   #define SOURCES \
-    showBase.cxx showBase.h mersenne.cxx mersenne.h
+    showBase.cxx showBase.h
 
   #define IGATESCAN all
 #end lib_target

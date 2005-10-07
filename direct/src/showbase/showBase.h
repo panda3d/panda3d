@@ -55,6 +55,7 @@ EXPCL_DIRECT bool query_fullscreen_testresult(int xsize, int ysize);
 END_PUBLISH
 
 
+
 #if 0
 class TempGridZoneManager {
 PUBLISHED:
