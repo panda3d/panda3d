@@ -637,35 +637,45 @@ choose_texture_size(int &x_size, int &y_size,
   x_size = model_tex->get_x_size();
   y_size = model_tex->get_y_size();
 
-  // But we might be looking at just a subset of that texture (scale <
-  // 1) or a superset of the texture (scale > 1).  In this case, we
+  // But we might be looking at just a subset of that texture (|scale| <
+  // 1) or a superset of the texture (|scale| > 1).  In this case, we
   // should adjust the pixel size accordingly, although we have to
   // keep it to a power of 2.
 
   LVecBase3f inherited_scale = model_stage._tex_mat->get_scale();
   
-  float u_scale = inherited_scale[0] * uv_scale[0];
+  float u_scale = cabs(inherited_scale[0]) * uv_scale[0];
   if (u_scale != 0.0f) {
     while (u_scale >= 2.0f) {
       x_size *= 2;
       u_scale *= 0.5f;
     }
-    while (u_scale <= 0.5f) {
+    while (u_scale <= 0.5f && x_size > 0) {
       x_size /= 2;
       u_scale *= 2.0f;
     }
   }
 
-  float v_scale = inherited_scale[1] * uv_scale[1];
+  float v_scale = cabs(inherited_scale[1]) * uv_scale[1];
   if (v_scale != 0.0f) {
     while (v_scale >= 2.0f) {
       y_size *= 2;
       v_scale *= 0.5f;
     }
-    while (v_scale <= 0.5f) {
+    while (v_scale <= 0.5f && y_size > 0) {
       y_size /= 2;
       v_scale *= 2.0f;
     }
+  }
+
+  if (x_size == 0 || y_size == 0) {
+    grutil_cat.warning()
+      << "Texture size " << model_tex->get_x_size() << " " 
+      << model_tex->get_y_size() << " with scale " 
+      << model_stage._tex_mat->get_scale() << ", reduced to size "
+      << x_size << " " << y_size << "; constraining to 1 1.\n";
+    x_size = 1;
+    y_size = 1;
   }
 
   // Constrain the x_size and y_size to the max_texture_dimension.
