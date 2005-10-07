@@ -72,7 +72,7 @@ init_libgrutil() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenCV");
   TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(OpenCVTexture::make_texture, "avi");
+  ts->register_texture_type(OpenCVTexture::make_texture, "avi mpg");
 #endif // HAVE_OPENCV
 }
 
