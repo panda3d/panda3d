@@ -21,8 +21,15 @@
     geometricBoundingVolume.h \
     linmath_events.h \
     look_at.h look_at_src.I  \
-    look_at_src.cxx look_at_src.h omniBoundingVolume.I  \
-    omniBoundingVolume.h plane.h plane_src.I plane_src.cxx  \
+    look_at_src.cxx look_at_src.h \
+    linmath_events.h \
+    mersenne.h \
+    omniBoundingVolume.I  \
+    omniBoundingVolume.h \
+    perlinNoise.h perlinNoise.I \
+    perlinNoise2.h perlinNoise2.I \
+    perlinNoise3.h perlinNoise3.I \
+    plane.h plane_src.I plane_src.cxx  \
     plane_src.h rotate_to.h rotate_to_src.cxx
      
   #define INCLUDED_SOURCES \
@@ -33,7 +40,12 @@
     finiteBoundingVolume.cxx geometricBoundingVolume.cxx  \
     look_at.cxx \
     linmath_events.cxx \
-    omniBoundingVolume.cxx plane.cxx rotate_to.cxx
+    mersenne.cxx \
+    omniBoundingVolume.cxx \
+    perlinNoise.cxx \
+    perlinNoise2.cxx \
+    perlinNoise3.cxx \
+    plane.cxx rotate_to.cxx
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
@@ -45,8 +57,12 @@
     geometricBoundingVolume.I geometricBoundingVolume.h look_at.h \
     look_at_src.I look_at_src.h \
     linmath_events.h \
-    mathHelpers.I mathHelpers.h \
-    omniBoundingVolume.I omniBoundingVolume.h plane.h plane_src.I \
+    mersenne.h \
+    omniBoundingVolume.I omniBoundingVolume.h \
+    perlinNoise.h perlinNoise.I \
+    perlinNoise2.h perlinNoise2.I \
+    perlinNoise3.h perlinNoise3.I \
+    plane.h plane_src.I \
     plane_src.h rotate_to.h
 
   #define IGATESCAN all

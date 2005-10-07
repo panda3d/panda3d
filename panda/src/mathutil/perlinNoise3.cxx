@@ -1,0 +1,127 @@
+// Filename: perlinNoise3.cxx
+// Created by:  drose (05Oct05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "perlinNoise3.h"
+#include "cmath.h"
+
+LVector3d PerlinNoise3::_grad_table[16] = {
+  LVector3d(1, 1, 0),
+  LVector3d(-1, 1, 0),
+  LVector3d(1, -1, 0),
+  LVector3d(-1, -1, 0),
+
+  LVector3d(1, 0, 1),
+  LVector3d(-1, 0, 1),
+  LVector3d(1, 0, -1),
+  LVector3d(-1, 0, -1),
+
+  LVector3d(0, 1, 1),
+  LVector3d(0, -1, 1),
+  LVector3d(0, 1, -1),
+  LVector3d(0, -1, -1),
+
+  LVector3d(1, 1, 0),
+  LVector3d(0, -1, 1),
+  LVector3d(-1, 1, 0),
+  LVector3d(0, -1, -1),
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::Constructor
+//       Access: Published
+//  Description: Randomizes the tables to make a unique noise
+//               function.
+//
+//               If seed is nonzero, it is used to define the tables;
+//               if it is zero a random seed is generated.
+////////////////////////////////////////////////////////////////////
+PerlinNoise3::
+PerlinNoise3(double sx, double sy, double sz,
+	     int table_size, unsigned long seed) :
+  PerlinNoise(table_size, seed)
+{
+  // Come up with a random rotation to apply to the input coordinates.
+  // This will reduce the problem of the singularities on the axes, by
+  // sending the axes in some crazy direction.
+  LRotationd rot(random_real_unit(),
+		 random_real_unit(),
+		 random_real_unit(),
+		 random_real_unit());
+  rot.normalize();
+  rot.extract_to_matrix(_input_xform);
+
+  // And come up with a random translation too, just so the
+  // singularity at (0, 0, 0) is also unpredicatable.
+  _input_xform.set_row(3, LVecBase3d(random_real_unit(),
+				     random_real_unit(),
+				     random_real_unit()));
+
+  // Finally, apply the user's input scale.
+  _input_xform = LMatrix4d::scale_mat(1.0f / sx, 1.0f / sy, 1.0f / sz) * _input_xform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::noise
+//       Access: Published
+//  Description: Returns the noise function of the three inputs.
+////////////////////////////////////////////////////////////////////
+double PerlinNoise3::
+noise(const LVecBase3d &value) {
+  // Convert the vector to our local coordinate space.
+  LVecBase3d vec = _input_xform.xform_point(value);
+
+  double x = vec._v.v._0;
+  double y = vec._v.v._1;
+  double z = vec._v.v._2;
+
+  // Find unit cube that contains point.
+  int X = cmod((int)cfloor(x), _table_size);
+  int Y = cmod((int)cfloor(y), _table_size);
+  int Z = cmod((int)cfloor(z), _table_size);
+
+  // Find relative x,y,z of point in cube.
+  x -= cfloor(x);
+  y -= cfloor(y);        
+  z -= cfloor(z);
+
+  // Compute fade curves for each of x,y,z.
+  double u = fade(x);
+  double v = fade(y);
+  double w = fade(z);
+
+  // Hash coordinates of the 8 cube corners . . .
+  int A = _index[X] + Y;
+  int AA = _index[A] + Z;
+  int AB = _index[A + 1] + Z;
+  int B = _index[X + 1] + Y;
+  int BA = _index[B] + Z;
+  int BB = _index[B + 1] + Z;     
+  
+  // . . . and add blended results from 8 corners of cube.
+  double result =
+    lerp(w, lerp(v, lerp(u, grad(_index[AA], x, y, z), 
+                         grad(_index[BA], x - 1, y, z)), 
+                 lerp(u, grad(_index[AB], x, y - 1, z), 
+                      grad(_index[BB], x - 1, y - 1, z))), 
+         lerp(v, lerp(u, grad(_index[AA + 1], x, y, z - 1), 
+                      grad(_index[BA + 1], x - 1, y, z - 1)), 
+              lerp(u, grad(_index[AB + 1], x, y - 1, z - 1), 
+                   grad(_index[BB + 1], x - 1, y - 1, z - 1))));
+
+  return result;
+}
