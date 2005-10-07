@@ -55,7 +55,7 @@ random_int(int range) {
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise::
 random_real(double range) {
-  return (range * _mersenne.get_uint31()) / ((double)0xffffffff + 1.0f);
+  return (range * _mersenne.get_uint31()) / ((double)0x80000000);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ random_real_unit() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise::get_next_seed
 //       Access: Protected, Static
-//  Description: Returns a random seed value for the next-in-sequence
+//  Description: Returns a random seed value for the next global
 //               PerlinNoise object.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned long PerlinNoise::
@@ -83,3 +83,14 @@ get_next_seed() {
   return _next_seed.get_uint31();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise::get_seed
+//       Access: Published
+//  Description: Returns a unique seed value based on the seed value
+//               passed to this PerlinNoise object (and on its current
+//               state).
+////////////////////////////////////////////////////////////////////
+INLINE unsigned long PerlinNoise::
+get_seed() {
+  return _mersenne.get_uint31();
+}

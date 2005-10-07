@@ -44,6 +44,9 @@ protected:
 
   INLINE static unsigned long get_next_seed();
 
+PUBLISHED:
+  INLINE unsigned long get_seed();
+
 protected:
   int _table_size;
 

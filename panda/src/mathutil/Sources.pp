@@ -30,8 +30,10 @@
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
     plane.h plane_src.I plane_src.cxx  \
-    plane_src.h rotate_to.h rotate_to_src.cxx
-     
+    plane_src.h rotate_to.h rotate_to_src.cxx \
+    stackedPerlinNoise2.h stackedPerlinNoise2.I \
+    stackedPerlinNoise3.h stackedPerlinNoise3.I
+
   #define INCLUDED_SOURCES \
     boundingHexahedron.cxx boundingLine.cxx \
     boundingPlane.cxx \
@@ -45,6 +47,8 @@
     perlinNoise.cxx \
     perlinNoise2.cxx \
     perlinNoise3.cxx \
+    stackedPerlinNoise2.cxx \
+    stackedPerlinNoise3.cxx \
     plane.cxx rotate_to.cxx
 
   #define INSTALL_HEADERS \
@@ -62,8 +66,11 @@
     perlinNoise.h perlinNoise.I \
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
-    plane.h plane_src.I \
-    plane_src.h rotate_to.h
+    plane.h plane_src.I plane_src.cxx \
+    plane_src.h rotate_to.h rotate_to_src.cxx \
+    stackedPerlinNoise2.h stackedPerlinNoise2.I \
+    stackedPerlinNoise3.h stackedPerlinNoise3.I
+
 
   #define IGATESCAN all
 

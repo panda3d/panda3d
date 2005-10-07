@@ -1,12 +1,12 @@
-
 #include "config_mathutil.cxx"
+#include "fftCompressor.cxx"
+#include "linmath_events.cxx"
+#include "look_at.cxx"
+#include "mersenne.cxx"
 #include "perlinNoise.cxx"
 #include "perlinNoise2.cxx"
 #include "perlinNoise3.cxx"
 #include "plane.cxx"
 #include "rotate_to.cxx"
-#include "look_at.cxx"
-#include "linmath_events.cxx"
-#include "mersenne.cxx"
-#include "fftCompressor.cxx"
-
+#include "stackedPerlinNoise2.cxx"
+#include "stackedPerlinNoise3.cxx"
