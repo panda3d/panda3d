@@ -578,26 +578,48 @@ PUBLISHED:
   bool has_tex_transform(TextureStage *stage) const;
   CPT(TransformState) get_tex_transform(TextureStage *stage) const;
 
-  INLINE void set_tex_offset(TextureStage *stage, const LVecBase2f &uv);
   INLINE void set_tex_offset(TextureStage *stage, float u, float v);
+  INLINE void set_tex_offset(TextureStage *stage, const LVecBase2f &uv);
   INLINE void set_tex_rotate(TextureStage *stage, float r);
-  INLINE void set_tex_scale(TextureStage *stage, const LVecBase2f &scale);
+  INLINE void set_tex_scale(TextureStage *stage, float scale);
   INLINE void set_tex_scale(TextureStage *stage, float su, float sv);
+  INLINE void set_tex_scale(TextureStage *stage, const LVecBase2f &scale);
   INLINE LVecBase2f get_tex_offset(TextureStage *stage) const;
   INLINE float get_tex_rotate(TextureStage *stage) const;
   INLINE LVecBase2f get_tex_scale(TextureStage *stage) const;
 
+  INLINE void set_tex_pos(TextureStage *stage, float u, float v, float w);
+  INLINE void set_tex_pos(TextureStage *stage, const LVecBase3f &uvw);
+  INLINE void set_tex_hpr(TextureStage *stage, float h, float p, float r);
+  INLINE void set_tex_hpr(TextureStage *stage, const LVecBase3f &hpr);
+  INLINE void set_tex_scale(TextureStage *stage, float su, float sv, float sw);
+  INLINE void set_tex_scale(TextureStage *stage, const LVecBase3f &scale);
+  INLINE LVecBase3f get_tex_pos(TextureStage *stage) const;
+  INLINE LVecBase3f get_tex_hpr(TextureStage *stage) const;
+  INLINE LVecBase3f get_tex_scale_3d(TextureStage *stage) const;
+
   void set_tex_transform(const NodePath &other, TextureStage *stage, const TransformState *transform);
   CPT(TransformState) get_tex_transform(const NodePath &other, TextureStage *stage) const;
 
-  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv);
   INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v);
+  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv);
   INLINE void set_tex_rotate(const NodePath &other, TextureStage *stage, float r);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float scale);
   INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale);
   INLINE LVecBase2f get_tex_offset(const NodePath &other, TextureStage *stage) const;
   INLINE float get_tex_rotate(const NodePath &other, TextureStage *stage) const;
   INLINE LVecBase2f get_tex_scale(const NodePath &other, TextureStage *stage) const;
+
+  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, float u, float v, float w);
+  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3f &uvw);
+  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, float h, float p, float r);
+  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3f &hpr);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv, float sw);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3f &scale);
+  INLINE LVecBase3f get_tex_pos(const NodePath &other, TextureStage *stage) const;
+  INLINE LVecBase3f get_tex_hpr(const NodePath &other, TextureStage *stage) const;
+  INLINE LVecBase3f get_tex_scale_3d(const NodePath &other, TextureStage *stage) const;
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 

@@ -1298,10 +1298,13 @@ get_sa() const {
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated offset to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(TextureStage *stage, const LVecBase2f &uv) {
-  set_tex_offset(stage, uv[0], uv[1]);
+set_tex_offset(TextureStage *stage, float u, float v) {
+  set_tex_offset(stage, LVecBase2f(u, v));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1309,12 +1312,15 @@ set_tex_offset(TextureStage *stage, const LVecBase2f &uv) {
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated offset to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(TextureStage *stage, float u, float v) {
+set_tex_offset(TextureStage *stage, const LVecBase2f &uv) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
-                    get_tex_transform(stage)->set_pos2d(LVecBase2f(u, v)));
+                    get_tex_transform(stage)->set_pos2d(uv));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1323,6 +1329,9 @@ set_tex_offset(TextureStage *stage, float u, float v) {
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated rotation, clockwise in degrees, to UV's
 //               for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_tex_rotate(TextureStage *stage, float r) {
@@ -1335,24 +1344,46 @@ set_tex_rotate(TextureStage *stage, float r) {
 //     Function: NodePath::set_tex_scale
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
-//               the indicated scale to UV's for the given stage.
+//               the indicated scale to UVW's for the given stage.
+//
+//               This call is appropriate for 2-d or 3-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, const LVecBase2f &scale) {
-  set_tex_scale(stage, scale[0], scale[1]);
+set_tex_scale(TextureStage *stage, float scale) {
+  nassertv_always(!is_empty());
+  set_tex_transform(stage, 
+                    get_tex_transform(stage)->set_scale(scale));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_tex_scale
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
-//               the indicated offset to UV's for the given stage.
+//               the indicated scale to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_tex_scale(TextureStage *stage, float su, float sv) {
+  set_tex_scale(stage, LVecBase2f(su, sv));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(TextureStage *stage, const LVecBase2f &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
-                    get_tex_transform(stage)->set_scale2d(LVecBase2f(su, sv)));
+                    get_tex_transform(stage)->set_scale2d(scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1360,6 +1391,9 @@ set_tex_scale(TextureStage *stage, float su, float sv) {
 //       Access: Published
 //  Description: Returns the offset set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase2f NodePath::
 get_tex_offset(TextureStage *stage) const {
@@ -1372,6 +1406,9 @@ get_tex_offset(TextureStage *stage) const {
 //       Access: Published
 //  Description: Returns the rotation set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
 get_tex_rotate(TextureStage *stage) const {
@@ -1384,6 +1421,9 @@ get_tex_rotate(TextureStage *stage) const {
 //       Access: Published
 //  Description: Returns the scale set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase2f NodePath::
 get_tex_scale(TextureStage *stage) const {
@@ -1392,14 +1432,131 @@ get_tex_scale(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_tex_offset
+//     Function: NodePath::set_tex_pos
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
-//               the indicated offset to UV's for the given stage.
+//               the indicated offset to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv) {
-  set_tex_offset(other, stage, uv[0], uv[1]);
+set_tex_pos(TextureStage *stage, float u, float v, float w) {
+  set_tex_pos(stage, LVecBase3f(u, v, w));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_pos
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated offset to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_pos(TextureStage *stage, const LVecBase3f &uvw) {
+  nassertv_always(!is_empty());
+  set_tex_transform(stage, 
+                    get_tex_transform(stage)->set_pos(uvw));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_hpr
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated rotation, as a 3-D HPR, to UVW's
+//               for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_hpr(TextureStage *stage, float h, float p, float r) {
+  set_tex_hpr(stage, LVecBase3f(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_hpr
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated rotation, as a 3-D HPR, to UVW's
+//               for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_hpr(TextureStage *stage, const LVecBase3f &hpr) {
+  nassertv_always(!is_empty());
+  set_tex_transform(stage, 
+                    get_tex_transform(stage)->set_hpr(hpr));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(TextureStage *stage, float su, float sv, float sw) {
+  set_tex_scale(stage, LVecBase3f(su, sv, sw));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(TextureStage *stage, const LVecBase3f &scale) {
+  nassertv_always(!is_empty());
+  set_tex_transform(stage, 
+                    get_tex_transform(stage)->set_scale(scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_pos
+//       Access: Published
+//  Description: Returns the offset set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_pos(TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f::zero());
+  return get_tex_transform(stage)->get_pos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_hpr
+//       Access: Published
+//  Description: Returns the 3-D HPR set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_hpr(TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f::zero());
+  return get_tex_transform(stage)->get_hpr();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_scale_3d
+//       Access: Published
+//  Description: Returns the scale set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_scale_3d(TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f(1.0f, 1.0f, 1.0f));
+  return get_tex_transform(stage)->get_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1407,12 +1564,29 @@ set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv)
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated offset to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v) {
+  set_tex_offset(other, stage, LVecBase2f(u, v));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_offset
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated offset to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
-                    get_tex_transform(other, stage)->set_pos2d(LVecBase2f(u, v)));
+                    get_tex_transform(other, stage)->set_pos2d(uv));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1421,6 +1595,9 @@ set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v) {
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated rotation, clockwise in degrees, to UV's
 //               for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_tex_rotate(const NodePath &other, TextureStage *stage, float r) {
@@ -1434,23 +1611,45 @@ set_tex_rotate(const NodePath &other, TextureStage *stage, float r) {
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
 //               the indicated scale to UV's for the given stage.
+//
+//               This call is appropriate for 2-d or 3-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale) {
-  set_tex_scale(other, stage, scale[0], scale[1]);
+set_tex_scale(const NodePath &other, TextureStage *stage, float scale) {
+  nassertv_always(!is_empty());
+  set_tex_transform(other, stage, 
+                    get_tex_transform(stage)->set_scale(scale));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_tex_scale
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
-//               the indicated offset to UV's for the given stage.
+//               the indicated scale to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
+  set_tex_scale(other, stage, LVecBase2f(su, sv));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UV's for the given stage.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
-                    get_tex_transform(stage)->set_scale2d(LVecBase2f(su, sv)));
+                    get_tex_transform(stage)->set_scale2d(scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1458,6 +1657,9 @@ set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
 //       Access: Published
 //  Description: Returns the offset set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase2f NodePath::
 get_tex_offset(const NodePath &other, TextureStage *stage) const {
@@ -1470,6 +1672,9 @@ get_tex_offset(const NodePath &other, TextureStage *stage) const {
 //       Access: Published
 //  Description: Returns the rotation set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
 get_tex_rotate(const NodePath &other, TextureStage *stage) const {
@@ -1482,11 +1687,142 @@ get_tex_rotate(const NodePath &other, TextureStage *stage) const {
 //       Access: Published
 //  Description: Returns the scale set for the UV's for the given
 //               stage on the current node.
+//
+//               This call is appropriate for ordinary 2-d texture
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase2f NodePath::
 get_tex_scale(const NodePath &other, TextureStage *stage) const {
   nassertr_always(!is_empty(), LVecBase2f(1.0f, 1.0f));
   return get_tex_transform(other, stage)->get_scale2d();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_pos
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated offset to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_pos(const NodePath &other, TextureStage *stage, float u, float v, float w) {
+  set_tex_pos(other, stage, LVecBase3f(u, v, w));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_pos
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated offset to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3f &uvw) {
+  nassertv_always(!is_empty());
+  set_tex_transform(other, stage, 
+                    get_tex_transform(stage)->set_pos(uvw));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_hpr
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated rotation, as a 3-D HPR, to UVW's
+//               for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_hpr(const NodePath &other, TextureStage *stage, float h, float p, float r) {
+  set_tex_hpr(other, stage, LVecBase3f(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_hpr
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated rotation, as a 3-D HPR, to UVW's
+//               for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3f &hpr) {
+  nassertv_always(!is_empty());
+  set_tex_transform(other, stage, 
+                    get_tex_transform(stage)->set_hpr(hpr));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv, float sw) {
+  set_tex_scale(other, stage, LVecBase3f(su, sv, sw));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_scale
+//       Access: Published
+//  Description: Sets a texture matrix on the current node to apply
+//               the indicated scale to UVW's for the given stage.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3f &scale) {
+  nassertv_always(!is_empty());
+  set_tex_transform(other, stage, 
+                    get_tex_transform(stage)->set_scale(scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_pos
+//       Access: Published
+//  Description: Returns the offset set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_pos(const NodePath &other, TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f::zero());
+  return get_tex_transform(stage)->get_pos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_hpr
+//       Access: Published
+//  Description: Returns the 3-D HPR set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_hpr(const NodePath &other, TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f::zero());
+  return get_tex_transform(stage)->get_hpr();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_scale_3d
+//       Access: Published
+//  Description: Returns the scale set for the UVW's for the given
+//               stage on the current node.
+//
+//               This call is appropriate for 3-d texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3f NodePath::
+get_tex_scale_3d(const NodePath &other, TextureStage *stage) const {
+  nassertr_always(!is_empty(), LVecBase3f(1.0f, 1.0f, 1.0f));
+  return get_tex_transform(stage)->get_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
