@@ -13,8 +13,8 @@ it does not:
 although it does send messeges that allow a listener to play sounds or
 animations based on walker events.
 """
-
 from direct.showbase.ShowBaseGlobal import *
+
 
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
@@ -530,7 +530,7 @@ class GravityWalker(DirectObject.DirectObject):
                     step=rotMat.xform(self.vel) + (self.priorParent * dt)
                     self.avatarNodePath.setFluidPos(Point3(
                             self.avatarNodePath.getPos()+step))
-                if 1:
+                if 0:
                     # rotMat is the rotation matrix corresponding to
                     # our previous heading.
                     rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
@@ -550,6 +550,59 @@ class GravityWalker(DirectObject.DirectObject):
                         onScreenDebug.add("a contactNormal()", self.lifter.getContactNormal().pPrintValues())
                         onScreenDebug.add("a rotMat", rotMat.pPrintValues())
                         onScreenDebug.add("a rotMat2", rotMat2.pPrintValues())
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+                if 1:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    right   = Vec3(rotMat.xform(Vec3.right()))
+                    up      = Vec3(rotMat.xform(self.lifter.getContactNormal()))
+                    forward = up.cross(right)
+                    self.vel=Vec3(forward * distance +
+                                right * slideDistance)
+                    step=self.vel + (self.priorParent * dt)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+                if 0:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    forward = Vec3(rotMat.xform(Vec3.forward()))
+                    right   = Vec3(rotMat.xform(Vec3.right()))
+                    up      = Vec3(rotMat.xform(self.lifter.getContactNormal()))
+                    rotMat2=Mat3()
+                    headsUp(rotMat2, up, right)
+                    newForward = Vec3(rotMat2.xform(Vec3.right()))
+                    newRight = Vec3(rotMat2.xform(Vec3.up()))
+                    if 1:
+                        onScreenDebug.add("a getH()", self.avatarNodePath.getH())
+                        onScreenDebug.add("a forward", forward.pPrintValues())
+                        onScreenDebug.add("a up", up.pPrintValues())
+                        onScreenDebug.add("a Vec3.forward()", Vec3.forward().pPrintValues())
+                        onScreenDebug.add("a Vec3.up()", Vec3.up().pPrintValues())
+                        onScreenDebug.add("a Vec3.right()", Vec3.right().pPrintValues())
+                        onScreenDebug.add("a contactNormal()", self.lifter.getContactNormal().pPrintValues())
+                        onScreenDebug.add("a rotMat", rotMat.pPrintValues())
+                        onScreenDebug.add("a rotMat2", rotMat2.pPrintValues())
+                        onScreenDebug.add("b newForward", newForward.pPrintValues())
+                        onScreenDebug.add("b newRight", newRight.pPrintValues())
+                    self.vel=Vec3(newForward * distance +
+                                newRight * slideDistance)
+                    step=self.vel + (self.priorParent * dt)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+                if 0:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    forward = Vec3(rotMat.xform(Vec3.forward()))
+                    up      = Vec3(rotMat.xform(self.lifter.getContactNormal()))
+                    rotMat2=Mat3()
+                    forward.setZ(forward.getZ() * up.getZ())
+                    #rotMat2=Mat3.rotateMatNormaxis(0.0, )
+                    #step=rotMat2.xform(self.vel) + (self.priorParent * dt)
+                    step=rotMat.xform(self.vel) + (self.priorParent * dt)
                     self.avatarNodePath.setFluidPos(Point3(
                             self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
