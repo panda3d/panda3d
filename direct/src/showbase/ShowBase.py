@@ -1604,7 +1604,7 @@ class ShowBase(DirectObject.DirectObject):
             source = source.getWindow()
 
         rig = NodePath(namePrefix)
-        buffer = source.makeCubeMap(namePrefix, size, 1, rig, cameraMask)
+        buffer = source.makeCubeMap(namePrefix, size, rig, cameraMask, 1)
         if buffer == None:
             raise StandardError, "Could not make cube map."
 
@@ -1664,7 +1664,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now make the cube map buffer.
         rig = NodePath(namePrefix)
-        buffer = toSphere.makeCubeMap(namePrefix, size, 0, rig, cameraMask)
+        buffer = toSphere.makeCubeMap(namePrefix, size, rig, cameraMask, 0)
         if buffer == None:
             base.graphicsEngine.removeWindow(toSphere)
             raise StandardError, "Could not make cube map."

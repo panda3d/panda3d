@@ -112,8 +112,10 @@ PUBLISHED:
 
   GraphicsOutput *make_texture_buffer(const string &name, int x_size, int y_size,
                                       Texture *tex = NULL, bool to_ram = false);
-  GraphicsOutput *make_cube_map(const string &name, int size, bool to_ram,
-                                NodePath &camera_rig, DrawMask camera_mask);
+  GraphicsOutput *make_cube_map(const string &name, int size,
+				NodePath &camera_rig,
+				DrawMask camera_mask = DrawMask::all_on(),
+				bool to_ram = false);
 
   INLINE static Filename make_screenshot_filename(const string &prefix = "screenshot");
   INLINE Filename save_screenshot_default(const string &prefix = "screenshot");

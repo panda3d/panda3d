@@ -626,8 +626,8 @@ static ShowBuffersCubeMapRegions cube_map_regions[6] = {
 //               rig.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsOutput::
-make_cube_map(const string &name, int size, bool to_ram,
-              NodePath &camera_rig, DrawMask camera_mask) {
+make_cube_map(const string &name, int size, NodePath &camera_rig, 
+	      DrawMask camera_mask, bool to_ram) {
   if (!to_ram) {
     // Check the limits imposed by the GSG.  (However, if we're
     // rendering the texture to RAM only, these limits may be
