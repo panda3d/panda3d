@@ -1153,9 +1153,6 @@ void WindowFramework::
 create_anim_controls() {
   destroy_anim_controls();
 
-  AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)NULL);
-
   PT(PGItem) group = new PGItem("anim_controls_group");
   PGFrameStyle style;
   style.set_type(PGFrameStyle::T_flat);
@@ -1178,6 +1175,9 @@ create_anim_controls() {
     
     return;
   }
+
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
 
   PT(TextNode) label = new TextNode("anim_name");
   label->set_align(TextNode::A_left);
