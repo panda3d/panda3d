@@ -558,25 +558,6 @@ def AddToVisualStudioPath(path,add):
 
 def LocateVisualStudio():
 
-    # Try to use the Visual Toolkit 2003
-    vcdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","VCToolkitInstallDir")
-    if (vcdir != 0) or (os.environ.has_key("VCTOOLKITINSTALLDIR")):
-        if (vcdir == 0): vcdir = os.environ["VCTOOLKITINSTALLDIR"]
-        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
-                               "Install Dir")
-        if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
-        WARNINGS.append("Using visual toolkit: "+vcdir)
-        WARNINGS.append("Using MS Platform SDK: "+platsdk)
-        AddToVisualStudioPath("PATH", vcdir + "\\bin")
-        AddToVisualStudioPath("INCLUDE", platsdk + "\\include")
-        AddToVisualStudioPath("INCLUDE", vcdir + "\\include")
-        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
-        AddToVisualStudioPath("LIB",     platsdk + "\\lib")
-        AddToVisualStudioPath("LIB",     vcdir + "\\lib")
-        AddToVisualStudioPath("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
-        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
-        return
-
     # Try to use Visual Studio
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
     if (vcdir == 0):
@@ -599,6 +580,25 @@ def LocateVisualStudio():
         AddToVisualStudioPath("LIB",     vcdir + "vc7\\PlatformSDK\\lib")
         return
 
+    # Try to use the Visual Toolkit 2003
+    vcdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","VCToolkitInstallDir")
+    if (vcdir != 0) or (os.environ.has_key("VCTOOLKITINSTALLDIR")):
+        if (vcdir == 0): vcdir = os.environ["VCTOOLKITINSTALLDIR"]
+        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
+                               "Install Dir")
+        if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
+        WARNINGS.append("Using visual toolkit: "+vcdir)
+        WARNINGS.append("Using MS Platform SDK: "+platsdk)
+        AddToVisualStudioPath("PATH", vcdir + "\\bin")
+        AddToVisualStudioPath("INCLUDE", platsdk + "\\include")
+        AddToVisualStudioPath("INCLUDE", vcdir + "\\include")
+        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
+        AddToVisualStudioPath("LIB",     platsdk + "\\lib")
+        AddToVisualStudioPath("LIB",     vcdir + "\\lib")
+        AddToVisualStudioPath("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
+        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
+        return
+
     # Give up
     exit("Cannot locate Microsoft Visual Studio 7.0, 7.1, or the Visual Toolkit 2003")
 
@@ -619,7 +619,7 @@ if (OMIT.count("HELIX")==0):
 
 ##########################################################################################
 #
-# Disable OpenCV under linux.
+# Disable OpenCV
 #
 ##########################################################################################
 
@@ -3126,10 +3126,9 @@ if (OMIT.count("PYTHON")==0):
     OPTS=['BUILDING_DIRECT', 'NSPR']
     CopyAllHeaders('direct/src/showbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='showBase.cxx', obj='showbase_showBase.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='mersenne.cxx', obj='showbase_mersenne.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libshowbase.in', obj='libshowbase_igate.obj',
                 src='direct/src/showbase', module='direct', library='libshowbase',
-                skip=[], also=["mersenne.cxx","showBase.cxx"])
+                skip=[], also=["showBase.cxx"])
 
 #
 # DIRECTORY: direct/metalibs/direct/
@@ -3152,7 +3151,6 @@ if (OMIT.count("PYTHON")==0):
                  'dcparser_dcLexer.obj',
                  'libdcparser_igate.obj',
                  'showbase_showBase.obj',
-                 'showbase_mersenne.obj',
                  'libshowbase_igate.obj',
                  'deadrec_composite.obj',
                  'libdeadrec_igate.obj',
