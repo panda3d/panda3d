@@ -286,7 +286,7 @@ remove_hooks_with(void *data) {
       if ((*cfi).second == data) {
         any_removed = true;
       } else {
-        new_funcs.insert(*cfi, new_funcs.end());
+        new_funcs.insert(*cfi);
       }
     }
     funcs.swap(new_funcs);
