@@ -1,0 +1,487 @@
+<Texture> shuttle_controls061 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.328125 0 0
+      0 0.328125 0
+      0.28125 0.046875 1
+    }
+  }
+}
+<Texture> shuttle_controls060 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.328125 0 0
+      0 0.328125 0
+      -0.015625 0.046875 1
+    }
+  }
+}
+<Texture> shuttle_controls059 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.233218 0 0
+      0 0.342988 0
+      0.703704 0.344131 1
+    }
+  }
+}
+<Texture> shuttle_controls058 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.38996 0 0
+      0 0.342988 0
+      0.344082 0.344131 1
+    }
+  }
+}
+<Texture> shuttle_controls057 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.38996 0 0
+      0 0.342988 0
+      -0.0152926 0.344131 1
+    }
+  }
+}
+<Texture> shuttle_controls056 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.358648 0 0
+      0 0.359375 0
+      0.312863 0.65625 1
+    }
+  }
+}
+<Texture> shuttle_controls055 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.358648 0 0
+      0 0.359375 0
+      -0.0152616 0.65625 1
+    }
+  }
+}
+<Texture> shuttle_controls054 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.359375 0 0
+      0 0.201766 0
+      0.578125 0.172554 1
+    }
+  }
+}
+<Texture> shuttle_controls053 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.359375 0 0
+      0 0.201766 0
+      0.578125 0.000679348 1
+    }
+  }
+}
+<Texture> shuttle_controls052 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.201766 0 0
+      0 0.359375 0
+      0.813179 0.65625 1
+    }
+  }
+}
+<Texture> shuttle_controls051 {
+  maps/shuttle_controls_1.rgb
+  <Scalar> format { alpha }
+  <Scalar> wrap { clamp }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> anisotropic-degree { 0 }
+  <Transform> {
+    <Matrix3> {
+      0.201766 0 0
+      0 0.359375 0
+      0.641304 0.65625 1
+    }
+  }
+}
+<Group> {
+  <Switch> { 1 }
+  <Scalar> fps { 2 }
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      0 1.15 0
+    }
+    <Vertex> 1 {
+      0.216667 -0.0333333 0
+      <UV> { 0.0740741 0.0434783 }
+    }
+    <Vertex> 2 {
+      0.6 -0.0333333 0
+      <UV> { 0.925926 0.0434783 }
+    }
+    <Vertex> 3 {
+      0.6 0.666667 0
+      <UV> { 0.925926 0.956522 }
+    }
+    <Vertex> 4 {
+      0.216667 0.666667 0
+      <UV> { 0.0740741 0.956522 }
+    }
+    <Vertex> 5 {
+      1 0 0
+    }
+    <Vertex> 6 {
+      0.333333 -0.0333333 0
+      <UV> { 0.0740741 0.0434783 }
+    }
+    <Vertex> 7 {
+      0.716667 -0.0333333 0
+      <UV> { 0.925926 0.0434783 }
+    }
+    <Vertex> 8 {
+      0.716667 0.666667 0
+      <UV> { 0.925926 0.956522 }
+    }
+    <Vertex> 9 {
+      0.333333 0.666667 0
+      <UV> { 0.0740741 0.956522 }
+    }
+    <Vertex> 10 {
+      1 0 0
+    }
+    <Vertex> 11 {
+      0.116667 0.116667 0
+      <UV> { 0.0434783 0.0740741 }
+    }
+    <Vertex> 12 {
+      0.816667 0.116667 0
+      <UV> { 0.956522 0.0740741 }
+    }
+    <Vertex> 13 {
+      0.816667 0.5 0
+      <UV> { 0.956522 0.925926 }
+    }
+    <Vertex> 14 {
+      0.116667 0.5 0
+      <UV> { 0.0434783 0.925926 }
+    }
+    <Vertex> 15 {
+      1 0 0
+    }
+    <Vertex> 16 {
+      0.116667 0.05 0
+      <UV> { 0.0434783 0.0740741 }
+    }
+    <Vertex> 17 {
+      0.816667 0.05 0
+      <UV> { 0.956522 0.0740741 }
+    }
+    <Vertex> 18 {
+      0.816667 0.433333 0
+      <UV> { 0.956522 0.925926 }
+    }
+    <Vertex> 19 {
+      0.116667 0.433333 0
+      <UV> { 0.0434783 0.925926 }
+    }
+    <Vertex> 20 {
+      1 0 0
+    }
+    <Vertex> 21 {
+      0.1 -0.0666667 0
+      <UV> { 0.0425532 0.0434783 }
+    }
+    <Vertex> 22 {
+      0.816667 -0.0666667 0
+      <UV> { 0.957447 0.0434783 }
+    }
+    <Vertex> 23 {
+      0.816667 0.633333 0
+      <UV> { 0.957447 0.956522 }
+    }
+    <Vertex> 24 {
+      0.1 0.633333 0
+      <UV> { 0.0425532 0.956522 }
+    }
+    <Vertex> 25 {
+      1 0 0
+    }
+    <Vertex> 26 {
+      0.183333 -0.0666667 0
+      <UV> { 0.0425532 0.0434783 }
+    }
+    <Vertex> 27 {
+      0.9 -0.0666667 0
+      <UV> { 0.957447 0.0434783 }
+    }
+    <Vertex> 28 {
+      0.9 0.633333 0
+      <UV> { 0.957447 0.956522 }
+    }
+    <Vertex> 29 {
+      0.183333 0.633333 0
+      <UV> { 0.0425532 0.956522 }
+    }
+    <Vertex> 30 {
+      1 0 0
+    }
+    <Vertex> 31 {
+      0.1 -0.0666667 0
+      <UV> { 0.0392157 0.0444444 }
+    }
+    <Vertex> 32 {
+      0.883333 -0.0666667 0
+      <UV> { 0.960784 0.0444444 }
+    }
+    <Vertex> 33 {
+      0.883333 0.616667 0
+      <UV> { 0.960784 0.955556 }
+    }
+    <Vertex> 34 {
+      0.1 0.616667 0
+      <UV> { 0.0392157 0.955556 }
+    }
+    <Vertex> 35 {
+      0.983333 0 0
+    }
+    <Vertex> 36 {
+      0.1 -0.0666667 0
+      <UV> { 0.0392157 0.0444444 }
+    }
+    <Vertex> 37 {
+      0.883333 -0.0666667 0
+      <UV> { 0.960784 0.0444444 }
+    }
+    <Vertex> 38 {
+      0.883333 0.616667 0
+      <UV> { 0.960784 0.955556 }
+    }
+    <Vertex> 39 {
+      0.1 0.616667 0
+      <UV> { 0.0392157 0.955556 }
+    }
+    <Vertex> 40 {
+      0.983333 0 0
+    }
+    <Vertex> 41 {
+      0.266667 -0.0666667 0
+      <UV> { 0.0645161 0.0444444 }
+    }
+    <Vertex> 42 {
+      0.716667 -0.0666667 0
+      <UV> { 0.935484 0.0444444 }
+    }
+    <Vertex> 43 {
+      0.716667 0.616667 0
+      <UV> { 0.935484 0.955556 }
+    }
+    <Vertex> 44 {
+      0.266667 0.616667 0
+      <UV> { 0.0645161 0.955556 }
+    }
+    <Vertex> 45 {
+      1 0 0
+    }
+    <Vertex> 46 {
+      0.183333 -0.0166667 0
+      <UV> { 0.047619 0.047619 }
+    }
+    <Vertex> 47 {
+      0.816667 -0.0166667 0
+      <UV> { 0.952381 0.047619 }
+    }
+    <Vertex> 48 {
+      0.816667 0.616667 0
+      <UV> { 0.952381 0.952381 }
+    }
+    <Vertex> 49 {
+      0.183333 0.616667 0
+      <UV> { 0.047619 0.952381 }
+    }
+    <Vertex> 50 {
+      1 0 0
+    }
+    <Vertex> 51 {
+      0.183333 -0.0166667 0
+      <UV> { 0.047619 0.047619 }
+    }
+    <Vertex> 52 {
+      0.816667 -0.0166667 0
+      <UV> { 0.952381 0.047619 }
+    }
+    <Vertex> 53 {
+      0.816667 0.616667 0
+      <UV> { 0.952381 0.952381 }
+    }
+    <Vertex> 54 {
+      0.183333 0.616667 0
+      <UV> { 0.047619 0.952381 }
+    }
+    <Vertex> 55 {
+      1 0 0
+    }
+  }
+  <Group> ds {
+    <PointLight> {
+      <VertexRef> { 0 <Ref> { vpool } }
+    }
+  }
+  <Group> 51 {
+    <Polygon> {
+      <TRef> { shuttle_controls051 }
+      <VertexRef> { 1 2 3 4 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 5 <Ref> { vpool } }
+    }
+  }
+  <Group> 52 {
+    <Polygon> {
+      <TRef> { shuttle_controls052 }
+      <VertexRef> { 6 7 8 9 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 10 <Ref> { vpool } }
+    }
+  }
+  <Group> 53 {
+    <Polygon> {
+      <TRef> { shuttle_controls053 }
+      <VertexRef> { 11 12 13 14 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 15 <Ref> { vpool } }
+    }
+  }
+  <Group> 54 {
+    <Polygon> {
+      <TRef> { shuttle_controls054 }
+      <VertexRef> { 16 17 18 19 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 20 <Ref> { vpool } }
+    }
+  }
+  <Group> 55 {
+    <Polygon> {
+      <TRef> { shuttle_controls055 }
+      <VertexRef> { 21 22 23 24 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 25 <Ref> { vpool } }
+    }
+  }
+  <Group> 56 {
+    <Polygon> {
+      <TRef> { shuttle_controls056 }
+      <VertexRef> { 26 27 28 29 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 30 <Ref> { vpool } }
+    }
+  }
+  <Group> 57 {
+    <Polygon> {
+      <TRef> { shuttle_controls057 }
+      <VertexRef> { 31 32 33 34 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 35 <Ref> { vpool } }
+    }
+  }
+  <Group> 58 {
+    <Polygon> {
+      <TRef> { shuttle_controls058 }
+      <VertexRef> { 36 37 38 39 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 40 <Ref> { vpool } }
+    }
+  }
+  <Group> 59 {
+    <Polygon> {
+      <TRef> { shuttle_controls059 }
+      <VertexRef> { 41 42 43 44 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 45 <Ref> { vpool } }
+    }
+  }
+  <Group> 60 {
+    <Polygon> {
+      <TRef> { shuttle_controls060 }
+      <VertexRef> { 46 47 48 49 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 50 <Ref> { vpool } }
+    }
+  }
+  <Group> 61 {
+    <Polygon> {
+      <TRef> { shuttle_controls061 }
+      <VertexRef> { 51 52 53 54 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 55 <Ref> { vpool } }
+    }
+  }
+}
