@@ -174,6 +174,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     
     // Create a display region that covers the entire window.
     _display_region_3d = _window->make_display_region();
+    _display_region_3d->set_sort(0);
 
     // Make sure the DisplayRegion does the clearing, not the window,
     // so we can have multiple DisplayRegions of different colors.
@@ -269,6 +270,7 @@ get_render_2d() {
     // Some standard properties for the 2-d display.
 
     _render_2d.set_depth_write(0);
+    _render_2d.set_depth_test(0);
     _render_2d.set_material_off(1);
     _render_2d.set_two_sided(1);
 
@@ -279,6 +281,7 @@ get_render_2d() {
     float l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
     _display_region_2d = _window->make_display_region(l, r, b, t);
+    _display_region_2d->set_sort(10);
     
     // Finally, we need a camera to associate with the display region.
     PT(Camera) camera = new Camera("camera2d");
@@ -1209,7 +1212,7 @@ create_anim_controls() {
   _play_rate_slider->setup_slider(false, 0.4f, 0.05f, 0.005f);
   _play_rate_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _play_rate_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
-  _play_rate_slider->set_value(1.0f);
+  _play_rate_slider->set_value(control->get_play_rate());
   NodePath pnp = _anim_controls_group.attach_new_node(_play_rate_slider);
   pnp.set_pos(0.75f, 0.0f, 0.15f);
 
