@@ -12,7 +12,7 @@
     config_framework.cxx config_framework.h \
     pandaFramework.cxx pandaFramework.I pandaFramework.h \
     windowFramework.cxx windowFramework.I windowFramework.h \
-    rock_floor_src.cxx
+    rock_floor_src.cxx shuttle_controls_src.cxx
 
   #define INSTALL_HEADERS \
     pandaFramework.I pandaFramework.h \

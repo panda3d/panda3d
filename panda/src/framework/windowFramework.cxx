@@ -55,15 +55,23 @@
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
 #include "string_utils.h"
+#include "bamFile.h"
+#include "staticTextFont.h"
+#include "mouseButton.h"
 
 // This is generated data for the standard texture we apply to the
 // blue triangle.
 #include "rock_floor_src.cxx"
 
+// This is generated data for shuttle_controls.bam, a bamified version
+// of shuttle_controls.egg (found in the models tree).
+#include "shuttle_controls_src.cxx"
+
 // This number is chosen arbitrarily to override any settings in model
 // files.
 static const int override_priority = 100;
 
+PT(TextFont) WindowFramework::_shuttle_controls_font = NULL;
 TypeHandle WindowFramework::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -966,6 +974,31 @@ set_background_type(WindowFramework::BackgroundType type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_shuttle_controls_font
+//       Access: Public, Static
+//  Description: Returns a font that contains the shuttle controls
+//               icons.
+////////////////////////////////////////////////////////////////////
+TextFont *WindowFramework::
+get_shuttle_controls_font() {
+  if (_shuttle_controls_font == (TextFont *)NULL) {
+    PT(TextFont) font;
+  
+    string shuttle_controls_string((const char *)shuttle_controls, shuttle_controls_len);
+    istringstream in(shuttle_controls_string);
+    BamFile bam_file;
+    if (bam_file.open_read(in, "shuttle_controls font stream")) {
+      PT(PandaNode) node = bam_file.read_node();
+      if (node != (PandaNode *)NULL) {
+        _shuttle_controls_font = new StaticTextFont(node);
+      }
+    }
+  }
+
+  return _shuttle_controls_font;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::make_camera
 //       Access: Protected
 //  Description: Makes a new 3-d camera for the window.
@@ -1150,11 +1183,11 @@ create_anim_controls() {
   label->set_align(TextNode::A_left);
   label->set_text(_anim_controls.get_anim_name(_anim_index));
   NodePath tnp = _anim_controls_group.attach_new_node(label);
-  tnp.set_pos(-1.0f, 0.0f, 0.15f);
+  tnp.set_pos(-0.95f, 0.0f, 0.15f);
   tnp.set_scale(0.05f);
 
   _anim_slider = new PGSliderBar("anim_slider");
-  _anim_slider->setup_slider(false, 1.8f, 0.1f, 0.01f);
+  _anim_slider->setup_slider(false, 1.9f, 0.1f, 0.01f);
   _anim_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _anim_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
 
@@ -1172,6 +1205,21 @@ create_anim_controls() {
   fnp.set_scale(0.05f);
   fnp.set_pos(0.0f, 0.0f, -0.01f);
 
+  _play_rate_slider = new PGSliderBar("play_rate_slider");
+  _play_rate_slider->setup_slider(false, 0.4f, 0.05f, 0.01f);
+  _play_rate_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
+  _play_rate_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
+  _play_rate_slider->set_value(1.0f);
+  NodePath pnp = _anim_controls_group.attach_new_node(_play_rate_slider);
+  pnp.set_pos(0.75f, 0.0f, 0.15f);
+
+  // Set up the jog/shuttle buttons.  These use symbols from the
+  // shuttle_controls_font file.
+  setup_shuttle_button("9", 0, st_back_button);
+  setup_shuttle_button(";", 1, st_pause_button);
+  setup_shuttle_button("4", 2, st_play_button);
+  setup_shuttle_button(":", 3, st_forward_button);
+
   _panda_framework->get_event_handler().add_hook("NewFrame", st_update_anim_controls, (void *)this);
 }
 
@@ -1185,13 +1233,7 @@ destroy_anim_controls() {
   if (!_anim_controls_group.is_empty()) {
     _anim_controls_group.remove_node();
 
-    _panda_framework->get_event_handler().remove_hook("NewFrame", st_update_anim_controls, (void *)this);
-
-    if (_anim_index < _anim_controls.get_num_anims()) {
-      AnimControl *control = _anim_controls.get_anim(_anim_index);
-      nassertv(control != (AnimControl *)NULL);
-      control->loop(false);
-    }
+    _panda_framework->get_event_handler().remove_hooks_with((void *)this);
   }
 }
 
@@ -1213,6 +1255,50 @@ update_anim_controls() {
   }
 
   _frame_number->set_text(format_string(control->get_frame()));
+
+  control->set_play_rate(_play_rate_slider->get_value());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::setup_shuttle_button
+//       Access: Private
+//  Description: Creates a PGButton to implement the indicated shuttle
+//               event (play, pause, etc.).
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+setup_shuttle_button(const string &label, int index, 
+                     EventHandler::EventCallbackFunction *func) {
+  PT(PGButton) button = new PGButton(label);
+  button->set_frame(-0.05f, 0.05f, 0.0f, 0.04f);
+
+  float bevel = 0.05f;
+
+  PGFrameStyle style;
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
+  style.set_width(bevel, bevel);
+
+  style.set_type(PGFrameStyle::T_bevel_out);
+  button->set_frame_style(PGButton::S_ready, style);
+
+  style.set_type(PGFrameStyle::T_bevel_in);
+  button->set_frame_style(PGButton::S_depressed, style);
+
+  style.set_color(0.9f, 0.9f, 0.9f, 1.0f);
+  button->set_frame_style(PGButton::S_rollover, style);
+
+  if (get_shuttle_controls_font() != (TextFont *)NULL) {
+    PT(TextNode) tn = new TextNode("label");
+    tn->set_align(TextNode::A_center);
+    tn->set_font(get_shuttle_controls_font());
+    tn->set_text(label);
+    tn->set_transform(LMatrix4f::scale_mat(0.04f));
+
+    button->get_state_def(PGButton::S_ready).attach_new_node(tn);
+    button->get_state_def(PGButton::S_depressed).attach_new_node(tn);
+    button->get_state_def(PGButton::S_rollover).attach_new_node(tn);
+  }
+
+  _panda_framework->get_event_handler().add_hook(button->get_click_event(MouseButton::one()), func, (void *)this);
 }
 
 
@@ -1227,3 +1313,47 @@ st_update_anim_controls(CPT_Event, void *data) {
   self->update_anim_controls();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::st_back_button
+//       Access: Private, Static
+//  Description: The static event handler function.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+st_back_button(CPT_Event, void *data) {
+  WindowFramework *self = (WindowFramework *)data;
+  cerr << "back\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::st_pause_button
+//       Access: Private, Static
+//  Description: The static event handler function.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+st_pause_button(CPT_Event, void *data) {
+  WindowFramework *self = (WindowFramework *)data;
+  cerr << "pause\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::st_play_button
+//       Access: Private, Static
+//  Description: The static event handler function.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+st_play_button(CPT_Event, void *data) {
+  WindowFramework *self = (WindowFramework *)data;
+  cerr << "play\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::st_forward_button
+//       Access: Private, Static
+//  Description: The static event handler function.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+st_forward_button(CPT_Event, void *data) {
+  WindowFramework *self = (WindowFramework *)data;
+  cerr << "forward\n";
+}

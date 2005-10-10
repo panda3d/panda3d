@@ -35,6 +35,7 @@
 #include "loaderOptions.h"
 #include "pgSliderBar.h"
 #include "textNode.h"
+#include "eventHandler.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -127,7 +128,9 @@ public:
   INLINE bool get_one_sided_reverse() const;
   INLINE bool get_lighting() const;
   INLINE BackgroundType get_background_type() const;
-  
+
+  static TextFont *get_shuttle_controls_font();
+
 protected:
   PT(Camera) make_camera();
   void setup_lights();
@@ -137,7 +140,16 @@ private:
   void create_anim_controls();
   void destroy_anim_controls();
   void update_anim_controls();
+
+  void setup_shuttle_button(const string &label, int index, 
+                            EventHandler::EventCallbackFunction *func);
+
   static void st_update_anim_controls(CPT_Event, void *data);
+
+  static void st_back_button(CPT_Event, void *data);
+  static void st_pause_button(CPT_Event, void *data);
+  static void st_play_button(CPT_Event, void *data);
+  static void st_forward_button(CPT_Event, void *data);
 
 private:
   PandaFramework *_panda_framework;
@@ -158,6 +170,7 @@ private:
   int _anim_index;
   NodePath _anim_controls_group;
   PT(PGSliderBar) _anim_slider;
+  PT(PGSliderBar) _play_rate_slider;
   PT(TextNode) _frame_number;
 
   NodePath _mouse;
@@ -179,6 +192,8 @@ private:
   PT(FrameRateMeter) _frame_rate_meter;
 
   BackgroundType _background_type;
+  
+  static PT(TextFont) _shuttle_controls_font;
 
 public:
   static TypeHandle get_class_type() {
