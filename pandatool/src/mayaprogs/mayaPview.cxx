@@ -126,6 +126,10 @@ doIt(const MArgList &args) {
   window->center_trackball(framework.get_models());
   window->loop_animations();
 
+  if (animate) {
+    window->set_anim_controls(true);
+  }
+
   framework.main_loop();
   return MS::kSuccess;
 }
