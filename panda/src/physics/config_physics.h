@@ -57,11 +57,11 @@ extern EXPCL_PANDAPHYSICS void init_libphysics();
   // Release build:
   #undef PHYSICS_DEBUG
 
-  #define physics_spam(msg) (()0)
-  #define physics_debug(msg) (()0)
-  #define physics_info(msg) (()0)
-  #define physics_warning(msg) (()0)
-  #define physics_error(msg) (()0)
+  #define physics_spam(msg) ((void)0)
+  #define physics_debug(msg) ((void)0)
+  #define physics_info(msg) ((void)0)
+  #define physics_warning(msg) ((void)0)
+  #define physics_error(msg) ((void)0)
 #endif //]
 
 #define audio_error(msg) \
