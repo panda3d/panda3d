@@ -143,6 +143,10 @@ private:
 
   void setup_shuttle_button(const string &label, int index, 
                             EventHandler::EventCallbackFunction *func);
+  void back_button();
+  void pause_button();
+  void play_button();
+  void forward_button();
 
   static void st_update_anim_controls(CPT_Event, void *data);
 

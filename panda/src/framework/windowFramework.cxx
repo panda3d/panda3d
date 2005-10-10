@@ -1187,7 +1187,7 @@ create_anim_controls() {
   tnp.set_scale(0.05f);
 
   _anim_slider = new PGSliderBar("anim_slider");
-  _anim_slider->setup_slider(false, 1.9f, 0.1f, 0.01f);
+  _anim_slider->setup_slider(false, 1.9f, 0.1f, 0.005f);
   _anim_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _anim_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
 
@@ -1206,7 +1206,7 @@ create_anim_controls() {
   fnp.set_pos(0.0f, 0.0f, -0.01f);
 
   _play_rate_slider = new PGSliderBar("play_rate_slider");
-  _play_rate_slider->setup_slider(false, 0.4f, 0.05f, 0.01f);
+  _play_rate_slider->setup_slider(false, 0.4f, 0.05f, 0.005f);
   _play_rate_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _play_rate_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _play_rate_slider->set_value(1.0f);
@@ -1269,9 +1269,9 @@ void WindowFramework::
 setup_shuttle_button(const string &label, int index, 
                      EventHandler::EventCallbackFunction *func) {
   PT(PGButton) button = new PGButton(label);
-  button->set_frame(-0.05f, 0.05f, 0.0f, 0.04f);
+  button->set_frame(-0.05f, 0.05f, 0.0f, 0.07f);
 
-  float bevel = 0.05f;
+  float bevel = 0.005f;
 
   PGFrameStyle style;
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
@@ -1284,6 +1284,7 @@ setup_shuttle_button(const string &label, int index,
   button->set_frame_style(PGButton::S_depressed, style);
 
   style.set_color(0.9f, 0.9f, 0.9f, 1.0f);
+  style.set_type(PGFrameStyle::T_bevel_out);
   button->set_frame_style(PGButton::S_rollover, style);
 
   if (get_shuttle_controls_font() != (TextFont *)NULL) {
@@ -1291,14 +1292,68 @@ setup_shuttle_button(const string &label, int index,
     tn->set_align(TextNode::A_center);
     tn->set_font(get_shuttle_controls_font());
     tn->set_text(label);
-    tn->set_transform(LMatrix4f::scale_mat(0.04f));
+    tn->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
+    LMatrix4f xform = LMatrix4f::scale_mat(0.07f);
+    xform.set_row(3, LVecBase3f(0.0f, 0.0f, 0.016f));
+    tn->set_transform(xform);
 
     button->get_state_def(PGButton::S_ready).attach_new_node(tn);
     button->get_state_def(PGButton::S_depressed).attach_new_node(tn);
     button->get_state_def(PGButton::S_rollover).attach_new_node(tn);
   }
 
+  NodePath np = _anim_controls_group.attach_new_node(button);
+  np.set_pos(0.1f * index - 0.15f, 0.0f, 0.12f);
+
   _panda_framework->get_event_handler().add_hook(button->get_click_event(MouseButton::one()), func, (void *)this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::back_button
+//       Access: Private, Static
+//  Description: Handler for a shuttle button.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+back_button() {
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+  control->pose(control->get_frame() - 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::pause_button
+//       Access: Private, Static
+//  Description: Handler for a shuttle button.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+pause_button() {
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+  control->stop();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::play_button
+//       Access: Private, Static
+//  Description: Handler for a shuttle button.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+play_button() {
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+  control->loop(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::forward_button
+//       Access: Private, Static
+//  Description: Handler for a shuttle button.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+forward_button() {
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+  control->pose(control->get_frame() + 1);
 }
 
 
@@ -1322,7 +1377,7 @@ st_update_anim_controls(CPT_Event, void *data) {
 void WindowFramework::
 st_back_button(CPT_Event, void *data) {
   WindowFramework *self = (WindowFramework *)data;
-  cerr << "back\n";
+  self->back_button();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1333,7 +1388,7 @@ st_back_button(CPT_Event, void *data) {
 void WindowFramework::
 st_pause_button(CPT_Event, void *data) {
   WindowFramework *self = (WindowFramework *)data;
-  cerr << "pause\n";
+  self->pause_button();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1344,7 +1399,7 @@ st_pause_button(CPT_Event, void *data) {
 void WindowFramework::
 st_play_button(CPT_Event, void *data) {
   WindowFramework *self = (WindowFramework *)data;
-  cerr << "play\n";
+  self->play_button();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1355,5 +1410,5 @@ st_play_button(CPT_Event, void *data) {
 void WindowFramework::
 st_forward_button(CPT_Event, void *data) {
   WindowFramework *self = (WindowFramework *)data;
-  cerr << "forward\n";
+  self->forward_button();
 }
