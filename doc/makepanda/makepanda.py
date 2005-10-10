@@ -37,7 +37,7 @@ VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
-          "BISON","FLEX","PANDATOOL","PANDAAPP"]
+          "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -616,6 +616,17 @@ if (OMIT.count("HELIX")==0):
     WARNINGS.append("HELIX is currently nonoperational")
     WARNINGS.append("I have automatically added this command-line option: --no-helix")
     OMIT.append("HELIX")
+
+##########################################################################################
+#
+# Disable OpenCV under linux.
+#
+##########################################################################################
+
+if (OMIT.count("OPENCV")==0):
+    WARNINGS.append("OPENCV doesn't work yet")
+    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
+    OMIT.append("OPENCV")
 
 ##########################################################################################
 #
@@ -1370,6 +1381,9 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/mesh.lib"'
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/maxutil.lib"'
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
+    if (PkgSelected(opts,"OPENCV")):
+        cmd = cmd + " /LIBPATH:thirdparty/win-libs-vc7/opencv/lib"
+        cmd = cmd + " cv.lib cxcore.lib cvaux.lib trs.lib highgui.lib"
     oscmd(cmd)
 
 def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
@@ -1699,6 +1713,7 @@ DTOOLDEFAULTS=[
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ]
 
 def CalculateDtoolConfig():
@@ -2416,7 +2431,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 #
 
 IPATH=['panda/src/grutil']
-OPTS=['BUILDING_PANDA', 'NSPR']
+OPTS=['BUILDING_PANDA', 'NSPR', 'OPENCV']
 CopyAllHeaders('panda/src/grutil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
@@ -2551,7 +2566,7 @@ CopyAllHeaders('panda/src/wgldisplay')
 CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW',
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW', 'OPENCV',
       'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',

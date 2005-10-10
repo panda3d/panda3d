@@ -287,7 +287,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             gsg->_state._texture->get_on_stages();
           if (texslot < (int)active_stages.size()) {
             TextureStage *stage = active_stages[texslot];
-            name = name->append(stage->get_texcoord_name()->get_name());
+            InternalName *texname = stage->get_texcoord_name();
+            if (name == InternalName::get_texcoord()) {
+              name = texname;
+            } else if (texname != InternalName::get_texcoord()) {
+              name = name->append(texname->get_basename());
+            }
           }
         }
         if (gsg->_vertex_data->get_array_info(name,
@@ -696,7 +701,7 @@ compile_cg_parameter(CGparameter p)
         return true;
       }
       if (pieces[1].substr(0,8)=="texcoord") {
-        bind.name = InternalName::get_root();
+        bind.name = InternalName::get_texcoord();
         bind.append_uv = atoi(pieces[1].c_str()+8);
         _cg_varying.push_back(bind);
         return true;
