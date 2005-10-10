@@ -132,6 +132,7 @@ public:
   static void event_i(CPT_Event, void *data);
   static void event_l(CPT_Event, void *data);
   static void event_c(CPT_Event, void *data);
+  static void event_a(CPT_Event, void *data);
   static void event_C(CPT_Event, void *data);
   static void event_B(CPT_Event, void *data);
   static void event_L(CPT_Event, void *data);

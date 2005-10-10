@@ -54,6 +54,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
+#include "string_utils.h"
 
 // This is generated data for the standard texture we apply to the
 // blue triangle.
@@ -79,6 +80,8 @@ WindowFramework(PandaFramework *panda_framework) :
   _got_keyboard = false;
   _got_trackball = false;
   _got_lights = false;
+  _anim_controls_enabled = false;
+  _anim_index = 0;
   _wireframe_enabled = false;
   _texture_enabled = true;
   _two_sided_enabled = false;
@@ -103,6 +106,8 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
   _got_keyboard = false;
   _got_trackball = false;
   _got_lights = false;
+  _anim_controls_enabled = false;
+  _anim_index = 0;
   _wireframe_enabled = false;
   _texture_enabled = true;
   _two_sided_enabled = false;
@@ -345,8 +350,8 @@ get_mouse() {
     // from get_mouse() is actually a MouseWatcher, but since it
     // presents the same interface as a Mouse, no one should mind.
 
-    // Another advantage to using a MouseWatcher is that it the PGTop
-    // of aspect2d likes it better.
+    // Another advantage to using a MouseWatcher is that the PGTop of
+    // aspect2d likes it better.
     PT(MouseWatcher) mw = new MouseWatcher("watcher");
     mw->set_display_region(_display_region_3d);
     _mouse = mouse.attach_new_node(mw);
@@ -672,6 +677,50 @@ loop_animations(int hierarchy_match_flags) {
   // animations looping.
   auto_bind(get_render().node(), _anim_controls, hierarchy_match_flags);
   _anim_controls.loop_all(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::next_anim_control
+//       Access: Public
+//  Description: Rotates the animation controls through all of the
+//               available animations.  If the animation controls are
+//               not already enabled, enables them at sets to the
+//               first animation; if they are already enabled, steps
+//               to the next animation; if that is the last animation,
+//               disables the animation controls.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+next_anim_control() {
+  if (_anim_controls_enabled) {
+    destroy_anim_controls();
+
+    ++_anim_index;
+    if (_anim_index >= _anim_controls.get_num_anims()) {
+      set_anim_controls(false);
+    } else {
+      create_anim_controls();
+    }
+  } else {
+    _anim_index = 0;
+    set_anim_controls(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::set_anim_controls
+//       Access: Public
+//  Description: Creates an onscreen animation slider for
+//               frame-stepping through the animations.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+set_anim_controls(bool enable) {
+  _anim_controls_enabled = enable;
+  if (_anim_controls_enabled) {
+    create_anim_controls();
+
+  } else {
+    destroy_anim_controls();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1060,3 +1109,121 @@ load_image_as_model(const Filename &filename) {
 
   return card_node.p();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::create_anim_controls
+//       Access: Private
+//  Description: Creates an onscreen animation slider for
+//               frame-stepping through the animations.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+create_anim_controls() {
+  destroy_anim_controls();
+
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+
+  PT(PGItem) group = new PGItem("anim_controls_group");
+  PGFrameStyle style;
+  style.set_type(PGFrameStyle::T_flat);
+  style.set_color(0.0f, 0.0f, 0.0f, 0.3f);
+  group->set_frame(-1.0f, 1.0f, 0.0f, 0.2f);
+  group->set_frame_style(0, style);
+  group->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
+  group->set_active(true);
+
+  _anim_controls_group = get_aspect_2d().attach_new_node(group);
+  _anim_controls_group.set_pos(0.0f, 0.0f, -0.9f);
+
+  if (_anim_index >= _anim_controls.get_num_anims()) {
+    PT(TextNode) label = new TextNode("label");
+    label->set_align(TextNode::A_center);
+    label->set_text("No animation.");
+    NodePath tnp = _anim_controls_group.attach_new_node(label);
+    tnp.set_pos(0.0f, 0.0f, 0.07f);
+    tnp.set_scale(0.1f);
+    
+    return;
+  }
+
+  PT(TextNode) label = new TextNode("anim_name");
+  label->set_align(TextNode::A_left);
+  label->set_text(_anim_controls.get_anim_name(_anim_index));
+  NodePath tnp = _anim_controls_group.attach_new_node(label);
+  tnp.set_pos(-1.0f, 0.0f, 0.15f);
+  tnp.set_scale(0.05f);
+
+  _anim_slider = new PGSliderBar("anim_slider");
+  _anim_slider->setup_slider(false, 1.8f, 0.1f, 0.01f);
+  _anim_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
+  _anim_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
+
+  _anim_slider->set_range(0.0f, (float)(control->get_num_frames() - 1));
+  _anim_slider->set_scroll_size(0.0f);
+  _anim_slider->set_page_size(1.0f);
+  NodePath snp = _anim_controls_group.attach_new_node(_anim_slider);
+  snp.set_pos(0.0f, 0.0f, 0.06f);
+
+  _frame_number = new TextNode("frame_number");
+  _frame_number->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
+  _frame_number->set_align(TextNode::A_center);
+  _frame_number->set_text(format_string(control->get_frame()));
+  NodePath fnp = NodePath(_anim_slider->get_thumb_button()).attach_new_node(_frame_number);
+  fnp.set_scale(0.05f);
+  fnp.set_pos(0.0f, 0.0f, -0.01f);
+
+  _panda_framework->get_event_handler().add_hook("NewFrame", st_update_anim_controls, (void *)this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::destroy_anim_controls
+//       Access: Private
+//  Description: Removes the previously-created anim controls, if any.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+destroy_anim_controls() {
+  if (!_anim_controls_group.is_empty()) {
+    _anim_controls_group.remove_node();
+
+    _panda_framework->get_event_handler().remove_hook("NewFrame", st_update_anim_controls, (void *)this);
+
+    if (_anim_index < _anim_controls.get_num_anims()) {
+      AnimControl *control = _anim_controls.get_anim(_anim_index);
+      nassertv(control != (AnimControl *)NULL);
+      control->loop(false);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::update_anim_controls
+//       Access: Private
+//  Description: A per-frame callback to update the anim slider for
+//               the current frame.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+update_anim_controls() {
+  AnimControl *control = _anim_controls.get_anim(_anim_index);
+  nassertv(control != (AnimControl *)NULL);
+
+  if (_anim_slider->is_button_down()) {
+    control->pose((int)(_anim_slider->get_value() + 0.5));
+  } else {
+    _anim_slider->set_value((float)control->get_frame());
+  }
+
+  _frame_number->set_text(format_string(control->get_frame()));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::st_update_anim_controls
+//       Access: Private, Static
+//  Description: The static event handler function.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+st_update_anim_controls(CPT_Event, void *data) {
+  WindowFramework *self = (WindowFramework *)data;
+  self->update_anim_controls();
+}
+

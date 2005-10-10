@@ -713,10 +713,10 @@ reposition() {
 void PGSliderBar::
 advance_scroll() {
   if (_scroll_button_held == _left_button) {
-    set_ratio(max(_ratio - _scroll_ratio, 0.0f));
+    internal_set_ratio(max(_ratio - _scroll_ratio, 0.0f));
 
   } else if (_scroll_button_held == _right_button) {
-    set_ratio(min(_ratio + _scroll_ratio, 1.0f));
+    internal_set_ratio(min(_ratio + _scroll_ratio, 1.0f));
   }
 
   _next_advance_time = 
@@ -744,7 +744,7 @@ advance_page() {
   } else {
     t = min(_ratio + _page_ratio - _scroll_ratio, target_ratio);
   }
-  set_ratio(t);
+  internal_set_ratio(t);
   if (t == target_ratio) {
     // We made it; begin dragging from now on until the user releases
     // the mouse.
@@ -786,7 +786,7 @@ continue_drag() {
   }
   if (_range_x != 0.0f) {
     float current_x = mouse_to_local(_mouse_pos).dot(_axis);
-    set_ratio((current_x - _drag_start_x) / _range_x);
+    internal_set_ratio((current_x - _drag_start_x) / _range_x);
   }
 }
 

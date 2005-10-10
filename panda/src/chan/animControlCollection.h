@@ -74,6 +74,7 @@ PUBLISHED:
   INLINE int get_frame() const;
 
   INLINE int get_num_frames(const string &anim_name) const;
+  INLINE int get_num_frames() const;
 
   INLINE bool is_playing(const string &anim_name) const;
   INLINE bool is_playing() const;

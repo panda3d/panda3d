@@ -196,9 +196,9 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_ratio(float ratio) {
-  _ratio = max(min(ratio, 1.0f), 0.0f);
-  _needs_reposition = true;
-  adjust();
+  if (!is_button_down()) {
+    internal_set_ratio(ratio);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +210,20 @@ set_ratio(float ratio) {
 INLINE float PGSliderBar:: 
 get_ratio() const {
   return _ratio;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::is_button_down
+//       Access: Published
+//  Description: Returns true if the user is currently holding down
+//               the mouse button to manipulate the slider.  When
+//               true, calls to set_ratio() or set_value() will have
+//               no effect.
+////////////////////////////////////////////////////////////////////
+INLINE bool PGSliderBar:: 
+is_button_down() const {
+  return _dragging || _mouse_button_page || 
+    (_scroll_button_held != (PGItem *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -432,4 +446,18 @@ get_adjust_prefix() {
 INLINE string PGSliderBar::
 get_adjust_event() const {
   return get_adjust_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::internal_set_ratio
+//       Access: Private
+//  Description: Sets the current value of the slider, expressed in
+//               the range 0 .. 1, without checking whether the user
+//               is currently manipulating the slider.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+internal_set_ratio(float ratio) {
+  _ratio = max(min(ratio, 1.0f), 0.0f);
+  _needs_reposition = true;
+  adjust();
 }

@@ -81,6 +81,8 @@ PUBLISHED:
   INLINE void set_ratio(float ratio);
   INLINE float get_ratio() const;
 
+  INLINE bool is_button_down() const;
+
   INLINE void set_resize_thumb(bool resize_thumb);
   INLINE bool get_resize_thumb() const;
 
@@ -118,6 +120,8 @@ protected:
   virtual void item_move(PGItem *item, const MouseWatcherParameter &param);
 
 private:
+  INLINE void internal_set_ratio(float ratio);
+
   void reposition();
   void advance_scroll();
   void advance_page();

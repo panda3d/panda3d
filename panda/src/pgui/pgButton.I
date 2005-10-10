@@ -103,7 +103,8 @@ get_click_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGButton::is_button_down
 //       Access: Published
-//  Description: Returns if the value of button_down
+//  Description: Returns true if the user is currently holding the
+//               mouse button down on the button, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGButton::
 is_button_down() {

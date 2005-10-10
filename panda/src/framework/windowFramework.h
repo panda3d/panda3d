@@ -33,6 +33,8 @@
 #include "typedWritableReferenceCount.h"
 #include "graphicsWindow.h"
 #include "loaderOptions.h"
+#include "pgSliderBar.h"
+#include "textNode.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -92,6 +94,9 @@ public:
   void loop_animations(int hierarchy_match_flags = 
                        PartGroup::HMF_ok_part_extra |
                        PartGroup::HMF_ok_anim_extra);
+  void next_anim_control();
+  void set_anim_controls(bool enable);
+  INLINE bool get_anim_controls() const;
 
   enum BackgroundType {
     BT_other = 0,
@@ -129,6 +134,10 @@ protected:
 
 private:
   PT(PandaNode) load_image_as_model(const Filename &filename);
+  void create_anim_controls();
+  void destroy_anim_controls();
+  void update_anim_controls();
+  static void st_update_anim_controls(CPT_Event, void *data);
 
 private:
   PandaFramework *_panda_framework;
@@ -143,7 +152,13 @@ private:
   NodePath _render;
   NodePath _render_2d;
   NodePath _aspect_2d;
+
   AnimControlCollection _anim_controls;
+  bool _anim_controls_enabled;
+  int _anim_index;
+  NodePath _anim_controls_group;
+  PT(PGSliderBar) _anim_slider;
+  PT(TextNode) _frame_number;
 
   NodePath _mouse;
   PT(Trackball) _trackball;

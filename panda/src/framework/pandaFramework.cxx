@@ -28,6 +28,7 @@
 #include "textNode.h"
 #include "mouseAndKeyboard.h"
 #include "mouseRecorder.h"
+#include "throw_event.h"
 
 LoaderOptions PandaFramework::_loader_options;
 
@@ -747,6 +748,8 @@ do_frame() {
   nassertr(_is_open, false);
   DataGraphTraverser dg_trav;
   dg_trav.traverse(_data_root.node());
+
+  throw_event("NewFrame");
   _event_handler.process_events();
 
   if (!_screenshot_text.is_empty()) {
@@ -834,6 +837,7 @@ do_enable_default_keys() {
   define_key("i", "invert (reverse) single-sided faces", event_i, this);
   define_key("l", "toggle lighting", event_l, this);
   define_key("c", "recenter view on object", event_c, this);
+  define_key("a", "toggle animation controls", event_a, this);
   define_key("shift-c", "toggle collision surfaces", event_C, this);
   define_key("shift-b", "report bounding volume", event_B, this);
   define_key("shift-l", "list hierarchy", event_L, this);
@@ -1022,6 +1026,23 @@ event_c(CPT_Event event, void *data) {
       node = self->get_models();
     }
     wf->center_trackball(node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_a
+//       Access: Public, Static
+//  Description: Default handler for a key: toggle the animation
+//               controls.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_a(CPT_Event event, void *data) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->next_anim_control();
   }
 }
 

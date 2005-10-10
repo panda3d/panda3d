@@ -213,7 +213,8 @@ help() {
 
     "  -a\n"
     "      Convert and play animations, if loading an external file type\n"
-    "      (like .mb) directly and if the converter supports animations.\n\n"
+    "      (like .mb) directly and if the converter supports animations.\n"
+    "      Also implicitly enables the animation controls.\n\n"
     
     "  -c\n"
     "      Automatically center models within the viewing window on startup.\n"
@@ -252,6 +253,7 @@ main(int argc, char *argv[]) {
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
 
+  bool anim_controls = false;
   bool auto_center = false;
   bool show_loading = false;
   bool auto_screenshot = false;
@@ -267,6 +269,7 @@ main(int argc, char *argv[]) {
   while (flag != EOF) {
     switch (flag) {
     case 'a':
+      anim_controls = true;
       PandaFramework::_loader_options.set_flags(PandaFramework::_loader_options.get_flags() | LoaderOptions::LF_convert_anim);
       break;
 
@@ -351,6 +354,10 @@ main(int argc, char *argv[]) {
 
     if (auto_screenshot) {
       return(output_screenshot(screenshotfn) ? 0:1);
+    }
+
+    if (anim_controls) {
+      window->set_anim_controls(true);
     }
 
     framework.enable_default_keys();

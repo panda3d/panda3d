@@ -64,6 +64,16 @@ get_camera(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_anim_controls
+//       Access: Public
+//  Description: Returns the current state of the anim_controls flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowFramework::
+get_anim_controls() const {
+  return _anim_controls_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::get_wireframe
 //       Access: Public
 //  Description: Returns the current state of the wireframe flag.

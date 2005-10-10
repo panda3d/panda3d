@@ -186,6 +186,20 @@ get_num_frames(const string &anim_name) const {
   return control->get_num_frames();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControlCollection::get_num_frames
+//       Access: Public
+//  Description: Returns the total number of frames in the
+//               last-started animation.
+////////////////////////////////////////////////////////////////////
+INLINE int AnimControlCollection::
+get_num_frames() const {
+  if (_last_started_control == (AnimControl *)NULL) {
+    return 0;
+  }
+  return _last_started_control->get_num_frames();
+}
+
 INLINE ostream &
 operator << (ostream &out, const AnimControlCollection &collection) {
   collection.output(out);

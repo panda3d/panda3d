@@ -185,6 +185,7 @@ play_all() {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->play();
+    _last_started_control = (*ci)._control;
   }
 }
 
@@ -198,6 +199,7 @@ play_all(int from, int to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->play(from, to);
+    _last_started_control = (*ci)._control;
   }
 }
 
@@ -211,6 +213,7 @@ loop_all(bool restart) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->loop(restart);
+    _last_started_control = (*ci)._control;
   }
 }
 
@@ -224,6 +227,7 @@ loop_all(bool restart, int from, int to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->loop(restart, from, to);
+    _last_started_control = (*ci)._control;
   }
 }
 
@@ -258,6 +262,7 @@ pose_all(int frame) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->pose(frame);
+    _last_started_control = (*ci)._control;
   }
 }
 
