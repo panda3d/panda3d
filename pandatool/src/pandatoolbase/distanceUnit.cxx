@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "distanceUnit.h"
-
+#include "config_pandatoolbase.h"
 #include "string_utils.h"
 #include "notify.h"
 
@@ -112,6 +112,22 @@ format_long_unit(DistanceUnit unit) {
 ostream &
 operator << (ostream &out, DistanceUnit unit) {
   return out << format_abbrev_unit(unit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DistanceUnit input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, DistanceUnit &unit) {
+  string word;
+  in >> word;
+  unit = string_distance_unit(word);
+  if (unit == DU_invalid) {
+    pandatoolbase_cat->error()
+      << "Invalid distance unit: " << word << "\n";
+  }
+  return in;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,11 +23,12 @@
 
 #include "dconfig.h"
 #include "distanceUnit.h"
+#include "configVariableEnum.h"
 
 ConfigureDecl(config_ptloader, EXPCL_PTLOADER, EXPTP_PTLOADER);
 NotifyCategoryDecl(ptloader, EXPCL_PTLOADER, EXPTP_PTLOADER);
 
-extern DistanceUnit ptloader_units;
+extern ConfigVariableEnum<DistanceUnit> ptloader_units;
 
 extern EXPCL_PTLOADER void init_libptloader();
 

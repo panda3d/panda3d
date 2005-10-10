@@ -39,7 +39,11 @@ ConfigureFn(config_ptloader) {
   init_libptloader();
 }
 
-DistanceUnit ptloader_units = DU_invalid;
+ConfigVariableEnum<DistanceUnit> ptloader_units
+("ptloader-units", DU_invalid,
+ PRC_DESC("Specifies the preferred units into which models will be converted "
+	  "when using libptloader to automatically convert files to Panda "
+	  "at load time, via e.g. \"pview myMayaFile.mb\"."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libptloader
@@ -56,15 +60,6 @@ init_libptloader() {
     return;
   }
   initialized = true;
-
-  string units = config_ptloader.GetString("ptloader-units", "feet");
-  if (!units.empty()) {
-    ptloader_units = string_distance_unit(units);
-    if (ptloader_units == DU_invalid) {
-      ptloader_cat->warning()
-        << "Invalid ptloader-units: " << units << "\n";
-    }
-  }
 
   LoaderFileTypePandatool::init_type();
 

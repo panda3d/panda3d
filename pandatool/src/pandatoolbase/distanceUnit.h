@@ -44,6 +44,7 @@ string format_abbrev_unit(DistanceUnit unit);
 string format_long_unit(DistanceUnit unit);
 
 ostream &operator << (ostream &out, DistanceUnit unit);
+istream &operator >> (istream &in, DistanceUnit &unit);
 DistanceUnit string_distance_unit(const string &str);
 
 double convert_units(DistanceUnit from, DistanceUnit to);

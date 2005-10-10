@@ -23,6 +23,8 @@
 #include "config_util.h"
 #include "textNode.h"
 #include "multiplexStream.h"
+#include "distanceUnit.h"
+#include "configVariableEnum.h"
 
 // We must define this to prevent Maya from doubly-declaring its
 // MApiVersion string in this file as well as in libmayaegg.
@@ -182,6 +184,19 @@ convert(const NodePath &parent, bool animate) {
 
   // Now the converter has filled up our egg structure with data, so
   // convert this egg data to Panda data for immediate viewing.
+  DistanceUnit input_units = converter.get_input_units();
+  ConfigVariableEnum<DistanceUnit> ptloader_units("ptloader-units", DU_invalid);
+  if (input_units != DU_invalid && ptloader_units != DU_invalid && 
+      input_units != ptloader_units) {
+    // Convert the file to the units specified by the ptloader-units
+    // Configrc variable.
+    nout
+      << "Converting from " << format_long_unit(input_units)
+      << " to " << format_long_unit(ptloader_units) << "\n";
+    double scale = convert_units(input_units, ptloader_units);
+    egg_data->transform(LMatrix4d::scale_mat(scale));
+  }
+
   egg_data->set_coordinate_system(CS_default);
   PT(PandaNode) result = load_egg_data(egg_data);
 
