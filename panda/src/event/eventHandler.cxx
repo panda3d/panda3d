@@ -80,16 +80,16 @@ dispatch_event(const CPT_Event &event) {
   }
 
   // now for callback hooks
-  CallbackHooks::const_iterator cbhi;
-  cbhi = _cbhooks.find(event->get_name());
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.find(event->get_name());
 
-  if (cbhi != _cbhooks.end()) {
+  if (chi != _cbhooks.end()) {
     // found one
-    CallbackFunctions copy_functions = (*cbhi).second;
+    CallbackFunctions copy_functions = (*chi).second;
 
-    CallbackFunctions::const_iterator cbfi;
-    for (cbfi = copy_functions.begin(); cbfi != copy_functions.end(); ++cbfi) {
-      ((*cbfi).first)(event, (*cbfi).second);
+    CallbackFunctions::const_iterator cfi;
+    for (cfi = copy_functions.begin(); cfi != copy_functions.end(); ++cfi) {
+      ((*cfi).first)(event, (*cfi).second);
     }
   }
 }
@@ -105,21 +105,21 @@ write(ostream &out) const {
   Hooks::const_iterator hi;
   hi = _hooks.begin();
 
-  CallbackHooks::const_iterator cbhi;
-  cbhi = _cbhooks.begin();
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.begin();
 
-  while (hi != _hooks.end() && cbhi != _cbhooks.end()) {
-    if ((*hi).first < (*cbhi).first) {
+  while (hi != _hooks.end() && chi != _cbhooks.end()) {
+    if ((*hi).first < (*chi).first) {
       write_hook(out, *hi);
       ++hi;
-    } else if ((*cbhi).first < (*hi).first) {
-      write_cbhook(out, *cbhi);
-      ++cbhi;
+    } else if ((*chi).first < (*hi).first) {
+      write_cbhook(out, *chi);
+      ++chi;
     } else {
       write_hook(out, *hi);
-      write_cbhook(out, *cbhi);
+      write_cbhook(out, *chi);
       ++hi;
-      ++cbhi;
+      ++chi;
     }
   }
 
@@ -128,9 +128,9 @@ write(ostream &out) const {
     ++hi;
   }
 
-  while (cbhi != _cbhooks.end()) {
-    write_cbhook(out, *cbhi);
-    ++cbhi;
+  while (chi != _cbhooks.end()) {
+    write_cbhook(out, *chi);
+    ++chi;
   }
 }
 
@@ -233,6 +233,66 @@ remove_hook(const string &event_name, EventCallbackFunction *function,
   assert(!event_name.empty());
   assert(function);
   return _cbhooks[event_name].erase(CallbackFunction(function, data)) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::remove_hooks
+//       Access: Public
+//  Description: Removes all functions from the named event hook.
+//               Returns true if any functions were removed, false if
+//               there were no functions added to the hook.
+////////////////////////////////////////////////////////////////////
+bool EventHandler::
+remove_hooks(const string &event_name) {
+  assert(!event_name.empty());
+  bool any_removed = false;
+
+  Hooks::iterator hi = _hooks.find(event_name);
+  if (hi != _hooks.end()) {
+    if (!(*hi).second.empty()) {
+      any_removed = true;
+    }
+    _hooks.erase(hi);
+  }
+
+  CallbackHooks::iterator chi = _cbhooks.find(event_name);
+  if (chi != _cbhooks.end()) {
+    if (!(*chi).second.empty()) {
+      any_removed = true;
+    }
+    _cbhooks.erase(chi);
+  }
+
+  return any_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::remove_hooks_with
+//       Access: Public
+//  Description: Removes all CallbackFunction hooks that have the
+//               indicated pointer as the associated data pointer.
+////////////////////////////////////////////////////////////////////
+bool EventHandler::
+remove_hooks_with(void *data) {
+  bool any_removed = false;
+
+  CallbackHooks::iterator chi;
+  for (chi = _cbhooks.begin(); chi != _cbhooks.end(); ++chi) {
+    CallbackFunctions &funcs = (*chi).second;
+    CallbackFunctions::iterator cfi;
+
+    CallbackFunctions new_funcs;
+    for (cfi = funcs.begin(); cfi != funcs.end(); ++cfi) {
+      if ((*cfi).second == data) {
+        any_removed = true;
+      } else {
+        new_funcs.insert(*cfi, new_funcs.end());
+      }
+    }
+    funcs.swap(new_funcs);
+  }
+
+  return any_removed;
 }
 
 

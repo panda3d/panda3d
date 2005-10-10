@@ -68,6 +68,9 @@ public:
   bool remove_hook(const string &event_name, EventCallbackFunction *function,
                    void *data);
 
+  bool remove_hooks(const string &event_name);
+  bool remove_hooks_with(void *data);
+
   void remove_all_hooks();
 
 protected:
