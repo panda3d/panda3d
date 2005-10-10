@@ -33,6 +33,7 @@ class DevWalker(DirectObject.DirectObject):
         DirectObject.DirectObject.__init__(self)
         self.speed=0.0
         self.rotationSpeed=0.0
+        self.slideSpeed=0.0
         self.vel=Vec3(0.0, 0.0, 0.0)
 
         self.task = None
@@ -46,7 +47,7 @@ class DevWalker(DirectObject.DirectObject):
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
-        return (self.speed, self.rotationSpeed)
+        return (self.speed, self.rotationSpeed, self.slideSpeed)
 
     def setAvatar(self, avatar):
         self.avatar = avatar

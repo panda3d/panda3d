@@ -33,6 +33,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.collisionsActive = 0
         self.speed=0.0
         self.rotationSpeed=0.0
+        self.slideSpeed=0.0
         self.vel=Vec3(0.0, 0.0, 0.0)
         self.stopThisFrame = 0
 
@@ -45,7 +46,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
-        return (self.speed, self.rotationSpeed)
+        return (self.speed, self.rotationSpeed, self.slideSpeed)
 
     def setAvatar(self, avatar):
         self.avatar = avatar
