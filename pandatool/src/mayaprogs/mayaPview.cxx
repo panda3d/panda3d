@@ -180,6 +180,7 @@ convert(const NodePath &parent, bool animate) {
   PT(EggData) egg_data = new EggData;
   converter.set_egg_data(egg_data);
   converter.set_from_selection(true);
+  converter.set_neutral_frame(-1);
 
   if (!converter.convert_maya()) {
     nout << "Errors in conversion.\n";
