@@ -63,6 +63,17 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
   _has_nested_fields = true;
   _num_nested_fields = _array_size;
   _pack_type = PT_array;
+
+  DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
+  if (simple_type != (DCSimpleParameter *)NULL) {
+    if (simple_type->get_type() == ST_char) {
+      // We make a special case for char[] arrays: these we format as
+      // a string.  (It will still accept an array of ints packed into
+      // it.)  We don't make this special case for uint8[] or int8[]
+      // arrays, although we will accept a string packed in for them.
+      _pack_type = PT_string;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -263,6 +274,42 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::pack_string
+//       Access: Published, Virtual
+//  Description: Packs the indicated numeric or string value into the
+//               stream.
+////////////////////////////////////////////////////////////////////
+void DCArrayParameter::
+pack_string(DCPackData &pack_data, const string &value,
+            bool &pack_error, bool &range_error) const {
+  // We can only pack a string if the array element type is char or
+  // int8.
+  DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
+  if (simple_type == (DCSimpleParameter *)NULL) {
+    pack_error = true;
+    return;
+  }
+
+  size_t string_length = value.length();
+
+  switch (simple_type->get_type()) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    _array_size_range.validate(string_length, range_error);
+    if (_num_length_bytes != 0) {
+      nassertv(_num_length_bytes == 2);
+      do_pack_uint16(pack_data.get_write_pointer(2), string_length);
+    }
+    pack_data.append_data(value.data(), string_length);
+    break;
+
+  default:
+    pack_error = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::pack_default_value
 //       Access: Public, Virtual
 //  Description: Packs the arrayParameter's specified default value (or a
@@ -302,6 +349,49 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::unpack_string
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+void DCArrayParameter::
+unpack_string(const char *data, size_t length, size_t &p, string &value,
+              bool &pack_error, bool &range_error) const {
+  // We can only unpack a string if the array element type is char or
+  // int8.
+  DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
+  if (simple_type == (DCSimpleParameter *)NULL) {
+    pack_error = true;
+    return;
+  }
+
+  size_t string_length;
+
+  switch (simple_type->get_type()) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    if (_num_length_bytes != 0) {
+      string_length = do_unpack_uint16(data + p);
+      p += 2;
+    } else {
+      nassertv(_array_size >= 0);
+      string_length = _array_size;
+    }
+    if (p + string_length > length) {
+      pack_error = true;
+      return;
+    }
+    value.assign(data + p, string_length);
+    p += string_length;
+    break;
+
+  default:
+    pack_error = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

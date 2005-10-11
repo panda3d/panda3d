@@ -56,7 +56,11 @@ public:
   virtual void output_instance(ostream &out, bool brief, const string &prename, 
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
+  virtual void pack_string(DCPackData &pack_data, const string &value,
+                           bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
+  virtual void unpack_string(const char *data, size_t length, size_t &p, 
+                             string &value, bool &pack_error, bool &range_error) const;
 
 protected:
   virtual bool do_check_match(const DCPackerInterface *other) const;
