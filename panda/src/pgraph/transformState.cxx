@@ -464,6 +464,15 @@ CPT(TransformState) TransformState::
 set_scale(const LVecBase3f &scale) const {
   nassertr(!scale.is_nan(), this);
   nassertr(!is_invalid(), this);
+
+  if (is_2d() && scale[0] == scale[1] && scale[1] == scale[2]) {
+    // Don't inflate from 2-d to 3-d just because we got a uniform
+    // scale.
+    return make_pos_rotate_scale_shear2d(get_pos2d(), get_rotate2d(),
+					 LVecBase2f(scale[0], scale[0]),
+					 get_shear2d());
+  }
+
   //  nassertr(has_components(), this);
   if (quat_given()) {
     return make_pos_quat_scale_shear(get_pos(), get_quat(), scale, get_shear());
