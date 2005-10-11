@@ -176,6 +176,7 @@ private:
   // This is the node that represents the cursor geometry.  It is also
   // attached to the above node, and is transformed around and/or
   // hidden according to the cursor's position and blink state.
+  NodePath _cursor_scale;
   NodePath _cursor_def;
 
   double _blink_start;

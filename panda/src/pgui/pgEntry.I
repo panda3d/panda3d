@@ -205,7 +205,7 @@ get_cursor_def() {
 INLINE void PGEntry:: 
 clear_cursor_def() {
   _cursor_def.remove_node();
-  _cursor_def = _text_render_root.attach_new_node("cursor");
+  _cursor_def = _cursor_scale.attach_new_node("cursor");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,6 +435,7 @@ set_wtext(const wstring &wtext) {
   _text_geom_stale = true;
   _cursor_stale = true;
   _blink_start = ClockObject::get_global_clock()->get_frame_time();
+  set_cursor_position(_wtext.size());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -57,7 +57,8 @@ PGEntry(const string &name) :
   _blink_rate = 1.0f;
 
   _text_render_root = NodePath("text_root");
-  _cursor_def = _text_render_root.attach_new_node("cursor");
+  _cursor_scale = _text_render_root.attach_new_node("cursor_scale");
+  _cursor_def = _cursor_def.attach_new_node("cursor");
   _cursor_visible = true;
 
   // These strings are used to specify the TextProperties to apply to
@@ -580,7 +581,7 @@ setup(float width, int num_lines) {
   LineSegs ls;
   ls.set_color(0.0f, 0.0f, 0.0f, 1.0f);
   ls.move_to(0.0f, 0.0f, -0.15f * line_height);
-  ls.draw_to(0.0f, 0.0f, 0.85f * line_height);
+  ls.draw_to(0.0f, 0.0f, 0.70f * line_height);
   get_cursor_def().attach_new_node(ls.create());
   
   /*
@@ -761,6 +762,10 @@ update_text() {
       // Get the left edge of the text at this line.
       line._left = 0.0f;
       if (_last_text_def->get_align() != TextNode::A_left) {
+        // Temporarily set this line's text in the TextNode, just so
+        // we can measure the left margin.  (If align is A_left, we
+        // know that the left margin is 0.0, so we don't need to do
+        // this.)
         _last_text_def->set_wtext(line._str);
         line._left = _last_text_def->get_left();
       }
@@ -782,6 +787,10 @@ update_text() {
     if (!_current_text.is_empty()) {
       _current_text.remove_node();
     }
+
+    // We need to reset the text, since we might have changed it
+    // temporarily in the above when align is not A_left.
+    _last_text_def->set_wtext(display_wtext);
     _current_text = 
       _text_render_root.attach_new_node(_last_text_def->generate());
     _text_geom_stale = false;
@@ -798,6 +807,8 @@ void PGEntry::
 update_cursor() {
   TextNode *node = get_text_def(get_state());
   nassertv(node != (TextNode *)NULL);
+  _cursor_scale.set_mat(node->get_transform());
+  _cursor_scale.set_color(node->get_text_color());
 
   if (_cursor_stale || node != _last_text_def) {
     update_text();
@@ -853,9 +864,9 @@ void PGEntry::
 show_hide_cursor(bool visible) {
   if (visible != _cursor_visible) {
     if (visible) {
-      _cursor_def.show();
+      _cursor_scale.show();
     } else {
-      _cursor_def.hide();
+      _cursor_scale.hide();
     }
     _cursor_visible = visible;
   }

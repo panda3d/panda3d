@@ -166,11 +166,30 @@ class DirectEntry(DirectFrame):
     def getBounds(self, state = 0):
         # Compute the width and height for the entry itself, ignoring
         # geometry etc.
-        lineHeight = self.onscreenText.textNode.getLineHeight()
+        tn = self.onscreenText.textNode
+        mat = tn.getTransform()
+        align = tn.getAlign()
+        lineHeight = tn.getLineHeight()
         numLines = self['numLines']
         width = self['width']
-        self.ll.set(0.0, 0.0, -0.3 * lineHeight - (lineHeight * (numLines - 1)))
-        self.ur.set(width, 0.0, lineHeight * 1.3)
+
+        if align == TextNode.ALeft:
+            left = 0.0
+            right = width
+        elif align == TextNode.ACenter:
+            left = -width / 2.0
+            right = width / 2.0
+        elif align == TextNode.ARight:
+            left = -width
+            right = 0.0
+
+        bottom = -0.3 * lineHeight - (lineHeight * (numLines - 1))
+        top = lineHeight
+        
+        self.ll.set(left, 0.0, bottom)
+        self.ur.set(right, 0.0, top)
+        self.ll = mat.xformPoint(self.ll)
+        self.ur = mat.xformPoint(self.ur)
 
         # Scale bounds to give a pad around graphics.  We also want to
         # scale around the border width.
