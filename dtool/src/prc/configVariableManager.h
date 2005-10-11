@@ -56,6 +56,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out) const;
 
+  void write_prc_variables(ostream &out) const;
+
   void list_unused_variables() const;
   void list_variables() const;
   void list_dynamic_variables() const;

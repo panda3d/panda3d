@@ -230,6 +230,45 @@ write(ostream &out) const {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableManager::write_prc_variables
+//       Access: Published
+//  Description: Writes all of the prc-set config variables, as they
+//               appear in a prc file somewhere, one per line, very
+//               concisely.  This lists the dominant value in the prc
+//               file; it does not list shadowed values, and it does
+//               not list locally-set values.
+//
+//               This is mainly intended for generating a hash of the
+//               input config file state.
+////////////////////////////////////////////////////////////////////
+void ConfigVariableManager::
+write_prc_variables(ostream &out) const {
+  VariablesByName::const_iterator ni;
+  for (ni = _variables_by_name.begin();
+       ni != _variables_by_name.end();
+       ++ni) {
+    ConfigVariableCore *variable = (*ni).second;
+    if (variable->get_num_trusted_references() != 0) {
+      if (variable->get_value_type() == ConfigVariableCore::VT_list ||
+          variable->get_value_type() == ConfigVariableCore::VT_search_path) {
+        // List all of the values for a "list" variable.
+        int num_references = variable->get_num_trusted_references();
+        for (int i = 0; i < num_references; i++) {
+          out << variable->get_name() << " " 
+              << variable->get_trusted_reference(i)->get_string_value()
+              << "\n";
+        }
+      } else {
+        // List just the one value for a non-list variable.
+        out << variable->get_name() << " " 
+            << variable->get_trusted_reference(0)->get_string_value()
+            << "\n";
+      }
+    }
+  }
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableManager::list_unused_variables
