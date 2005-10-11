@@ -515,32 +515,29 @@ class GravityWalker(DirectObject.DirectObject):
             self.vel=Vec3(Vec3.forward() * distance +
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
-                if 0:
-                    # rotMat is the rotation matrix corresponding to
-                    # our previous heading.
-                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                    right   = Vec3(rotMat.xform(Vec3.right()))
-                    up      = Vec3(rotMat.xform(self.lifter.getContactNormal()))
-                    forward = up.cross(right)
-                    self.vel=Vec3(forward * distance +
-                                right * slideDistance)
-                    step=self.vel + (self.priorParent * dt)
-                    self.avatarNodePath.setFluidPos(Point3(
-                            self.avatarNodePath.getPos()+step))
-                if 1:
-                    # rotMat is the rotation matrix corresponding to
-                    # our previous heading.
-                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                    forward = self.lifter.getContactNormal().cross(Vec3.right())
-                    forward = Vec3(rotMat.xform(forward))
-                    self.vel=Vec3(forward * distance)
-                    if slideDistance:
-                        right   = forward.cross(self.lifter.getContactNormal())
-                        right   = Vec3(rotMat.xform(Vec3.right()))
-                        self.vel=Vec3(self.vel + right * slideDistance)
-                    step=self.vel + (self.priorParent * dt)
-                    self.avatarNodePath.setFluidPos(Point3(
-                            self.avatarNodePath.getPos()+step))
+                # rotMat is the rotation matrix corresponding to
+                # our previous heading.
+                rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                contact = self.lifter.getContactNormal()
+                forward = contact.cross(Vec3.right())
+                forward = Vec3(rotMat.xform(forward))
+                # Consider commenting out this normalize.  If you do so
+                # then going up and down slops is a touch slower and
+                # steeper terrain can cut the movement in half.  Without
+                # the normalize the movement is slowed by the cosine of 
+                # the slope (i.e. it is multiplied by the sign as a
+                # side effect of the cross product above).
+                forward.normalize()
+                self.vel=Vec3(forward * distance)
+                if slideDistance:
+                    right = forward.cross(contact)
+                    right = Vec3(rotMat.xform(Vec3.right()))
+                    # See note above for forward.normalize()
+                    right.normalize()
+                    self.vel=Vec3(self.vel + right * slideDistance)
+                step=self.vel + (self.priorParent * dt)
+                self.avatarNodePath.setFluidPos(Point3(
+                        self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
         else:
             self.vel.set(0.0, 0.0, 0.0)
