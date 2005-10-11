@@ -64,6 +64,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.highMark = 0
         self.ship = None
 
+
+
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
         self.avatarControlForwardSpeed=forward

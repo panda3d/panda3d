@@ -155,7 +155,6 @@ class GravityWalker(DirectObject.DirectObject):
             )
         self.moveIval.loop()
     """
-
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.notify.debugStateCall(self)
         self.avatarControlForwardSpeed=forward
