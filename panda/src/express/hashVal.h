@@ -61,6 +61,9 @@ PUBLISHED:
   string as_hex() const;
   bool set_from_hex(const string &text);
 
+  string as_bin() const;
+  bool set_from_bin(const string &text);
+
   INLINE void write_datagram(Datagram &destination) const;
   INLINE void read_datagram(DatagramIterator &source);
   INLINE void write_stream(StreamWriter &destination) const;

@@ -164,6 +164,33 @@ set_from_hex(const string &text) {
   return !strm.fail();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::as_bin
+//       Access: Published
+//  Description: Returns the HashVal as a 16-byte binary string.
+////////////////////////////////////////////////////////////////////
+string HashVal::
+as_bin() const {
+  Datagram dg;
+  write_datagram(dg);
+  return dg.get_message();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::set_from_bin
+//       Access: Published
+//  Description: Sets the HashVal from a 16-byte binary string.
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HashVal::
+set_from_bin(const string &text) {
+  nassertr(text.size() == 16, false);
+  Datagram dg(text);
+  DatagramIterator dgi(dg);
+  read_datagram(dgi);
+  return true;
+}
+
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::hash_file

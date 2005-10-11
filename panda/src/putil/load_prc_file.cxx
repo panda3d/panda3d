@@ -18,9 +18,11 @@
 
 #include "load_prc_file.h"
 #include "configPageManager.h"
+#include "configVariableManager.h"
 #include "virtualFileSystem.h"
 #include "config_express.h"
 #include "config_util.h"
+#include "hashVal.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load_prc_file
@@ -121,3 +123,21 @@ unload_prc_file(ConfigPage *page) {
   return cp_mgr->delete_explicit_page(page);
 }
 
+
+#ifdef HAVE_OPENSSL
+
+////////////////////////////////////////////////////////////////////
+//     Function: hash_prc_variables
+//  Description: Fills HashVal with the hash from the current prc file
+//               state as reported by
+//               ConfigVariableManager::write_prc_variables().
+////////////////////////////////////////////////////////////////////
+void
+hash_prc_variables(HashVal &hash) {
+  ostringstream strm;
+  ConfigVariableManager *cv_mgr = ConfigVariableManager::get_global_ptr();
+  cv_mgr->write_prc_variables(strm);
+  hash.hash_string(strm.str());
+}
+
+#endif  // HAVE_OPENSSL

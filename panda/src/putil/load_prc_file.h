@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 class ConfigPage;
+class HashVal;
 
 BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
@@ -69,6 +70,21 @@ load_prc_file_data(const string &name, const string &data);
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDA bool
 unload_prc_file(ConfigPage *page);
+
+#ifdef HAVE_OPENSSL
+
+////////////////////////////////////////////////////////////////////
+//     Function: hash_prc_variables
+//  Description: Fills HashVal with the hash from the current prc file
+//               state as reported by
+//               ConfigVariableManager::write_prc_variables().
+////////////////////////////////////////////////////////////////////
+EXPCL_PANDA void
+hash_prc_variables(HashVal &hash);
+
+#endif  // HAVE_OPENSSL
+
+
 END_PUBLISH
 
 #endif
