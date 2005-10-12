@@ -1706,7 +1706,7 @@ make_from_bam(const FactoryParams &params) {
       if (!manager->get_filename().empty()) {
 	// If texture filename was given relative to the bam filename,
 	// expand it now.
-	DSearchPath bam_dir = manager->get_filename().get_dirname();
+	Filename bam_dir = manager->get_filename().get_dirname();
         vfs->resolve_filename(filename, bam_dir);
 	if (!alpha_filename.empty()) {
 	  vfs->resolve_filename(alpha_filename, bam_dir);
@@ -1808,6 +1808,8 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
+  bool has_bam_dir = !manager->get_filename().empty();
+  Filename bam_dir = manager->get_filename().get_dirname();
   Filename filename = get_filename();
   Filename alpha_filename = get_alpha_filename();
 
@@ -1835,17 +1837,25 @@ write_datagram(BamWriter *manager, Datagram &me) {
   case BTM_relative:
     filename = get_fullpath();
     alpha_filename = get_alpha_fullpath();
-    filename.find_on_searchpath(get_texture_path()) ||
-      filename.find_on_searchpath(get_model_path());
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Texture file " << get_filename() << " found as " << filename << "\n";
+    if (!has_bam_dir || filename.find_on_searchpath(bam_dir) == -1) {
+      if (filename.find_on_searchpath(get_texture_path()) == -1) {
+	filename.find_on_searchpath(get_model_path());
+      }
     }
-    alpha_filename.find_on_searchpath(get_texture_path()) ||
-      alpha_filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "Alpha image " << get_alpha_filename() << " found as " << alpha_filename << "\n";
+        << "Texture file " << get_filename()
+	<< " found as " << filename << "\n";
+    }
+    if (!has_bam_dir || alpha_filename.find_on_searchpath(bam_dir) == -1) {
+      if (alpha_filename.find_on_searchpath(get_texture_path()) == -1) {
+	alpha_filename.find_on_searchpath(get_model_path());
+      }
+    }
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Alpha image " << get_alpha_filename()
+	<< " found as " << alpha_filename << "\n";
     }
     break;
 

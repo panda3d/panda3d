@@ -18,6 +18,19 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_filename
+//       Access: Public
+//  Description: If a BAM is a file, then the BamWriter should
+//               contain the name of the file.  This enables the
+//               writer to convert pathnames in the BAM to relative
+//               to the directory containing the BAM.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &BamWriter::
+get_filename() const {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_file_endian
 //       Access: Public
 //  Description: Returns the endian preference indicated by the Bam

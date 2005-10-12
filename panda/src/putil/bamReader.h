@@ -94,14 +94,14 @@ public:
   static WritableFactory *const NullFactory;
 
   // The primary interface for a caller.
-  BamReader(DatagramGenerator *generator, const Filename &name="");
+  BamReader(DatagramGenerator *generator, const Filename &name = "");
   ~BamReader();
 
   bool init();
 
   void set_aux_data(const string &name, void *data);
   void *get_aux_data(const string &name) const;
-  const Filename &get_filename() const;
+  INLINE const Filename &get_filename() const;
   
   TypedWritable *read_object();
   INLINE bool is_eof() const;

@@ -33,8 +33,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamWriter::
-BamWriter(DatagramSink *sink) :
-  _target(sink)
+BamWriter(DatagramSink *sink, const Filename &name) :
+  _target(sink),
+  _filename(name)
 {
 }
 

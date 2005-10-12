@@ -170,19 +170,6 @@ get_aux_data(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_filename
-//       Access: Public
-//  Description: If a BAM is a file, then the BamReader should
-//               contain the name of the file.  This enables the
-//               reader to interpret pathnames in the BAM as relative
-//               to the directory containing the BAM.
-////////////////////////////////////////////////////////////////////
-const Filename &BamReader::
-get_filename() const {
-  return _filename;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_object
 //       Access: Public
 //  Description: Reads a single object from the Bam file.  If the

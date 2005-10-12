@@ -18,6 +18,19 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_filename
+//       Access: Public
+//  Description: If a BAM is a file, then the BamReader should
+//               contain the name of the file.  This enables the
+//               reader to interpret pathnames in the BAM as relative
+//               to the directory containing the BAM.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &BamReader::
+get_filename() const {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::is_eof
 //       Access: Public
 //  Description: Returns true if the reader has reached end-of-file,

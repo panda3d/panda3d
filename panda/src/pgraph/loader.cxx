@@ -418,7 +418,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     num_files = find_all_files(filename, get_model_path(), results);
   } else {
     // Look for the file only where it is.
-    num_files = find_all_files(filename, DSearchPath("."), results);
+    num_files = find_all_files(filename, DSearchPath(Filename(".")), results);
   }
 
   if (num_files == 0) {

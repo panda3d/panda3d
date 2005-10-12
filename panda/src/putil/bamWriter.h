@@ -76,12 +76,13 @@ struct PipelineCyclerBase;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BamWriter {
 public:
-  BamWriter(DatagramSink *sink);
+  BamWriter(DatagramSink *sink, const Filename &name = "");
   ~BamWriter();
 
   // The primary interface for a caller.
 
   bool init();
+  INLINE const Filename &get_filename() const;
   bool write_object(const TypedWritable *obj);
   bool has_object(const TypedWritable *obj) const;
 
@@ -103,6 +104,9 @@ private:
   void write_object_id(Datagram &dg, int object_id);
   void write_pta_id(Datagram &dg, int pta_id);
   int enqueue_object(const TypedWritable *object);
+
+  // This is the filename of the BAM, or null string if not in a file.
+  Filename _filename;
 
   BamEndian _file_endian;
 
