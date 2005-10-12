@@ -82,34 +82,34 @@ class Notifier:
 
     # Severity funcs
     def setSeverity(self, severity):
-        from pandac.PandaModules import NotifySeverity
-        if severity >= NotifySeverity.NSError:
+        from pandac.PandaModules import NSDebug, NSInfo, NSWarning, NSError
+        if severity >= NSError:
             self.setWarning(0)
             self.setInfo(0)
             self.setDebug(0)
-        elif severity == NotifySeverity.NSWarning:
+        elif severity == NSWarning:
             self.setWarning(1)
             self.setInfo(0)
             self.setDebug(0)
-        elif severity == NotifySeverity.NSInfo:
+        elif severity == NSInfo:
             self.setWarning(1)
             self.setInfo(1)
             self.setDebug(0)
-        elif severity <= NotifySeverity.NSDebug:
+        elif severity <= NSDebug:
             self.setWarning(1)
             self.setInfo(1)
             self.setDebug(1)
 
     def getSeverity(self):
-        from pandac.PandaModules import NotifySeverity
+        from pandac.PandaModules import NSDebug, NSInfo, NSWarning, NSError
         if self.getDebug():
-            return NotifySeverity.NSDebug
+            return NSDebug
         elif self.getInfo():
-            return NotifySeverity.NSInfo
+            return NSInfo
         elif self.getWarning():
-            return NotifySeverity.NSWarning
+            return NSWarning
         else:
-            return NotifySeverity.NSError
+            return NSError
 
     # error funcs
     def error(self, errorString, exception=StandardError):
