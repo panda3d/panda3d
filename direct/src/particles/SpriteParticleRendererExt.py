@@ -90,7 +90,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         if (m == None):
             print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName 
             return False
-        nodeName = self.getSourceNodeName()
+
         np = m.find(nodeName)
         if np.isEmpty():
             print "SpriteParticleRendererExt: Couldn't find node: %s!" % nodeName
