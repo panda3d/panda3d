@@ -57,6 +57,7 @@ public:
 PUBLISHED:
   DSearchPath();
   DSearchPath(const string &path, const string &separator = string());
+  DSearchPath(const Filename &directory);
   DSearchPath(const DSearchPath &copy);
   void operator = (const DSearchPath &copy);
   ~DSearchPath();

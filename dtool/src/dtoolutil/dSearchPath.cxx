@@ -121,6 +121,16 @@ DSearchPath(const string &path, const string &separator) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DSearchPath::
+DSearchPath(const Filename &directory) {
+  append_directory(directory);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Copy Constructor
 //       Access: Public
 //  Description:

@@ -741,7 +741,11 @@ standardize() {
 ////////////////////////////////////////////////////////////////////
 void Filename::
 make_absolute() {
-  make_absolute(ExecutionEnvironment::get_cwd());
+  if (is_local()) {
+    make_absolute(ExecutionEnvironment::get_cwd());
+  } else {
+    standardize();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1266,7 +1270,9 @@ find_on_searchpath(const DSearchPath &searchpath) {
 
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; i++) {
-    if (make_relative_to(searchpath.get_directory(i), false)) {
+    Filename directory = searchpath.get_directory(i);
+    directory.make_absolute();
+    if (make_relative_to(directory, false)) {
       return i;
     }
   }
