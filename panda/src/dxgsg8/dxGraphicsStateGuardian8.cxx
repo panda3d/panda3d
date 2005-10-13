@@ -347,7 +347,14 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
   }
 
-  set_vertex_format(dvbc->_fvf);
+  HRESULT hr = _d3d_device->SetVertexShader(dvbc->_fvf);
+#ifndef NDEBUG
+  if (FAILED(hr)) {
+    dxgsg8_cat.error() 
+      << "SetVertexShader(0x" << (void*)dvbc->_fvf
+      << ") failed" << D3DERRORSTRING(hr);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1613,7 +1620,6 @@ reset() {
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
-  ZeroMemory(&_lmodel_ambient, sizeof(Colorf));
   _d3d_device->SetRenderState(D3DRS_AMBIENT, 0x0);
 
   _clip_plane_bits = 0;
@@ -1623,29 +1629,18 @@ reset() {
 
   // these both reflect d3d defaults
   _color_writemask = 0xFFFFFFFF;
-  _cur_fvf_type = 0x0;
 
   _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
-  _depth_test_enabled = true;
-  _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, _depth_test_enabled);
+  _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 
   _d3d_device->SetRenderState(D3DRS_EDGEANTIALIAS, false);
 
-  _color_material_enabled = false;
-
-  _depth_test_enabled = D3DZB_FALSE;
   _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 
-  _blend_enabled = false;
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)_blend_enabled);
+  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-  // just use whatever d3d defaults to here
-  _d3d_device->GetRenderState(D3DRS_SRCBLEND, (DWORD*)&_blend_source_func);
-  _d3d_device->GetRenderState(D3DRS_DESTBLEND, (DWORD*)&_blend_dest_func);
-
-  _fog_enabled = false;
-  _d3d_device->SetRenderState(D3DRS_FOGENABLE, _fog_enabled);
+  _d3d_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
 
   _projection_mat = LMatrix4f::ident_mat();
   _has_scene_graph_color = false;
@@ -1701,9 +1696,9 @@ reset() {
   _d3d_device->SetRenderState(D3DRS_LIGHTING, false);
 
   // turn on dithering if the rendertarget is < 8bits/color channel
-  _dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(_screen->_presentation_params.BackBufferFormat)
-                     && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
-  _d3d_device->SetRenderState(D3DRS_DITHERENABLE, _dither_enabled);
+  bool dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(_screen->_presentation_params.BackBufferFormat)
+			 && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
+  _d3d_device->SetRenderState(D3DRS_DITHERENABLE, dither_enabled);
 
   _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
 
@@ -1719,18 +1714,14 @@ reset() {
   // must do SetTSS here because redundant states are filtered out by
   // our code based on current values above, so initial conditions
   // must be correct
-  _texturing_enabled = false;
   _d3d_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);  // disables texturing
 
   _cull_face_mode = CullFaceAttrib::M_cull_none;
   _d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-  _alpha_func = D3DCMP_ALWAYS;
-  _alpha_func_refval = 1.0f;
-  _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, _alpha_func);
-  _d3d_device->SetRenderState(D3DRS_ALPHAREF, (UINT)(_alpha_func_refval*255.0f));
-  _alpha_test_enabled = false;
-  _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, _alpha_test_enabled);
+  _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);
+  _d3d_device->SetRenderState(D3DRS_ALPHAREF, 255);
+  _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
   // this is a new DX8 state that lets you do additional operations other than ADD (e.g. subtract/max/min)
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
@@ -1818,12 +1809,13 @@ do_issue_alpha_test() {
   const AlphaTestAttrib *attrib = _target._alpha_test;
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
-    enable_alpha_test(false);
+    _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
   } else {
     //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
-    call_dxAlphaFunc((D3DCMPFUNC)mode, attrib->get_reference_alpha());
-    enable_alpha_test(true);
+    _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
+    _d3d_device->SetRenderState(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
+    _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
   }
 }
 
@@ -1923,10 +1915,8 @@ do_issue_depth_test() {
   const DepthTestAttrib *attrib = _target._depth_test;
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
-    _depth_test_enabled = false;
     _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
   } else {
-    _depth_test_enabled = true;
     _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
     _d3d_device->SetRenderState(D3DRS_ZFUNC, (D3DCMPFUNC) mode);
   }
@@ -1940,7 +1930,11 @@ do_issue_depth_test() {
 void DXGraphicsStateGuardian8::
 do_issue_depth_write() {
   const DepthWriteAttrib *attrib = _target._depth_write;
-  enable_zwritemask(attrib->get_mode() == DepthWriteAttrib::M_on);
+  if (attrib->get_mode() == DepthWriteAttrib::M_on) {
+    _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+  } else {
+    _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1979,12 +1973,12 @@ void DXGraphicsStateGuardian8::
 do_issue_fog() {
   const FogAttrib *attrib = _target._fog;
   if (!attrib->is_off()) {
-    enable_fog(true);
+    _d3d_device->SetRenderState(D3DRS_FOGENABLE, TRUE);
     Fog *fog = attrib->get_fog();
     nassertv(fog != (Fog *)NULL);
     apply_fog(fog);
   } else {
-    enable_fog(false);
+    _d3d_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
   }
 }
 
@@ -2708,11 +2702,12 @@ do_issue_blending() {
   if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        enable_blend(false);
+	_d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
       } else {
-        enable_blend(true);
-        call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+	_d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	_d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+	_d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       }
     }
     return;
@@ -2730,7 +2725,7 @@ do_issue_blending() {
 
   // Is there a color blend set?
   if (color_blend_mode != ColorBlendAttrib::M_none) {
-    enable_blend(true);
+    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
     switch (color_blend_mode) {
     case ColorBlendAttrib::M_add:
@@ -2754,8 +2749,10 @@ do_issue_blending() {
       break;
     }
 
-    call_dxBlendFunc(get_blend_func(color_blend->get_operand_a()),
-                     get_blend_func(color_blend->get_operand_b()));
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND, 
+				get_blend_func(color_blend->get_operand_a()));
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND, 
+				get_blend_func(color_blend->get_operand_b()));
     return;
   }
 
@@ -2769,9 +2766,10 @@ do_issue_blending() {
   case TransparencyAttrib::M_multisample:
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
-    enable_blend(true);
+    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
     _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-    call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
     return;
 
   default:
@@ -2781,7 +2779,7 @@ do_issue_blending() {
   }
 
   // Nothing's set, so disable blending.
-  enable_blend(false);
+  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3277,14 +3275,6 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   assert(IS_VALID_PTR(_screen->_d3d8));
   assert(IS_VALID_PTR(_d3d_device));
 
-  // Calling this forces all of the textures and vbuffers to be
-  // regenerated.  It appears to be necessary on some cards but not
-  // on others.
-  //  release_all();
-  // On second thought, let's try releasing the vertex buffers only.
-  release_all_vertex_buffers();
-  release_all_index_buffers();
-
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed
   _screen->_d3d8->GetAdapterDisplayMode(_screen->_card_id, &_screen->_display_mode);
@@ -3298,7 +3288,6 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   if (!(_screen->_swap_chain)
       || (_presentation_reset.BackBufferWidth < presentation_params->BackBufferWidth)
       || (_presentation_reset.BackBufferHeight < presentation_params->BackBufferHeight)) {
-    
     if (wdxdisplay8_cat.is_debug()) {
       wdxdisplay8_cat.debug()
         << "swap_chain = " << _screen->_swap_chain << " _presentation_reset = "
@@ -3318,6 +3307,18 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
       _presentation_reset.BackBufferHeight = presentation_params->BackBufferHeight;
     }
 
+    // Calling this forces all of the textures and vbuffers to be
+    // regenerated, a prerequisite to calling Reset().  Actually, this
+    // shouldn't be necessary, because all of our textures and
+    // vbuffers are stored in the D3DPOOL_MANAGED memory class.
+    //    release_all();
+
+    // Just to be extra-conservative for now, we'll go ahead and
+    // release the vbuffers and ibuffers at least; they're relatively
+    // cheap to replace.
+    release_all_vertex_buffers();
+    release_all_index_buffers();
+    
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
       return hr;

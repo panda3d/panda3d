@@ -140,23 +140,12 @@ protected:
   void do_auto_rescale_normal();
 
 protected:
-  INLINE void enable_color_material(bool val);
-  INLINE void enable_fog(bool val);
-  INLINE void enable_zwritemask(bool val);
-  INLINE void set_vertex_format(DWORD NewFvfType);
-
   INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
   INLINE static D3DFOGMODE get_fog_mode_type(Fog::Mode m);
   const D3DCOLORVALUE &get_light_color(Light *light) const;
   INLINE static D3DTRANSFORMSTATETYPE get_tex_mat_sym(int stage_index);
 
-  INLINE void enable_alpha_test(bool val);
-  INLINE void enable_blend(bool val);
-  INLINE void call_dxLightModelAmbient(const Colorf &color);
-  INLINE void call_dxAlphaFunc(D3DCMPFUNC func, float refval);
-  INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
   static D3DBLEND get_blend_func(ColorBlendAttrib::Operand operand);
-  INLINE void enable_dither(bool val);
   void report_texmgr_stats();
 
   void set_context(DXScreenData *new_context);
@@ -197,12 +186,9 @@ protected:
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
 
-  DWORD _cur_fvf_type;
-
   D3DCOLOR _d3dcolor_clear_value;
   UINT _color_writemask;
 
-  Colorf _lmodel_ambient;
   float _material_ambient;
   float _material_diffuse;
   float _material_specular;
@@ -215,21 +201,7 @@ protected:
     PerPixelFog=D3DRS_FOGTABLEMODE
   };
   DxgsgFogType _do_fog_type;
-  bool _fog_enabled;
 
-  float _alpha_func_refval;  // d3d stores UINT, panda stores this as float.  we store float
-  D3DCMPFUNC _alpha_func;
-
-  D3DBLEND _blend_source_func;
-  D3DBLEND _blend_dest_func;
-
-  bool _color_material_enabled;
-  bool _texturing_enabled;
-  bool _dither_enabled;
-  bool _blend_enabled;
-  bool _depth_test_enabled;
-  bool _depth_write_enabled;
-  bool _alpha_test_enabled;
   DWORD _clip_plane_bits;
   CullFaceAttrib::Mode _cull_face_mode;
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
