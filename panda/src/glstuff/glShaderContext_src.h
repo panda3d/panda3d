@@ -81,6 +81,7 @@ private:
   CGcontext _cg_context;
   CGprofile _cg_profile[2];
   CGprogram _cg_program[2];
+  string    _cg_errors;
   
   // These arrays contain lists of "bindings." They
   // tell us how to fill the shader's input parameters.
@@ -92,9 +93,11 @@ private:
   vector <ShaderTransBind> _cg_parameter_bind;
   vector <ShaderVarying> _cg_varying;
   
+  bool try_cg_compile(ShaderExpansion *s);
   void bind_cg_transform(const ShaderTransBind &stb,
                          CLP(GraphicsStateGuardian) *gsg);
-  
+  void suggest_cg_profile(const string &vpro, const string &fpro);
+  CGprofile parse_cg_profile(const string &id, bool vertex);
   bool compile_cg_parameter(CGparameter p);
   bool errchk_cg_parameter_words(CGparameter p, int len);
   bool errchk_cg_parameter_direction(CGparameter p, CGenum dir);

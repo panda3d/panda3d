@@ -46,7 +46,6 @@ MAXSDK = {}
 MAXSDKCS = {}
 PYTHONSDK=0
 STARTTIME=time.time()
-BUILTANYTHING=0
 SLAVEFILE=0
 DEPENDENCYQUEUE=[]
 FILEDATECACHE = {}
@@ -623,10 +622,10 @@ if (OMIT.count("HELIX")==0):
 #
 ##########################################################################################
 
-if (OMIT.count("OPENCV")==0):
-    WARNINGS.append("OPENCV doesn't work yet")
-    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
-    OMIT.append("OPENCV")
+#if (OMIT.count("OPENCV")==0):
+#    WARNINGS.append("OPENCV doesn't work yet")
+#    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
+#    OMIT.append("OPENCV")
 
 ##########################################################################################
 #
@@ -989,6 +988,8 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
     if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
     if (opts.count("USEPTMALLOC2")): cmd = cmd + ' /DUSE_MEMORY_PTMALLOC2'
+    if (opts.count("USEDLMALLOC")): cmd = cmd + ' /DUSE_MEMORY_DLMALLOC'
+    if (opts.count("USEMALLOC")): cmd = cmd + ' /DUSE_MEMORY_MALLOC'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
     if (optlevel==2): cmd = cmd + " /MD /Zi "
@@ -1045,16 +1046,17 @@ def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 ########################################################################
 
 def CompileBisonMSVC7(pre, dsth, dstc, wobj, ipath, opts, src):
-#   CopyFile(".", "thirdparty/win-util/bison.simple")
-    oscmd('thirdparty/win-util/bison -y -d -o built/tmp/y_tab.c -p '+pre+' '+src)
-    CopyFile(dstc, "built/tmp/y_tab.c")
-    CopyFile(dsth, "built/tmp/y_tab.h")
+    ifile = os.path.basename(src)
+    oscmd('thirdparty/win-util/bison -y -d -obuilt/tmp/'+ifile+'.c -p '+pre+' '+src)
+    CopyFile(dstc, "built/tmp/"+ifile+".c")
+    CopyFile(dsth, "built/tmp/"+ifile+".h")
     CompileCxxMSVC7(wobj,dstc,ipath,opts)
 
 def CompileBisonLINUXA(pre, dsth, dstc, wobj, ipath, opts, src):
-    oscmd("bison -y -d -o built/tmp/y.tab.c -p "+pre+" "+src)
-    CopyFile(dstc, "built/tmp/y.tab.c")
-    CopyFile(dsth, "built/tmp/y.tab.h")
+    ifile = os.path.basename(src)
+    oscmd("bison -y -d -obuilt/tmp/"+src+".c -p "+pre+" "+src)
+    CopyFile(dstc, "built/tmp/"+ifile+".c")
+    CopyFile(dsth, "built/tmp/"+ifile+".h")
     CompileCxxLINUXA(wobj,dstc,ipath,opts)
 
 def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
@@ -1461,8 +1463,9 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
 
 def CompileBam(preconv, bam, egg):
     if (egg[-4:] == ".flt"):
-        oscmd("built/bin/flt2egg -pr " + preconv + " -o built/tmp/tmp.egg" + " " + egg)
-        oscmd("built/bin/egg2bam -o " + bam + " built/tmp/tmp.egg")
+        ifile = os.path.basename(egg)
+        oscmd("built/bin/flt2egg -pr " + preconv + " -o built/tmp/"+ifile+".egg" + " " + egg)
+        oscmd("built/bin/egg2bam -o " + bam + " built/tmp/"+ifile+".egg")
     else:
         oscmd("built/bin/egg2bam -pr " + preconv + " -o " + bam + " " + egg)
 
@@ -1939,8 +1942,8 @@ IPATH=['dtool/src/dtoolbase']
 OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
 if (sys.platform == "win32"):
-    OPTS.append("USEPTMALLOC2")
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='ptmalloc2_smp.c', obj='dtoolbase_allocator.obj')
+    OPTS.append("USEDLMALLOC")
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dlmalloc.c', obj='dtoolbase_allocator.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 else:
     OPTS.append("USEMALLOC")
@@ -4514,7 +4517,6 @@ def AllSourcesReady(task, pending):
     return 1
 
 def ParallelMake(tasklist):
-    global BUILTANYTHING
     # Read the slave-file.
     slaves = []
     if (SLAVEFILE!=0):
@@ -4549,7 +4551,6 @@ def ParallelMake(tasklist):
                 if (tasksqueued < len(slaves)*3) & (AllSourcesReady(task, pending)):
                     if (older(task[2], task[3])):
                         tasksqueued += 1
-                        BUILTANYTHING=1
                         taskqueue.put(task)
                     else:
                         for target in task[2]:
@@ -4573,10 +4574,8 @@ def ParallelMake(tasklist):
         exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
 
 def SequentialMake(tasklist):
-    global BUILTANYTHING
     for task in tasklist:
         if (older(task[2], task[3])):
-            BUILTANYTHING=1
             apply(task[0], task[1])
             for target in task[2]:
                 updatefiledate(target)
@@ -4640,7 +4639,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
         os.remove("nsis-output.exe")
     psource=os.path.abspath(".")
     panda=os.path.abspath("built")
-    cmd="thirdparty/win-nsis/makensis.exe /V2 "
+    cmd="thirdparty/win-nsis/makensis /V2 "
     cmd=cmd+'/DCOMPRESSOR="'+COMPRESSOR+'" '
     cmd=cmd+'/DNAME="'+fullname+'" '
     cmd=cmd+'/DSMDIRECTORY="'+smdirectory+'" '
@@ -4717,7 +4716,7 @@ Description: The panda3D free 3D engine
     oscmd("rm -rf debtmp")
 
 
-if ((BUILTANYTHING)&(INSTALLER != 0)):
+if (INSTALLER != 0):
     if (sys.platform == "win32"):
         MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2") and (os.path.isfile("/usr/bin/dpkg-deb")):

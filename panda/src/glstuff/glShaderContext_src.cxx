@@ -31,13 +31,13 @@ CLP(ShaderContext)(ShaderExpansion *s) : ShaderContext(s) {
   
 #ifdef HAVE_CGGL
   _cg_context = (CGcontext)0;
-  _cg_profile[SHADER_type_vert] = (CGprofile)0;
-  _cg_profile[SHADER_type_frag] = (CGprofile)0;
+  _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
+  _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
   _cg_program[SHADER_type_vert] = (CGprogram)0;
   _cg_program[SHADER_type_frag] = (CGprogram)0;
-
+  
   if (header == "//Cg") {
-
+    // Create the Cg context.
     _cg_context = cgCreateContext();
     if (_cg_context == 0) {
       release_resources();
@@ -45,56 +45,160 @@ CLP(ShaderContext)(ShaderExpansion *s) : ShaderContext(s) {
       return;
     }
     
-    _cg_profile[SHADER_type_vert] = cgGLGetLatestProfile(CG_GL_VERTEX);
-    _cg_profile[SHADER_type_frag] = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    // Parse any directives in the source.
+    string directive;
+    while (!s->parse_eof()) {
+      s->parse_line(directive, true, true);
+      vector_string pieces;
+      tokenize(directive, pieces, " \t");
+      if ((pieces.size()==4)&&(pieces[0]=="//Cg")&&(pieces[1]=="profile")) {
+        suggest_cg_profile(pieces[2], pieces[3]);
+      }
+    }
+    
+    // Select a profile if no preferred profile specified in the source.
+    if (_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN) {
+      _cg_profile[SHADER_type_vert] = cgGLGetLatestProfile(CG_GL_VERTEX);
+    }
+    if (_cg_profile[SHADER_type_frag] == CG_PROFILE_UNKNOWN) {
+      _cg_profile[SHADER_type_frag] = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    }
+    
+    // If we still haven't chosen a profile, give up.
     if ((_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN)||
         (_cg_profile[SHADER_type_frag] == CG_PROFILE_UNKNOWN)) {
       release_resources();
-      cerr << "Cg not supported by this video card II\n";
+      cerr << "Cg not supported by this video card.\n";
       return;
     }
     
-    cgGetError();
-    _cg_program[0] =
-      cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
-                      _cg_profile[0], "vshader", (const char**)NULL);
-    print_cg_compile_errors(s->get_name(), _cg_context);
-
-    cgGetError();
-    _cg_program[1] =
-      cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
-                      _cg_profile[1], "fshader", (const char**)NULL);
-    print_cg_compile_errors(s->get_name(), _cg_context);
-
-    if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
-      release_resources();
-      return;
-    }
-
-    bool success = true;
-    CGparameter parameter;
-    for (int progindex=0; progindex<2; progindex++) {
-      for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
-           parameter != 0;
-           parameter = cgGetNextLeafParameter(parameter)) {
-        success &= compile_cg_parameter(parameter);
-      }
-    }
-    if (!success) {
-      release_resources();
-      return;
-    }
-        
-    cgGLLoadProgram(_cg_program[SHADER_type_vert]);
-    cgGLLoadProgram(_cg_program[SHADER_type_frag]);
-    
-    cerr << s->get_name() << ": compiled ok.\n";
+    // Compile the program.
+    try_cg_compile(s);
+    cerr << _cg_errors;
     return;
   }
 #endif
   
   cerr << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::suggest_cg_profile
+//       Access: Private
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+#ifdef HAVE_CGGL
+void CLP(ShaderContext)::
+suggest_cg_profile(const string &vpro, const string &fpro)
+{
+  // If a good profile has already been suggested, ignore suggestion.
+  if ((_cg_profile[SHADER_type_vert] != CG_PROFILE_UNKNOWN)||
+      (_cg_profile[SHADER_type_frag] != CG_PROFILE_UNKNOWN)) {
+    return;
+  }
+  
+  // Parse the suggestion. If not parseable, print error and ignore.
+  _cg_profile[SHADER_type_vert] = parse_cg_profile(vpro, true);
+  _cg_profile[SHADER_type_frag] = parse_cg_profile(fpro, false);
+  if ((_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN)||
+      (_cg_profile[SHADER_type_frag] == CG_PROFILE_UNKNOWN)) {
+    cerr << "Cg: unrecognized profile name: " << vpro << " " << fpro << "\n";
+    _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
+    _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
+    return;
+  }
+
+  // If the suggestion is parseable, but not supported, ignore silently.
+  if ((!cgGLIsProfileSupported(_cg_profile[SHADER_type_vert]))||
+      (!cgGLIsProfileSupported(_cg_profile[SHADER_type_frag]))) {
+    _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
+    _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
+    return;
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::parse_cg_profile
+//       Access: Private
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+#ifdef HAVE_CGGL
+CGprofile CLP(ShaderContext)::
+parse_cg_profile(const string &id, bool vertex)
+{
+  int nvprofiles = 4;
+  int nfprofiles = 4;
+  CGprofile vprofiles[] = { CG_PROFILE_ARBVP1, CG_PROFILE_VP20, CG_PROFILE_VP30, CG_PROFILE_VP40 };
+  CGprofile fprofiles[] = { CG_PROFILE_ARBFP1, CG_PROFILE_FP20, CG_PROFILE_FP30, CG_PROFILE_FP40 };
+  if (vertex) {
+    for (int i=0; i<nvprofiles; i++) {
+      if (id == cgGetProfileString(vprofiles[i])) {
+        return vprofiles[i];
+      }
+    }
+  } else {
+    for (int i=0; i<nfprofiles; i++) {
+      if (id == cgGetProfileString(fprofiles[i])) {
+        return fprofiles[i];
+      }
+    }
+  }
+  return CG_PROFILE_UNKNOWN;
+}
+#endif HAVE_CGGL
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::try_cg_compile
+//       Access: Private
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+#ifdef HAVE_CGGL
+bool CLP(ShaderContext)::
+try_cg_compile(ShaderExpansion *s)
+{
+  _cg_errors = "";
+  
+  cgGetError();
+  _cg_program[0] =
+    cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
+                    _cg_profile[0], "vshader", (const char**)NULL);
+  print_cg_compile_errors(s->get_name(), _cg_context);
+  
+  cgGetError();
+  _cg_program[1] =
+    cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
+                    _cg_profile[1], "fshader", (const char**)NULL);
+  print_cg_compile_errors(s->get_name(), _cg_context);
+  
+  if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
+    release_resources();
+    return false;
+  }
+  
+  bool success = true;
+  CGparameter parameter;
+  for (int progindex=0; progindex<2; progindex++) {
+    for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
+         parameter != 0;
+         parameter = cgGetNextLeafParameter(parameter)) {
+      success &= compile_cg_parameter(parameter);
+    }
+  }
+  if (!success) {
+    release_resources();
+    return false;
+  }
+  
+  cgGLLoadProgram(_cg_program[SHADER_type_vert]);
+  cgGLLoadProgram(_cg_program[SHADER_type_frag]);
+  
+  _cg_errors = s->get_name() + ": compiled to "
+    + cgGetProfileString(_cg_profile[SHADER_type_vert]) + " "
+    + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
+  return true;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Destructor
@@ -631,7 +735,7 @@ errchk_cg_output(CGparameter p, const string &msg)
   string err;
   string fn = _shader_expansion->get_name();
   err = fn + ": " + msg + " (" + vstr + dstr + ts + " " + cgGetParameterName(p) + ")\n";
-  cerr << err << "\n";
+  _cg_errors = _cg_errors + err + "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -654,11 +758,11 @@ print_cg_compile_errors(const string &file, CGcontext ctx)
       for (int i=0; i<(int)errlines.size(); i++) {
         string line = trim(errlines[i]);
         if (line != "") {
-          cerr << file << " " << errlines[i] << "\n";
+          _cg_errors += file + " " + errlines[i] + "\n";
         }
       }
     } else {
-      cerr << file << ": " << cgGetErrorString(err) << "\n";
+      _cg_errors += file + ": " + cgGetErrorString(err) + "\n";
     }
   }
 }
