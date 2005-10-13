@@ -64,6 +64,9 @@ PUBLISHED:
 
   INLINE void set_color_blend_mode(ColorBlendAttrib::Mode bm, ColorBlendAttrib::Operand oa = ColorBlendAttrib::O_zero, ColorBlendAttrib::Operand ob = ColorBlendAttrib::O_zero);
 
+  void set_ignore_scale(bool ignore_scale);
+  INLINE bool get_ignore_scale() const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
@@ -91,6 +94,7 @@ private:
   PT(GeomNode) _render_node;
 
   float _user_alpha;
+  bool _ignore_scale;
 
   // birth and kill particle are for renderers that might do maintenance
   // faster if it was notified on a per-event basis.  An example:

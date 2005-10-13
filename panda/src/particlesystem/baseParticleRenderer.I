@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_render_node
-//       Class : Public
+//    Function : BaseParticleRender::get_render_node
+//       Class : Published
 // Description : Query the geomnode pointer
 ////////////////////////////////////////////////////////////////////
 INLINE GeomNode *BaseParticleRenderer::
@@ -27,8 +27,8 @@ get_render_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_alpha_mode
-//      Access : public
+//    Function : BaseParticleRender::set_alpha_mode
+//      Access : Published
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleRenderer::
 set_alpha_mode(BaseParticleRenderer::ParticleRendererAlphaMode am) {
@@ -37,8 +37,8 @@ set_alpha_mode(BaseParticleRenderer::ParticleRendererAlphaMode am) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_alpha_mode
-//      Access : public
+//    Function : BaseParticleRender::get_alpha_mode
+//      Access : Published
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleRenderer::ParticleRendererAlphaMode BaseParticleRenderer::
 get_alpha_mode() const {
@@ -46,8 +46,8 @@ get_alpha_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_user_alpha
-//      Access : public
+//    Function : BaseParticleRender::set_user_alpha
+//      Access : Published
 // Description : sets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleRenderer::
@@ -56,8 +56,8 @@ set_user_alpha(float ua) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_user_alpha
-//      Access : public
+//    Function : BaseParticleRender::get_user_alpha
+//      Access : Published
 // Description : gets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleRenderer::
@@ -66,8 +66,8 @@ get_user_alpha() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_color_blend_mode
-//      Access : public
+//    Function : BaseParticleRender::set_color_blend_mode
+//      Access : Published
 // Description : sets the ColorBlendAttrib on the _render_node
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleRenderer::
@@ -81,11 +81,22 @@ set_color_blend_mode(ColorBlendAttrib::Mode bm, ColorBlendAttrib::Operand oa, Co
 
   _render_node->set_attrib(ra);
   return;
-};
+}
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_cur_alpha
-//      Access : public
+//    Function : BaseParticleRender::get_ignore_scale
+//      Access : Published
+// Description : Returns the "ignore scale" flag.  See
+//               set_ignore_scale().
+////////////////////////////////////////////////////////////////////
+INLINE bool BaseParticleRenderer::
+get_ignore_scale() const {
+  return _ignore_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : BaseParticleRender::get_cur_alpha
+//      Access : Published
 // Description : gets current alpha for a particle
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleRenderer::
