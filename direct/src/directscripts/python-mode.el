@@ -375,10 +375,12 @@ support for features needed by `python-mode'.")
 (put 'python-mode 'font-lock-defaults '(python-font-lock-keywords))
 
 ;; have to bind py-file-queue before installing the kill-emacs-hook
-(defvar py-file-queue nil
-  "Queue of Python temp files awaiting execution.
-Currently-active file is at the head of the list.")
-
+;; (defvar py-file-queue nil
+;;   "Queue of Python temp files awaiting execution.
+;; Currently-active file is at the head of the list.")
+(defvar py-file-queues (make-hash-table)
+  "hash table of Python process to queue of Python temp files awaiting
+   execution. Currently-active file is at the head of each list.")
 
 ;; Constants
 
@@ -585,6 +587,7 @@ Currently-active file is at the head of the list.")
   (define-key py-shell-map [return] 'comint-interrupt-subjob-or-maybe-return)
   (define-key py-shell-map "\C-c\C-r" 'python-resume)
   (define-key py-shell-map "\C-c\C-s" 'pyd-shell)
+  (define-key py-shell-map "\C-c\C-f" 'py-kill-shells)
   )
 
 (defvar py-mode-syntax-table nil
@@ -1114,8 +1117,7 @@ comment."
 Make that process's buffer visible and force display.  Also make
 comint believe the user typed this string so that
 `kill-output-from-shell' does The Right Thing."
-  (let ((curbuf (current-buffer))
-	(procbuf (process-buffer proc))
+  (let ((procbuf (process-buffer proc))
 					;(comint-scroll-to-bottom-on-output t)
 	;; VR STUDIO DE-HANCEMENT: GET RID OF ANNOYING MESSAGE
 	;(msg (format "## working on region in file %s...\n" filename))
@@ -1126,24 +1128,26 @@ comint believe the user typed this string so that
 	  (set-buffer procbuf)
 	  (goto-char (point-max))
 	  (move-marker (process-mark proc) (point))
-	  (funcall (process-filter proc) proc msg))
-      (set-buffer curbuf))
+	  (funcall (process-filter proc) proc msg)))
     (process-send-string proc cmd)))
 
 (defun py-comint-output-filter-function (string)
   "Watch output for Python prompt and exec next file waiting in queue.
 This function is appropriate for `comint-output-filter-functions'."
-  ;; TBD: this should probably use split-string
-  (when (and (or (string-equal string ">>> ")
-		 (and (>= (length string) 5)
-		      (string-equal (substring string -5) "\n>>> ")))
-	     py-file-queue)
-    (py-safe (delete-file (car py-file-queue)))
-    (setq py-file-queue (cdr py-file-queue))
-    (if py-file-queue
-	(let ((pyproc (get-buffer-process (current-buffer))))
-	  (py-execute-file pyproc (car py-file-queue))))
-    ))
+  (let* ((proc (get-buffer-process (current-buffer)))
+	 (file-queue (gethash proc py-file-queues nil)))
+    ;; TBD: this should probably use split-string
+    (when (and file-queue
+	       (or (string-equal string ">>> ")
+		   (and (>= (length string) 5)
+			(string-equal (substring string -5) "\n>>> "))))
+      (let ((entry (car file-queue)))
+	(py-safe (delete-file (car entry)))
+	(setq file-queue (cdr file-queue))
+	(if file-queue
+	    (let ((entry (car file-queue)))
+	      (py-execute-file (cdar entry) (car entry))))
+	))))
 
 (defun py-postprocess-output-buffer (buf)
   "Highlight exceptions found in BUF.
@@ -1182,7 +1186,7 @@ If an exception occurred return t, otherwise return nil.  BUF must exist."
 (defvar ppy-which-args  ppy-python-command-args)
 (defvar pyd-which-args  pyd-python-command-args)
 (defvar pyo-which-args  pyo-python-command-args)
-(defvar py-which-bufname "Python")
+(defvar py-which-bufname-moved "Python")
 (make-variable-buffer-local 'py-which-shell)
 (make-variable-buffer-local 'ppy-which-shell)
 (make-variable-buffer-local 'pyd-which-shell)
@@ -1191,7 +1195,7 @@ If an exception occurred return t, otherwise return nil.  BUF must exist."
 (make-variable-buffer-local 'ppy-which-args)
 (make-variable-buffer-local 'pyd-which-args)
 (make-variable-buffer-local 'pyo-which-args)
-(make-variable-buffer-local 'py-which-bufname)
+(make-variable-buffer-local 'py-which-bufname-moved)
 (make-variable-buffer-local 'ppy-which-bufname)
 (make-variable-buffer-local 'pyd-which-bufname)
 (make-variable-buffer-local 'pyo-which-bufname)
@@ -1245,6 +1249,21 @@ Programmatically, ARG can also be one of the symbols `cpython' or
      )
     (message "Using the %s shell" msg)
     (setq py-output-buffer (format "*%s Output*" py-which-bufname))))
+
+(defun py-kill-shells ()
+  (interactive)
+  (save-current-buffer
+    (for-all-py-procs
+     (lambda (proc)
+       (let ((procbuf (process-buffer proc)))
+	 (set-buffer procbuf)
+	 (comint-send-eof)
+	 (py-point-to-max proc)
+	 )
+       )
+     )
+    )
+  )
 
 ;;;###autoload
 (defun py-shell (&optional argprompt)
@@ -1337,7 +1356,7 @@ filter."
     ))
 
 (defun pyo-shell (&optional argprompt)
-  "This is Jesse's hacked version of py-shell which runs the debug python"
+  "This is Jesse's hacked version of py-shell which runs the optimized python"
   (interactive "P")
   ;; Set the default shell if not already set
   (when (null pyo-which-shell)
@@ -1392,17 +1411,88 @@ filter."
     (use-local-map py-shell-map)
     ))
 
+(defun py-shell-named (bufname)
+  "This is Darren's hacked version of py-shell that allows for multiple
+   Python shells in a single Emacs window via different buffer names.
+   Creates a buffer named *Python-bufname*
+   "
+  (interactive "sShell Name: ")
+  ;; Set the default shell if not already set
+  (when (null py-which-shell)
+    (py-toggle-shells py-default-interpreter))
+  (let ((bname py-which-bufname))
+    (when bufname
+      (setq bname (concat py-which-bufname "-" bufname)))
+    (switch-to-buffer ;; -other-window
+     (apply 'make-comint bname py-which-shell nil py-which-args))
+    (make-local-variable 'comint-prompt-regexp)
+    (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
+    (add-hook 'comint-output-filter-functions
+             'py-comint-output-filter-function)
+    (set-syntax-table py-mode-syntax-table)
+    (use-local-map py-shell-map))
+  )
 
-(defun py-clear-queue ()
+(defun py-start-process (name command)
+  (let ((bufname (format "*Python-%s*" name))
+	(macro (format "%s\r" command))
+	(curbuf (current-buffer))
+	(newbuf nil))
+    (py-shell-named name)
+    (switch-to-buffer bufname)
+    (setq newbuf (current-buffer))
+    (execute-kbd-macro macro)
+    (py-point-to-max (get-buffer-process (current-buffer)))
+    (switch-to-buffer curbuf)
+    ; make sure that the new buffer is visible
+    (display-buffer newbuf)
+    )
+  )
+
+(defun is-py-bufname (bufname)
+  (and (eq (compare-strings py-which-bufname 0 (length py-which-bufname)
+			    bufname 0 (length py-which-bufname)) t)
+       (not (string-equal bufname "Python Output")))
+  )
+
+(defun is-py-proc (proc)
+  (is-py-bufname (process-name proc))
+)
+
+(defun for-all-py-procs (callback)
+  "Call a function for each python process. Callback must accept process.
+  If args are provided they will be passed to callback before process."
+  ;; run through all the Python processes and call the callback
+  (mapcar
+   (lambda (proc)
+     (if (is-py-proc proc)
+        (let ()
+          (apply callback (list proc))
+          )
+       )
+     )
+   (process-list)
+   )
+  )
+
+(defun py-clear-queues ()
   "Clear the queue of temporary files waiting to execute."
   (interactive)
-  (let ((n (length py-file-queue)))
-    (mapcar 'delete-file py-file-queue)
-    (setq py-file-queue nil)
-    (message "%d pending files de-queued." n)))
+  (when py-file-queues
+    (let ()
+      (maphash (lambda (proc file-queue)
+		 (let ((n (length file-queue)))
+		   (mapcar #'(lambda (entry)
+			       (py-safe (delete-file (car entry))))
+			   file-queue)
+		   (setq file-queue nil)
+		   (message "%d pending files de-queued." n)))
+	       py-file-queues
+	       )
+      (clrhash py-file-queues))
+    ))
 
-
-(defun py-execute-region (start end &optional async)
+(defun py-execute-region (start end proc &optional async)
   "Execute the region in a Python interpreter.
 
 The region is first copied into a temporary file (in the directory
@@ -1426,11 +1516,11 @@ window) so you can see it, and a comment of the form
 
     \t## working on region in file <name>...
 
-is inserted at the end.  See also the command `py-clear-queue'."
+is inserted at the end.  See also the command `py-clear-queues'."
   (interactive "r\nP")
   (or (< start end)
       (error "Region is empty"))
-  (let* ((proc (get-process py-which-bufname))
+  (let* ((bufname (process-name proc))
 	 (temp (if (memq 'broken-temp-names py-emacs-features)
 		   (let
 		       ((sn py-serial-number)
@@ -1457,11 +1547,14 @@ is inserted at the end.  See also the command `py-clear-queue'."
      ;; execution there.
      (proc
       ;; use the existing python shell
-      (if (not py-file-queue)
-	  (py-execute-file proc file)
-	(message "File %s queued for execution" file))
-      (setq py-file-queue (append py-file-queue (list file)))
-      (setq py-exception-buffer (cons file (current-buffer))))
+      (let ((file-queue (gethash proc py-file-queues nil)))
+	(if (not file-queue)
+	    (py-execute-file proc file)
+	  (message "File %s queued for execution" file))
+	(setq file-queue (append file-queue (list file)))
+	(setq py-exception-buffer (cons file (current-buffer)))
+	)
+      )
      (t
       ;; TBD: a horrible hack, buy why create new Custom variables?
       (let ((cmd (concat py-which-shell
@@ -1565,7 +1658,7 @@ subtleties, including the use of the optional ASYNC argument."
     (py-execute-region (mark) (point) async)))
 
 
-(defun py-execute-string (string &optional async)
+(defun py-execute-string (string proc &optional async)
   "Send the argument STRING to a Python interpreter.
 
 If there is a *Python* process buffer it is used.
@@ -1577,7 +1670,7 @@ subtleties, including the use of the optional ASYNC argument."
     (set-buffer (get-buffer-create
                  (generate-new-buffer-name " *Python Command*")))
     (insert string)
-    (py-execute-region (point-min) (point-max) async)))
+    (py-execute-region (point-min) (point-max) proc async)))
 
 
 
@@ -3251,11 +3344,10 @@ to do so may mean a greater delay in fixing your bug.\n\n")
 
 
 (defun py-kill-emacs-hook ()
-  "Delete files in `py-file-queue'.
+  "Delete files in `py-file-queues'.
 These are Python temporary files awaiting execution."
-  (mapcar #'(lambda (filename)
-	      (py-safe (delete-file filename)))
-	  py-file-queue))
+  (py-clear-queues)
+  )
 
 ;; arrange to kill temp files when Emacs exists
 (add-hook 'kill-emacs-hook 'py-kill-emacs-hook)
@@ -3271,17 +3363,32 @@ These are Python temporary files awaiting execution."
 	  (goto-char (- current 4))
 	  (if (or (search-forward ">>> " current t)
 		  (search-forward "... " current t))
-	      (python-resume)
+	      (save-current-buffer
+		(goto-char current)
+		(for-all-py-procs
+		 (lambda (proc)
+		   (let ((procbuf (process-buffer proc)))
+		     (set-buffer procbuf)
+		     (let ((current (point)))
+		       (goto-char (point-max))
+		       (if (and (eobp) (= (point) (marker-position (process-mark proc))))
+			   (let ()
+			     (goto-char (- current 4))
+			     (if (or (search-forward ">>> " current t)
+				     (search-forward "... " current t))
+				 (let ()
+				   (python-resume proc)
+				   )
+			       (let ()
+				 (goto-char current)
+				 ))))
+		       )))))
 	    (let ()
 	      (goto-char current)
 	      (message "End of buffer")
-	      )
-	    )
-	  )
+	      )))
       (delete-char arg)
-      )
-    )
-  )
+      )))
 
 
 (defun comint-interrupt-subjob-or-maybe-return (arg)
@@ -3295,45 +3402,67 @@ These are Python temporary files awaiting execution."
 	  (if (or (search-forward ">>> " current t)
 		  (search-forward "... " current t))
 	      (comint-send-input)
-	    (let ()
-	     (goto-char current)
-	     (comint-interrupt-subjob))))
-      (comint-send-input))))
-
-
-;; Function to try to resume panda mainloop
-(defun python-resume ()
-  (interactive)
-  (let* ((curbuf (current-buffer))
-	(proc (get-process py-which-bufname))
-	(procbuf (process-buffer proc))
-	)
-    (set-buffer procbuf)
-    (insert "run()\n")
-    (py-execute-string "try:\n\trun()\nexcept NameError,e:\n\tif e.__str__() == 'run':\n\t\tpass\n\telse:\n\t\traise\nexcept:\n\traise")
-    (goto-char (point-max))
-    (set-buffer curbuf)
+	    (save-current-buffer
+	      (goto-char current)
+	      (for-all-py-procs
+	       (lambda (proc)
+		 (let ((procbuf (process-buffer proc)))
+		   (set-buffer procbuf)
+		   (goto-char (point-max))
+		   (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
+		       (comint-interrupt-subjob))
+		   )
+		 )
+	       ))
+	    )
+	  )
+      (comint-send-input)
+      )
     )
   )
 
+(defun py-point-to-max (proc)
+  ;; updates the cursor position of a buffer for all windows
+  ;; into that buffer
+  (save-current-buffer
+    (let ((procbuf (process-buffer proc)))
+      (mapcar (lambda (window)
+		(set-window-point window (point-max)))
+	      (get-buffer-window-list procbuf))
+      (set-buffer procbuf)
+      (goto-char (point-max))
+      )
+    )
+  )
+
+;; Function to try to resume panda mainloop
+(defun python-resume (proc)
+  (interactive)
+  (save-current-buffer
+    (let ((procbuf (process-buffer proc))
+	  )
+      (set-buffer procbuf)
+      (goto-char (point-max))
+      (insert "run()\n")
+      (py-execute-string "try:\n\trun()\nexcept NameError,e:\n\tif e.__str__() == 'run':\n\t\tpass\n\telse:\n\t\traise\nexcept:\n\traise" proc)
+      (py-point-to-max proc)
+    ))
+  )
 
 
 (defun py-redefine-class (&optional async)
   (interactive "P")
   (save-excursion
-      (py-mark-def-or-class t)
-      ;; mark is before point
-      (py-redefine-class-region (mark) (point) async)
-      )
+    (py-mark-def-or-class t)
+    ;; mark is before point
+    (py-redefine-class-region (mark) (point) async)
+    )
   )
 
 
-(defun py-redefine-class-region (start end &optional async)
+(defun py-redefine-class-region-for-proc (start end proc)
   (interactive "r\nP")
-  (or (< start end)
-      (error "Region is empty"))
-  (let* ((proc (get-process py-which-bufname))
-	 (temp (if (memq 'broken-temp-names py-emacs-features)
+  (let* ((temp (if (memq 'broken-temp-names py-emacs-features)
 		   (let
 		       ((sn py-serial-number)
 			(pid (and (fboundp 'emacs-pid) (emacs-pid))))
@@ -3350,6 +3479,19 @@ These are Python temporary files awaiting execution."
       (py-redefine-class-file proc file)
      ))))
 
+(defun py-redefine-class-region (start end &optional async)
+  (interactive "r\nP")
+  (or (< start end)
+      (error "Region is empty"))
+  ;; run through all the Python processes and redefine the class
+  (save-current-buffer
+    (let ((curbuf (current-buffer)))
+      (for-all-py-procs (lambda (proc)
+			  (set-buffer curbuf)
+			  (py-redefine-class-region-for-proc start end proc)))
+      )
+    )
+  )
 
 ;; Python subprocess utilities and filters
 (defun py-redefine-class-file (proc filename)
@@ -3358,8 +3500,7 @@ Make that process's buffer visible and force display.  Also make
 comint believe the user typed this string so that
 `kill-output-from-shell' does The Right Thing."
   (interactive)
-  (let ((curbuf (current-buffer))
-	(procbuf (process-buffer proc))
+  (let ((procbuf (process-buffer proc))
 	(cmd (format "from direct.showbase import Finder; Finder.rebindClass(__builtins__.globals(), r'%s')\n" filename))
 	)
 
