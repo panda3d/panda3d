@@ -94,8 +94,9 @@ x_cleanup_parser() {
 %type <u.primitive_type> primitive_type
 %type <int_list> integer_list
 %type <double_list> realnum_list
-%type <str> name
-%type <str> optional_name
+%type <str> singleword_name
+%type <str> multiword_name
+%type <str> optional_multiword_name
 %type <str> string
 %type <guid> class_id
 %type <guid> optional_class_id
@@ -111,7 +112,7 @@ xfile:
         ;
 
 template:
-	 TOKEN_TEMPLATE name TOKEN_OBRACE class_id
+	 TOKEN_TEMPLATE singleword_name TOKEN_OBRACE class_id
 {
   $$ = current_node;
   XFileTemplate *templ = new XFileTemplate(x_file, $2, $4);
@@ -155,7 +156,7 @@ template_members:
          ;
 
 primitive:
-         primitive_type optional_name TOKEN_SEMICOLON
+         primitive_type optional_multiword_name TOKEN_SEMICOLON
 {
   current_data_def = new XFileDataDef(x_file, $2, $1);
   current_node->add_child(current_data_def);
@@ -167,7 +168,7 @@ array:
          ;
 
 template_reference: 
-         name optional_name TOKEN_SEMICOLON
+         singleword_name optional_multiword_name TOKEN_SEMICOLON
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -227,12 +228,12 @@ primitive_type:
         ;
 
 array_data_type:
-        primitive_type name
+        primitive_type multiword_name
 {
   current_data_def = new XFileDataDef(x_file, $2, $1);
   current_node->add_child(current_data_def);
 }
-        | name name
+        | singleword_name multiword_name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -258,7 +259,7 @@ dimension_size:
 {
   current_data_def->add_array_def(XFileArrayDef($1));
 }
-        | name
+        | multiword_name
 {
   XFileNode *data_def = current_node->find_child($1);
   if (data_def == (XFileNode *)NULL) {
@@ -279,7 +280,7 @@ template_option_list:
 	;
 
 template_option_part:
-	name
+	singleword_name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -288,7 +289,7 @@ template_option_part:
     DCAST(XFileTemplate, current_node)->add_option(xtemplate);
   }
 }
-	| name class_id
+	| singleword_name class_id
 {
   XFileTemplate *xtemplate = x_file->find_template($2);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -303,16 +304,28 @@ template_option_part:
 }
         ;
 
-name: 
+singleword_name:
+	TOKEN_NAME
+	;
+
+multiword_name: 
         TOKEN_NAME
+	| multiword_name TOKEN_NAME
+{
+  $$ = $1 + " " + $2;
+}
+	| multiword_name TOKEN_INTEGER
+{
+  $$ = $1 + " " + $<str>2;
+}
         ;
 
-optional_name:
+optional_multiword_name:
         empty
 {
   $$ = string();
 }
-        | name
+        | multiword_name
         ;
 
 class_id:
@@ -332,7 +345,7 @@ ellipsis:
         ;
 
 object:
-        name optional_name TOKEN_OBRACE
+        singleword_name optional_multiword_name TOKEN_OBRACE
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   $$ = current_node;
@@ -413,7 +426,7 @@ list_separator:
 	;
 
 data_reference:
-        name
+        multiword_name
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object($1);
   if (data_object == (XFileDataObject *)NULL) {
@@ -422,7 +435,7 @@ data_reference:
 
   $$ = new XFileDataNodeReference(data_object);
 }
-	| name class_id
+	| multiword_name class_id
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object($2);
   if (data_object == (XFileDataObject *)NULL) {

@@ -402,6 +402,7 @@ inline void accept() {
 INTEGERNUM           ([+-]?([0-9]+))
 REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 SEPARATOR            [ \t;,]+
+WHITESPACE           [ ]+
 
 %%
 
@@ -542,11 +543,11 @@ SEPARATOR            [ \t;,]+
   return TOKEN_WORD;
 }
 
-{INTEGERNUM} { 
+{INTEGERNUM}({WHITESPACE})? { 
   // A signed or unsigned integer number.
   accept();
   xyylval.u.number = atol(xyytext); 
-  xyylval.str = yytext;
+  xyylval.str = trim_right(xyytext);
 
   return TOKEN_INTEGER;
 }
@@ -598,6 +599,13 @@ SEPARATOR            [ \t;,]+
 
 [A-Za-z_-][A-Za-z_0-9-]* { 
   // Identifier.
+  accept();
+  xyylval.str = xyytext;
+  return TOKEN_NAME;
+}
+
+[0-9-]+[A-Za-z_-][A-Za-z_0-9-]* { 
+  // Identifier with leading digit.
   accept();
   xyylval.str = xyytext;
   return TOKEN_NAME;
