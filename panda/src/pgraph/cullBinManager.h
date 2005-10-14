@@ -62,6 +62,8 @@ PUBLISHED:
   INLINE int get_bin_sort(int bin_index) const;
   INLINE void set_bin_sort(int bin_index, int sort);
 
+  void write(ostream &out) const;
+
   static CullBinManager *get_global_ptr();
 
 public:
@@ -101,6 +103,9 @@ private:
   static CullBinManager *_global_ptr;
   friend class SortBins;
 };
+
+EXPCL_PANDA ostream &
+operator << (ostream &out, CullBinManager::BinType bin_type);
 
 #include "cullBinManager.I"
 

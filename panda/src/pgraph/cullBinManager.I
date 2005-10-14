@@ -80,7 +80,6 @@ get_bin(int n) const {
 //       Access: Published
 //  Description: Returns the name of the bin with the indicated
 //               bin_index (where bin_index was retrieved by get_bin()
-
 //               or find_bin()).  The bin's name may not be changed
 //               during the life of the bin.
 ////////////////////////////////////////////////////////////////////

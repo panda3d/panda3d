@@ -176,6 +176,24 @@ find_bin(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CullBinManager::
+write(ostream &out) const {
+  if (!_bins_are_sorted) {
+    ((CullBinManager *)this)->do_sort_bins();
+  }
+  SortedBins::const_iterator sbi;
+  for (sbi = _sorted_bins.begin(); sbi != _sorted_bins.end(); ++sbi) {
+    int bin_index = (*sbi);
+    out << get_bin_name(bin_index) << ", " << get_bin_type(bin_index)
+        << ", " << get_bin_sort(bin_index) << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinManager::get_global_ptr
 //       Access: Published, Static
 //  Description: Returns the pointer to the global CullBinManager
@@ -333,4 +351,33 @@ parse_bin_type(const string &bin_type) {
   } else {
     return BT_invalid;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::BinType output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, CullBinManager::BinType bin_type) {
+  switch (bin_type) {
+  case CullBinManager::BT_invalid:
+    return out << "invalid";
+    
+  case CullBinManager::BT_unsorted:
+    return out << "unsorted";
+    
+  case CullBinManager::BT_state_sorted:
+    return out << "state_sorted";
+    
+  case CullBinManager::BT_back_to_front:
+    return out << "back_to_front";
+    
+  case CullBinManager::BT_front_to_back:
+    return out << "front_to_back";
+    
+  case CullBinManager::BT_fixed:
+    return out << "fixed";
+  }
+
+  return out << "**invalid BinType(" << (int)bin_type << ")**";
 }
