@@ -11,39 +11,71 @@ class Transitions:
     IrisModelName = "models/misc/iris"
     FadeModelName = "models/misc/fade"
 
-    def __init__(self, loader):
+    def __init__(self, loader,
+                 model=None,
+                 scale=3.0,
+                 pos=Vec3(0,0,0)):
         self.transitionIval = None
         self.letterboxIval = None
         self.iris = None
         self.fade = None
         self.letterbox = None
-        self.alphaOff = Vec4(0,0,0,0)
-        self.alphaOn = Vec4(0,0,0,1)
-
+        self.fadeModel = model
+        self.imageScale = scale
+        self.imagePos = pos
+        if model:
+            self.alphaOff = Vec4(1,1,1,0)
+            self.alphaOn = Vec4(1,1,1,1)
+            model.setTransparency(1)
+            self.lerpFunc = LerpColorScaleInterval
+        else:
+            self.alphaOff = Vec4(0,0,0,0)
+            self.alphaOn = Vec4(0,0,0,1)
+            self.lerpFunc = LerpColorInterval
+            
         self.irisTaskName = "irisTask"
         self.fadeTaskName = "fadeTask"
         self.letterboxTaskName = "letterboxTask"
 
+    def __del__(self):
+        if self.fadeModel:
+            self.fadeModel.removeNode()
+            self.fadeModel = None
+            
     ##################################################
     # Fade
     ##################################################
+
+    # We can set a custom model for the fade before using it for the first time
+    def setFadeModel(self, model, scale=1.0):
+        self.fadeModel = model
+        # We have to change some default parameters for a custom fadeModel
+        self.imageScale = scale
+        self.alphaOn = Vec4(1,1,1,1)
+
+        # Reload fade if its already been created
+        if self.fade:
+            del self.fade
+            self.fade = None
+            self.loadFade()
         
     def loadFade(self):
+        if not self.fadeModel:
+            self.fadeModel = loader.loadModel(self.FadeModelName)
+            
         if self.fade == None:
             # We create a DirectFrame for the fade polygon, instead of
             # simply loading the polygon model and using it directly,
             # so that it will also obscure mouse events for objects
             # positioned behind it.
-            fadeModel = loader.loadModel(self.FadeModelName)
             self.fade = DirectFrame(
                 parent = hidden,
                 guiId = 'fade',
                 relief = None,
-                image = fadeModel,
-                image_scale = 3.0,
+                image = self.fadeModel,
+                image_scale = self.imageScale,
                 state = NORMAL,
                 )                                    
-            fadeModel.removeNode()
 
     def fadeIn(self, t=0.5, finishIval=None):
         """
@@ -61,9 +93,9 @@ class Transitions:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
             self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
-            self.transitionIval = Sequence(LerpColorInterval(self.fade, t,
-                                                   color = self.alphaOff,
-                                                   startColor = self.alphaOn),
+            self.transitionIval = Sequence(self.lerpFunc(self.fade, t,
+                                                         self.alphaOff,
+                                                         self.alphaOn),
                                  Func(self.fade.detachNode),
                                  name = self.fadeTaskName,
                                  )
@@ -89,9 +121,9 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.transitionIval = Sequence(LerpColorInterval(self.fade, t,
-                                                   color = self.alphaOn,
-                                                   startColor = self.alphaOff),
+            self.transitionIval = Sequence(self.lerpFunc(self.fade, t,
+                                                         self.alphaOn,
+                                                         self.alphaOff),
                                  name = self.fadeTaskName,
                                  )
             if finishIval:
