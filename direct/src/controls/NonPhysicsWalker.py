@@ -175,6 +175,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
+    def addBlastForce(self, vector):
+        pass
+
     def displayDebugInfo(self):
         """
         For debug use.

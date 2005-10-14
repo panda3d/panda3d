@@ -86,6 +86,9 @@ class DevWalker(DirectObject.DirectObject):
     def oneTimeCollide(self):
         pass
 
+    def addBlastForce(self, vector):
+        pass
+
     def displayDebugInfo(self):
         """
         For debug use.

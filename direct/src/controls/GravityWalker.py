@@ -419,6 +419,9 @@ class GravityWalker(DirectObject.DirectObject):
             self.setMayJump,
             "jumpDelay-%s"%id(self))
 
+    def addBlastForce(self, vector):
+        self.lifter.addVelocity(vector.length())
+
     def displayDebugInfo(self):
         """
         For debug use.

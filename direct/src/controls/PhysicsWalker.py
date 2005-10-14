@@ -407,6 +407,9 @@ class PhysicsWalker(DirectObject.DirectObject):
                 tempCTrav.addCollider(self.cRayNodePath, self.cRayQueue)
         tempCTrav.traverse(render)
 
+    def addBlastForce(self, vector):
+        pass
+
     def displayDebugInfo(self):
         """
         For debug use.
