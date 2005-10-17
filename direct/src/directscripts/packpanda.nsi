@@ -142,7 +142,9 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\models
             File /r /x CVS ${PANDA}\models\*
             SetOutPath $INSTDIR\samples
-            File /r /x CVS ${PSOURCE}\samples\*
+            File /r /x CVS /x GreetingCard ${PSOURCE}\samples\*
+            SetOutPath $INSTDIR\samples\GreetingCard
+            File /r /x CVS ${PANDA}\tmp\GreetingCard\*
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"

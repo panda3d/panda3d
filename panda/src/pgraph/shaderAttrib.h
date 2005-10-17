@@ -42,15 +42,27 @@ PUBLISHED:
 
   INLINE bool               has_shader() const;
   INLINE int                get_shader_priority() const;
-  INLINE const Shader      *get_shader() const;
-  INLINE const ShaderInput *get_input(const InternalName *id) const;
   
-  CPT(RenderAttrib)  clear_shader() const;
-  CPT(RenderAttrib)  set_shader(const Shader *s, int priority=0) const;
-  CPT(RenderAttrib)  set_shader_off(int priority=0) const;
-  
-  CPT(RenderAttrib)  add_input(const ShaderInput *input) const;
-  CPT(RenderAttrib)  clear_input(const InternalName *id) const;
+  CPT(RenderAttrib) set_shader(const Shader *s, int priority=0) const;
+  CPT(RenderAttrib) set_shader_off(int priority=0) const;
+  CPT(RenderAttrib) clear_shader() const;
+  CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
+  CPT(RenderAttrib) set_shader_input(InternalName *id, Texture *tex,       int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(InternalName *id, const NodePath &np, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(InternalName *id, const LVector4f &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1,
+                                     int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const string &id, Texture *tex,       int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const string &id, const NodePath &np, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const string &id, const LVector4f &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1,
+                                     int priority=0) const;
+  CPT(RenderAttrib) clear_shader_input(InternalName *id) const;
+  CPT(RenderAttrib) clear_shader_input(const string &id) const;
+
+  const Shader      *get_shader() const;
+  const ShaderInput *get_shader_input(InternalName *id) const;
+  const ShaderInput *get_shader_input(const string &id) const;
   
   static void register_with_read_factory();
   

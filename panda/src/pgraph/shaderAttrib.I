@@ -41,19 +41,6 @@ ShaderAttrib(const ShaderAttrib &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderAttrib::get_shader
-//       Access: Published
-//  Description: Returns the shader object associated with the node.
-//               If get_override returns true, but get_shader 
-//               returns NULL, that means that this attribute should
-//               disable the shader.
-////////////////////////////////////////////////////////////////////
-INLINE const Shader *ShaderAttrib::
-get_shader() const {
-  return _shader;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::has_shader
 //       Access: Published
 //  Description: If true, the shader field of this attribute overrides
@@ -72,22 +59,5 @@ has_shader() const {
 INLINE int ShaderAttrib::
 get_shader_priority() const {
   return _shader_priority;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderAttrib::get_input
-//       Access: Published
-//  Description: Returns the ShaderInput of the given name.  If
-//               no such name is found, this function does not return
-//               NULL --- it returns the "blank" ShaderInput.
-////////////////////////////////////////////////////////////////////
-INLINE const ShaderInput *ShaderAttrib::
-get_input(const InternalName *id) const {
-  Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    return ShaderInput::get_blank();
-  } else {
-    return (*i).second;
-  }
 }
 

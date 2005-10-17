@@ -1464,10 +1464,10 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
 def CompileBam(preconv, bam, egg):
     if (egg[-4:] == ".flt"):
         ifile = os.path.basename(egg)
-        oscmd("built/bin/flt2egg -pr " + preconv + " -o built/tmp/"+ifile+".egg" + " " + egg)
+        oscmd("built/bin/flt2egg " + preconv + " -o built/tmp/"+ifile+".egg" + " " + egg)
         oscmd("built/bin/egg2bam -o " + bam + " built/tmp/"+ifile+".egg")
     else:
-        oscmd("built/bin/egg2bam -pr " + preconv + " -o " + bam + " " + egg)
+        oscmd("built/bin/egg2bam " + preconv + " -o " + bam + " " + egg)
 
 def EnqueueBam(preconv, bam, egg):
     if (sys.platform == "win32"):
@@ -1578,6 +1578,9 @@ MakeDirectory("built/models/icons")
 MakeDirectory("built/models/maps")
 MakeDirectory("built/models/misc")
 MakeDirectory("built/models/gui")
+MakeDirectory("built/tmp/GreetingCard")
+MakeDirectory("built/tmp/GreetingCard/models")
+MakeDirectory("built/tmp/GreetingCard/sound")
 
 if (OMIT.count("PYTHON")==0):
     MakeDirectory("built/direct")
@@ -4447,21 +4450,21 @@ if (OMIT.count("PANDAAPP")==0):
 #
 
 if (OMIT.count("PANDATOOL")==0):
-    EnqueueBam("../=", "built/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
-    EnqueueBam("../=", "built/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
-    EnqueueBam("../=", "built/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
-    EnqueueBam("../=", "built/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
-    EnqueueBam("../=", "built/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
-    EnqueueBam("../=", "built/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
-    EnqueueBam("../=", "built/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
-    EnqueueBam("../=", "built/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
-    EnqueueBam("../=", "built/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
-    EnqueueBam("../=", "built/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
-    EnqueueBam("../=", "built/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
-    EnqueueBam("../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
-    EnqueueBam("../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
-    EnqueueBam("../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
-    #EnqueueBam("../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+    EnqueueBam("-pr ../=", "built/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
+    EnqueueBam("-pr ../=", "built/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
+    EnqueueBam("-pr ../=", "built/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
+    EnqueueBam("-pr ../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
+    EnqueueBam("-pr ../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
+    EnqueueBam("-pr ../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
+    EnqueueBam("-pr ../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
     
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
@@ -4478,6 +4481,18 @@ if (OMIT.count("PANDATOOL")==0):
     CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".png")
     CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgb")
     CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgba")
+
+#
+# egg2bam on the greeting card directory
+#
+
+if (INSTALLER):
+    CopyFile("built/tmp/GreetingCard/",            "samples/GreetingCard/GreetingCard.py")
+    CopyFile("built/tmp/GreetingCard/sound/",      "samples/GreetingCard/sound/soundtrack.mp3")
+    CopyAllFiles("built/tmp/GreetingCard/models/", "samples/GreetingCard/models/", ".jpg")
+    EnqueueBam("-ps strip", "built/tmp/GreetingCard/models/thankyou_card.bam", "samples/GreetingCard/models/thankyou_card.egg")
+    EnqueueBam("-ps strip", "built/tmp/GreetingCard/models/thankyou_anim.bam", "samples/GreetingCard/models/thankyou_anim.egg")
+
 
 ##########################################################################################
 #

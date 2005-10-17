@@ -335,14 +335,14 @@ issue_parameters(GSG *gsg)
     // Pass in k-float parameters.
     for (int i=0; i<(int)_cg_fbind.size(); i++) {
       InternalName *id = _cg_fbind[i].name;
-      const ShaderInput *input = gsg->_target._shader->get_input(id);
+      const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
       cgGLSetParameter4fv(_cg_fbind[i].parameter, input->get_vector().get_data());
     }
     
     // Pass in k-float4x4 parameters.
     for (int i=0; i<(int)_cg_npbind.size(); i++) {
       InternalName *id = _cg_npbind[i].name;
-      const ShaderInput *input = gsg->_target._shader->get_input(id);
+      const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
       const float *dat;
       if (input->get_nodepath().is_empty()) {
         dat = LMatrix4f::ident_mat().get_data();
@@ -515,7 +515,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       Texture *tex = 0;
       InternalName *id = _cg_texbind[i].name;
       if (id != 0) {
-        const ShaderInput *input = gsg->_target._shader->get_input(id);
+        const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
         tex = input->get_texture();
       } else {
         if (_cg_texbind[i].stage >= gsg->_target._texture->get_num_on_stages()) {
@@ -576,7 +576,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   } else if (stb.src_name == InternalName::get_world()) {
     src = gsg->get_scene()->get_world_transform();
   } else {
-    const ShaderInput *input = gsg->_target._shader->get_input(stb.src_name);
+    const ShaderInput *input = gsg->_target._shader->get_shader_input(stb.src_name);
     if (input->get_nodepath().is_empty()) {
       src = gsg->get_scene()->get_world_transform();
     } else {
@@ -594,7 +594,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   } else if (stb.rel_name == InternalName::get_world()) {
     rel = gsg->get_scene()->get_world_transform();
   } else {
-    const ShaderInput *input = gsg->_target._shader->get_input(stb.rel_name);
+    const ShaderInput *input = gsg->_target._shader->get_shader_input(stb.rel_name);
     if (input->get_nodepath().is_empty()) {
       rel = gsg->get_scene()->get_world_transform();
     } else {

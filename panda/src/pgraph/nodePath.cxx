@@ -3141,11 +3141,11 @@ set_shader_input(const ShaderInput *inp) {
     node()->get_attrib(ShaderAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
-    node()->set_attrib(sa->add_input(inp));
+    node()->set_attrib(sa->set_shader_input(inp));
   } else {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
-    node()->set_attrib(sa->add_input(inp));
+    node()->set_attrib(sa->set_shader_input(inp));
   }
 }
 
@@ -3162,7 +3162,7 @@ get_shader_input(InternalName *id) const {
     node()->get_attrib(ShaderAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
-    return sa->get_input(id);
+    return sa->get_shader_input(id);
   }
   return NULL;
 }
@@ -3180,7 +3180,7 @@ clear_shader_input(InternalName *id) {
     node()->get_attrib(ShaderAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
-    node()->set_attrib(sa->clear_input(id));
+    node()->set_attrib(sa->clear_shader_input(id));
   }
 }
 
