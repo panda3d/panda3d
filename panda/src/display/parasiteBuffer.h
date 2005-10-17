@@ -56,7 +56,7 @@ class EXPCL_PANDA ParasiteBuffer : public GraphicsOutput {
 public:
   ParasiteBuffer(GraphicsOutput *host, const string &name,
                  int x_size, int y_size);
-
+  
 PUBLISHED:
   virtual ~ParasiteBuffer();
 
@@ -65,9 +65,11 @@ PUBLISHED:
 public:
   virtual GraphicsOutput *get_host();
   virtual void make_current();
+  virtual void auto_resize();
 
 private:
   PT(GraphicsOutput) _host;
+  bool _track_host_size;
   
 public:
   static TypeHandle get_class_type() {

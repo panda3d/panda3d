@@ -541,18 +541,9 @@ set_properties_now(WindowProperties &properties) {
       if (open_window()) {
         // When the window is first opened, force its size to be
         // broadcast to its display regions.
-        _x_size = _properties.get_x_size();
-        _y_size = _properties.get_y_size();
-        _has_size = true;
         _is_valid = true;
-
-        TotalDisplayRegions::iterator dri;
-        for (dri = _total_display_regions.begin(); 
-             dri != _total_display_regions.end(); 
-             ++dri) {
-          (*dri)->compute_pixels(_x_size, _y_size);
-        }
-
+        set_size_and_recalc(_properties.get_x_size(),
+                            _properties.get_y_size());
       } else {
         // Since we can't even open the window, tag the
         // _rejected_properties with all of the window properties that
@@ -715,18 +706,9 @@ system_changed_size(int x_size, int y_size) {
     display_cat.debug()
       << "system_changed_size(" << x_size << ", " << y_size << ")\n";
   }
-
+  
   if (x_size != _properties.get_x_size() || 
       y_size != _properties.get_y_size()) {
-    _x_size = x_size;
-    _y_size = y_size;
-    _has_size = true;
-
-    TotalDisplayRegions::iterator dri;
-    for (dri = _total_display_regions.begin(); 
-         dri != _total_display_regions.end(); 
-         ++dri) {
-      (*dri)->compute_pixels(_x_size, _y_size);
-    }
+    set_size_and_recalc(x_size, y_size);
   }
 }

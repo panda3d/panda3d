@@ -1321,16 +1321,19 @@ end_draw_primitives() {
 //               copy.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
+                            const RenderBuffer &rb) {
   set_read_buffer(rb);
+
+  int orig_x = tex->get_x_size();
+  int orig_y = tex->get_y_size();
 
   HRESULT hr;
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
-
-  tex->set_x_size(w);
-  tex->set_y_size(h);
-
+  tex->set_x_size(Texture::up_to_power_2(w));
+  tex->set_y_size(Texture::up_to_power_2(h));
+  
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return;
@@ -1345,13 +1348,54 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const 
   }
   nassertv(dtc->get_d3d_2d_texture() != NULL);
 
-  IDirect3DSurface8 *tex_level_0, *render_target;
+  IDirect3DSurface8 *tex_level_0;
   hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     return;
   }
 
+  // If the texture is the wrong size, we need to do something about it.
+  D3DSURFACE_DESC texdesc;
+  hr = tex_level_0->GetDesc(&texdesc);
+  if (FAILED(hr)) {
+    dxgsg8_cat.error() << "GetDesc failed in copy_texture" << D3DERRORSTRING(hr);
+    SAFE_RELEASE(tex_level_0);
+    return;
+  }
+  if ((texdesc.Width != tex->get_x_size())||(texdesc.Height != tex->get_y_size())) {
+    if ((orig_x != tex->get_x_size()) || (orig_y != tex->get_y_size())) {
+      // Texture might be wrong size because we resized it and need to recreate.
+      SAFE_RELEASE(tex_level_0);
+      if (!dtc->create_texture(*_screen)) {
+        // Oops, we can't re-create the texture for some reason.
+        dxgsg8_cat.error()
+          << "Unable to re-create texture " << *dtc->_texture << endl;
+        return;
+      }
+      hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
+      if (FAILED(hr)) {
+        dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
+        return;
+      }
+      hr = tex_level_0->GetDesc(&texdesc);
+      if (FAILED(hr)) {
+        dxgsg8_cat.error() << "GetDesc 2 failed in copy_texture" << D3DERRORSTRING(hr);
+        SAFE_RELEASE(tex_level_0);
+        return;
+      }
+    }
+    if ((texdesc.Width != tex->get_x_size())||(texdesc.Height != tex->get_y_size())) {
+      // If it's still the wrong size, it's because driver can't create size
+      // that we want.  In that case, there's no helping it, we have to give up.
+      dxgsg8_cat.error()
+        << "Unable to copy to texture, texture is wrong size: " << *dtc->_texture << endl;
+      SAFE_RELEASE(tex_level_0);
+      return;
+    }
+  }
+  
+  IDirect3DSurface8 *render_target;
   hr = _d3d_device->GetRenderTarget(&render_target);
   if (FAILED(hr)) {
     dxgsg8_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);

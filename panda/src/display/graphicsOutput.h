@@ -35,6 +35,7 @@
 #include "drawMask.h"
 #include "pvector.h"
 #include "weakPointerTo.h"
+#include "nodePath.h"
 
 class PNMImage;
 
@@ -122,6 +123,8 @@ PUBLISHED:
   INLINE bool save_screenshot(const Filename &filename);
   INLINE bool get_screenshot(PNMImage &image);
 
+  NodePath get_texture_card();
+
 public:
   // These are not intended to be called directly by the user.
   INLINE bool needs_context() const;
@@ -137,6 +140,8 @@ public:
   virtual void set_close_now();
   virtual void reset_window(bool swapchain);
 
+  void set_size_and_recalc(int x, int y);
+  
   // It is an error to call any of the following methods from any
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
@@ -152,7 +157,8 @@ public:
   virtual bool make_context();
   virtual void make_current();
   virtual void release_gsg();
-
+  virtual void auto_resize();
+  
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();
   virtual void end_flip();
@@ -165,8 +171,7 @@ public:
 protected:
   enum RenderTextureMode {
     RTM_none,
-    RTM_bind_texture,
-    RTM_bind_if_possible,
+    RTM_bind_or_copy,
     RTM_copy_texture,
     RTM_copy_ram,
   };
@@ -180,6 +185,7 @@ protected:
   bool _needs_context;
   int _cube_map_index;
   DisplayRegion *_cube_map_dr;
+  PT(Geom) _texture_card;
 
 private:
   DisplayRegion *add_display_region(DisplayRegion *display_region);
@@ -188,7 +194,7 @@ private:
 
   INLINE void determine_display_regions() const;
   void do_determine_display_regions();
-
+  
   int _sort;
   unsigned int _internal_sort_index;
 

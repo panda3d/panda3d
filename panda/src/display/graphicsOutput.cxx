@@ -32,6 +32,10 @@
 #include "perspectiveLens.h"
 #include "pointerTo.h"
 #include "compassEffect.h"
+#include "geom.h"
+#include "geomNode.h"
+#include "geomTristrips.h"
+#include "geomVertexWriter.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -87,6 +91,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _one_shot = false;
   _inverted = window_inverted;
   _delete_flag = false;
+  _texture_card = 0;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
   if ((mode & FrameBufferProperties::FM_buffer) == FrameBufferProperties::FM_single_buffer) {
@@ -217,30 +222,29 @@ void GraphicsOutput::
 setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
   MutexHolder holder(_lock);
 
+  if (to_ram) {
+    _rtm_mode = RTM_copy_ram;
+  } else if (allow_bind) {
+    _rtm_mode = RTM_bind_or_copy;
+  } else {
+    _rtm_mode = RTM_copy_texture;
+  }
+  
   if (tex == (Texture *)NULL) {
     _texture = new Texture(get_name());
     _texture->set_wrap_u(Texture::WM_clamp);
     _texture->set_wrap_v(Texture::WM_clamp);
-
   } else {
     _texture = tex;
     _texture->clear_ram_image();
   }
   _texture->set_match_framebuffer_format(true);
-
+  
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
   _texture->set_x_size(get_x_size());
   _texture->set_y_size(get_y_size());
-
-  if (to_ram) {
-    _rtm_mode = RTM_copy_ram;
-  } else if (allow_bind) {
-    _rtm_mode = RTM_bind_if_possible;
-  } else {
-    _rtm_mode = RTM_copy_texture;
-  }
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
@@ -461,6 +465,110 @@ get_active_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: create_texture_card_vdata
+//       Access: Static
+//  Description: Generates a GeomVertexData for a texture card.
+////////////////////////////////////////////////////////////////////
+static PT(GeomVertexData)
+create_texture_card_vdata(int x, int y)
+{
+  int xru = Texture::up_to_power_2(x);
+  int yru = Texture::up_to_power_2(y);
+  
+  float xhi = (x * 1.0f) / xru;
+  float yhi = (y * 1.0f) / yru;
+  
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3cpt2();
+  
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("card", format, Geom::UH_static);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+    
+  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
+  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
+  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
+  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
+  
+  texcoord.add_data2f( 0.0f,  yhi);
+  texcoord.add_data2f( 0.0f, 0.0f);
+  texcoord.add_data2f(  xhi,  yhi);
+  texcoord.add_data2f(  xhi, 0.0f);
+  
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+
+  return vdata;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_size_and_recalc
+//       Access: Public
+//  Description: Changes the x_size and y_size, then recalculates
+//               structures that depend on size.  The recalculation
+//               currently includes:
+//               - compute_pixels on all the graphics regions.
+//               - updating the texture card, if one is present.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_size_and_recalc(int x, int y) {
+  _x_size = x;
+  _y_size = y;
+  _has_size = true;
+  
+  TotalDisplayRegions::iterator dri;
+  for (dri = _total_display_regions.begin(); 
+       dri != _total_display_regions.end(); 
+       ++dri) {
+    (*dri)->compute_pixels(x,y);
+  }
+
+  if (_texture_card != 0) {
+    _texture_card->set_vertex_data(create_texture_card_vdata(x, y));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_texture_card
+//       Access: Published
+//  Description: Returns a PandaNode containing a square polygon.
+//               The dimensions are (-1,0,-1) to (1,0,1). The texture
+//               coordinates are such that the texture of this
+//               GraphicsOutput is aligned properly to the polygon.
+//               The GraphicsOutput promises to surgically update
+//               the Geom inside the PandaNode if necessary to maintain
+//               this invariant.
+//
+//               Each invocation of this function returns a freshly-
+//               allocated PandaNode.  You can therefore safely modify
+//               the RenderAttribs of the PandaNode.  The
+//               PandaNode is initially textured with the texture
+//               of this GraphicOutput.
+////////////////////////////////////////////////////////////////////
+NodePath GraphicsOutput::
+get_texture_card() {
+  if (_texture_card == 0) {
+    PT(GeomVertexData) vdata = create_texture_card_vdata(_x_size, _y_size);
+    PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+    strip->set_shade_model(Geom::SM_uniform);
+    strip->add_next_vertices(4);
+    strip->close_primitive();
+    _texture_card = new Geom(vdata);
+    _texture_card->add_primitive(strip);
+  }
+  
+  PT(GeomNode) gnode = new GeomNode("texture card");
+  gnode->add_geom(_texture_card);
+  NodePath path(gnode);
+  path.set_texture(get_texture(), 0);
+  return path;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_texture_buffer
 //       Access: Published
 //  Description: Creates and returns an offscreen buffer for rendering
@@ -508,6 +616,15 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   int sort = get_sort() - 1;
 
   GraphicsOutput *buffer = NULL;
+
+  if ((x_size == 0) && (y_size == 0)) {
+    // Currently, only parasite buffers support the tracking of the
+    // host window size.  If the user requests this, we have to use a
+    // parasite buffer.
+    buffer = engine->make_parasite(host, name, sort, x_size, y_size);
+    buffer->setup_render_texture(tex, false, to_ram);
+    return buffer;
+  }
 
   if (show_buffers) {
     // If show_buffers is true, just go ahead and call make_buffer(),
@@ -784,6 +901,9 @@ begin_frame() {
     return false;
   }
 
+  // Track the size of some other graphics output, if desired.
+  auto_resize();
+  
   if (needs_context()) {
     if (!make_context()) {
       return false;
@@ -793,11 +913,11 @@ begin_frame() {
   // Okay, we already have a GSG, so activate it.
   make_current();
 
-  if (_rtm_mode == RTM_bind_texture) {
+  if (_rtm_mode == RTM_bind_or_copy) {
     // Release the texture so we can render into the frame buffer.
     _gsg->framebuffer_release_texture(this, get_texture());
   }
-
+  
   _cube_map_index = -1;
   _cube_map_dr = NULL;
 
@@ -856,10 +976,10 @@ end_frame() {
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
 
-    // If _rtm_mode is RTM_bind_texture, it means we should attempt to
-    // lock the framebuffer directly to the texture memory, avoiding
+    // If _rtm_mode is one of the bind-modes, it means we should attempt
+    // to lock the framebuffer directly to the texture memory, avoiding
     // the copy.
-    if (_rtm_mode == RTM_bind_texture) {
+    if (_rtm_mode == RTM_bind_or_copy) {
       if (display_cat.is_debug()) {
         display_cat.debug()
           << "Locking texture for " << get_name() << " at frame end.\n";
@@ -870,8 +990,8 @@ end_frame() {
         _rtm_mode = RTM_copy_texture;
       }
     }
-
-    if (_rtm_mode != RTM_bind_texture) {
+    
+    if (_rtm_mode == RTM_copy_texture) {
       if (display_cat.is_debug()) {
         display_cat.debug()
           << "Copying texture for " << get_name() << " at frame end.\n";
@@ -922,7 +1042,7 @@ end_frame() {
       
       // If we were rendering directly to texture, we can't delete the
       // buffer until the texture is gone too.
-      if (_rtm_mode == RTM_bind_texture) {
+      if (_rtm_mode == RTM_bind_or_copy) {
         _hold_texture = _texture;
       }
     }
@@ -959,7 +1079,7 @@ change_scenes(DisplayRegion *new_dr) {
     _cube_map_dr = new_dr;
 
     if (_rtm_mode != RTM_none) {
-      if (_rtm_mode == RTM_bind_texture) {
+      if (_rtm_mode == RTM_bind_or_copy) {
         // In render-to-texture mode, switch the rendering backend to
         // the new cube map face, so that the subsequent frame will be
         // rendered to the new face.
@@ -1041,6 +1161,17 @@ make_current() {
 void GraphicsOutput::
 release_gsg() {
   _gsg.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::auto_resize
+//       Access: Public, Virtual
+//  Description: Certain graphics outputs can automatically resize
+//               themselves to automatically stay the same size as
+//               some other graphics output.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+auto_resize() {
 }
 
 ////////////////////////////////////////////////////////////////////

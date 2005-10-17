@@ -44,13 +44,20 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
       << " on " << _host->get_name() << "\n";
   }
 
+  if ((x_size == 0)&&(y_size == 0)) {
+    _track_host_size = true;
+    x_size = host->get_x_size();
+    y_size = host->get_y_size();
+  } else {
+    _track_host_size = false;
+  }
+  
   _x_size = x_size;
   _y_size = y_size;
   _has_size = true;
   _default_display_region->compute_pixels(_x_size, _y_size);
-
   _is_valid = true;
-
+  
   nassertv(_x_size <= host->get_x_size() && _y_size <= host->get_y_size());
 }
 
@@ -99,4 +106,23 @@ get_host() {
 void ParasiteBuffer::
 make_current() {
   _host->make_current();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::auto_resize
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               to make sure this buffer is the right size.  If not,
+//               it will be resized.
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+auto_resize() {
+  if (_track_host_size) {
+    _host->auto_resize();
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
+    }
+  }
 }

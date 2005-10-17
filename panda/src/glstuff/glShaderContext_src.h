@@ -51,10 +51,32 @@ public:
 private:
 
 #ifdef HAVE_CGGL
+  enum ShaderAutoValue {
+    // This first batch of constants cleverly lines up
+    // with the Cg constant values.  Don't insert anything.
+    SIC_mat_modelview,
+    SIC_inv_modelview,
+    SIC_tps_modelview,
+    SIC_itp_modelview,
+    SIC_mat_projection,
+    SIC_inv_projection,
+    SIC_tps_projection,
+    SIC_itp_projection,
+    SIC_mat_texture,
+    SIC_inv_texture,
+    SIC_tps_texture,
+    SIC_itp_texture,
+    SIC_mat_modelproj,
+    SIC_inv_modelproj,
+    SIC_tps_modelproj,
+    SIC_itp_modelproj,
+    // From this point forward, it's okay to insert stuff.
+    SIC_sys_windowsize,
+    SIC_sys_pixelsize,
+  };
   struct ShaderAutoBind {
     CGparameter parameter;
-    CGGLenum matrix;
-    CGGLenum orient;
+    int value;
   };
   struct ShaderArgBind {
     CGparameter parameter;
@@ -85,7 +107,8 @@ private:
   
   // These arrays contain lists of "bindings." They
   // tell us how to fill the shader's input parameters.
-  vector <ShaderAutoBind> _cg_autobind;
+  vector <ShaderAutoBind> _cg_auto_trans;
+  vector <ShaderAutoBind> _cg_auto_param;
   vector <ShaderArgBind> _cg_fbind;
   vector <ShaderArgBind> _cg_npbind;
   vector <ShaderTexBind> _cg_texbind;
@@ -98,6 +121,7 @@ private:
                          CLP(GraphicsStateGuardian) *gsg);
   void suggest_cg_profile(const string &vpro, const string &fpro);
   CGprofile parse_cg_profile(const string &id, bool vertex);
+  void issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg);
   bool compile_cg_parameter(CGparameter p);
   bool errchk_cg_parameter_words(CGparameter p, int len);
   bool errchk_cg_parameter_direction(CGparameter p, CGenum dir);

@@ -565,6 +565,51 @@ reset() {
     }
   }
 
+  _supports_framebuffer_object = false;
+  if (has_extension("GL_EXT_framebuffer_object")) {
+    _supports_framebuffer_object = true;
+    _glIsRenderbuffer = (PFNGLISRENDERBUFFEREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "IsRenderbufferEXT");
+    _glBindRenderbuffer = (PFNGLBINDRENDERBUFFEREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindRenderbufferEXT");
+    _glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DeleteRenderbuffersEXT");
+    _glGenRenderbuffers = (PFNGLGENRENDERBUFFERSEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GenRenderbuffersEXT");
+    _glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageEXT");
+    _glGetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GetRenderbufferParameterivEXT");
+    _glIsFramebuffer = (PFNGLISFRAMEBUFFEREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "IsFramebufferEXT");
+    _glBindFramebuffer = (PFNGLBINDFRAMEBUFFEREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindFramebufferEXT");
+    _glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DeleteFramebuffersEXT");
+    _glGenFramebuffers = (PFNGLGENFRAMEBUFFERSEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GenFramebuffersEXT");
+    _glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CheckFramebufferStatusEXT");
+    _glFramebufferTexture1D = (PFNGLFRAMEBUFFERTEXTURE1DEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture1DEXT");
+    _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture2DEXT");
+    _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture3DEXT");
+    _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferRenderbufferEXT");
+    _glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GetFramebufferAttachmentParameterivEXT");
+    _glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GenerateMipmapEXT");
+  }
+
+  _glDrawBuffers = NULL;
+  if (has_extension("GL_ARB_draw_buffers")) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawBuffersARB");
+  }
+  
   _glBlendEquation = NULL;
   bool supports_blend_equation = false;
   if (is_at_least_version(1, 2)) {
@@ -831,7 +876,7 @@ reset() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear
+//     Function: GLGraphicsStateGuardian::do_clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
@@ -2388,10 +2433,26 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
+  tex->set_x_size(Texture::up_to_power_2(w));
+  tex->set_y_size(Texture::up_to_power_2(h));
+  
+  // Sanity check everything.
+  if (z >= 0) {
+    if (!_supports_cube_map) {
+      return;
+    }
+    nassertv(z < 6);
+    nassertv(tex->get_texture_type() == Texture::TT_cube_map);
+    if ((w != tex->get_x_size()) ||
+        (h != tex->get_y_size()) ||
+        (w != h)) {
+      return;
+    }
+  } else {
+    nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+  }
 
-  tex->set_x_size(w);
-  tex->set_y_size(h);
-
+  // Match framebuffer format if necessary.
   if (tex->get_match_framebuffer_format()) {
     const FrameBufferProperties &properties = get_properties();
     int mode = properties.get_frame_buffer_mode();
@@ -2414,37 +2475,39 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
-
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
   GLenum target = get_texture_target(tex->get_texture_type());
-  if (target == GL_NONE) {
-    // Invalid texture, can't copy to it.
-    return;
-  }
   GLP(BindTexture)(target, gtc->_index);
+  GLint internal_format = get_internal_image_format(tex->get_format());
+  GLenum imagetarget = (z >= 0) ? (GL_TEXTURE_CUBE_MAP_POSITIVE_X + z) : GL_TEXTURE_2D;
+  
+  // If the texture has never been uploaded before, create it.
+  // We cannot use glCopyTexImage2D to create a texture that may be
+  // larger than the screen, so use glTexImage2D with arbitrary data.
+  
+  if ((gtc->_already_applied == false)||
+      (gtc->_internal_format != internal_format)||
+      (gtc->_width  != tex->get_x_size())||
+      (gtc->_height != tex->get_y_size())||
+      (gtc->_depth  != 1)) {
 
-  if (z >= 0) {
-    // Copy to a cube map face.
-    nassertv(z < 6);
-    nassertv(tex->get_texture_type() == Texture::TT_cube_map);
-
-    if (_supports_cube_map) {
-      // We cleverly defined the cube map faces to fall in the same
-      // order as the GL constants are defined, so we can just make this
-      // simple addition to get to the right GL constant.
-      GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
-                          get_internal_image_format(tex->get_format()),
-                          xo, yo, w, h, 0);
-    }
-
-  } else {
-    // Copy to a regular texture.
-    nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
-    GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
-                        get_internal_image_format(tex->get_format()),
-                        xo, yo, w, h, 0);
+    char *image = new char[tex->get_x_size() * tex->get_y_size()];
+    memset(image, 128, tex->get_x_size() * tex->get_y_size());
+    GLP(TexImage2D)(imagetarget, 0, internal_format, 
+                    tex->get_x_size(), tex->get_y_size(), 0,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
+    delete image;
+    
+    gtc->_already_applied = true;
+    gtc->_internal_format = internal_format;
+    gtc->_width  = tex->get_x_size();
+    gtc->_height = tex->get_y_size();
+    gtc->_depth  = 1;
   }
-
+  
+  // Copy the pixel data from the frame buffer.
+  GLP(CopyTexSubImage2D)(imagetarget, 0, 0, 0, xo, yo, w, h);
+  
   report_my_gl_errors();
 
   // Force reload of texture state, since we've just monkeyed with it.

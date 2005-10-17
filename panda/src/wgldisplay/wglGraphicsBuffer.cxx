@@ -235,13 +235,12 @@ open_buffer() {
     wgldisplay_cat.debug()
       << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
     switch (_rtm_mode) {
-    case RTM_bind_texture:
+    case RTM_bind_or_copy:
       wgldisplay_cat.debug()
         << "pbuffer renders directly to texture.\n";
       break;
 
     case RTM_copy_texture:
-    case RTM_bind_if_possible:
       wgldisplay_cat.debug()
         << "pbuffer copies indirectly into texture.\n";
       break;
@@ -288,7 +287,7 @@ make_pbuffer(HDC twindow_dc) {
   if (wglgsg->_supports_pixel_format) {
     bool got_pbuffer_format = false;
 
-    if (_rtm_mode == RTM_bind_if_possible && 
+    if ((_rtm_mode == RTM_bind_or_copy) &&
         wglgsg->_supports_render_texture) {
       // First, try to get a pbuffer format that supports
       // render-to-texture.
@@ -296,12 +295,12 @@ make_pbuffer(HDC twindow_dc) {
       if (new_pbformat != 0) {
         pbformat = new_pbformat;
         got_pbuffer_format = true;
-        _rtm_mode = RTM_bind_texture;
       }
     }
 
     if (!got_pbuffer_format) {
       // Failing that, just get a matching pbuffer format.
+      _rtm_mode = RTM_copy_texture;
       int new_pbformat = choose_pbuffer_format(twindow_dc, false);
       if (new_pbformat != 0) {
         pbformat = new_pbformat;
@@ -323,7 +322,7 @@ make_pbuffer(HDC twindow_dc) {
   int iattrib_list[max_attrib_list];
   int ni = 0;
 
-  if (_rtm_mode == RTM_bind_texture) {
+  if (_rtm_mode == RTM_bind_or_copy) {
     nassertr(_texture != (Texture *)NULL, false);
 
     if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {

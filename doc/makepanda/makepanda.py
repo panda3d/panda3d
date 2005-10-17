@@ -1893,6 +1893,7 @@ if (SLAVEBUILD==0):
         CopyFile('built/bin/', 'thirdparty/win-python/python24.dll')
         if (OMIT.count("PYTHON")==0):
             CopyTree('built/python', 'thirdparty/win-python')
+            ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
 
 ########################################################################
 ##

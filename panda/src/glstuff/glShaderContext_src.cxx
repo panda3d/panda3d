@@ -244,7 +244,6 @@ bind(GSG *gsg) {
 
     // Pass in k-parameters and transform-parameters
     issue_parameters(gsg);
-    issue_transform(gsg);
     
     // Bind the shaders.
     cgGLEnableProfile(_cg_profile[SHADER_type_vert]);
@@ -272,12 +271,61 @@ unbind()
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::issue_cg_auto_bind
+//       Access: Public
+//  Description: Pass a single system parameter into the shader.
+////////////////////////////////////////////////////////////////////
+#ifdef HAVE_CGGL
+void CLP(ShaderContext)::
+issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
+{
+  LVecBase4f t;
+
+  CGparameter p = bind.parameter;
+  switch(bind.value) {
+  case SIC_mat_modelview:
+  case SIC_inv_modelview:
+  case SIC_tps_modelview:
+  case SIC_itp_modelview:
+  case SIC_mat_projection:
+  case SIC_inv_projection:
+  case SIC_tps_projection:
+  case SIC_itp_projection:
+  case SIC_mat_texture:
+  case SIC_inv_texture:
+  case SIC_tps_texture:
+  case SIC_itp_texture:
+  case SIC_mat_modelproj:
+  case SIC_inv_modelproj:
+  case SIC_tps_modelproj:
+  case SIC_itp_modelproj:
+    cgGLSetStateMatrixParameter(p, (CGGLenum)((bind.value >> 2)+4), (CGGLenum)(bind.value & 3));
+    return;
+  case SIC_sys_windowsize:
+    t[0] = gsg->_current_display_region->get_pixel_width();
+    t[1] = gsg->_current_display_region->get_pixel_height();
+    t[2] = 1;
+    t[3] = 1;
+    cgGLSetParameter4fv(p, t.get_data());
+    return;
+  case SIC_sys_pixelsize:
+    t[0] = 1.0 / gsg->_current_display_region->get_pixel_width();
+    t[1] = 1.0 / gsg->_current_display_region->get_pixel_height();
+    t[2] = 1;
+    t[3] = 1;
+    cgGLSetParameter4fv(p, t.get_data());
+    return;
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::issue_parameters
 //       Access: Public
-//  Description: This function is to be called whenever
-//               the RenderState has changed, but the ShaderExpansion
-//               has not changed.  It loads the new input parameters
-//               into the already-bound shader.
+//  Description: This function gets called whenever the RenderState
+//               has changed, but the ShaderExpansion itself has not
+//               changed.  It loads new parameters into the
+//               already-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 issue_parameters(GSG *gsg)
@@ -304,24 +352,27 @@ issue_parameters(GSG *gsg)
       cgGLSetMatrixParameterfc(_cg_npbind[i].parameter, dat);
     }
     
+    // Pass in system parameters
+    for (int i=0; i<(int)_cg_auto_param.size(); i++) {
+      issue_cg_auto_bind(_cg_auto_param[i], gsg);
+    }
+    
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
-    for (int i=0; i<(int)_cg_parameter_bind.size(); i++)
+    for (int i=0; i<(int)_cg_parameter_bind.size(); i++) {
       bind_cg_transform(_cg_parameter_bind[i], gsg);
-
-    // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
-    for (int i=0; i<(int)_cg_transform_bind.size(); i++)
-      bind_cg_transform(_cg_transform_bind[i], gsg);
+    }
   }
 #endif
+  issue_transform(gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::issue_transform
 //       Access: Public
-//  Description: This function is to be called whenever
-//               the external_transform has changed, but the
-//               ShaderExpansion itself has not changed.  It loads the 
-//               new transform into the already-bound shader.
+//  Description: This function gets called whenever the RenderState
+//               or the TransformState has changed, but the
+//               ShaderExpansion itself has not changed.  It loads
+//               new parameters into the already-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 issue_transform(GSG *gsg)
@@ -329,14 +380,13 @@ issue_transform(GSG *gsg)
 #ifdef HAVE_CGGL
   if (_cg_context != 0) {
     // Pass in modelview, projection, etc.
-    for (int i=0; i<(int)_cg_autobind.size(); i++)
-      cgGLSetStateMatrixParameter(_cg_autobind[i].parameter,
-                                  _cg_autobind[i].matrix,
-                                  _cg_autobind[i].orient);
-    
+    for (int i=0; i<(int)_cg_auto_trans.size(); i++) {
+      issue_cg_auto_bind(_cg_auto_trans[i], gsg);
+    }
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
-    for (int i=0; i<(int)_cg_transform_bind.size(); i++)
+    for (int i=0; i<(int)_cg_transform_bind.size(); i++) {
       bind_cg_transform(_cg_transform_bind[i], gsg);
+    }
   }
 #endif
 }
@@ -513,13 +563,14 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 void CLP(ShaderContext)::
 bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 {
+  const float *data;
   CPT(TransformState) src;
   CPT(TransformState) rel;
   
   if (stb.src_name == InternalName::get_camera()) {
     src = TransformState::make_identity();
   } else if (stb.src_name == InternalName::get_view()) {
-    src = gsg->_cs_transform;
+    src = gsg->_inv_cs_transform;
   } else if (stb.src_name == InternalName::get_model()) {
     src = gsg->get_transform();
   } else if (stb.src_name == InternalName::get_world()) {
@@ -536,8 +587,8 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 
   if (stb.rel_name == InternalName::get_camera()) {
     rel = TransformState::make_identity();
-  } else if (stb.src_name == InternalName::get_view()) {
-    rel = gsg->_cs_transform;
+  } else if (stb.rel_name == InternalName::get_view()) {
+    rel = gsg->_inv_cs_transform;
   } else if (stb.rel_name == InternalName::get_model()) {
     rel = gsg->get_transform();
   } else if (stb.rel_name == InternalName::get_world()) {
@@ -553,13 +604,39 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   }
   
   CPT(TransformState) total = rel->invert_compose(src);
-  const float *data = total->get_mat().get_data();
-  //  cerr << "Input for " << cgGetParameterName(stb.parameter) << " is\n" << 
+
+  //  data = src->get_mat().get_data();
+  //  cerr << "Src for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+  //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+  //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+  //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  //  data = rel->get_mat().get_data();
+  //  cerr << "Rel for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+  //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+  //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+  //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  //  data = total->get_mat().get_data();
+  //  cerr << "Total for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+  //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+  //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+  //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  //  data = gsg->_cs_transform->get_mat().get_data();
+  //  cerr << "cs_transform is\n" <<
+  //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+  //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+  //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+  //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  //  data = gsg->_internal_transform->get_mat().get_data();
+  //  cerr << "internal_transform is\n" <<
   //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
   //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
   //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
   //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 
+  data = total->get_mat().get_data();
   switch (stb.trans_piece) {
   case SHADER_data_matrix: cgGLSetMatrixParameterfc(stb.parameter, data); break;
   case SHADER_data_transpose:  cgGLSetMatrixParameterfr(stb.parameter, data); break;
@@ -894,9 +971,11 @@ compile_cg_parameter(CGparameter p)
     bind.parameter = p;
     
     if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_matrix; }
+    else if (pieces[0]=="vstrans") { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="cstrans") { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="mstrans") { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="wspos")   { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_row3; }
+    else if (pieces[0]=="vspos")   { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_row3; }
     else if (pieces[0]=="cspos")   { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_row3; }
     else if (pieces[0]=="mspos")   { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_row3; }
 
@@ -926,20 +1005,49 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderAutoBind bind;
     bind.parameter = p;
-    if      (pieces[1] == "modelview")  bind.matrix = CG_GL_MODELVIEW_MATRIX;
-    else if (pieces[1] == "projection") bind.matrix = CG_GL_PROJECTION_MATRIX;
-    else if (pieces[1] == "texmatrix")  bind.matrix = CG_GL_TEXTURE_MATRIX;
-    else if (pieces[1] == "modelproj")  bind.matrix = CG_GL_MODELVIEW_PROJECTION_MATRIX;
+    bind.value = 0;
+    if      (pieces[1] == "modelview")  bind.value += 0;
+    else if (pieces[1] == "projection") bind.value += 4;
+    else if (pieces[1] == "texmatrix")  bind.value += 8;
+    else if (pieces[1] == "modelproj")  bind.value += 12;
     else {
       errchk_cg_output(p, "unrecognized matrix name");
       return false;
     }
-    if      (pieces[0]=="mat") bind.orient = CG_GL_MATRIX_IDENTITY;
-    else if (pieces[0]=="inv") bind.orient = CG_GL_MATRIX_INVERSE;
-    else if (pieces[0]=="tps") bind.orient = CG_GL_MATRIX_TRANSPOSE;
-    else if (pieces[0]=="itp") bind.orient = CG_GL_MATRIX_INVERSE_TRANSPOSE;
-    _cg_autobind.push_back(bind);
+    if      (pieces[0]=="mat") bind.value += 0;
+    else if (pieces[0]=="inv") bind.value += 1;
+    else if (pieces[0]=="tps") bind.value += 2;
+    else if (pieces[0]=="itp") bind.value += 3;
+    _cg_auto_trans.push_back(bind);
     return true;
+  }
+
+  if (pieces[0] == "sys") {
+    if ((!errchk_cg_parameter_words(p,2)) ||
+        (!errchk_cg_parameter_direction(p, CG_IN)) ||
+        (!errchk_cg_parameter_variance(p, CG_UNIFORM))) {
+      return false;    
+    }
+    ShaderAutoBind bind;
+    bind.parameter = p;
+    if (pieces[1] == "pixelsize") {
+      if (!errchk_cg_parameter_type(p, CG_FLOAT2)) {
+        return false;
+      }
+      bind.value = SIC_sys_pixelsize;
+      _cg_auto_param.push_back(bind);
+      return true;
+    }
+    if (pieces[1] == "windowsize") {
+      if (!errchk_cg_parameter_type(p, CG_FLOAT2)) {
+        return false;
+      }
+      bind.value = SIC_sys_windowsize;
+      _cg_auto_param.push_back(bind);
+      return true;
+    }
+    errchk_cg_output(p,"unknown system parameter");
+    return false;
   }
 
   if (pieces[0] == "tex") {

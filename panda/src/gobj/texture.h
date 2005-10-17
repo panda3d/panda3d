@@ -289,12 +289,14 @@ public:
 
   static PT(Texture) make_texture();
 
+public:
+  static int up_to_power_2(int value);
+  static int down_to_power_2(int value);
+
 protected:
   virtual void reconsider_dirty();
   virtual void reload_ram_image();
 
-  static int up_to_power_2(int value);
-  static int down_to_power_2(int value);
   bool reconsider_z_size(int z);
   bool reconsider_image_properties(int x_size, int y_size, int num_components,
 				   ComponentType component_type, int z);
