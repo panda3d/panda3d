@@ -1,5 +1,9 @@
-#ifndef __glext_h_
-#define __glext_h_
+/* Additions by drose to re-include this glext.h even if an older
+   version has previously been included. */
+#if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 21
+  #undef GL_GLEXT_VERSION
+#endif
+#ifndef GL_GLEXT_VERSION
 
 #ifdef __cplusplus
 extern "C" {
