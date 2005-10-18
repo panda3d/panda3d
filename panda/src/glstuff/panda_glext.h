@@ -1,6 +1,6 @@
 /* Additions by drose to re-include this glext.h even if an older
    version has previously been included. */
-#if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 21
+#if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 29
   #undef GL_GLEXT_VERSION
 #endif
 #ifndef GL_GLEXT_VERSION
