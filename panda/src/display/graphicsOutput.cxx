@@ -92,6 +92,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _inverted = window_inverted;
   _delete_flag = false;
   _texture_card = 0;
+  _trigger_copy = false;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
   if ((mode & FrameBufferProperties::FM_buffer) == FrameBufferProperties::FM_single_buffer) {
@@ -219,17 +220,13 @@ GraphicsOutput::
 //               render-to-a-texture mode.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
-  MutexHolder holder(_lock);
-
-  if (to_ram) {
-    _rtm_mode = RTM_copy_ram;
-  } else if (allow_bind) {
-    _rtm_mode = RTM_bind_or_copy;
-  } else {
-    _rtm_mode = RTM_copy_texture;
+setup_render_texture(Texture *tex, RenderTextureMode mode) {
+  if (mode == RTM_none) {
+    return;
   }
-  
+  MutexHolder holder(_lock);
+  _rtm_mode = mode;
+
   if (tex == (Texture *)NULL) {
     _texture = new Texture(get_name());
     _texture->set_wrap_u(Texture::WM_clamp);
@@ -248,6 +245,22 @@ setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::setup_render_texture
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
+  if (to_ram) {
+    setup_render_texture(tex, RTM_copy_ram);
+  } else if (allow_bind) {
+    setup_render_texture(tex, RTM_bind_or_copy);
+  } else {
+    setup_render_texture(tex, RTM_copy_texture);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -912,7 +925,7 @@ begin_frame() {
 
   // Okay, we already have a GSG, so activate it.
   make_current();
-
+  
   if (_rtm_mode == RTM_bind_or_copy) {
     // Release the texture so we can render into the frame buffer.
     _gsg->framebuffer_release_texture(this, get_texture());
@@ -991,7 +1004,11 @@ end_frame() {
       }
     }
     
-    if (_rtm_mode == RTM_copy_texture) {
+    if ((_rtm_mode == RTM_copy_texture)||
+        (_rtm_mode == RTM_copy_ram)||
+        ((_rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
+        ((_rtm_mode == RTM_triggered_copy_ram)&&(_trigger_copy))) {
+      _trigger_copy = false;
       if (display_cat.is_debug()) {
         display_cat.debug()
           << "Copying texture for " << get_name() << " at frame end.\n";
@@ -1000,7 +1017,7 @@ end_frame() {
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
       if (_cube_map_dr != (DisplayRegion *)NULL) {
-        if (_rtm_mode == RTM_copy_ram) {
+        if ((_rtm_mode == RTM_copy_ram)||(_rtm_mode == RTM_triggered_copy_ram)) {
           _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
                                         _cube_map_dr, buffer);
         } else {
@@ -1008,7 +1025,7 @@ end_frame() {
                                             _cube_map_dr, buffer);
         }
       } else {
-        if (_rtm_mode == RTM_copy_ram) {
+        if ((_rtm_mode == RTM_copy_ram)||(_rtm_mode == RTM_triggered_copy_ram)) {
           _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
                                         _default_display_region, buffer);
         } else {

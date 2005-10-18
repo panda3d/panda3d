@@ -242,6 +242,18 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::trigger_copy
+//       Access: Published
+//  Description: When the GraphicsOutput is in triggered copy mode,
+//               this function triggers the copy (at the end of the
+//               next frame).
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+trigger_copy()  {
+  _trigger_copy = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_display_region
 //       Access: Published
 //  Description: Creates a new DisplayRegion that covers the entire

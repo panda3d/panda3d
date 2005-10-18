@@ -69,6 +69,15 @@ private:
   void operator = (const GraphicsOutput &copy);
 
 PUBLISHED:
+  enum RenderTextureMode {
+    RTM_none,
+    RTM_bind_or_copy,
+    RTM_copy_texture,
+    RTM_copy_ram,
+    RTM_triggered_copy_texture,
+    RTM_triggered_copy_ram,
+  };
+
   virtual ~GraphicsOutput();
 
   INLINE GraphicsStateGuardian *get_gsg() const;
@@ -77,8 +86,9 @@ PUBLISHED:
 
   INLINE bool has_texture() const;  
   INLINE Texture *get_texture() const;  
+  void setup_render_texture(Texture *tex, RenderTextureMode mode);
   void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
-
+  
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -99,6 +109,8 @@ PUBLISHED:
   void set_sort(int sort);
   INLINE int get_sort() const;
 
+  INLINE void trigger_copy();
+  
   INLINE DisplayRegion *make_display_region();
   INLINE DisplayRegion *make_display_region(float l, float r,
                                             float b, float t);
@@ -169,12 +181,6 @@ public:
   virtual void process_events();
   
 protected:
-  enum RenderTextureMode {
-    RTM_none,
-    RTM_bind_or_copy,
-    RTM_copy_texture,
-    RTM_copy_ram,
-  };
 
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
@@ -186,7 +192,8 @@ protected:
   int _cube_map_index;
   DisplayRegion *_cube_map_dr;
   PT(Geom) _texture_card;
-
+  bool _trigger_copy;
+  
 private:
   DisplayRegion *add_display_region(DisplayRegion *display_region);
 
