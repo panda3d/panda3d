@@ -1054,7 +1054,7 @@ def CompileBisonMSVC7(pre, dsth, dstc, wobj, ipath, opts, src):
 
 def CompileBisonLINUXA(pre, dsth, dstc, wobj, ipath, opts, src):
     ifile = os.path.basename(src)
-    oscmd("bison -y -d -obuilt/tmp/"+src+".c -p "+pre+" "+src)
+    oscmd("bison -y -d -obuilt/tmp/"+ifile+".c -p "+pre+" "+src)
     CopyFile(dstc, "built/tmp/"+ifile+".c")
     CopyFile(dsth, "built/tmp/"+ifile+".h")
     CompileCxxLINUXA(wobj,dstc,ipath,opts)
