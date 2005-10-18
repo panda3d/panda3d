@@ -140,7 +140,7 @@ class Particles(ParticleSystem):
             self.renderer = SparkleParticleRenderer()
         elif (type == "SpriteParticleRenderer"):
             self.renderer = SpriteParticleRendererExt.SpriteParticleRendererExt()
-            self.renderer.setTextureFromFile()
+            # self.renderer.setTextureFromFile()
         else:
             print "unknown renderer type: %s" % type
             return None
