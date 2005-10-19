@@ -428,12 +428,12 @@ class DistributedObjectAI(DirectObject):
     def beginBarrier(self, name, avIds, timeout, callback):
         # Begins waiting for a set of avatars.  When all avatars in
         # the list have reported back in or the callback has expired,
-        # calls the indicated callback with the list of toons that
+        # calls the indicated callback with the list of avatars that
         # made it through.  There may be multiple barriers waiting
         # simultaneously on different lists of avatars, although they
         # should have different names.
 
-        from toontown.ai import ToonBarrier
+        from otp.ai import Barrier
         context = self.__nextBarrierContext
         # We assume the context number is passed as a uint16.
         self.__nextBarrierContext = (self.__nextBarrierContext + 1) & 0xffff
@@ -441,7 +441,7 @@ class DistributedObjectAI(DirectObject):
         assert(self.notify.debug('beginBarrier(%s, %s, %s, %s)' % (context, name, avIds, timeout)))
 
         if avIds:
-            barrier = ToonBarrier.ToonBarrier(
+            barrier = Barrier.Barrier(
                 name, self.uniqueName(name), avIds, timeout,
                 doneFunc = PythonUtil.Functor(self.__barrierCallback, context, callback))
             self.__barriers[context] = barrier
@@ -460,9 +460,9 @@ class DistributedObjectAI(DirectObject):
         # and the avIds waiting for them.
         data = []
         for context, barrier in self.__barriers.items():
-            toons = barrier.pendingToons
-            if toons:
-                data.append((context, barrier.name, toons))
+            avatars = barrier.pendingAvatars
+            if avatars:
+                data.append((context, barrier.name, avatars))
         return data
 
     def ignoreBarrier(self, context):
