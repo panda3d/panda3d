@@ -88,13 +88,13 @@ class InputState(DirectObject.DirectObject):
     
     def isSet(self, name):
         """
-        returns 0, 1, or None (if we're not tracking it at all)
+        returns 0, 1
         """
         #assert(self.debugPrint("isSet(name=%s)"%(name)))
         r = self.forcing.get(name)
         if r is not None:
             return r
-        return self.state.get(name)
+        return self.state.get(name, 0)
     
     def debugPrint(self, message):
         """for debugging"""
