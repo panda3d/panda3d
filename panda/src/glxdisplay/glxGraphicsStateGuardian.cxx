@@ -56,6 +56,7 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties,
   
   _libgl_handle = NULL;
   _checked_get_proc_address = false;
+  _glxGetProcAddress = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
