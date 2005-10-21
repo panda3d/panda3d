@@ -133,7 +133,7 @@ PUBLISHED:
   INLINE bool has_nonzero_shear() const;
   INLINE bool has_mat() const;
 
-  INLINE const LVecBase3f &get_pos() const;
+  INLINE const LPoint3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LQuaternionf &get_quat() const;
   INLINE const LVecBase3f &get_scale() const;
@@ -290,7 +290,8 @@ private:
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
   };
-  LVecBase3f _pos, _hpr, _scale, _shear;
+  LPoint3f _pos;
+  LVecBase3f _hpr, _scale, _shear;
   LQuaternionf _quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;

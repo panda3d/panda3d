@@ -452,7 +452,7 @@ has_mat() const {
 //  Description: Returns the pos component of the transform.  It is an
 //               error to call this if has_pos() returned false.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase3f &TransformState::
+INLINE const LPoint3f &TransformState::
 get_pos() const {
   check_components();
   nassertr(has_pos(), _pos);

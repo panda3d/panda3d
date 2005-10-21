@@ -22,8 +22,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
-CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-                 const LPoint3f &c) {
+CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
+                 const LVecBase3f &c) {
   LPoint3f array[3];
   array[0] = a;
   array[1] = b;
@@ -37,8 +37,8 @@ CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
-CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-                 const LPoint3f &c, const LPoint3f &d) {
+CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
+                 const LVecBase3f &c, const LVecBase3f &d) {
   LPoint3f array[4];
   array[0] = a;
   array[1] = b;

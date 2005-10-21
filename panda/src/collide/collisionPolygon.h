@@ -35,10 +35,10 @@ class GeomNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionPolygon : public CollisionPlane {
 PUBLISHED:
-  INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-                          const LPoint3f &c);
-  INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-                          const LPoint3f &c, const LPoint3f &d);
+  INLINE CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
+                          const LVecBase3f &c);
+  INLINE CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
+                          const LVecBase3f &c, const LVecBase3f &d);
   INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
 
 private:
