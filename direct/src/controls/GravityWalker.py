@@ -521,8 +521,11 @@ class GravityWalker(DirectObject.DirectObject):
                 # rotMat is the rotation matrix corresponding to
                 # our previous heading.
                 rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                contact = self.lifter.getContactNormal()
-                forward = contact.cross(Vec3.right())
+                if self.isAirborne:
+                    forward = Vec3.forward()
+                else:
+                    contact = self.lifter.getContactNormal()
+                    forward = contact.cross(Vec3.right())
                 forward = Vec3(rotMat.xform(forward))
                 # Consider commenting out this normalize.  If you do so
                 # then going up and down slops is a touch slower and
@@ -533,8 +536,11 @@ class GravityWalker(DirectObject.DirectObject):
                 forward.normalize()
                 self.vel=Vec3(forward * distance)
                 if slideDistance:
-                    right = forward.cross(contact)
-                    right = Vec3(rotMat.xform(Vec3.right()))
+                    if self.isAirborne:
+                        right = Vec3.right()
+                    else:
+                        right = forward.cross(contact)
+                    right = Vec3(rotMat.xform(right))
                     # See note above for forward.normalize()
                     right.normalize()
                     self.vel=Vec3(self.vel + right * slideDistance)
