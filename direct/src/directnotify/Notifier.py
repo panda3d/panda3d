@@ -124,7 +124,7 @@ class Notifier:
     def warning(self, warningString):
         """warning(self, string)
         Issue the warning message if warn flag is on"""
-        if (self.__warning):
+        if self.__warning:
             string = (self.getTime() + self.__name + '(warning): ' + warningString)
             self.__log(string)
             self.__print(string)
@@ -147,7 +147,7 @@ class Notifier:
         """
         Issue the debug message if debug flag is on
         """
-        if (self.__debug):
+        if self.__debug:
             string = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(string)
             self.__print(string)
@@ -163,14 +163,14 @@ class Notifier:
         """
         Return whether the printing of debug messages is on or off
         """
-        return(self.__debug)
+        return self.__debug
 
     # info funcs
     def info(self, infoString):
         """
         Print the given informational string, if info flag is on
         """
-        if (self.__info):
+        if self.__info:
             string = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(string)
             self.__print(string)
@@ -180,7 +180,7 @@ class Notifier:
         """
         Return whether the printing of info messages is on or off
         """
-        return(self.__info)
+        return self.__info
 
     def setInfo(self, bool):
         """
@@ -193,7 +193,7 @@ class Notifier:
         """
         Determine whether to send informational message to the logger
         """
-        if (self.__logging):
+        if self.__logging:
             self.__logger.log(logEntry)
 
     def getLogging(self):
@@ -225,7 +225,7 @@ class Notifier:
         the function call (with parameters).
         """
         #f.f_locals['self'].__init__.im_class.__name__
-        if (self.__debug):
+        if self.__debug:
             state = ''
             doId = ''
             if obj is not None:
@@ -265,7 +265,7 @@ class Notifier:
         call followed by the notifier category and
         the function call (with parameters).
         """
-        if (self.__debug):
+        if self.__debug:
             string = ":%s:%s \"%s\" %s"%(
                 self.getOnlyTime(),
                 self.__name,
