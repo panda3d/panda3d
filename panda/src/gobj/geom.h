@@ -96,11 +96,9 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
-  // Temporarily virtual.
   virtual void transform_vertices(const LMatrix4f &mat);
-
-  // Temporarily virtual.
   virtual bool check_valid() const;
+  bool check_valid(const GeomVertexData *vertex_data) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

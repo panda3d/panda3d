@@ -593,7 +593,7 @@ get_num_bytes() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::transform_vertices
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Applies the indicated transform to all of the
 //               vertices in the Geom.  If the Geom happens to share a
 //               vertex table with another Geom, this operation will
@@ -645,6 +645,30 @@ check_valid() const {
        pi != cdata->_primitives.end();
        ++pi) {
     if (!(*pi)->check_valid(cdata->_data)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::check_valid
+//       Access: Published
+//  Description: Verifies that the all of the primitives within the
+//               geom reference vertices that actually exist within
+//               the indicated GeomVertexData.  Returns true if the
+//               geom appears to be valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+check_valid(const GeomVertexData *vertex_data) const {
+  CDReader cdata(_cycler);
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi)->check_valid(vertex_data)) {
       return false;
     }
   }

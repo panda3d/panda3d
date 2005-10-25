@@ -421,6 +421,45 @@ add_geoms_from(const GeomNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::set_geom
+//       Access: Public
+//  Description: Replaces the nth Geom of the node with a new pointer.
+//               There must already be a Geom in this slot.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+set_geom(int n, Geom *geom) {
+  nassertv(geom != (Geom *)NULL);
+  nassertv(geom->check_valid());
+
+  CDWriter cdata(_cycler);
+  nassertv(n >= 0 && n < (int)cdata->_geoms.size());
+  cdata->_geoms[n]._geom = geom;
+
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::check_valid
+//       Access: Published
+//  Description: Verifies that the each Geom within the GeomNode
+//               reference vertices that actually exist within its
+//               GeomVertexData.  Returns true if the GeomNode appears
+//               to be valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomNode::
+check_valid() const {
+  int num_geoms = get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    const Geom *geom = get_geom(i);
+    if (!geom->check_valid()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::unify
 //       Access: Published
 //  Description: Attempts to unify all of the Geoms contained within

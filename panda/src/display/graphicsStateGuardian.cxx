@@ -895,11 +895,12 @@ finish_decal() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_draw_primitives(const Geom *, const GeomMunger *munger,
+begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
                       const GeomVertexData *data) {
   _munger = munger;
   _vertex_data = data;
 
+  nassertr(geom->check_valid(data), false);
   return _vertex_data->has_vertex();
 }
 

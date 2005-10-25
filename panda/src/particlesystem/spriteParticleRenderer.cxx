@@ -530,6 +530,8 @@ init_geoms() {
       }
     }
   }
+
+  nassertv(render_node->check_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -726,9 +728,21 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     }
   }
 
+  int n = 0;
+  GeomNode *render_node = get_render_node();
+
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       _sprites[i][j]->clear_vertices();
+
+      // We have to reassign the GeomVertexData and GeomPrimitive to
+      // the Geom, and the Geom to the GeomNode, in case it got
+      // flattened away.
+      _sprite_primitive[i][j]->set_primitive(0, _sprites[i][j]);
+      _sprite_primitive[i][j]->set_vertex_data(_vdata[i][j]);
+
+      render_node->set_geom(n, _sprite_primitive[i][j]);
+      ++n;
     }
   }
 
@@ -750,11 +764,13 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
+      nassertv(_sprite_primitive[i][j]->check_valid());
       _sprite_primitive[i][j]->set_bound(BoundingSphere(aabb_center, radius));
     }
   }
 
   get_render_node()->mark_bound_stale();
+  nassertv(render_node->check_valid());
   _animation_removed = false;
 }
 

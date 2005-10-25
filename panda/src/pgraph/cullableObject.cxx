@@ -54,6 +54,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   if (_geom != (Geom *)NULL) {
     _munger = munger;
     _munged_data = _geom->get_vertex_data();
+    nassertv(_geom->check_valid(_munged_data));
 
     int geom_rendering = _geom->get_geom_rendering();
     geom_rendering = _state->get_geom_rendering(geom_rendering);
@@ -305,159 +306,161 @@ munge_points_to_quads(const CullTraverser *traverser) {
   int num_primitives = _geom->get_num_primitives();
   for (int pi = 0; pi < num_primitives; ++pi) {
     const GeomPrimitive *primitive = _geom->get_primitive(pi);
+    if (primitive->get_num_vertices() != 0) {
+      // We must first convert all of the points to eye space.
+      int num_points = primitive->get_max_vertex() + 1;
 
-    // We must first convert all of the points to eye space.
-    int num_points = primitive->get_max_vertex() + 1;
-    int num_vertices = primitive->get_num_vertices();
-    PointData *points = (PointData *)alloca(num_points * sizeof(PointData));
-    unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
-    unsigned int *vertices_end = vertices + num_vertices;
+      int num_vertices = primitive->get_num_vertices();
+      PointData *points = (PointData *)alloca(num_points * sizeof(PointData));
+      unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
+      unsigned int *vertices_end = vertices + num_vertices;
 
-    if (primitive->is_indexed()) {
-      GeomVertexReader index(primitive->get_vertices(), 0);
+      if (primitive->is_indexed()) {
+	GeomVertexReader index(primitive->get_vertices(), 0);
+	for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
+	  // Get the point in eye-space coordinates.
+	  unsigned int v = index.get_data1i();
+	  nassertv(v < (unsigned int)num_points);
+	  (*vi) = v;
+	  vertex.set_row(v);
+	  points[v]._eye = modelview.xform_point(vertex.get_data3f());
+	  points[v]._dist = gsg->compute_distance_to(points[v]._eye);
+	}
+      } else {
+	// Nonindexed case.
+	unsigned int first_vertex = primitive->get_first_vertex();
+	for (int i = 0; i < num_vertices; ++i) {
+	  unsigned int v = i + first_vertex;
+	  nassertv(v < (unsigned int)num_points);
+	  vertices[i] = v;
+	  vertex.set_row(v);
+	  points[v]._eye = modelview.xform_point(vertex.get_data3f());
+	  points[v]._dist = gsg->compute_distance_to(points[v]._eye);
+	}
+      }
+  
+      // Now sort the points in order from back-to-front so they will
+      // render properly with transparency, at least with each other.
+      sort(vertices, vertices_end, SortPoints(points));
+  
+      // Go through the points, now in sorted order, and generate a pair
+      // of triangles for each one.  We generate indexed triangles
+      // instead of two-triangle strips, since this seems to be
+      // generally faster on PC hardware (otherwise, we'd have to nearly
+      // double the vertices to stitch all the little triangle strips
+      // together).
+      PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
+
       for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
-        // Get the point in eye-space coordinates.
-        unsigned int v = index.get_data1i();
-        nassertv(v < (unsigned int)num_points);
-        (*vi) = v;
-        vertex.set_row(v);
-        points[v]._eye = modelview.xform_point(vertex.get_data3f());
-        points[v]._dist = gsg->compute_distance_to(points[v]._eye);
-      }
-    } else {
-      // Nonindexed case.
-      unsigned int first_vertex = primitive->get_first_vertex();
-      for (int i = 0; i < num_vertices; ++i) {
-        unsigned int v = i + first_vertex;
-        nassertv(v < (unsigned int)num_points);
-        vertices[i] = v;
-        vertex.set_row(i + first_vertex);
-        points[v]._eye = modelview.xform_point(vertex.get_data3f());
-        points[v]._dist = gsg->compute_distance_to(points[v]._eye);
-      }
-    }
-  
-    // Now sort the points in order from back-to-front so they will
-    // render properly with transparency, at least with each other.
-    sort(vertices, vertices_end, SortPoints(points));
-  
-    // Go through the points, now in sorted order, and generate a pair
-    // of triangles for each one.  We generate indexed triangles
-    // instead of two-triangle strips, since this seems to be
-    // generally faster on PC hardware (otherwise, we'd have to nearly
-    // double the vertices to stitch all the little triangle strips
-    // together).
-    PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
-
-    for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
-      // The point in eye coordinates.
-      const LPoint3f &eye = points[*vi]._eye;
+	// The point in eye coordinates.
+	const LPoint3f &eye = points[*vi]._eye;
     
-      // The point in clip coordinates.
-      LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * projection;
+	// The point in clip coordinates.
+	LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * projection;
 
-      if (has_size) {
-        size.set_row(*vi);
-        point_size = size.get_data1f();
-      }
+	if (has_size) {
+	  size.set_row(*vi);
+	  point_size = size.get_data1f();
+	}
 
-      float scale_y = point_size;
-      if (perspective) {
-        // Perspective-sized points.  Here point_size is the point's
-        // height in 3-d units.  To arrange that, we need to figure
-        // out the appropriate scaling factor based on the current
-        // viewport and projection matrix.
-        float scale = _modelview_transform->get_scale()[1];
-        LVector3f height(0.0f, point_size * scale, scale);
-        height = height * height_projection;
-        scale_y = height[1] * viewport_height;
+	float scale_y = point_size;
+	if (perspective) {
+	  // Perspective-sized points.  Here point_size is the point's
+	  // height in 3-d units.  To arrange that, we need to figure
+	  // out the appropriate scaling factor based on the current
+	  // viewport and projection matrix.
+	  float scale = _modelview_transform->get_scale()[1];
+	  LVector3f height(0.0f, point_size * scale, scale);
+	  height = height * height_projection;
+	  scale_y = height[1] * viewport_height;
 
-        // We should then divide the radius by the distance from the
-        // camera plane, to emulate the glPointParameters() behavior.
-        if (!lens->is_orthographic()) {
-          scale_y /= gsg->compute_distance_to(eye);
-        }
-      }
+	  // We should then divide the radius by the distance from the
+	  // camera plane, to emulate the glPointParameters() behavior.
+	  if (!lens->is_orthographic()) {
+	    scale_y /= gsg->compute_distance_to(eye);
+	  }
+	}
       
-      // Also factor in the homogeneous scale for being in clip
-      // coordinates still.
-      scale_y *= p4[3];
+	// Also factor in the homogeneous scale for being in clip
+	// coordinates still.
+	scale_y *= p4[3];
 
-      float scale_x = scale_y;
-      if (has_aspect_ratio) {
-        aspect_ratio.set_row(*vi);
-        scale_x *= aspect_ratio.get_data1f();
+	float scale_x = scale_y;
+	if (has_aspect_ratio) {
+	  aspect_ratio.set_row(*vi);
+	  scale_x *= aspect_ratio.get_data1f();
+	}
+
+	// Define the first two corners based on the scales in X and Y.
+	LPoint2f c0(scale_x, scale_y);
+	LPoint2f c1(-scale_x, scale_y);
+
+	if (has_rotate) { 
+	  // If we have a rotate factor, apply it to those two corners.
+	  rotate.set_row(*vi);
+	  float r = rotate.get_data1f();
+	  LMatrix3f mat = LMatrix3f::rotate_mat(r);
+	  c0 = c0 * mat;
+	  c1 = c1 * mat;
+	}
+
+	// Finally, scale the corners in their newly-rotated position,
+	// to compensate for the aspect ratio of the viewport.
+	float rx = 1.0f / viewport_width;
+	float ry = 1.0f / viewport_height;
+	c0.set(c0[0] * rx, c0[1] * ry);
+	c1.set(c1[0] * rx, c1[1] * ry);
+
+	new_vertex.add_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
+	new_vertex.add_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
+	new_vertex.add_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
+	new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
+
+	if (has_normal) {
+	  normal.set_row(*vi);
+	  Normalf c = render_transform.xform_vec(normal.get_data3f());
+	  new_normal.add_data3f(c);
+	  new_normal.add_data3f(c);
+	  new_normal.add_data3f(c);
+	  new_normal.add_data3f(c);
+	}
+	if (has_color) {
+	  color.set_row(*vi);
+	  const Colorf &c = color.get_data4f();
+	  new_color.add_data4f(c);
+	  new_color.add_data4f(c);
+	  new_color.add_data4f(c);
+	  new_color.add_data4f(c);
+	}
+	if (sprite_texcoord) {
+	  new_texcoord.add_data2f(1.0f, 0.0f);
+	  new_texcoord.add_data2f(0.0f, 0.0f);
+	  new_texcoord.add_data2f(1.0f, 1.0f);
+	  new_texcoord.add_data2f(0.0f, 1.0f);
+	} else if (has_texcoord) {
+	  texcoord.set_row(*vi);
+	  const LVecBase4f &c = texcoord.get_data4f();
+	  new_texcoord.add_data4f(c);
+	  new_texcoord.add_data4f(c);
+	  new_texcoord.add_data4f(c);
+	  new_texcoord.add_data4f(c);
+	}
+
+	new_primitive->add_vertex(new_vi);
+	new_primitive->add_vertex(new_vi + 1);
+	new_primitive->add_vertex(new_vi + 2);
+	new_primitive->close_primitive();
+
+	new_primitive->add_vertex(new_vi + 2);
+	new_primitive->add_vertex(new_vi + 1);
+	new_primitive->add_vertex(new_vi + 3);
+	new_primitive->close_primitive();
+
+	new_vi += 4;
       }
 
-      // Define the first two corners based on the scales in X and Y.
-      LPoint2f c0(scale_x, scale_y);
-      LPoint2f c1(-scale_x, scale_y);
-
-      if (has_rotate) { 
-       // If we have a rotate factor, apply it to those two corners.
-        rotate.set_row(*vi);
-        float r = rotate.get_data1f();
-        LMatrix3f mat = LMatrix3f::rotate_mat(r);
-        c0 = c0 * mat;
-        c1 = c1 * mat;
-      }
-
-      // Finally, scale the corners in their newly-rotated position,
-      // to compensate for the aspect ratio of the viewport.
-      float rx = 1.0f / viewport_width;
-      float ry = 1.0f / viewport_height;
-      c0.set(c0[0] * rx, c0[1] * ry);
-      c1.set(c1[0] * rx, c1[1] * ry);
-
-      new_vertex.add_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
-      new_vertex.add_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
-      new_vertex.add_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
-      new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
-
-      if (has_normal) {
-        normal.set_row(*vi);
-        Normalf c = render_transform.xform_vec(normal.get_data3f());
-        new_normal.add_data3f(c);
-        new_normal.add_data3f(c);
-        new_normal.add_data3f(c);
-        new_normal.add_data3f(c);
-      }
-      if (has_color) {
-        color.set_row(*vi);
-        const Colorf &c = color.get_data4f();
-        new_color.add_data4f(c);
-        new_color.add_data4f(c);
-        new_color.add_data4f(c);
-        new_color.add_data4f(c);
-      }
-      if (sprite_texcoord) {
-        new_texcoord.add_data2f(1.0f, 0.0f);
-        new_texcoord.add_data2f(0.0f, 0.0f);
-        new_texcoord.add_data2f(1.0f, 1.0f);
-        new_texcoord.add_data2f(0.0f, 1.0f);
-      } else if (has_texcoord) {
-        texcoord.set_row(*vi);
-        const LVecBase4f &c = texcoord.get_data4f();
-        new_texcoord.add_data4f(c);
-        new_texcoord.add_data4f(c);
-        new_texcoord.add_data4f(c);
-        new_texcoord.add_data4f(c);
-      }
-
-      new_primitive->add_vertex(new_vi);
-      new_primitive->add_vertex(new_vi + 1);
-      new_primitive->add_vertex(new_vi + 2);
-      new_primitive->close_primitive();
-
-      new_primitive->add_vertex(new_vi + 2);
-      new_primitive->add_vertex(new_vi + 1);
-      new_primitive->add_vertex(new_vi + 3);
-      new_primitive->close_primitive();
-
-      new_vi += 4;
+      new_geom->add_primitive(new_primitive);
     }
-
-    new_geom->add_primitive(new_primitive);
   }
 
   _geom = new_geom.p();

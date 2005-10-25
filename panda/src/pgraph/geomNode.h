@@ -65,8 +65,10 @@ PUBLISHED:
 
   int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
   void add_geoms_from(const GeomNode *other);
+  void set_geom(int n, Geom *geom);
   INLINE void remove_geom(int n);
   INLINE void remove_all_geoms();
+  bool check_valid() const;
 
   void unify();
 
