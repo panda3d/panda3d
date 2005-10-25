@@ -1,6 +1,6 @@
 from pandac.PandaModules import VBase3
 from direct.task import Task
-
+#
 class Audio3DManager:
 
     def __init__(self, audio_manager, listener_target = None, root = None,
