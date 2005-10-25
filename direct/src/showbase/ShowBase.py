@@ -73,13 +73,6 @@ class ShowBase(DirectObject.DirectObject):
 
         self.wantStats = self.config.GetBool('want-pstats', 0)
 
-        self.clientSleep = self.config.GetFloat('client-sleep', 0.)
-        # magic-word override
-        self.mwClientSleep = 0.
-
-        # using 'sleep' once per frame to limit CPU usage.
-        self.sleepCycle = 0.0
-
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.
         self.exitFunc = None
@@ -257,6 +250,11 @@ class ShowBase(DirectObject.DirectObject):
 
         # Setup the window controls - handy for multiwindow applications
         self.setupWindowControls()
+
+        # Client sleep
+        sleepTime = self.config.GetFloat('client-sleep', 0.0)
+        self.clientSleep = 0.0
+        self.setSleep(sleepTime)
 
         # Start Tk and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
@@ -569,15 +567,18 @@ class ShowBase(DirectObject.DirectObject):
         Sets up a task that calls python 'sleep' every frame.  This is a simple
         way to reduce the CPU usage (and frame rate) of a panda program.
         """
-        if (self.sleepCycle == amount): return()
-        if (time == 0.0):
-          self.taskMgr.remove('sleep-cycle')
+        if (self.clientSleep == amount):
+            return
+        self.clientSleep = amount
+        if (amount == 0.0):
+            self.taskMgr.remove('clientSleep')
         else:
-          self.sleepCycle = amount
-          self.taskMgr.add(self.sleepCycleTask, 'sleep-cycle')
+            # Spawn it after igloop (at the end of each frame)
+            self.taskMgr.remove('clientSleep')
+            self.taskMgr.add(self.sleepCycleTask, 'clientSleep', priority = 55)
 
-    def sleepCycleTask(self, state):
-        time.sleep(self.sleepCycle)
+    def sleepCycleTask(self, task):
+        time.sleep(self.clientSleep)
         return Task.cont
 
     def setFrameRateMeter(self, flag):
@@ -1203,12 +1204,6 @@ class ShowBase(DirectObject.DirectObject):
             # minimized, not just the main window.  But it will do for
             # now until someone complains.
             time.sleep(0.1)
-        else:
-            # magic word overrides config
-            if self.mwClientSleep:
-                time.sleep(self.mwClientSleep)
-            elif self.clientSleep:
-                time.sleep(self.clientSleep)
 
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
