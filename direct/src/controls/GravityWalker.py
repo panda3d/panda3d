@@ -456,9 +456,9 @@ class GravityWalker(DirectObject.DirectObject):
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
-        # Use reverse speed for strafe - that should be about what you want
-        self.slideSpeed=(slideLeft and -self.avatarControlReverseSpeed or
-                         slideRight and self.avatarControlReverseSpeed)
+        # Slide speed is a scaled down version of forward speed
+        self.slideSpeed=(slideLeft and -self.avatarControlForwardSpeed or
+                         slideRight and self.avatarControlForwardSpeed) * 0.5
         self.rotationSpeed=not (slideLeft or slideRight) and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
