@@ -96,15 +96,35 @@ class BattleWalker(GravityWalker.GravityWalker):
             rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
-            self.vel=Vec3(Vec3.forward() * distance +
-                          Vec3.right() * slideDistance)
-            if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
+            if distance or slideDistance or self.priorParent != Vec3.zero():
                 # rotMat is the rotation matrix corresponding to
                 # our previous heading.
                 rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                step=(self.priorParent * dt) + rotMat.xform(self.vel)
+                if self.isAirborne:
+                    forward = Vec3.forward()
+                else:
+                    contact = self.lifter.getContactNormal()
+                    forward = contact.cross(Vec3.right())
+                    # Consider commenting out this normalize.  If you do so
+                    # then going up and down slops is a touch slower and
+                    # steeper terrain can cut the movement in half.  Without
+                    # the normalize the movement is slowed by the cosine of 
+                    # the slope (i.e. it is multiplied by the sign as a
+                    # side effect of the cross product above).
+                    forward.normalize()
+                self.vel=Vec3(forward * distance)
+                if slideDistance:
+                    if self.isAirborne:
+                        right = Vec3.right()
+                    else:
+                        right = forward.cross(contact)
+                        # See note above for forward.normalize()
+                        right.normalize()
+                    self.vel=Vec3(self.vel + (right * slideDistance))
+                self.vel=Vec3(rotMat.xform(self.vel))
+                step=self.vel + (self.priorParent * dt)
                 self.avatarNodePath.setFluidPos(Point3(
-                    self.avatarNodePath.getPos()+step))
+                        self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
         else:
             self.vel.set(0.0, 0.0, 0.0)
