@@ -233,10 +233,15 @@ class DoCollectionManager:
 
         doTable = self.getDoTable(ownerView)
 
-        #assert do.doId not in doTable
+        # make sure the object is not already present
         if do.doId in doTable:
-            print "ignoring repeated object %s" % (do.doId)
-            return
+            if ownerView:
+                tableName = 'doId2ownerView'
+            else:
+                tableName = 'doId2do'
+            self.notify.error('doId %s already in %s [%s stomping %s]' % (
+                do.doId, tableName, do.__class__.__name__,
+                doTable[do.doId].__class__.__name__))
 
         doTable[do.doId]=do
 
