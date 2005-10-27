@@ -191,9 +191,6 @@ public:
   virtual void draw_points(const GeomPoints *primitive);
   virtual void end_draw_primitives();
 
-  virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
-  virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex);
-
   INLINE bool reset_if_new();
   INLINE void mark_new();
   virtual void reset();

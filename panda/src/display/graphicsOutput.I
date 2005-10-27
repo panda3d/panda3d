@@ -61,29 +61,35 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::count_textures
+//       Access: Published
+//  Description: If the GraphicsOutput is set to render into a
+//               texture, returns the number of textures that are
+//               being rendered into.  Normally, the textures would
+//               be associated with different buffers - a color
+//               texture, a depth texture, and a stencil texture.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+count_textures() const {
+  return _textures.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::has_texture
 //       Access: Published
-//  Description: Returns true if the GraphicsOutput is set to render
-//               into a texture, or false otherwise.
-//
-//               Normally, this will only be true for a GraphicsBuffer
-//               object, and only when want_texture is passed in as
-//               true to the GraphicsBuffer constructor.  If
-//               show-buffers is true, this may also be set for a
-//               GraphicsWindow, which is in this case serving in the
-//               place of a GraphicsBuffer.
+//  Description: Returns true if the GraphicsOutput is rendering 
+//               into any textures at all.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 has_texture() const {
-  return !(_texture.is_null());
+  return (_textures.size() > 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_texture
 //       Access: Published
-//  Description: Returns the texture into which the GraphicsOutput
-//               renders, if has_texture() is true, or NULL if
-//               has_texture() is false.
+//  Description: Returns the nth texture into which the GraphicsOutput
+//               renders.  Returns NULL if there is no such texture.
 //
 //               If the texture is non-NULL, it may be applied to
 //               geometry to be rendered for any other windows or
@@ -93,8 +99,26 @@ has_texture() const {
 //               the texture will be invalid.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *GraphicsOutput::
-get_texture() const {
-  return _texture;
+get_texture(int i) const {
+  if ((i < 0) || (i >= ((int)_textures.size()))) {
+    return (Texture *)NULL;
+  }
+  return _textures[i]._texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_rtm_mode
+//       Access: Published
+//  Description: Returns the RenderTextureMode associated with the
+//               nth texture.  Returns RTM_none if there is no such
+//               texture.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput::RenderTextureMode GraphicsOutput::
+get_rtm_mode(int i) const {
+  if ((i < 0) || (i >= ((int)_textures.size()))) {
+    return RTM_none;
+  }
+  return _textures[i]._rtm_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,7 +249,12 @@ INLINE bool GraphicsOutput::
 get_delete_flag() const {
   // We only delete the window or buffer automatically when it is
   // no longer associated with a texture.
-  return _delete_flag && !_hold_texture.is_valid_pointer();
+  for (int i=0; i<(int)_hold_textures.size(); i++) {
+    if (_hold_textures[i].is_valid_pointer()) {
+      return false;
+    }
+  }
+  return _delete_flag;
 }
 
 ////////////////////////////////////////////////////////////////////

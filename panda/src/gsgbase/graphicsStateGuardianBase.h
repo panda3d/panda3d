@@ -202,10 +202,7 @@ public:
   (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
   (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
-
-  virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex)=0;
-  virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex)=0;
-
+  
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 

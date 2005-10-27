@@ -84,11 +84,14 @@ PUBLISHED:
   INLINE GraphicsPipe *get_pipe() const;
   INLINE const string &get_name() const;
 
-  INLINE bool has_texture() const;  
-  INLINE Texture *get_texture() const;  
-  void setup_render_texture(Texture *tex, RenderTextureMode mode);
+  INLINE int count_textures() const;
+  INLINE bool has_texture() const;
+  INLINE Texture *get_texture(int i=0) const;
+  INLINE RenderTextureMode get_rtm_mode(int i=0) const;
+  void clear_render_textures();
+  void add_render_texture(Texture *tex, RenderTextureMode mode);
   void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
-  
+
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -157,9 +160,12 @@ public:
   // It is an error to call any of the following methods from any
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
-  virtual bool begin_frame();
   void clear();
+  virtual bool begin_frame();
   virtual void end_frame();
+
+  virtual void begin_render_texture();
+  virtual void end_render_texture();
 
   void change_scenes(DisplayRegion *new_dr);
   virtual void select_cube_map(int cube_map_index);
@@ -182,11 +188,15 @@ public:
   
 protected:
 
+  class RenderTexture {
+  public:
+    PT(Texture) _texture;
+    RenderTextureMode _rtm_mode;
+  };
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
   string _name;
-  PT(Texture) _texture;
-  RenderTextureMode _rtm_mode;
+  pvector<RenderTexture> _textures;
   bool _flip_ready;
   bool _needs_context;
   int _cube_map_index;
@@ -211,12 +221,12 @@ protected:
   bool _inverted;
   bool _delete_flag;
 
-  // This weak pointer is used to keep track of whether the buffer's
-  // bound Texture has been deleted or not.  Until it has, we don't
-  // auto-close the buffer (since that would deallocate the memory
-  // associated with the texture).
-  WPT(Texture) _hold_texture;
-
+  // These weak pointers are used to keep track of whether the
+  // buffer's bound Texture has been deleted or not.  Until they have,
+  // we don't auto-close the buffer (since that would deallocate the
+  // memory associated with the texture).
+  pvector<WPT(Texture)> _hold_textures;
+  
 protected:
   Mutex _lock; 
   // protects _display_regions.

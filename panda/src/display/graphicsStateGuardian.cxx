@@ -972,39 +972,6 @@ end_draw_primitives() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::framebuffer_bind_to_texture
-//       Access: Public, Virtual
-//  Description: Works in lieu of copy_texture() to bind the primary
-//               render buffer of the framebuffer to the indicated
-//               texture (which must have been created via
-//               GraphicsOutput::setup_render_texture()).
-//
-//               If supported by the graphics backend, this will make
-//               the framebuffer memory directly accessible within the
-//               texture, but the frame cannot be rendered again until
-//               framebuffer_release_texture() is called.
-//
-//               The return value is true if successful, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-framebuffer_bind_to_texture(GraphicsOutput *, Texture *) {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::framebuffer_release_texture
-//       Access: Public, Virtual
-//  Description: Undoes a previous call to
-//               framebuffer_bind_to_texture().  The framebuffer may
-//               again be rendered into, and the contents of the
-//               texture is undefined.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-framebuffer_release_texture(GraphicsOutput *, Texture *) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::do_issue_color_scale
 //       Access: Public, Virtual
 //  Description:

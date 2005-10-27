@@ -64,66 +64,6 @@ wglGraphicsStateGuardian::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::framebuffer_bind_to_texture
-//       Access: Public, Virtual
-//  Description: Works in lieu of copy_texture() to bind the primary
-//               render buffer of the framebuffer to the indicated
-//               texture (which must have been created via
-//               GraphicsOutput::setup_render_texture()).
-//
-//               If supported by the graphics backend, this will make
-//               the framebuffer memory directly accessible within the
-//               texture, but the frame cannot be rendered again until
-//               framebuffer_release_texture() is called.
-//
-//               The return value is true if successful, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsStateGuardian::
-framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex) {
-  wglGraphicsBuffer *buffer;
-  DCAST_INTO_R(buffer, win, false);
-
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  GLenum target = get_texture_target(tex->get_texture_type());
-  if (target == GL_NONE) {
-    // Invalid texture, can't bind it.
-    return false;
-  }
-  GLP(BindTexture)(target, gtc->_index);
-
-  if (get_properties().is_single_buffered()) {
-    _wglBindTexImageARB(buffer->_pbuffer, WGL_FRONT_LEFT_ARB);
-  } else {
-    _wglBindTexImageARB(buffer->_pbuffer, WGL_BACK_LEFT_ARB);
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::framebuffer_release_texture
-//       Access: Public, Virtual
-//  Description: Undoes a previous call to
-//               framebuffer_bind_to_texture().  The framebuffer may
-//               again be rendered into, and the contents of the
-//               texture is undefined.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsStateGuardian::
-framebuffer_release_texture(GraphicsOutput *win, Texture *) {
-  wglGraphicsBuffer *buffer;
-  DCAST_INTO_V(buffer, win);
-
-  if (get_properties().is_single_buffered()) {
-    _wglReleaseTexImageARB(buffer->_pbuffer, WGL_FRONT_LEFT_ARB);
-  } else {
-    _wglReleaseTexImageARB(buffer->_pbuffer, WGL_BACK_LEFT_ARB);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly

@@ -80,7 +80,6 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _y_size = 0;
   _has_size = false;
   _is_valid = false;
-  _rtm_mode = RTM_none;
   _flip_ready = false;
   _needs_context = true;
   _cube_map_index = -1;
@@ -187,12 +186,24 @@ GraphicsOutput::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::setup_render_texture
+//     Function: GraphicsOutput::clear_render_textures
+//       Access: Published
+//  Description: If the GraphicsOutput is currently rendering to
+//               a texture, then all textures are dissociated from
+//               the GraphicsOuput.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+clear_render_textures() {
+  MutexHolder holder(_lock);
+  _textures.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::add_render_texture
 //       Access: Published
 //  Description: Creates a new Texture object, suitable for rendering
-//               the contents of this buffer into, and stores it in
-//               _texture.  This also disassociates the previous
-//               texture (if any).
+//               the contents of this buffer into, and appends it to
+//               the list of render textures.
 //
 //               If tex is not NULL, it is the texture that will be
 //               set up for rendering into; otherwise, a new Texture
@@ -200,66 +211,84 @@ GraphicsOutput::
 //               get_texture() to retrieve the new texture pointer
 //               later).
 //
-//               If allow_bind is true, and this GraphicsOutput is an
-//               offscreen graphics buffer that has not yet been
-//               rendered into, it will attempt to set up the buffer
-//               for rendering directly into the texture, avoiding the
-//               cost of the copy-to-texture-memory each frame.  This
-//               is not supported by all graphics hardware, but if it
-//               is not supported, this option is quietly ignored.
-//
-//               If to_ram is true, the texture image will be
-//               downloaded from the framebuffer memory into system
-//               RAM each frame, which is more expensive but allows
-//               the texture to subsequently be applied to any GSG.
-//               Otherwise, the texture image remains in texture
-//               memory only.
-//
 //               Also see make_texture_buffer(), which is a
 //               higher-level interface for preparing
 //               render-to-a-texture mode.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-setup_render_texture(Texture *tex, RenderTextureMode mode) {
+add_render_texture(Texture *tex, RenderTextureMode mode) {
   if (mode == RTM_none) {
     return;
   }
   MutexHolder holder(_lock);
-  _rtm_mode = mode;
 
   if (tex == (Texture *)NULL) {
-    _texture = new Texture(get_name());
-    _texture->set_wrap_u(Texture::WM_clamp);
-    _texture->set_wrap_v(Texture::WM_clamp);
+    tex = new Texture(get_name());
+    tex->set_wrap_u(Texture::WM_clamp);
+    tex->set_wrap_v(Texture::WM_clamp);
   } else {
-    _texture = tex;
-    _texture->clear_ram_image();
+    tex->clear_ram_image();
   }
-  _texture->set_match_framebuffer_format(true);
+  tex->set_match_framebuffer_format(true);
   
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  _texture->set_x_size(get_x_size());
-  _texture->set_y_size(get_y_size());
-
+  tex->set_x_size(get_x_size());
+  tex->set_y_size(get_y_size());
+  
+  RenderTexture result;
+  result._texture = tex;
+  result._rtm_mode = mode;
+  _textures.push_back(result);
+  
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
+
+  // Sanity check that we don't have two textures of the same type.
+  int count_stencil_textures = 0;
+  int count_depth_textures = 0;
+  int count_color_textures = 0;
+  for (int i=0; i<count_textures(); i++) {
+    Texture::Format fmt = get_texture(i)->get_format();
+    if (fmt == Texture::F_depth_component) {
+      count_depth_textures += 1;
+    } else if (fmt == Texture::F_stencil_index) {
+      count_stencil_textures += 1;
+    } else {
+      count_color_textures += 1;
+    }
+  }
+  if ((count_color_textures > 1)||
+      (count_depth_textures > 1)||
+      (count_stencil_textures > 1)) {
+    display_cat.error() <<
+      "Currently, each GraphicsOutput can only render to one color texture, "
+      "one depth texture, and one stencil texture at a time.  RTM aborted.\n";
+    clear_render_textures();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::setup_render_texture
 //       Access: Published
-//  Description:
+//  Description: This is a deprecated interface that made sense back
+//               when GraphicsOutputs could only render into one
+//               texture at a time.  From now on, use 
+//               clear_render_textures and add_render_texture
+//               instead.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
+  display_cat.warning() <<
+    "Using deprecated setup_render_texture interface.\n";
+  clear_render_textures();
   if (to_ram) {
-    setup_render_texture(tex, RTM_copy_ram);
+    add_render_texture(tex, RTM_copy_ram);
   } else if (allow_bind) {
-    setup_render_texture(tex, RTM_bind_or_copy);
+    add_render_texture(tex, RTM_bind_or_copy);
   } else {
-    setup_render_texture(tex, RTM_copy_texture);
+    add_render_texture(tex, RTM_copy_texture);
   }
 }
 
@@ -577,7 +606,20 @@ get_texture_card() {
   PT(GeomNode) gnode = new GeomNode("texture card");
   gnode->add_geom(_texture_card);
   NodePath path(gnode);
-  path.set_texture(get_texture(), 0);
+
+  // The texture card, by default, is textured with the first
+  // render-to-texture output texture.  Depth and stencil
+  // textures are ignored.  The user can freely alter the
+  // card's texture attrib.
+  for (int i=0; i<count_textures(); i++) {
+    Texture *texture = get_texture(i);
+    if ((texture->get_format() != Texture::F_depth_component) &&
+        (texture->get_format() != Texture::F_stencil_index)) {
+      path.set_texture(texture, 0);
+      break;
+    }
+  }
+  
   return path;
 }
 
@@ -635,7 +677,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     // host window size.  If the user requests this, we have to use a
     // parasite buffer.
     buffer = engine->make_parasite(host, name, sort, x_size, y_size);
-    buffer->setup_render_texture(tex, false, to_ram);
+    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
     return buffer;
   }
 
@@ -644,7 +686,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     // since it all amounts to the same thing anyway--this will
     // actually create a new GraphicsWindow.
     buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
-    buffer->setup_render_texture(tex, false, to_ram);
+    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
     return buffer;
   }
   
@@ -661,7 +703,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
       (x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
     buffer = engine->make_parasite(host, name, sort, x_size, y_size);
     if (buffer != (GraphicsOutput *)NULL) {
-      buffer->setup_render_texture(tex, false, to_ram);
+      buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
       return buffer;
     }
   }
@@ -680,7 +722,11 @@ make_texture_buffer(const string &name, int x_size, int y_size,
         buffer = engine->make_buffer(sb_gsg, name, sort, x_size, y_size);
         if (buffer != (GraphicsOutput *)NULL) {
           // Check the buffer for goodness.
-          buffer->setup_render_texture(tex, allow_bind, to_ram);
+          if (allow_bind) {
+            buffer->add_render_texture(tex, RTM_bind_or_copy);
+          } else {
+            buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
+          }
           engine->open_windows();
           if (buffer->is_valid()) {
             return buffer;
@@ -700,7 +746,11 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   // source window is double-buffered.
   buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
   if (buffer != (GraphicsOutput *)NULL) {
-    buffer->setup_render_texture(tex, allow_bind, to_ram);
+    if (allow_bind) {
+      buffer->add_render_texture(tex, RTM_bind_or_copy);
+    } else {
+      buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
+    }
     engine->open_windows();
     if (buffer->is_valid()) {
       return buffer;
@@ -714,7 +764,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   // Looks like we have to settle for a parasite buffer.
   if (x_size <= host->get_x_size() && y_size <= host->get_y_size()) {
     buffer = engine->make_parasite(host, name, sort, x_size, y_size);
-    buffer->setup_render_texture(tex, false, to_ram);
+    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
     return buffer;
   }
 
@@ -926,10 +976,7 @@ begin_frame() {
   // Okay, we already have a GSG, so activate it.
   make_current();
   
-  if (_rtm_mode == RTM_bind_or_copy) {
-    // Release the texture so we can render into the frame buffer.
-    _gsg->framebuffer_release_texture(this, get_texture());
-  }
+  begin_render_texture();
   
   _cube_map_index = -1;
   _cube_map_dr = NULL;
@@ -982,33 +1029,24 @@ end_frame() {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
 
-  // If _rtm_mode isn't RTM_none, it means we should copy or lock the
-  // framebuffer to the GraphicsOutput's associated texture after the
-  // frame has rendered.
-  if (_rtm_mode != RTM_none) {
+  // Handle all render-to-texture operations that use bind-to-texture
+  end_render_texture();
+  
+  // Handle all render-to-texture operations that use copy-to-texture
+  for (int i=0; i<count_textures(); i++) {
+    RenderTextureMode rtm_mode = get_rtm_mode(i);
+    if ((rtm_mode == RTM_none)||(rtm_mode == RTM_bind_or_copy)) {
+      continue;
+    }
+
+    Texture *texture = get_texture(i);
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
-
-    // If _rtm_mode is one of the bind-modes, it means we should attempt
-    // to lock the framebuffer directly to the texture memory, avoiding
-    // the copy.
-    if (_rtm_mode == RTM_bind_or_copy) {
-      if (display_cat.is_debug()) {
-        display_cat.debug()
-          << "Locking texture for " << get_name() << " at frame end.\n";
-      }
-      if (!_gsg->framebuffer_bind_to_texture(this, get_texture())) {
-        display_cat.warning()
-          << "Lock-to-texture failed, resorting to copy.\n";
-        _rtm_mode = RTM_copy_texture;
-      }
-    }
     
-    if ((_rtm_mode == RTM_copy_texture)||
-        (_rtm_mode == RTM_copy_ram)||
-        ((_rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
-        ((_rtm_mode == RTM_triggered_copy_ram)&&(_trigger_copy))) {
-      _trigger_copy = false;
+    if ((rtm_mode == RTM_copy_texture)||
+        (rtm_mode == RTM_copy_ram)||
+        ((rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
+        ((rtm_mode == RTM_triggered_copy_ram)&&(_trigger_copy))) {
       if (display_cat.is_debug()) {
         display_cat.debug()
           << "Copying texture for " << get_name() << " at frame end.\n";
@@ -1017,30 +1055,31 @@ end_frame() {
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
       if (_cube_map_dr != (DisplayRegion *)NULL) {
-        if ((_rtm_mode == RTM_copy_ram)||(_rtm_mode == RTM_triggered_copy_ram)) {
-          _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
+        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
+          _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
                                         _cube_map_dr, buffer);
         } else {
-          _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
+          _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
                                             _cube_map_dr, buffer);
         }
       } else {
-        if ((_rtm_mode == RTM_copy_ram)||(_rtm_mode == RTM_triggered_copy_ram)) {
-          _gsg->framebuffer_copy_to_ram(get_texture(), _cube_map_index,
+        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
+          _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
                                         _default_display_region, buffer);
         } else {
-          _gsg->framebuffer_copy_to_texture(get_texture(), _cube_map_index,
+          _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
                                             _default_display_region, buffer);
         }
       }
     }
   }
-
+  _trigger_copy = false;
+  
   // If we're not single-buffered, we're now ready to flip.
   if (!_gsg->get_properties().is_single_buffered()) {
     _flip_ready = true;
   }
-
+  
   // In one-shot mode, we request the GraphicsEngine to delete the
   // window after we have rendered a frame.
   if (_one_shot) {
@@ -1059,21 +1098,51 @@ end_frame() {
       
       // If we were rendering directly to texture, we can't delete the
       // buffer until the texture is gone too.
-      if (_rtm_mode == RTM_bind_or_copy) {
-        _hold_texture = _texture;
+      for (int i=0; i<count_textures(); i++) {
+        if (get_rtm_mode(i) == RTM_bind_or_copy) {
+          _hold_textures.push_back(get_texture(i));
+        }
       }
     }
 
-    // We have to be sure to clear the _texture pointer, though, or
-    // we'll end up holding a reference to it forever.
-    _texture = NULL;
-    
-    // And we need to stop trying to copy to the texture.
-    _rtm_mode = RTM_none;
+    // We have to be sure to clear the _textures pointers, though, or
+    // we'll end up holding a reference to the textures forever.
+    clear_render_textures();
   }
-
+  
   _cube_map_index = -1;
   _cube_map_dr = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::begin_render_texture
+//       Access: Public, Virtual
+//  Description: If the GraphicsOutput supports direct render-to-texture,
+//               and if any setup needs to be done during begin_frame,
+//               then the setup code should go here.  Any textures that
+//               can not be rendered to directly should be reflagged
+//               as RTM_copy_texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+begin_render_texture() {
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      _textures[i]._rtm_mode = RTM_copy_texture;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::end_render_texture
+//       Access: Public, Virtual
+//  Description: If the GraphicsOutput supports direct render-to-texture,
+//               and if any setup needs to be done during end_frame,
+//               then the setup code should go here.  Any textures that
+//               could not be rendered to directly should be reflagged
+//               as RTM_copy_texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+end_render_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1095,31 +1164,35 @@ change_scenes(DisplayRegion *new_dr) {
     _cube_map_index = new_cube_map_index;
     _cube_map_dr = new_dr;
 
-    if (_rtm_mode != RTM_none) {
-      if (_rtm_mode == RTM_bind_or_copy) {
-        // In render-to-texture mode, switch the rendering backend to
-        // the new cube map face, so that the subsequent frame will be
-        // rendered to the new face.
-
-        select_cube_map(new_cube_map_index);
-        
-      } else if (old_cube_map_index != -1) {
-        // In copy-to-texture mode, copy the just-rendered framebuffer
-        // to the old cube map face.
-        nassertv(old_cube_map_dr != (DisplayRegion *)NULL);
-        if (display_cat.is_debug()) {
-          display_cat.debug()
-            << "Copying texture for " << get_name() << " at scene change.\n";
-          display_cat.debug()
-            << "cube_map_index = " << old_cube_map_index << "\n";
-        }
-        RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-        if (_rtm_mode == RTM_copy_ram) {
-          _gsg->framebuffer_copy_to_ram(get_texture(), old_cube_map_index, 
-                                        old_cube_map_dr, buffer);
-        } else {
-          _gsg->framebuffer_copy_to_texture(get_texture(), old_cube_map_index, 
-                                            old_cube_map_dr, buffer);
+    for (int i=0; i<count_textures(); i++) {
+      Texture *texture = get_texture(i);
+      RenderTextureMode rtm_mode = get_rtm_mode(i);
+      if (rtm_mode != RTM_none) {
+        if (rtm_mode == RTM_bind_or_copy) {
+          // In render-to-texture mode, switch the rendering backend to
+          // the new cube map face, so that the subsequent frame will be
+          // rendered to the new face.
+          
+          select_cube_map(new_cube_map_index);
+          
+        } else if (old_cube_map_index != -1) {
+          // In copy-to-texture mode, copy the just-rendered framebuffer
+          // to the old cube map face.
+          nassertv(old_cube_map_dr != (DisplayRegion *)NULL);
+          if (display_cat.is_debug()) {
+            display_cat.debug()
+              << "Copying texture for " << get_name() << " at scene change.\n";
+            display_cat.debug()
+              << "cube_map_index = " << old_cube_map_index << "\n";
+          }
+          RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+          if (rtm_mode == RTM_copy_ram) {
+            _gsg->framebuffer_copy_to_ram(texture, old_cube_map_index, 
+                                          old_cube_map_dr, buffer);
+          } else {
+            _gsg->framebuffer_copy_to_texture(texture, old_cube_map_index, 
+                                              old_cube_map_dr, buffer);
+          }
         }
       }
     }

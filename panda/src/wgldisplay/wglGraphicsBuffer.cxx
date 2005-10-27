@@ -90,6 +90,75 @@ begin_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::begin_render_texture
+//       Access: Public, Virtual
+//  Description: If the GraphicsOutput supports direct render-to-texture,
+//               and if any setup needs to be done during begin_frame,
+//               then the setup code should go here.  Any textures that
+//               can not be rendered to directly should be reflagged
+//               as RTM_copy_texture.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+begin_render_texture() {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
+  
+  if (_gsg->get_properties().is_single_buffered()) {
+    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
+  } else {
+    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::end_render_texture
+//       Access: Public, Virtual
+//  Description: If the GraphicsOutput supports direct render-to-texture,
+//               and if any setup needs to be done during end_frame,
+//               then the setup code should go here.  Any textures that
+//               could not be rendered to directly should be reflagged
+//               as RTM_copy_texture.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+end_render_texture() {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
+
+  // Find the color texture, if there is one. That one can be bound to
+  // the framebuffer.  All others must be marked RTM_copy_to_texture.
+  int tex_index = -1;
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
+          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+          (tex_index < 0)) {
+        tex_index = i;
+      } else {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+      }
+    }
+  }
+  
+  if (tex_index >= 0) {
+    Texture *tex = get_texture(tex_index);
+    TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
+    nassertv(tc != (TextureContext *)NULL);
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    GLenum target = wglgsg->get_texture_target(tex->get_texture_type());
+    if (target == GL_NONE) {
+      _textures[tex_index]._rtm_mode = RTM_copy_texture;
+      return;
+    }
+    GLP(BindTexture)(target, gtc->_index);
+    if (_gsg->get_properties().is_single_buffered()) {
+      wglgsg->_wglBindTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
+    } else {
+      wglgsg->_wglBindTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::select_cube_map
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
@@ -231,29 +300,6 @@ open_buffer() {
   }
 
   _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
-    switch (_rtm_mode) {
-    case RTM_bind_or_copy:
-      wgldisplay_cat.debug()
-        << "pbuffer renders directly to texture.\n";
-      break;
-
-    case RTM_copy_texture:
-      wgldisplay_cat.debug()
-        << "pbuffer copies indirectly into texture.\n";
-      break;
-
-    case RTM_copy_ram:
-      wgldisplay_cat.debug()
-        << "pbuffer copies indirectly into system RAM.\n";
-      break;
-
-    default:
-      break;
-    }
-  }
   
   wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
   wglgsg->report_my_gl_errors();
@@ -286,9 +332,15 @@ make_pbuffer(HDC twindow_dc) {
 
   if (wglgsg->_supports_pixel_format) {
     bool got_pbuffer_format = false;
+    bool any_binds = false;
+    
+    for (int i=0; i<count_textures(); i++) {
+      if (get_rtm_mode(i) == RTM_bind_or_copy) {
+        any_binds = true;
+      }
+    }
 
-    if ((_rtm_mode == RTM_bind_or_copy) &&
-        wglgsg->_supports_render_texture) {
+    if (any_binds && wglgsg->_supports_render_texture) {
       // First, try to get a pbuffer format that supports
       // render-to-texture.
       int new_pbformat = choose_pbuffer_format(twindow_dc, true);
@@ -299,8 +351,13 @@ make_pbuffer(HDC twindow_dc) {
     }
 
     if (!got_pbuffer_format) {
-      // Failing that, just get a matching pbuffer format.
-      _rtm_mode = RTM_copy_texture;
+      // Failing that, just get a matching pbuffer format,
+      // and disable RTM_bind_or_copy.
+      for (int i=0; i<count_textures(); i++) {
+        if (get_rtm_mode(i) == RTM_bind_or_copy) {
+          _textures[i]._rtm_mode = RTM_copy_texture;
+        }
+      }
       int new_pbformat = choose_pbuffer_format(twindow_dc, false);
       if (new_pbformat != 0) {
         pbformat = new_pbformat;
@@ -322,8 +379,18 @@ make_pbuffer(HDC twindow_dc) {
   int iattrib_list[max_attrib_list];
   int ni = 0;
 
-  if (_rtm_mode == RTM_bind_or_copy) {
-    nassertr(_texture != (Texture *)NULL, false);
+  // Find the texture to bind to the color buffer.
+  Texture *bindtexture = NULL;
+  for (int i=0; i<count_textures(); i++) {
+    if ((get_rtm_mode(i) == RTM_bind_or_copy)&&
+        (get_texture(i)->get_format() != Texture::F_depth_component)&&
+        (get_texture(i)->get_format() != Texture::F_stencil_index)) {
+      bindtexture = get_texture(i);
+      break;
+    }
+  }
+  
+  if (bindtexture != 0) {
 
     if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
       iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
@@ -333,12 +400,12 @@ make_pbuffer(HDC twindow_dc) {
       iattrib_list[ni++] = WGL_TEXTURE_RGB_ARB;
     }
 
-    if (_texture->uses_mipmaps()) {
+    if (bindtexture->uses_mipmaps()) {
       iattrib_list[ni++] = WGL_MIPMAP_TEXTURE_ARB;
       iattrib_list[ni++] = 1;
     }
 
-    switch (_texture->get_texture_type()) {
+    switch (bindtexture->get_texture_type()) {
     case Texture::TT_cube_map:
       iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_ARB;
@@ -353,7 +420,7 @@ make_pbuffer(HDC twindow_dc) {
       iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
     }
-  }    
+  }  
 
   // Terminate the list.
   nassertr(ni <= max_attrib_list, false);

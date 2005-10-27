@@ -43,9 +43,6 @@ public:
   INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
 
-  virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
-  virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex);
-
   virtual void reset();
 
   INLINE HDC get_twindow_dc();

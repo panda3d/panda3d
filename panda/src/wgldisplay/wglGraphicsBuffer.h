@@ -52,6 +52,9 @@ public:
   virtual void make_current();
   virtual void release_gsg();
 
+  virtual void begin_render_texture();
+  virtual void end_render_texture();
+  
   virtual void process_events();
 
 protected:
