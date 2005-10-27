@@ -1756,43 +1756,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         // Go thru all the texture references for this primitive and set uvs
         mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
         mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
-        /* old method
-        for (int ti=0; ti< egg_poly->get_num_textures(); ++ti) {
-          // get the eggTexture pointer
-          EggTexture *tex_p = egg_poly->get_texture(ti);
-          mayaegg_cat.debug() << "tex->uvset_name :" << tex_p->get_uv_name() << endl;
-
-          // get the shader color def that matches this EggTexture
-          for (size_t tj=0; tj< shader->_color.size(); ++tj) {
-            color_def = shader->get_color_def(tj);
-            if (color_def->_texture_name == tex_p->get_uv_name()) {
-              mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
-              break;
-            }
-          }
-          mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
-          uv_name = color_def->_uvset_name;  // this is the name to look up by in maya
-          if (uv_name == "default")
-            uv_name = "map1";
-
-          if (color_def->has_projection()) {
-            // If the shader has a projection, use it instead of the
-            // polygon's built-in UV's.
-            vert.set_uv(tex_p->get_uv_name(), 
-                        color_def->project_uv(p3d, centroid));
-          } else {
-            // Get the UV's from the polygon.
-            float2 uvs;
-            MString uv_mstring(uv_name.c_str());
-            status = pi.getUV(i, uvs, &uv_mstring);
-            if (!status) {
-              status.perror("MItMeshPolygon::getUV");
-            } else {
-              vert.set_uv(tex_p->get_uv_name(), TexCoordd(uvs[0], uvs[1]));
-            }
-          }
-        }
-        */
         for (size_t ti=0; ti< uvset_names.size(); ++ti) {
           // get the eggTexture pointer
           string colordef_uv_name = uvset_name=  uvset_names[ti];
@@ -1819,11 +1782,13 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             // Get the UV's from the polygon.
             float2 uvs;
             MString uv_mstring(uvset_name.c_str());
-            status = pi.getUV(i, uvs, &uv_mstring);
-            if (!status) {
-              status.perror("MItMeshPolygon::getUV");
-            } else {
-              vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
+            if (pi.hasUVs(uv_mstring, &status)) {
+              status = pi.getUV(i, uvs, &uv_mstring);
+              if (!status) {
+                status.perror("MItMeshPolygon::getUV");
+              } else {
+                vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
+              }
             }
           }
         }
