@@ -18,9 +18,9 @@ class DoInterestManager(DirectObject.DirectObject):
     """
     Top level Interest Manager
     """
-    if __debug__:
-        from direct.directnotify.DirectNotifyGlobal import directNotify
-        notify = directNotify.newCategory("DoInterestManager")
+    #if __debug__:      is this production ready?
+    from direct.directnotify.DirectNotifyGlobal import directNotify
+    notify = directNotify.newCategory("DoInterestManager")
 
     _interestIdAssign = 1
     _interestIdScopes = 100
