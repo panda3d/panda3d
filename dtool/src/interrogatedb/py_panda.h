@@ -179,7 +179,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 {\
     PyObject_HEAD_INIT(NULL)\
     0,\
-    #MODULE_NAME "." #PUBLIC_NAME, /*type name with module */ \
+    "lib" #MODULE_NAME "." #PUBLIC_NAME, /*type name with module */ \
     sizeof(Dtool_PyInstDef),     /* tp_basicsize*/ \
     0,     /*tp_itemsize*/ \
     &Dtool_Deallocate_General, /*Dtool_Deallocate_##CLASS_NAME,*/ /*tp_dealloc*/\
