@@ -13,13 +13,12 @@ from direct.showbase.PythonUtil import *
 from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class DoInterestManager(DirectObject.DirectObject):
     """
     Top level Interest Manager
     """
-    #if __debug__:      is this production ready?
-    from direct.directnotify.DirectNotifyGlobal import directNotify
     notify = directNotify.newCategory("DoInterestManager")
 
     _interestIdAssign = 1
