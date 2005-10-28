@@ -2493,9 +2493,23 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
     char *image = new char[tex->get_x_size() * tex->get_y_size()];
     memset(image, 128, tex->get_x_size() * tex->get_y_size());
-    GLP(TexImage2D)(imagetarget, 0, internal_format, 
-                    tex->get_x_size(), tex->get_y_size(), 0,
-                    GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
+    switch (tex->get_format()) {
+    case Texture::F_depth_component:
+      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
+      break;
+    case Texture::F_stencil_index:
+      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
+      break;
+    default:
+      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
+      break;
+    }
     delete image;
     
     gtc->_already_applied = true;
