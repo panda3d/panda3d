@@ -753,37 +753,6 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::wants_normals
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-wants_normals() const {
-  return (_lighting_enabled || (_force_normals != 0));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::wants_texcoords
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-wants_texcoords() const {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::wants_colors
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG should issue geometry color
-//               commands, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-wants_colors() const {
-  return _vertex_colors_enabled;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a

@@ -47,6 +47,8 @@ extern ConfigVariableBool dx_preserve_fpu_state;
 extern ConfigVariableInt dx_force_backface_culling;
 #endif
 
+extern ConfigVariableBool dx_broken_max_index;
+
 #ifdef _DEBUG
 extern ConfigVariableDouble dx_global_miplevel_bias;
 extern ConfigVariableBool dx_debug_view_mipmaps;

@@ -133,8 +133,6 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
                           int light_id);
 
-  virtual bool wants_texcoords() const;
-
   void print_gfx_visual();
 
   //For those interested in what the guardian thinks is the current

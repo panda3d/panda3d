@@ -53,7 +53,7 @@ is_linear() const {
 void MatrixLens::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":\n";
-  _projection_mat.write(out, indent_level + 2);
+  get_projection_mat().write(out, indent_level + 2);
 }
 
 ////////////////////////////////////////////////////////////////////

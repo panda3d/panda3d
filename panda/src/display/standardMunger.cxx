@@ -169,11 +169,9 @@ munge_data_impl(const GeomVertexData *data) {
 ////////////////////////////////////////////////////////////////////
 bool StandardMunger::
 munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
-  int geom_rendering = geom->get_geom_rendering();
   int supported_geom_rendering = _gsg->get_supported_geom_rendering();
 
-  int unsupported_bits = geom_rendering & ~supported_geom_rendering;
-
+  int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
   if (unsupported_bits != 0) {
     // Even beyond munging the vertex format, we have to convert the
     // Geom itself into a new primitive type the GSG can render
@@ -188,6 +186,10 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
       // any GSG's that can support strips without also supporting
       // fans.
       geom = geom->decompose();
+
+      // Decomposing might produce an indexed Geom, so re-check the
+      // unsupported bits.
+      unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
     }
     if ((unsupported_bits & Geom::GR_shade_model_bits) != 0) {
       // Rotate the vertices to account for different shade-model
@@ -198,8 +200,10 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
     if ((unsupported_bits & Geom::GR_indexed_bits) != 0) {
       // Convert indexed geometry to nonindexed geometry.
       PT(Geom) new_geom = geom->make_copy();
+      new_geom->set_vertex_data(vertex_data);
       new_geom->make_nonindexed(false);
       geom = new_geom;
+      vertex_data = new_geom->get_vertex_data();
     }
   }
 

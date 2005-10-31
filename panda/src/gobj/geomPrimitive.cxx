@@ -88,8 +88,11 @@ GeomPrimitive::
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_geom_rendering() const {
-  // The default is nothing fancy.
-  return 0;
+  if (is_indexed()) {
+    return GR_indexed_other;
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

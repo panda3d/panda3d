@@ -155,7 +155,7 @@ protected:
 
   void dx_cleanup();
   HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params, 
-                           DXScreenData **pScrn = NULL);
+                           DXScreenData **screen = NULL);
 
   bool check_cooperative_level();
 
@@ -174,7 +174,7 @@ protected:
 
 protected:
   DXScreenData *_screen;
-  LPDIRECT3DDEVICE8 _d3d_device;  // same as pScrn->_d3d_device, cached for spd
+  LPDIRECT3DDEVICE8 _d3d_device;  // same as _screen->_d3d_device, cached for spd
   IDirect3DSwapChain8 *_swap_chain;
   D3DPRESENT_PARAMETERS _presentation_reset;  // This is built during reset device
 

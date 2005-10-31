@@ -80,63 +80,66 @@ PUBLISHED:
   // two indicates whether the Geom needs to be munged for the GSG.
   enum GeomRendering {
     // If there are indexed points.
-    GR_indexed_point        = 0x0001,
+    GR_indexed_point        = 0x00001,
+
+    // If there is indexed geometry of any other type.
+    GR_indexed_other        = 0x10000,
 
     // The union of all of the indexed attributes.
-    GR_indexed_bits         = 0x0001,
+    GR_indexed_bits         = 0x10001,
 
     // If there are any points at all.
-    GR_point                = 0x0002,
+    GR_point                = 0x00002,
 
     // If the points are all the same size, other than 1 pixel.
-    GR_point_uniform_size   = 0x0004,
+    GR_point_uniform_size   = 0x00004,
 
     // If the points have a per-vertex size designation.
-    GR_per_point_size       = 0x0008,
+    GR_per_point_size       = 0x00008,
 
     // If the points' size is specified in camera units rather than
     // screen pixels.
-    GR_point_perspective    = 0x0010,
+    GR_point_perspective    = 0x00010,
 
     // If the points have a non-square aspect ratio.
-    GR_point_aspect_ratio   = 0x0020,
+    GR_point_aspect_ratio   = 0x00020,
 
     // If the points are under a scale transform, uniform or non-uniform.
-    GR_point_scale          = 0x0040,
+    GR_point_scale          = 0x00040,
 
     // If the points are rotated off the orthonormal axis.
-    GR_point_rotate         = 0x0080,
+    GR_point_rotate         = 0x00080,
 
     // If the points require texture coordinates interpolated across
     // their face, to render textures as sprites.
-    GR_point_sprite         = 0x0100,
+    GR_point_sprite         = 0x00100,
 
     // If there is a texture matrix applied to the sprite's generated
     // texture coordinates.
-    GR_point_sprite_tex_matrix = 0x0200,
+    GR_point_sprite_tex_matrix = 0x00200,
 
     // The union of all the above point attributes, except GR_indexed_point.
-    GR_point_bits           = 0x03fe,
+    GR_point_bits           = 0x003fe,
 
     // If there are any of these composite types.
-    GR_triangle_strip       = 0x0400,
-    GR_triangle_fan         = 0x0800,
-    GR_line_strip           = 0x1000,
+    GR_triangle_strip       = 0x00400,
+    GR_triangle_fan         = 0x00800,
+    GR_line_strip           = 0x01000,
 
     // The union of all of the above composite types.
-    GR_composite_bits       = 0x1c00,
+    GR_composite_bits       = 0x01c00,
 
     // If the shade model requires a particular vertex for flat shading.
-    GR_flat_first_vertex    = 0x2000,
-    GR_flat_last_vertex     = 0x4000,
+    GR_flat_first_vertex    = 0x02000,
+    GR_flat_last_vertex     = 0x04000,
 
     // The union of the above shade model types.
-    GR_shade_model_bits     = 0x6000,
+    GR_shade_model_bits     = 0x06000,
 
     // If there is a TexGenAttrib in effect with M_light_vector
     // enabled, meaning we need to generate the tangent space light
     // vector as the texture coordinates.
-    GR_texcoord_light_vector = 0x8000,
+    GR_texcoord_light_vector = 0x08000,
   };
 
   // The shade model specifies whether the per-vertex colors and

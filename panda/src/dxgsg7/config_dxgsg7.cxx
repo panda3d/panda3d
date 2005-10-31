@@ -28,7 +28,7 @@
 
 Configure(config_dxgsg7);
 NotifyCategoryDef(dxgsg7, ":display:gsg");
-NotifyCategoryDef(wdxdisplay7, "windisplay");
+NotifyCategoryDef(wdxdisplay7, "display");
 
 //  Configure this to TRUE if you want DirectX to control the entire screen,
 //  If false, it will just blit into a window.
@@ -76,6 +76,18 @@ ConfigVariableBool dx_do_vidmemsize_check
 ConfigVariableBool dx_preserve_fpu_state
 ("dx-preserve-fpu-state", true);
 
+ConfigVariableBool dx_broken_max_index
+("dx-broken-max-index", false,
+ PRC_DESC("Configure this true if you have a buggy graphics driver that "
+          "doesn't correctly implement the third parameter, NumVertices, "
+          "of DrawIndexedPrimitive().  In particular, the NVIDIA Quadro "
+          "driver version 6.14.10.7184 seems to treat this as a maximum "
+          "vertex index, rather than a delta between the maximum and "
+          "minimum vertex index.  Turn this on if you are seeing stray "
+          "triangles, or you are not seeing all of your triangles.  Enabling "
+          "this should work around this bug, at the cost of some additional "
+          "rendering overhead on the GPU."));
+
 #ifdef _DEBUG
 ConfigVariableDouble dx_global_miplevel_bias
 ("dx-global-miplevel-bias", 0.0);
@@ -112,6 +124,7 @@ init_libdxgsg7() {
 
   DXGraphicsStateGuardian7::init_type();
   DXTextureContext7::init_type();
+  DXGeomMunger7::init_type();
 
   wdxGraphicsPipe7::init_type();
   wdxGraphicsWindow7::init_type();

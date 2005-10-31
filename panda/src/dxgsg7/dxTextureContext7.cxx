@@ -214,7 +214,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
     }
 
     if(FAILED( hr = pDDSurf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg7_cat.error() << "CreateTexture failed: _surface->Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
+        dxgsg7_cat.error() << "create_texture failed: _surface->Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
         return hr;
     }
 
@@ -331,7 +331,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
                     pDstWord = (WORD*)pDDSurfBytes;
-
+		    
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         BYTE r,g,b,a;
                         DWORD dwPixel = *pSrcWord;
@@ -662,7 +662,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
             }
 
         default:
-            dxgsg7_cat.error() << "CreateTexture failed! unhandled texture conversion type: "<< ConvNeeded <<" \n";
+            dxgsg7_cat.error() << "create_texture failed! unhandled texture conversion type: "<< ConvNeeded <<" \n";
             pDDSurf->Unlock(NULL);
             return E_INVALIDARG;
     }
@@ -1001,12 +1001,8 @@ HRESULT ConvertDDSurftoPixBuf(Texture *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) {
 //       gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
-LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, 
-#ifdef USE_TEXFMTVEC
-                                        DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
-#else
+LPDIRECTDRAWSURFACE7 DXTextureContext7::create_texture(LPDIRECT3DDEVICE7 pd3dDevice, 
                                         int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
-#endif
    {
     HRESULT hr;
     int i,cNumAlphaBits;     //  number of alpha bits in texture pixfmt
@@ -1016,21 +1012,16 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
     ConversionType ConvNeeded;
 
     assert(_texture!=NULL);
+    delete_texture();
+    clear_dirty_flags(Texture::DF_image | Texture::DF_mipmap);
 
-#ifdef USE_TEXFMTVEC
-    int cNumTexPixFmts=TexturePixelFormats.size();
-#endif
     DDPIXELFORMAT *pTexPixFmts = new DDPIXELFORMAT[cNumTexPixFmts];
 
     // make local copy of array so I can muck with it during searches for this texture fmt
     // (such as marking pixfmts that no search will be interested in)
     // probably should do this faster way
 
-#ifdef USE_TEXFMTVEC
-    memcpy(pTexPixFmts,&TexturePixelFormats[0],cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-#else
     memcpy(pTexPixFmts,pTexFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-#endif
 
     // bpp indicates requested fmt, not pixbuf fmt
     DWORD bpp = get_bits_per_pixel(_texture->get_format(), &cNumAlphaBits);
@@ -1160,10 +1151,10 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
     LPDDPIXELFORMAT pCurPixFmt;
     char *szErrorMsg;
 
-    szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
+    szErrorMsg = "create_texture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
 
     if(dxgsg7_cat.is_spam())
-        dxgsg7_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
+        dxgsg7_cat.spam() << "create_texture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
 
     // Mark formats I dont want to deal with
     for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
@@ -1244,7 +1235,7 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
 
             // at this point, bail.  dont worry about converting to non-alpha formats yet,
             // I think this will be a very rare case
-                szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!\n";
+                szErrorMsg = "create_texture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!\n";
             }
 
             break;
@@ -1466,7 +1457,7 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
             break;
 
         default:
-            szErrorMsg = "CreateTexture failed: unhandled pixel bitdepth in DX loader";
+            szErrorMsg = "create_texture failed: unhandled pixel bitdepth in DX loader";
     }
 
     // if we've gotten here, haven't found a match
@@ -1509,13 +1500,14 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
         else ft=Texture::FT_linear;
     }
 
-    if((ft==Texture::FT_linear) && !(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
+    if((ft==Texture::FT_linear) && !(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR)) {
         ft=Texture::FT_nearest;
+    }
     _tex->set_magfilter(ft);
 
     // figure out if we are mipmapping this texture
     ft =_tex->get_minfilter();
-    _bHasMipMaps=FALSE;
+    _has_mipmaps=FALSE;
 
     if(!dx_ignore_mipmaps) {  // set if no HW mipmap capable
         switch(ft) {
@@ -1523,11 +1515,11 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
             case Texture::FT_linear_mipmap_nearest:
             case Texture::FT_nearest_mipmap_linear:  // pick nearest in each, interpolate linearly b/w them
             case Texture::FT_linear_mipmap_linear:
-                _bHasMipMaps=TRUE;
+                _has_mipmaps=TRUE;
         }
 
         if(dx_mipmap_everything) {  // debug toggle, ok to leave in since its just a creation cost
-           _bHasMipMaps=TRUE;
+           _has_mipmaps=TRUE;
            if(ft != Texture::FT_linear_mipmap_linear) {
                dxgsg7_cat.spam() << "Forcing mipmap filtering on DX texture [" << _tex->get_name() << "]\n";
            }
@@ -1582,14 +1574,14 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
     }
     _tex->set_anisotropic_degree(aniso_degree);
 #ifdef _DEBUG
-    dxgsg7_cat.spam() << "CreateTexture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
+    dxgsg7_cat.spam() << "create_texture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
 #endif
 
-    if(_bHasMipMaps) {
+    if(_has_mipmaps) {
        // We dont specify mipmapcount, so CreateSurface will auto-create surfs
        // for all mipmaps down to 1x1 (if driver supports deep-mipmaps, otherwise Nx1)
         ddsd.ddsCaps.dwCaps |= (DDSCAPS_MIPMAP | DDSCAPS_COMPLEX);
-        dxgsg7_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
+        dxgsg7_cat.debug() << "create_texture: generating mipmaps for "<< _tex->get_name() << endl;
     }
 
     if(pD3DDevDesc->dwDevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
@@ -1599,17 +1591,15 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
         ddsd.dwFlags |= DDSD_TEXTURESTAGE;
     }
 
-    PRINTVIDMEM(pDD,&ddsd.ddsCaps,"texture surf (includes AGP mem)");
-
     // Create a new surface for the texture
     if(FAILED( hr = pDD->CreateSurface( &ddsd, &_surface, NULL ) )) {
-        dxgsg7_cat.error() << "CreateTexture failed: pDD->CreateSurface() failed!  hr = " << ConvD3DErrorToString(hr) << "\n";
+        dxgsg7_cat.error() << "create_texture failed: pDD->CreateSurface() failed!  hr = " << ConvD3DErrorToString(hr) << "\n";
         goto error_exit;
     }
 
 
 #ifdef _DEBUG
-    dxgsg7_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";
+    dxgsg7_cat.debug() << "create_texture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";
 #endif
 
     _PixBufConversionType=ConvNeeded;
@@ -1661,7 +1651,7 @@ FillDDSurfTexturePixels() {
     
     CPTA_uchar orig_image = _texture->get_ram_image();
     if (orig_image.empty()) {
-      dxgsg7_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
+      dxgsg7_cat.fatal() << "create_texture: get_ram_image() failed\n";
       // The texture doesn't have an image to load.
       return E_FAIL;
     }
@@ -1682,7 +1672,7 @@ FillDDSurfTexturePixels() {
 
     _surface->GetSurfaceDesc(&ddsd);
 
-    if(_bHasMipMaps) {
+    if(_has_mipmaps) {
         DWORD i,oldcurxsize,oldcurysize,curxsize,curysize,cMipMapCount=ddsd.dwMipMapCount;
         assert(ddsd.dwMipMapCount<20);
 
@@ -1771,7 +1761,7 @@ FillDDSurfTexturePixels() {
 
             hr = pCurDDSurf->GetAttachedSurface(&ddsCaps, &pMipLevel_DDSurf);
             if(FAILED(hr)) {
-                dxgsg7_cat.error() << "CreateTexture failed creating mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
+                dxgsg7_cat.error() << "create_texture failed creating mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
                 delete [] pMipMapPixBufSpace;
                 pCurDDSurf->Release();
                 return hr;
@@ -1799,7 +1789,7 @@ FillDDSurfTexturePixels() {
         if(dx_debug_view_mipmaps) {
 #if 0
             if(!(ddcaps.dwCaps & DDCAPS_BLTSTRETCH)) {
-                dxgsg7_cat.error() << "CreateTexture failed debug-viewing mipmaps, BLT stretching not supported!  ( we need to do SW stretch) \n";
+                dxgsg7_cat.error() << "create_texture failed debug-viewing mipmaps, BLT stretching not supported!  ( we need to do SW stretch) \n";
                 return hr;
             }
 #endif
@@ -1917,12 +1907,10 @@ FillDDSurfTexturePixels() {
 // Desc: Release the surface used to store the texture
 //-----------------------------------------------------------------------------
 void DXTextureContext7::
-DeleteTexture( ) {
+delete_texture( ) {
     if(dxgsg7_cat.is_spam()) {
         dxgsg7_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
     }
-
-    ULONG refcnt;
 
 #ifdef DEBUG_RELEASES
     if(_surface) {
@@ -1954,13 +1942,13 @@ TextureContext(tex) {
     }
 //#endif
     _surface = NULL;
-    _bHasMipMaps = FALSE;
+    _has_mipmaps = FALSE;
     _tex = tex;
 }
 
 DXTextureContext7::
 ~DXTextureContext7() {
-    DeleteTexture();
+    delete_texture();
     TextureContext::~TextureContext();
     _tex = NULL;
 }

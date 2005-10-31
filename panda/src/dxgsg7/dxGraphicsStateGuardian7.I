@@ -18,347 +18,113 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_line_smooth
-//       Access:
-//  Description:
+//     Function: DXGraphicsStateGuardian7::Colorf_to_D3DCOLOR
+//       Access: Public, Static
+//  Description: Converts Panda's floating-point Colorf structure to
+//               DirectX's D3DCOLOR packed structure.
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_line_smooth(bool val) {
-  if(_line_smooth_enabled != val) {
-    _line_smooth_enabled = val;
-  #ifndef NDEBUG
-    {
-        if(val && (_pScrn->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASEDGES))
-           dxgsg7_cat.error() << "no HW support for line smoothing!!\n";
+INLINE DWORD DXGraphicsStateGuardian7::
+Colorf_to_D3DCOLOR(const Colorf &cColorf) {
+// MS VC defines _M_IX86 for x86.  gcc should define _X86_
+#if defined(_M_IX86) || defined(_X86_)
+    DWORD d3dcolor,tempcolorval=255;
+
+    // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
+    // dont think this makes much difference
+
+    __asm {
+        push ebx   ; want to save this in case this fn is inlined
+        push ecx
+        mov ecx, cColorf
+        fild tempcolorval
+        fld DWORD PTR [ecx]
+        fmul ST(0),ST(1)
+        fistp tempcolorval  ; no way to store directly to int register
+        mov eax, tempcolorval
+        shl eax, 16
+
+        fld DWORD PTR [ecx+4]  ;grn
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        mov ebx,tempcolorval
+        shl ebx, 8
+        or eax,ebx
+
+        fld DWORD PTR [ecx+8]  ;blue
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        or eax,tempcolorval
+
+        fld DWORD PTR [ecx+12] ;alpha
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        ; simulate pop 255.0 off FP stack w/o store, mark top as empty and increment stk ptr
+        ffree ST(0)
+        fincstp
+        mov ebx,tempcolorval
+        shl ebx, 24
+        or eax,ebx
+        mov d3dcolor,eax
+        pop ecx
+        pop ebx
     }
-  #endif
 
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_EDGEANTIALIAS, (DWORD)val);
+   //   dxgsg7_cat.debug() << (void*)d3dcolor << endl;
+   return d3dcolor;
+#else //!_X86_
+   return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+#endif //!_X86_
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian7::get_texture_wrap_mode
+//       Access: Protected, Static
+//  Description: Maps from the Texture's internal wrap mode symbols to
+//               GL's.
+////////////////////////////////////////////////////////////////////
+INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian7::
+get_texture_wrap_mode(Texture::WrapMode wm) {
+  switch (wm) {
+  case Texture::WM_clamp:
+    return D3DTADDRESS_CLAMP;
+  case Texture::WM_repeat:
+    return D3DTADDRESS_WRAP;
+  case Texture::WM_mirror:
+    return D3DTADDRESS_MIRROR;
+  case Texture::WM_mirror_once:
+    return D3DTADDRESS_BORDER;
+  case Texture::WM_border_color:
+    return D3DTADDRESS_BORDER;
   }
+  dxgsg7_cat.error() << "Invalid Texture::Mode value" << endl;
+  return D3DTADDRESS_WRAP;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_dither
-//       Access:
-//  Description:
+//     Function: DXGraphicsStateGuardian7::get_fog_mode_type
+//       Access: Protected, Static
+//  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_dither(bool val) {
-  if (_dither_enabled != val) {
-    _dither_enabled = val;
-
-  #ifndef NDEBUG
-    {
-        if(val && !(_pScrn->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER))
-           dxgsg7_cat.error() << "no HW support for color dithering!!\n";
-    }
-  #endif
-
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, (DWORD)val);
+INLINE D3DFOGMODE DXGraphicsStateGuardian7::
+get_fog_mode_type(Fog::Mode m) {
+  switch (m) {
+  case Fog::M_linear:
+    return D3DFOG_LINEAR;
+  case Fog::M_exponential:
+    return D3DFOG_EXP;
+  case Fog::M_exponential_squared:
+    return D3DFOG_EXP2;
   }
+  dxgsg7_cat.error() << "Invalid Fog::Mode value" << endl;
+  return D3DFOG_EXP;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_stencil_test
-//       Access:
-//  Description:
+//     Function: DXGraphicsStateGuardian7::get_tex_mat_sym
+//       Access: Protected, Static
+//  Description: Returns the nth D3DTRANSFORMSTATE_TEXTURE(n) constant.
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_stencil_test(bool val) {
-  if (_stencil_test_enabled != val) {
-    _stencil_test_enabled = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILENABLE, (DWORD)val);
-  }
+INLINE D3DTRANSFORMSTATETYPE DXGraphicsStateGuardian7::
+get_tex_mat_sym(int stage_index) {
+  return (D3DTRANSFORMSTATETYPE)(D3DTRANSFORMSTATE_TEXTURE0 + stage_index);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_color_material
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_color_material(bool val) {
-  if (_color_material_enabled != val) {
-    _color_material_enabled = val;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_blend
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_blend(bool val) {
-  if (_blend_enabled != val) {
-    _blend_enabled = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_blend
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-set_shademode(D3DSHADEMODE val) {
-  if (_CurShadeMode != val) {
-    _CurShadeMode = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, (DWORD)val);
-  }
-}
-
-INLINE void DXGraphicsStateGuardian7::
-enable_primitive_clipping(bool val) {
-  if (_clipping_enabled != val) {
-    _clipping_enabled = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_fog
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_fog(bool val) {
-  if ((_fog_enabled != val) && (_doFogType!=None)) {
-    _fog_enabled = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_FOGENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_alpha_test
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_alpha_test(bool val )
-{
-  if (_alpha_test_enabled != val) {
-    _alpha_test_enabled = val;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, (DWORD)val);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::call_dxLightModelAmbient
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-call_dxLightModelAmbient( const Colorf& color)
-{
-  if (_lmodel_ambient != color) {
-    _lmodel_ambient = color;
-#ifdef GSG_VERBOSE
-    dxgsg7_cat.debug() << "dxLightModel(LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
-#endif
-    _pScrn->pD3DDevice->SetRenderState( D3DRENDERSTATE_AMBIENT,
-                D3DRGBA(color[0], color[1], color[2], color[3]));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::call_dxAlphaFunc
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
-  if (_alpha_func != func) {
-    _alpha_func = func;
-#ifdef GSG_VERBOSE
-    dxgsg7_cat.debug() << "dxAlphaFunc(";
-    switch (func) {
-    case D3DCMP_NEVER:
-      dxgsg7_cat.debug(false) << "D3DCMP_NEVER";
-      break;
-    case D3DCMP_LESS:
-      dxgsg7_cat.debug(false) << "D3DCMP_LESS";
-      break;
-    case D3DCMP_EQUAL:
-      dxgsg7_cat.debug(false) << "D3DCMP_EQUAL";
-      break;
-#ifdef D3DCMP_LEQUAL
-    case D3DCMP_LEQUAL:
-      dxgsg7_cat.debug(false) << "D3DCMP_LEQUAL";
-      break;
-#endif
-    case D3DCMP_GREATER:
-      dxgsg7_cat.debug(false) << "D3DCMP_GREATER";
-      break;
-    case D3DCMP_NOTEQUAL:
-      dxgsg7_cat.debug(false) << "D3DCMP_NOTEQUAL";
-      break;
-#ifdef D3DCMP_GEQUAL
-    case D3DCMP_GEQUAL:
-      dxgsg7_cat.debug(false) << "D3DCMP_GEQUAL";
-      break;
-#endif
-    case D3DCMP_ALWAYS:
-      dxgsg7_cat.debug(false) << "D3DCMP_ALWAYS";
-      break;
-    }
-    dxgsg7_cat.debug() << " , " << reference_alpha << ")" << endl;
-#endif
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, func);
-  }
-
-  if(_alpha_func_refval != reference_alpha) {
-      _alpha_func_refval = reference_alpha;
-      _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
-  }
-}
-
-INLINE void DXGraphicsStateGuardian7::
-call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )
-{
-  if (_blend_source_func != sfunc)
-    {
-    _blend_source_func = sfunc;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND, sfunc);
-#ifdef GSG_VERBOSE
-    dxgsg7_cat.debug() << "dxSrcBlendFunc(";
-    switch (sfunc)
-        {
-        case D3DBLEND_ZERO:
-          dxgsg7_cat.debug(false) << "ZERO, ";
-          break;
-        case D3DBLEND_ONE:
-          dxgsg7_cat.debug(false) << "ONE, ";
-          break;
-        case D3DBLEND_DESTCOLOR:
-          dxgsg7_cat.debug(false) << "DESTCOLOR, ";
-          break;
-        case D3DBLEND_INVDESTCOLOR:
-          dxgsg7_cat.debug(false) << "INVDESTCOLOR, ";
-          break;
-        case D3DBLEND_SRCALPHA:
-          dxgsg7_cat.debug(false) << "SRCALPHA, ";
-          break;
-        case D3DBLEND_INVSRCALPHA:
-          dxgsg7_cat.debug(false) << "INVSRCALPHA, ";
-          break;
-        case D3DBLEND_DESTALPHA:
-          dxgsg7_cat.debug(false) << "DESTALPHA, ";
-          break;
-        case D3DBLEND_INVDESTALPHA:
-          dxgsg7_cat.debug(false) << "INVDESTALPHA, ";
-          break;
-        case D3DBLEND_SRCALPHASAT:
-          dxgsg7_cat.debug(false) << "SRCALPHASAT, ";
-          break;
-        default:
-          dxgsg7_cat.debug(false) << "unknown, ";
-          break;
-        }
-    dxgsg7_cat.debug(false) << endl;
-#endif
-    }
-  if ( _blend_dest_func != dfunc)
-    {
-    _blend_dest_func = dfunc;
-    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, dfunc);
-#ifdef GSG_VERBOSE
-    dxgsg7_cat.debug() << "dxDstBlendFunc(";
-    switch (dfunc)
-        {
-        case D3DBLEND_ZERO:
-          dxgsg7_cat.debug(false) << "ZERO, ";
-          break;
-        case D3DBLEND_ONE:
-          dxgsg7_cat.debug(false) << "ONE, ";
-          break;
-        case D3DBLEND_DESTCOLOR:
-          dxgsg7_cat.debug(false) << "DESTCOLOR, ";
-          break;
-        case D3DBLEND_INVDESTCOLOR:
-          dxgsg7_cat.debug(false) << "INVDESTCOLOR, ";
-          break;
-        case D3DBLEND_SRCALPHA:
-          dxgsg7_cat.debug(false) << "SRCALPHA, ";
-          break;
-        case D3DBLEND_INVSRCALPHA:
-          dxgsg7_cat.debug(false) << "INVSRCALPHA, ";
-          break;
-        case D3DBLEND_DESTALPHA:
-          dxgsg7_cat.debug(false) << "DESTALPHA, ";
-          break;
-        case D3DBLEND_INVDESTALPHA:
-          dxgsg7_cat.debug(false) << "INVDESTALPHA, ";
-          break;
-        case D3DBLEND_SRCALPHASAT:
-          dxgsg7_cat.debug(false) << "SRCALPHASAT, ";
-          break;
-        }
-    dxgsg7_cat.debug(false) << endl;
-#endif
-    }
-}
-
-INLINE void DXGraphicsStateGuardian7::
-enable_zwritemask(bool val) {
-    if (_depth_write_enabled != val) {
-        _depth_write_enabled = val;
-        _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, val);
-    }
-}
-
-/**  unimplemented
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_multisample
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_multisample(bool val) {
-  _multisample_enabled = val;
-  #ifdef NDEBUG
-    dxgsg7_cat.error() << "dx multisample unimplemented!!\n";
-  #endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_multisample_alpha_one
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_multisample_alpha_one(bool val) {
-  if (_multisample_alpha_one_enabled != val) {
-    _multisample_alpha_one_enabled = val;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_multisample_alpha_mask
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_multisample_alpha_mask(bool val) {
-  if (_multisample_alpha_mask_enabled != val) {
-    _multisample_alpha_mask_enabled = val;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::enable_point_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
-enable_point_smooth(bool val) {
-  // _point_smooth_enabled = val;
-
-  #ifdef NDEBUG
-    dxgsg7_cat.error() << "dx point smoothing unimplemented!!\n";
-  #endif
-}
-*/
-

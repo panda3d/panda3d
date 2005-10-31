@@ -91,7 +91,11 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 int GeomLinestrips::
 get_geom_rendering() const {
-  return GR_line_strip;
+  if (is_indexed()) {
+    return GR_line_strip | GR_indexed_other;
+  } else {
+    return GR_line_strip;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

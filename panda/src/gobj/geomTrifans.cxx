@@ -90,7 +90,11 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 int GeomTrifans::
 get_geom_rendering() const {
-  return GR_triangle_fan;
+  if (is_indexed()) {
+    return GR_triangle_fan | GR_indexed_other;
+  } else {
+    return GR_triangle_fan;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

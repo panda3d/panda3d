@@ -41,17 +41,14 @@ public:
 
 //  static is_unused_texpixelformat(DDPIXELFORMAT *)
 
-#ifdef USE_TEXFMTVEC
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
-#else
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
-#endif
+  LPDIRECTDRAWSURFACE7 create_texture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+  void delete_texture();
 
-  bool _bHasMipMaps;
+  INLINE bool has_mipmaps() const;
+
+  bool _has_mipmaps;
   DWORD _PixBufConversionType;  // enum ConversionType
 
-  // must be public since called from global callback fns
-  void DeleteTexture();
   HRESULT FillDDSurfTexturePixels();
 
 protected:
@@ -75,6 +72,7 @@ private:
   static TypeHandle _type_handle;
 };
 
+#include "dxTextureContext7.I"
 
 #endif
 

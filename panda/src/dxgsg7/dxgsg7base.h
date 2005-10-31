@@ -38,17 +38,12 @@
 #error DX7 headers not available, you need to install MS Platform SDK or DirectX 8+ SDK!
 #endif
 
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__  << ":" << __LINE__ << "), hr=" <<  ConvD3DErrorToString(HRESULT) << endl
+
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
 
-//#define USE_TEXFMTVEC
-// USE_TEXFMTVEC caused crash on dealloc
-
-#ifdef USE_TEXFMTVEC
-typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
-#else
 #define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
-#endif
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
 
@@ -69,7 +64,8 @@ typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
 #define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)  {          \
+   ULONG refcnt;                                                \
    if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {         \
         refcnt = (OBJECT)->Release();                           \
         MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
@@ -82,11 +78,12 @@ typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
         (OBJECT) = NULL;                          \
       } else {                                    \
         MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
-      } 
+      } }
 
 #define PRINTREFCNT(OBJECT,STR)  {  (OBJECT)->AddRef();  dxgsg7_cat.debug() << STR << " refcnt = " << (OBJECT)->Release() << endl; }
 #else
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)     \
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)    { \
+   ULONG refcnt;                                         \
    if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) { \
         refcnt=(OBJECT)->Release();                     \
         if((bDoDownToZero) && (refcnt>0)) {             \
@@ -96,7 +93,7 @@ typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
               } while(refcnt>0);                  \
         }                                         \
         (OBJECT) = NULL;                          \
-   }
+   } }
 
 #define PRINTREFCNT(OBJECT,STR)  
 #endif    
@@ -127,9 +124,6 @@ typedef struct {
       WORD              CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
       DDDEVICEIDENTIFIER2 DXDeviceID;
       D3DDEVICEDESC7    D3DDevDesc;
-#ifdef USE_TEXFMTVEC
-      DDPixelFormatVec  TexPixFmts;
-#endif
 } DXScreenData;
 #endif
 

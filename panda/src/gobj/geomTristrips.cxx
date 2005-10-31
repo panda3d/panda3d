@@ -91,7 +91,11 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 int GeomTristrips::
 get_geom_rendering() const {
-  return GR_triangle_strip;
+  if (is_indexed()) {
+    return GR_triangle_strip | GR_indexed_other;
+  } else {
+    return GR_triangle_strip;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

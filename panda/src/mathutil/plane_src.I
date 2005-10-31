@@ -131,7 +131,7 @@ operator *= (const FLOATNAME(LMatrix4) &mat) {
 //       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(Plane)::
 xform(const FLOATNAME(LMatrix4) &mat) {
   (*this) = (*this) * mat;
 }

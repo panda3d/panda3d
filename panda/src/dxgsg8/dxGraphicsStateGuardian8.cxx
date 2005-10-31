@@ -53,7 +53,7 @@
 #include "geomLines.h"
 #include "geomLinestrips.h"
 #include "geomPoints.h"
-#include "GeomVertexReader.h"
+#include "geomVertexReader.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
 #include "dxVertexBufferContext8.h"
@@ -112,6 +112,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   _supported_geom_rendering = 
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_point_perspective | Geom::GR_point_sprite |
+    Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 }
@@ -176,27 +177,25 @@ apply_texture(int i, TextureContext *tc) {
 
   int dirty = dtc->get_dirty_flags();
 
-  if (dirty) {
-    // If the texture image has changed, or if its use of mipmaps has
-    // changed, we need to re-create the image.  Ignore other types of
-    // changes, which aren't significant for DX.
-
-    if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
-      // If this is *only* because of a mipmap change, issue a
-      // warning--it is likely that this change is the result of an
-      // error or oversight.
-      if ((dirty & Texture::DF_image) == 0) {
-        dxgsg8_cat.warning()
-          << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
-      }
-
-      if (!dtc->create_texture(*_screen)) {
-        // Oops, we can't re-create the texture for some reason.
-        dxgsg8_cat.error()
-          << "Unable to re-create texture " << *dtc->_texture << endl;
-        _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
-        return;
-      }
+  // If the texture image has changed, or if its use of mipmaps has
+  // changed, we need to re-create the image.  Ignore other types of
+  // changes, which aren't significant for DX.
+  
+  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+    // If this is *only* because of a mipmap change, issue a
+    // warning--it is likely that this change is the result of an
+    // error or oversight.
+    if ((dirty & Texture::DF_image) == 0) {
+      dxgsg8_cat.warning()
+	<< "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+    }
+    
+    if (!dtc->create_texture(*_screen)) {
+      // Oops, we can't re-create the texture for some reason.
+      dxgsg8_cat.error()
+	<< "Unable to re-create texture " << *dtc->_texture << endl;
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+      return;
     }
   }
 
@@ -928,6 +927,11 @@ draw_triangles(const GeomTriangles *primitive) {
       // Nonindexed, client arrays.
       int stride = _vertex_data->get_format()->get_array(0)->get_stride();
       unsigned int first_vertex = primitive->get_first_vertex();
+
+      // Interestingly, my ATI driver seems to fail to draw anything
+      // in this call if the address range of the buffer supplied
+      // crosses over a multiple of 0x10000.  I refuse to hack around
+      // this lame driver bug.
       _d3d_device->DrawPrimitiveUP
         (D3DPT_TRIANGLELIST,
          primitive->get_num_primitives(),

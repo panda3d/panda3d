@@ -120,6 +120,19 @@ is_active() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::is_valid
+//       Access: Published
+//  Description: Returns true if the GSG has been correctly
+//               initialized within a graphics context, false if there
+//               has been some problem or it hasn't been initialized
+//               yet.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+is_valid() const {
+  return _is_valid;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_properties
 //       Access: Published
 //  Description: Returns the frame buffer properties requested for
@@ -617,19 +630,6 @@ reset_if_new() {
 INLINE void GraphicsStateGuardian::
 mark_new() {
   _needs_reset = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::is_valid
-//       Access: Public
-//  Description: Returns true if the GSG has been correctly
-//               initialized within a graphics context, false if there
-//               has been some problem or it hasn't been initialized
-//               yet.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-is_valid() const {
-  return _is_valid;
 }
 
 ////////////////////////////////////////////////////////////////////

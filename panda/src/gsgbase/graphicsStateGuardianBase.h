@@ -115,17 +115,11 @@ class Lens;
 //               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
-public:
+PUBLISHED:
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
 
-  // These functions will be queried by the GeomIssuer to determine if
-  // it should issue normals, texcoords, and/or colors, based on the
-  // GSG's current state.
-  virtual bool wants_normals() const=0;
-  virtual bool wants_texcoords() const=0;
-  virtual bool wants_colors() const=0;
-
+public:
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory
   // that display depends on.

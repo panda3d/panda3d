@@ -1,7 +1,4 @@
-// DX7 build is temporarily disabled until we bring it up-to-date with
-// the new Geom rewrite.
-#define BUILD_DIRECTORY
-//#define BUILD_DIRECTORY $[HAVE_DX]
+#define BUILD_DIRECTORY $[HAVE_DX]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
@@ -20,23 +17,19 @@
     putil linmath mathutil pnmimage event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
-
-  // need to install these due to external projects that link directly with libpandadx (bartop)  
-  #define INSTALL_HEADERS \
-    config_dxgsg7.h dxGraphicsStateGuardian7.I dxGraphicsStateGuardian7.h \
-    dxTextureContext7.h dxgsg7base.h
-
-  // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
     dxGraphicsStateGuardian7.cxx \
+    dxGeomMunger7.I dxGeomMunger7.h \
+    dxTextureContext7.I dxTextureContext7.h \
     wdxGraphicsPipe7.I wdxGraphicsPipe7.h \
-    wdxGraphicsWindow7.I wdxGraphicsWindow7.h \
+    wdxGraphicsWindow7.I wdxGraphicsWindow7.h 
     $[INSTALL_HEADERS]
     
   #define INCLUDED_SOURCES \
     config_dxgsg7.cxx \
     dxgsg7base.cxx \
+    dxGeomMunger7.cxx \
     dxTextureContext7.cxx \
     wdxGraphicsPipe7.cxx wdxGraphicsWindow7.cxx
 

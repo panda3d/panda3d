@@ -46,7 +46,6 @@ public:
                      const string &name);
   virtual ~wdxGraphicsWindow7();
   virtual void end_flip();
-  //virtual bool begin_frame();
   virtual void make_current();
   virtual bool open_window();
 
@@ -54,7 +53,6 @@ protected:
   virtual void fullscreen_restored(WindowProperties &properties);
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
-  virtual void support_overlay_window(bool flag);
 
 private:
   bool set_to_temp_rendertarget();

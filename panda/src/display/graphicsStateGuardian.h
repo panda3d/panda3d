@@ -76,6 +76,7 @@ PUBLISHED:
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
+  INLINE bool is_valid() const;
 
   INLINE const FrameBufferProperties &get_properties() const;
   INLINE GraphicsPipe *get_pipe() const;
@@ -167,13 +168,6 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  // These functions will be queried by the GeomIssuer to determine if
-  // it should issue normals, texcoords, and/or colors, based on the
-  // GSG's current state.
-  virtual bool wants_normals() const;
-  virtual bool wants_texcoords() const;
-  virtual bool wants_colors() const;
-
   virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
   virtual CPT(RenderState) begin_decal_nested();
@@ -194,7 +188,6 @@ public:
   INLINE bool reset_if_new();
   INLINE void mark_new();
   virtual void reset();
-  INLINE bool is_valid() const;
 
   INLINE CPT(TransformState) get_transform();
   

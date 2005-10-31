@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef wdxGraphicsWindow8_H
-#define wdxGraphicsWindow8_H
+#ifndef WDXGRAPHICSWINDOW8_H
+#define WDXGRAPHICSWINDOW8_H
 
 #include "pandabase.h"
 #include "winGraphicsWindow.h"

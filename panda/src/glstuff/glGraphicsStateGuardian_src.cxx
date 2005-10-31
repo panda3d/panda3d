@@ -295,6 +295,7 @@ reset() {
   _supported_geom_rendering = 
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
+    Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_last_vertex;
 
@@ -3395,16 +3396,6 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::wants_texcoords
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-wants_texcoords() const {
-  return true;
 }
 
 #ifdef SUPPORT_IMMEDIATE_MODE

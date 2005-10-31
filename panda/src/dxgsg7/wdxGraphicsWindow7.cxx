@@ -174,36 +174,10 @@ open_window() {
   set_coop_levels_and_display_modes();
   create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
 
+  make_current();
+
   return true;
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow7::make_gsg
-//       Access: Public, Virtual
-//  Description: Creates a new GSG for the window and stores it in the
-//               _gsg pointer.  This should only be called from within
-//               the draw thread.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow7::
-make_gsg() {
-  nassertv(_gsg == (GraphicsStateGuardian *)NULL);
-  _dxgsg = new DXGraphicsStateGuardian7(this);
-  _gsg = _dxgsg;
-  // Tell the associated dxGSG about the window handle.
-  _wcontext.hWnd = _hWnd;
-
-  if (!choose_device(0, NULL)) {
-    wdxdisplay7_cat.error()
-      << "Unable to find suitable rendering device.\n";
-    release_gsg();
-    return;
-  }
-
-  set_coop_levels_and_display_modes();
-  create_screen_buffers_and_device(_dxgsg->scrn, dx_force_16bpp_zbuffer);
-}
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow7::end_flip
@@ -284,18 +258,13 @@ handle_reshape() {
       return;
     }
 
-    _dxgsg->RestoreAllVideoSurfaces();
+    _dxgsg->release_all();
 
     set_to_temp_rendertarget();
 
-    // create the new resized rendertargets
-    //RECT view_rect;
-    //get_client_rect_screen(hWnd, &view_rect);
-    //_dxgsg->dx_setup_after_resize(view_rect, &_wcontext);
-
     RECT view_rect;
     get_client_rect_screen(_wcontext.hWnd, &view_rect);
-    _dxgsg->dx_setup_after_resize(&view_rect);
+    //    _dxgsg->dx_setup_after_resize(&view_rect);
   }
 }
 
@@ -307,7 +276,7 @@ handle_reshape() {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
 do_fullscreen_resize(int x_size, int y_size) {
-  _dxgsg->SetDXReady(false);
+  //  _dxgsg->SetDXReady(false);
 
   HRESULT hr;
 
@@ -379,7 +348,7 @@ do_fullscreen_resize(int x_size, int y_size) {
     return false;
   }
 
-  _dxgsg->free_dxgsg_objects();
+  //  _dxgsg->free_dxgsg_objects();
 
    // let driver choose default refresh rate (hopefully its >=60Hz)   
   hr = _wcontext.pDD->SetDisplayMode(x_size, y_size, dwFullScreenBitDepth,
@@ -405,26 +374,9 @@ do_fullscreen_resize(int x_size, int y_size) {
   _wcontext.dwRenderHeight = y_size;
 
   create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
-  _dxgsg->RecreateAllVideoSurfaces();
-  _dxgsg->SetDXReady(true);
+  _dxgsg->release_all();
+  //  _dxgsg->SetDXReady(true);
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow7::support_overlay_window
-//       Access: Protected, Virtual
-//  Description: Some windows graphics contexts (e.g. DirectX)
-//               require special support to enable the displaying of
-//               an overlay window (particularly the IME window) over
-//               the fullscreen graphics window.  This is a hook for
-//               the window to enable or disable that mode when
-//               necessary.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow7::
-support_overlay_window(bool flag) {
-  if (_dxgsg != (DXGraphicsStateGuardian7 *)NULL) {
-    _dxgsg->support_overlay_window(flag);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -439,8 +391,9 @@ support_overlay_window(bool flag) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
 set_to_temp_rendertarget() {
+  return true;
+
   LPDIRECTDRAWSURFACE7 pddsDummy = NULL, pddsDummyZ = NULL;
-  ULONG refcnt;
   HRESULT hr;
     
   DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
@@ -452,8 +405,6 @@ set_to_temp_rendertarget() {
   ddsd.dwWidth = 1; 
   ddsd.dwHeight = 1;
   ddsd.ddsCaps.dwCaps &= ~(DDSCAPS_COMPLEX | DDSCAPS_FLIP | DDSCAPS_FRONTBUFFER | DDSCAPS_BACKBUFFER);
-  
-  PRINTVIDMEM(pDD, &ddsd.ddsCaps, "dummy backbuf");
   
   hr = pDD->CreateSurface(&ddsd, &pddsDummy, NULL);    
   if (FAILED(hr)) {
@@ -469,8 +420,6 @@ set_to_temp_rendertarget() {
     ddsdZ.dwFlags &= ~DDSD_PITCH;
     ddsdZ.dwWidth = 1;
     ddsdZ.dwHeight = 1;
-    
-    PRINTVIDMEM(pDD,&ddsdZ.ddsCaps,"dummy zbuf");
     
     hr = pDD->CreateSurface(&ddsdZ, &pddsDummyZ, NULL);
     if (FAILED(hr)) {
@@ -551,8 +500,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       // set it anyway.  hope this is OK.
       ddsd.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
     }
-
-    PRINTVIDMEM(pDD, &ddsd.ddsCaps, "initial primary & backbuf");
 
     // Create the primary surface for the fullscreen window
     hr = pDD->CreateSurface(&ddsd, &pPrimaryDDSurf, NULL);
@@ -673,8 +620,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
     SurfaceDesc.dwFlags = DDSD_CAPS ;
     SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
 
-    PRINTVIDMEM(pDD, &SurfaceDesc.ddsCaps, "initial primary surface");
-
     // Create the primary surface for windowed mode.  This includes
     // all of the visible window, so no need to specify height/width.
     hr = pDD->CreateSurface(&SurfaceDesc, &pPrimaryDDSurf, NULL);
@@ -724,8 +669,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       // set it anyway.  hope this is OK.
       SurfaceDesc.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
     }
-
-    PRINTVIDMEM(pDD, &SurfaceDesc.ddsCaps, "initial backbuf");
 
     // Create the backbuffer. (might want to handle failure due to
     // running out of video memory)
@@ -896,8 +839,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       }
     }
 
-    PRINTVIDMEM(pDD, &ddsd.ddsCaps, "initial zbuf");
-
 #ifdef _DEBUG
     wdxdisplay7_cat.info()
       << "Creating " << ddsd.ddpfPixelFormat.dwRGBBitCount << "bpp zbuffer\n";
@@ -921,8 +862,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
           << "GetAvailVidMem lied, not enough VidMem for 32bpp, so trying 16bpp on device #"
           << Display.CardIDNum << endl;
         
-        ULONG refcnt;
-
         // free pri and back (maybe should just free pri since created
         // as complex chain?)
         RELEASE(pBackDDSurf, wdxdisplay7, "backbuffer", false);
@@ -993,13 +932,13 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   _dxgsg->set_context(&Display);
   //pDD, pPrimaryDDSurf, pBackDDSurf, pZDDSurf, pD3DI, pD3DDevice, view_rect);
-  _dxgsg->dx_init();
+  //  _dxgsg->dx_init();
 
   // do not SetDXReady() yet since caller may want to do more work
   // before letting rendering proceed
 
   // Oh, go ahead and call it.
-  _dxgsg->SetDXReady(true);
+  //  _dxgsg->SetDXReady(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1389,33 +1328,3 @@ set_coop_levels_and_display_modes() {
     }
   }
 }
-
-#if 0
-
-// probably need this here similar to dx8
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow7::
-begin_frame() {
-  if (_awaiting_restore) {
-    // The fullscreen window was recently restored; we can't continue
-    // until the GSG says we can.
-    if (!_dxgsg->CheckCooperativeLevel()) {
-      // Keep waiting.
-      return false;
-    }
-    _awaiting_restore = false;
-
-    init_resized_window();
-  }
-
-  return WinGraphicsWindow::begin_frame();
-}
-#endif
