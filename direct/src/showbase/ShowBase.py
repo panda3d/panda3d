@@ -64,6 +64,7 @@ class ShowBase(DirectObject.DirectObject):
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
+        self.wantRender2dp = self.config.GetBool('want-render2dp', 0)
 
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
         self.musicManager = None
@@ -139,8 +140,11 @@ class ShowBase(DirectObject.DirectObject):
 
         self.setupRender()
         self.setupRender2d()
-        self.setupRender2dp()
         self.setupDataGraph()
+
+        if self.wantRender2dp:
+            self.setupRender2dp()
+
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
@@ -210,9 +214,7 @@ class ShowBase(DirectObject.DirectObject):
 
         __builtins__["base"] = self
         __builtins__["render2d"] = self.render2d
-        __builtins__["render2dp"] = self.render2dp
         __builtins__["aspect2d"] = self.aspect2d
-        __builtins__["aspect2dp"] = self.aspect2dp
         __builtins__["render"] = self.render
         __builtins__["hidden"] = self.hidden
         __builtins__["camera"] = self.camera
@@ -236,6 +238,10 @@ class ShowBase(DirectObject.DirectObject):
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
         __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
+
+        if self.wantRender2dp:
+            __builtins__["render2dp"] = self.render2dp
+            __builtins__["aspect2dp"] = self.aspect2dp
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
@@ -674,12 +680,6 @@ class ShowBase(DirectObject.DirectObject):
         # many 2-d objects will be drawn over each other without
         # regard to depth position.
 
-        # We used to avoid clearing the depth buffer before drawing
-        # render2d, but nowadays we clear it anyway, since we
-        # occasionally want to put 3-d geometry under render2d, and
-        # it's simplest (and seems to be easier on graphics drivers)
-        # if the 2-d scene has been cleared first.
-
         dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
         dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
         self.render2dp.setDepthTest(0)
@@ -825,9 +825,8 @@ class ShowBase(DirectObject.DirectObject):
         dr = win.makeDisplayRegion(*displayRegion)
         dr.setSort(sort)
 
-        # Enable clearing of the depth buffer on this new display
-        # region (see the comment in setupRender2d, above).
-        dr.setClearDepthActive(1)
+        # Unlike render2d, we don't clear the depth buffer for
+        # render2dp.  Caveat emptor.
 
         left, right, bottom, top = coords
 
