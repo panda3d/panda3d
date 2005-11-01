@@ -64,7 +64,7 @@ class ShowBase(DirectObject.DirectObject):
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
-        self.wantRender2dp = self.config.GetBool('want-render2dp', 0)
+        self.wantRender2dp = self.config.GetBool('want-render2dp', 1)
 
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
         self.musicManager = None
@@ -117,12 +117,14 @@ class ShowBase(DirectObject.DirectObject):
         self.drive = None
         self.trackball = None
         self.cam = None
-        self.camList = []
-        self.camNode = None
-        self.camLens = None
+        self.cam2d = None
+        self.cam2dp = None
         self.camera = None
         self.camera2d = None
         self.camera2dp = None
+        self.camList = []
+        self.camNode = None
+        self.camLens = None
         self.camFrustumVis = None
 
         # This is used for syncing multiple PCs in a distributed cluster
@@ -458,6 +460,10 @@ class ShowBase(DirectObject.DirectObject):
                 # preserve it for reopening the window.
                 if cam == self.cam:
                     self.cam = None
+                if cam == self.cam2d:
+                    self.cam2d = None
+                if cam == self.cam2dp:
+                    self.cam2dp = None
                 cam.removeNode()
 
         # Now we can actually close the window.
@@ -813,6 +819,9 @@ class ShowBase(DirectObject.DirectObject):
         camera2d = self.camera2d.attachNewNode(cam2dNode)
         dr.setCamera(camera2d)
 
+        if self.cam2d == None:
+            self.cam2d = camera2d
+
         return camera2d
 
     def makeCamera2dp(self, win, sort = 20,
@@ -846,6 +855,9 @@ class ShowBase(DirectObject.DirectObject):
 
         camera2dp = self.camera2dp.attachNewNode(cam2dNode)
         dr.setCamera(camera2dp)
+
+        if self.cam2dp == None:
+            self.cam2dp = camera2dp
 
         return camera2dp
 

@@ -520,7 +520,7 @@ create_texture_card_vdata(int x, int y)
   float xhi = (x * 1.0f) / xru;
   float yhi = (y * 1.0f) / yru;
   
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3cpt2();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
   
   PT(GeomVertexData) vdata = new GeomVertexData
     ("card", format, Geom::UH_static);
@@ -528,7 +528,7 @@ create_texture_card_vdata(int x, int y)
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
-    
+  
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));

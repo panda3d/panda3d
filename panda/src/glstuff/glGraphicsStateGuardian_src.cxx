@@ -518,6 +518,16 @@ reset() {
     _glClientActiveTexture = null_glActiveTexture;
   }
 
+  if (has_extension("GL_ARB_depth_texture")) {
+    _supports_depth_texture = true;
+  }
+
+  if (_supports_depth_texture &&
+      has_extension("GL_ARB_shadow") &&
+      has_extension("GL_ARB_fragment_program_shadow")) {
+    _supports_shadow_filter = true;
+  }
+  
   _supports_texture_combine = 
     has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
   _supports_texture_saved_result =
@@ -2041,7 +2051,7 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(ShaderExpansion *se) {
-  CLP(ShaderContext) *result = new CLP(ShaderContext)(se);
+  CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
   if (result->valid()) return result;
   delete result;
   return NULL;
@@ -2452,7 +2462,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   } else {
     nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
   }
-
+  
   // Match framebuffer format if necessary.
   if (tex->get_match_framebuffer_format()) {
     const FrameBufferProperties &properties = get_properties();
@@ -3901,6 +3911,8 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
     case Texture::FT_nearest_mipmap_linear:
     case Texture::FT_linear_mipmap_linear:
       return GL_LINEAR;
+    case Texture::FT_shadow:
+      return GL_LINEAR;
     case Texture::FT_invalid:
       break;
     }
@@ -3919,6 +3931,8 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
       return GL_NEAREST_MIPMAP_LINEAR;
     case Texture::FT_linear_mipmap_linear:
       return GL_LINEAR_MIPMAP_LINEAR;
+    case Texture::FT_shadow:
+      return GL_LINEAR;
     case Texture::FT_invalid:
       break;
     }
@@ -5044,7 +5058,7 @@ update_standard_texture_bindings()
 
       GLP(MatrixMode)(GL_TEXTURE);
       if (_target._tex_matrix->has_stage(stage)) {
-        GLP(LoadMatrixf)(_state._tex_matrix->get_mat(stage).get_data());
+        GLP(LoadMatrixf)(_target._tex_matrix->get_mat(stage).get_data());
       } else {
         GLP(LoadIdentity)();
       }
@@ -5444,6 +5458,19 @@ specify_texture(Texture *tex) {
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, true));
 
+  if (_supports_shadow_filter) {
+    if (tex->get_format() == Texture::F_depth_component) {
+      if ((tex->get_magfilter() == Texture::FT_shadow) ||
+          (tex->get_minfilter() == Texture::FT_shadow)) {
+        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
+        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_GEQUAL);
+      } else {
+        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE);
+        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);
+      }
+    }
+  }
+  
   report_my_gl_errors();
 }
 

@@ -127,6 +127,9 @@ PUBLISHED:
     // two mipmap levels, and linearly blend the results.
     FT_linear_mipmap_linear,
 
+    // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
+    FT_shadow,
+    
     // Returned by string_filter_type() for an invalid match.
     FT_invalid
   };

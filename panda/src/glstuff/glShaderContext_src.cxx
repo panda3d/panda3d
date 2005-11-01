@@ -24,7 +24,7 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
-CLP(ShaderContext)(ShaderExpansion *s) : ShaderContext(s) {
+CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   string header;
   s->parse_init();
   s->parse_line(header, true, true);
@@ -73,7 +73,7 @@ CLP(ShaderContext)(ShaderExpansion *s) : ShaderContext(s) {
     }
     
     // Compile the program.
-    try_cg_compile(s);
+    try_cg_compile(s, gsg);
     cerr << _cg_errors;
     return;
   }
@@ -155,7 +155,7 @@ parse_cg_profile(const string &id, bool vertex)
 ////////////////////////////////////////////////////////////////////
 #ifdef HAVE_CGGL
 bool CLP(ShaderContext)::
-try_cg_compile(ShaderExpansion *s)
+try_cg_compile(ShaderExpansion *s, GSG *gsg)
 {
   _cg_errors = "";
   
@@ -174,6 +174,78 @@ try_cg_compile(ShaderExpansion *s)
   if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
     release_resources();
     return false;
+  }
+  
+  // The following code is present to work around a bug in the Cg compiler.
+  // It does not generate correct code for shadow map lookups when using arbfp1.
+  // This is a particularly onerous limitation, given that arbfp1 is the only
+  // Cg target that works on radeons.  I suspect this is an intentional
+  // omission on nvidia's part.  The following code fetches the output listing,
+  // detects the error, repairs the code, and resumbits the repaired code to Cg.
+  if ((_cg_profile[1] == CG_PROFILE_ARBFP1) && (gsg->_supports_shadow_filter)) {
+    bool shadowunit[32];
+    bool anyshadow = false;
+    memset(shadowunit, 0, sizeof(shadowunit));
+    vector_string lines;
+    tokenize(cgGetProgramString(_cg_program[1], CG_COMPILED_PROGRAM), lines, "\n");
+    // figure out which texture units contain shadow maps.
+    for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+      if (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) {
+        continue;
+      }
+      vector_string fields;
+      tokenize(lines[lineno], fields, ":");
+      if (fields.size()!=5) {
+        continue;
+      }
+      vector_string words;
+      tokenize(trim(fields[2]), words, " ");
+      if (words.size()!=2) {
+        continue;
+      }
+      int unit = atoi(words[1].c_str());
+      if ((unit < 0)||(unit >= 32)) {
+        continue;
+      }
+      anyshadow = true;
+      shadowunit[unit] = true;
+    }
+    // modify all TEX statements that use the relevant texture units.
+    if (anyshadow) {
+      for (int lineno=0; lineno<(int)lines.size(); lineno++) {
+        if (lines[lineno].compare(0,4,"TEX ")) {
+          continue;
+        }
+        vector_string fields;
+        tokenize(lines[lineno], fields, ",");
+        if ((fields.size()!=4)||(trim(fields[3]) != "2D;")) {
+          continue;
+        }
+        vector_string texunitf;
+        tokenize(trim(fields[2]), texunitf, "[]");
+        if ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
+          continue;
+        }
+        int unit = atoi(texunitf[1].c_str());
+        if ((unit < 0) || (unit >= 32) || (shadowunit[unit]==false)) {
+          continue;
+        }
+        lines[lineno] = fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;";
+      }
+      string result = "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n";
+      for (int lineno=1; lineno<(int)lines.size(); lineno++) {
+        result += (lines[lineno] + "\n");
+      }
+      cgDestroyProgram(_cg_program[1]);
+      _cg_program[1] =
+        cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
+                        _cg_profile[1], "fshader", (const char**)NULL);
+      print_cg_compile_errors(s->get_name(), _cg_context);
+      if (_cg_program[SHADER_type_frag]==0) {
+        release_resources();
+        return false;
+      }
+    }
   }
   
   bool success = true;

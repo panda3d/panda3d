@@ -145,7 +145,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_multisample = false;
   _supports_generate_mipmap = false;
   _supports_render_texture = false;
-
+  _supports_depth_texture = false;
+  _supports_shadow_filter = false;
   _supported_geom_rendering = 0;
 
   // If this is true, then we can apply a color and/or color scale by

@@ -471,6 +471,28 @@ get_supports_render_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_depth_texture
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               textures whose format is F_depth_component.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_depth_texture() const {
+  return _supports_depth_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_shadow_filter
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               the filter mode FT_shadow for depth textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_shadow_filter() const {
+  return _supports_shadow_filter;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_color_scale_via_lighting
 //       Access: Published
 //  Description: Returns true if this particular GSG can implement (or

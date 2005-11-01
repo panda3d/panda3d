@@ -1367,7 +1367,8 @@ string_filter_type(const string &string) {
     return FT_linear_mipmap_linear;
   } else if (cmp_nocase_uh(string, "mipmap") == 0) {
     return FT_linear_mipmap_linear;
-
+  } else if (cmp_nocase_uh(string, "shadow") == 0) {
+    return FT_shadow;
   } else {
     return FT_invalid;
   }
@@ -1923,6 +1924,9 @@ operator << (ostream &out, Texture::FilterType ft) {
   case Texture::FT_linear_mipmap_linear:
     return out << "linear_mipmap_linear";
 
+  case Texture::FT_shadow:
+    return out << "shadow";
+  
   case Texture::FT_invalid:
     return out << "invalid";
   }

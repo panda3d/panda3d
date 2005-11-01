@@ -34,9 +34,10 @@ class CLP(GraphicsStateGuardian);
 
 class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
-  CLP(ShaderContext)(ShaderExpansion *s);
-  ~CLP(ShaderContext)();
   typedef CLP(GraphicsStateGuardian) GSG;
+
+  CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
+  ~CLP(ShaderContext)();
 
   INLINE bool valid(void);
   void bind(GSG *gsg);
@@ -116,7 +117,7 @@ private:
   vector <ShaderTransBind> _cg_parameter_bind;
   vector <ShaderVarying> _cg_varying;
   
-  bool try_cg_compile(ShaderExpansion *s);
+  bool try_cg_compile(ShaderExpansion *s, GSG *gsg);
   void bind_cg_transform(const ShaderTransBind &stb,
                          CLP(GraphicsStateGuardian) *gsg);
   void suggest_cg_profile(const string &vpro, const string &fpro);

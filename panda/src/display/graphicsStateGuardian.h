@@ -109,11 +109,13 @@ PUBLISHED:
   virtual bool get_supports_multisample() const;
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_render_texture() const;
+  INLINE bool get_supports_depth_texture() const;
+  INLINE bool get_supports_shadow_filter() const;
 
   virtual int get_supported_geom_rendering() const;
 
   INLINE bool get_color_scale_via_lighting() const;
-
+  
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
@@ -355,9 +357,11 @@ protected:
   bool _supports_multisample;
   bool _supports_generate_mipmap;
   bool _supports_render_texture;
+  bool _supports_depth_texture;
+  bool _supports_shadow_filter;
   int _supported_geom_rendering;
   bool _color_scale_via_lighting;
-
+  
 public:
   // Statistics
   static PStatCollector _total_texusage_pcollector;
