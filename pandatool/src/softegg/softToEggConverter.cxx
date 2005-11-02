@@ -910,7 +910,7 @@ convert_hierarchy(EggGroupNode *egg_root) {
     if (!process_model_node(_tree.get_node(i))) {
       return false;
     }
-    softegg_cat.info() << i << endl;
+    softegg_cat.debug() << i << endl;
   }
   return true;
 }
