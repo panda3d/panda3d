@@ -21,6 +21,8 @@
 #include "eggData.h"
 #include "load_egg_file.h"
 #include "config_util.h"
+#include "config_chan.h"
+#include "config_gobj.h"
 #include "textNode.h"
 #include "multiplexStream.h"
 #include "distanceUnit.h"
@@ -37,7 +39,16 @@
 #include <maya/MArgParser.h>
 #include <maya/MArgList.h>
 #include <maya/MSyntax.h>
+#include <maya/MProgressWindow.h>
 #include "post_maya_include.h"
+
+// On Windows, we have code to fork pview as a separate process, which
+// seems to be better for Maya.
+#ifdef WIN32_VC
+#include <windows.h>
+#include <process.h>
+#define SEPARATE_PVIEW 1
+#endif  // WIN32_VC
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaPview::Constructor
@@ -73,6 +84,69 @@ doIt(const MArgList &args) {
     return result;
   }
 
+  if (!MProgressWindow::reserve()) {
+    nout << "Couldn't reserve progress window.\n";
+    return MS::kFailure;
+  }
+  MProgressWindow::setTitle("Sending to pview");
+  MProgressWindow::setInterruptable(false);
+  MProgressWindow::setProgressRange(0, 3);
+  MProgressWindow::setProgressStatus("Converting scene");
+  MProgressWindow::startProgress();
+
+#ifdef SEPARATE_PVIEW
+  // We'll write the bam file to a temporary file first.
+  Filename bam_filename = Filename::temporary("", "pview");
+  bam_filename.set_extension("bam");
+
+  // Since we're just writing to a bam file in this process, and
+  // running pview in a separate process, we don't actually need to
+  // load textures at this point.  Disable the loading of textures.
+  textures_header_only = true;
+
+  NodePath root("root");
+  if (!convert(root, animate)) {
+    nout << "failure in conversion.\n";
+    MProgressWindow::endProgress();
+    return MS::kFailure;
+  }
+
+  MProgressWindow::setProgressStatus("Writing bam file");
+  MProgressWindow::advanceProgress(1);
+
+  if (!root.write_bam_file(bam_filename)) {
+    nout << "Couldn't write to " << bam_filename << ".\n";
+    MProgressWindow::endProgress();
+    return MS::kFailure;
+  }
+
+  MProgressWindow::setProgressStatus("Spawning pview");
+  MProgressWindow::advanceProgress(1);
+  
+  // Now spawn a pview instance to view this temporary file.
+  string pview_args = "-clD";
+  if (animate) {
+    pview_args = "-clDa";
+  }
+
+  // On Windows, we use the spawn function to run pview
+  // asynchronously.
+  string quoted = string("\"") + bam_filename.get_fullpath() + string("\"");
+  nout << "pview " << pview_args << " " << quoted << "\n";
+  int retval = _spawnlp(_P_DETACH, "pview", 
+                        "pview", pview_args.c_str(), quoted.c_str(), NULL);
+  if (retval == -1) {
+    bam_filename.unlink();
+    MProgressWindow::endProgress();
+    return MS::kFailure;
+  }
+
+  nout << "pview running.\n"; 
+  MProgressWindow::endProgress();
+
+#else  // SEPARATE_PVIEW
+  // We'll run PandaFramework directly within this process.
+
   // Maya seems to run each invocation of the plugin in a separate
   // thread.  To minimize conflict in our
   // not-yet-completely-thread-safe Panda, we'll create a separate
@@ -90,6 +164,7 @@ doIt(const MArgList &args) {
   if (window == (WindowFramework *)NULL) {
     // Couldn't open a window.
     nout << "Couldn't open a window!\n";
+    MProgressWindow::endProgress();
     return MS::kFailure;
   }
 
@@ -117,6 +192,7 @@ doIt(const MArgList &args) {
 
   if (!convert(framework.get_models(), animate)) {
     nout << "failure in conversion.\n";
+    MProgressWindow::endProgress();
     return MS::kFailure;
   }
 
@@ -130,7 +206,10 @@ doIt(const MArgList &args) {
     window->set_anim_controls(true);
   }
 
+  MProgressWindow::endProgress();
   framework.main_loop();
+#endif  // SEPARATE_PVIEW
+
   return MS::kSuccess;
 }
 
@@ -158,10 +237,15 @@ convert(const NodePath &parent, bool animate) {
   // We always want polygon output since we want to be able to see the
   // results.
   converter._polygon_output = true;
+  converter._polygon_tolerance = 0.01;
 
   if (animate) {
     // We also want to get the animation if there is any.
     converter.set_animation_convert(AC_both);
+
+    // Don't compress animation channels; that can introduce confusing
+    // artifacts.
+    compress_channels = false;
   }
 
   PathReplace *path_replace = converter.get_path_replace();
@@ -186,6 +270,9 @@ convert(const NodePath &parent, bool animate) {
     nout << "Errors in conversion.\n";
     return false;
   }
+
+  MProgressWindow::setProgressStatus("Converting to bam");
+  MProgressWindow::advanceProgress(1);
 
   // Now the converter has filled up our egg structure with data, so
   // convert this egg data to Panda data for immediate viewing.
