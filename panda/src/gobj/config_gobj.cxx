@@ -188,6 +188,14 @@ ConfigVariableEnum<AutoTextureScale> textures_square
           "a square aspect ratio when they are loaded from disk.  Set this "
           "to 'none', 'down', or 'up'.  See textures-power-2."));
 
+extern EXPCL_PANDA ConfigVariableBool textures_header_only;
+ConfigVariableBool textures_header_only
+("textures-header-only", false,
+ PRC_DESC("If this is true, texture images will not actually be loaded from "
+	  "disk, but the image header information will be consulted to verify "
+	  "number of channels and so forth.  The texture images themselves "
+	  "will be generated in a default blue color."));
+
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
  PRC_DESC("Specifies the maximum number of entries in the cache "

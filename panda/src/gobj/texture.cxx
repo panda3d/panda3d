@@ -288,10 +288,25 @@ bool Texture::
 read(const Filename &fullpath, int z, int primary_file_num_channels) {
   PNMImage image;
 
-  if (!image.read(fullpath, NULL, false)) {
-    gobj_cat.error()
-      << "Texture::read() - couldn't read: " << fullpath << endl;
-    return false;
+  if (textures_header_only) {
+    if (!image.read_header(fullpath)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read: " << fullpath << endl;
+      return false;
+    }
+    image = PNMImage(1, 1, image.get_num_channels(), image.get_maxval(),
+		     image.get_type());
+    image.fill(0.2, 0.3, 1.0);
+    if (image.has_alpha()) {
+      image.alpha_fill(1.0);
+    }
+
+  } else {
+    if (!image.read(fullpath, NULL, false)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read: " << fullpath << endl;
+      return false;
+    }
   }
 
   if (!has_name()) {
@@ -327,19 +342,50 @@ bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int z, int primary_file_num_channels, int alpha_file_channel) {
   PNMImage image;
-  if (!image.read(fullpath, NULL, false)) {
-    gobj_cat.error()
-      << "Texture::read() - couldn't read: " << fullpath << endl;
-    return false;
+  if (textures_header_only) {
+    if (!image.read_header(fullpath)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read: " << fullpath << endl;
+      return false;
+    }
+    image = PNMImage(1, 1, image.get_num_channels(), image.get_maxval(),
+		     image.get_type());
+    image.fill(0.2, 0.3, 1.0);
+    if (image.has_alpha()) {
+      image.alpha_fill(1.0);
+    }
+
+  } else {
+    if (!image.read(fullpath, NULL, false)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read: " << fullpath << endl;
+      return false;
+    }
   }
 
   PNMImage alpha_image;
-  if (!alpha_image.read(alpha_fullpath, NULL, true)) {
-    gobj_cat.error()
-      << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
-    return false;
-  }
+  if (textures_header_only) {
+    if (!alpha_image.read_header(alpha_fullpath)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read: " << alpha_fullpath << endl;
+      return false;
+    }
+    alpha_image = PNMImage(1, 1, alpha_image.get_num_channels(), 
+			   alpha_image.get_maxval(),
+			   alpha_image.get_type());
+    alpha_image.fill(1.0);
+    if (alpha_image.has_alpha()) {
+      alpha_image.alpha_fill(1.0);
+    }
 
+  } else {
+    if (!alpha_image.read(alpha_fullpath, NULL, true)) {
+      gobj_cat.error()
+	<< "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
+      return false;
+    }
+  }
+    
   if (!has_name()) {
     set_name(fullpath.get_basename_wo_extension());
   }

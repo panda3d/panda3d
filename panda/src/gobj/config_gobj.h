@@ -61,6 +61,7 @@ extern EXPCL_PANDA ConfigVariableBool connect_triangle_strips;
 extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;
+extern EXPCL_PANDA ConfigVariableBool textures_header_only;
 
 extern EXPCL_PANDA ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA ConfigVariableInt geom_cache_min_frames;
