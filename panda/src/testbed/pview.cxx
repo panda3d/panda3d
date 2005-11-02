@@ -233,6 +233,10 @@ help() {
     "      After displaying the models, immediately take a screenshot and\n"
     "      exit.\n\n"
 
+    "  -D\n"
+    "      Delete the model files after loading them (presumably this option\n"
+    "      will only be used when loading a temporary model file).\n\n"
+
     "  -V\n"
     "      Report the current version of Panda, and exit.\n\n"
     
@@ -260,10 +264,11 @@ main(int argc, char *argv[]) {
   int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
                               PartGroup::HMF_ok_anim_extra;
   Filename screenshotfn;
+  bool delete_models = false;
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "acls:Vhi";
+  static const char *optflags = "acls:DVhi";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -288,6 +293,10 @@ main(int argc, char *argv[]) {
     case 's':
       auto_screenshot = true;
       screenshotfn = optarg;
+      break;
+
+    case 'D':
+      delete_models = true;
       break;
 
     case 'V':
@@ -343,6 +352,16 @@ main(int argc, char *argv[]) {
       window->load_default_model(framework.get_models());
     } else {
       window->load_models(framework.get_models(), argc, argv);
+
+      if (delete_models) {
+	for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
+	  Filename model = Filename::from_os_specific(argv[i]);
+	  if (model.exists()) {
+	    nout << "Deleting " << model << "\n";
+	    model.unlink();
+	  }
+	}
+      }
     }
     window->loop_animations(hierarchy_match_flags);
     
