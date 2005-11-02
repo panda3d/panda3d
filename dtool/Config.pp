@@ -635,7 +635,7 @@
 // properly with optimize level 4 set (we get link errors with ostream).
 
 #define MAYA_LOCATION /usr/aw/maya
-#defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib,Foundation OpenMaya OpenMayaAnim]
+#defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib OpenMayaUI.lib,Foundation OpenMaya OpenMayaAnim OpenMayaUI]
 // Optionally define this to the value of LM_LICENSE_FILE that should
 // be set before invoking Maya.
 #define MAYA_LICENSE_FILE
