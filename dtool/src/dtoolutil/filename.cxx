@@ -862,7 +862,24 @@ make_true_case() {
   }
   assert(l < MAX_PATH + 1);
 
-  (*this) = Filename::from_os_specific(long_name);
+  Filename true_case = Filename::from_os_specific(long_name);
+		  
+  // Now sanity-check the true-case filename.  If it's not the same as
+  // the source file, except for case, reject it.
+  string orig_filename = get_fullpath();
+  string new_filename = true_case.get_fullpath();
+  bool match = (orig_filename.length() == new_filename.length());
+  for (size_t i = 0; i < orig_filename.length() && match; ++i) {
+    match = (tolower(orig_filename[i]) == tolower(new_filename[i]));
+  }
+  if (!match) {
+    // Something went wrong.  Keep the original filename, assume it
+    // was the correct case after all.  We return true because the
+    // filename is good.
+    return true;
+  }
+
+  (*this) = true_case;
   return true;
 
 #else  // WIN32
