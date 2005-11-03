@@ -679,10 +679,10 @@ class ClientRepository(ConnectionRepository):
 
         if(self.old_setzone_interest_handle == None):
             self.old_setzone_interest_handle = self.addInterest(
-                parentId, InterestZones, "OldSetZone Imulator", event)
+                parentId, InterestZones, "OldSetZoneEmulator", event)
         else:
             self.alterInterest(self.old_setzone_interest_handle,
-                parentId, InterestZones, "OldSetZone Imulator", event)
+                parentId, InterestZones, "OldSetZoneEmulator", event)
 
     def sendEmulateSetZoneOff(self):
         MyAvID = base.localAvatar.doId
