@@ -9,6 +9,25 @@ if __debug__:
     DefaultTimeout = config.GetInt("async-request-default-timeout", 8.0)
     BreakOnTimeout = config.GetBool("async-request-break-on-timeout", 0)
 
+_asyncRequests={}
+
+def _addActiveAsyncRequest(asyncRequest):
+    global _asyncRequests
+    _asyncRequests[id(asyncRequest)]=asyncRequest
+
+def _removeActiveAsyncRequest(asyncRequest):
+    global _asyncRequests
+    del _asyncRequests[id(asyncRequest)]
+
+def cleanupAsyncRequests():
+    """
+    Only call this when the application is shuting down.
+    """
+    global _asyncRequests
+    for asyncRequest in _asyncRequests:
+        asyncRequest.delete()
+    assert _asyncRequests == {}
+    _asyncRequests={}
 
 class AsyncRequest(DirectObject):
     """
@@ -46,7 +65,8 @@ class AsyncRequest(DirectObject):
         assert self.notify.debugCall()
         if __debug__:
             self.__deleted=False
-        assert isinstance(air, ConnectionRepository) # The api to AsyncRequest has changed.
+        _addActiveAsyncRequest(self)
+        self.deletingMessage="AsyncRequest-deleting-%s"%(id(self,))
         #DirectObject.DirectObject.__init__(self)
         self.air=air
         self.replyToChannelId=replyToChannelId
@@ -59,9 +79,11 @@ class AsyncRequest(DirectObject):
         assert not self.__deleted
         if __debug__:
             self.__deleted=True
+        _removeActiveAsyncRequest(self)
         self.ignoreAll()
         self.timeoutTask.remove()
         del self.timeoutTask
+        messenger.send(self.deletingMessage, [])
         if 0:
             for i in self.neededObjects.values():
                 if i is not None:
