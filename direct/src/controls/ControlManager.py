@@ -60,7 +60,7 @@ class ControlManager:
         inputState.watch("turnLeft", "shift-arrow_left", "arrow_left-up")
         inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
         inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
-        
+
         inputState.watch("turnRight", "arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "control-arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "shift-control-arrow_right", "arrow_right-up")
@@ -69,8 +69,6 @@ class ControlManager:
         inputState.watch("turnRight", "shift-arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
         inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
-        
-        inputState.watch("jump", "control", "control-up")
 
         if self.wantWASD:
             inputState.watch("forward", "w", "w-up")
@@ -87,33 +85,25 @@ class ControlManager:
             inputState.watch("reverse", "control-alt-s", "s-up")
             inputState.watch("reverse", "shift-s", "s-up")
 
-            inputState.watch("turnLeft", "a", "a-up")
-            inputState.watch("turnLeft", "control-a", "a-up")
-            inputState.watch("turnLeft", "shift-control-a", "a-up")
-            inputState.watch("turnLeft", "alt-a", "alt-a-up")
-            inputState.watch("turnLeft", "control-alt-a", "alt-a-up")
-            inputState.watch("turnLeft", "shift-a", "a-up")
+            inputState.watch("slideLeft", "a", "a-up")
+            inputState.watch("slideLeft", "control-a", "a-up")
+            inputState.watch("slideLeft", "shift-control-a", "a-up")
+            inputState.watch("slideLeft", "alt-a", "alt-a-up")
+            inputState.watch("slideLeft", "control-alt-a", "alt-a-up")
+            inputState.watch("slideLeft", "shift-a", "a-up")
 
-            inputState.watch("turnRight", "d", "d-up")
-            inputState.watch("turnRight", "control-d", "d-up")
-            inputState.watch("turnRight", "shift-control-d", "d-up")
-            inputState.watch("turnRight", "alt-d", "d-up")
-            inputState.watch("turnRight", "control-alt-d", "d-up")
-            inputState.watch("turnRight", "shift-d", "d-up")
-            
-            inputState.watch("slideLeft", "q", "q-up")
-            inputState.watch("slideLeft", "control-q", "q-up")
-            inputState.watch("slideLeft", "shift-control-q", "q-up")
-            inputState.watch("slideLeft", "alt-q", "q-up")
-            inputState.watch("slideLeft", "control-alt-q", "q-up")
-            inputState.watch("slideLeft", "shift-q", "q-up")
+            inputState.watch("slideRight", "d", "d-up")
+            inputState.watch("slideRight", "control-d", "d-up")
+            inputState.watch("slideRight", "shift-control-d", "d-up")
+            inputState.watch("slideRight", "alt-d", "d-up")
+            inputState.watch("slideRight", "control-alt-d", "d-up")
+            inputState.watch("slideRight", "shift-d", "d-up")
 
-            inputState.watch("slideRight", "e", "e-up")
-            inputState.watch("slideRight", "control-e", "e-up")
-            inputState.watch("slideRight", "shift-control-e", "e-up")
-            inputState.watch("slideRight", "alt-e", "e-up")
-            inputState.watch("slideRight", "control-alt-e", "e-up")
-            inputState.watch("slideRight", "shift-e", "e-up")
+        # Jump controls
+        if self.wantWASD:
+            inputState.watch("jump", "space", "space-up")
+        else:
+            inputState.watch("jump", "control", "control-up")
 
 
 
