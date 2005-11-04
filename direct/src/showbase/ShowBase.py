@@ -976,8 +976,7 @@ class ShowBase(DirectObject.DirectObject):
         mw.node().addRegion(PGMouseWatcherBackground())
 
     def enableSoftwareMousePointer(self):
-        """enableSoftwareMousePointer(self)
-
+        """
         Creates some geometry and parents it to render2d to show
         the currently-known mouse position.  Useful if the mouse
         pointer is invisible for some reason.
@@ -1007,21 +1006,18 @@ class ShowBase(DirectObject.DirectObject):
             KeyboardButton.control())
 
     def addAngularIntegrator(self):
-        """addAngularIntegrator(self)"""
         if (self.physicsMgrAngular == 0):
             self.physicsMgrAngular = 1
             integrator = AngularEulerIntegrator()
             self.physicsMgr.attachAngularIntegrator(integrator)
 
     def enableParticles(self):
-        """enableParticles(self)"""
         self.particleMgrEnabled = 1
         self.physicsMgrEnabled = 1
         self.taskMgr.remove('manager-update')
         self.taskMgr.add(self.updateManagers, 'manager-update')
 
     def disableParticles(self):
-        """enableParticles(self)"""
         self.particleMgrEnabled = 0
         self.physicsMgrEnabled = 0
         self.taskMgr.remove('manager-update')

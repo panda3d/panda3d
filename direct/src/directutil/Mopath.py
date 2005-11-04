@@ -82,8 +82,6 @@ class Mopath(PandaObject):
             return tIn
 
     def getFinalState(self):
-        """ getFinalState()
-        """
         pos = Point3(0)
         if (self.xyzNurbsCurve != None):
             self.xyzNurbsCurve.getPoint(self.maxT, pos)

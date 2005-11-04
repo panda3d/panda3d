@@ -41,7 +41,7 @@ class TaskManagerWidget(PandaObject):
     """
 
     def __init__(self, parent, taskMgr):
-        """__init__(self)
+        """
         TaskManagerWidget class pops up a control panel to view/delete
         tasks managed by the taskManager.
         """

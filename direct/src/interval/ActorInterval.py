@@ -40,8 +40,6 @@ class ActorInterval(Interval.Interval):
                  startFrame=None, endFrame=None,
                  playRate=1.0, name=None, forceUpdate=0,
                  partName=None, lodName=None):
-        """__init__(name)
-        """
         # Generate unique id
         id = 'Actor-%s-%d' % (animName, ActorInterval.animNum)
         ActorInterval.animNum += 1

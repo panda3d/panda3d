@@ -143,12 +143,10 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
 
 
     def forceToTruePosition(self):
-        """forceToTruePosition(self)
-
+        """
         This forces the node to reposition itself to its latest known
         position.  This may result in a pop as the node skips the last
         of its lerp points.
-
         """
         if (not self.isLocal()) and \
            self.smoother.getLatestPosition():
@@ -156,13 +154,11 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.clearPositions(1)
 
     def reloadPosition(self):
-        """reloadPosition(self)
-
+        """
         This function re-reads the position from the node itself and
         clears any old position reports for the node.  This should be
         used whenever show code bangs on the node position and expects
         it to stick.
-
         """
         self.smoother.clearPositions(0)
         self.smoother.setMat(self.getMat())

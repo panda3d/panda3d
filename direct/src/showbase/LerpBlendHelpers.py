@@ -14,7 +14,7 @@ noBlend = NoBlendType()
 
             
 def getBlend(blendType):
-    """getBlend(string)
+    """
     Return the C++ blend class corresponding to blendType string
     """
     # Note, this is temporary until blend functions get exposed

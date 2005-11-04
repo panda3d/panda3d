@@ -7,8 +7,9 @@ import math
 
 class Logger:
     def __init__(self, fileName="log"):
-        """__init__(self)
-        Logger constructor"""    
+        """
+        Logger constructor
+        """    
         self.__timeStamp = 1
         self.__startTime = 0.0
         self.__logFile = None

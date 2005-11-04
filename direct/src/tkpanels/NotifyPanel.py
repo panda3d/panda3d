@@ -4,7 +4,7 @@ class NotifyPanel:
     a panel to control direct/panda notify categories."""
 
     def __init__(self, directNotify, tl = None):
-        """__init__(self)
+        """
         NotifyPanel class pops up a control panel to view/set
         notify levels for all available DIRECT and PANDA notify categories
         """

@@ -11,8 +11,7 @@ class OnscreenImage(PandaObject, NodePath):
                  color = None,
                  parent = None,
                  sort = 0):
-        """__init__(self, ...)
-
+        """
         Make a image node from string or a node path,
         put it into the 2d sg and set it up with all the indicated parameters.
 

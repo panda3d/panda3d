@@ -34,8 +34,8 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
         self.node = node
 
     def __doMopath(self, t):
-        """ updateFunc(t, event)
-            Go to time t
+        """
+        Go to time t
         """
         self.mopath.goTo(self.node, t)
 
