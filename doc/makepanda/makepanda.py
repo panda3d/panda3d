@@ -607,7 +607,7 @@ if (COMPILER == "MSVC7"):
 
 ##########################################################################################
 #
-# Disable Helix
+# Disable packages that are currently broken or not supported.
 #
 ##########################################################################################
 
@@ -616,28 +616,15 @@ if (OMIT.count("HELIX")==0):
     WARNINGS.append("I have automatically added this command-line option: --no-helix")
     OMIT.append("HELIX")
 
-##########################################################################################
-#
-# Disable OpenCV
-#
-##########################################################################################
+if (sys.platform != "win32") and (OMIT.count("OPENCV")==0):
+    WARNINGS.append("OPENCV currently only works under windows.")
+    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
+    OMIT.append("OPENCV")
 
-#if (OMIT.count("OPENCV")==0):
-#    WARNINGS.append("OPENCV doesn't work yet")
-#    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
-#    OMIT.append("OPENCV")
-
-##########################################################################################
-#
-# See if there's a "MILES" subdirectory under 'thirdparty'
-#
-##########################################################################################
-
-if (os.path.isdir(os.path.join("thirdparty", "win-libs-vc7", "miles"))==0):
-    if (OMIT.count("MILES")==0):
-        WARNINGS.append("You do not have a copy of MILES sound system")
-        WARNINGS.append("I have automatically added this command-line option: --no-miles")
-        OMIT.append("MILES")
+if (OMIT.count("MILES")==0):
+    WARNINGS.append("makepanda currently does not support miles sound system")
+    WARNINGS.append("I have automatically added this command-line option: --no-miles")
+    OMIT.append("MILES")
 
 ##########################################################################################
 #
