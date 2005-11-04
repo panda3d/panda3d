@@ -32,9 +32,6 @@ class ClientRepository(ConnectionRepository):
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
-        # this is used to emulate the old setzone behavior
-        # with set locationa and set interest
-        self.old_setzone_interest_handle = None
 
         self.readDCFile()
         self.cache=CRCache.CRCache()
@@ -659,37 +656,6 @@ class ClientRepository(ConnectionRepository):
             if do.__class__ == objClass:
                 doDict[doId] = do
         return doDict
-
-    def sendEmulateSetZoneMsg(self, zoneId, visibleZoneList=None,
-                              parentIdin=None, event=None):
-        """
-        This Will Move The avatar and set an interest to that location ..
-        """
-        parentId = parentIdin
-        if parentId is None:
-            parentId = base.localAvatar.defaultShard
-
-        # move the avatar
-        self.sendSetLocation(base.localAvatar.doId,parentId,zoneId)
-
-        # move the interest
-        InterestZones = zoneId
-        if visibleZoneList is not None:
-            InterestZones = visibleZoneList
-
-        if(self.old_setzone_interest_handle == None):
-            self.old_setzone_interest_handle = self.addInterest(
-                parentId, InterestZones, "OldSetZoneEmulator", event)
-        else:
-            self.alterInterest(self.old_setzone_interest_handle,
-                parentId, InterestZones, "OldSetZoneEmulator", event)
-
-    def sendEmulateSetZoneOff(self):
-        MyAvID = base.localAvatar.doId
-        self.sendSetLocation(MyAvID,0,0)
-        if self.old_setzone_interest_handle is not None:
-            self.removeInterest(self.old_setzone_interest_handle)
-            self.old_setzone_interest_handle = None
 
 
     def sendSetLocation(self,doId,parentId,zoneId):
