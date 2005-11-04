@@ -626,6 +626,11 @@ if (OMIT.count("MILES")==0):
     WARNINGS.append("I have automatically added this command-line option: --no-miles")
     OMIT.append("MILES")
 
+if (OMIT.count("MAYA5")==0):
+    WARNINGS.append("MAYA5 support is currently broken.")
+    WARNINGS.append("I have automatically added this command-line option: --no-maya5")
+    OMIT.append("MAYA5")
+
 ##########################################################################################
 #
 # Verify that LD_LIBRARY_PATH contains the built/lib directory.
@@ -1361,6 +1366,7 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
             cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMaya.lib"'
             cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaAnim.lib"'
+            cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaUI.lib"'
     for max in ["MAX5","MAX6","MAX7"]:
         if PkgSelected(opts,max):
             cmd = cmd + ' "' + MAXSDK[max] +  '/lib/core.lib"'
