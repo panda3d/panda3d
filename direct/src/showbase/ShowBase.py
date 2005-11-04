@@ -284,8 +284,8 @@ class ShowBase(DirectObject.DirectObject):
            print "\n\nEnvironment Debug Info {"
            print "* model path:"
            print getModelPath()
-           print "* dna path:"
-           print getDnaPath()
+           #print "* dna path:"
+           #print getDnaPath()
            print "* texture path:"
            print getTexturePath()
            print "* sound path:"
