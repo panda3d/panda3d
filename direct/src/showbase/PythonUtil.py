@@ -776,8 +776,48 @@ class Stack:
         return self.__list.pop()
     def clear(self):
         self.__list = []
+    def isEmpty(self):
+        return len(self.__list) == 0
     def __len__(self):
         return len(self.__list)
+
+class Queue:
+    # FIFO queue
+    # interface is intentionally identical to Stack (LIFO)
+    def __init__(self):
+        self.__list = []
+    def push(self, item):
+        self.__list.append(item)
+    def top(self):
+        # return the next item at the front of the queue without popping it off
+        return self.__list[0]
+    def pop(self):
+        return self.__list.pop(0)
+    def clear(self):
+        self.__list = []
+    def isEmpty(self):
+        return len(self.__list) == 0
+    def __len__(self):
+        return len(self.__list)
+
+if __debug__:
+    q = Queue()
+    assert q.isEmpty()
+    q.clear()
+    assert q.isEmpty()
+    q.push(10)
+    assert not q.isEmpty()
+    q.push(20)
+    assert not q.isEmpty()
+    assert len(q) == 2
+    assert q.top() == 10
+    assert q.top() == 10
+    assert q.pop() == 10
+    assert len(q) == 1
+    assert not q.isEmpty()
+    assert q.pop() == 20
+    assert len(q) == 0
+    assert q.isEmpty()
 
 """
 ParamObj/ParamSet
