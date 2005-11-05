@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-from pandac import PandaModules 
+from pandac import PandaModules
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import EventManager
 import Interval
@@ -148,3 +148,4 @@ class IntervalManager(CIntervalManager):
 
 # The global IntervalManager object.
 ivalMgr = IntervalManager(1)
+
