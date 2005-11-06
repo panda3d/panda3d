@@ -493,6 +493,17 @@ get_supports_shadow_filter() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_basic_shaders
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               arbfp1+arbvp1 or above.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_basic_shaders() const {
+  return _supports_basic_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_color_scale_via_lighting
 //       Access: Published
 //  Description: Returns true if this particular GSG can implement (or

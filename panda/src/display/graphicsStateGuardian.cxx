@@ -147,6 +147,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_render_texture = false;
   _supports_depth_texture = false;
   _supports_shadow_filter = false;
+  _supports_basic_shaders = false;
   _supported_geom_rendering = 0;
 
   // If this is true, then we can apply a color and/or color scale by

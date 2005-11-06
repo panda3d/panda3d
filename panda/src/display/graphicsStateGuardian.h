@@ -111,7 +111,8 @@ PUBLISHED:
   INLINE bool get_supports_render_texture() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_shadow_filter() const;
-
+  INLINE bool get_supports_basic_shaders() const;
+  
   virtual int get_supported_geom_rendering() const;
 
   INLINE bool get_color_scale_via_lighting() const;
@@ -359,6 +360,7 @@ protected:
   bool _supports_render_texture;
   bool _supports_depth_texture;
   bool _supports_shadow_filter;
+  bool _supports_basic_shaders;
   int _supported_geom_rendering;
   bool _color_scale_via_lighting;
   
