@@ -576,6 +576,13 @@ reset() {
     }
   }
 
+#ifdef HAVE_CGGL
+  if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
+      cgGLIsProfileSupported(CG_PROFILE_ARBVP1)) {
+    _supports_basic_shaders = true;
+  }
+#endif
+
   _supports_framebuffer_object = false;
   if (has_extension("GL_EXT_framebuffer_object")) {
     _supports_framebuffer_object = true;
