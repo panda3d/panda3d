@@ -99,6 +99,22 @@ class ControlManager:
             inputState.watch("slideRight", "control-alt-d", "d-up")
             inputState.watch("slideRight", "shift-d", "d-up")
 
+
+            inputState.watch("turnLeft", "q", "q-up")
+            inputState.watch("turnLeft", "control-q", "q-up")
+            inputState.watch("turnLeft", "shift-control-q", "q-up")
+            inputState.watch("turnLeft", "alt-q", "alt-q-up")
+            inputState.watch("turnLeft", "control-alt-q", "alt-q-up")
+            inputState.watch("turnLeft", "shift-q", "q-up")
+
+            inputState.watch("turnRight", "e", "e-up")
+            inputState.watch("turnRight", "control-e", "e-up")
+            inputState.watch("turnRight", "shift-control-e", "e-up")
+            inputState.watch("turnRight", "alt-e", "e-up")
+            inputState.watch("turnRight", "control-alt-e", "e-up")
+            inputState.watch("turnRight", "shift-e", "e-up")
+
+
         # Jump controls
         if self.wantWASD:
             inputState.watch("jump", "space", "space-up")
