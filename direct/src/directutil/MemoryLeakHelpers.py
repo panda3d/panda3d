@@ -7,11 +7,10 @@
 # fsm-redefine 0
 # want-dev 0
 
-if (__builtins__.__dict__.has_key("running-epydoc")==0):
-    import gc
-    gc.set_debug(gc.DEBUG_LEAK)
-    gc.collect()
-    print gc.garbage
+import gc
+gc.set_debug(gc.DEBUG_LEAK)
+gc.collect()
+print gc.garbage
 
 # Inside DistributedObjectAI, you can uncomment the __del__ function to
 # see when your objects are being deleted (or not)
