@@ -266,6 +266,6 @@ def run():
         import epydoc.cli
         import direct.directbase.DirectStart
         mandir = os.path.join(outputDir,"docs")
-        cmd = ["epydoc","-n","Panda3D","-o",mandir,"--docformat","panda","--ignore-param-mismatch",outputDir,directDir]
+        cmd = ["epydoc","-n","Panda3D","-o",mandir,"--docformat","panda","--ignore-param-mismatch",directDir]+codeLibs
         sys.argv = cmd
         epydoc.cli.cli()
