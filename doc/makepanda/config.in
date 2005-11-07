@@ -60,10 +60,6 @@ want-tk           #f
 want-pstats            #f
 show-frame-rate-meter  #f
 
-# This enables simple networked programs to easily provide a DC file
-
-dc-file sample.dc
-
 # Enable audio using the FMod audio library by default:
 
 audio-library-name fmod_audio
