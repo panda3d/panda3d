@@ -551,8 +551,8 @@ class ClientRepository(ConnectionRepository):
             self.handleDelete(di)
         elif msgType == CLIENT_DONE_INTEREST_RESP:
             self.handleInterestDoneMessage(di)
-        elif msgType == CLIENT_QUERY_ONE_FIELD_RESP:
-            self.handleQueryOneFieldResp(di)
+        #Roger wants to remove this elif msgType == CLIENT_QUERY_ONE_FIELD_RESP:
+        #Roger wants to remove this     self.handleQueryOneFieldResp(di)
         elif msgType == CLIENT_OBJECT_LOCATION:
             self.handleObjectLocation(di)
         else:
