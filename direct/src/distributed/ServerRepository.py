@@ -17,7 +17,7 @@ class ServerRepository:
 
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
-    def __init__(self, tcpPort, udpPort):
+    def __init__(self, tcpPort, udpPort, dcFileNames = None):
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
@@ -41,7 +41,7 @@ class ServerRepository:
         self.ZonetoDOIDs = {}
         self.dcFile = DCFile()
         self.dcSuffix = ''
-        self.readDCFile()
+        self.readDCFile(dcFileNames)
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """ Imports the indicated moduleName and all of its symbols

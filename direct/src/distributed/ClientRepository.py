@@ -24,7 +24,7 @@ class ClientRepository(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
-    def __init__(self):
+    def __init__(self, dcFileNames = None):
         self.dcSuffix=""
         ConnectionRepository.__init__(self, base.config, hasOwnerView=True)
 
@@ -33,7 +33,7 @@ class ClientRepository(ConnectionRepository):
 
         self.recorder = base.recorder
 
-        self.readDCFile()
+        self.readDCFile(dcFileNames)
         self.cache=CRCache.CRCache()
         self.cacheOwner=CRCache.CRCache()
         self.serverDelta = 0
