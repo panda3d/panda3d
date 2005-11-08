@@ -226,7 +226,7 @@ class DoCollectionManager:
     
     def addDOToTables(self, do, location=None, ownerView=False):
         assert self.notify.debugStateCall(self)
-        assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
+        #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
         if not ownerView:
             if location is None:
                 location = (do.parentId, do.zoneId)
@@ -258,7 +258,7 @@ class DoCollectionManager:
 
     def removeDOFromTables(self, do):
         assert self.notify.debugStateCall(self)
-        assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
+        #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
         #assert do.doId in self.doId2do
         location = do.getLocation()
         if location is not None:
@@ -275,7 +275,7 @@ class DoCollectionManager:
             del self.doId2do[do.doId]
         
     def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
-        assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
+        #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
         oldLocation = (oldParentId, oldZoneId)
         newLocation = (newParentId, newZoneId)
         # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
