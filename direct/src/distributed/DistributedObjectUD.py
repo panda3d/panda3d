@@ -204,11 +204,6 @@ class DistributedObjectUD(DirectObject):
                 self.lastNonQuietZone = zoneId
         self.air.storeObjectLocation(self.doId, parentId, zoneId)
 
-    # Set the initial values of parentId,zoneId
-    def setInitLocation(self, parentId, zoneId):
-        self.parentId=parentId
-        self.zoneId=zoneId
-
     def getLocation(self):
         try:
             if self.parentId <= 0 and self.zoneId <= 0:
