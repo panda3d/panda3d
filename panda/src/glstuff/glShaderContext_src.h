@@ -74,6 +74,7 @@ private:
     // From this point forward, it's okay to insert stuff.
     SIC_sys_windowsize,
     SIC_sys_pixelsize,
+    SIC_sys_cardcenter,
   };
   struct ShaderAutoBind {
     CGparameter parameter;

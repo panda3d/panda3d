@@ -351,7 +351,7 @@ unbind()
 void CLP(ShaderContext)::
 issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
 {
-  LVecBase4f t;
+  LVecBase4f t; float xhi,yhi; int px,py;
 
   CGparameter p = bind.parameter;
   switch(bind.value) {
@@ -383,6 +383,17 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
   case SIC_sys_pixelsize:
     t[0] = 1.0 / gsg->_current_display_region->get_pixel_width();
     t[1] = 1.0 / gsg->_current_display_region->get_pixel_height();
+    t[2] = 1;
+    t[3] = 1;
+    cgGLSetParameter4fv(p, t.get_data());
+    return;
+  case SIC_sys_cardcenter:
+    px = gsg->_current_display_region->get_pixel_width();
+    py = gsg->_current_display_region->get_pixel_height();
+    xhi = (px*1.0) / Texture::up_to_power_2(px);
+    yhi = (py*1.0) / Texture::up_to_power_2(py);
+    t[0] = xhi*0.5;
+    t[1] = yhi*0.5;
     t[2] = 1;
     t[3] = 1;
     cgGLSetParameter4fv(p, t.get_data());
@@ -1115,6 +1126,14 @@ compile_cg_parameter(CGparameter p)
         return false;
       }
       bind.value = SIC_sys_windowsize;
+      _cg_auto_param.push_back(bind);
+      return true;
+    }
+    if (pieces[1] == "cardcenter") {
+      if (!errchk_cg_parameter_type(p, CG_FLOAT2)) {
+        return false;
+      }
+      bind.value = SIC_sys_cardcenter;
       _cg_auto_param.push_back(bind);
       return true;
     }
