@@ -979,9 +979,6 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
     if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
-    if (opts.count("USEPTMALLOC2")): cmd = cmd + ' /DUSE_MEMORY_PTMALLOC2'
-    if (opts.count("USEDLMALLOC")): cmd = cmd + ' /DUSE_MEMORY_DLMALLOC'
-    if (opts.count("USEMALLOC")): cmd = cmd + ' /DUSE_MEMORY_MALLOC'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
     if (optlevel==2): cmd = cmd + " /MD /Zi "
@@ -1005,7 +1002,6 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
     for x in ipath: cmd = cmd + ' -I' + x
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
-    if (opts.count("USEMALLOC")): cmd = cmd + ' -DUSE_MEMORY_MALLOC'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " -g"
     if (optlevel==2): cmd = cmd + " -O1"
@@ -1698,6 +1694,9 @@ DTOOLDEFAULTS=[
     ("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
     ("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
     ("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
+    ("USE_MEMORY_DLMALLOC",            '1',                      'UNDEF'),
+    ("USE_MEMORY_PTMALLOC",            'UNDEF',                  'UNDEF'),
+    ("USE_MEMORY_MALLOC",              'UNDEF',                  '1'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
     ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
@@ -1939,11 +1938,9 @@ IPATH=['dtool/src/dtoolbase']
 OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
 if (sys.platform == "win32"):
-    OPTS.append("USEDLMALLOC")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dlmalloc.c', obj='dtoolbase_allocator.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 else:
-    OPTS.append("USEMALLOC")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='null.cxx', obj='dtoolbase_allocator.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 
