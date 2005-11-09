@@ -175,6 +175,9 @@ class DoInterestManager(DirectObject.DirectObject):
                 zoneIdList.sort()
             DoInterestManager._debug_currentInterests.append(
                 (handle, scopeId, parentId, zoneIdList))
+        if parentId == 0:
+            DoInterestManager.notify.error(
+                'trying to set interest to invalid parent: %s' % parentId)
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_ADD_INTEREST)
