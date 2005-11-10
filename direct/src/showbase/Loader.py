@@ -30,7 +30,8 @@ class Loader:
         modelPath is a string.
 
         Attempt to load a model from given file path, return
-        a nodepath to the model if successful or None otherwise."""
+        a nodepath to the model if successful or None otherwise.
+        """
         assert(Loader.notify.debug("Loading model: %s" % (modelPath) ))
         if phaseChecker:
             phaseChecker(modelPath)
@@ -49,7 +50,8 @@ class Loader:
 
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
-        the model if successful or None otherwise"""
+        the model if successful or None otherwise
+        """
         assert(Loader.notify.debug("Loading model once: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
@@ -89,7 +91,8 @@ class Loader:
         """loadModelCopy(self, string)
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
-        a copy of the model if successful or None otherwise"""
+        a copy of the model if successful or None otherwise
+        """
         assert(Loader.notify.debug("Loading model copy: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
@@ -212,7 +215,6 @@ class Loader:
 
         Returns a 3-D Texture object, suitable for rendering
         volumetric textures, if successful, or None if not.
-
         """
         assert(Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern) ))
         if phaseChecker:
@@ -238,7 +240,8 @@ class Loader:
 
     def unloadTexture(self, texture):
 
-        """ Removes the previously-loaded texture from the cache, so
+        """
+        Removes the previously-loaded texture from the cache, so
         that when the last reference to it is gone, it will be
         released.  This also means that the next time the same texture
         is loaded, it will be re-read from disk (and duplicated in
