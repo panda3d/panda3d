@@ -195,6 +195,20 @@
 // bison and flex (or copy from *.prebuilt if we don't have them).
 #define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_so_sources] $[lxx_st_sources]]
 
+// Rather than making a rule to generate each install directory later,
+// we create the directories now.  This reduces problems from
+// multiprocess builds.
+#mkdir $[sort \
+    $[if $[install_lib],$[install_lib_dir]] \
+    $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
+    $[if $[install_headers],$[install_headers_dir]] \
+    $[if $[install_parser_inc],$[install_parser_inc_dir]] \
+    $[if $[install_data],$[install_data_dir]] \
+    $[if $[install_config],$[install_config_dir]] \
+    $[if $[install_igatedb],$[install_igatedb_dir]] \
+    $[if $[install_py],$[install_py_dir] $[install_py_package_dir]] \
+    ]
+
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
 // more effective (and more portable) way is simply to compile all the
