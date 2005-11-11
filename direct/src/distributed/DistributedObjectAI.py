@@ -249,13 +249,20 @@ class DistributedObjectAI(DirectObject):
         # this event is generated whenever this object changes zones.
         # arguments are newZoneId, oldZoneId
         # includes the quiet zone.
-        return 'DOChangeZone-%s' % self.doId
+        return DistributedObjectAI.staticGetZoneChangeEvent(self.doId)
     def getLogicalZoneChangeEvent(self):
         # this event is generated whenever this object changes to a
         # non-quiet-zone zone.
         # arguments are newZoneId, oldZoneId
         # does not include the quiet zone.
-        return 'DOLogicalChangeZone-%s' % self.doId
+        return DistributedObjectAI.staticGetLogicalZoneChangeEvent(self.doId)
+
+    @staticmethod
+    def staticGetZoneChangeEvent(doId):
+        return 'DOChangeZone-%s' % doId
+    @staticmethod
+    def staticGetLogicalZoneChangeEvent(doId):
+        return 'DOLogicalChangeZone-%s' % doId
 
     def handleLogicalZoneChange(self, newZoneId, oldZoneId):
         """this function gets called as if we never go through the
