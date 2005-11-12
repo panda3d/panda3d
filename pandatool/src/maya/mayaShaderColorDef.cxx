@@ -29,6 +29,7 @@
 #include <maya/MPlugArray.h>
 #include <maya/MObject.h>
 #include <maya/MStatus.h>
+#include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -311,15 +312,46 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
 
   } else if (color.hasFn(MFn::kLayeredTexture)) {
     maya_cat.debug() << "Found layered texture" << endl;
-    //list_maya_attributes(color);
-    //shader->_multi_texture = true;
-    //get_enum_attribute(color,"blendMode",shader->_blend_mode);
-    //maya_cat.debug() << "blend mode :" << shader->_blend_mode << endl;
-
-    get_bool_attribute(color, "alphaIsLuminance", shader->_alpha_is_luminance);
-    //    get_bool_attribute(color, "isVisible", test_b);
 
     MFnDependencyNode layered_fn(color);
+    MStatus status;
+    MPlug inputsPlug = layered_fn.findPlug("inputs", &status);
+    MPlug blendModePlug = layered_fn.findPlug("blendMode", &status);
+    size_t numElements = inputsPlug.evaluateNumElements(&status);
+    maya_cat.spam() << "*** Start doIt... ***" << endl;
+    maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
+    // Asad:following block fills the plug array values: needed to get all the connections
+    int blendValue;
+    for (size_t i=0; i<inputsPlug.numElements(); ++i) {
+      status = blendModePlug.selectAncestorLogicalIndex(i,inputsPlug);
+      blendModePlug.getValue(blendValue); // this call fills the plug connection
+    }
+    // It seems our Maya, has the array of plugs in the reverse
+    // order. That is why I haev to query the ancestor index to the
+    // 2nd to last idx
+    status = blendModePlug.selectAncestorLogicalIndex(inputsPlug.numElements()-2,inputsPlug);
+    maya_cat.spam() << "blendModePlug Name: " << blendModePlug.name() << endl; 
+    blendModePlug.getValue(blendValue);
+    maya_cat.spam() << "blendModePlug's value is " << blendValue << endl;
+    MFnEnumAttribute blendModeEnum(blendModePlug);
+    MString blendName = blendModeEnum.fieldName(blendValue, &status);
+    switch (blendValue) {
+      case 1:
+        shader->_blend_type = MayaShader::BT_decal;
+        break;
+      case 6:
+        shader->_blend_type = MayaShader::BT_modulate;
+        break;
+      case 4:
+        shader->_blend_type = MayaShader::BT_add;
+        break;
+      default:
+        shader->_blend_type = MayaShader::BT_modulate;
+    }
+
+    maya_cat.spam() << "blendModePlug's field name is " << blendName << endl;
+    maya_cat.spam() << "*** END doIt... ***" << endl;
+
     MPlugArray color_pa;
     layered_fn.getConnections(color_pa);
     maya_cat.debug() << "number of connections: " << color_pa.length() << endl;

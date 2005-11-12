@@ -53,7 +53,17 @@ public:
   typedef pvector<MayaShaderColorDef *> ColorDef;
   ColorDef _color;
 
-  bool _alpha_is_luminance;
+  enum BlendType {
+    BT_unspecified, 
+    BT_modulate, 
+    BT_decal,
+    BT_blend,
+    BT_replace,
+    BT_add,
+    BT_blend_color_scale,
+  };
+
+  BlendType _blend_type;
 
 private:
   bool read_surface_shader(MObject shader);
