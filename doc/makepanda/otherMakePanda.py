@@ -14,7 +14,7 @@
 
 import sys,os,time,stat,string,re,getopt,cPickle
 from glob import glob
-#
+
 ########################################################################
 ##
 ## Utility Routines
@@ -67,7 +67,7 @@ def xpaths(prefix,base,suffix):
         result.append(xpaths(prefix,x,suffix))
     return result
 
-if sys.platform == "win32":
+if sys.platform == "win32" or sys.platform == "cygwin":
     import _winreg
     def GetRegistryKey(path, subkey):
         k1=0
@@ -89,7 +89,7 @@ def oslocalcmd(cd, cmd):
         base=os.getcwd()
         os.chdir(cd)
     sys.stdout.flush()
-    if sys.platform == "win32":
+    if sys.platform == "win32" or sys.platform == "cygwin":
         exe = cmd.split()[0]
         if os.path.isfile(exe)==0:
             for i in os.environ["PATH"].split(";"):
@@ -187,8 +187,11 @@ def MakeDirectory(path):
 ##
 ########################################################################
 
-if (sys.platform == "win32"): COMPILERS=["MSVC7"]
-if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
+if (sys.platform == "win32"): COMPILERS=["MSVC7", "MSVC71", "MINGW"]
+elif (sys.platform == "cygwin"): COMPILERS=["MSVC7", "MSVC71", "GCC33"]
+elif (sys.platform == "linux2"): COMPILERS=["LINUXA"]
+else:
+    print "which compiler should be used for %s"%(sys.platform,)
 PREFIX="built"
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
@@ -204,11 +207,15 @@ PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
+
+SDK_LIB_PATH = {}
+
 DIRECTXSDK = None
-PythonSDK = None
 MAYASDK = {}
 MAXSDK = {}
 MAXSDKCS = {}
+NSPR_SDK = None
+PYTHONSDK = None
 
 try:
     # If there is a makepandaPreferences.py, import it:
@@ -351,7 +358,7 @@ DTOOLDEFAULTS=[
     ]
 
 DTOOLCONFIG={}
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     for key,win,unix in DTOOLDEFAULTS:
         DTOOLCONFIG[key] = win
 else:
@@ -452,7 +459,6 @@ def packageInfo():
               "http://www.cs.unc.edu/Research/vrpn/"
               A controller/peripheral input library.
 """
-    sys.exit(1)
 
 ########################################################################
 ##
@@ -465,7 +471,7 @@ def packageInfo():
 def usage(problem):
     if (problem):
         print ""
-        print problem
+        print '***', problem, '***'
     print ""
     print "Makepanda generates a 'built' subdirectory containing a"
     print "compiled copy of Panda3D.  Command-line arguments are:"
@@ -543,7 +549,8 @@ def parseopts(args):
                         break
             anything = 1
     except "package-info": packageInfo()
-    except: usage(0)
+    except "help": usage('')
+    except Exception, e: usage(e)
     if (anything==0): usage(0)
     if   (OPTIMIZE=="1"): OPTIMIZE=1
     elif (OPTIMIZE=="2"): OPTIMIZE=2
@@ -615,7 +622,7 @@ if (os.path.isdir("sdks")):
 ##
 ########################################################################
 
-if sys.platform == "win32" and DIRECTXSDK is None:
+if (sys.platform == "win32" or sys.platform == "cygwin") and DIRECTXSDK is None:
     dxdir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX SDK", "DX9SDK Samples Path")
     if (dxdir != 0): DIRECTXSDK = os.path.dirname(dxdir)
     else:
@@ -645,7 +652,7 @@ MAYAVERSIONS=[("MAYA5",  "SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPa
 
 for (ver,key) in MAYAVERSIONS:
     if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
-        if (sys.platform == "win32"):
+        if (sys.platform == "win32" or sys.platform == "cygwin"):
             MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
             if (MAYASDK[ver] == 0):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
@@ -670,7 +677,7 @@ MAXVERSIONS = [("MAX5", "SOFTWARE\\Autodesk\\3DSMAX\\5.0\\MAX-1:409", "uninstall
 
 for version,key1,key2,subdir in MAXVERSIONS:
     if (OMIT.count(version)==0) and (MAXSDK.has_key(version)==0):
-        if (sys.platform == "win32"):
+        if (sys.platform == "win32" or sys.platform == "cygwin"):
             top = GetRegistryKey(key1,key2)
             if (top == 0):
                 WARNINGS.append("The registry does not appear to contain a pointer to "+version)
@@ -688,6 +695,22 @@ for version,key1,key2,subdir in MAXVERSIONS:
             WARNINGS.append(version+" not yet supported under linux")
             WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             OMIT.append(version)
+            
+########################################################################
+##
+## Locate the NSPR SDK
+##
+########################################################################
+
+if NSPR_SDK is None:
+    if sys.platform == "win32" or sys.platform == "cygwin":
+        nsprPaths = ["C:/Python22", 'thirdparty/nspr']
+    else:
+        nsprPaths = ["/usr/include/nspr", 'thirdparty/win-python']
+    for p in nsprPaths:
+        if os.path.isdir(p): NSPR_SDK = p
+    if NSPR_SDK is None:
+        sys.exit("Cannot find the NSPR SDK")
 
 ########################################################################
 ##
@@ -695,22 +718,48 @@ for version,key1,key2,subdir in MAXVERSIONS:
 ##
 ########################################################################
 
-if PythonSDK is None:
-    if sys.platform == "win32":
-        if   os.path.isdir("C:/Python22"): PythonSDK = "C:/Python22"
-        elif os.path.isdir("C:/Python23"): PythonSDK = "C:/Python23"
-        elif os.path.isdir("C:/Python24"): PythonSDK = "C:/Python24"
-        elif os.path.isdir("C:/Python25"): PythonSDK = "C:/Python25"
-        elif os.path.isdir('thirdparty/win-python'): PythonSDK = "thirdparty/win-python"
-        else:
-            sys.exit("Cannot find the python SDK")
+if PYTHONSDK is None:
+    if sys.platform == "win32" or sys.platform == "cygwin":
+        pythonPaths = [
+            "C:/Python22",
+            "C:/Python23",
+            "C:/Python24",
+            "C:/Python25",
+            'thirdparty/win-python']
     else:
-        if   os.path.isdir("/usr/include/python2.5"): PythonSDK = "/usr/include/python2.5"
-        elif os.path.isdir("/usr/include/python2.4"): PythonSDK = "/usr/include/python2.4"
-        elif os.path.isdir("/usr/include/python2.3"): PythonSDK = "/usr/include/python2.3"
-        elif os.path.isdir("/usr/include/python2.2"): PythonSDK = "/usr/include/python2.2"
-        else: sys.exit("Cannot find the python SDK")
-        # this is so that the user can find out which version of python was used.
+        pythonPaths = [
+            "/usr/include/python2.5",
+            "/usr/include/python2.4",
+            "/usr/include/python2.3",
+            "/usr/include/python2.2"]
+    for p in pythonPaths:
+        if os.path.isdir(p): PYTHONSDK = p
+    if PYTHONSDK is None:
+        sys.exit("Cannot find the Python SDK")
+            
+########################################################################
+##
+## Locate the SSL SDK
+##
+########################################################################
+
+if sys.platform == "win32" or sys.platform == "cygwin":
+    SDK_SEARCH_PATHS = {
+        'ssl': [
+            "C:/openssl",
+            'thirdparty/ssl']
+else:
+    SDK_SEARCH_PATHS = {
+        'ssl': [
+            "/usr/include/ssl",
+            'thirdparty/win-python']
+for package in packages:
+    if SDK_LIB_PATH.get(package) is None:
+        for p in SDK_SEARCH_PATHS.get(package, '.'):
+            if os.path.isdir(p):
+                SDK_LIB_PATH[package] = p
+    if SDK_LIB_PATH.get(package) is None or not os.path.isdir(SDK_LIB_PATH.get(package)):
+        sys.exit("The SDK for %s was not found."%(package,))
 
 ########################################################################
 ##
@@ -721,7 +770,7 @@ if PythonSDK is None:
 ##
 ########################################################################
 
-if (COMPILER == "MSVC7"):
+if (COMPILER == "MSVC7" or COMPILER=="MSVC71"):
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
     if ((vcdir == 0) or (vcdir[-13:] != "\\Common7\\IDE\\")):
         vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir")
@@ -745,7 +794,7 @@ if (COMPILER == "MSVC7"):
 #
 ##########################################################################################
 
-if (sys.platform != "win32"):
+if (sys.platform != "win32" or sys.platform == "cygwin"):
     if (OMIT.count("HELIX")==0):
         WARNINGS.append("HELIX not yet supported under linux")
         WARNINGS.append("I have automatically added this command-line option: --no-helix")
@@ -807,7 +856,7 @@ if (OPTIMIZE <= 3):
 #
 ##########################################################################################
 
-if (sys.platform != "win32"):
+if (sys.platform != "win32" and sys.platform != "cygwin"):
     BUILTLIB = os.path.abspath(PREFIX+"/lib")
     try:
         LDPATH = []
@@ -850,10 +899,10 @@ def printStatus(header,warnings):
         print "Makepanda: Thirdparty dir:",THIRDPARTY
         print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
-        print "Makepanda: PythonSDK:", PythonSDK
+        print "Makepanda: PYTHONSDK:", PYTHONSDK
         if (GENMAN): print "Makepanda: Generate API reference manual"
         else       : print "Makepanda: Don't generate API reference manual"
-        if (sys.platform == "win32"):
+        if (sys.platform == "win32" or sys.platform == "cygwin"):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
             if PPGAME!=0:  print "Makepanda: Build pprepackaged game ",PPGAME,"using",COMPRESSOR
@@ -1127,12 +1176,12 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
-    if (COMPILER=="MSVC7"): cmd = 'xcopy.exe /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
-    if (COMPILER=="LINUXA"): cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
+    if (COMPILER=="MSVC7" or COMPILER=="MSVC71"): cmd = 'xcopy.exe /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+    elif (COMPILER=="LINUXA"): cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
     oscmd(cmd)
     updatefiledate(dstdir)
 
-def CompileBison(pre,dstc,dsth,src):
+def CompileBison(pre, dstc, dsth, src):
     """
     Generate a CXX file from a source YXX file.
     """
@@ -1147,7 +1196,11 @@ def CompileBison(pre,dstc,dsth,src):
             oslocalcmd(PREFIX+"/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
             osmove(PREFIX+"/tmp/y_tab.c", dstc)
             osmove(PREFIX+"/tmp/y_tab.h", dsth)
-        if (COMPILER=="LINUXA"):
+        elif (COMPILER=="LINUXA"):
+            oslocalcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
+            osmove(PREFIX+"/tmp/y.tab.c", dstc)
+            osmove(PREFIX+"/tmp/y.tab.h", dsth)
+        else:
             oslocalcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
             osmove(PREFIX+"/tmp/y.tab.c", dstc)
             osmove(PREFIX+"/tmp/y.tab.h", dsth)
@@ -1163,12 +1216,12 @@ def CompileFlex(pre,dst,src,dashi):
     dst = PREFIX+"/tmp/"+dst
     if (older(dst,src)):
         CopyFile(PREFIX+"/tmp/", src)
-        if (COMPILER=="MSVC7"):
+        if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
             flexFullPath=os.path.abspath("thirdparty/win-util/flex.exe")
             if (dashi): oslocalcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
             else:       oslocalcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
             replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
-        if (COMPILER=="LINUXA"):
+        elif (COMPILER=="LINUXA"):
             if (dashi): oslocalcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
             else:       oslocalcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
             oscmd('cp '+PREFIX+'/tmp/lex.yy.c '+dst)
@@ -1197,7 +1250,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
     if (fullsrc == 0): sys.exit("Cannot find source file "+src)
     dep = CxxCalcDependencies(fullsrc, ipath, [])
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
         wobj = PREFIX+"/tmp/"+obj
         if (older(wobj, dep)):
             if VERBOSE >= 0:
@@ -1212,7 +1265,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
                     cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
             for pkg in PACKAGES:
                 if (pkg[:4] != "MAYA") and PkgSelected(opts,pkg):
-                    cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
+                    cmd = cmd + " /I" + SDK_LIB_PATH.get(pkg.lower(), '.') + "/include"
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
             if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
@@ -1226,20 +1279,19 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + fullsrc
             oscmd(cmd)
             updatefiledate(wobj)
-
-    if (COMPILER=="LINUXA"):
+    elif (COMPILER=="LINUXA"):
         wobj = PREFIX+"/tmp/" + obj[:-4] + ".o"
         if (older(wobj, dep)):
             if VERBOSE >= 0:
                 checkIfNewDir(ipath[1])
             if (src[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
             else:                cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
-            cmd = cmd + ' -I"' + PythonSDK + '"'
+            cmd = cmd + ' -I"' + PYTHONSDK + '"'
             if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/vrpn/include'
             if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fftw/include'
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fmod/include'
             if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nvidiacg/include'
-            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nspr/include'
+            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + NSPR_SDK + '/include'
             if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
             for x in ipath: cmd = cmd + ' -I' + x
             if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -1268,7 +1320,7 @@ def CompileRES(obj=0,src=0,ipath=[],opts=[]):
     obj = PREFIX+"/tmp/"+obj
     wdep = CxxCalcDependencies(fullsrc, ipath, [])
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
         if (older(obj, wdep)):
             cmd = 'rc.exe /d "NDEBUG" /l 0x409'
             for x in ipath: cmd = cmd + " /I" + x
@@ -1276,8 +1328,7 @@ def CompileRES(obj=0,src=0,ipath=[],opts=[]):
             cmd = cmd + ' ' + fullsrc
             oscmd(cmd)
             updatefiledate(obj)
-
-    if (COMPILER=="LINUXA"):
+    elif (COMPILER=="LINUXA"):
         sys.exit("Can only compile RES files on Windows.")
 
 ########################################################################
@@ -1316,7 +1367,32 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
             for pkg in PACKAGES:
                 if (PkgSelected(opts,pkg)):
                     cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
-        if (COMPILER=="LINUXA"):
+        elif (COMPILER=="MSVC71"):
+            cmd = dotdots + PREFIX + "/bin/interrogate.exe"
+            cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
+            cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
+            if (OPTIMIZE==1): cmd = cmd + ' '
+            if (OPTIMIZE==2): cmd = cmd + ' '
+            if (OPTIMIZE==3): cmd = cmd + ' -DFORCE_INLINING'
+            if (OPTIMIZE==4): cmd = cmd + ' -DFORCE_INLINING'
+            cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc'
+            cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+            for pkg in PACKAGES:
+                if (PkgSelected(opts,pkg)):
+                    cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
+        elif (COMPILER=="LINUXA"):
+            cmd = dotdots + PREFIX + '/bin/interrogate'
+            cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
+            if (OPTIMIZE==1): cmd = cmd + ' '
+            if (OPTIMIZE==2): cmd = cmd + ' '
+            if (OPTIMIZE==3): cmd = cmd + ' '
+            if (OPTIMIZE==4): cmd = cmd + ' '
+            cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc -S/usr/include'
+            cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+            for pkg in PACKAGES:
+                if (PkgSelected(opts,pkg)):
+                    cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/linux-libs-a/" + pkg.lower() + "/include"
+        else:
             cmd = dotdots + PREFIX + '/bin/interrogate'
             cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
             if (OPTIMIZE==1): cmd = cmd + ' '
@@ -1334,9 +1410,11 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
-        if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
+        if ((COMPILER=="MSVC7" or COMPILER=="MSVC71") and opts.count("DXSDK")):
+            cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
         for ver in ["MAYA5","MAYA6","MAYA65"]:
-          if ((COMPILER=="MSVC7") and opts.count(ver)): cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
+          if ((COMPILER=="MSVC7" or COMPILER=="MSVC71") and opts.count(ver)):
+              cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oslocalcmd(src, cmd)
         updatefiledate(outd)
@@ -1359,10 +1437,10 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
         global VERBOSE
         if VERBOSE >= 1:
             print "Generating Python-stub cxx file for %s"%(library,)
-        if (COMPILER=="MSVC7"):
-                cmd = PREFIX + '/bin/interrogate_module.exe '
-        if (COMPILER=="LINUXA"):
-                cmd = PREFIX + '/bin/interrogate_module '
+        if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
+            cmd = PREFIX + '/bin/interrogate_module.exe '
+        elif (COMPILER=="LINUXA"):
+            cmd = PREFIX + '/bin/interrogate_module '
         cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python '
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
@@ -1379,7 +1457,7 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
 def CompileLIB(lib=0, obj=[], opts=[]):
     if (lib==0): sys.exit("syntax error in CompileLIB directive")
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
         if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".lib"
         else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".lib"
         wobj = xpaths(PREFIX+"/tmp/",obj,"")
@@ -1390,8 +1468,7 @@ def CompileLIB(lib=0, obj=[], opts=[]):
             for x in wobj: cmd = cmd + ' ' + x
             oscmd(cmd)
             updatefiledate(wlib)
-
-    if (COMPILER=="LINUXA"):
+    elif (COMPILER=="LINUXA"):
         if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".a"
         else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".a"
         wobj = []
@@ -1413,7 +1490,7 @@ def CompileLIB(lib=0, obj=[], opts=[]):
 def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
     if (dll==0): sys.exit("Syntax error in CompileLink directive")
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC7" or COMPILER=="MSVC71"):
         lib = PREFIX+"/lib/"+dll[:-4]+".lib"
         if ((dll[-4:] != ".exe") and (dll[-4:] != ".dll")):
             dll = PREFIX+"/plugins/"+dll
@@ -1486,10 +1563,10 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/utillib.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/stlport_vc7.lib'
             if (PkgSelected(opts,"NSPR")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/libnspr4.lib'
+                cmd = cmd + ' ' + SDK_LIB_PATH['nspr'] + '/nspr4.lib'
             if (PkgSelected(opts,"SSL")):
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/ssleay32.lib'
-                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libeay32.lib'
+                cmd = cmd + ' ' + SDK_LIB_PATH['ssl'] + '/ssleay32.lib'
+                cmd = cmd + ' ' + SDK_LIB_PATH['ssl'] + '/libeay32.lib'
             if (PkgSelected(opts,"FREETYPE")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/libfreetype.lib'
             if (PkgSelected(opts,"FFTW")):
@@ -1513,8 +1590,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             updatefiledate(dll)
             if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
                 CopyFile(dll[:-4]+"_d.dll", dll)
-
-    if (COMPILER=="LINUXA"):
+    elif (COMPILER=="LINUXA"):
         ALLTARGETS.append(PREFIX+"/lib/"+dll[:-4]+".so")
         if (dll[-4:]==".exe"): wdll = PREFIX+"/bin/"+dll[:-4]
         else: wdll = PREFIX+"/lib/"+dll[:-4]+".so"
@@ -1540,7 +1616,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 cmd = cmd + ' -L' + THIRDPARTY + 'nvidiacg/lib '
                 if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
                 cmd = cmd + " -lCg"
-            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/nspr/lib -lpandanspr4'
+            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + NSPR_SDK + '/lib -lpandanspr4'
             if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
             if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
             if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
@@ -1563,7 +1639,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
 
 def CompileBAM(preconv, bam, egg):
     dotexe = ".exe"
-    if (sys.platform != "win32"): dotexe = ""
+    if (sys.platform != "win32" or sys.platform == "cygwin"): dotexe = ""
     if (older(bam, egg)):
         if (egg[-4:]==".flt"):
             oscmd(PREFIX + "/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
@@ -1679,7 +1755,7 @@ conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
 
-ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PythonSDK))
+ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PYTHONSDK))
 
 ##########################################################################################
 #
@@ -1687,7 +1763,7 @@ ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PythonSDK))
 #
 ##########################################################################################
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
   IPATH=["panda/src/configfiles"]
   OPTS=[]
   CompileRES(ipath=IPATH, opts=OPTS, src='pandaIcon.rc', obj='pandaIcon.res')
@@ -1897,7 +1973,7 @@ dc-file sample.dc
 audio-library-name fmod_audio
 """
 
-if (sys.platform != "win32"):
+if (sys.platform != "win32" or sys.platform == "cygwin"):
     CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx9","")
     CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx8","")
     CONFAUTOPRC = CONFAUTOPRC.replace("aux-display pandadx7","")
@@ -1913,17 +1989,17 @@ ConditionalWriteFile(PREFIX + "/etc/Config.prc", CONFIGPRC)
 
 for pkg in (PACKAGES + ["extras"]):
     if (OMIT.count(pkg)==0):
-        if (COMPILER == "MSVC7"):
+        if (COMPILER == "MSVC7" or COMPILER=="MSVC71"):
             if (os.path.exists(THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin")):
                 CopyAllFiles(PREFIX+"/bin/",THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin/")
-        if (COMPILER == "LINUXA"):
+        elif (COMPILER == "LINUXA"):
             if (os.path.exists(THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib")):
                 CopyAllFiles(PREFIX+"/lib/",THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib/")
 
-if sys.platform == "win32":
-    CopyTree(PREFIX+'/python', PythonSDK)
-    if os.path.isfile(PythonSDK+'/python22.dll'):
-        CopyFile(PREFIX+'/bin/',   PythonSDK+'/python22.dll')
+if sys.platform == "win32" or sys.platform == "cygwin":
+    CopyTree(PREFIX+'/python', PYTHONSDK)
+    if os.path.isfile(PYTHONSDK+'/python22.dll'):
+        CopyFile(PREFIX+'/bin/',   PYTHONSDK+'/python22.dll')
 
 ########################################################################
 ##
@@ -2973,7 +3049,7 @@ CompileLink(dll='libglstuff.dll', opts=['ADVAPI', 'GLUT', 'NSPR', 'NVIDIACG', 'C
 # DIRECTORY: panda/src/windisplay/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['panda/src/windisplay']
     OPTS=['BUILDING_PANDAWIN', 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='winGraphicsWindow.cxx', obj='windisplay_winGraphicsWindow.obj')
@@ -2994,7 +3070,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if (sys.platform != "win32"):
+if (sys.platform != "win32" and sys.platform != "cygwin"):
     IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
     OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
     CompileC(ipath=IPATH, opts=OPTS, src='glxdisplay_composite1.cxx',     obj='glxdisplay_composite1.obj')
@@ -3023,7 +3099,7 @@ if (sys.platform != "win32"):
 # DIRECTORY: panda/src/wgldisplay/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['panda/src/wgldisplay', 'panda/src/glstuff', 'panda/src/gobj']
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
     CompileC(ipath=IPATH, opts=OPTS, src='wgldisplay_composite1.cxx', obj='wgldisplay_composite1.obj')
@@ -3050,7 +3126,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/metalibs/pandadx7/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['panda/src/dxgsg7']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
@@ -3074,7 +3150,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/metalibs/pandadx8/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['panda/src/dxgsg8']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
@@ -3099,7 +3175,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['panda/src/dxgsg9']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
@@ -4374,7 +4450,7 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
 # DIRECTORY: pandatool/src/win-stats/
 #
 
-if (OMIT.count("NSPR")==0) and (sys.platform == "win32"):
+if (OMIT.count("NSPR")==0) and (sys.platform == "win32" or sys.platform == "cygwin"):
     IPATH=['pandatool/src/win-stats']
     OPTS=['NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
@@ -4630,7 +4706,7 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 
 if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
     ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
-    if (sys.platform=="win32"):
+    if (sys.platform=="win32" or sys.platform == "cygwin"):
         if (GENMAN): oscmd(PREFIX+"/bin/genpycode.exe -m")
         else       : oscmd(PREFIX+"/bin/genpycode.exe")
     else:
@@ -4676,7 +4752,7 @@ if (COMPLETE):
 #
 ##########################################################################################
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" or sys.platform == "cygwin"):
 
     def MakeInstaller(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
         if (older(file, ALLTARGETS)):
@@ -4718,4 +4794,5 @@ if (sys.platform == "win32"):
 
 WARNINGS.append("Elapsed Time: "+prettyTime(time.time() - STARTTIME))
 printStatus("Makepanda Final Status Report", WARNINGS)
+
 
