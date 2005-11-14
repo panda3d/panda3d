@@ -60,6 +60,16 @@ XFileToEgg() :
      "and the frames are played sequentially at the specified frame rate.",
      &XFileToEgg::dispatch_double, NULL, &_frame_rate);
 
+  add_option
+    ("anim", "", 0,
+     "Generate animation data only (all geometry will be discarded).",
+     &XFileToEgg::dispatch_none, &_keep_animation);
+
+  add_option
+    ("model", "", 0,
+     "Generate model data only (all animation data will be discarded).",
+     &XFileToEgg::dispatch_none, &_keep_model);
+
   redescribe_option
     ("ui",
      "Specify the units of the input " + _format_name + " file.");
@@ -95,7 +105,9 @@ run() {
   converter._frame_rate = _frame_rate;
   converter._make_char = _make_char;
   converter._char_name = _char_name;
-
+  converter._keep_model = _keep_model;
+  converter._keep_animation = _keep_animation;
+  
   // Copy in the path and animation parameters.
   apply_parameters(converter);
 

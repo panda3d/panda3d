@@ -38,7 +38,7 @@ class XFileDataNodeTemplate;
 ////////////////////////////////////////////////////////////////////
 class XFile : public XFileNode {
 public:
-  XFile();
+  XFile(bool keep_names=false);
   ~XFile();
 
   virtual void clear();
@@ -79,7 +79,8 @@ private:
   int _major_version, _minor_version;
   FormatType _format_type;
   FloatSize _float_size;
-
+  bool _keep_names;
+  
   typedef pmap<WindowsGuid, XFileNode *> NodesByGuid;
   NodesByGuid _nodes_by_guid;
 

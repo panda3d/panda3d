@@ -36,11 +36,12 @@ PT(XFile) XFile::_standard_templates;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFile::
-XFile() : XFileNode(this, "") {
+XFile(bool keep_names) : XFileNode(this, "") {
   _major_version = 3;
   _minor_version = 2;
   _format_type = FT_text;
   _float_size = FS_64;
+  _keep_names = keep_names;
 }
 
 ////////////////////////////////////////////////////////////////////

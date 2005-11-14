@@ -35,9 +35,14 @@ TypeHandle XFileNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 XFileNode::
 XFileNode(XFile *x_file, const string &name) :
-  Namable(make_nice_name(name)),
+  Namable(),
   _x_file(x_file)
 {
+  if (x_file && x_file->_keep_names) {
+    set_name(name);
+  } else {
+    set_name(make_nice_name(name));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -565,15 +570,15 @@ make_nice_name(const string &str) {
       case '-':
         result += (*si);
         break;
-
       default:
         result += "_";
       }
     }
   }
 
-  if (!str.empty() && isdigit(str[0])) {
-    // If the name begins with a digit, we must make it begin with
+  if (str.empty() || isdigit(str[0])) {
+    // If the name begins with a digit, or if it
+    // is empty, then we must make it begin with
     // something else, like for instance an underscore.
     result = '_' + result;
   }

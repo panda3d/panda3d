@@ -40,7 +40,7 @@ XFileToEggConverter::
 XFileToEggConverter() {
   _make_char = false;
   _frame_rate = 30.0;
-  _x_file = new XFile;
+  _x_file = new XFile(true);
   _dart_node = NULL;
 }
 
@@ -54,7 +54,7 @@ XFileToEggConverter(const XFileToEggConverter &copy) :
   SomethingToEggConverter(copy),
   _make_char(copy._make_char)
 {
-  _x_file = new XFile;
+  _x_file = new XFile(true);
   _dart_node = NULL;
 }
 
@@ -149,6 +149,14 @@ convert_file(const Filename &filename) {
     return false;
   }
 
+  if (_keep_model && !_keep_animation) {
+    strip_nodes(EggTable::get_class_type());
+  }
+  
+  if (_keep_animation && !_keep_model) {
+    strip_nodes(EggGroup::get_class_type());
+  }
+  
   return !had_error();
 }
 
@@ -176,6 +184,27 @@ close() {
   _animation_sets.clear();
 
   _joints.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileToEggConverter::strip_nodes
+//       Access: Public
+//  Description: Removes all groups of the given type.  This is used
+//               to implement the -anim and -model options.
+////////////////////////////////////////////////////////////////////
+void XFileToEggConverter::
+strip_nodes(TypeHandle t) {
+  pvector <EggNode *> garbage;
+  EggGroupNode::iterator i;
+  for (i=_egg_data->begin(); i!=_egg_data->end(); ++i) {
+    EggNode *node = (*i);
+    if (node->is_of_type(t)) {
+      garbage.push_back(node);
+    }
+  }
+  for (int n=0; n<(int)garbage.size(); n++) {
+    _egg_data->remove_child(garbage[n]);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -391,10 +420,11 @@ convert_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
 convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent) {
+
   string name = obj->get_name();
   EggGroup *group = new EggGroup(name);
   egg_parent->add_child(group);
-
+  
   if (_make_char) {
     group->set_group_type(EggGroup::GT_joint);
     if (name.empty()) {

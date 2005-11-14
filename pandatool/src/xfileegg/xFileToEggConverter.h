@@ -62,11 +62,14 @@ public:
   EggTexture *create_unique_texture(const EggTexture &copy);
   EggMaterial *create_unique_material(const EggMaterial &copy);
   EggGroup *find_joint(const string &joint_name);
+  void strip_nodes(TypeHandle t);
 
 public:
   bool _make_char;
   string _char_name;
   double _frame_rate;
+  bool _keep_model;
+  bool _keep_animation;
 
 private:
   typedef XFileAnimationSet::FrameData FrameData;

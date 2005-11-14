@@ -102,7 +102,7 @@ public:
   XFileDataNode *add_Frame(const string &name);
   XFileDataNode *add_FrameTransformMatrix(const LMatrix4d &mat);
 
-protected:
+public:
   static string make_nice_name(const string &str);
 
 protected:
