@@ -52,28 +52,6 @@ os.chdir(PANDASOURCE)
 
 ########################################################################
 ##
-## Locate the Python SDK
-##
-########################################################################
-
-if sys.platform == "win32":
-    PythonSDK="python2.2"
-    if 0: # Needs testing:
-        if   (os.path.isdir("C:/Python22")): PythonSDK = "C:/Python22"
-        elif (os.path.isdir("C:/Python23")): PythonSDK = "C:/Python23"
-        elif (os.path.isdir("C:/Python24")): PythonSDK = "C:/Python24"
-        elif (os.path.isdir("C:/Python25")): PythonSDK = "C:/Python25"
-        else: sys.exit("Cannot find the python SDK")
-else:
-    if   (os.path.isdir("/usr/include/python2.5")): PythonSDK = "/usr/include/python2.5"
-    elif (os.path.isdir("/usr/include/python2.4")): PythonSDK = "/usr/include/python2.4"
-    elif (os.path.isdir("/usr/include/python2.3")): PythonSDK = "/usr/include/python2.3"
-    elif (os.path.isdir("/usr/include/python2.2")): PythonSDK = "/usr/include/python2.2"
-    else: sys.exit("Cannot find the python SDK")
-    # this is so that the user can find out which version of python was used.
-
-########################################################################
-##
 ## Read the default version number from dtool/PandaVersion.pp
 ##
 ## Parse the command-line arguments.
@@ -121,13 +99,16 @@ The Panda3D engine.
 %build
 makepanda/makepanda.py --version VERSION --everything MOREARGUMENTS
 %install
+
+PYTHONV=`cat built/bin/pythonversion`
+
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/include
 mkdir -p $RPM_BUILD_ROOT/usr/lib
 mkdir -p $RPM_BUILD_ROOT/usr/share/panda3d
-mkdir -p $RPM_BUILD_ROOT/usr/lib/PYTHONV/lib-dynload
-mkdir -p $RPM_BUILD_ROOT/usr/lib/PYTHONV/site-packages
+mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload
+mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/site-packages
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 
@@ -149,12 +130,12 @@ cp doc/LICENSE               $RPM_BUILD_ROOT/usr/share/panda3d/LICENSE
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/include/panda3d/LICENSE
 cp doc/ReleaseNotes          $RPM_BUILD_ROOT/usr/share/panda3d/ReleaseNotes
 echo "/usr/lib/panda3d" >    $RPM_BUILD_ROOT/etc/ld.so.conf.d/panda3d.conf
-echo "/usr/share/panda3d" >  $RPM_BUILD_ROOT/usr/lib/PYTHONV/site-packages/panda3d.pth
+echo "/usr/share/panda3d" >  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/site-packages/panda3d.pth
 cp built/bin/*               $RPM_BUILD_ROOT/usr/bin/
 
 for x in built/lib/* ; do
   base=`basename $x`
-  ln -sf /usr/lib/panda3d/$base $RPM_BUILD_ROOT/usr/lib/PYTHONV/lib-dynload/$base
+  ln -sf /usr/lib/panda3d/$base $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload/$base
 done
 for x in $RPM_BUILD_ROOT/usr/share/panda3d/direct/src/* ; do
   if [ `basename $x` != extensions ] ; then
@@ -169,8 +150,6 @@ chmod -R 555 $RPM_BUILD_ROOT/usr/share/panda3d
 
 %post
 /sbin/ldconfig
-rm -rf /usr/lib/PYTHONV/direct
-rm -rf /usr/lib/PYTHONV/SceneEditor
 %postun
 /sbin/ldconfig
 %clean
@@ -190,7 +169,6 @@ MORE=''
 for x in sys.argv[2:]: MORE=MORE+x+' '
 SPEC=SPEC.replace("VERSION",str(VERSION))
 SPEC=SPEC.replace("MOREARGUMENTS",MORE)
-SPEC=SPEC.replace("PYTHONV",os.path.basename(PythonSDK))
 
 ########################################################################
 ##
