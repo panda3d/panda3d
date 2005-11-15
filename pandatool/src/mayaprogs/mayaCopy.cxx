@@ -192,10 +192,18 @@ copy_maya_file(const Filename &source, const Filename &dest,
 
   if (num_refs != 0) {
     if (_replace_prefix.find("none") != string::npos) {
-      maya_cat.error()
-        << "External references exist: " 
-        << "please make sure to specify a _replace_prefix with -rp option\n";
-      exit(1);
+      // try to put the first word of the file name as the replace prefix
+      size_t idx = source.get_basename().find("_",0);
+      if (idx != string::npos) {
+        string st = source.get_basename().substr(0, idx);
+        _replace_prefix = st;
+      }
+      else {
+        maya_cat.error()
+          << "External references exist: " 
+          << "please make sure to specify a _replace_prefix with -rp option\n";
+        exit(1);
+      }
     }
   }
 
