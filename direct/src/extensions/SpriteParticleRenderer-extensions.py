@@ -1,6 +1,6 @@
 
     """
-    SpriteParticleRenderer-extensions module: contains methods to extend functionality
+    Contains methods to extend functionality
     of the SpriteParticleRenderer class
     """
 

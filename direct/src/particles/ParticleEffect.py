@@ -1,16 +1,15 @@
+
 from pandac.PandaModules import *
 import Particles
 import ForceGroup
 from direct.directnotify import DirectNotifyGlobal
 
 class ParticleEffect(NodePath):
-
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
     pid = 1 
 
     def __init__(self, name=None, particles=None):
-        """__init__()"""
-        if (name == None):
+        if name == None:
             name = 'particle-effect-%d' % ParticleEffect.pid
             ParticleEffect.pid += 1
         NodePath.__init__(self, name)
@@ -22,7 +21,7 @@ class ParticleEffect(NodePath):
         self.particlesDict = {}
         self.forceGroupDict = {}
         # The effect's particle system
-        if (particles != None):
+        if particles != None:
             self.addParticles(particles)
         self.renderParent = None
 
@@ -30,7 +29,7 @@ class ParticleEffect(NodePath):
         assert(self.notify.debug('start() - name: %s' % self.name))
         self.renderParent = renderParent
         self.enable()
-        if (parent != None):
+        if parent != None:
             self.reparentTo(parent)
 
     def cleanup(self):
@@ -46,8 +45,6 @@ class ParticleEffect(NodePath):
             del self.particlesDict
         del self.renderParent
 
-
-
     def reset(self):
         self.removeAllForces()
         self.removeAllParticles()
@@ -55,7 +52,6 @@ class ParticleEffect(NodePath):
         self.particlesDict = {}
 
     def enable(self):
-        """enable()"""
         # band-aid added for client crash - grw
         if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesDict'): 
             if (self.renderParent != None):
@@ -68,7 +64,6 @@ class ParticleEffect(NodePath):
             self.fEnabled = 1
 
     def disable(self):
-        """disable()"""
         self.detachNode()
         for p in self.particlesDict.values():
             p.setRenderParent(p.node)
@@ -80,13 +75,11 @@ class ParticleEffect(NodePath):
 
     def isEnabled(self):
         """
-        isEnabled()
         Note: this may be misleading if enable(),disable() not used
         """
         return self.fEnabled
 
     def addForceGroup(self, forceGroup):
-        """addForceGroup(forceGroup)"""
         forceGroup.nodePath.reparentTo(self)
         forceGroup.particleEffect = self
         self.forceGroupDict[forceGroup.getName()] = forceGroup
@@ -96,12 +89,10 @@ class ParticleEffect(NodePath):
             self.addForce(forceGroup[i])
 
     def addForce(self, force):
-        """addForce(force)"""
         for p in self.particlesDict.values():
             p.addForce(force)
 
     def removeForceGroup(self, forceGroup):
-        """removeForceGroup(forceGroup)"""
         # Remove forces from all particles
         for i in range(len(forceGroup)):
             self.removeForce(forceGroup[i])
@@ -111,7 +102,6 @@ class ParticleEffect(NodePath):
         del self.forceGroupDict[forceGroup.getName()]
 
     def removeForce(self, force):
-        """removeForce(force)"""
         for p in self.particlesDict.values():
             p.removeForce(force)
 
@@ -120,7 +110,6 @@ class ParticleEffect(NodePath):
             self.removeForceGroup(fg)
 
     def addParticles(self, particles):
-        """addParticles(particles)"""
         particles.nodePath.reparentTo(self)
         self.particlesDict[particles.getName()] = particles
 
@@ -130,7 +119,7 @@ class ParticleEffect(NodePath):
                 particles.addForce(fg[i])
 
     def removeParticles(self, particles):
-        if (particles == None):
+        if particles == None:
             self.notify.warning('removeParticles() - particles == None!')
             return
         particles.nodePath.detachNode()
@@ -164,7 +153,6 @@ class ParticleEffect(NodePath):
         return self.forceGroupDict
 
     def saveConfig(self, filename):
-        """saveFileData(filename)"""
         f = open(filename.toOsSpecific(), 'wb')
         # Add a blank line
         f.write('\n')
@@ -205,7 +193,6 @@ class ParticleEffect(NodePath):
         f.close()
 
     def loadConfig(self, filename):
-        """loadConfig(filename)"""
         try:
             if vfs:
                 exec vfs.readFile(filename)

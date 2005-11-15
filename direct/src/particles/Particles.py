@@ -28,12 +28,11 @@ import SpriteParticleRendererExt
 
 import string
 import os
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 import sys
 
 class Particles(ParticleSystem):
-
-    notify = DirectNotifyGlobal.directNotify.newCategory('Particles')
+    notify = directNotify.newCategory('Particles')
     id = 1
 
     def __init__(self, name=None, poolSize=1024):
@@ -147,7 +146,6 @@ class Particles(ParticleSystem):
         ParticleSystem.setRenderer(self, self.renderer)
 
     def setEmitter(self, type):
-        """setEmitter(type)"""
         if (self.emitterType == type):
             return None
         if (self.emitter):

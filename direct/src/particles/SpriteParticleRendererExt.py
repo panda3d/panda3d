@@ -3,7 +3,7 @@ from pandac.PandaModules import SpriteParticleRenderer
 
 class SpriteParticleRendererExt(SpriteParticleRenderer):
     """
-    SpriteParticleRenderer-extensions module: contains methods to extend functionality
+    Contains methods to extend functionality
     of the SpriteParticleRenderer class
     """
 
@@ -30,7 +30,6 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def setTextureFromFile(self, fileName = None):
         if fileName == None:
             fileName = self.getSourceTextureName()
-        
 
         t = loader.loadTexture(fileName)
         if (t != None):
