@@ -1,25 +1,33 @@
-"""ParticleInterval module: contains the ParticleInterval class"""
+"""
+Contains the ParticleInterval class
+"""
 
 from pandac.PandaModules import *
-from direct.directnotify.DirectNotifyGlobal import *
-import Interval
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from Interval import Interval
 
 from direct.particles import ParticleEffect
 
-class ParticleInterval(Interval.Interval):
+class ParticleInterval(Interval):
     # Name counter
     particleNum = 1
     # create ParticleInterval DirectNotify category
     notify = directNotify.newCategory('ParticleInterval')
     # Class methods
     def __init__(self, particleEffect, parent, worldRelative=1, loop=0, 
-                                                duration=0.0, name=None):
-        """__init__(particleEffect, parent, worldRelative, loop, duration, name)
+            duration=0.0, name=None):
+        """
+        particleEffect is ??
+        parent is ??
+        worldRelative is a boolean
+        loop is a boolean
+        duration is a float for the time
+        name is ??
         """
         # Generate unique name
         id = 'Particle-%d' % ParticleInterval.particleNum
         ParticleInterval.particleNum += 1
-        if (name == None):
+        if name == None:
             name = id
         # Record instance variables
         self.particleEffect = particleEffect 
@@ -28,7 +36,7 @@ class ParticleInterval(Interval.Interval):
         self.fLoop = loop
         assert(duration > 0.0 or loop == 1)
         # Initialize superclass
-        Interval.Interval.__init__(self, name, duration)
+        Interval.__init__(self, name, duration)
 
     def __del__(self):
         if self.particleEffect:
