@@ -77,14 +77,60 @@ This will compile panda with all the features.  It can take several
 hours, depending on the speed of your machine.
 
 The resulting copy of panda will be found in a subdirectory 'built'
-inside the source tree.  You can invoke panda programs directly out of
-the built subdirectory.
+inside the source tree.
 
-You can also move the built subdirectory elsewhere on your machine.
-If you choose to do so, you must first copy the subdirectories
-'models' and 'samples' into the built subdirectory, and 'direct/src'
-into 'built/direct/src'.
+TESTING THE COMPILED PANDA
 
+After building panda, you should test it before installing it.
+
+The first step is to add the built/bin directory to your PATH.  This
+is not strictly necessary, you can run the panda programs by typing
+their paths explicitly, but it is much more convenient to set the
+PATH.
+
+Second, add the built/lib directory to your LD_LIBRARY_PATH.  This is
+only necessary under Linux - Windows takes care of this automatically.
+It is also possible to use the system ld.so.conf configuration file to
+achieve the same effect, but LD_LIBRARY_PATH is more convenient for
+quick-and-dirty testing.
+
+Finally, change directory to one of the sample programs, and run the
+sample program using 'ppython'.  For example,
+
+  cd samples/Feature-Tutorials--Actors
+  ppython Tut-Actors.py
+
+If this doesn't work, something is wrong, and there's no reason
+to continue with the installation process.
+
+INSTALLING PANDA
+
+The first step is to copy 'models' and 'samples' into the built
+subdirectory, and 'direct/src' into 'built/direct/src'.  Then, move
+the built directory anywhere you like on your system.  For example,
+Linux users might want to move it to /usr/local:
+
+  mv built /usr/local/panda3d
+
+Windows users might want to move it to C:\Panda3D
+
+  move built c:\Panda3D
+
+Then, add the panda bin directory to your PATH.  Under Linux, it is
+also necessary to add the panda lib directory to the system library
+path.  It is usually possible to do so by editing the
+file /etc/ld.so.conf.
+
+INSTALLATION AND THE LINUX STANDARD FILESYSTEM LAYOUT
+
+The installation instructions above will produce a fully-functional
+installation of panda with a minimum number of complicated steps.
+However, the installation will not conform to the Linux standards
+for filesystem layout.
+
+If you want a conformant installation, the most sensible approach is
+to build a redhat RPM or a debian DEB, and then install the package.
+Instructions for building a package can be found below.
 
 MAKEPANDA COMMAND-LINE OPTIONS
 
