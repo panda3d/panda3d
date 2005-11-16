@@ -100,7 +100,7 @@ The Panda3D engine.
 makepanda/makepanda.py --version VERSION --everything MOREARGUMENTS
 %install
 
-PYTHONV=`cat built/bin/pythonversion`
+PYTHONV=`cat built/tmp/pythonversion`
 
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
