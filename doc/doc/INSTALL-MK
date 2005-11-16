@@ -79,6 +79,7 @@ hours, depending on the speed of your machine.
 The resulting copy of panda will be found in a subdirectory 'built'
 inside the source tree.
 
+
 TESTING THE COMPILED PANDA
 
 After building panda, you should test it before installing it.
@@ -103,6 +104,7 @@ sample program using 'ppython'.  For example,
 If this doesn't work, something is wrong, and there's no reason
 to continue with the installation process.
 
+
 INSTALLING PANDA
 
 The first step is to copy 'models' and 'samples' into the built
@@ -121,16 +123,19 @@ also necessary to add the panda lib directory to the system library
 path.  It is usually possible to do so by editing the
 file /etc/ld.so.conf.
 
+
 INSTALLATION AND THE LINUX STANDARD FILESYSTEM LAYOUT
 
 The installation instructions above will produce a fully-functional
-installation of panda with a minimum number of complicated steps.
-However, the installation will not conform to the Linux standards
-for filesystem layout.
+installation of panda with a minimum number of steps.  However, the
+installation will not conform to the Linux standards for filesystem
+layout.
 
 If you want a conformant installation, the most sensible approach is
 to build a redhat RPM or a debian DEB, and then install the package.
+The installation process will distribute the files properly.
 Instructions for building a package can be found below.
+
 
 MAKEPANDA COMMAND-LINE OPTIONS
 
@@ -147,7 +152,7 @@ it will show you the available command-line options:
   --optimize X      (optimization level can be 1,2,3,4)
   --thirdparty X    (directory containing third-party software)
   --complete        (copy models, samples, direct into the build)
-  --installer       (build an executable installer)
+  --installer       (build an installer)
   --v1 X            (set the major version number)
   --v2 X            (set the minor version number)
   --v3 X            (set the sequence version number)
@@ -235,7 +240,7 @@ the --thirdparty option to point makepanda to your libraries.
 THE EDIT-COMPILE-DEBUG CYCLE
 
 A small caution: if you invoke 'makepanda' with one set of options,
-and then invoke 'makepanda' using the *exact same* set of options, the
+and then invoke 'makepanda' using the exact same set of options, the
 second time will be fast.  It will see that everything has already
 been built, and it will do no actual compilation.  As a result,
 makepanda can be used as part of an edit-compile-debug cycle.
@@ -258,26 +263,45 @@ panda without helix.  I have a very short Windows BAT file called
 This helps me avoid accidentally typing makepanda with the wrong
 options.
 
-We have included a Visual Studio project file that simply invokes
-'makepanda' whenever you click 'compile', and it runs ppython when you
-click 'run'.  This is a handy way to edit, compile, and debug the
-panda3d sources.
 
+BUILDING THE SOURCE TAR-BALL AND ZIP-FILE
 
-BUILDING THE SOURCE TAR-BALL AND THE RPM
-
-If you are using Linux and you want to build an RPM, it is fairly easy
-to do so.  First, you need a panda source tar-ball.  If you do not
-already have one, build one using 'maketarball.py'.  You will need to
-give your version of panda a version number.  The version number can
-be any three integers separated by dots.
+If you want to distribute panda sources, it is convenient to package
+them up into a tar-ball or a zip-file.  There is a utility to do this
+in the makepanda directory.  You will need to give your version of
+panda a version number.  The version number can be any three integers
+separated by dots:
 
 	makepanda/maketarball.py 58.23.95
 
-This builds panda3d-58.23.95.tar.gz and panda3d-58.23.95.zip.  Once
-you have the tar-ball, it is easy to turn it into a binary RPM:
+This will create both the tar-ball and the zip-file.  The version
+number will be hardcoded into both.
+
+
+BUILDING A LINUX RPM PACKAGE
+
+To build an RPM, first you need the tar-ball.  Once you have the
+tar-ball, the command to turn it into a binary RPM is as follows:
 
 	rpmbuild -tb panda3d-58.23.95.tar.gz
 
 Before you use rpmbuild, you need to set up an RPM workspace.  Doing
 so is beyond the scope of this document.
+
+
+BUILDING A WINDOWS INSTALLER
+
+Under Windows, makepanda can create an executable installer.  All you
+need to do is pass the --installer option to makepanda.  The makepanda
+option --lzma will cause the installer to be compressed with LZMA
+compression, which is better, but it takes a long time to do the
+compression.
+
+
+BUILDING A LINUX DEB PACKAGE
+
+Under Linux, passing the --installer option to makepanda will
+cause makepanda to try to build a deb package.  For this to work,
+you have to be using a Linux distribution that includes the deb
+utilities.
+
