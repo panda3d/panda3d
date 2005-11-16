@@ -37,6 +37,17 @@
 // This file is not protected from multiple inclusion; it may need to
 // be included multiple times.
 
+// This forces the stuff in panda_glext.h to be reloaded,
+// if it was already loaded.
+
+#if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 29
+  #undef GL_GLEXT_VERSION
+  #undef GL_GLEXT_PROTOTYPES
+  #undef GL_VERSION_1_2
+  #undef GL_VERSION_1_3
+  #undef GL_VERSION_1_4
+  #undef GL_VERSION_1_5
+#endif
 #include "panda_glext.h"
 
 #include "glmisc_src.h"
