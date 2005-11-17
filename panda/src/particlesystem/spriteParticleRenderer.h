@@ -170,10 +170,10 @@ PUBLISHED:
 
   virtual BaseParticleRenderer *make_copy();
 
-  void set_from_node(const NodePath &node_path, bool size_from_texels = true);
-  void set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = true);
-  void add_from_node(const NodePath &node_path, bool size_from_texels = true, bool resize = false);
-  void add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = true, bool resize = false);
+  void set_from_node(const NodePath &node_path, bool size_from_texels = false);
+  void set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = false);
+  void add_from_node(const NodePath &node_path, bool size_from_texels = false, bool resize = false);
+  void add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = false, bool resize = false);
 
   INLINE void set_texture(Texture *tex, float texels_per_unit = 1.0f);
   INLINE void set_texture(Texture *tex, const string &tex_path, float texels_per_unit = 1.0f);
