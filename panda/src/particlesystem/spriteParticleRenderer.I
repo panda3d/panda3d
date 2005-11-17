@@ -43,12 +43,14 @@ set_texture(Texture *tex, float texels_per_unit) {
     _anims.clear();
 
     // Insert the single texture
-    _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+    // For some reason sprite particles are rendering flipped in the horizontal direction.
+    // This is a hack to fix it for now.
+    //_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+    _anims.push_back(new SpriteAnim(tex,TexCoordf(1.0f, 0.0f),TexCoordf(0.0f, 1.0f)));
 
     // We scale the particle size by the size of the texture.
     set_size(tex->get_x_size() / texels_per_unit,
              tex->get_y_size() / texels_per_unit);
-
     get_last_anim()->set_source_info(tex->get_filename());    
   }
   init_geoms();
@@ -79,7 +81,10 @@ add_texture(Texture *tex, float texels_per_unit, bool resize) {
   } else {
     if(tex != (Texture *)NULL) {
       if (tex != (Texture *)NULL) {
-        _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+	// For some reason sprite particles are rendering flipped in the horizontal direction.
+	// This is a hack to fix it for now.
+	//_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+        _anims.push_back(new SpriteAnim(tex,TexCoordf(1.0f, 0.0f),TexCoordf(0.0f, 1.0f)));
       }
       if(resize) {
         // We scale the particle size by the size of the texture.
@@ -187,6 +192,7 @@ set_size(float width, float height) {
 INLINE void SpriteParticleRenderer::
 set_color(const Colorf &color) {
   _color = color;
+  _color_interpolation_manager->set_default_color(_color);
 }
 
 ////////////////////////////////////////////////////////////////////
