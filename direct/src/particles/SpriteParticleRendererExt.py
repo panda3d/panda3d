@@ -77,12 +77,11 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         # Set instance copy of class variable
         self.sourceNodeName = name
 
-    def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
+    def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
         if modelName == None:
-            modelName = self.getSourceFileName()
-            
-        if nodeName == None:
-            nodeName = self.getSourceNodeName()
+            modelName = self.getSourceFileName()            
+            if nodeName == None:
+                nodeName = self.getSourceNodeName()
             
         # Load model and get texture
         m = loader.loadModelOnce(modelName)
@@ -102,15 +101,14 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         m.removeNode()
         return True
         
-    def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = True):
+    def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
         if(self.getNumAnims == 0):
             return self.setTextureFromNode(modelName,nodeName,sizeFromTexels)
 
         if modelName == None:
-            modelName = self.getSourceFileName()
-            
-        if nodeName == None:
-            nodeName = self.getSourceNodeName()
+            modelName = self.getSourceFileName()            
+            if nodeName == None:
+                nodeName = self.getSourceNodeName()
 
         # Load model and get texture
         m = loader.loadModelOnce(modelName)
