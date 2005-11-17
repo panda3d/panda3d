@@ -327,11 +327,20 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
                 
             } else {
               const LVecBase2f &uv = texcoord.get_data2f();
-              
+              /*
               min_uv[0] = min(min_uv[0], uv[0]);
               max_uv[0] = max(max_uv[0], uv[0]);
               min_uv[1] = min(min_uv[1], uv[1]);
               max_uv[1] = max(max_uv[1], uv[1]);
+	      */
+
+	      // For some reason sprite particles are rendering flipped in the horizontal direction.
+	      // This is a hack to fix it for now.
+              min_uv[0] = max(min_uv[0], uv[0]);
+              max_uv[0] = min(max_uv[0], uv[0]);
+              min_uv[1] = min(min_uv[1], uv[1]);
+              max_uv[1] = max(max_uv[1], uv[1]);
+
             }
           }
         }
@@ -381,7 +390,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
             }
           }
         }
-      }     
+      }
 
       if (got_vertex) {
         float width = max_xyz[0] - min_xyz[0];
@@ -393,7 +402,6 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
           // number of texels in the source image.
           float y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
           set_size(y_texels * width / height, y_texels);
-          
         } else {
           // If size_from_texels is false, we get the particle size from
           // the size of the polygon.
