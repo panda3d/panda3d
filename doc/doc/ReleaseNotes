@@ -1,3 +1,31 @@
+------------------------  RELEASE 1.1.0  ------------------------
+
+This is a BETA release.  It's pretty reliable, but there are still a
+few quirks here and there.  Over the summer, Panda3D was overhauled
+top to bottom.  The new code is dramatically improved, but it needs a
+little bit of testing.  The new features are:
+
+* Much faster rendering of high-poly models.
+* Dramatically improved vertex and pixel shader support.
+* New demo programs using shaders and render-to-texture.
+* Play movies by using an AVI as a texture (windows only).
+* Python scripting uses much faster python to C++ interface.
+* Support for procedurally-created geometry (eg, fractals, etc).
+* Cleaner, simpler internal data structures.
+* Comes with Python 2.4 support built-in.
+* A lot more.
+
+The new demo programs are:
+
+* Render to Texture Demo
+* Cartoon Shader Demo
+* Motion Trails Demo
+* Procedural Geometry (Fractals) Demo
+* Normal Mapping Demo
+
+However, a caution: this is a BETA release: reasonably stable, but
+not quite perfect.  Please send us your bug reports.
+
 ------------------------  RELEASE 1.0.5  ------------------------
 
 UPDATE: this release broke support for visual studio. Use
