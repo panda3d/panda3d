@@ -244,6 +244,17 @@ set_enabled(const bool enabled) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : ColorInterpolationManager::set_default_color
+//      Access : public
+// Description : Sets the color to used if no segments are present
+////////////////////////////////////////////////////////////////////
+
+INLINE void ColorInterpolationManager::
+set_default_color(const Colorf &c) {
+  _default_color = c;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationManager::get_segment
 //      Access : public
 // Description : Returns the segment that corresponds to 'seg_id'.

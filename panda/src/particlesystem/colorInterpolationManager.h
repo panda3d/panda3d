@@ -291,12 +291,8 @@ ColorInterpolationManager();
   int add_linear(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f));
   int add_stepwave(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float width_a = 0.5f, const float width_b = 0.5f);
   int add_sinusoid(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float period = 1.0f);
-  /*
-  static ColorInterpolationFunctionConstant* downcast_function_to_constant(ColorInterpolationFunction* f);
-  static ColorInterpolationFunctionLinear*   downcast_function_to_linear(ColorInterpolationFunction* f);
-  static ColorInterpolationFunctionStepwave* downcast_function_to_stepwave(ColorInterpolationFunction* f);
-  static ColorInterpolationFunctionSinusoid* downcast_function_to_sinusoid(ColorInterpolationFunction* f);
-  */
+
+  INLINE void set_default_color(const Colorf &c);
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);
   INLINE string get_segment_id_list();
   void clear_segment(const int seg_id);
