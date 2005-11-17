@@ -1813,14 +1813,19 @@ class ParticlePanel(AppShell):
         if ren.addTextureFromFile():
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = ren.getAnim(animId)
-        
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+            
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
+                self.createSpriteAnimationTextureWidget(parent,anim,`frameNum`))
         else:
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STTexture
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+            
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationTextureWidget(parent,anim,`animId`))
+                self.createSpriteAnimationTextureWidget(parent,anim,`frameNum`))
         parent.pack(fill=BOTH, expand=1)
     def addRendererSpriteAnimationFromNode(self):
         ren = self.particles.getRenderer()
@@ -1829,14 +1834,19 @@ class ParticlePanel(AppShell):
         if ren.addTextureFromNode():
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = ren.getAnim(animId)
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
             
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationNodeWidget(parent,anim,`animId`))
+                self.createSpriteAnimationNodeWidget(parent,anim,`frameNum`))
         else:
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STFromNode
+
+            frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
+            
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationNodeWidget(parent,anim,`animId`))
+                self.createSpriteAnimationNodeWidget(parent,anim,`frameNum`))
         parent.pack(fill=BOTH, expand=1)
         
     def toggleRendererSpriteXScale(self):
