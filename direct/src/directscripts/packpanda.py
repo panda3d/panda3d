@@ -136,7 +136,7 @@ if (os.path.isfile(LICENSE)==0):
   LICENSE=os.path.join(PANDA,"LICENSE")
 
 if (os.path.isfile(BITMAP)==0):
-  BITMAP=os.path.join(NSIS,"Contrib","Modern UI","Graphics","Wizard","nsis.bmp")
+  BITMAP=os.path.join(NSIS,"Contrib","Graphics","Wizard","nsis.bmp")
 
 ##############################################################################
 #
