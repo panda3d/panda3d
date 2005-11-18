@@ -373,7 +373,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         shader->_blend_type = MayaShader::BT_modulate;
     }
 
-    maya_cat.info() << "blendMode used " << blendName << endl;
+    maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
     maya_cat.spam() << "*** END doIt... ***" << endl;
 
     maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
