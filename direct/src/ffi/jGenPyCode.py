@@ -24,12 +24,13 @@ import sys,os
 
 DIRECT=None
 PANDAC=None
+
 for dir in sys.path:
     if (DIRECT is None):
-        if os.path.exists(os.path.join(dir,"direct")):
+        if (dir != "") and os.path.exists(os.path.join(dir,"direct")):
             DIRECT=os.path.join(dir,"direct")
     if (PANDAC is None):
-        if (os.path.exists(os.path.join(dir,"pandac"))):
+        if (dir != "") and (os.path.exists(os.path.join(dir,"pandac"))):
             PANDAC=os.path.join(dir,"pandac")
 
 if (DIRECT is None):
