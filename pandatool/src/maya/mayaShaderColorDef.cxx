@@ -314,25 +314,49 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     maya_cat.debug() << "Found layered texture" << endl;
 
     MFnDependencyNode layered_fn(color);
+
+    MPlugArray color_pa;
+    layered_fn.getConnections(color_pa);
+
+    int blendValue;
     MStatus status;
     MPlug inputsPlug = layered_fn.findPlug("inputs", &status);
     MPlug blendModePlug = layered_fn.findPlug("blendMode", &status);
-    size_t numElements = inputsPlug.evaluateNumElements(&status);
+
     maya_cat.spam() << "*** Start doIt... ***" << endl;
     maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
-    // Asad:following block fills the plug array values: needed to get all the connections
-    int blendValue;
-    for (size_t i=0; i<inputsPlug.numElements(); ++i) {
-      status = blendModePlug.selectAncestorLogicalIndex(i,inputsPlug);
-      blendModePlug.getValue(blendValue); // this call fills the plug connection
+
+    //maya_cat.spam() << "inputsPlug numElem: " << inputsPlug.numElements() << endl;
+    maya_cat.spam() << "plug_array numElem: " << color_pa.length() << endl;
+    int logicalIdx = -1;
+    // go through the plug array to find the first logical index of blend mode
+    for (size_t i=0; i<color_pa.length(); ++i) {
+      MPlug elementPlug = color_pa[i];
+      int li = elementPlug.logicalIndex();
+      maya_cat.spam() << "li: " << li << endl;
+      if (li > -1) {
+        if (li > 20) {
+          maya_cat.error()
+            << "unusual blendmode :" << li << " for :" << layered_fn.name() << endl;
+          exit(1);
+        }
+        logicalIdx = li;
+        break;
+      }
     }
-    // It seems our Maya, has the array of plugs in the reverse
-    // order. That is why I haev to query the ancestor index to the
-    // 2nd to last idx
-    status = blendModePlug.selectAncestorLogicalIndex(inputsPlug.numElements()-2,inputsPlug);
-    maya_cat.spam() << "blendModePlug Name: " << blendModePlug.name() << endl; 
+    if (logicalIdx < 0) {
+      maya_cat.error() 
+        << "Could not retrieve blendMode from: " << layered_fn.name() << endl;
+      exit(1);
+    }
+    // Now that I have the logical index, select the ancestorLogicalIndex
+    // on the blendModePlug to get the blendMode
+    status = blendModePlug.selectAncestorLogicalIndex(logicalIdx,inputsPlug);
     blendModePlug.getValue(blendValue);
-    maya_cat.spam() << "blendModePlug's value is " << blendValue << endl;
+
+    maya_cat.spam() 
+      << blendModePlug.name() << ": has value " << blendValue << endl;
+
     MFnEnumAttribute blendModeEnum(blendModePlug);
     MString blendName = blendModeEnum.fieldName(blendValue, &status);
     switch (blendValue) {
@@ -349,11 +373,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         shader->_blend_type = MayaShader::BT_modulate;
     }
 
-    maya_cat.spam() << "blendModePlug's field name is " << blendName << endl;
+    maya_cat.info() << "blendMode used " << blendName << endl;
     maya_cat.spam() << "*** END doIt... ***" << endl;
 
-    MPlugArray color_pa;
-    layered_fn.getConnections(color_pa);
     maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
     bool first = true;
     for (size_t i=0; i<color_pa.length(); ++i) {
