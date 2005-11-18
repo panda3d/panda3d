@@ -69,12 +69,13 @@ OPTIONS = ParseOptions(sys.argv[1:])
 
 PANDA=None
 for dir in sys.path:
-    if os.path.exists(os.path.join(dir,"direct")) and os.path.exists(os.path.join(dir,"pandac")) and os.path.exists(os.path.join(dir,"python")):
+    if (dir != "") and os.path.exists(os.path.join(dir,"direct")) and os.path.exists(os.path.join(dir,"pandac")) and os.path.exists(os.path.join(dir,"python")) and os.path.exists(os.path.join(dir,"nsis")):
         PANDA=os.path.abspath(dir)
 if (PANDA is None):
   sys.exit("Cannot locate the panda root directory in the python path (cannot locate directory containing direct and pandac).")
+print "PANDA located at "+PANDA
 
-if (os.path.exists(os.path.join("PANDA","..","makepanda","makepanda.py"))) and (os.path.exists(os.path.join("PANDA","..","thirdparty","win-nsis","makensis.exe"))):
+if (os.path.exists(os.path.join(PANDA,"..","makepanda","makepanda.py"))) and (os.path.exists(os.path.join(PANDA,"..","thirdparty","win-nsis","makensis.exe"))):
   PSOURCE=os.path.abspath(os.path.join(PANDA,".."))
   NSIS=os.path.abspath(os.path.join(PANDA,"..","thirdparty","win-nsis"))
 else:

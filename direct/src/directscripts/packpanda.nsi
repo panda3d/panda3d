@@ -90,8 +90,9 @@ Section "${SMDIRECTORY}" SecCore
         File /r ${PANDA}\etc\*
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\*.py
-        File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\src\directscripts\*
         File ${PANDA}\direct\__init__.py
+        SetOutPath $INSTDIR\direct\src\directscripts
+        File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\src\directscripts\*
         SetOutPath $INSTDIR\pandac
         File /r ${PANDA}\pandac\*.py
         SetOutPath $INSTDIR\python
@@ -204,12 +205,6 @@ Section -post
         Push "$INSTDIR\bin"
         Call AddToPath
         !endif
-
-        DetailPrint "Registering Helix Preferences..."
-        WriteRegStr HKLM "Software\Helix\HelixSDK\10.0\Preferences\UseOverlay" "" "0"
-        WriteRegStr HKLM "Software\Helix\HelixSDK\10.0\Preferences\UseWinDraw" "" "0"
-        WriteRegStr HKCU "Software\Helix\HelixSDK\10.0\Preferences\UseOverlay" "" "0"
-        WriteRegStr HKCU "Software\Helix\HelixSDK\10.0\Preferences\UseWinDraw" "" "0"
 
         DetailPrint "Adding the uninstaller ..."
         Delete "$INSTDIR\uninst.exe"
