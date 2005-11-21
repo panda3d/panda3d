@@ -319,6 +319,7 @@ class DistributedObjectAI(DirectObject):
         self.zoneId = zoneId
         self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
         self.generate()
+        self.announceGenerate()
 
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
@@ -358,6 +359,7 @@ class DistributedObjectAI(DirectObject):
         self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
+        self.announceGenerate()
 
     def generate(self):
         """
