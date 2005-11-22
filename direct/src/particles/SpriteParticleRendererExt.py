@@ -33,7 +33,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
         t = loader.loadTexture(fileName)
         if (t != None):
-            self.setTexture(t,fileName)
+            self.setTexture(t,t.getYSize())
             self.setSourceTextureName(fileName)
             return True
         else:
@@ -41,7 +41,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             return False
 
     def addTextureFromFile(self, fileName = None):
-        if(self.getNumAnims == 0):
+        if(self.getNumAnims() == 0):
             return self.setTextureFromFile(fileName)            
         
         if fileName == None:
@@ -49,7 +49,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
         t = loader.loadTexture(fileName)
         if (t != None):
-            self.addTexture(t,fileName)
+            self.addTexture(t,t.getYSize())
             return True
         else:
             print "Couldn't find rendererSpriteTexture file: %s" % fileName
@@ -102,7 +102,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         return True
         
     def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
-        if(self.getNumAnims == 0):
+        if(self.getNumAnims() == 0):
             return self.setTextureFromNode(modelName,nodeName,sizeFromTexels)
 
         if modelName == None:
