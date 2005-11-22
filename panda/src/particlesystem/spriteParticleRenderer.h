@@ -176,9 +176,7 @@ PUBLISHED:
   void add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = false, bool resize = false);
 
   INLINE void set_texture(Texture *tex, float texels_per_unit = 1.0f);
-  INLINE void set_texture(Texture *tex, const string &tex_path, float texels_per_unit = 1.0f);
   INLINE void add_texture(Texture *tex, float texels_per_unit = 1.0f, bool resize = false);
-  INLINE void add_texture(Texture *tex, const string &tex_path, float texels_per_unit = 1.0f, bool resize = false);
   INLINE void remove_animation(const int n);
   INLINE void set_ll_uv(const TexCoordf &ll_uv);
   INLINE void set_ll_uv(const TexCoordf &ll_uv, const int anim, const int frame);

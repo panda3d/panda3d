@@ -29,24 +29,13 @@
 //               all previously loaded textures and animations.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_texture(Texture *tex, const string &tex_path, float texels_per_unit) {
-  set_texture(tex,texels_per_unit);  
-  
-  //moved to "set_texture(Texture *tex, float texels_per_unit)" for backwards compatibility
-  //get_last_anim()->set_source_info(tex_path); 
-}
-
-INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex, float texels_per_unit) {
   if (tex != (Texture *)NULL) {
     // Clear all texture information
     _anims.clear();
 
     // Insert the single texture
-    // For some reason sprite particles are rendering flipped in the horizontal direction.
-    // This is a hack to fix it for now.
-    //_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
-    _anims.push_back(new SpriteAnim(tex,TexCoordf(1.0f, 0.0f),TexCoordf(0.0f, 1.0f)));
+    _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
 
     // We scale the particle size by the size of the texture.
     set_size(tex->get_x_size() / texels_per_unit,
@@ -65,32 +54,20 @@ set_texture(Texture *tex, float texels_per_unit) {
 //               a previous call to set_texture().
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-add_texture(Texture *tex, const string &tex_path, float texels_per_unit, bool resize) {
-  int anim_count = _anims.size();
-  add_texture(tex,texels_per_unit,resize);
-  if (anim_count < (int)_anims.size()) {
-    get_last_anim()->set_source_info(tex_path);
-  }
-
-}
-
-INLINE void SpriteParticleRenderer::
 add_texture(Texture *tex, float texels_per_unit, bool resize) {
   if (_anims.size() == 0) {
     set_texture(tex, texels_per_unit);
   } else {
     if(tex != (Texture *)NULL) {
       if (tex != (Texture *)NULL) {
-	// For some reason sprite particles are rendering flipped in the horizontal direction.
-	// This is a hack to fix it for now.
-	//_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
-        _anims.push_back(new SpriteAnim(tex,TexCoordf(1.0f, 0.0f),TexCoordf(0.0f, 1.0f)));
+	_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
       }
       if(resize) {
         // We scale the particle size by the size of the texture.
         set_size(tex->get_x_size() / texels_per_unit,
                  tex->get_y_size() / texels_per_unit);
       }
+      get_last_anim()->set_source_info(tex->get_filename());
       init_geoms();
     }
   }
