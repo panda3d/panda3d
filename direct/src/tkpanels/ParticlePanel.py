@@ -2331,17 +2331,11 @@ class ParticlePanel(AppShell):
             if(widget and widget.valid):
                 if(widget.animSourceType == SpriteAnim.STTexture):
                     texSource = self.getVariable('Sprite Renderer', `x` + ' Anim Texture').get()
-                    if(x == 0):
-                        ren.setTextureFromFile(texSource)
-                    else:
-                        ren.addTextureFromFile(texSource)
+                    ren.addTextureFromFile(texSource)
                 else:
                     modelSource = self.getVariable('Sprite Renderer', `x` + ' Anim Model').get()
                     nodeSource = self.getVariable('Sprite Renderer', `x` + ' Anim Node').get()
-                    if(x == 0):
-                        ren.setTextureFromNode(modelSource,nodeSource)
-                    else:
-                        ren.addTextureFromNode(modelSource,nodeSource)
+                    ren.addTextureFromNode(modelSource,nodeSource)
     
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
