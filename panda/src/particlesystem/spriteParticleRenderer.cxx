@@ -44,10 +44,10 @@ SpriteParticleRenderer(Texture *tex) :
   _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _height(1.0f),
   _width(1.0f),
-  _initial_x_scale(0.02f),
-  _final_x_scale(0.02f),
-  _initial_y_scale(0.02f),
-  _final_y_scale(0.02f),
+  _initial_x_scale(1.0f),
+  _final_x_scale(1.0f),
+  _initial_y_scale(1.0f),
+  _final_y_scale(1.0f),
   _theta(0.0f),
   _base_y_scale(1.0f),
   _aspect_ratio(1.0f),
@@ -327,20 +327,11 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
                 
             } else {
               const LVecBase2f &uv = texcoord.get_data2f();
-              /*
+
               min_uv[0] = min(min_uv[0], uv[0]);
               max_uv[0] = max(max_uv[0], uv[0]);
               min_uv[1] = min(min_uv[1], uv[1]);
               max_uv[1] = max(max_uv[1], uv[1]);
-	      */
-
-	      // For some reason sprite particles are rendering flipped in the horizontal direction.
-	      // This is a hack to fix it for now.
-              min_uv[0] = max(min_uv[0], uv[0]);
-              max_uv[0] = min(max_uv[0], uv[0]);
-              min_uv[1] = min(min_uv[1], uv[1]);
-              max_uv[1] = max(max_uv[1], uv[1]);
-
             }
           }
         }
@@ -527,8 +518,8 @@ init_geoms() {
         
         // Build a transform to convert the texture coordinates to the
         // ll, ur space.
-        LPoint2f ul(anim->get_ur(j)[0], anim->get_ur(j)[1]);
-        LPoint2f lr(anim->get_ll(j)[0], anim->get_ll(j)[1]);
+        LPoint2f ul(anim->get_ll(j)[0], anim->get_ur(j)[1]);
+        LPoint2f lr(anim->get_ur(j)[0], anim->get_ll(j)[1]);
         LVector2f sc = lr - ul;
 
         CPT(TransformState) ts = TransformState::make_pos_rotate_scale2d(ul, 0.0f, sc);
@@ -610,7 +601,6 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     for (j = 0; j < _anim_size[i]; ++j) {
       // Set the particle per frame counts to 0.
       memset(_ttl_count[i], 0, _anim_size[i]*sizeof(int));
-      
       _sprite_writer[i][j].vertex = GeomVertexWriter(_vdata[i][j], InternalName::get_vertex());
       _sprite_writer[i][j].color = GeomVertexWriter(_vdata[i][j], InternalName::get_color());
       _sprite_writer[i][j].rotate = GeomVertexWriter(_vdata[i][j], InternalName::get_rotate());
@@ -655,6 +645,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     float t = cur_particle->get_parameterized_age();
     int anim_index = cur_particle->get_index();
 
+    // If an animation has been removed, we need to reassign
+    // those particles assigned to the removed animation.
     if(_animation_removed && (anim_index >= anim_count)) {
       anim_index = int(NORMALIZED_RAND()*anim_count);
       anim_index = anim_index<anim_count?anim_index:anim_index-1;
@@ -678,7 +670,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // Calculate the color
     // This is where we'll want to give the renderer the new color
-    Colorf c = _color_interpolation_manager->generateColor(t);    
+    Colorf c = _color_interpolation_manager->generateColor(t);
 
     int alphamode=get_alpha_mode();
     if (alphamode != PR_ALPHA_NONE) {
@@ -738,7 +730,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   int n = 0;
   GeomNode *render_node = get_render_node();
-
+  
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       _sprites[i][j]->clear_vertices();
