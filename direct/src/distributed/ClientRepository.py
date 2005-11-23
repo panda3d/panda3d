@@ -99,12 +99,6 @@ class ClientRepository(ConnectionRepository):
         else:
             return self.doId2do, self.cache
 
-    def _handleShutdown(self):
-        """
-        User just killed the window. Clean up quickly.
-        """
-        self.loginFSM.request("shutdown")
-
     def sendDisconnect(self):
         if self.isConnected():
             # Tell the game server that we're going:
