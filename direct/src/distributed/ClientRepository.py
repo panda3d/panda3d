@@ -99,13 +99,11 @@ class ClientRepository(ConnectionRepository):
         else:
             return self.doId2do, self.cache
 
-    def abruptCleanup(self):
+    def _handleShutdown(self):
         """
-        Call this method to clean up any pending hooks or tasks on
-        distributed objects, but leave the ClientRepository in a sane
-        state for creating more distributed objects.
+        User just killed the window. Clean up quickly.
         """
-        self.relatedObjectMgr.abortAllRequests()
+        self.loginFSM.request("shutdown")
 
     def sendDisconnect(self):
         if self.isConnected():
