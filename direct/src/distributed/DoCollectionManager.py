@@ -294,19 +294,19 @@ class DoCollectionManager:
             self.zoneId2doIds.setdefault(newLocation, {})
             self.zoneId2doIds[newLocation][do.doId]=do
 
-    def getObjectsInZone(self, location):
+    def getObjectsInZone(self, parentId, zoneId):
         """ call this to get a dict of doId:distObj for a zone.
         Creates a shallow copy, so you can do whatever you want with the
         dict. """
         assert self.notify.debugStateCall(self)
-        return copy.copy(self.zoneId2doIds.get(location, {}))
+        return copy.copy(self.zoneId2doIds.get((parentId, zoneId), {}))
 
-    def getObjectsOfClassInZone(self, location, objClass):
+    def getObjectsOfClassInZone(self, parentId, zoneId, objClass):
         """ returns dict of doId:object for a zone, containing all objects
         that inherit from 'class'. returned dict is safely mutable. """
         assert self.notify.debugStateCall(self)
         doDict = {}
-        for doId, do in self.zoneId2doIds.get(location, {}).items():
+        for doId, do in self.zoneId2doIds.get((parentId, zoneId), {}).items():
             if isinstance(do, objClass):
                 doDict[doId] = do
         return doDict
