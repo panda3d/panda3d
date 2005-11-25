@@ -11,6 +11,9 @@ class CRCache:
         self.dict = {}
         self.fifo = []
 
+    def isEmpty(self):
+        return len(self.fifo) == 0
+
     def flush(self):
         """
         Delete each item in the cache then clear all references to them
