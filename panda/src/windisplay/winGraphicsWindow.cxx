@@ -2232,7 +2232,6 @@ get_icon(const Filename &filename) {
   if (h == 0) {
     windisplay_cat.warning()
       << "windows icon filename '" << os << "' could not be loaded!!\n";
-    show_error_message();
   }
 
   _icon_filenames[filename] = h;
