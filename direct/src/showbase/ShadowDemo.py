@@ -188,33 +188,33 @@ def arbitraryShadow(node):
 
     return sc
 
-def testShadow():
+##def testShadow():
 ##    a = piratesAvatarShadow()
-    """
-from direct.showbase.ShadowDemo import *
-from direct.interval.IntervalGlobal import *
-b = loader.loadModel('/i/beta/PotC/Maya/Pirates/scenes/models/sets/buildings/spanish_buildings/TavernIntExt/tavern_ext/bar.egg')
-bs = arbitraryShadow(b)
-s = loader.loadModel('smiley')
-s.reparentTo(bs.lightPath)
-b.reparentTo((base.localAvatar))
-a = AmbientLight('cloudAmbientHi')
-a.setColor(Vec4(0.9, 0.9, 0.9, 1.000))
-aNP = s.attachNewNode(a.upcastToPandaNode())
-b.setLight(aNP)
-d = DirectionalLight("chernabogDirectionalLight")
-d.setDirection(Vec3(0,1,0))
-d.setColor(Vec4(1))
-#d.setColor(Vec4(0.9, 0.7, 0.7, 1.000))
-dNP = s.attachNewNode(d.upcastToPandaNode())
-b.setLight(dNP)
+##
+##from direct.showbase.ShadowDemo import *
+##from direct.interval.IntervalGlobal import *
+##b = loader.loadModel('/i/beta/PotC/Maya/Pirates/scenes/models/sets/buildings/spanish_buildings/TavernIntExt/tavern_ext/bar.egg')
+##bs = arbitraryShadow(b)
+##s = loader.loadModel('smiley')
+##s.reparentTo(bs.lightPath)
+##b.reparentTo((base.localAvatar))
+##a = AmbientLight('cloudAmbientHi')
+##a.setColor(Vec4(0.9, 0.9, 0.9, 1.000))
+##aNP = s.attachNewNode(a.upcastToPandaNode())
+##b.setLight(aNP)
+##d = DirectionalLight("chernabogDirectionalLight")
+##d.setDirection(Vec3(0,1,0))
+##d.setColor(Vec4(1))
+###d.setColor(Vec4(0.9, 0.7, 0.7, 1.000))
+##dNP = s.attachNewNode(d.upcastToPandaNode())
+##b.setLight(dNP)
+##
+##ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200,0,50)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(-200,0,200)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,200)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,50)),
+##)
+##ival.loop()
 
-ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200,0,50)),
-                LerpPosInterval(bs.lightPath, 10.0, Vec3(-200,0,200)),
-                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,200)),
-                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,50)),
-)
-ival.loop()
 
 
-    """
