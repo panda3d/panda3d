@@ -182,7 +182,19 @@ for package in packages:
                         isModule = 1
                     except:
                         isModule = 0
-
+                        
+                    # 
+                    # RHH.... hack OPT2 .. py debug libraries...
+                    #
+                    if not isModule:
+                        # debug py library magin naming in windows..
+                        basename = basename.replace('_d','')                   
+                        try:
+                            __import__(basename, globals(), locals())
+                            isModule = 1
+                        except:
+                            isModule = 0                        
+                        
                     if isModule:
                         if basename not in DoGenPyCode.codeLibs:
                             DoGenPyCode.codeLibs.append(basename)
