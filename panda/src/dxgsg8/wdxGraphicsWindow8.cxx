@@ -592,6 +592,8 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   }
 
   if (is_fullscreen()) {
+    // CREATE FULLSCREEN BUFFERS
+
     presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
     presentation_params->FullScreen_PresentationInterval = (do_sync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
     presentation_params->FullScreen_RefreshRateInHz = display._display_mode.RefreshRate;
@@ -611,20 +613,22 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     }
 
     SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
-  }   // end create full screen buffers
 
-  else {          // CREATE WINDOWED BUFFERS
+  } else {
+    // CREATE WINDOWED BUFFERS
 
     D3DDISPLAYMODE dispmode;
     hr = display._d3d8->GetAdapterDisplayMode(display._card_id, &dispmode);
 
     if (FAILED(hr)) {
-      wdxdisplay8_cat.fatal() << "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
+      wdxdisplay8_cat.fatal()
+	<< "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
       return false;
     }
 
     if (dispmode.Format == D3DFMT_P8) {
-      wdxdisplay8_cat.fatal() << "Can't run windowed in an 8-bit or less display mode" << endl;
+      wdxdisplay8_cat.fatal()
+	<< "Can't run windowed in an 8-bit or less display mode" << endl;
       return false;
     }
 
@@ -632,9 +636,15 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
     if (dx_multisample_antialiasing_level<2) {
       if (do_sync) {
-        presentation_params->SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
+	// It turns out that COPY_VSYNC has real performance problems
+	// on many nVidia cards--it syncs at some random interval,
+	// possibly skipping over several video syncs.  Screw it,
+	// we'll effectively disable sync-video with windowed mode
+	// using DirectX8.
+        //presentation_params->SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
+        presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
       } else {
-        presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;  //D3DSWAPEFFECT_COPY;  does this make any difference?
+        presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
       }
     } else {
       presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
