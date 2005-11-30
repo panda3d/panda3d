@@ -1,13 +1,47 @@
 ########################################################################
 #
-# Documentation generator for panda.  There are three
-# major subsystems:
+# Documentation generator for panda.
 #
-# * The module that reads interrogate databases.
+# How to use this module:
 #
-# * The module that reads python source-files.
+#   from direct.directscripts import gendocs
+#   gendocs.generate(version, indir, directdir, docdir, header, footer, urlprefix, urlsuffix)
 #
-# * 
+#   - version is the panda version number
+#
+#   - indir is the name of a directory containing the "xxx.in"
+#     files that interrogate generates.  No slash at end.
+#
+#   - directdir is the name of a directory containing the 
+#     source code for "direct."  No slash at end.
+#
+#   - docdir is the name of a directory into which HTML files
+#     will be emitted.  No slash at end.
+#
+#   - header is a string that will be placed at the front of
+#     every HTML page.
+#
+#   - footer is a string that will be placed at the end of
+#     every HTML page.
+#
+#   - urlprefix is a string that will be appended to the front of
+#     every URL.
+#
+#   - urlsuffix is a string that will be appended to the end of
+#     every URL.
+#
+########################################################################
+#
+# The major subsystems are:
+#
+# * The module that loads interrogate databases.
+#
+# * The module that loads python parse-trees.
+#
+# * The "code database", which provides a single access point
+#   for both interrogate databases and python parse trees.
+#
+# * The HTML generator.
 # 
 ########################################################################
 
@@ -75,8 +109,8 @@ def textToHTML(comment,sep,delsection=None):
                 total = total + sec + "<br>\n"
     return total
 
-def linkToPage(page, text):
-    return '<a href="/apiref.php?page=' + page + '">' + text + '</a>'
+def linkTo(link, text):
+    return '<a href="' + link + '">' + text + '</a>'
 
 def convertToPythonFn(fn):
     result = ""
@@ -89,19 +123,6 @@ def convertToPythonFn(fn):
                 result = result + c
         lastc = c
     return result
-
-def getPandaVersion():
-    try:
-        f = file("dtool/PandaVersion.pp","r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                version = match.group(1)+"."+match.group(2)+"."+match.group(3)
-                break
-        f.close()
-    except: sys.exit("Cannot read version number from dtool/PandaVersion.pp")
-    return version
 
 ########################################################################
 #
@@ -611,23 +632,9 @@ CLASS_RENAME_DICT = {
 
 ########################################################################
 #
-# Main Program
+# HTML generation
 #
 ########################################################################
-
-def getCodeDatabase():
-    ignore = {}
-    ignore["__init__.py"] = 1
-    ignore["direct/src/directscripts"] = 1
-    ignore["direct/src/extensions"] = 1
-    ignore["direct/src/extensions_native"] = 1
-    ignore["direct/src/ffi"] = 1
-    cxxfiles = []
-    pyfiles = []
-    findFiles("built/pandac/input", ".in", ignore, cxxfiles)
-    findFiles("direct",             ".py", ignore, pyfiles)
-    return CodeDatabase(cxxfiles, pyfiles)
-
 
 def generateFunctionDocs(code, method):
     name = code.getFunctionName(method)
@@ -641,8 +648,33 @@ def generateFunctionDocs(code, method):
     chunk = chunk + "</td></tr></table>\n"
     return chunk
 
-def generateDocs(code):
-    dir = "built/pandac/docs"
+def generateLinkTable(table, cols, urlprefix, urlsuffix):
+    table = table[:]
+    column = (len(table)+cols-1)/cols
+    percent = 100 / cols
+    for i in range(cols): table.append("")
+    result = '<table width="100%">\n'
+    for i in range(column):
+        line = ""
+        for j in range(cols):
+            slot = table[i + column*j]
+            line = line + '<td width="' + str(percent) + '%">' + linkTo(urlprefix+slot+urlsuffix,slot) + "</td>"
+        result = result + "<tr>" + line + "</tr>\n"
+    result = result + "</table>\n"
+    return result
+
+def generate(pversion, indir, directdir, docdir, header, footer, urlprefix, urlsuffix):
+    ignore = {}
+    ignore["__init__.py"] = 1
+    ignore[directdir + "/src/directscripts"] = 1
+    ignore[directdir + "/src/extensions"] = 1
+    ignore[directdir + "/src/extensions_native"] = 1
+    ignore[directdir + "/src/ffi"] = 1
+    cxxfiles = []
+    pyfiles = []
+    findFiles(indir,     ".in", ignore, cxxfiles)
+    findFiles(directdir, ".py", ignore, pyfiles)
+    code = CodeDatabase(cxxfiles, pyfiles)
     classes = code.getClassList()[:]
     classes.sort()
     xclasses = classes[:]
@@ -654,9 +686,9 @@ def generateDocs(code):
         inheritance = code.getInheritance(type)
         body = body + "<h2>Inheritance:</h2>\n<ul>\n"
         for inh in inheritance:
-            line = "  " + linkToPage(inh,inh) + " : "
+            line = "  " + linkTo(urlprefix+inh+urlsuffix,inh) + " : "
             for parent in code.getClassParents(inh):
-                line = line + linkToPage(parent,parent) + " "
+                line = line + linkTo(urlprefix+parent+urlsuffix,parent) + " "
             body = body + line + "<br>\n"
         body = body + "</ul>\n"
         for sclass in inheritance:
@@ -674,28 +706,25 @@ def generateDocs(code):
             methods.sort()
             for method in methods:
                 body = body + generateFunctionDocs(code, method)
-        writeFile(dir + "/" + type + ".html", body)
+        body = header + body + footer
+        writeFile(docdir + "/" + type + ".html", body)
         if (CLASS_RENAME_DICT.has_key(type)):
             modtype = CLASS_RENAME_DICT[type]
-            writeFile(dir + "/" + modtype + ".html", body)
+            writeFile(docdir + "/" + modtype + ".html", body)
             xclasses.append(modtype)
     xclasses.sort()
-    pversion = getPandaVersion()
-    index = "<h1>List of Classes - Panda " + pversion + "</h1>\n<ul>\n"
-    for type in xclasses:
-        index = index + linkToPage(type,type) + "<br>\n"
-    index = index + "</ul>\n"
-    index = index + "<h1>List of Global Functions - Panda " + pversion + "</h1>\n<ul>\n"
+    index = "<h1>List of Classes - Panda " + pversion + "</h1>\n"
+    index = index + generateLinkTable(xclasses,3,urlprefix,urlsuffix)
     fnlist = code.getGlobalFunctionList()[:]
     fnlist.sort()
-    for func in fnlist:
-        fn = code.getFunctionName(func)
-        index = index + '<a href="#' + fn + '">' + fn + "</a><br>\n"
-    index = index + "</ul>\n"
+    fnnames = []
+    for i in range(len(fnlist)):
+        fnnames.append(code.getFunctionName(fnlist[i]))
+    index = index + "<h1>List of Global Functions - Panda " + pversion + "</h1>\n"
+    index = index + generateLinkTable(fnnames,3,"#","")
     for func in fnlist:
         index = index + generateFunctionDocs(code, func)
-    writeFile(dir + "/index.html", index)
+    index = header + index + footer
+    writeFile(docdir + "/index.html", index)
 
-
-generateDocs(getCodeDatabase())
 
