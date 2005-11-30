@@ -156,7 +156,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   // true_net_transform->compose(new_node_transform) produces the same
   // result we would have gotten had we actually computed
   // want_transform->compose(orig_node_transform).
-  node_transform = node_transform->compose(compass_transform);
+  node_transform = compass_transform->compose(node_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
