@@ -40,7 +40,6 @@ Options:
   -O          no C++ comments or assertion statements
   -n          Don't use squeezeTool to squeeze the result into one .pyz file
   -s          Don't delete source files after squeezing
-  -m          Generate the API reference manual as well
 
 Any additional names listed on the command line are taken to be names
 of libraries that are to be instrumented.
@@ -56,7 +55,6 @@ codeLibs = []
 etcPath = []
 doSqueeze = True
 deleteSourceAfterSqueeze = True
-generateManual = False
 native = False  # This is set by genPyCode.py
 
 def doGetopts():
@@ -66,7 +64,6 @@ def doGetopts():
     global codeLibs
     global doSqueeze
     global deleteSourceAfterSqueeze
-    global generateManual
     global etcPath
 
     # These options are allowed but are flagged as warnings (they are
@@ -117,8 +114,6 @@ def doGetopts():
             doSqueeze = False
         elif (flag == '-s'):
             deleteSourceAfterSqueeze = False
-        elif (flag == '-m'):
-            generateManual = True
         elif (flag in ['-g', '-t', '-p', '-o']):
             FFIConstants.notify.warning("option is deprecated: %s" % (flag))
             
@@ -244,7 +239,6 @@ def run():
     global codeLibs
     global doSqueeze
     global deleteSourceAfterSqueeze
-    global generateManual
     global etcPath
 
     doGetopts()
@@ -262,10 +256,3 @@ def run():
         if doSqueeze:
             db.squeezeGeneratedCode(outputDir, deleteSourceAfterSqueeze)
 
-    if generateManual:
-        import epydoc.cli
-        import direct.directbase.DirectStart
-        mandir = os.path.join(outputDir,"docs")
-        cmd = ["epydoc","-n","Panda3D","-o",mandir,"--docformat","panda","--ignore-param-mismatch",directDir]+codeLibs
-        sys.argv = cmd
-        epydoc.cli.cli()
