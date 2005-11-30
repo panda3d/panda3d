@@ -925,18 +925,12 @@ draw_triangles(const GeomTriangles *primitive) {
 
     } else {
       // Nonindexed, client arrays.
-      int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-      unsigned int first_vertex = primitive->get_first_vertex();
 
-      // Interestingly, my ATI driver seems to fail to draw anything
-      // in this call if the address range of the buffer supplied
-      // crosses over a multiple of 0x10000.  I refuse to hack around
-      // this lame driver bug.
-      _d3d_device->DrawPrimitiveUP
-        (D3DPT_TRIANGLELIST,
-         primitive->get_num_primitives(),
-         _vertex_data->get_array(0)->get_data() + stride * first_vertex,
-         stride);
+      draw_primitive_up(D3DPT_TRIANGLELIST, primitive->get_num_primitives(),
+			primitive->get_first_vertex(), 
+			primitive->get_num_vertices(),
+			_vertex_data->get_array(0)->get_data(),
+			_vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -989,13 +983,12 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Indexed, client arrays, one long triangle strip.
-        int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-        unsigned int first_vertex = primitive->get_first_vertex();
-        _d3d_device->DrawPrimitiveUP
-          (D3DPT_TRIANGLESTRIP,
-           primitive->get_num_vertices() - 2,
-           _vertex_data->get_array(0)->get_data() + stride * first_vertex,
-           stride);
+	draw_primitive_up(D3DPT_TRIANGLESTRIP,
+			  primitive->get_num_vertices() - 2,
+			  primitive->get_first_vertex(),
+			  primitive->get_num_vertices(),
+			  _vertex_data->get_array(0)->get_data(),
+			  _vertex_data->get_format()->get_array(0)->get_stride());
       }
     }
 
@@ -1079,10 +1072,10 @@ draw_tristrips(const GeomTristrips *primitive) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          _d3d_device->DrawPrimitiveUP
-            (D3DPT_TRIANGLESTRIP,
-             ends[i] - start - 2,
-             array_data + (first_vertex + start) * stride, stride);
+	  draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
+			    first_vertex + start,
+			    ends[i] - start,
+			    array_data, stride);
 
           start = ends[i] + 2;
         }
@@ -1178,11 +1171,11 @@ draw_trifans(const GeomTrifans *primitive) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-        _d3d_device->DrawPrimitiveUP
-          (D3DPT_TRIANGLEFAN,
-           ends[i] - start - 2,
-           array_data + (first_vertex + start) * stride, stride);
-
+	draw_primitive_up(D3DPT_TRIANGLEFAN,
+			  ends[i] - start - 2,
+			  first_vertex,
+			  ends[i] - start,
+			  array_data, stride);
         start = ends[i];
       }
     }
@@ -1237,13 +1230,11 @@ draw_lines(const GeomLines *primitive) {
 
     } else {
       // Nonindexed, client arrays.
-      int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-      unsigned int first_vertex = primitive->get_first_vertex();
-      _d3d_device->DrawPrimitiveUP
-        (D3DPT_LINELIST,
-         primitive->get_num_primitives(),
-         _vertex_data->get_array(0)->get_data() + stride * first_vertex,
-         stride);
+      draw_primitive_up(D3DPT_LINELIST, primitive->get_num_primitives(),
+			primitive->get_first_vertex(),
+			primitive->get_num_vertices(),
+			_vertex_data->get_array(0)->get_data(),
+			_vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -1280,13 +1271,11 @@ draw_points(const GeomPoints *primitive) {
 
   } else {
     // Nonindexed, client arrays.
-    int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-    unsigned int first_vertex = primitive->get_first_vertex();
-    _d3d_device->DrawPrimitiveUP
-      (D3DPT_POINTLIST,
-       primitive->get_num_primitives(),
-       _vertex_data->get_array(0)->get_data() + stride * first_vertex,
-       stride);
+    draw_primitive_up(D3DPT_POINTLIST, primitive->get_num_primitives(),
+		      primitive->get_first_vertex(), 
+		      primitive->get_num_vertices(),
+		      _vertex_data->get_array(0)->get_data(),
+		      _vertex_data->get_format()->get_array(0)->get_stride());
   }
 }
 
@@ -3707,5 +3696,61 @@ get_texture_argument_modifier(TextureStage::CombineOperand operand) {
   dxgsg8_cat.error()
     << "Invalid TextureStage::CombineOperand value (" << (int)operand << ")\n";
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_primitive_up
+//       Access: Public
+//  Description: Issues the DrawPrimitiveUP call to draw the indicated
+//               primitive_type from the given buffer.  We add the
+//               num_vertices parameter, so we can determine the size
+//               of the buffer.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
+		  unsigned int primitive_count,
+		  unsigned int first_vertex, 
+		  unsigned int num_vertices,
+		  const unsigned char *buffer, size_t stride) {
+
+  // It appears that the common ATI driver seems to fail to draw
+  // anything in the DrawPrimitiveUP() call if the address range of
+  // the buffer supplied crosses over a multiple of 0x10000.  That's
+  // incredibly broken, yet it undeniably appears to be true.  We'll
+  // have to hack around it.
+
+  const unsigned char *buffer_start = buffer + stride * first_vertex;
+  const unsigned char *buffer_end = buffer_start + stride * num_vertices;
+  
+  if (buffer_end - buffer_start > 0x10000) {
+    // Actually, the buffer doesn't fit within the required limit
+    // anyway.  Go ahead and draw it and hope for the best.
+    _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
+				 buffer_start, stride);
+
+  } else if ((((long)buffer_end ^ (long)buffer_start) & 0xffff) == 0) {
+    // No problem; we can draw the buffer directly.
+    _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
+				 buffer_start, stride);
+
+  } else {
+    // We have a problem--the buffer crosses over a 0x10000 boundary.
+    // We have to copy the buffer to a temporary buffer that we can
+    // draw from.
+    static unsigned char *temp_buffer = NULL;
+    static unsigned char *safe_buffer_start = NULL;
+    if (temp_buffer == NULL) {
+      // Guarantee we get a buffer of size 0x10000 bytes that begins
+      // on an even multiple of 0x10000.  We do this by allocating
+      // double the required buffer, and then pointing to the first
+      // multiple of 0x10000 within that buffer.
+      temp_buffer = new unsigned char[0x1ffff];
+      safe_buffer_start = (unsigned char *)(((long)temp_buffer + 0xffff) & ~0xffff);
+    }
+    memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
+    _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
+				 safe_buffer_start, stride);
+    
+  }
 }
 

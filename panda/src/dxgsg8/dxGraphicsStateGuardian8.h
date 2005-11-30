@@ -172,6 +172,12 @@ protected:
                                     TextureStage::CombineOperand operand);
   static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
 
+  void draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
+			 unsigned int primitive_count,
+			 unsigned int first_vertex, 
+			 unsigned int num_vertices,
+			 const unsigned char *buffer, size_t stride);
+
 protected:
   DXScreenData *_screen;
   LPDIRECT3DDEVICE8 _d3d_device;  // same as _screen->_d3d_device, cached for spd
