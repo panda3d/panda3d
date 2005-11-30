@@ -641,11 +641,11 @@ def generateFunctionDocs(code, method):
     proto = code.getFunctionPrototype(method)
     comment = code.getFunctionComment(method)
     if (comment == ""): comment = "Undocumented function.<br>\n"
-    chunk = '<table class="codecomment1" width="100%"><tr><td>' + "\n"
+    chunk = '<table bgcolor="e8e8e8" border=0 cellspacing=0 cellpadding=5 width="100%"><tr><td>' + "\n"
     chunk = chunk + '<a name="' + name + '"><b>' + name + "</b></a><br>\n"
     chunk = chunk + proto + "<br>\n"
     chunk = chunk + comment
-    chunk = chunk + "</td></tr></table>\n"
+    chunk = chunk + "</td></tr></table><br>\n"
     return chunk
 
 def generateLinkTable(table, cols, urlprefix, urlsuffix):
