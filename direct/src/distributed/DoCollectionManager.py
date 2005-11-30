@@ -191,7 +191,7 @@ class DoCollectionManager:
             oldZoneId = obj.zoneId
             if oldParentId != parentId:
                 # Remove old location
-                self.deleteDoIdFromLocation(doId, oldParentId, oldZoneId)
+                self.deleteObjectLocation(doId, oldParentId, oldZoneId)
             if oldParentId == parentId and oldZoneId == zoneId:
                 # object is already at that parent and zone
                 return
@@ -203,11 +203,7 @@ class DoCollectionManager:
             zoneDoSet = parentZoneDict.setdefault(zoneId, set())
             zoneDoSet.add(doId)
 
-    def deleteObjectLocation(self, distObj):
-        self.deleteDoIdFromLocation(
-            distObj.doId, distObj.parentId, distObj.zoneId)
-
-    def deleteDoIdFromLocation(self, doId, parentId, zoneId):
+    def deleteObjectLocation(self, doId, parentId, zoneId):
         # Do not worry about null values
         if (parentId is None) or (zoneId is None):
             return
@@ -266,7 +262,7 @@ class DoCollectionManager:
         assert self.notify.debugStateCall(self)
         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
         #assert do.doId in self.doId2do
-        self.deleteObjectLocation(do)
+        self.deleteObjectLocation(do.doId, do.parentId, do.zoneId)
         ## location = do.getLocation()
         ## if location is not None:
         ##     if location not in self.zoneId2doIds:
