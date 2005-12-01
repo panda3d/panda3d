@@ -192,12 +192,9 @@ class DistributedObjectAI(DirectObject):
 
         oldParentId = self.parentId
         oldZoneId = self.zoneId
+        self.air.storeObjectLocation(self.doId, parentId, zoneId)
         if ((oldParentId != parentId) or
             (oldZoneId != zoneId)):
-            #print "%s location is now %s, %s (%s)"%(self.doId, parentId, zoneId, self)
-            self.zoneId = zoneId
-            self.parentId = parentId
-            self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
             messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
             # if we are not going into the quiet zone, send a 'logical' zone
             # change message
@@ -207,7 +204,6 @@ class DistributedObjectAI(DirectObject):
                     lastLogicalZone = self.lastNonQuietZone
                 self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                 self.lastNonQuietZone = zoneId
-        self.air.storeObjectLocation(self.doId, parentId, zoneId)
 
     def getLocation(self):
         try:
@@ -219,6 +215,30 @@ class DistributedObjectAI(DirectObject):
             return (self.parentId, self.zoneId)
         except AttributeError:
             return None
+
+    def handleChildArrive(self, childObj, zoneId):
+        self.notify.debugCall()
+        # A new child has just setLocation beneath us.  Give us a
+        # chance to run code when a new child sets location to us. For
+        # example, we may want to scene graph reparent the child to
+        # some subnode we own.
+        ## zone=self.children.setdefault(zoneId, {})
+        ## zone[childObj.doId]=childObj
+
+        # Inheritors should override
+        pass
+
+    def handleChildLeave(self, childObj, zoneId):
+        self.notify.debugCall()
+        # A child is about to setLocation away from us.  Give us a
+        # chance to run code just before a child sets location away from us.
+        ## zone=self.children[zoneId]
+        ## del zone[childObj.doId]
+        ## if not len(zone):
+        ##     del self.children[zoneId]
+
+        # Inheritors should override
+        pass
 
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -355,9 +375,9 @@ class DistributedObjectAI(DirectObject):
         # Send a generate message
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 
-        assert not hasattr(self, 'parentId') or self.parentId is None
-        self.parentId = parentId
-        self.zoneId = zoneId
+        ## assert not hasattr(self, 'parentId') or self.parentId is None
+        ## self.parentId = parentId
+        ## self.zoneId = zoneId
         self.generate()
         self.announceGenerate()
 

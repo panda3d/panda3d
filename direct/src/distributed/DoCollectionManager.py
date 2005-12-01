@@ -202,11 +202,34 @@ class DoCollectionManager:
             parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
             zoneDoSet = parentZoneDict.setdefault(zoneId, set())
             zoneDoSet.add(doId)
+            
+            # Set the new parent and zone on the object
+            obj.parentId = parentId
+            obj.zoneId = zoneId
+    
+            if 1:
+                # Do we still need this
+                if oldParentId != parentId:
+                    # Give the parent a chance to run code when a new child
+                    # sets location to it. For example, the parent may want to
+                    # scene graph reparent the child to some subnode it owns.
+                    parentObj = self.doId2do.get(parentId)
+                    if parentObj is not None:
+                        parentObj.handleChildArrive(obj, zoneId)
 
     def deleteObjectLocation(self, doId, parentId, zoneId):
         # Do not worry about null values
         if (parentId is None) or (zoneId is None):
             return
+        if 1:
+            # Do we still need this
+            
+            # notify any existing parent that we're moving away
+            oldParentObj = self.doId2do.get(parentId)
+            obj = self.doId2do.get(doId)
+            if oldParentObj is not None and obj is not None:
+                oldParentObj.handleChildLeave(obj, zoneId)
+
         parentZoneDict = self.__doHierarchy.get(parentId)
         if parentZoneDict is not None:
             zoneDoSet = parentZoneDict.get(zoneId)
@@ -277,28 +300,28 @@ class DoCollectionManager:
         if do.doId in self.doId2do:
             del self.doId2do[do.doId]
         
-    def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
-        if 1:
-            self.storeObjectLocation(do.doId, newParentId, newZoneId)
-        else:
-            #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
-            oldLocation = (oldParentId, oldZoneId)
-            newLocation = (newParentId, newZoneId)
-            # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
-            # zoneId2doIds table
-            if self.isValidLocationTuple(oldLocation):
-                assert self.notify.debugStateCall(self)
-                assert oldLocation in self.zoneId2doIds
-                assert do.doId in self.zoneId2doIds[oldLocation]
-                assert do.doId not in self.zoneId2doIds.get(newLocation,{})
-                # remove from old zone
-                del(self.zoneId2doIds[oldLocation][do.doId])
-                if len(self.zoneId2doIds[oldLocation]) == 0:
-                    del self.zoneId2doIds[oldLocation]
-            if self.isValidLocationTuple(newLocation):
-                # add to new zone
-                self.zoneId2doIds.setdefault(newLocation, {})
-                self.zoneId2doIds[newLocation][do.doId]=do
+    ## def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
+    ##     if 1:
+    ##         self.storeObjectLocation(do.doId, newParentId, newZoneId)
+    ##     else:
+    ##         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
+    ##         oldLocation = (oldParentId, oldZoneId)
+    ##         newLocation = (newParentId, newZoneId)
+    ##         # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
+    ##         # zoneId2doIds table
+    ##         if self.isValidLocationTuple(oldLocation):
+    ##             assert self.notify.debugStateCall(self)
+    ##             assert oldLocation in self.zoneId2doIds
+    ##             assert do.doId in self.zoneId2doIds[oldLocation]
+    ##             assert do.doId not in self.zoneId2doIds.get(newLocation,{})
+    ##             # remove from old zone
+    ##             del(self.zoneId2doIds[oldLocation][do.doId])
+    ##             if len(self.zoneId2doIds[oldLocation]) == 0:
+    ##                 del self.zoneId2doIds[oldLocation]
+    ##         if self.isValidLocationTuple(newLocation):
+    ##             # add to new zone
+    ##             self.zoneId2doIds.setdefault(newLocation, {})
+    ##             self.zoneId2doIds[newLocation][do.doId]=do
 
     ## def getObjectsInZone(self, parentId, zoneId):
     ##     """ call this to get a dict of doId:distObj for a zone.

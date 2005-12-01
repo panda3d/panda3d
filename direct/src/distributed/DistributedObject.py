@@ -381,34 +381,7 @@ class DistributedObject(PandaObject):
         self.cr.sendSetLocation(self.doId, parentId, zoneId)
 
     def setLocation(self, parentId, zoneId):
-        # Prevent Duplicate SetLocations for being Called
-        if (self.parentId == parentId) and (self.zoneId == zoneId):
-            return
-
-        #self.notify.info("setLocation: %s parentId: %s zoneId: %s" % (self.doId, parentId, zoneId))
-        # parentId can be 'None', e.g. when an object is being disabled
-        oldParentId = self.parentId
-        oldZoneId = self.zoneId
-        parentIsNew = (oldParentId != parentId)
-
-        # notify any existing parent that we're moving away
-        if (oldParentId is not None) and parentIsNew:
-            oldParentObj = self.cr.doId2do.get(oldParentId)
-            if oldParentObj:
-                oldParentObj.handleChildLeave(self, oldZoneId)
-
-        # The store must run first so we know the old location
-        self.parentId = parentId
-        self.zoneId = zoneId
         self.cr.storeObjectLocation(self.doId, parentId, zoneId)
-
-        # Give the parent a chance to run code when a new child
-        # sets location to it. For example, the parent may want to
-        # scene graph reparent the child to some subnode it owns.
-        if (self.parentId is not None) and parentIsNew:
-            parentObj = self.cr.doId2do.get(parentId)
-            if parentObj:
-                parentObj.handleChildArrive(self, zoneId)
 
     def getLocation(self):
         try:
