@@ -3767,7 +3767,7 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
   // As above, we'll hack the case of the buffer crossing the 0x10000
   // boundary.
   const unsigned char *buffer_start = buffer + stride * min_index;
-  const unsigned char *buffer_end = buffer_start + stride * (max_index + 1);
+  const unsigned char *buffer_end = buffer + stride * (max_index + 1);
 
   if (buffer_end - buffer_start > 0x10000) {
     // Actually, the buffer doesn't fit within the required limit
