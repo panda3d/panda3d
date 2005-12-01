@@ -68,6 +68,8 @@ TypeHandle DXGraphicsStateGuardian8::_type_handle;
 
 D3DMATRIX DXGraphicsStateGuardian8::_d3d_ident_mat;
 
+unsigned char *DXGraphicsStateGuardian8::_temp_buffer = NULL;
+unsigned char *DXGraphicsStateGuardian8::_safe_buffer_start = NULL;
 
 #define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx8 hdrs
 
@@ -905,10 +907,9 @@ draw_triangles(const GeomTriangles *primitive) {
     } else {
       // Indexed, client arrays.
       D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-
-      _d3d_device->DrawIndexedPrimitiveUP
+      draw_indexed_primitive_up
         (D3DPT_TRIANGLELIST,
-         min_vertex, max_vertex - min_vertex + 1,
+         min_vertex, max_vertex,
          primitive->get_num_primitives(),
          primitive->get_data(),
          index_type,
@@ -965,9 +966,9 @@ draw_tristrips(const GeomTristrips *primitive) {
       } else {
         // Indexed, client arrays, one long triangle strip.
         D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-        _d3d_device->DrawIndexedPrimitiveUP
+	draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
-           min_vertex, max_vertex - min_vertex + 1,
+           min_vertex, max_vertex,
            primitive->get_num_vertices() - 2,
            primitive->get_data(), index_type,
            _vertex_data->get_array(0)->get_data(),
@@ -1039,9 +1040,9 @@ draw_tristrips(const GeomTristrips *primitive) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
           unsigned int min = mins.get_data1i();
           unsigned int max = maxs.get_data1i();
-          _d3d_device->DrawIndexedPrimitiveUP
+	  draw_indexed_primitive_up
             (D3DPT_TRIANGLESTRIP,
-             min, max - min + 1,
+             min, max,
              ends[i] - start - 2,
              vertices + start * index_stride, index_type,
              array_data, stride);
@@ -1138,9 +1139,9 @@ draw_trifans(const GeomTrifans *primitive) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         unsigned int min = mins.get_data1i();
         unsigned int max = maxs.get_data1i();
-        _d3d_device->DrawIndexedPrimitiveUP
+	draw_indexed_primitive_up
           (D3DPT_TRIANGLEFAN,
-           min, max - min + 1,
+           min, max,
            ends[i] - start - 2,
            vertices + start * index_stride, index_type,
            array_data, stride);
@@ -1211,9 +1212,9 @@ draw_lines(const GeomLines *primitive) {
       // Indexed, client arrays.
       D3DFORMAT index_type = get_index_type(primitive->get_index_type());
 
-      _d3d_device->DrawIndexedPrimitiveUP
+      draw_indexed_primitive_up
         (D3DPT_LINELIST,
-         min_vertex, max_vertex - min_vertex + 1,
+         min_vertex, max_vertex,
          primitive->get_num_primitives(),
          primitive->get_data(),
          index_type,
@@ -3525,7 +3526,7 @@ copy_pres_reset(DXScreenData *screen) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::get_d3d_min_type
-//       Access: Public, Static
+//       Access: Protected, Static
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
@@ -3557,7 +3558,7 @@ get_d3d_min_type(Texture::FilterType filter_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::get_d3d_mip_type
-//       Access: Public, Static
+//       Access: Protected, Static
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
@@ -3589,7 +3590,7 @@ get_d3d_mip_type(Texture::FilterType filter_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::get_texture_operation
-//       Access: Public, Static
+//       Access: Protected, Static
 //  Description: Returns the D3DTEXTUREOP value corresponding to the
 //               indicated TextureStage::CombineMode enumerated type.
 ////////////////////////////////////////////////////////////////////
@@ -3637,7 +3638,7 @@ get_texture_operation(TextureStage::CombineMode mode, int scale) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::get_texture_argument
-//       Access: Public, Static
+//       Access: Protected, Static
 //  Description: Returns the D3DTA value corresponding to the
 //               indicated TextureStage::CombineSource and
 //               TextureStage::CombineOperand enumerated types.
@@ -3670,7 +3671,7 @@ get_texture_argument(TextureStage::CombineSource source,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::get_texture_argument_modifier
-//       Access: Public, Static
+//       Access: Protected, Static
 //  Description: Returns the extra bits that modify the D3DTA
 //               argument, according to the indicated
 //               TextureStage::CombineOperand enumerated type.
@@ -3700,7 +3701,7 @@ get_texture_argument_modifier(TextureStage::CombineOperand operand) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::draw_primitive_up
-//       Access: Public
+//       Access: Protected
 //  Description: Issues the DrawPrimitiveUP call to draw the indicated
 //               primitive_type from the given buffer.  We add the
 //               num_vertices parameter, so we can determine the size
@@ -3721,14 +3722,14 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
 
   const unsigned char *buffer_start = buffer + stride * first_vertex;
   const unsigned char *buffer_end = buffer_start + stride * num_vertices;
-  
+
   if (buffer_end - buffer_start > 0x10000) {
     // Actually, the buffer doesn't fit within the required limit
     // anyway.  Go ahead and draw it and hope for the best.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
 				 buffer_start, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & 0xffff) == 0) {
+  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
 				 buffer_start, stride);
@@ -3737,16 +3738,7 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     // We have a problem--the buffer crosses over a 0x10000 boundary.
     // We have to copy the buffer to a temporary buffer that we can
     // draw from.
-    static unsigned char *temp_buffer = NULL;
-    static unsigned char *safe_buffer_start = NULL;
-    if (temp_buffer == NULL) {
-      // Guarantee we get a buffer of size 0x10000 bytes that begins
-      // on an even multiple of 0x10000.  We do this by allocating
-      // double the required buffer, and then pointing to the first
-      // multiple of 0x10000 within that buffer.
-      temp_buffer = new unsigned char[0x1ffff];
-      safe_buffer_start = (unsigned char *)(((long)temp_buffer + 0xffff) & ~0xffff);
-    }
+    unsigned char *safe_buffer_start = get_safe_buffer_start();
     memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
 				 safe_buffer_start, stride);
@@ -3754,3 +3746,50 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_indexed_primitive_up
+//       Access: Protected
+//  Description: Issues the DrawIndexedPrimitiveUP call to draw the
+//               indicated primitive_type from the given buffer.  As
+//               in draw_primitive_up(), above, the parameter list is
+//               not exactly one-for-one with the
+//               DrawIndexedPrimitiveUP() call, but it's similar (in
+//               particular, we pass max_index instead of NumVertices,
+//               which always seemed ambiguous to me).
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
+			  unsigned int min_index, unsigned int max_index,
+			  unsigned int num_primitives,
+			  const unsigned char *index_data, 
+			  D3DFORMAT index_type,
+			  const unsigned char *buffer, size_t stride) {
+  // As above, we'll hack the case of the buffer crossing the 0x10000
+  // boundary.
+  const unsigned char *buffer_start = buffer + stride * min_index;
+  const unsigned char *buffer_end = buffer_start + stride * (max_index + 1);
+
+  if (buffer_end - buffer_start > 0x10000) {
+    // Actually, the buffer doesn't fit within the required limit
+    // anyway.  Go ahead and draw it and hope for the best.
+    _d3d_device->DrawIndexedPrimitiveUP
+      (primitive_type, min_index, max_index - min_index + 1, num_primitives,
+       index_data, index_type, buffer, stride);
+
+  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+    // No problem; we can draw the buffer directly.
+    _d3d_device->DrawIndexedPrimitiveUP
+      (primitive_type, min_index, max_index - min_index + 1, num_primitives,
+       index_data, index_type, buffer, stride);
+
+  } else {
+    // We have a problem--the buffer crosses over a 0x10000 boundary.
+    // We have to copy the buffer to a temporary buffer that we can
+    // draw from.
+    unsigned char *safe_buffer_start = get_safe_buffer_start();
+    memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
+    _d3d_device->DrawIndexedPrimitiveUP
+      (primitive_type, min_index, max_index - min_index + 1, num_primitives,
+       index_data, index_type, safe_buffer_start - stride * min_index, stride);
+  }
+}

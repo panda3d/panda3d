@@ -177,6 +177,14 @@ protected:
 			 unsigned int first_vertex, 
 			 unsigned int num_vertices,
 			 const unsigned char *buffer, size_t stride);
+  void draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
+				 unsigned int min_index, unsigned int max_index,
+				 unsigned int num_primitives,
+				 const unsigned char *index_data, 
+				 D3DFORMAT index_type,
+				 const unsigned char *buffer, size_t stride);
+
+  INLINE static unsigned char *get_safe_buffer_start();
 
 protected:
   DXScreenData *_screen;
@@ -222,6 +230,9 @@ protected:
   bool _tex_stats_retrieval_impossible;
 
   static D3DMATRIX _d3d_ident_mat;
+
+  static unsigned char *_temp_buffer;
+  static unsigned char *_safe_buffer_start;
 
 public:
   virtual TypeHandle get_type() const {
