@@ -181,27 +181,6 @@ class DistributedObjectUD(DirectObject):
         self.air.sendSetLocation(self, parentId, zoneId)
 
     def setLocation(self, parentId, zoneId):
-        # Prevent Duplicate SetLocations for being Called
-        if (self.parentId == parentId) and (self.zoneId == zoneId):
-            return
-
-        oldParentId = self.parentId
-        oldZoneId = self.zoneId
-        if ((oldParentId != parentId) or
-            (oldZoneId != zoneId)):
-            #print "%s location is now %s, %s (%s)"%(self.doId, parentId, zoneId, self)
-            self.zoneId = zoneId
-            self.parentId = parentId
-            self.air.changeDOZoneInTables(self, parentId, zoneId, oldParentId, oldZoneId)
-            messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
-            # if we are not going into the quiet zone, send a 'logical' zone
-            # change message
-            if zoneId != DistributedObjectUD.QuietZone:
-                lastLogicalZone = oldZoneId
-                if oldZoneId == DistributedObjectUD.QuietZone:
-                    lastLogicalZone = self.lastNonQuietZone
-                self.handleLogicalZoneChange(zoneId, lastLogicalZone)
-                self.lastNonQuietZone = zoneId
         self.air.storeObjectLocation(self.doId, parentId, zoneId)
 
     def getLocation(self):
