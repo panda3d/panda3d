@@ -32,6 +32,10 @@
 #include <map>
 #include <string>
 
+#ifdef _DEBUG
+#define  Py_DEBUG
+#endif
+
 #ifndef NO_RUNTIME_TYPES
 
 #include "dtoolbase.h"
