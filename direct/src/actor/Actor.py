@@ -80,6 +80,7 @@ class Actor(PandaObject, NodePath):
 
         # create data structures
         self.__partBundleDict = {}
+        self.__sortedLODNames = []
         self.__animControlDict = {}
         self.__controlJoints = {}
         
@@ -291,6 +292,7 @@ class Actor(PandaObject, NodePath):
         self.stop()
 
         self.__partBundleDict = {}
+        self.__sortedLODNames = []
         self.__animControlDict = {}
         self.__controlJoints = {}
 
@@ -313,17 +315,20 @@ class Actor(PandaObject, NodePath):
     def getPartBundleDict(self):
         return self.__partBundleDict
 
+    def __updateSortedLODNames(self):
+        # Cache the sorted LOD names so we dont have to grab them
+        # and sort them every time somebody asks for the list
+        self.__sortedLODNames = self.__partBundleDict.keys()
+        # Reverse sort the doing a string->int
+        self.__sortedLODNames.sort(lambda x,y : cmp(int(y), int(x)))
         
     def getLODNames(self):
         """
         Return list of Actor LOD names. If not an LOD actor,
         returns 'lodRoot'
-        Sorts them from highest lod to lowest.
+        Caution - this returns a reference to the list - not your own copy
         """
-        lodNames = self.__partBundleDict.keys()
-        # Reverse sort the doing a string->int
-        lodNames.sort(lambda x,y : cmp(int(y), int(x)))
-        return lodNames
+        return self.__sortedLODNames
     
     def getPartNames(self):
         """
@@ -1260,6 +1265,7 @@ class Actor(PandaObject, NodePath):
         if (needsDict):
             bundleDict[partName] = bundle
             self.__partBundleDict[lodName] = bundleDict
+            self.__updateSortedLODNames()
         else:
             self.__partBundleDict[lodName][partName] = bundle
 
@@ -1401,7 +1407,8 @@ class Actor(PandaObject, NodePath):
         instance's own. NOTE: this method does not actually copy geometry
         """
         for lodName in other.__partBundleDict.keys():
-            self.__partBundleDict[lodName] = {}            
+            self.__partBundleDict[lodName] = {}
+            self.__updateSortedLODNames()            
             for partName in other.__partBundleDict[lodName].keys():
                 # find the part in our tree
                 partBundle = self.find("**/" + Actor.partPrefix + partName) 
