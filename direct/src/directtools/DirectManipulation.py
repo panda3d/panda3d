@@ -175,14 +175,34 @@ class DirectManipulationControl(PandaObject):
     def removeManipulateObjectTask(self):
         taskMgr.remove('manipulateObject')
 
+    #--------------------------------------------------------------------------
+    # Function:   get edit types list for specified objects which indicate
+    #             how editable the objects are
+    # Parameters: object, list of object to get edit types for
+    # Changes:    none
+    # Returns:    list of edit types
+    #--------------------------------------------------------------------------
+    def getEditTypes(self,objects):
+        # See if any of the selected in the don't manipulate tag list
+        editTypes = 0
+        for tag in self.unmovableTagList:
+            for selected in objects:
+                unmovableTag = selected.getTag(tag)
+                if (unmovableTag):
+                    # check value of unmovableTag to see if it is
+                    # completely uneditable or if it allows only certain
+                    # types of editing
+                    editTypes |= int(unmovableTag)
+        return editTypes
+
     def manipulateObject(self):
         # Only do this if something is selected
         selectedList = direct.selected.getSelectedAsList()
-        # See if any of the selected in the don't manipulate tag list
-        for tag in self.unmovableTagList:
-            for selected in selectedList:
-                if selected.hasTag(tag):
-                    return
+        # See if any of the selected are completely uneditable
+        editTypes = self.getEditTypes(selectedList)
+        if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+            return
+        self.currEditTypes = editTypes
         if selectedList:
             # Remove the task to keep the widget attached to the object
             taskMgr.remove('followSelectedNodePath')
@@ -234,11 +254,11 @@ class DirectManipulationControl(PandaObject):
         # Widget takes precedence
         if self.constraint:
             type = self.constraint[2:]
-            if type == 'post':
+            if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
                 self.xlate1D(state)
-            elif type == 'disc':
+            elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
                 self.xlate2D(state)
-            elif type == 'ring':
+            elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
                 self.rotate1D(state)
         # No widget interaction, determine free manip mode
         elif self.fFreeManip:
@@ -247,17 +267,17 @@ class DirectManipulationControl(PandaObject):
                 self.objectHandles.transferObjectHandlesScale()
                 self.fScaling = 0
             # Alt key switches to a scaling mode
-            if direct.fControl:
+            if direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
                 self.fScaling = 1
                 self.scale3D(state)
             # Otherwise, manip mode depends on where you started
-            elif state.fMouseX and state.fMouseY:
+            elif state.fMouseX and state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
                 # In the corner, spin around camera's axis
                 self.rotateAboutViewVector(state)
-            elif state.fMouseX or state.fMouseY:
+            elif state.fMouseX or state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
                 # Mouse started elsewhere in the outer frame, rotate
                 self.rotate2D(state)
-            else:
+            elif not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
                 # Mouse started in central region, xlate
                 # Mode depends on shift key
                 if direct.fShift or direct.fControl:
@@ -280,6 +300,7 @@ class DirectManipulationControl(PandaObject):
 
     def removeTag(self, tag):
         self.unmovableTagList.remove(tag)
+
 
     ### WIDGET MANIPULATION METHODS ###
     def xlate1D(self, state):
@@ -960,6 +981,5 @@ class ObjectHandles(NodePath,PandaObject):
             self.hitPt.assign(planeIntersect(
                 lineOrigin, lineDir, ORIGIN, Z_AXIS))
         return self.hitPt
-
 
 

@@ -9,12 +9,12 @@ COA_CENTER = 1
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
-    def __init__(self, nodePath):
+    def __init__(self, nodePath, bboxColor=None):
         # Initialize the superclass
         NodePath.__init__(self)
         self.assign(nodePath)
         # Create a bounding box
-        self.bbox = DirectBoundingBox(self)
+        self.bbox = DirectBoundingBox(self, bboxColor)
         center = self.bbox.getCenter()
         # Create matrix to hold the offset between the nodepath
         # and its center of action (COA)
@@ -69,7 +69,7 @@ class SelectedNodePaths(PandaObject):
         if not nodePath:
             print 'Nothing selected!!'
             return None
-        
+
         # Reset selected objects and highlight if multiSelect is false
         if not fMultiSelect:
             self.deselectAll()
@@ -244,13 +244,13 @@ class SelectedNodePaths(PandaObject):
 
 
 class DirectBoundingBox:
-    def __init__(self, nodePath):
+    def __init__(self, nodePath, bboxColor=None):
         # Record the node path
         self.nodePath = nodePath
         # Compute bounds, min, max, etc.
         self.computeTightBounds()
         # Generate the bounding box
-        self.lines = self.createBBoxLines()
+        self.lines = self.createBBoxLines(bboxColor)
 
     def recompute(self):
         # Compute bounds, min, max, etc.
@@ -285,11 +285,14 @@ class DirectBoundingBox:
         self.min = Point3(self.center - Point3(self.radius))
         self.max = Point3(self.center + Point3(self.radius))
         
-    def createBBoxLines(self):
+    def createBBoxLines(self, bboxColor=None):
         # Create a line segments object for the bbox
         lines = LineNodePath(hidden)
         lines.node().setName('bboxLines')
-        lines.setColor(VBase4(1., 0., 0., 1.))
+        if (bboxColor):
+            lines.setColor(VBase4(*bboxColor))
+        else:
+            lines.setColor(VBase4(1., 0., 0., 1.))
         lines.setThickness(0.5)
 
         minX = self.min[0]
@@ -328,6 +331,13 @@ class DirectBoundingBox:
         useDirectRenderStyle(lines)
         
         return lines
+
+    def setBoxColorScale(self,r,g,b,a):
+        if (self.lines):
+            self.lines.reset()
+            self.lines = None
+        self.lines = self.createBBoxLines((r,g,b,a))
+        self.show()
 
     def updateBBoxLines(self):
         ls = self.lines.lineSegs
