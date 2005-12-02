@@ -608,11 +608,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # get the button states:
         forward = inputState.isSet("forward")
         reverse = inputState.isSet("reverse")
-        turnLeft = inputState.isSet("turnLeft")
-        turnRight = inputState.isSet("turnRight")
-        slide = 0#inputState.isSet("slide")
-        slideLeft = 0#inputState.isSet("slideLeft")
-        slideRight = 0#inputState.isSet("slideRight")
+        turnLeft = inputState.isSet("shipTurnLeft")
+        turnRight = inputState.isSet("shipTurnRight")
+        slide = inputState.isSet("slide")
+        slideLeft = inputState.isSet("shipSlideLeft")
+        slideRight = inputState.isSet("shipSlideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
 
@@ -640,7 +640,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or 
         #        (turnRight and avatarSlideSpeed))
-        self.__slideSpeed=(
+        self.__slideSpeed=(forward or reverse) and (
                 (slideLeft and -avatarSlideSpeed) or 
                 (slideRight and avatarSlideSpeed))
         self.__rotationSpeed=not slide and (
