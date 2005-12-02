@@ -504,21 +504,22 @@ class ClientRepository(ConnectionRepository):
         self.DOIDlast = self.DOIDbase + di.getUint32()
         self.DOIDnext = self.DOIDbase
 
-    def handleRequestGenerates(self, di):
-        # When new clients join the zone of an object, they need to hear
-        # about it, so we send out all of our information about objects in
-        # that particular zone.
-
-        # This method is only used in conjunction with the CMU LAN
-        # server.
-
-        assert self.DOIDnext < self.DOIDlast
-        zone = di.getUint32()
-        for obj in self.doId2do.values():
-            if obj.zone == zone:
-                id = obj.doId
-                if (self.isLocalId(id)):
-                    self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
+    ## TODO: This should probably be move to a derived class for CMU
+    ## def handleRequestGenerates(self, di):
+    ##     # When new clients join the zone of an object, they need to hear
+    ##     # about it, so we send out all of our information about objects in
+    ##     # that particular zone.
+    ## 
+    ##     # This method is only used in conjunction with the CMU LAN
+    ##     # server.
+    ## 
+    ##     assert self.DOIDnext < self.DOIDlast
+    ##     zone = di.getUint32()
+    ##     for obj in self.doId2do.values():
+    ##         if obj.zone == zone:
+    ##             id = obj.doId
+    ##             if (self.isLocalId(id)):
+    ##                 self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
 
     def handleMessageType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
@@ -566,32 +567,33 @@ class ClientRepository(ConnectionRepository):
                 " game state: " +
                 currentGameStateName)
                     
-    def createWithRequired(self, className, zoneId = 0, optionalFields=None):
-        # This method is only used in conjunction with the CMU LAN
-        # server.
-
-        if self.DOIDnext >= self.DOIDlast:
-            self.notify.error(
-                "Cannot allocate a distributed object ID: all IDs used up.")
-            return None
-        id = self.DOIDnext
-        self.DOIDnext = self.DOIDnext + 1
-        dclass = self.dclassesByName[className]
-        classDef = dclass.getClassDef()
-        if classDef == None:
-            self.notify.error("Could not create an undefined %s object." % (
-                dclass.getName()))
-        obj = classDef(self)
-        obj.dclass = dclass
-        obj.zone = zoneId
-        obj.doId = id
-        self.doId2do[id] = obj
-        obj.generateInit()
-        obj.generate()
-        obj.announceGenerate()
-        datagram = dclass.clientFormatGenerate(obj, id, zoneId, optionalFields)
-        self.send(datagram)
-        return obj
+    ## TODO: This should probably be move to a derived class for CMU
+    ## def createWithRequired(self, className, zoneId = 0, optionalFields=None):
+    ##     # This method is only used in conjunction with the CMU LAN
+    ##     # server.
+    ## 
+    ##     if self.DOIDnext >= self.DOIDlast:
+    ##         self.notify.error(
+    ##             "Cannot allocate a distributed object ID: all IDs used up.")
+    ##         return None
+    ##     id = self.DOIDnext
+    ##     self.DOIDnext = self.DOIDnext + 1
+    ##     dclass = self.dclassesByName[className]
+    ##     classDef = dclass.getClassDef()
+    ##     if classDef == None:
+    ##         self.notify.error("Could not create an undefined %s object." % (
+    ##             dclass.getName()))
+    ##     obj = classDef(self)
+    ##     obj.dclass = dclass
+    ##     obj.zone = zoneId
+    ##     obj.doId = id
+    ##     self.doId2do[id] = obj
+    ##     obj.generateInit()
+    ##     obj.generate()
+    ##     obj.announceGenerate()
+    ##     datagram = dclass.clientFormatGenerate(obj, id, zoneId, optionalFields)
+    ##     self.send(datagram)
+    ##     return obj
 
     def sendDisableMsg(self, doId):
         # This method is only used in conjunction with the CMU LAN
@@ -740,15 +742,16 @@ class ClientRepository(ConnectionRepository):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
                               "heartBeat")
 
-    def sendUpdateZone(self, obj, zoneId):
-        # This method is only used in conjunction with the CMU LAN
-        # server.
-
-        id = obj.doId
-        assert(self.isLocalId(id))
-        self.sendDeleteMsg(id, 1)
-        obj.zone = zoneId
-        self.send(obj.dclass.clientFormatGenerate(obj, id, zoneId, []))
+    ## TODO: This should probably be move to a derived class for CMU
+    ## def sendUpdateZone(self, obj, zoneId):
+    ##     # This method is only used in conjunction with the CMU LAN
+    ##     # server.
+    ## 
+    ##     id = obj.doId
+    ##     assert(self.isLocalId(id))
+    ##     self.sendDeleteMsg(id, 1)
+    ##     obj.zone = zoneId
+    ##     self.send(obj.dclass.clientFormatGenerate(obj, id, zoneId, []))
 
     def replaceMethod(self, oldMethod, newFunction):
         return 0
