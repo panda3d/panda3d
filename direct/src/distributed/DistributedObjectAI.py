@@ -1,13 +1,13 @@
 """DistributedObjectAI module: contains the DistributedObjectAI class"""
 
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase import PythonUtil
-from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+#from PyDatagram import PyDatagram
+#from PyDatagramIterator import PyDatagramIterator
 
-class DistributedObjectAI(DirectObject):
+class DistributedObjectAI(DistributedObjectBase):
     notify = directNotify.newCategory("DistributedObjectAI")
     QuietZone = 1
 
@@ -16,13 +16,11 @@ class DistributedObjectAI(DirectObject):
             self.DistributedObjectAI_initialized
         except:
             self.DistributedObjectAI_initialized = 1
+            DistributedObjectBase.__init__(self, air)
 
             self.accountName=''
             # Record the repository
             self.air = air
-            # Record our parentId and zoneId
-            self.parentId = None
-            self.zoneId = None
 
             # Record our distributed class
             className = self.__class__.__name__

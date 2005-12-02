@@ -1,8 +1,9 @@
-from direct.showbase.PandaObject import *
-from direct.directnotify.DirectNotifyGlobal import directNotify
 
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.distributed.DistributedObjectBase import DistributedObjectBase
+
+#from PyDatagram import PyDatagram
+#from PyDatagramIterator import PyDatagramIterator
 
 # Values for DistributedObjectOV.activeState
 # these should match DistributedObject.ES*
@@ -14,7 +15,7 @@ ESDisabled     = 4  # values here and lower are considered "disabled"
 ESGenerating   = 5  # values here and greater are considered "generated"
 ESGenerated    = 6
 
-class DistributedObjectOV(PandaObject):
+class DistributedObjectOV(DistributedObjectBase):
     """
     Implementation of the 'owner view' (OV) of a distributed object; 
     """
@@ -26,7 +27,7 @@ class DistributedObjectOV(PandaObject):
             self.DistributedObjectOV_initialized
         except:
             self.DistributedObjectOV_initialized = 1
-            self.cr = cr
+            DistributedObjectBase.__init__(self, cr)
 
             # This count tells whether the object can be deleted right away,
             # or not.

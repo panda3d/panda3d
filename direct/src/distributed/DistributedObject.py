@@ -1,9 +1,9 @@
 """DistributedObject module: contains the DistributedObject class"""
 
-from direct.showbase.PandaObject import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from direct.distributed.DistributedObjectBase import DistributedObjectBase
+#from PyDatagram import PyDatagram
+#from PyDatagramIterator import PyDatagramIterator
 
 # Values for DistributedObject.activeState
 
@@ -14,7 +14,7 @@ ESDisabled     = 4  # values here and lower are considered "disabled"
 ESGenerating   = 5  # values here and greater are considered "generated"
 ESGenerated    = 6
 
-class DistributedObject(PandaObject):
+class DistributedObject(DistributedObjectBase):
     """
     The Distributed Object class is the base class for all network based
     (i.e. distributed) objects.  These will usually (always?) have a
@@ -34,8 +34,7 @@ class DistributedObject(PandaObject):
             self.DistributedObject_initialized
         except:
             self.DistributedObject_initialized = 1
-            self.cr = cr
-            self.children = {}
+            DistributedObjectBase.__init__(self, cr)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take
@@ -64,11 +63,9 @@ class DistributedObject(PandaObject):
             # This is used by doneBarrier().
             self.__barrierContext = None
 
-            #zone of the distributed object, default to 0
-            self.zone = 0
-    
-            self.parentId = None
-            self.zoneId = None
+            ## TODO: This should probably be move to a derived class for CMU
+            ## #zone of the distributed object, default to 0
+            ## self.zone = 0
 
     if __debug__:
         def status(self, indent=0):
