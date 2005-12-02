@@ -335,11 +335,13 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       int li = elementPlug.logicalIndex();
       maya_cat.spam() << "li: " << li << endl;
       if (li > -1) {
+        /*
         if (li > 20) {
           maya_cat.error()
             << "unusual blendmode :" << li << " for :" << layered_fn.name() << endl;
           exit(1);
         }
+        */
         logicalIdx = li;
         break;
       }
