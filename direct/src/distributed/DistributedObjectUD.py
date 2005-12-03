@@ -296,8 +296,8 @@ class DistributedObjectUD(DistributedObjectBase):
 
         # The repository is the one that really does the work
         self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
-        self.parentId = parentId
-        self.zoneId = zoneId
+        ## self.parentId = parentId
+        ## self.zoneId = zoneId
         self.generate()
         self.announceGenerate()
 
@@ -319,9 +319,9 @@ class DistributedObjectUD(DistributedObjectBase):
         # Send a generate message
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 
-        assert not hasattr(self, 'parentId') or self.parentId is None
-        self.parentId = parentId
-        self.zoneId = zoneId
+        ## assert not hasattr(self, 'parentId') or self.parentId is None
+        ## self.parentId = parentId
+        ## self.zoneId = zoneId
         self.generate()
 
     def generate(self):
