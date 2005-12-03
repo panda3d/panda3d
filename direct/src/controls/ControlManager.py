@@ -114,38 +114,6 @@ class ControlManager:
             inputState.watch("turnRight", "control-alt-e", "e-up")
             inputState.watch("turnRight", "shift-e", "e-up")
 
-            
-            # Ship turns and slides are reversed from avatar walking
-            inputState.watch("shipSlideLeft", "q", "q-up")
-            inputState.watch("shipSlideLeft", "control-q", "q-up")
-            inputState.watch("shipSlideLeft", "shift-control-q", "q-up")
-            inputState.watch("shipSlideLeft", "alt-q", "alt-q-up")
-            inputState.watch("shipSlideLeft", "control-alt-q", "alt-q-up")
-            inputState.watch("shipSlideLeft", "shift-q", "q-up")
-
-            inputState.watch("shipSlideRight", "e", "e-up")
-            inputState.watch("shipSlideRight", "control-e", "e-up")
-            inputState.watch("shipSlideRight", "shift-control-e", "e-up")
-            inputState.watch("shipSlideRight", "alt-e", "e-up")
-            inputState.watch("shipSlideRight", "control-alt-e", "e-up")
-            inputState.watch("shipSlideRight", "shift-e", "e-up")
-
-            # Ship turns and slides are reversed from avatar walking
-            inputState.watch("shipTurnLeft", "a", "a-up")
-            inputState.watch("shipTurnLeft", "control-a", "a-up")
-            inputState.watch("shipTurnLeft", "shift-control-a", "a-up")
-            inputState.watch("shipTurnLeft", "alt-a", "alt-a-up")
-            inputState.watch("shipTurnLeft", "control-alt-a", "alt-a-up")
-            inputState.watch("shipTurnLeft", "shift-a", "a-up")
-
-            inputState.watch("shipTurnRight", "d", "d-up")
-            inputState.watch("shipTurnRight", "control-d", "d-up")
-            inputState.watch("shipTurnRight", "shift-control-d", "d-up")
-            inputState.watch("shipTurnRight", "alt-d", "d-up")
-            inputState.watch("shipTurnRight", "control-alt-d", "d-up")
-            inputState.watch("shipTurnRight", "shift-d", "d-up")
-
-
         # Jump controls
         if self.wantWASD:
             inputState.watch("jump", "space", "space-up")
