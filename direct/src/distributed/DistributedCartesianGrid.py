@@ -18,6 +18,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
                                CartesianGridBase.CartesianGridBase):
 
     notify = directNotify.newCategory("DistributedCartesianGrid")
+    notify.setDebug(0)
 
     VisualizeGrid = config.GetBool("visualize-cartesian-grid", 0)
 
@@ -137,6 +138,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
     # Take an avatar (or other object) from somewhere in the world and
     # wrtReparent him to the grid.
     def addObjectToGrid(self, av):
+        self.notify.debug("addObjectToGrid %s" % av)
         # Get our pos relative to the island grid
         pos = av.getPos(self)
         # Figure out what zone in that island grid
@@ -145,6 +147,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         self.handleAvatarZoneChange(av, zoneId)
 
     def removeObjectFromGrid(self, av):
+        self.notify.debug("removeObjectFromGrid %s" % av)
         # TODO: WHAT LOCATION SHOULD WE SET THIS TO?
         #av.reparentTo(hidden)
         if (av.getParent().compareTo(self) == 0):
