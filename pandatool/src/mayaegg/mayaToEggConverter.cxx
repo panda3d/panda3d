@@ -445,6 +445,7 @@ convert_maya() {
       
     case AC_none:
       // none: just get out a static model, no animation.
+      mayaegg_cat.info() << "ac_none" << endl;
       all_ok = convert_hierarchy(get_egg_data());
       break;
       
@@ -852,6 +853,19 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
       
   } else if (dag_path.hasFn(MFn::kMesh)) {
+    if (node_desc->is_tagged()) {
+      EggGroup *egg_group = _tree.get_egg_group(node_desc);
+      get_transform(node_desc, dag_path, egg_group);
+      MFnMesh mesh(dag_path, &status);
+      if (!status) {
+        mayaegg_cat.info()
+          << "Error in node " << path << ":\n"
+          << "  it appears to have a polygon mesh, but does not.\n";
+      } else {
+        make_polyset(node_desc, dag_path, mesh, egg_group);
+      }
+    }
+    /*
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);
 
@@ -865,8 +879,13 @@ process_model_node(MayaNodeDesc *node_desc) {
         make_polyset(node_desc, dag_path, mesh, egg_group);
       }
     }
-
+    */
   } else if (dag_path.hasFn(MFn::kLocator)) {
+    if (_animation_convert == AC_none) {
+      if (!node_desc->is_tagged()) {
+        return true;
+      }
+    }
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
 
     if (mayaegg_cat.is_debug()) {
@@ -888,9 +907,13 @@ process_model_node(MayaNodeDesc *node_desc) {
       get_transform(node_desc, dag_path, egg_group);
       make_locator(dag_path, dag_node, egg_group);
     }
-
   } else {
     // Just a generic node.
+    if (_animation_convert == AC_none) {
+      if (!node_desc->is_tagged()) {
+        return true;
+      }
+    }
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);
   }
