@@ -50,8 +50,6 @@ MayaShader(MObject engine) {
       << "Reading shading engine " << get_name() << "\n";
   }
 
-  _blend_type = BT_unspecified;
-
   bool found_shader = false;
   MPlug shader_plug = engine_fn.findPlug("surfaceShader");
   if (!shader_plug.isNull()) {

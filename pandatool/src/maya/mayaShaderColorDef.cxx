@@ -61,6 +61,8 @@ MayaShaderColorDef() {
 
   _alpha_is_luminance = false;
 
+  _blend_type = BT_unspecified;
+
   _repeat_uv.set(1.0, 1.0);
   _offset.set(0.0, 0.0);
   _rotate_uv = 0.0;
@@ -98,6 +100,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
   _wrap_u = copy._wrap_u;
   _wrap_v = copy._wrap_v;
 
+  _blend_type = copy._blend_type;
   _alpha_is_luminance = copy._alpha_is_luminance;
 
   _repeat_uv = copy._repeat_uv;
@@ -323,67 +326,49 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     MPlug inputsPlug = layered_fn.findPlug("inputs", &status);
     MPlug blendModePlug = layered_fn.findPlug("blendMode", &status);
 
-    maya_cat.spam() << "*** Start doIt... ***" << endl;
-    maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
-
-    //maya_cat.spam() << "inputsPlug numElem: " << inputsPlug.numElements() << endl;
-    maya_cat.spam() << "plug_array numElem: " << color_pa.length() << endl;
-    int logicalIdx = -1;
-    // go through the plug array to find the first logical index of blend mode
-    for (size_t i=0; i<color_pa.length(); ++i) {
-      MPlug elementPlug = color_pa[i];
-      int li = elementPlug.logicalIndex();
-      maya_cat.spam() << "li: " << li << endl;
-      if (li > -1) {
-        /*
-        if (li > 20) {
-          maya_cat.error()
-            << "unusual blendmode :" << li << " for :" << layered_fn.name() << endl;
-          exit(1);
-        }
-        */
-        logicalIdx = li;
-        break;
-      }
-    }
-    if (logicalIdx < 0) {
-      maya_cat.error() 
-        << "Could not retrieve blendMode from: " << layered_fn.name() << endl;
-      exit(1);
-    }
-    // Now that I have the logical index, select the ancestorLogicalIndex
-    // on the blendModePlug to get the blendMode
-    status = blendModePlug.selectAncestorLogicalIndex(logicalIdx,inputsPlug);
-    blendModePlug.getValue(blendValue);
-
-    maya_cat.spam() 
-      << blendModePlug.name() << ": has value " << blendValue << endl;
-
-    MFnEnumAttribute blendModeEnum(blendModePlug);
-    MString blendName = blendModeEnum.fieldName(blendValue, &status);
-    switch (blendValue) {
-      case 1:
-        shader->_blend_type = MayaShader::BT_decal;
-        break;
-      case 6:
-        shader->_blend_type = MayaShader::BT_modulate;
-        break;
-      case 4:
-        shader->_blend_type = MayaShader::BT_add;
-        break;
-      default:
-        shader->_blend_type = MayaShader::BT_modulate;
-    }
-
-    maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
-    maya_cat.spam() << "*** END doIt... ***" << endl;
-
     maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
     bool first = true;
+    BlendType bt = BT_modulate;
     for (size_t i=0; i<color_pa.length(); ++i) {
       MPlug pl = color_pa[i];
       MPlugArray pla;
       pl.connectedTo(pla, true, false);
+
+      // First figure out the blend mode intended for this shadercolordef
+      int li = pl.logicalIndex();
+      if (li > -1) {
+        // found a blend mode
+
+        maya_cat.spam() << "*** Start doIt... ***" << endl;
+        maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
+
+        status = blendModePlug.selectAncestorLogicalIndex(li,inputsPlug);
+        blendModePlug.getValue(blendValue);
+
+        maya_cat.spam() 
+          << blendModePlug.name() << ": has value " << blendValue << endl;
+
+        MFnEnumAttribute blendModeEnum(blendModePlug);
+        MString blendName = blendModeEnum.fieldName(blendValue, &status);
+        
+        switch (blendValue) {
+        case 1:
+          bt = BT_decal;
+          break;
+        case 6:
+          bt = BT_modulate;
+          break;
+        case 4:
+          bt = BT_add;
+          break;
+        }
+        maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
+        maya_cat.spam() << "*** END doIt... ***" << endl;
+
+        // advance to the next plug, because that is where the shader info are
+        pl = color_pa[++i];
+        pl.connectedTo(pla, true, false);
+      }
       for (size_t j=0; j<pla.length(); ++j) {
         //maya_cat.debug() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
         //maya_cat.debug() << pla[j].name() << " is(pla) " << pla[j].node().apiTypeStr() << endl;
@@ -401,6 +386,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->read_surface_color(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
+          color_p->_blend_type = bt;
           size_t loc = color_p->_texture_name.find('.',0);
           if (loc != string::npos) {
             color_p->_texture_name.resize(loc);
@@ -411,6 +397,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
+          _blend_type = bt;
           size_t loc = _texture_name.find('.',0);
           if (loc != string::npos) {
             _texture_name.resize(loc);
@@ -418,21 +405,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           maya_cat.debug() << "uv_name : " << _texture_name << endl;
           first = false;
         }
-
-        // lets see what this is connected to!?
-        MPlug pl_temp = pla[j];
-        MPlugArray pla_temp;
-        pl_temp.connectedTo(pla_temp, true, false);
-        maya_cat.debug() << pl_temp.name().asChar() << " connectedTo:" << pla_temp.length() << " plugs\n";
       }
-      /*
-      string blah;
-      get_enum_attribute(pl.node(),"blendMode",blah);
-      maya_cat.info() << "rsc layer: blend mode :" << blah << endl;
-      float alpha;
-      get_maya_attribute(pl.node(),"alpha",alpha);
-      maya_cat.info() << "rsc layer: alpha :" << alpha << endl;
-      */
     }
   } else {
     // This shader wasn't understood.

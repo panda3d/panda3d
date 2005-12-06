@@ -46,6 +46,18 @@ public:
   
   void write(ostream &out) const;
 
+  enum BlendType {
+    BT_unspecified, 
+    BT_modulate, 
+    BT_decal,
+    BT_blend,
+    BT_replace,
+    BT_add,
+    BT_blend_color_scale,
+  };
+
+  BlendType _blend_type;
+
   enum ProjectionType {
     PT_off,
     PT_planar,
@@ -58,6 +70,11 @@ public:
     PT_perspective,
   };
 
+  ProjectionType _projection_type;
+  LMatrix4d _projection_matrix;
+  double _u_angle;
+  double _v_angle;
+    
   bool _has_texture;
   Filename _texture_filename;
   string _texture_name;
@@ -67,11 +84,6 @@ public:
   bool _has_flat_color;
   Colord _flat_color;
   
-  ProjectionType _projection_type;
-  LMatrix4d _projection_matrix;
-  double _u_angle;
-  double _v_angle;
-    
   LVector2f _coverage;
   LVector2f _translate_frame;
   double _rotate_frame;
