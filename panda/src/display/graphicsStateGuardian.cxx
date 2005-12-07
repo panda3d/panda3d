@@ -46,6 +46,8 @@ PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Vertex b
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Vertex buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
 PStatCollector GraphicsStateGuardian::_load_index_buffer_pcollector("Draw:Transfer data:Index buffer");
+PStatCollector GraphicsStateGuardian::_create_vertex_buffer_pcollector("Draw:Transfer data:Create Vertex buffer");
+PStatCollector GraphicsStateGuardian::_create_index_buffer_pcollector("Draw:Transfer data:Create Index buffer");
 PStatCollector GraphicsStateGuardian::_load_texture_pcollector("Draw:Transfer data:Texture");
 PStatCollector GraphicsStateGuardian::_data_transferred_pcollector("Data transferred");
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");

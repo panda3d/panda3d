@@ -68,6 +68,8 @@ create_ibuffer(DXScreenData &scrn) {
     _ibuffer = NULL;
   }
 
+  PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector);
+
   D3DFORMAT index_type = 
     DXGraphicsStateGuardian8::get_index_type(get_data()->get_index_type());
 

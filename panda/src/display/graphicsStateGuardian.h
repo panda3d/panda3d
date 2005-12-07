@@ -374,6 +374,8 @@ public:
   static PStatCollector _index_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
+  static PStatCollector _create_vertex_buffer_pcollector;
+  static PStatCollector _create_index_buffer_pcollector;
   static PStatCollector _load_texture_pcollector;
   static PStatCollector _data_transferred_pcollector;
   static PStatCollector _total_geom_pcollector;

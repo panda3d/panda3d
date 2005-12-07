@@ -194,6 +194,8 @@ create_vbuffer(DXScreenData &scrn) {
     _vbuffer = NULL;
   }
 
+  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector);
+
   HRESULT hr = scrn._d3d_device->CreateVertexBuffer
     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
      _fvf, D3DPOOL_MANAGED, &_vbuffer);
