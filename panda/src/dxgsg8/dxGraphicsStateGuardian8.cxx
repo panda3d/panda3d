@@ -2172,6 +2172,7 @@ set_state_and_transform(const RenderState *target,
   }
   
   if (_target._tex_matrix != _state._tex_matrix) {
+    _state._texture = 0;
     _state._tex_matrix = _target._tex_matrix;
   }
   
@@ -3769,14 +3770,17 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
   const unsigned char *buffer_start = buffer + stride * min_index;
   const unsigned char *buffer_end = buffer + stride * (max_index + 1);
 
-  if (buffer_end - buffer_start > 0x10000) {
+  bool is_mickey = (_vertex_data->get_name() == "mickey");
+  is_mickey = false;
+
+  if (buffer_end - buffer > 0x10000) {
     // Actually, the buffer doesn't fit within the required limit
     // anyway.  Go ahead and draw it and hope for the best.
     _d3d_device->DrawIndexedPrimitiveUP
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
        index_data, index_type, buffer, stride);
 
-  } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
+  } else if ((((long)buffer_end ^ (long)buffer) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawIndexedPrimitiveUP
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
@@ -3787,9 +3791,10 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
     // We have to copy the buffer to a temporary buffer that we can
     // draw from.
     unsigned char *safe_buffer_start = get_safe_buffer_start();
-    memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
+    size_t offset = buffer_start - buffer;
+    memcpy(safe_buffer_start + offset, buffer_start, buffer_end - buffer_start);
     _d3d_device->DrawIndexedPrimitiveUP
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
-       index_data, index_type, safe_buffer_start - stride * min_index, stride);
+       index_data, index_type, safe_buffer_start, stride);
   }
 }
