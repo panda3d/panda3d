@@ -57,8 +57,8 @@ if (os.path.isfile("built/pandac/input/libpgraph.in")==0) or (os.path.isfile("bu
 ##
 ########################################################################
 
-MakeDirectory("apiref-php")
-gendocs.generate(VERSION, "built/pandac/input", "direct", "apiref-php", "", "", "/apiref.php?page=", "")
+MakeDirectory("referphp")
+gendocs.generate(VERSION, "built/pandac/input", "direct", "referphp", "", "", "/apiref.php?page=", "")
 
 ########################################################################
 ##
@@ -72,6 +72,6 @@ gendocs.generate(VERSION, "built/pandac/input", "direct", "apiref-php", "", "", 
 HEADER = "<html><head></head><body>\n"
 FOOTER = "</body></html>\n"
 
-MakeDirectory("apiref-html")
-gendocs.generate(VERSION, "built/pandac/input", "direct", "apiref-html", HEADER, FOOTER, "", ".html")
+MakeDirectory("reference")
+gendocs.generate(VERSION, "built/pandac/input", "direct", "reference", HEADER, FOOTER, "", ".html")
 
