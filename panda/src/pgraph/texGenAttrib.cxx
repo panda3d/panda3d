@@ -85,37 +85,8 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
   mode_def._mode = mode;
   mode_def._source_name = source_name;
   mode_def._light = light;
-  switch (mode) {
-  case M_point_sprite:
-    attrib->_no_texcoords.insert(stage);
-    attrib->_point_geom_rendering |= Geom::GR_point_sprite;
-    attrib->_num_point_sprites++;
-    break;
+  attrib->record_stage(stage, mode_def);
 
-  case M_light_vector:
-    {
-      if (!light.is_empty()) {
-	Light *light_obj = light.node()->as_light();
-	if (light_obj == (Light *)NULL) {
-	  ostringstream strm;
-	  strm << "Not a light: " << light;
-	  nassert_raise(strm.str());
-	  mode_def._light = NodePath();
-	}
-      }
-	  
-      attrib->_light_vectors.insert(stage);
-      attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
-      attrib->_num_light_vectors++;
-    }
-    break;
-
-  case M_off:
-    break;
-
-  default:
-    attrib->_no_texcoords.insert(stage);
-  }
   return return_new(attrib);
 }
 
@@ -406,33 +377,7 @@ compose_impl(const RenderAttrib *other) const {
     ++bi;
   }
 
-  // Now copy from _stages to _no_texcoords.
-  Stages::const_iterator ri;
-  for (ri = attrib->_stages.begin(); ri != attrib->_stages.end(); ++ri) {
-    TextureStage *stage = (*ri).first;
-    const ModeDef &mode_def = (*ri).second;
-    Mode mode = mode_def._mode;
-
-    switch (mode) {
-    case M_point_sprite:
-      attrib->_no_texcoords.insert(stage);
-      attrib->_point_geom_rendering |= Geom::GR_point_sprite;
-      attrib->_num_point_sprites++;
-      break;
-      
-    case M_light_vector:
-      attrib->_light_vectors.insert(stage);
-      attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
-      attrib->_num_light_vectors++;
-      break;
-      
-    case M_off:
-      break;
-      
-    default:
-      attrib->_no_texcoords.insert(stage);
-    }
-  }
+  attrib->filled_stages();
 
   return return_new(attrib);
 }
@@ -490,33 +435,7 @@ invert_compose_impl(const RenderAttrib *other) const {
     ++bi;
   }
 
-  // Now copy from _stages to _no_texcoords.
-  Stages::const_iterator ri;
-  for (ri = attrib->_stages.begin(); ri != attrib->_stages.end(); ++ri) {
-    TextureStage *stage = (*ri).first;
-    const ModeDef &mode_def = (*ri).second;
-    Mode mode = mode_def._mode;
-
-    switch (mode) {
-    case M_point_sprite:
-      attrib->_no_texcoords.insert(stage);
-      attrib->_point_geom_rendering |= Geom::GR_point_sprite;
-      attrib->_num_point_sprites++;
-      break;
-      
-    case M_light_vector:
-      attrib->_light_vectors.insert(stage);
-      attrib->_geom_rendering |= Geom::GR_texcoord_light_vector;
-      attrib->_num_light_vectors++;
-      break;
-      
-    case M_off:
-      break;
-      
-    default:
-      attrib->_no_texcoords.insert(stage);
-    }
-  }
+  attrib->filled_stages();
 
   return return_new(attrib);
 }
@@ -535,6 +454,69 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *TexGenAttrib::
 make_default_impl() const {
   return new TexGenAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::filled_stages
+//       Access: Private
+//  Description: This method is to be called after the _stages map has
+//               been built up internally through some artificial
+//               means; it copies the appropriate settings to
+//               _no_texcoords and updates other internal cache values
+//               appropriately.
+////////////////////////////////////////////////////////////////////
+void TexGenAttrib::
+filled_stages() {
+  Stages::iterator ri;
+  for (ri = _stages.begin(); ri != _stages.end(); ++ri) {
+    TextureStage *stage = (*ri).first;
+    ModeDef &mode_def = (*ri).second;
+    record_stage(stage, mode_def);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::record_stage
+//       Access: Private
+//  Description: Updates the appropriate internal caches before adding
+//               the indicated stage with the given mode to the
+//               _stages map.
+////////////////////////////////////////////////////////////////////
+void TexGenAttrib::
+record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
+  switch (mode_def._mode) {
+  case M_point_sprite:
+    _no_texcoords.insert(stage);
+    _point_geom_rendering |= Geom::GR_point_sprite;
+    _num_point_sprites++;
+    break;
+
+  case M_light_vector:
+    {
+      if (!mode_def._light.is_empty()) {
+	Light *light_obj = mode_def._light.node()->as_light();
+	if (light_obj == (Light *)NULL) {
+#ifndef NDEBUG
+	  ostringstream strm;
+	  strm << "Not a light: " << mode_def._light;
+	  nassert_raise(strm.str());
+#endif
+	  mode_def._light = NodePath();
+	}
+      }
+	  
+      _light_vectors.insert(stage);
+      _geom_rendering |= Geom::GR_texcoord_light_vector;
+      _num_light_vectors++;
+    }
+    break;
+
+  case M_off:
+    break;
+
+  default:
+    _no_texcoords.insert(stage);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,11 +580,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
     TextureStage *stage = DCAST(TextureStage, p_list[pi++]);
     _stages[stage]._mode = mode;
-
-    if (mode != M_off) {
-      _no_texcoords.insert(stage);
-    }
   }
+
+  filled_stages();
 
   return pi;
 }

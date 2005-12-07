@@ -83,6 +83,10 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
+  class ModeDef;
+  void filled_stages();
+  void record_stage(TextureStage *stage, ModeDef &mode_def);
+
   class ModeDef {
   public:
     INLINE ModeDef();
