@@ -674,6 +674,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         else:
             mult = .8
         self.currentTurning *= mult
+        if self.currentTurning < 0.001 and self.currentTurning > -0.001:
+            self.currentTurning = 0.0
         self.__rotationSpeed = self.currentTurning
 
 
@@ -794,7 +796,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         # Check to see if we're moving at all:
-        if 0 or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
+        if self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
             distance = dt * self.__speed
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
