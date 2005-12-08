@@ -321,7 +321,7 @@ class Actor(PandaObject, NodePath):
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int
         def sortFunc(x,y):
-            if isinstance(x,str):
+            if not str(x).isdigit():
                 smap = {'h':2,
                         'm':1,
                         'l':0}
@@ -329,7 +329,7 @@ class Actor(PandaObject, NodePath):
             else:
                 return cmp (int(y),int(x))
                 
-        self.__sortedLODNames.sort(lambda x,y : cmp(int(y), int(x)))
+        self.__sortedLODNames.sort(sortFunc)
 
     def getLODNames(self):
         """
