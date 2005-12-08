@@ -320,8 +320,17 @@ class Actor(PandaObject, NodePath):
         # and sort them every time somebody asks for the list
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int
-        self.__sortedLODNames.sort(lambda x,y : cmp(int(y), int(x)))
-        
+        def sortFunc(x,y):
+            if isinstance(x,str):
+                smap = {'h':2,
+                        'm':1,
+                        'l':0}
+                return cmp(smap[y[0]],smap[x[0]])
+            else:
+                return cmp (int(y),int(x))
+                
+        self.__sortedLODNames.sort(sortFunc)
+
     def getLODNames(self):
         """
         Return list of Actor LOD names. If not an LOD actor,
