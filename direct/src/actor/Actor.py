@@ -329,7 +329,7 @@ class Actor(PandaObject, NodePath):
             else:
                 return cmp (int(y),int(x))
                 
-        self.__sortedLODNames.sort(sortFunc)
+        self.__sortedLODNames.sort(lambda x,y : cmp(int(y), int(x)))
 
     def getLODNames(self):
         """
