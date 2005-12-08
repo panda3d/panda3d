@@ -638,21 +638,11 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             ostringstream GetThis;
             GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
             GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-            GetThis << "    if(local_this == NULL)\n";
-            GetThis << "    {\n";
-            GetThis << "      if(!PyTuple_Check(args))\n";
-            GetThis << "      {\n";
-            GetThis << "        PyObject * temp = args;\n";
-            GetThis << "        args = self;\n";
-            GetThis << "        self = temp;\n";    
-            GetThis << "        DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-            GetThis << "      }\n";
-            GetThis << "      if(local_this == NULL)\n";
-            GetThis << "      {\n";
-            GetThis << "        PyErr_SetString(PyExc_TypeError, \"Error extracting 'this' pointer.  Self is not a " << cClassName << "\");\n";
-            GetThis << "        return (PyObject *) NULL;\n" ;
-            GetThis << "      }\n";
-            GetThis << "    };\n";
+            GetThis << "    if(local_this == NULL) {\n";
+            GetThis << "      // This might happen if Python called a reverse operator like __rsub__().\n";
+	    GetThis << "      Py_INCREF(Py_NotImplemented);\n";
+	    GetThis << "      return Py_NotImplemented;\n";
+            GetThis << "    }\n";
 
             write_function_for_top(out, func,GetThis.str());
         }
