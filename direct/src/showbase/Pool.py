@@ -88,6 +88,25 @@ class Pool:
         Returns true if this item has already been checked out.
         """
         return (item in self.__used)
+
+    def getNumItems(self):
+        """
+        Returns the number of free items and the number of used items.
+        """
+        return len(self.__free), len(self.__used)
+
+    def cleanup(self, cleanupFunc=None):
+        """
+        Completely cleanup the pool and all of its objects.
+        cleanupFunc will be called on every free and used item.
+        """
+        if cleanupFunc:
+            for item in self.__free:
+                cleanupFunc(item)
+            for item in self.__used:
+                cleanupFunc(item)
+        del self.__free
+        del self.__used
     
     def __repr__(self):        
         return "free = %s\nused = %s" % (self.__free, self.__used)
