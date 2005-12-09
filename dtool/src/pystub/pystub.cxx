@@ -87,9 +87,15 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyDict_Type(...);
   EXPCL_DTOOLCONFIG int PyArg_ParseTupleAndKeywords(...);
   EXPCL_DTOOLCONFIG int PyDict_Size(...);
+  EXPCL_DTOOLCONFIG int Py_InitModule4TraceRefs(...);
+  EXPCL_DTOOLCONFIG int _PyObject_DebugFree(...);
+  EXPCL_DTOOLCONFIG int _Py_Dealloc(...);
+  EXPCL_DTOOLCONFIG int _Py_RefTotal(...);
+  EXPCL_DTOOLCONFIG int _Py_NegativeRefcount(...);
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
   EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
+  EXPCL_DTOOLCONFIG extern void *_Py_NotImplementedStruct;
 };
 
 
@@ -161,11 +167,17 @@ int PyModule_AddIntConstant(...) { return 0; };
 int PyObject_GenericGetAttr(...) { return 0; };
 int PyArg_Parse(...) { return 0; };
 int PyDict_Type(...) { return 0; };
+int Py_InitModule4TraceRefs(...) { return 0; };
+int _PyObject_DebugFree(...) { return 0; };
+int _Py_Dealloc(...) { return 0; };
+int _Py_RefTotal(...) { return 0; };
+int _Py_NegativeRefcount(...) { return 0; };
 
 
 
 void *PyExc_AssertionError = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
+void *_Py_NotImplementedStruct = (void *)NULL;
 
 
 void
