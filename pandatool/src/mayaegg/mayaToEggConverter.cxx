@@ -2332,11 +2332,16 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           if (i!=shader._color.size()-1) {
             // read the _alpha_is_luminance to figure out env_type
             tex.set_env_type((EggTexture::EnvType)color_def->_blend_type);
-            // multitexture modulate mode may specify, desired alpha on/off
+            // multitexture modulate mode should always turn alpha
+            // off. The texture and textures.txa will determine
+            // whether to keep it or not
+            if (tex.get_env_type() == EggTexture::ET_modulate) {
+              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
+            }
+            /*
             if (!color_def->_alpha_is_luminance)
               tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
-          }
-          if (color_def->_alpha_is_luminance) {
+            */
           }
         }
       } else {  // trans_def._has_texture
