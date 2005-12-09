@@ -1,14 +1,13 @@
-// DX9 build is temporarily disabled until we bring it up-to-date with
-// the new Geom rewrite.
-#define BUILD_DIRECTORY
-//#define BUILD_DIRECTORY $[HAVE_DX]
+#define BUILD_DIRECTORY $[HAVE_DX]
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES dx
+#define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolconfig:m \
+   dtoolutil:c dtoolbase:c dtool:m
 
 #define WIN_SYS_LIBS \
    d3d9.lib d3dx9.lib dxerr9.lib
+   
+#define USE_PACKAGES dx
 
 #begin lib_target
   #define TARGET dxgsg9
@@ -18,12 +17,6 @@
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
-  // need to install these due to external projects that link directly with libpandadx (bartop)  
-  #define INSTALL_HEADERS \
-    dxgsg9base.h config_dxgsg9.h dxGraphicsStateGuardian9.I dxGraphicsStateGuardian9.h \
-    dxTextureContext9.h d3dfont9.h \
-    dxGraphicsDevice9.h
-
   // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
@@ -31,12 +24,19 @@
     dxGraphicsDevice9.h \
     wdxGraphicsPipe9.I wdxGraphicsPipe9.h \
     wdxGraphicsWindow9.I wdxGraphicsWindow9.h \
-    $[INSTALL_HEADERS]
+    dxgsg9base.h config_dxgsg9.h dxGraphicsStateGuardian9.I dxGraphicsStateGuardian9.h \
+    dxVertexBufferContext9.h dxVertexbufferContext9.I \
+    dxIndexBufferContext9.h dxIndexBufferContext9.I \
+    dxTextureContext9.h dxTextureContext9.I \
+    dxGeomMunger9.h dxGeomMunger9.I \
+    dxGraphicsDevice9.h
     
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
+    dxVertexBufferContext9.cxx \
+    dxIndexBufferContext9.cxx \
     dxTextureContext9.cxx \
-    d3dfont9.cxx \
+    dxGeomMunger9.cxx \
     dxGraphicsDevice9.cxx \
     wdxGraphicsPipe9.cxx wdxGraphicsWindow9.cxx
 

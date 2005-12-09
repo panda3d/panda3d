@@ -1,10 +1,10 @@
-// Filename: dxGraphicsStateGuardian.h
-// Created by:   masad (02Jan04)
+// Filename: dxGraphicsStateGuardian9.h
+// Created by:  mike (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -16,343 +16,250 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DXGRAPHICSSTATEGUARDIAN_H
-#define DXGRAPHICSSTATEGUARDIAN_H
-
-//#define GSG_VERBOSE 1
+#ifndef DXGRAPHICSSTATEGUARDIAN9_H
+#define DXGRAPHICSSTATEGUARDIAN9_H
 
 #include "dxgsg9base.h"
 #include "dxTextureContext9.h"
-#include "d3dfont9.h"
 #include "config_dxgsg9.h"
 
 #include "graphicsStateGuardian.h"
-#include "geomprimitives.h"
 #include "texture.h"
-#include "texGenAttrib.h"
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
+#include "cullFaceAttrib.h"
 #include "renderModeAttrib.h"
 #include "fog.h"
 #include "pointerToArray.h"
 
 class Light;
 
-//#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
-//#ifdef _DEBUG
-// is there something in DX9 to replace this?
-#if 0
-// This function now serves both to print a debug message to the
-// console, as well as to notify PStats about the change in texture
-// memory.  Thus, we compile it in if we are building with support for
-// either notify debug messages or PStats; otherwise, we compile it
-// out.
-extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg);
-#define PRINTVIDMEM(pDD,pCaps,pMsg) dbgPrintVidMem(pDD,pCaps,pMsg)
-#else
-#define PRINTVIDMEM(pDD,pCaps,pMsg)
-#endif
+class DXVertexBufferContext9;
+class DXIndexBufferContext9;
 
 ////////////////////////////////////////////////////////////////////
-//   Class : DXGraphicsStateGuardian9
-// Description : A GraphicsStateGuardian specialized for rendering
-//               into DX.  There should be no DX calls
-//               outside of this object.
+//       Class : DXGraphicsStateGuardian9
+// Description : A GraphicsStateGuardian for rendering into DirectX9
+//               contexts.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian9 : public GraphicsStateGuardian {
-  friend class wdxGraphicsWindow9;
-  friend class wdxGraphicsPipe9;
-  friend class wdxGraphicsWindowGroup9;
-  friend class DXTextureContext9;
-
 public:
   DXGraphicsStateGuardian9(const FrameBufferProperties &properties);
   ~DXGraphicsStateGuardian9();
 
-  virtual void reset();
+  virtual TextureContext *prepare_texture(Texture *tex);
+  void apply_texture(int i, TextureContext *tc);
+  virtual void release_texture(TextureContext *tc);
+
+  virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
+  void apply_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffer(VertexBufferContext *vbc);
+
+  virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
+  void apply_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffer(IndexBufferContext *ibc);
+
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
+
+  virtual void set_color_clear_value(const Colorf &value);
 
   virtual void do_clear(const RenderBuffer &buffer);
 
   virtual void prepare_display_region();
   virtual bool prepare_lens();
 
-  virtual void draw_point(GeomPoint *geom, GeomContext *gc);
-  virtual void draw_line(GeomLine *geom, GeomContext *gc);
-  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
-  void draw_linestrip_base(Geom *geom, GeomContext *gc, bool bConnectEnds);
-  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc);
-  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc);
-  virtual void draw_quad(GeomQuad *geom, GeomContext *gc);
-  virtual void draw_tri(GeomTri *geom, GeomContext *gc);
-  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
-  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
-  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
+  virtual bool begin_frame();
+  virtual bool begin_scene();
+  virtual void end_scene();
+  virtual void end_frame();
 
-  virtual TextureContext *prepare_texture(Texture *tex);
-  void apply_texture(TextureContext *tc, int index);
-  virtual void release_texture(TextureContext *tc);
+  virtual bool begin_draw_primitives(const Geom *geom,
+                                     const GeomMunger *munger,
+                                     const GeomVertexData *vertex_data);
+  virtual void draw_triangles(const GeomTriangles *primitive);
+  virtual void draw_tristrips(const GeomTristrips *primitive);
+  virtual void draw_trifans(const GeomTrifans *primitive);
+  virtual void draw_lines(const GeomLines *primitive);
+  virtual void draw_linestrips(const GeomLinestrips *primitive);
+  virtual void draw_points(const GeomPoints *primitive);
+  virtual void end_draw_primitives();
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                                            const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                                        const RenderBuffer &rb);
 
-  virtual void apply_material(const Material *material);
+  virtual void reset();
+
   virtual void apply_fog(Fog *fog);
 
-  virtual void issue_transform(const TransformState *transform);
-  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
-  virtual void issue_tex_gen(const TexGenAttrib *attrib);
-  virtual void issue_texture(const TextureAttrib *attrib);
-  virtual void issue_material(const MaterialAttrib *attrib);
-  virtual void issue_render_mode(const RenderModeAttrib *attrib);
-  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
-  virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
-  virtual void issue_depth_test(const DepthTestAttrib *attrib);
-  virtual void issue_depth_write(const DepthWriteAttrib *attrib);
-  virtual void issue_color_write(const ColorWriteAttrib *attrib);
-  virtual void issue_cull_face(const CullFaceAttrib *attrib);
-  virtual void issue_fog(const FogAttrib *attrib);
-  virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 
-  virtual bool begin_frame();
-  virtual bool begin_scene();
-  virtual void end_scene();
-  virtual void end_frame();
+  static D3DFORMAT get_index_type(Geom::NumericType numeric_type);
+  INLINE static DWORD Colorf_to_D3DCOLOR(const Colorf &cColorf);
 
-  virtual bool wants_texcoords() const;
-
-  virtual void set_color_clear_value(const Colorf& value);
-
-public:
-  // recreate_tex_callback needs these to be public
-  DXScreenData *_pScrn;
-  LPDIRECT3DDEVICE9 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
-  IDirect3DSwapChain9 *_pSwapChain;
-  D3DPRESENT_PARAMETERS _PresReset;  // This is built during reset device
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform);
 
 protected:
+  void do_issue_transform();
+  void do_issue_alpha_test();
+  void do_issue_render_mode();
+  void do_issue_rescale_normal();
+  void do_issue_color_write();
+  void do_issue_depth_test();
+  void do_issue_depth_write();
+  void do_issue_cull_face();
+  void do_issue_fog();
+  void do_issue_depth_offset();
+  void do_issue_tex_gen();
+  void do_issue_shade_model();
+  void do_issue_material();
+  void do_issue_texture();
+  void do_issue_blending();
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
 
-  virtual bool slot_new_clip_plane(int plane_id);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
 
-  virtual void set_blend_mode();
-
-  void free_nondx_resources();            // free local internal buffers
+  void free_nondx_resources();
   void free_d3d_device();
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
-
   void do_auto_rescale_normal();
 
-  bool                  _bDXisReady;
-  HRESULT               _last_testcooplevel_result;
-  DXTextureContext9  *_pCurTexContext;
+protected:
+  INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
+  INLINE static D3DFOGMODE get_fog_mode_type(Fog::Mode m);
+  const D3DCOLORVALUE &get_light_color(Light *light) const;
+  INLINE static D3DTRANSFORMSTATETYPE get_tex_mat_sym(int stage_index);
 
-  bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
-  D3DMATRIX         _SavedTransform;
+  static D3DBLEND get_blend_func(ColorBlendAttrib::Operand operand);
+  void report_texmgr_stats();
+
+  void set_context(DXScreenData *new_context);
+  void set_render_target();
+
+  void set_texture_blend_mode(int i, const TextureStage *stage);
+
+  void dx_cleanup();
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params,
+                           DXScreenData **screen = NULL);
+
+  bool check_cooperative_level();
+
+  void show_frame();
+
+  bool create_swap_chain (DXScreenData *new_context);
+  bool release_swap_chain (DXScreenData *new_context);
+  void copy_pres_reset(DXScreenData *new_context);
+
+  static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type);
+  static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
+  static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
+  static DWORD get_texture_argument(TextureStage::CombineSource source,
+                                    TextureStage::CombineOperand operand);
+  static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
+
+  void draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
+       unsigned int primitive_count,
+       unsigned int first_vertex,
+       unsigned int num_vertices,
+       const unsigned char *buffer, size_t stride);
+  void draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
+         unsigned int min_index, unsigned int max_index,
+         unsigned int num_primitives,
+         const unsigned char *index_data,
+         D3DFORMAT index_type,
+         const unsigned char *buffer, size_t stride);
+
+  INLINE static unsigned char *get_safe_buffer_start();
+
+protected:
+  DXScreenData *_screen;
+  LPDIRECT3DDEVICE9 _d3d_device;  // same as _screen->_d3d_device, cached for spd
+  IDirect3DSwapChain9 *_swap_chain;
+  D3DPRESENT_PARAMETERS _presentation_reset;  // This is built during reset device
+
+  bool _dx_is_ready;
+  HRESULT _last_testcooplevel_result;
+
+  bool _vertex_blending_enabled;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
 
-  void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
-                    void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-                    D3DXVECTOR3 *pCenter, float fRadius,
-                    DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
-                    DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
-  HRESULT ReleaseAllDeviceObjects();
-  HRESULT RecreateAllDeviceObjects();
-  HRESULT DeleteAllDeviceObjects();
-
-/*
-  INLINE void enable_multisample_alpha_one(bool val);
-  INLINE void enable_multisample_alpha_mask(bool val);
-  INLINE void enable_multisample(bool val);
-*/
-
-  INLINE void enable_color_material(bool val);
-  INLINE void enable_fog(bool val);
-  INLINE void enable_zwritemask(bool val);
-  INLINE void set_color_writemask(UINT color_writemask);
-  INLINE void enable_gouraud_shading(bool val);
-  INLINE void set_vertex_format(DWORD NewFvfType);
-
-  INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
-  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
-
-  INLINE void enable_primitive_clipping(bool val);
-  INLINE void enable_alpha_test(bool val);
-  INLINE void enable_line_smooth(bool val);
-  INLINE void enable_blend(bool val);
-  INLINE void enable_point_smooth(bool val);
-  INLINE void enable_texturing(bool val);
-  INLINE void call_dxLightModelAmbient(const Colorf& color);
-  INLINE void call_dxAlphaFunc(D3DCMPFUNC func, float refval);
-  INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
-  static D3DBLEND get_blend_func(ColorBlendAttrib::Operand operand);
-  INLINE void enable_dither(bool val);
-  INLINE void enable_stencil_test(bool val);
-  void report_texmgr_stats();
-  void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
-
-  void draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags);
-  void draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom);
-  size_t draw_prim_setup(const Geom *geom) ;
-
-  //   for drawing primitives
-  Normalf   p_normal;  // still used to hold G_OVERALL, G_PER_PRIM values
-  TexCoordf p_texcoord;
-  D3DCOLOR  _curD3Dcolor;
-  DWORD     _perPrim,_perVertex,_perComp;   //  these hold DrawLoopFlags bitmask values
-  DWORD     _CurFVFType;
-  // for storage of the flexible vertex format
-  BYTE *_pCurFvfBufPtr,*_pFvfBufBasePtr;
-  WORD *_index_buf;  // base of malloced array
-
-  D3DCOLOR _scene_graph_color_D3DCOLOR;
   D3DCOLOR _d3dcolor_clear_value;
-//  D3DSHADEMODE _CurShadeMode;
-  bool _bGouraudShadingOn;
   UINT _color_writemask;
-  bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
 
-  // iterators for primitives
-  Geom::VertexIterator vi;
-  Geom::NormalIterator ni;
-  Geom::TexCoordIterator ti;
-  Geom::ColorIterator ci;
-
-  // these are used for fastpaths that bypass the iterators above
-  // pointers to arrays in current geom, used to traverse indexed and non-indexed arrays
-  Vertexf *_coord_array,*_pCurCoord;
-  ushort *_coordindex_array,*_pCurCoordIndex;
-
-  TexCoordf *_texcoord_array,*_pCurTexCoord;
-  ushort *_texcoordindex_array,*_pCurTexCoordIndex;
-
-/*
-  PTA_Normalf _norms;
-  PTA_Colorf _colors;
-  PTA_ushort _cindexes,_nindexes;
-*/
-
-  Colorf _lmodel_ambient;
   float _material_ambient;
   float _material_diffuse;
   float _material_specular;
   float _material_shininess;
   float _material_emission;
 
-  typedef enum {None,
-                PerVertexFog=D3DRS_FOGVERTEXMODE,
-                PerPixelFog=D3DRS_FOGTABLEMODE
-               } DxgsgFogType;
-  DxgsgFogType _doFogType;
-  bool _fog_enabled;
-/*
-  TODO: cache fog state
-  float _fog_start,_fog_end,_fog_density,float _fog_color;
-*/
+  enum DxgsgFogType {
+    None,
+    PerVertexFog=D3DRS_FOGVERTEXMODE,
+    PerPixelFog=D3DRS_FOGTABLEMODE
+  };
+  DxgsgFogType _do_fog_type;
 
-  float      _alpha_func_refval;  // d3d stores UINT, panda stores this as float.  we store float
-  D3DCMPFUNC _alpha_func;
-
-  D3DBLEND _blend_source_func;
-  D3DBLEND _blend_dest_func;
-
-  bool _line_smooth_enabled;
-  bool _color_material_enabled;
-  bool _texturing_enabled;
-  bool _clipping_enabled;
-  bool _dither_enabled;
-  bool _stencil_test_enabled;
-  bool _blend_enabled;
-  bool _depth_test_enabled;
-  bool _depth_write_enabled;
-  bool _alpha_test_enabled;
   DWORD _clip_plane_bits;
+  CullFaceAttrib::Mode _cull_face_mode;
+  RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
 
-  RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
-
-  // unused right now
-  //GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
-
-  // Cur Texture State
-  TextureStage::Mode _CurTexBlendMode;
-  D3DTEXTUREFILTERTYPE _CurTexMagFilter,_CurTexMinFilter,_CurTexMipFilter;
-  DWORD _CurTexAnisoDegree;
-  Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
-  LMatrix4f _current_projection_mat;
-  int _projection_mat_stack_count;
+  LMatrix4f _projection_mat;
 
   CPT(DisplayRegion) _actual_display_region;
-
-  // Color/Alpha Matrix Transition stuff
-  INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
+  const DXVertexBufferContext9 *_active_vbuffer;
+  const DXIndexBufferContext9 *_active_ibuffer;
 
   bool _overlay_windows_supported;
+  bool _tex_stats_retrieval_impossible;
 
-#if 0
-  // This is here just as a temporary hack so this file will still
-  // compile.  However, it is never initialized and will certainly
-  // cause the code to crash when it is referenced.  (This used to be
-  // inherited from the base class, but the new design requires that a
-  // GSG may be used for multiple windows, so it doesn't make sense to
-  // store a single window pointer any more.)
-  GraphicsWindow *_win;
-#endif
+  static D3DMATRIX _d3d_ident_mat;
+
+  static unsigned char *_temp_buffer;
+  static unsigned char *_safe_buffer_start;
 
 public:
-  static GraphicsStateGuardian*
-  make_DXGraphicsStateGuardian9(const FactoryParams &params);
-  void set_context(DXScreenData *pNewContextData);
-  void set_render_target();
-
-  static TypeHandle get_class_type();
-  static void init_type();
-  virtual TypeHandle get_type() const;
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
-  INLINE bool GetDXReady()  { return _bDXisReady;}
-  void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureStage::Mode TexBlendMode,bool bJustEnable);
 
-  void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
-  void reset_panda_gsg();
-  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn=NULL);
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
 
-  #define DO_REACTIVATE_WINDOW true
-  bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
-
-  void show_frame(bool bNoNewFrameDrawn = false);
-  void dx_init();
-
-  void support_overlay_window(bool flag);
-
-  bool create_swap_chain (DXScreenData *pNewContextData);
-  bool release_swap_chain (DXScreenData *pNewContextData);
-  void copy_pres_reset(DXScreenData *pNewContextData);
+public:
+  static void init_type() {
+    GraphicsStateGuardian::init_type();
+    register_type(_type_handle, "DXGraphicsStateGuardian9",
+                  GraphicsStateGuardian::get_class_type());
+  }
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wdxGraphicsWindow9;
+  friend class wdxGraphicsPipe9;
+  friend class wdxGraphicsWindowGroup9;
+  friend class DXTextureContext9;
 };
 
-HRESULT CreateDX9Cursor(LPDIRECT3DDEVICE9 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark);
+#include "dxGraphicsStateGuardian9.I"
 
-#include "DXGraphicsStateGuardian9.I"
 #endif
-

@@ -1,5 +1,5 @@
-// Filename: dxGraphicsDevice.cxx
-// Created by:  masad (22Jul03)
+// Filename: dxGeomMunger9.I
+// Created by:  drose (11Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg9.h"
-#include "dxGraphicsDevice9.h"
-
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsDevice9::Constructor
+//     Function: DXGeomMunger9::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXGraphicsDevice9::
-DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
-  GraphicsDevice(pipe) {
-
-  ZeroMemory(&_Scrn,sizeof(_Scrn));
-  _d3d_device = NULL;
-  _swap_chain = NULL;
+INLINE DXGeomMunger9::
+DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
+  StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
+  _texture(state->get_texture()),
+  _tex_gen(state->get_tex_gen())
+{
+  if (_texture != (TextureAttrib *)NULL) {
+    _texture = _texture->filter_to_max(gsg->get_max_texture_stages());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsDevice9::Destructor
+//     Function: DXGeomMunger9::operator new
 //       Access: Public
-//  Description:
+//  Description: Calls up to do_operator_new() to implement the
+//               low-overhead allocation/deallocation for this type of
+//               GeomMunger.
 ////////////////////////////////////////////////////////////////////
-DXGraphicsDevice9::
-~DXGraphicsDevice9() {
-
+INLINE void *DXGeomMunger9::
+operator new(size_t size) {
+  return do_operator_new(size, &_deleted_chain);
 }
+

@@ -1,10 +1,10 @@
-// Filename: dxgsg8base.h
-// Created by:   masad (02Jan04)
+// Filename: dxgsg9base.h
+// Created by:  georges (07Oct01)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -19,10 +19,9 @@
 #ifndef DXGSG9BASE_H
 #define DXGSG9BASE_H
 
-// include win32 defns for everything up to WinServer2003, and assume I'm smart enough to
-// use GetProcAddress for backward compat on newer fns
-// Note DX9 cannot be installed on w95, so OK to assume base of win98
-#define _WIN32_WINNT 0x0502
+#include "pandabase.h"
+#include "graphicsWindow.h"
+#include "pmap.h"
 
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
@@ -38,20 +37,19 @@
 #include <dxerr9.h>
 #undef WIN32_LEAN_AND_MEAN
 
-#include "pandabase.h"
-#include "graphicsWindow.h"
-
-#if D3D_SDK_VERSION < 31
-#error you have DX 8.0/8.1 headers, not DX 9, you need to install DX 9 SDK!
+/* ***** DX9
+#if D3D_SDK_VERSION != 220
+#error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
 #endif
 
 #if DIRECT3D_VERSION != 0x0900
-#error DX9 headers not available, you need to install newer MS Platform SDK!
+#error DX8.1 headers not available, you need to install newer MS Platform SDK!
 #endif
 
 #ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
 #error you have pre-release DX8.1 headers, you need to install final DX 8.1 SDK!
 #endif
+*/
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
@@ -78,7 +76,7 @@ typedef DWORD DXShaderHandle;
     type var;                       \
     ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
-    
+
 #define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
   if((HANDLE!=NULL)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL; }
 
@@ -94,7 +92,7 @@ typedef DWORD DXShaderHandle;
 #define RELEASE_ONCE false
 
 
-// uncomment to add refcnt debug output 
+// uncomment to add refcnt debug output
 #define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
@@ -116,7 +114,7 @@ typedef DWORD DXShaderHandle;
 
 #define PRINT_REFCNT(MODULE,p) { ULONG refcnt;  (p)->AddRef();  refcnt=(p)->Release(); \
                                  MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; }
-                                 
+
 #else
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)   { \
    ULONG refcnt;                                        \
@@ -132,7 +130,7 @@ typedef DWORD DXShaderHandle;
    }}
 
 #define PRINT_REFCNT(MODULE,p)
-#endif    
+#endif
 
 #ifdef DO_PSTATS
 #define DO_PSTATS_STUFF(XX) XX;
@@ -156,7 +154,7 @@ typedef enum {
     A8_FLAG =           FLG(8),
     A8R3G3B2_FLAG =     FLG(9),
     X4R4G4B4_FLAG =     FLG(10),
-    A2R10G10B10_FLAG =  FLG(11),
+    A2B10G10R10_FLAG =  FLG(11),
     G16R16_FLAG =       FLG(12),
     A8P8_FLAG =         FLG(13),
     P8_FLAG =           FLG(14),
@@ -189,34 +187,33 @@ typedef enum {
 #define RECT_XSIZE(REC) (REC.right-REC.left)
 #define RECT_YSIZE(REC) (REC.bottom-REC.top)
 
-typedef struct {
-      LPDIRECT3DDEVICE9 pD3DDevice;
-      IDirect3DSwapChain9 *pSwapChain;
-      LPDIRECT3D9       pD3D9;  // copied from DXGraphicsPipe9 for convenience
-      HWND              hWnd;
-      HMONITOR          hMon;
-      DWORD             MaxAvailVidMem;
-      ushort            CardIDNum;  // adapter ID
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      bool              bCanDirectDisableColorWrites;  // if true, dont need blending for this
-      bool              bIsLowVidMemCard;
-      bool              bIsTNLDevice;
-      bool              bCanUseHWVertexShaders;
-      bool              bCanUsePixelShaders;
-      bool              bIsDX9;
-      UINT              SupportedScreenDepthsMask;
-      UINT              SupportedTexFmtsMask;
-      D3DCAPS9          d3dcaps;
-      D3DDISPLAYMODE    DisplayMode;
-      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
-      D3DADAPTER_IDENTIFIER9 DXDeviceID;
-} DXScreenData;
+struct DXScreenData {
+  LPDIRECT3DDEVICE9 _d3d_device;
+  IDirect3DSwapChain9 *_swap_chain;
+  LPDIRECT3D9 _d3d9;  // copied from DXGraphicsPipe9 for convenience
+  HWND _window;
+  HMONITOR _monitor;
+  DWORD _max_available_video_memory;
+  ushort _card_id;  // adapter ID
+  ushort _depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+  bool _can_direct_disable_color_writes;  // if true, dont need blending for this
+  bool _is_low_memory_card;
+  bool _is_tnl_device;
+  bool _can_use_hw_vertex_shaders;
+  bool _can_use_pixel_shaders;
+  bool _is_dx9_1;
+  UINT _supported_screen_depths_mask;
+  UINT _supported_tex_formats_mask;
+  D3DCAPS9 _d3dcaps;
+  D3DDISPLAYMODE _display_mode;
+  D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
+  D3DADAPTER_IDENTIFIER9 _dx_device_id;
+};
 
 
 //utility stuff
-extern map<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
+extern pmap<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
 extern void Init_D3DFORMAT_map();
 extern const char *D3DFormatStr(D3DFORMAT fmt);
 
 #endif
-

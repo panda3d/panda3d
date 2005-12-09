@@ -1,10 +1,10 @@
-// Filename: dxTextureContext8.h
-// Created by:   masad (02Jan04)
+// Filename: dxTextureContext9.h
+// Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -23,38 +23,43 @@
 #include "texture.h"
 #include "textureContext.h"
 
-//#define DO_CUSTOM_CONVERSIONS
-
 ////////////////////////////////////////////////////////////////////
-//   Class : DXTextureContext9
+//       Class : DXTextureContext9
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext9 : public TextureContext {
-  friend class DXGraphicsStateGuardian;
-  friend class wdxGraphicsWindow;
-
 public:
   DXTextureContext9(Texture *tex);
-  ~DXTextureContext9();
+  virtual ~DXTextureContext9();
 
-  IDirect3DTexture9  *_pD3DTexture9;
-  Texture *_tex;            // ptr to parent, primarily for access to namestr
-  IDirect3DTexture9 *CreateTexture(DXScreenData &scrn);
+  bool create_texture(DXScreenData &scrn);
+  void delete_texture();
 
-  D3DFORMAT _PixBufD3DFmt;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
+  INLINE bool has_mipmaps() const;
+  INLINE IDirect3DBaseTexture9 *get_d3d_texture() const;
+  INLINE IDirect3DTexture9 *get_d3d_2d_texture() const;
+  INLINE IDirect3DVolumeTexture9 *get_d3d_volume_texture() const;
+  INLINE IDirect3DCubeTexture9 *get_d3d_cube_texture() const;
 
-  bool _bHasMipMaps;
+  static HRESULT d3d_surface_to_texture(RECT &source_rect,
+          IDirect3DSurface9 *d3d_surface,
+          bool inverted, Texture *result,
+          int z);
 
-#ifdef DO_CUSTOM_CONVERSIONS
-  DWORD _PixBufConversionType;  // enum ConversionType
-#endif
+private:
+  HRESULT fill_d3d_texture_pixels();
+  HRESULT fill_d3d_volume_texture_pixels();
+  static int down_to_power_2(int value);
+  unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
-  // must be public since called from global callback fns
-  void DeleteTexture();
-  HRESULT FillDDSurfTexturePixels();
+private:
+  D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
+  IDirect3DBaseTexture9 *_d3d_texture;
+  IDirect3DTexture9 *_d3d_2d_texture;
+  IDirect3DVolumeTexture9 *_d3d_volume_texture;
+  IDirect3DCubeTexture9 *_d3d_cube_texture;
 
-protected:
-    unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
+  bool _has_mipmaps;
 
 public:
   static TypeHandle get_class_type() {
@@ -74,7 +79,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-extern HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,Texture *pixbuf);
+#include "dxTextureContext9.I"
 
 #endif
-

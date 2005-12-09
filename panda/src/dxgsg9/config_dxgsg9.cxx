@@ -1,10 +1,10 @@
-// Filename: config_dxgsg8.cxx
-// Created by:   masad (02Jan04)
+// Filename: config_dxgsg9.cxx
+// Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -19,6 +19,9 @@
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
 #include "dxTextureContext9.h"
+#include "dxVertexBufferContext9.h"
+#include "dxIndexBufferContext9.h"
+#include "dxGeomMunger9.h"
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow9.h"
 #include "wdxGraphicsPipe9.h"
@@ -27,9 +30,8 @@
 #include "dconfig.h"
 
 Configure(config_dxgsg9);
-//NotifyCategoryDef(dxgsg9, ":display:gsg");  dont want to merge this with the regular parent class dbg output
-NotifyCategoryDef(dxgsg9, "dxgsg");
-NotifyCategoryDef(wdxdisplay9, "windisplay");
+NotifyCategoryDef(dxgsg9, ":display:gsg");
+NotifyCategoryDef(wdxdisplay9, "display");
 
 // Configure this variable true to cause the DXGSG to show each
 // transform space it renders by drawing a little unit axis.  This
@@ -45,9 +47,9 @@ ConfigVariableInt dx_multisample_antialiasing_level
 ConfigVariableBool dx_no_vertex_fog
 ("dx-no-vertex-fog", false);
 
-// if true, overwrite cursor bitmap tip with "D3D" to distinguish it from GDI cursor 
+// if true, overwrite cursor bitmap tip with "D3D" to distinguish it from GDI cursor
 ConfigVariableBool dx_show_cursor_watermark
-("dx-show-cursor-watermark", 
+("dx-show-cursor-watermark",
 #ifdef _DEBUG
     true
 #else
@@ -58,6 +60,18 @@ ConfigVariableBool dx_show_cursor_watermark
 // if true, triangle filter will be used to generate mipmap levels instead of default box filter
 ConfigVariableBool dx_use_triangle_mipgen_filter
 ("dx-use-triangle-mipgen-filter", false);
+
+ConfigVariableBool dx_broken_max_index
+("dx-broken-max-index", false,
+ PRC_DESC("Configure this true if you have a buggy graphics driver that "
+          "doesn't correctly implement the third parameter, NumVertices, "
+          "of DrawIndexedPrimitive().  In particular, the NVIDIA Quadro "
+          "driver version 6.14.10.7184 seems to treat this as a maximum "
+          "vertex index, rather than a delta between the maximum and "
+          "minimum vertex index.  Turn this on if you are seeing stray "
+          "triangles, or you are not seeing all of your triangles.  Enabling "
+          "this should work around this bug, at the cost of some additional "
+          "rendering overhead on the GPU."));
 
 #ifndef NDEBUG
 // debugging flag
@@ -110,7 +124,7 @@ ConfigVariableBool dx_debug_view_mipmaps
 ConfigVariableBool dx_force_anisotropic_filtering
 ("dx-force-anisotropic-filtering", false);
 
-// set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 
+// set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom
 // together using degenerate tris
 ConfigVariableBool link_tristrips
 ("link-tristrips", false);
@@ -137,6 +151,9 @@ init_libdxgsg9() {
 
   DXGraphicsStateGuardian9::init_type();
   DXTextureContext9::init_type();
+  DXVertexBufferContext9::init_type();
+  DXIndexBufferContext9::init_type();
+  DXGeomMunger9::init_type();
 
   wdxGraphicsPipe9::init_type();
   wdxGraphicsWindow9::init_type();

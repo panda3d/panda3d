@@ -1,10 +1,10 @@
 // Filename: dxGraphicsDevice.h
-// Created by:  masad (02Jan04)
+// Created by:  masad (22Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //   Class : DXGraphicsDevice9
 // Description : A GraphicsDevice necessary for multi-window rendering
-//               in DX. 
+//               in DX.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsDevice9 : public GraphicsDevice {
   friend class wdxGraphicsPipe9;
@@ -39,8 +39,8 @@ public:
   ~DXGraphicsDevice9();
 
   DXScreenData _Scrn;
-  LPDIRECT3DDEVICE9 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
-  IDirect3DSwapChain9 *_pSwapChain;
+  LPDIRECT3DDEVICE9 _d3d_device;  // same as Scrn._d3d_device, cached for spd
+  IDirect3DSwapChain9 *_swap_chain;
 
 #if 0
 protected:
@@ -52,4 +52,3 @@ protected:
 };
 
 #endif
-

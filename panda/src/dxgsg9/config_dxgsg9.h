@@ -1,10 +1,10 @@
 // Filename: config_dxgsg.h
-// Created by:  masad (02Jan04)
+// Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -36,6 +36,7 @@ extern ConfigVariableBool dx_use_rangebased_fog;
 extern ConfigVariableBool link_tristrips;
 extern ConfigVariableInt dx_multisample_antialiasing_level;
 extern ConfigVariableBool dx_use_triangle_mipgen_filter;
+extern ConfigVariableBool dx_broken_max_index;
 
 
 // debug flags we might want to use in full optimized build

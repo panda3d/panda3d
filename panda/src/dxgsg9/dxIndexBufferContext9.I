@@ -1,5 +1,5 @@
-// Filename: wdxGraphicsPipe9.I
-// Created by:  drose (20Dec02)
+// Filename: dxIndexBufferContext9.I
+// Created by:  drose (18Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //

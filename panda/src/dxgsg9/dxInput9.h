@@ -1,10 +1,10 @@
-// Filename: dxInput8.h
-// Created by:   masad (02Jan04)
+// Filename: dxInput9.h
+// Created by:  blllyjo (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -19,7 +19,7 @@
 #ifndef DXINPUT9_H
 #define DXINPUT9_H
 
-#define DIRECTINPUT_VERSION 0x800
+#define DIRECTINPUT_VERSION 0x900
 #include <dinput.h>
 typedef vector<DIDEVICEINSTANCE> DI_DeviceInfos;
 typedef vector<DIDEVICEOBJECTINSTANCE> DI_DeviceObjInfos;
@@ -29,7 +29,7 @@ public:
  DInput9Info();
  ~DInput9Info();
  bool InitDirectInput();
- bool CreateJoystickOrPad(HWND hWnd);
+ bool CreateJoystickOrPad(HWND _window);
  bool ReadJoystick(int devnum, DIJOYSTATE2 &js);
 
  HINSTANCE _hDInputDLL;
@@ -43,3 +43,4 @@ public:
 };
 
 #endif
+

@@ -1,10 +1,10 @@
-// Filename: dxInput8.cxx
-// Created by:   masad (02Jan04)
+// Filename: dxInput9.cxx
+// Created by:  angelina jolie (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -102,7 +102,7 @@ bool DInput9Info::InitDirectInput() {
     return true;
 }
 
-bool DInput9Info::CreateJoystickOrPad(HWND hWnd) {
+bool DInput9Info::CreateJoystickOrPad(HWND _window) {
     bool bFoundDev = false;
     UINT devnum=0;
     char *errstr=NULL;
@@ -156,7 +156,7 @@ bool DInput9Info::CreateJoystickOrPad(HWND hWnd) {
 
     // Set the cooperative level to let DInput know how this device should
     // interact with the system and with other DInput applications.
-    hr = pJoyDevice->SetCooperativeLevel( hWnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+    hr = pJoyDevice->SetCooperativeLevel( _window, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
     if(FAILED(hr)) {
         errstr="SetCooperativeLevel";
         goto handle_error;
@@ -272,5 +272,3 @@ bool DInput9Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
      wdxdisplay_cat.fatal() << errstr << D3DERRORSTRING(hr);
      return false;
 }
-
-

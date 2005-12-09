@@ -1,4 +1,4 @@
-// Filename: dxVertexBufferContext8.cxx
+// Filename: dxVertexBufferContext9.cxx
 // Created by:  drose (18Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,24 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxVertexBufferContext8.h"
+#include "dxVertexBufferContext9.h"
 #include "geomVertexArrayData.h"
 #include "geomVertexArrayFormat.h"
 #include "graphicsStateGuardian.h"
 #include "pStatTimer.h"
 #include "internalName.h"
-#include "config_dxgsg8.h"
-#include <d3dx8.h>
+#include "config_dxgsg9.h"
+#include <d3dx9.h>
 
-TypeHandle DXVertexBufferContext8::_type_handle;
+TypeHandle DXVertexBufferContext9::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext8::Constructor
+//     Function: DXVertexBufferContext9::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXVertexBufferContext8::
-DXVertexBufferContext8(GeomVertexArrayData *data) :
+DXVertexBufferContext9::
+DXVertexBufferContext9(GeomVertexArrayData *data) :
   VertexBufferContext(data),
   _vbuffer(NULL)
 {
@@ -164,50 +164,52 @@ DXVertexBufferContext8(GeomVertexArrayData *data) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext8::Destructor
+//     Function: DXVertexBufferContext9::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXVertexBufferContext8::
-~DXVertexBufferContext8() {
+DXVertexBufferContext9::
+~DXVertexBufferContext9() {
   if (_vbuffer != NULL) {
-    if (dxgsg8_cat.is_debug()) {
-      dxgsg8_cat.debug()
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
         << "deleting vertex buffer " << _vbuffer << "\n";
     }
 
-    RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
+    RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
     _vbuffer = NULL;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext8::create_vbuffer
+//     Function: DXVertexBufferContext9::create_vbuffer
 //       Access: Public
 //  Description: Creates a new vertex buffer (but does not upload data
 //               to it).
 ////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext8::
+void DXVertexBufferContext9::
 create_vbuffer(DXScreenData &scrn) {
   if (_vbuffer != NULL) {
-    RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
+    RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
     _vbuffer = NULL;
   }
 
   PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector);
 
   HRESULT hr = scrn._d3d_device->CreateVertexBuffer
+
 //    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
-//     _fvf, D3DPOOL_MANAGED, &_vbuffer);
+//    _fvf, D3DPOOL_MANAGED, &_vbuffer, NULL);
       (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
-     _fvf, D3DPOOL_DEFAULT, &_vbuffer);
+      _fvf, D3DPOOL_DEFAULT, &_vbuffer, NULL);
+
   if (FAILED(hr)) {
-    dxgsg8_cat.warning()
+    dxgsg9_cat.warning()
       << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
     _vbuffer = NULL;
   } else {
-    if (dxgsg8_cat.is_debug()) {
-      dxgsg8_cat.debug()
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
         << "created vertex buffer " << _vbuffer << ": "
         << get_data()->get_num_rows() << " vertices "
         << *get_data()->get_array_format() << "\n";
@@ -216,29 +218,31 @@ create_vbuffer(DXScreenData &scrn) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext8::upload_data
+//     Function: DXVertexBufferContext9::upload_data
 //       Access: Public
 //  Description: Copies the latest data from the client store to
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext8::
+void DXVertexBufferContext9::
 upload_data() {
   nassertv(_vbuffer != NULL);
   PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector);
 
   int data_size = get_data()->get_data_size_bytes();
 
-  if (dxgsg8_cat.is_spam()) {
-    dxgsg8_cat.spam()
+  if (dxgsg9_cat.is_spam()) {
+    dxgsg9_cat.spam()
       << "copying " << data_size
       << " bytes into vertex buffer " << _vbuffer << "\n";
   }
 
   BYTE *local_pointer;
-//  HRESULT hr = _vbuffer->Lock(0, data_size, &local_pointer, 0);
-  HRESULT hr = _vbuffer->Lock(0, data_size, &local_pointer, D3DLOCK_DISCARD);
+
+//  HRESULT hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, 0);
+  HRESULT hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
+
   if (FAILED(hr)) {
-    dxgsg8_cat.error()
+    dxgsg9_cat.error()
       << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
     return;
   }
@@ -248,4 +252,3 @@ upload_data() {
 
   _vbuffer->Unlock();
 }
-

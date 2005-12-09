@@ -1,10 +1,10 @@
-// Filename: wdxGraphicsPipe8.h
-// Created by:   masad (02Jan04)
+// Filename: wdxGraphicsPipe9.h
+// Created by:  drose (20Dec02)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -25,20 +25,10 @@
 #include "dxgsg9base.h"
 #include <ddraw.h>
 
-typedef struct {
-   UINT    cardID;
-   char    szDriver[MAX_DEVICE_IDENTIFIER_STRING];
-   char    szDescription[MAX_DEVICE_IDENTIFIER_STRING];
-   GUID    guidDeviceIdentifier;
-   DWORD   VendorID, DeviceID;
-   HMONITOR hMon;
-} DXDeviceInfo;
-typedef pvector<DXDeviceInfo> DXDeviceInfoVec;
-
 ////////////////////////////////////////////////////////////////////
 //       Class : wdxGraphicsPipe9
 // Description : This graphics pipe represents the interface for
-//               creating DirectX graphics windows.
+//               creating DirectX9 graphics windows.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsPipe9 : public WinGraphicsPipe {
 public:
@@ -52,18 +42,18 @@ public:
                                              GraphicsStateGuardian *share_with);
   virtual PT(GraphicsDevice) make_device(void *scrn);
 
-  bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
-                       D3DFORMAT *pBestFmt, bool bWantStencil,
-                       bool bForce16bpp, bool bVerboseMode = false) const;
+  bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
+                              D3DFORMAT *pBestFmt, bool bWantStencil,
+                              bool bForce16bpp, bool bVerboseMode = false) const;
 
   void search_for_valid_displaymode(DXScreenData &scrn,
-                             UINT RequestedX_Size, UINT RequestedY_Size,
-                             bool bWantZBuffer, bool bWantStencil,
-                             UINT *pSupportedScreenDepthsMask,
-                             bool *pCouldntFindAnyValidZBuf,
-                             D3DFORMAT *pSuggestedPixFmt,
-                             bool bForce16bppZBuffer,
-                             bool bVerboseMode = false);
+                                    UINT RequestedX_Size, UINT RequestedY_Size,
+                                    bool bWantZBuffer, bool bWantStencil,
+                                    UINT *p_supported_screen_depths_mask,
+                                    bool *pCouldntFindAnyValidZBuf,
+                                    D3DFORMAT *pSuggestedPixFmt,
+                                    bool bForce16bppZBuffer,
+                                    bool bVerboseMode = false);
 
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
@@ -81,7 +71,7 @@ private:
 private:
   HINSTANCE _hDDrawDLL;
   HINSTANCE _hD3D9_DLL;
-  LPDIRECT3D9 _pD3D9;
+  LPDIRECT3D9 __d3d9;
 
 
   typedef LPDIRECT3D9 (WINAPI *Direct3DCreate9_ProcPtr)(UINT SDKVersion);
@@ -91,20 +81,19 @@ private:
   LPDIRECTDRAWENUMERATEEX _DirectDrawEnumerateExA;
   Direct3DCreate9_ProcPtr _Direct3DCreate9;
 
-  // CardID is used in DX7 lowmem card-classification pass so DX9 can
+  // CardID is used in DX7 lowmem card-classification pass so DX8 can
   // establish correspondence b/w DX7 mem info & DX8 device
   struct CardID {
-    HMONITOR hMon;
-    DWORD MaxAvailVidMem;
-    bool  bIsLowVidMemCard;
+    HMONITOR _monitor;
+    DWORD _max_available_video_memory;
+    bool  _is_low_memory_card;
     GUID  DX7_DeviceGUID;
     DWORD VendorID, DeviceID;
-    //   char  szDriver[MAX_DEVICE_IDENTIFIER_STRING];
   };
-  
+
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
-  bool _bIsDX9;
+  bool __is_dx9_1;
 
 public:
   static TypeHandle get_class_type() {
