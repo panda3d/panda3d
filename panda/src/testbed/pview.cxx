@@ -24,6 +24,7 @@
 #include "multitexReducer.h"
 #include "sceneGraphReducer.h"
 #include "partGroup.h"
+#include "cardMaker.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -140,58 +141,30 @@ void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
 
-  /*
-  SceneGraphReducer gr;
-  gr.collect_vertex_data(framework.get_models().node());
-  gr.unify(framework.get_models().node());
-  gr.make_nonindexed(framework.get_models().node());
-  */
+  EventParameter param = event->get_parameter(0);
+  WindowFramework *wf;
+  DCAST_INTO_V(wf, param.get_ptr());
 
-  static int count = 0;
+  // Create a new offscreen buffer.
+  GraphicsWindow *win = wf->get_graphics_window();
+  PT(GraphicsOutput) buffer = win->make_texture_buffer("tex", 256, 256);
 
-  static PT(TextureStage) ts;
-  if (ts == (TextureStage *)NULL) {
-    ts = new TextureStage("ts");
-    ts->set_sort(50);
-  }
+  // Set the offscreen buffer to render the same scene as the main camera.
+  DisplayRegion *dr = buffer->make_display_region();
+  dr->set_camera(NodePath(wf->get_camera(0)));
 
-  NodePath models = framework.get_models();
+  // Make the clear color on the buffer be yellow, so it's obviously
+  // different from the main scene's background color.
+  buffer->set_clear_color(Colorf(1, 1, 0, 0));
 
-  if (count == 0) {
-    cerr << "applying scale\n";
-    models.set_color_scale(0.7, 0.7, 0.1, 1.0);
-
-  } else {
-    cerr << "flattening\n";
-    MultitexReducer mr;
-    //mr.set_use_geom(true);
-    mr.scan(models);
-    
-    WindowFramework *wf = framework.get_window(0);
-    GraphicsWindow *win = wf->get_graphics_window();
-    mr.flatten(win);
-
-    if (count > 1) {
-      PT(Texture) tex = TexturePool::load_texture("maps/cmss12.rgb");
-      if (tex != (Texture *)NULL) {
-        cerr << "Reapplying\n";
-        
-        ts->set_mode(TextureStage::M_add);
-        models.set_texture(ts, tex);
-     
-        if (count > 3 && (count % 2) == 1) {
-          cerr << "Reflattening\n";
-          MultitexReducer mr;
-          mr.scan(models);
-          
-          WindowFramework *wf = framework.get_window(0);
-          GraphicsWindow *win = wf->get_graphics_window();
-          mr.flatten(win);
-        }
-      }
-    }
-  }
-  count++;
+  // Apply the offscreen buffer's texture to a card in the main
+  // window.
+  CardMaker cm("card");
+  cm.set_frame(0, 1, 0, 1);
+  NodePath card_np(cm.generate());
+  
+  card_np.reparent_to(wf->get_render_2d());
+  card_np.set_texture(buffer->get_texture());
 }
 
 void 
