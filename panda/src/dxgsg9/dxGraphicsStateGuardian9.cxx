@@ -1412,12 +1412,14 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   DWORD render_target_index;
   IDirect3DSurface9 *render_target;
 
-/* ***** DX9 GetRenderTarget (render_target_index, ) */
-render_target_index = 0;
+  /* ***** DX9 GetRenderTarget, assume only one render target so index = 0 */
+  render_target_index = 0;
 
   hr = _d3d_device->GetRenderTarget(render_target_index, &render_target);
   if (FAILED(hr)) {
-    dxgsg9_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
+    dxgsg9_cat.error()
+      << "GetRenderTarget failed in framebuffer_copy_to_texture"
+      << D3DERRORSTRING(hr);
     SAFE_RELEASE(tex_level_0);
     return;
   }
@@ -1429,15 +1431,53 @@ render_target_index = 0;
   src_rect.top = yo;
   src_rect.bottom = yo+h;
 
-  // now copy from fb to tex
-
-/* ***** DX9 CopyRects */
+//  THE DX8 WAY
 //  hr = _d3d_device->CopyRects(render_target, &src_rect, 1, tex_level_0, 0);
-   hr = -1;
+
+//  THE DX9 WAY, this is not efficient since it copies the entire render
+//    target to system memory and then copies the rectangle to the texture
+
+  // create a surface in system memory that is a duplicate of the render target
+  D3DPOOL pool;
+  IDirect3DSurface9 *temp_surface = NULL;
+  D3DSURFACE_DESC surface_description;
+
+  render_target -> GetDesc (&surface_description);
+
+  pool = D3DPOOL_SYSTEMMEM;
+  hr = _d3d_device->CreateOffscreenPlainSurface(
+         surface_description.Width,
+         surface_description.Height,
+         surface_description.Format,
+         pool,
+         &temp_surface,
+         NULL);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "CreateOffscreenPlainSurface failed in framebuffer_copy_to_texture"
+      << D3DERRORSTRING(hr);
+    return;
+  }
+
+  // this copies the entire render target into system memory
+  hr = _d3d_device -> GetRenderTargetData (render_target, temp_surface);
+
+  if (FAILED(hr)) {
+    dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
+    RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
+    return;
+  }
+
+  // copy system memory version to texture
+  DXTextureContext9::d3d_surface_to_texture(src_rect, temp_surface,
+              false, tex, z);
+
+  RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
 
   if (FAILED(hr)) {
     dxgsg9_cat.error()
-      << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
+      << "CopyRects failed in framebuffer_copy_to_texture"
+      << D3DERRORSTRING(hr);
   }
 
   SAFE_RELEASE(render_target);
