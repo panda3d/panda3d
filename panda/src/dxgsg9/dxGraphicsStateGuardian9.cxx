@@ -1527,7 +1527,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // first.
   D3DPOOL pool;
 
-  pool = D3DPOOL_SCRATCH;
+  pool = D3DPOOL_SYSTEMMEM;
     hr = _d3d_device->CreateOffscreenPlainSurface(w, h, _screen->_display_mode.Format,
            pool,
            &temp_surface,
@@ -1542,16 +1542,17 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
 
     // Now we must copy from the backbuffer to our temporary surface.
 
-/* ***** DX9 CopyRects */
-//    hr = _d3d_device->CopyRects(backbuffer, &rect, 1, temp_surface, NULL);
-    hr = -1;
+//  DX8 VERSION  hr = _d3d_device->CopyRects(backbuffer, &rect, 1, temp_surface, NULL);
+    hr = _d3d_device -> GetRenderTargetData (backbuffer, temp_surface);
 
     if (FAILED(hr)) {
-      dxgsg9_cat.error() << "CopyRects failed" << D3DERRORSTRING(hr);
+      dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
       temp_surface->Release();
       backbuffer->Release();
       return false;
     }
+
+    copy_inverted = true;
 
     RELEASE(backbuffer, dxgsg9, "backbuffer", RELEASE_ONCE);
 
