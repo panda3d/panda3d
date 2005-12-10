@@ -140,8 +140,8 @@ private:
   //  void set_shader_attributes(EggPrimitive &primitive,
   //                             const MayaShader &shader);
   void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                             const MItMeshPolygon *pi = NULL, 
-                             const vector_string &uvset_names = vector_string());
+                             const MItMeshPolygon *pi = NULL);
+                             //const vector_string &uvset_names = vector_string());
   void apply_texture_properties(EggTexture &tex, 
                                 const MayaShaderColorDef &color_def);
   bool compare_texture_properties(EggTexture &tex, 
@@ -149,7 +149,12 @@ private:
 
   bool reparent_decals(EggGroupNode *egg_parent);
 
+  string find_uv_link(string match);
+
   string _program_name;
+
+  vector_string _uvset_names;
+  vector_string _tex_names;
 
   bool _from_selection;
   typedef pvector<GlobPattern> Globs;

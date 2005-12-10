@@ -224,6 +224,26 @@ reset_maya_texture(const Filename &texture) {
   return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaderColorDef::strip_prefix
+//       Access: Private
+//  Description: Maya puts a prefix on shader nameswhen files are 
+//               imported. This routine strips that out before writing 
+//               egg file. //This was a hack: not needed anymore
+////////////////////////////////////////////////////////////////////
+string MayaShaderColorDef::
+strip_prefix(string full_name) {
+  string axed_name;
+  size_t cut_point = full_name.find(":");
+  if (cut_point != string::npos) {
+    axed_name = full_name.substr(cut_point+1);
+    maya_cat.spam() << "stripped from: " << full_name << "-> to: " << axed_name << endl;
+    return axed_name;
+  }
+  return full_name;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShaderColorDef::read_surface_color
 //       Access: Private
@@ -258,6 +278,14 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         _has_texture = false;
         set_string_attribute(color, "fileTextureName", "");
       }
+      /*
+      // Asad: testcode
+      bool file_has_alpha = false;
+      get_bool_attribute(color, "fileHasAlpha", file_has_alpha);
+      if (file_has_alpha) {
+        maya_cat.info() << _texture_filename << " : has alpha" << endl;
+      }
+      */
     }
 
     get_vec2f_attribute(color, "coverage", _coverage);
@@ -265,7 +293,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
 
     get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
-    
+
     get_bool_attribute(color, "mirror", _mirror);
     get_bool_attribute(color, "stagger", _stagger);
     get_bool_attribute(color, "wrapU", _wrap_u);

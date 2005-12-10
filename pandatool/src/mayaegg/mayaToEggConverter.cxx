@@ -1672,16 +1672,52 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
-  vector_string uvset_names;
   MStringArray maya_uvset_names;
   status = mesh.getUVSetNames(maya_uvset_names);
   if (!status) {
     status.perror("MFnMesh getUVSetNames not found");
-    //return;
   }
+  _uvset_names.clear();
   for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
     mayaegg_cat.debug() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
-    uvset_names.push_back(maya_uvset_names[ui].asChar());
+    _uvset_names.push_back(maya_uvset_names[ui].asChar());
+  }
+
+  // test the connection editor to gather the link to the texture name
+  MFnDependencyNode dn(mesh_object);
+  MStringArray mresult;
+  MPlugArray pla;
+
+  _tex_names.clear();
+  dn.getConnections(pla);
+  mayaegg_cat.spam() << "number of connections: " << pla.length() << endl;
+  string uv1("uvLink -query -uvSet ");
+  uv1.append(mesh.name().asChar());
+  uv1.append(".uvSet[0].uvSetName");
+  MGlobal::executeCommand(MString(uv1.c_str()), mresult);
+  string tcat;
+  for (size_t k=0; k<mresult.length(); ++k) {
+    maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
+    tcat.append(mresult[k].asChar());
+  }
+  maya_cat.debug() << "saving string to look up uvset: " << tcat << endl;
+  _tex_names.push_back(tcat);
+  for (size_t j=0; j<pla.length(); ++j) {
+    MPlug pl = pla[j];
+    //maya_cat.info() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
+    string tn;
+    string ts = pl.name().asChar();
+    if (ts.find("uvSetName") != string::npos) {
+      string execString = "uvLink -query -uvSet " + ts;
+      //maya_cat.info() << "executing command: " << execString << "\n";
+      MGlobal::executeCommand(MString(execString.c_str()), mresult);
+      for (size_t k=0; k<mresult.length(); ++k) {
+        maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
+        tcat.append(mresult[k].asChar());
+      }
+      maya_cat.debug() << "saving string: " << tcat << endl;
+      _tex_names.push_back(tcat);
+    }
   }
 
   while (!pi.isDone()) {
@@ -1710,7 +1746,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
     // And apply the shader properties to the polygon.
     if (shader != (MayaShader *)NULL) {
-      set_shader_attributes(*egg_poly, *shader, &pi, uvset_names);
+      set_shader_attributes(*egg_poly, *shader, &pi);
       color_def = shader->get_color_def();
     }
 
@@ -1779,9 +1815,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         // Go thru all the texture references for this primitive and set uvs
         mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
         mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
-        for (size_t ti=0; ti< uvset_names.size(); ++ti) {
+        for (size_t ti=0; ti< _uvset_names.size(); ++ti) {
           // get the eggTexture pointer
-          string colordef_uv_name = uvset_name=  uvset_names[ti];
+          string colordef_uv_name = uvset_name=  _uvset_names[ti];
           mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
 
           if (uvset_name == "map1")  // this is the name to look up by in maya
@@ -2220,6 +2256,23 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::find_uv_link
+//       Access: Private
+//  Description: given the texture name, find corresponding uvLink
+////////////////////////////////////////////////////////////////////
+string MayaToEggConverter::
+find_uv_link(string match) {
+  // find the index of this string in the _tex_names
+  int idx = 0;
+  vector_string::iterator vi;
+  for (vi = _tex_names.begin(); vi != _tex_names.end(); ++vi, ++idx) {
+    if (vi->find(match) != string::npos) {
+      return _uvset_names[idx];
+    }
+  }
+  return "error";
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::set_shader_attributes
@@ -2232,7 +2285,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                      const MItMeshPolygon *pi, const vector_string &uvset_names) {
+                      const MItMeshPolygon *pi) {
 
   //mayaegg_cat.spam() << "  set_shader_attributes : begin\n";
 
@@ -2246,24 +2299,12 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
     mayaegg_cat.spam() << "slot " << i << ":got color_def: " << color_def << endl;
     if (color_def->_has_texture || trans_def._has_texture) {
       EggTexture tex(shader.get_name(), "");
-      string uvset_name = color_def->_texture_name;
-      // look for this name in maya's uvset_names
-      if (uvset_names.size()){
-        if (uvset_name.length()) {
-          uvset_name.resize(uvset_name.length() - 1);
-        }
-        mayaegg_cat.spam() << "looking for uvset_name: " << uvset_name << " ";
-        for (size_t uvi = 0; uvi < uvset_names.size(); ++uvi){
-          if (uvset_names[uvi].find(uvset_name) != string::npos) {
-            uvset_name = uvset_names[uvi];
-            mayaegg_cat.spam() << "found maya uvset_name: " << uvset_name << endl;
-          }
-        }
-      }
-      
-      maya_cat.debug() << "got shader name:" << shader.get_name() << endl;
-      maya_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
-      
+      mayaegg_cat.debug() << "got shader name:" << shader.get_name() << endl;
+      mayaegg_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
+
+      string uvset_name = find_uv_link(color_def->_texture_name);
+      mayaegg_cat.debug() << "ssa:corresponding uvset name is " << uvset_name << endl;
+
       if (color_def->_has_texture) {
         // If we have a texture on color, apply it as the filename.
         //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
@@ -2338,10 +2379,6 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
             if (tex.get_env_type() == EggTexture::ET_modulate) {
               tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
             }
-            /*
-            if (!color_def->_alpha_is_luminance)
-              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
-            */
           }
         }
       } else {  // trans_def._has_texture

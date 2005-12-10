@@ -38,6 +38,8 @@ public:
   MayaShaderColorDef();
   MayaShaderColorDef(MayaShaderColorDef&);
   ~MayaShaderColorDef();
+
+  string strip_prefix(string full_name);
   
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
