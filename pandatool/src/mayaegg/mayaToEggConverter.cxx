@@ -1577,6 +1577,78 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::find_uv_link
+//       Access: Private
+//  Description: given the texture name, find corresponding uvLink
+////////////////////////////////////////////////////////////////////
+string MayaToEggConverter::
+find_uv_link(string match) {
+  // find the index of this string in the _tex_names
+  int idx = 0;
+  vector_string::iterator vi;
+  mayaegg_cat.spam() << "ful: looking for " << match << endl;
+  for (vi = _tex_names.begin(); vi != _tex_names.end(); ++vi, ++idx) {
+    mayaegg_cat.spam() << "ful:" << idx << ":stored_name is " << vi->c_str() << endl;
+    if (vi->find(match) != string::npos) {
+      return _uvset_names[idx];
+    }
+  }
+  mayaegg_cat.spam() << "ful: did not find " << match << endl;
+  return "not found";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::store_tex_names
+//       Access: Private
+//  Description: check the uvsets and see what texture these are 
+//               connected to. set_shader_attribute will use this
+//               information to write eggTexture
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+make_tex_names(const MFnMesh &mesh, const MObject &mesh_object) {
+
+  // test the connection editor to gather the uvLink to the texture name
+  MFnDependencyNode dn(mesh_object);
+  MStringArray mresult;
+  MPlugArray pla;
+
+  _tex_names.clear();
+  dn.getConnections(pla);
+  mayaegg_cat.spam() << "number of connections: " << pla.length() << endl;
+  string uv1("uvLink -query -uvSet ");
+  uv1.append(mesh.name().asChar());
+  uv1.append(".uvSet[0].uvSetName");
+  MGlobal::executeCommand(MString(uv1.c_str()), mresult);
+  string tcat;
+  for (size_t k=0; k<mresult.length(); ++k) {
+    maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
+    tcat.append(mresult[k].asChar());
+  }
+  maya_cat.debug() << "saving string to look up uvset: " << tcat << endl;
+  _tex_names.push_back(tcat);
+  for (size_t j=0; j<pla.length(); ++j) {
+    MPlug pl = pla[j];
+    //maya_cat.info() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
+    string tn;
+    string ts = pl.name().asChar();
+    if (ts.find("uvSetName") != string::npos) {
+      string execString = "uvLink -query -uvSet " + ts;
+      //maya_cat.info() << "executing command: " << execString << "\n";
+      MGlobal::executeCommand(MString(execString.c_str()), mresult);
+      for (size_t k=0; k<mresult.length(); ++k) {
+        maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
+        tcat.append(mresult[k].asChar());
+      }
+      // save unique of this string
+      if (find_uv_link(tcat) == "not found") {
+        maya_cat.debug() << "saving string: " << tcat << endl;
+        _tex_names.push_back(tcat);
+      }
+    }
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::make_polyset
 //       Access: Private
 //  Description: Converts the indicated Maya polyset to a bunch of
@@ -1683,42 +1755,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     _uvset_names.push_back(maya_uvset_names[ui].asChar());
   }
 
-  // test the connection editor to gather the link to the texture name
-  MFnDependencyNode dn(mesh_object);
-  MStringArray mresult;
-  MPlugArray pla;
-
-  _tex_names.clear();
-  dn.getConnections(pla);
-  mayaegg_cat.spam() << "number of connections: " << pla.length() << endl;
-  string uv1("uvLink -query -uvSet ");
-  uv1.append(mesh.name().asChar());
-  uv1.append(".uvSet[0].uvSetName");
-  MGlobal::executeCommand(MString(uv1.c_str()), mresult);
-  string tcat;
-  for (size_t k=0; k<mresult.length(); ++k) {
-    maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
-    tcat.append(mresult[k].asChar());
-  }
-  maya_cat.debug() << "saving string to look up uvset: " << tcat << endl;
-  _tex_names.push_back(tcat);
-  for (size_t j=0; j<pla.length(); ++j) {
-    MPlug pl = pla[j];
-    //maya_cat.info() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
-    string tn;
-    string ts = pl.name().asChar();
-    if (ts.find("uvSetName") != string::npos) {
-      string execString = "uvLink -query -uvSet " + ts;
-      //maya_cat.info() << "executing command: " << execString << "\n";
-      MGlobal::executeCommand(MString(execString.c_str()), mresult);
-      for (size_t k=0; k<mresult.length(); ++k) {
-        maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
-        tcat.append(mresult[k].asChar());
-      }
-      maya_cat.debug() << "saving string: " << tcat << endl;
-      _tex_names.push_back(tcat);
-    }
-  }
+  // Get the tex_names that are connected to those uvnames
+  make_tex_names(mesh, mesh_object);
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -2254,24 +2292,6 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 
   // The surface was not soft-skinned.
   return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::find_uv_link
-//       Access: Private
-//  Description: given the texture name, find corresponding uvLink
-////////////////////////////////////////////////////////////////////
-string MayaToEggConverter::
-find_uv_link(string match) {
-  // find the index of this string in the _tex_names
-  int idx = 0;
-  vector_string::iterator vi;
-  for (vi = _tex_names.begin(); vi != _tex_names.end(); ++vi, ++idx) {
-    if (vi->find(match) != string::npos) {
-      return _uvset_names[idx];
-    }
-  }
-  return "error";
 }
 
 ////////////////////////////////////////////////////////////////////
