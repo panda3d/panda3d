@@ -118,6 +118,7 @@
 
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
+$[cdefine USE_DEBUG_PYTHON]
 /* Define if we have Python as a framework (Mac OS X).  */
 $[cdefine PYTHON_FRAMEWORK]
 

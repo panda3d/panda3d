@@ -269,6 +269,10 @@
 #define PYTHON_FRAMEWORK
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
+// By default, we'll assume the user only wants to run with Debug
+// python if he has to--that is, on Windows when building a debug build.
+#defer USE_DEBUG_PYTHON $[and $[< $[OPTIMIZE],3],$[WINDOWS_PLATFORM]]
+
 // Define the default set of libraries to be instrumented by
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure

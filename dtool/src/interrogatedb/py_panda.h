@@ -32,7 +32,7 @@
 #include <map>
 #include <string>
 
-#ifdef _DEBUG
+#ifdef USE_DEBUG_PYTHON
 #define  Py_DEBUG
 #endif
 

@@ -14,7 +14,7 @@
 #define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
 
 #define python $[PYTHON_COMMAND]
-#if $[< $[OPTIMIZE],3]
+#if $[USE_DEBUG_PYTHON]
   #define python $[PYTHON_DEBUG_COMMAND]
 #endif
 
@@ -58,7 +58,7 @@ $[python] -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #endif  // Win32
 
 #output genPyCode.py
-#! /usr/bin/env python
+#! /usr/bin/env $[python]
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
