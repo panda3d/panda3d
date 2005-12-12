@@ -106,8 +106,10 @@ class DirectScrollBar(DirectFrame):
     def setOrientation(self):
         if self['orientation'] == HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
-        else:
+        elif self['orientation'] == VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, -1))
+        else:
+            raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
 
     def setManageButtons(self):
         self.guiItem.setManagePieces(self['manageButtons'])
