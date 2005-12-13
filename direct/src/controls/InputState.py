@@ -51,6 +51,12 @@ class InputState(DirectObject.DirectObject):
         else:
             # Start a new list
             self.watching[name] = [(eventOn, eventOff)]
+
+    def watchWithModifiers(self, name, event, default = 0):
+        patterns = ('%s', 'control-%s', 'shift-control-%s', 'alt-%s',
+                    'control-alt-%s', 'shift-%s',)
+        for pattern in patterns:
+            self.watch(name, pattern % event, '%s-up' % event, default)
     
     def force(self, name, value):
         """
