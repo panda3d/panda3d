@@ -194,7 +194,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         if 1:
             # Front sphere:
-            self.cBowSphere = CollisionSphere(0.0, 35.0, -5.0, avatarRadius)
+            self.cBowSphere = CollisionSphere(0.0, self.frontSphereOffset, -5.0, avatarRadius)
             cBowSphereNode = CollisionNode('SP.cBowSphereNode')
             cBowSphereNode.addSolid(self.cBowSphere)
             self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
@@ -207,7 +207,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.pusher.addCollider(self.cBowSphereNodePath, self.avatarNodePath)
             
             # Back sphere:
-            self.cSternSphere = CollisionSphere(0.0, -20.0, -5.0, avatarRadius)
+            self.cSternSphere = CollisionSphere(0.0, self.backSphereOffset, -5.0, avatarRadius)
             cSternSphereNode = CollisionNode('SP.cSternSphereNode')
             cSternSphereNode.addSolid(self.cSternSphere)
             self.cSternSphereNodePath = self.avatarNodePath.attachNewNode(cSternSphereNode)
@@ -354,7 +354,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.floorBitmask = bitMask
 
     def initializeCollisions(self, collisionTraverser,
-            avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
+            avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0,
+            frontSphereOffset = 35.0, backSphereOffset = -80.0):
         """
         Set up the avatar collisions
         """
@@ -363,6 +364,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
+        self.frontSphereOffset = frontSphereOffset
+        self.backSphereOffset = backSphereOffset
 
     def deleteCollisions(self):
         assert(self.debugPrint("deleteCollisions()"))
