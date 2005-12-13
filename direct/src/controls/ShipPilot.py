@@ -805,7 +805,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         # Check to see if we're moving at all:
-        if self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
+        physVel = physObject.getVelocity()
+        physVelLen = physVel.length()
+        if (physVelLen!=0. or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero()):
             distance = dt * self.__speed
             goForward = True
             if (distance < 0):
@@ -867,19 +869,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
         else:
+            # even if there are no active inputs, we still might be moving
+            assert physObject.getVelocity().length() == 0.
             self.__vel.set(0.0, 0.0, 0.0)
             goForward = True
 
         
         #*#
-        speed = physObject.getVelocity()
-        speedLen = speed.length()
+        speed = physVel
         if (goForward):
-            if speedLen > maxSpeed:
+            if physVelLen > maxSpeed:
                 speed.normalize()
                 speed *= maxSpeed
         else:
-            if speedLen > self.ship.maxReverseSpeed:
+            if physVelLen > self.ship.maxReverseSpeed:
                 speed.normalize()
                 speed *= self.ship.maxReverseSpeed
 
