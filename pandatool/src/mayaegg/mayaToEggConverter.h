@@ -117,7 +117,7 @@ private:
   // I ran into core dumps trying to pass around a MFnMesh object by
   // value.  From now on, all MFn* objects will be passed around by
   // reference.
-  void make_tex_names(const MFnMesh &mesh, const MObject &mesh_object);
+  //  void make_tex_names(const MFnMesh &mesh, const MObject &mesh_object);
 
   void make_nurbs_surface(MayaNodeDesc *node_desc,
                           const MDagPath &dag_path, 
@@ -152,6 +152,7 @@ private:
   bool reparent_decals(EggGroupNode *egg_parent);
 
   string find_uv_link(string match);
+  //  string find_uv_link_2(string match, const MObjectArray &textures);
 
   string _program_name;
 
