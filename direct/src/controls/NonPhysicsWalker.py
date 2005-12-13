@@ -184,14 +184,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         onScreenDebug.add("controls", "NonPhysicsWalker")
 
-    def handleAvatarControls(self, task):
-        """
-        Check on the arrow keys and update the avatar.
-        """
-        if not self.lifter.hasContact():
-            # hack fix for falling through the floor:
-            messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
-
+    def _calcSpeeds(self):
         # get the button states:
         forward = inputState.isSet("forward")
         reverse = inputState.isSet("reverse")
@@ -209,7 +202,17 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-         
+
+    def handleAvatarControls(self, task):
+        """
+        Check on the arrow keys and update the avatar.
+        """
+        if not self.lifter.hasContact():
+            # hack fix for falling through the floor:
+            messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
+
+        self._calcSpeeds()
+            
         if __debug__:
             debugRunning = inputState.isSet("debugRunning")
             if debugRunning:
