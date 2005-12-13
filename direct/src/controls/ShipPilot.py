@@ -218,6 +218,12 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
             self.pusher.addCollider(self.cSternSphereNodePath, self.avatarNodePath)
 
+            # hide other things on my ship that these spheres might collide
+            # with and which I dont need anyways...
+            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            if not shipCollWall.isEmpty():
+                shipCollWall.stash()
+            
     def takedownPhysics(self):
         assert(self.debugPrint("takedownPhysics()"))
         if hasattr(self, "phys"):
