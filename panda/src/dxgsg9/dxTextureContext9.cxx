@@ -943,9 +943,10 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
           g = (pixel & greenmask) >> greenshift;
           r = (pixel & redmask) >> redshift;
 
-          *dest_byte += b;
-          *dest_byte += g;
-          *dest_byte += r;
+          *dest_byte++ = b;
+          *dest_byte++ = g;
+          *dest_byte++ = r;
+
     source_word++;
         }
   surface_bytes += byte_pitch;
