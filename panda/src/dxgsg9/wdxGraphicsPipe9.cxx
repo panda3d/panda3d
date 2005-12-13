@@ -19,6 +19,7 @@
 #include "wdxGraphicsPipe9.h"
 #include "dxGraphicsDevice9.h"
 #include "wdxGraphicsWindow9.h"
+#include "wdxGraphicsBuffer9.h"
 #include "config_dxgsg9.h"
 
 TypeHandle wdxGraphicsPipe9::_type_handle;
@@ -95,6 +96,18 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
   // are really opened until wdxGraphicsWindow9->open_window() is
   // called
   return new wdxGraphicsWindow9(this, gsg, name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsPipe9::make_buffer
+//       Access: Protected, Virtual
+//  Description: Creates a new offscreen buffer on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsBuffer) wdxGraphicsPipe9::
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size) {
+
+  return new wdxGraphicsBuffer9(this, gsg, name, x_size, y_size);
 }
 
 ////////////////////////////////////////////////////////////////////

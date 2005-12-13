@@ -117,6 +117,9 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
+
+  // default render to texture format
+  _render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1729,6 +1732,29 @@ reset() {
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
+
+  // check for render to texture support
+  D3DDEVICE_CREATION_PARAMETERS creation_parameters;
+
+  _d3d_device->GetCreationParameters (&creation_parameters);
+
+  hr = _screen->_d3d9->CheckDeviceFormat
+     (creation_parameters.AdapterOrdinal,
+      creation_parameters.DeviceType,
+      _screen->_display_mode.Format,
+      D3DUSAGE_RENDERTARGET,
+      D3DRTYPE_TEXTURE,
+      _render_to_texture_d3d_format);
+  if (SUCCEEDED (hr)) {
+    _supports_render_texture = true;
+  }
+  else {
+    _supports_render_texture = false;
+  }
+
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug() << "Render to Texture Support = " << _supports_render_texture << "\n";
+  }
 
   _supports_3d_texture = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_VOLUMEMAP) != 0);
   if (_supports_3d_texture) {

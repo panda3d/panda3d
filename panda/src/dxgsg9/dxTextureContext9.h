@@ -77,6 +77,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wdxGraphicsBuffer9;
 };
 
 #include "dxTextureContext9.I"

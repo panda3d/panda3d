@@ -1,4 +1,5 @@
 #include "dxgsg9base.h"
+#include "wdxGraphicsBuffer9.cxx"
 #include "config_dxgsg9.cxx"
 #include "dxTextureContext9.cxx"
 #include "dxVertexBufferContext9.cxx"
@@ -7,3 +8,4 @@
 #include "wdxGraphicsPipe9.cxx"
 #include "wdxGraphicsWindow9.cxx"
 #include "dxGraphicsDevice9.cxx"
+

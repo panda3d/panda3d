@@ -38,7 +38,9 @@
     dxTextureContext9.cxx \
     dxGeomMunger9.cxx \
     dxGraphicsDevice9.cxx \
-    wdxGraphicsPipe9.cxx wdxGraphicsWindow9.cxx
+    wdxGraphicsPipe9.cxx \
+    wdxGraphicsWindow9.cxx \
+    wdxGraphicsBuffer9.cxx
 
 
 #end lib_target

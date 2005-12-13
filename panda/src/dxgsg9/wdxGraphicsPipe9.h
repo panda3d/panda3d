@@ -59,7 +59,8 @@ public:
 
 protected:
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, const string &name);
-
+  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size);
 private:
   bool init();
   bool find_all_card_memavails();
