@@ -104,6 +104,7 @@ int render_target_index;
       state = TRUE;
     }
   }
+
   // set render context
   if (state && _dx_texture_context9)
   {
@@ -111,13 +112,14 @@ int render_target_index;
   int tex_index;
   DXTextureContext9 *dx_texture_context9;
 
-// **** ??? assume 0
+// ***** assume 0 ???
   tex_index = 0;
 
   Texture *tex = get_texture(tex_index);
 
 // ***** ??? CAST
 
+// cache
   dx_texture_context9 = _dx_texture_context9;
 
     UINT mipmap_level;
@@ -125,6 +127,7 @@ int render_target_index;
     mipmap_level = 0;
     _direct_3d_surface = NULL;
 
+// render to texture 2D
 IDirect3DTexture9 *direct_3d_texture;
 
 direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
@@ -139,19 +142,19 @@ direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
       }
     }
 
+// render to cubemap face
 IDirect3DCubeTexture9 *direct_3d_cube_texture;
 
 direct_3d_cube_texture = dx_texture_context9 -> _d3d_cube_texture;
 
     if (direct_3d_cube_texture) {
-
-// ***** check for legal cubemap index
-
-      hr = direct_3d_cube_texture -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
-      if (SUCCEEDED (hr)) {
-        hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _direct_3d_surface);
+      if (_cube_map_index >= 0 && _cube_map_index < 6) {
+        hr = direct_3d_cube_texture -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
         if (SUCCEEDED (hr)) {
+          hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _direct_3d_surface);
+          if (SUCCEEDED (hr)) {
 
+          }
         }
       }
     }
@@ -175,6 +178,7 @@ end_render_texture() {
   // Find the color texture, if there is one. That one can be bound to
   // the framebuffer.  All others must be marked RTM_copy_to_texture.
 
+// ??? is this really needed ?
   int tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
@@ -235,7 +239,6 @@ select_cube_map(int cube_map_index) {
   DCAST_INTO_V(dxgsg, _gsg);
 
   _cube_map_index = cube_map_index;
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,6 +255,7 @@ make_current() {
   DXGraphicsStateGuardian9 *dxgsg;
   DCAST_INTO_V(dxgsg, _gsg);
 
+  // do nothing here
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,7 +343,7 @@ open_buffer() {
   Texture *tex = get_texture(tex_index);
   TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
 
-// free managed texture ???
+// ***** release managed texture ???
 
 
 
@@ -354,6 +358,7 @@ _dx_texture_context9 = dx_texture_context9;
     dxgsg -> _render_to_texture_d3d_format, dx_texture_context9,
     dxgsg -> _d3d_device);
 
+  // override texture managed format
   dx_texture_context9 -> _d3d_format = dxgsg -> _render_to_texture_d3d_format;
 
   _is_valid = true;
