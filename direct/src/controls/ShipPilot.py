@@ -91,7 +91,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 self.ship.acceleration = 60
                 self.ship.maxSpeed = 12
                 self.ship.reverseAcceleration = 10
-                self.ship.maxReverseSpeed = 20
+                self.ship.maxReverseSpeed = 2
                 self.ship.turnRate = 3
                 self.ship.maxTurn = 30
                 self.ship.anchorDrag = .9
@@ -801,6 +801,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # Check to see if we're moving at all:
         if self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
             distance = dt * self.__speed
+            goForward = True
+            if (distance < 0):
+                goForward = False
+                distance /= 5
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
             
@@ -819,7 +823,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             newVector = Vec3(step)
             #newVector=Vec3(rotMat.xform(newVector))
             #maxLen = maxSpeed
-            maxLen = self.ship.acceleration
+            if (goForward):
+                maxLen = self.ship.acceleration
+            else:
+                maxLen = self.ship.reverseAcceleration
             if newVector.length() > maxLen:
                 newVector.normalize()
                 newVector *= maxLen
@@ -855,14 +862,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             messenger.send("avatarMoving")
         else:
             self.__vel.set(0.0, 0.0, 0.0)
+            goForward = True
 
         
         #*#
         speed = physObject.getVelocity()
         speedLen = speed.length()
-        if speedLen > maxSpeed:
-            speed.normalize()
-            speed *= maxSpeed
+        if (goForward):
+            if speedLen > maxSpeed:
+                speed.normalize()
+                speed *= maxSpeed
+        else:
+            if speedLen > self.ship.maxReverseSpeed:
+                speed.normalize()
+                speed *= self.ship.maxReverseSpeed
 
         #speed *= 1.0 - dt * 0.05
         physObject.setVelocity(speed)
