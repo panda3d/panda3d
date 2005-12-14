@@ -131,9 +131,11 @@ DoGenPyCode.native = $[if $[PYTHON_NATIVE],1,0]
 #if $[not $[CTPROJS]]
 // Since the user is not using ctattach, bake these variables in too.
 DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
-DoGenPyCode.outputDir = r'$[osfilename $[install_lib_dir]/pandac]'
+DoGenPyCode.outputCodeDir = r'$[osfilename $[install_lib_dir]/pandac]'
+DoGenPyCode.outputHTMLDir = r'$[osfilename $[install_data_dir]/doc]'
 DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/$[extensions_name]]'
 DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
+DoGenPyCode.pythonSourcePath = r'$[osfilename $[TOPDIR]]'
 
 #else
 # The user is expected to be using ctattach, so don't bake in the
@@ -141,9 +143,11 @@ DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
 # ctattach.
 
 DoGenPyCode.directDir = directDir
-DoGenPyCode.outputDir = os.path.join(directDir, 'built', 'lib', 'pandac')
+DoGenPyCode.outputCodeDir = os.path.join(directDir, 'built', 'lib', 'pandac')
+DoGenPyCode.outputHTMLDir = os.path.join(directDir, 'built', 'shared', 'doc')
 DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
+DoGenPyCode.pythonSourcePath = []
 
 # Look for additional packages (other than the basic three)
 # that the user might be dynamically attached to.
@@ -166,6 +170,8 @@ for package in packages:
             DoGenPyCode.etcPath.append(etcDir)
 
         if package not in ['WINTOOLS', 'DTOOL', 'DIRECT', 'PANDA']:
+	    DoGenPyCode.pythonSourcePath.append(packageDir)
+
             libDir = os.path.join(packageDir, 'built', 'lib')
             try:
                 files = os.listdir(libDir)

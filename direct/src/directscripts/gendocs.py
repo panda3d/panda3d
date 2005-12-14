@@ -5,15 +5,18 @@
 # How to use this module:
 #
 #   from direct.directscripts import gendocs
-#   gendocs.generate(version, indir, directdir, docdir, header, footer, urlprefix, urlsuffix)
+#   gendocs.generate(version, indirlist, directdirlist, docdir, header, footer, urlprefix, urlsuffix)
 #
 #   - version is the panda version number
 #
-#   - indir is the name of a directory containing the "xxx.in"
-#     files that interrogate generates.  No slash at end.
+#   - indirlist is the name of a directory, or a list of directories,
+#     containing the "xxx.in" files that interrogate generates.  No
+#     slash at end.
 #
-#   - directdir is the name of a directory containing the 
-#     source code for "direct."  No slash at end.
+#   - directdirlist is the name of a directory, or a list of
+#     directories, containing the source code for "direct," as well as
+#     for other Python-based trees that should be included in the
+#     documentation pages.  No slash at end.
 #
 #   - docdir is the name of a directory into which HTML files
 #     will be emitted.  No slash at end.
@@ -73,15 +76,18 @@ def writeFile(wfile,data):
     except:
         sys.exit("Cannot write "+wfile)
 
-def findFiles(dir, ext, ign, list):
-    for file in os.listdir(dir):
-        full = dir + "/" + file
-        if (ign.has_key(full)==0) and (ign.has_key(file)==0):
-            if (os.path.isfile(full)):
-                if (file.endswith(ext)):
-                    list.append(full)
-            elif (os.path.isdir(full)):
-                findFiles(full, ext, ign, list)
+def findFiles(dirlist, ext, ign, list):
+    if isinstance(dirlist, types.StringTypes):
+        dirlist = [dirlist]
+    for dir in dirlist:
+        for file in os.listdir(dir):
+            full = dir + "/" + file
+            if (ign.has_key(full)==0) and (ign.has_key(file)==0):
+                if (os.path.isfile(full)):
+                    if (file.endswith(ext)):
+                        list.append(full)
+                elif (os.path.isdir(full)):
+                    findFiles(full, ext, ign, list)
 
 def textToHTML(comment,sep,delsection=None):
     sections = [""]
@@ -477,8 +483,9 @@ class CodeDatabase:
         self.funcs = {}
         self.goodtypes = {}
         self.globalfn = []
+        print "Reading C++ source files"
         for cxx in cxxlist:
-            print "Reading source file "+cxx
+            #print "Reading source file "+cxx
             tokzr = InterrogateTokenizer(cxx)
             idb = InterrogateDatabase(tokzr)
             for type in idb.types.values():
@@ -494,8 +501,9 @@ class CodeDatabase:
                     self.globalfn.append("GLOBAL."+func.pyname)
                 else:
                     self.funcs[type.scopedname+"."+func.pyname] = func
+        print "Reading Python sources files"
         for py in pylist:
-            print "Reading source file "+py
+            #print "Reading source file "+py
             pyinf = ParseTreeInfo(readFile(py), py)
             for type in pyinf.class_info.keys():
                 typinf = pyinf.class_info[type]
@@ -663,23 +671,29 @@ def generateLinkTable(table, cols, urlprefix, urlsuffix):
     result = result + "</table>\n"
     return result
 
-def generate(pversion, indir, directdir, docdir, header, footer, urlprefix, urlsuffix):
+def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlprefix, urlsuffix):
     ignore = {}
     ignore["__init__.py"] = 1
-    ignore[directdir + "/src/directscripts"] = 1
-    ignore[directdir + "/src/extensions"] = 1
-    ignore[directdir + "/src/extensions_native"] = 1
-    ignore[directdir + "/src/ffi"] = 1
+
+    if isinstance(directdirlist, types.StringTypes):
+        directdirlist = [directdirlist]
+    for directdir in directdirlist:
+        ignore[directdir + "/src/directscripts"] = 1
+        ignore[directdir + "/src/extensions"] = 1
+        ignore[directdir + "/src/extensions_native"] = 1
+        ignore[directdir + "/src/ffi"] = 1
+        ignore[directdir + "/built"] = 1
     cxxfiles = []
     pyfiles = []
-    findFiles(indir,     ".in", ignore, cxxfiles)
-    findFiles(directdir, ".py", ignore, pyfiles)
+    findFiles(indirlist,     ".in", ignore, cxxfiles)
+    findFiles(directdirlist, ".py", ignore, pyfiles)
     code = CodeDatabase(cxxfiles, pyfiles)
     classes = code.getClassList()[:]
     classes.sort()
     xclasses = classes[:]
+    print "Generating HTML pages"
     for type in classes:
-        print "Generating page for class "+type
+        #print "Generating page for class "+type
         body = "<h1>" + type + "</h1>\n"
         comment = code.getClassComment(type)
         body = body + "<ul>\n" + comment + "</ul>\n\n"

@@ -7,6 +7,7 @@ import sys
 import os
 import glob
 import types
+import time
 from direct.ffi import FFIConstants
 
 # Define a help string for the user
@@ -32,10 +33,13 @@ default.
 Options:
   -h          print this message
   -v          verbose
-  -d dir      directory to write output code
+  -d          generate HTML documentation too
+  -C dir      directory to write output code
+  -H dir      directory to write output HTML
   -x dir      directory to pull extension code from
   -i lib      interrogate library
   -e dir      directory to search for *.in files (may be repeated)
+  -p dir      directory to search for Python source files (may be repeated)
   -r          remove the default library list; instrument only named libraries
   -O          no C++ comments or assertion statements
   -n          Don't use squeezeTool to squeeze the result into one .pyz file
@@ -46,25 +50,44 @@ of libraries that are to be instrumented.
 
 """
 
+HTMLHeader = """
+<html>
+<head>
+<title>Panda3D documentation generated %s</title>
+</head>
+<body>
+"""
+
+HTMLFooter = """
+</body>
+</html>
+"""
+
 # Initialize variables
-outputDir = ''
+outputCodeDir = ''
+outputHTMLDir = ''
 directDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
 etcPath = []
+pythonSourcePath = []
 doSqueeze = True
 deleteSourceAfterSqueeze = True
+doHTML = False
 native = False  # This is set by genPyCode.py
 
 def doGetopts():
-    global outputDir
+    global outputCodeDir
+    global outputHTMLDir
     global extensionsDir
     global interrogateLib
     global codeLibs
     global doSqueeze
     global deleteSourceAfterSqueeze
+    global doHTML
     global etcPath
+    global pythonSourcePath
 
     # These options are allowed but are flagged as warnings (they are
     # deprecated with the new genPyCode script):
@@ -79,7 +102,7 @@ def doGetopts():
 
     # Extract the args the user passed in
     try:
-        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:Ni:e:rnsgtpom')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'hvdOC:H:x:Ni:e:p:rns')
     except Exception, e:
         # User passed in a bad option, print the error and the help, then exit
         print e
@@ -98,13 +121,19 @@ def doGetopts():
             else:
                 FFIConstants.notify.setDebug(1)
         elif (flag == '-d'):
-            outputDir = value
+            doHTML = True
+        elif (flag == '-C'):
+            outputCodeDir = value
+        elif (flag == '-H'):
+            outputHTMLDir = value
         elif (flag == '-x'):
             extensionsDir = value
         elif (flag == '-i'):
             interrogateLib = value
         elif (flag == '-e'):
             etcPath.append(value)
+        elif (flag == '-p'):
+            pythonSourcePath.append(value)
         elif (flag == '-r'):
             codeLibs = []
         elif (flag == '-O'):
@@ -114,8 +143,6 @@ def doGetopts():
             doSqueeze = False
         elif (flag == '-s'):
             deleteSourceAfterSqueeze = False
-        elif (flag in ['-g', '-t', '-p', '-o']):
-            FFIConstants.notify.warning("option is deprecated: %s" % (flag))
             
         else:
             FFIConstants.notify.error('illegal option: ' + flag)
@@ -141,7 +168,8 @@ def doGetopts():
         
 
 def doErrorCheck():
-    global outputDir
+    global outputCodeDir
+    global outputHTMLDir
     global extensionsDir
     global interrogateLib
     global codeLibs
@@ -155,15 +183,26 @@ def doErrorCheck():
         FFIConstants.notify.debug('Setting interrogate library to: ' + interrogateLib)
         FFIConstants.InterrogateModuleName = interrogateLib
 
-    if (not outputDir):
-        FFIConstants.notify.info('Setting output directory to current directory')
-        outputDir = '.'
-    elif (not os.path.exists(outputDir)):
-        FFIConstants.notify.info('Directory does not exist, creating: ' + outputDir)
-        os.mkdir(outputDir)
-        FFIConstants.notify.info('Setting output directory to: ' + outputDir)
+    if (not outputCodeDir):
+        FFIConstants.notify.info('Setting output code directory to current directory')
+        outputCodeDir = '.'
+    elif (not os.path.exists(outputCodeDir)):
+        FFIConstants.notify.info('Directory does not exist, creating: ' + outputCodeDir)
+        os.mkdir(outputCodeDir)
+        FFIConstants.notify.info('Setting output code directory to: ' + outputCodeDir)
     else:
-        FFIConstants.notify.info('Setting output directory to: ' + outputDir)
+        FFIConstants.notify.info('Setting output code directory to: ' + outputCodeDir)
+
+    if doHTML:
+        if (not outputHTMLDir):
+            FFIConstants.notify.info('Setting output HTML directory to current directory')
+            outputHTMLDir = '.'
+        elif (not os.path.exists(outputHTMLDir)):
+            FFIConstants.notify.info('Directory does not exist, creating: ' + outputHTMLDir)
+            os.makedirs(outputHTMLDir)
+            FFIConstants.notify.info('Setting output HTML directory to: ' + outputHTMLDir)
+        else:
+            FFIConstants.notify.info('Setting output HTML directory to: ' + outputHTMLDir)
 
 
     if (not extensionsDir):
@@ -182,26 +221,26 @@ def doErrorCheck():
         FFIConstants.CodeModuleNameList = codeLibs
 
 def generateNativeWrappers():
-    # Empty out the codeDir of unnecessary crud from previous runs
-    # before we begin.
-    for file in os.listdir(outputDir):
-        pathname = os.path.join(outputDir, file)
+    # Empty out the output directories of unnecessary crud from
+    # previous runs before we begin.
+    for file in os.listdir(outputCodeDir):
+        pathname = os.path.join(outputCodeDir, file)
         if not os.path.isdir(pathname):
             os.unlink(pathname)
 
     # Generate __init__.py
-    initFilename = os.path.join(outputDir, '__init__.py')
+    initFilename = os.path.join(outputCodeDir, '__init__.py')
     init = open(initFilename, 'w')
 
     # Generate PandaModules.py
-    pandaModulesFilename = os.path.join(outputDir, 'PandaModules.py')
+    pandaModulesFilename = os.path.join(outputCodeDir, 'PandaModules.py')
     pandaModules = open(pandaModulesFilename, 'w')
 
     # Copy in any helper classes from the extensions_native directory
     extensionHelperFiles = [ 'extension_native_helpers.py' ]
     for name in extensionHelperFiles:
         inFilename = os.path.join(extensionsDir, name)
-        outFilename = os.path.join(outputDir, name)
+        outFilename = os.path.join(outputCodeDir, name)
         if os.path.exists(inFilename):
             inFile = open(inFilename, 'r')
             outFile = open(outFilename, 'w')
@@ -215,7 +254,7 @@ def generateNativeWrappers():
 
         pandaModules.write('from %sModules import *\n' % (moduleName))
 
-        moduleModulesFilename = os.path.join(outputDir, '%sModules.py' % (moduleName))
+        moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
         moduleModules = open(moduleModulesFilename, 'w')
 
         moduleModules.write('from %s import *\n\n' % (moduleName))
@@ -232,7 +271,8 @@ def generateNativeWrappers():
         
 
 def run():
-    global outputDir
+    global outputCodeDir
+    global outputHTMLDir
     global directDir
     global extensionsDir
     global interrogateLib
@@ -240,6 +280,7 @@ def run():
     global doSqueeze
     global deleteSourceAfterSqueeze
     global etcPath
+    global pythonSourcePath
 
     doGetopts()
     doErrorCheck()
@@ -251,8 +292,17 @@ def run():
     else:
         from direct.ffi import FFIInterrogateDatabase
         db = FFIInterrogateDatabase.FFIInterrogateDatabase(etcPath = etcPath)
-        db.generateCode(outputDir, extensionsDir)
+        db.generateCode(outputCodeDir, extensionsDir)
 
         if doSqueeze:
-            db.squeezeGeneratedCode(outputDir, deleteSourceAfterSqueeze)
+            db.squeezeGeneratedCode(outputCodeDir, deleteSourceAfterSqueeze)
 
+    if doHTML:
+        from direct.directscripts import gendocs
+        from pandac.PandaModules import PandaSystem
+        versionString = '%s %s' % (
+            PandaSystem.getDistributor(), PandaSystem.getVersionString())
+
+        gendocs.generate(versionString, etcPath, pythonSourcePath,
+                         outputHTMLDir, HTMLHeader % time.asctime(),
+                         HTMLFooter, '', '.html')
