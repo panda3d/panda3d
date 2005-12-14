@@ -792,7 +792,7 @@ class LevelEditor(NodePath, PandaObject):
             self.traversalOn()
 
     def configureDriveModeCollisionData(self):
-        """
+        """initializeCollisions(self)
         Set up the local avatar for collisions
         """
         # Set up the collision sphere
@@ -1488,6 +1488,7 @@ class LevelEditor(NodePath, PandaObject):
         self.createNewGroup(type = 'vis')
 
     def createNewGroup(self, type = 'dna'):
+        print "createNewGroup"
         """ Create a new DNA Node group under the active parent """
         # Create a new DNA Node group
         if type == 'dna':
@@ -1538,6 +1539,7 @@ class LevelEditor(NodePath, PandaObject):
         self.initDNANode(newDNALandmarkBuilding)
 
     def addProp(self, propType):
+        print "addProp %s " % propType
         # Record new prop type
         self.setCurrent('prop_texture', propType)
         # And create new prop
@@ -1575,11 +1577,13 @@ class LevelEditor(NodePath, PandaObject):
     def createDoor(self, type):
         if (type == 'landmark_door'):
             newDNADoor = DNADoor('door')
+            print "createDoor %s" % type
             if not (self.getCurrent('door_double_texture')):
                 doorStyles = self.styleManager.attributeDictionary['door_double_texture'].getList()[1:]
                 defaultDoorStyle = whrandom.choice(doorStyles)
                 self.setCurrent('door_double_texture', defaultDoorStyle)
             newDNADoor.setCode(self.getCurrent('door_double_texture'))
+            print "doorcolor = %s" % self.getCurrent('door_color')
             newDNADoor.setColor(self.getCurrent('door_color'))
         elif (type == 'door'):
             newDNADoor = DNAFlatDoor('door')
@@ -2368,7 +2372,7 @@ class LevelEditor(NodePath, PandaObject):
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
         handlesToCam = direct.widget.getPos(direct.camera)
-        handlesToCam = handlesToCam * (direct.dr.near/handlesToCam[1])
+        handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
         if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.remove('manipulateCamera')
@@ -3373,6 +3377,16 @@ class LevelEditor(NodePath, PandaObject):
         self.reparentStreetBuildings(self.NPToplevel)
         return newGroup
 
+    def makeNewBuildingGroup(self, sequenceNum, side):
+        print "-------------------------- new building group %s ------------------------" % sequenceNum
+        # Now create a new group with just the buildings
+        self.addGroup(self.NPToplevel)
+        newGroup = self.NPParent
+        groupName = 'Buildings_' + side + "-" + str(sequenceNum)
+        newGroup.setName(groupName)
+        self.setName(newGroup, groupName)
+        direct.setActiveParent(newGroup)
+
     def adjustPropChildren(self, nodePath, maxPropOffset = -4):
         for np in nodePath.getChildrenAsList():
             dnaNode = self.findDNANode(np)
@@ -3446,65 +3460,183 @@ class LevelEditor(NodePath, PandaObject):
             parent = self.panel.component('hull'))
         if streetCurveFilename:
             modelFile = loader.loadModel(Filename.fromOsSpecific(streetCurveFilename))
-            curve = modelFile.find('**/+ClassicNurbsCurve')
-            if not curve.isEmpty():
-                return curve.node()
-            else:
-                return None
+            #curves = modelFile.findAllMatches('**/+ClassicNurbsCurve').asList()
+            curves = {'inner':[], 'outer':[]}
+            curvesInner = modelFile.findAllMatches('**/*curve_inner*').asList()
+            curvesOuter = modelFile.findAllMatches('**/*curve_outer*').asList()
+            # return an ordered list
+            for i in range(len(curvesInner)):
+                curve = modelFile.find('**/*curve_inner_'+str(i))
+                if not curve.isEmpty():
+                    # Mark whether it is a section of buildings or trees
+                    curveType = curve.getName().split("_")[0]
+                    curves['inner'].append([curve.node(),curveType])
+            for i in range(len(curvesOuter)):
+                curve = modelFile.find('**/*curve_outer_'+str(i))
+                if not curve.isEmpty():
+                    # Mark whether it is a section of buildings or trees
+                    curveType = curve.getName().split("_")[0]
+                    curves['outer'].append([curve.node(),curveType])
+            print "loaded curves: %s" % curves
+            return curves
         else:
             return None
 
     def duplicateFlatBuilding(self, oldDNANode):
         # Yes, make a new copy of the dnaNode
+        print "a"
         dnaNode = oldDNANode.__class__(oldDNANode)
+        print "b"
         dnaNode.setWidth(oldDNANode.getWidth())
         # Add the DNA to the active parent
+        print "c"
         self.DNAParent.add(dnaNode)
         # And create the geometry
+        print "d %s" % (oldDNANode)
         newNodePath = dnaNode.traverse(self.NPParent, DNASTORE, 1)
+        print "e"
         return newNodePath
 
+    def getBldg(self, bldgIndex, bldgs):
+        numBldgs = len(bldgs)
+        if bldgIndex < numBldgs:
+            # Use original
+            print "using original bldg"
+            bldg = bldgs[bldgIndex]
+            bldgIndex += 1
+        else:
+            # Make a copy
+            oldBldg = bldgs[bldgIndex % numBldgs]
+            bldgIndex += 1
+
+            oldBldg.select()
+            oldDNANode = self.findDNANode(oldBldg)
+            nodeClass = DNAGetClassType(oldDNANode)
+            if nodeClass.eq(DNA_LANDMARK_BUILDING):
+                print "making landmark copy"
+                # Remove white and dark grey doors from color list
+                colorList = self.getAttribute('door_color').getList()
+                colorList = colorList[1:3] + colorList[4:len(colorList)]
+                # Set a random door color
+                doorColor = whrandom.choice(colorList)
+                self.setCurrent('door_color', doorColor)
+                self.addLandmark(oldDNANode.getCode(), oldDNANode.getBuildingType())
+                bldg = self.lastNodePath
+            else:
+                print "making flatbuilding copy"
+                bldg = self.duplicateFlatBuilding(oldDNANode)
+        return bldg, bldgIndex
+        
     def makeStreetAlongCurve(self):
-        curve = self.loadStreetCurve()
-        if curve == None:
+        curves = self.loadStreetCurve()
+        if curves == None:
             return
+
         direct.grid.fXyzSnap = 0
         direct.grid.fHprSnap = 0
         self.panel.fPlaneSnap.set(0)
         bldgGroup = self.consolidateStreetBuildings()
         bldgs = bldgGroup.getChildrenAsList()
-        currT = 0
-        endT = curve.getMaxT()
+
+        # streetWidth puts buildings on the edge of the street, not the middle
         currPoint = Point3(0)
         bldgIndex = 0
-        numBldgs = len(bldgs)
-        while currT < endT:
-            if bldgIndex < numBldgs:
-                # Use original
-                bldg = bldgs[bldgIndex]
-                bldgIndex += 1
-            else:
-                # Make a copy
-                oldBldg = bldgs[bldgIndex % numBldgs]
-                bldgIndex += 1
-                oldBldg.select()
-                oldDNANode = self.findDNANode(oldBldg)
-                nodeClass = DNAGetClassType(oldDNANode)
-                if nodeClass.eq(DNA_LANDMARK_BUILDING):
-                    self.addLandmark(oldDNANode.getCode(), oldDNANode.getBuildingType())
-                    bldg = self.lastNodePath
-                else:
-                    bldg = self.duplicateFlatBuilding(oldDNANode)
-            curve.getPoint(currT, currPoint)
-            bldg.setPos(currPoint)
-            bldgWidth = self.getBuildingWidth(bldg)
-            # Adjust grid orientation based upon next point along curve
-            print bldgIndex, currT
-            currT, currPoint = self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, rd = 0)
-            bldg.lookAt(currPoint)
-            bldg.setH(bldg, 90)
-            self.updateSelectedPose([bldg])
-            self.adjustPropChildren(bldg)
+
+        # Populate buildings on both sides of the street
+        sides = ['inner', 'outer']
+        maxGroupWidth = 500
+        for side in sides:
+            print "Building street for %s side" % side
+            # Subdivide the curve into different groups.  
+            bldgGroupIndex = 0
+            curGroupWidth = 0
+            self.makeNewBuildingGroup(bldgGroupIndex, side)
+            
+            for curve, curveType in curves[side]:
+                print "----------------- curve(%s): %s --------------- " % (side, curve)
+                currT = 0
+                endT = curve.getMaxT()
+
+                while currT < endT:
+                    if curveType == 'urban':
+                        bldg, bldgIndex = self.getBldg(bldgIndex, bldgs)
+                        curve.getPoint(currT, currPoint)
+
+                        if side == "inner":
+                            heading = 90
+                        else:
+                            heading = -90
+                        bldg.setPos(currPoint)
+                        bldgWidth = self.getBuildingWidth(bldg)
+
+                        curGroupWidth += bldgWidth
+                        # Adjust grid orientation based upon next point along curve
+                        currT, currPoint = self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, rd = 0)
+                        bldg.lookAt(Point3(currPoint))
+                        bldg.setH(bldg, heading)
+
+                        # Shift building forward if it is on the out track, since we just turned it away from
+                        # the direction of the track
+                        if side == "outer":
+                            bldg.setPos(currPoint)
+
+                        self.updateSelectedPose([bldg])
+                        self.adjustPropChildren(bldg)
+                        direct.reparent(bldg, fWrt = 1)
+                        print bldgIndex
+                    elif curveType == 'trees':
+                        curve.getPoint(currT, currPoint)
+                        # trees are spaced anywhere from 40-80 ft apart
+                        treeWidth = whrandom.randint(40,80)
+                        curGroupWidth += treeWidth
+                        # Adjust grid orientation based upon next point along curve
+                        currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
+                        
+                        # Add some trees
+                        tree = whrandom.choice(["prop_tree_small_ul",
+                                                "prop_tree_small_ur",
+                                                "prop_tree_large_ur",
+                                                "prop_tree_large_ul"])
+                        self.addProp(tree)
+                        for selectedNode in direct.selected:
+                            # Move it
+                            selectedNode.setPos(currPoint)
+                            # Snap objects to grid and update DNA if necessary
+                            self.updateSelectedPose(direct.selected.getSelectedAsList())
+                    elif curveType == 'bridge':
+                        # Don't add any dna for the bridge sections, but add the length
+                        # of the bridge so we can increment our building groups correctly
+                        print "adding bridge (%s), curT = %s" % (side, currT)
+                        bridgeWidth = 1050
+                        curGroupWidth += bridgeWidth
+                        #currT, currPoint = self.findBldgEndPoint(bridgeWidth, curve, currT, currPoint, rd = 0)
+                        print "currT after adding bridge = %s" % currT
+                        # force move to next curve
+                        currT = endT + 1
+                    elif curveType == 'tunnel':
+                        # Don't add any dna for the tunnel sections, but add the length
+                        # of the bridge so we can increment our building groups correctly
+                        print "adding tunnel (%s), curT = %s" % (side, currT)
+                        tunnelWidth = 775
+                        curGroupWidth += tunnelWidth
+                        #currT, currPoint = self.findBldgEndPoint(tunnelWidth, curve, currT, currPoint, rd = 0)
+                        print "currT after adding tunnel = %s" % currT
+                        # force move to next curve
+                        currT = endT + 1
+                    
+                    # Check if we need a new group yet
+                    if curGroupWidth > maxGroupWidth:
+                        print "curGroupWidth %s > %s" % (curGroupWidth, maxGroupWidth)
+                        diffGroup = curGroupWidth - maxGroupWidth
+                        while diffGroup > 0:
+                            bldgGroupIndex += 1
+                            self.makeNewBuildingGroup(bldgGroupIndex, side)
+                            print "adding group %s (%s)" % (bldgGroupIndex, diffGroup)
+                            diffGroup -= maxGroupWidth
+                        curGroupWidth = 0
+                    print currT, curGroupWidth
+
+                        
 
     def findBldgEndPoint(self, bldgWidth, curve, currT, currPoint,
                          startT = None, endT = None, tolerance = 0.1, rd = 0):
@@ -3539,7 +3671,6 @@ class LevelEditor(NodePath, PandaObject):
             else:
                 return self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, startT = midT, endT = endT,
                                              rd = rd + 1)
-
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
     def __init__(self):
