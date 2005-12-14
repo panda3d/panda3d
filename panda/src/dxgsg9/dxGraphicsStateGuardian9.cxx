@@ -1569,12 +1569,18 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // need to copy it to a temporary surface of the appropriate type
     // first.
   D3DPOOL pool;
+  D3DSURFACE_DESC surface_description;
+
+  backbuffer -> GetDesc (&surface_description);
 
   pool = D3DPOOL_SYSTEMMEM;
-    hr = _d3d_device->CreateOffscreenPlainSurface(w, h, _screen->_display_mode.Format,
-           pool,
-           &temp_surface,
-           NULL);
+    hr = _d3d_device->CreateOffscreenPlainSurface(
+          surface_description.Width,
+          surface_description.Height,
+          surface_description.Format,
+          pool,
+          &temp_surface,
+          NULL);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
   << "CreateImageSurface failed in copy_pixel_buffer()"
