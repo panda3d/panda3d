@@ -111,6 +111,22 @@ class DoCollectionManager:
             r = a
         return r
     
+    def getOwnerViewDoList(self, classType):
+        assert self.hasOwnerView()
+        l = []
+        for obj in self.doId2ownerView.values():
+            if isinstance(obj, classType):
+                l.append(obj)
+        return l
+
+    def getOwnerViewDoIdList(self, classType):
+        assert self.hasOwnerView()
+        l = []
+        for doId, obj in self.doId2ownerView.items():
+            if isinstance(obj, classType):
+                l.append(doId)
+        return l
+
     def countObjects(self, classType):
         """
         Counts the number of objects of the given type in the
