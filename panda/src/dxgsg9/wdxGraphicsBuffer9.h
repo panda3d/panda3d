@@ -79,6 +79,7 @@ public:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
+private:
   bool create_render_texture (UINT texture_width, UINT texture_height, UINT texture_depth, D3DFORMAT texture_format, DXTextureContext9 *dx_texture_context9, IDirect3DDevice9 *direct_3d_device);
 
 private:

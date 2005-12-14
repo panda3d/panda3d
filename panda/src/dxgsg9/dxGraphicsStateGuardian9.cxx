@@ -1736,22 +1736,20 @@ reset() {
   // check for render to texture support
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
 
-  _d3d_device->GetCreationParameters (&creation_parameters);
-
-  hr = _screen->_d3d9->CheckDeviceFormat
-     (creation_parameters.AdapterOrdinal,
-      creation_parameters.DeviceType,
-      _screen->_display_mode.Format,
-      D3DUSAGE_RENDERTARGET,
-      D3DRTYPE_TEXTURE,
-      _render_to_texture_d3d_format);
+  _supports_render_texture = false;
+  hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
-    _supports_render_texture = true;
+    hr = _screen->_d3d9->CheckDeviceFormat (
+        creation_parameters.AdapterOrdinal,
+        creation_parameters.DeviceType,
+        _screen->_display_mode.Format,
+        D3DUSAGE_RENDERTARGET,
+        D3DRTYPE_TEXTURE,
+        _render_to_texture_d3d_format);
+    if (SUCCEEDED (hr)) {
+      _supports_render_texture = true;
+    }
   }
-  else {
-    _supports_render_texture = false;
-  }
-
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug() << "Render to Texture Support = " << _supports_render_texture << "\n";
   }
@@ -3927,3 +3925,4 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
        index_data, index_type, safe_buffer_start - stride * min_index, stride);
   }
 }
+

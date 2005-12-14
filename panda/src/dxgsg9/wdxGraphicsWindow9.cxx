@@ -646,6 +646,12 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
       } else {
         presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
       }
+
+      // override presentation parameters for windowed mode, render and display at maximum speed
+      if (do_sync == false) {
+        presentation_params->SwapEffect = D3DSWAPEFFECT_FLIP;
+        presentation_params->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+      }
     } else {
       presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
     }
