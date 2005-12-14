@@ -38,7 +38,8 @@
     dxTextureContext8.cxx \
     dxGeomMunger8.cxx \
     dxGraphicsDevice8.cxx \
-    wdxGraphicsPipe8.cxx wdxGraphicsWindow8.cxx
-
+    wdxGraphicsPipe8.cxx \
+    wdxGraphicsWindow8.cxx \
+    wdxGraphicsBuffer8.cxx
 
 #end lib_target

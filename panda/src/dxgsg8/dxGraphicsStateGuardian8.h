@@ -74,7 +74,7 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool begin_draw_primitives(const Geom *geom, 
+  virtual bool begin_draw_primitives(const Geom *geom,
                                      const GeomMunger *munger,
                                      const GeomVertexData *vertex_data);
   virtual void draw_triangles(const GeomTriangles *primitive);
@@ -94,11 +94,11 @@ public:
 
   virtual void apply_fog(Fog *fog);
 
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 
   static D3DFORMAT get_index_type(Geom::NumericType numeric_type);
@@ -123,7 +123,7 @@ protected:
   void do_issue_material();
   void do_issue_texture();
   void do_issue_blending();
-  
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
@@ -154,7 +154,7 @@ protected:
   void set_texture_blend_mode(int i, const TextureStage *stage);
 
   void dx_cleanup();
-  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params, 
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params,
                            DXScreenData **screen = NULL);
 
   bool check_cooperative_level();
@@ -173,16 +173,16 @@ protected:
   static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
 
   void draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
-			 unsigned int primitive_count,
-			 unsigned int first_vertex, 
-			 unsigned int num_vertices,
-			 const unsigned char *buffer, size_t stride);
+       unsigned int primitive_count,
+       unsigned int first_vertex,
+       unsigned int num_vertices,
+       const unsigned char *buffer, size_t stride);
   void draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
-				 unsigned int min_index, unsigned int max_index,
-				 unsigned int num_primitives,
-				 const unsigned char *index_data, 
-				 D3DFORMAT index_type,
-				 const unsigned char *buffer, size_t stride);
+         unsigned int min_index, unsigned int max_index,
+         unsigned int num_primitives,
+         const unsigned char *index_data,
+         D3DFORMAT index_type,
+         const unsigned char *buffer, size_t stride);
 
   INLINE static unsigned char *get_safe_buffer_start();
 
@@ -234,6 +234,8 @@ protected:
   static unsigned char *_temp_buffer;
   static unsigned char *_safe_buffer_start;
 
+  D3DFORMAT _render_to_texture_d3d_format;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -255,6 +257,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class wdxGraphicsWindow8;
+  friend class wdxGraphicsBuffer8;
   friend class wdxGraphicsPipe8;
   friend class wdxGraphicsWindowGroup8;
   friend class DXTextureContext8;

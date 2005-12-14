@@ -19,6 +19,7 @@
 #include "wdxGraphicsPipe8.h"
 #include "dxGraphicsDevice8.h"
 #include "wdxGraphicsWindow8.h"
+#include "wdxGraphicsBuffer8.h"
 #include "config_dxgsg8.h"
 
 TypeHandle wdxGraphicsPipe8::_type_handle;
@@ -95,6 +96,25 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
   // are really opened until wdxGraphicsWindow8->open_window() is
   // called
   return new wdxGraphicsWindow8(this, gsg, name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsPipe8::make_buffer
+//       Access: Protected, Virtual
+//  Description: Creates a new offscreen buffer on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsBuffer) wdxGraphicsPipe8::
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size) {
+
+// hmmmm must return NULL if render to texture is supported and you don't
+// want to use it, otherwise it doesn't work
+  if (support_render_texture && gsg->get_supports_render_texture ( )) {
+    return new wdxGraphicsBuffer8(this, gsg, name, x_size, y_size);
+  }
+  else {
+    return NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

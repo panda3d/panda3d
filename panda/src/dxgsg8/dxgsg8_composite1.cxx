@@ -6,4 +6,5 @@
 #include "dxGeomMunger8.cxx"
 #include "wdxGraphicsPipe8.cxx"
 #include "wdxGraphicsWindow8.cxx"
+#include "wdxGraphicsBuffer8.cxx"
 #include "dxGraphicsDevice8.cxx"

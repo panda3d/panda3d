@@ -111,12 +111,15 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
   // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
   // texture coordinates via a texture matrix, so we don't advertise
   // GR_point_sprite_tex_matrix.
-  _supported_geom_rendering = 
+  _supported_geom_rendering =
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_point_perspective | Geom::GR_point_sprite |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
+
+  // default render to texture format
+  _render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,20 +185,20 @@ apply_texture(int i, TextureContext *tc) {
   // If the texture image has changed, or if its use of mipmaps has
   // changed, we need to re-create the image.  Ignore other types of
   // changes, which aren't significant for DX.
-  
+
   if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
     // If this is *only* because of a mipmap change, issue a
     // warning--it is likely that this change is the result of an
     // error or oversight.
     if ((dirty & Texture::DF_image) == 0) {
       dxgsg8_cat.warning()
-	<< "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+  << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
     }
-    
+
     if (!dtc->create_texture(*_screen)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg8_cat.error()
-	<< "Unable to re-create texture " << *dtc->_texture << endl;
+  << "Unable to re-create texture " << *dtc->_texture << endl;
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
@@ -211,8 +214,8 @@ apply_texture(int i, TextureContext *tc) {
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSW, get_texture_wrap_mode(wrap_w));
 
-  _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR, 
-				    Colorf_to_D3DCOLOR(tex->get_border_color()));
+  _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR,
+            Colorf_to_D3DCOLOR(tex->get_border_color()));
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
@@ -351,7 +354,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   HRESULT hr = _d3d_device->SetVertexShader(dvbc->_fvf);
 #ifndef NDEBUG
   if (FAILED(hr)) {
-    dxgsg8_cat.error() 
+    dxgsg8_cat.error()
       << "SetVertexShader(0x" << (void*)dvbc->_fvf
       << ") failed" << D3DERRORSTRING(hr);
   }
@@ -622,7 +625,7 @@ prepare_lens() {
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of
   // choice is otherwise.
-  const LMatrix4f &convert_mat = 
+  const LMatrix4f &convert_mat =
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system());
 
   // DirectX also uses a Z range of 0 to 1, whereas the Panda
@@ -643,7 +646,7 @@ prepare_lens() {
     _projection_mat *= invert_mat;
   }
 
-  HRESULT hr = 
+  HRESULT hr =
     _d3d_device->SetTransform(D3DTS_PROJECTION,
                               (D3DMATRIX*)_projection_mat.get_data());
   return SUCCEEDED(hr);
@@ -795,7 +798,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   apply_vertex_buffer(vbc);
 
-  const GeomVertexAnimationSpec &animation = 
+  const GeomVertexAnimationSpec &animation =
     vertex_data->get_format()->get_animation();
   if (animation.get_animation_type() == Geom::AT_hardware) {
     // Set up vertex blending.
@@ -928,10 +931,10 @@ draw_triangles(const GeomTriangles *primitive) {
       // Nonindexed, client arrays.
 
       draw_primitive_up(D3DPT_TRIANGLELIST, primitive->get_num_primitives(),
-			primitive->get_first_vertex(), 
-			primitive->get_num_vertices(),
-			_vertex_data->get_array(0)->get_data(),
-			_vertex_data->get_format()->get_array(0)->get_stride());
+      primitive->get_first_vertex(),
+      primitive->get_num_vertices(),
+      _vertex_data->get_array(0)->get_data(),
+      _vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -966,7 +969,7 @@ draw_tristrips(const GeomTristrips *primitive) {
       } else {
         // Indexed, client arrays, one long triangle strip.
         D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-	draw_indexed_primitive_up
+  draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            primitive->get_num_vertices() - 2,
@@ -984,12 +987,12 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Indexed, client arrays, one long triangle strip.
-	draw_primitive_up(D3DPT_TRIANGLESTRIP,
-			  primitive->get_num_vertices() - 2,
-			  primitive->get_first_vertex(),
-			  primitive->get_num_vertices(),
-			  _vertex_data->get_array(0)->get_data(),
-			  _vertex_data->get_format()->get_array(0)->get_stride());
+  draw_primitive_up(D3DPT_TRIANGLESTRIP,
+        primitive->get_num_vertices() - 2,
+        primitive->get_first_vertex(),
+        primitive->get_num_vertices(),
+        _vertex_data->get_array(0)->get_data(),
+        _vertex_data->get_format()->get_array(0)->get_stride());
       }
     }
 
@@ -1040,7 +1043,7 @@ draw_tristrips(const GeomTristrips *primitive) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
           unsigned int min = mins.get_data1i();
           unsigned int max = maxs.get_data1i();
-	  draw_indexed_primitive_up
+    draw_indexed_primitive_up
             (D3DPT_TRIANGLESTRIP,
              min, max,
              ends[i] - start - 2,
@@ -1073,10 +1076,10 @@ draw_tristrips(const GeomTristrips *primitive) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-	  draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
-			    first_vertex + start,
-			    ends[i] - start,
-			    array_data, stride);
+    draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
+          first_vertex + start,
+          ends[i] - start,
+          array_data, stride);
 
           start = ends[i] + 2;
         }
@@ -1139,7 +1142,7 @@ draw_trifans(const GeomTrifans *primitive) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         unsigned int min = mins.get_data1i();
         unsigned int max = maxs.get_data1i();
-	draw_indexed_primitive_up
+  draw_indexed_primitive_up
           (D3DPT_TRIANGLEFAN,
            min, max,
            ends[i] - start - 2,
@@ -1172,11 +1175,11 @@ draw_trifans(const GeomTrifans *primitive) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-	draw_primitive_up(D3DPT_TRIANGLEFAN,
-			  ends[i] - start - 2,
-			  first_vertex,
-			  ends[i] - start,
-			  array_data, stride);
+  draw_primitive_up(D3DPT_TRIANGLEFAN,
+        ends[i] - start - 2,
+        first_vertex,
+        ends[i] - start,
+        array_data, stride);
         start = ends[i];
       }
     }
@@ -1232,10 +1235,10 @@ draw_lines(const GeomLines *primitive) {
     } else {
       // Nonindexed, client arrays.
       draw_primitive_up(D3DPT_LINELIST, primitive->get_num_primitives(),
-			primitive->get_first_vertex(),
-			primitive->get_num_vertices(),
-			_vertex_data->get_array(0)->get_data(),
-			_vertex_data->get_format()->get_array(0)->get_stride());
+      primitive->get_first_vertex(),
+      primitive->get_num_vertices(),
+      _vertex_data->get_array(0)->get_data(),
+      _vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -1273,10 +1276,10 @@ draw_points(const GeomPoints *primitive) {
   } else {
     // Nonindexed, client arrays.
     draw_primitive_up(D3DPT_POINTLIST, primitive->get_num_primitives(),
-		      primitive->get_first_vertex(), 
-		      primitive->get_num_vertices(),
-		      _vertex_data->get_array(0)->get_data(),
-		      _vertex_data->get_format()->get_array(0)->get_stride());
+          primitive->get_first_vertex(),
+          primitive->get_num_vertices(),
+          _vertex_data->get_array(0)->get_data(),
+          _vertex_data->get_format()->get_array(0)->get_stride());
   }
 }
 
@@ -1327,7 +1330,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   dr->get_region_pixels_i(xo, yo, w, h);
   tex->set_x_size(Texture::up_to_power_2(w));
   tex->set_y_size(Texture::up_to_power_2(h));
-  
+
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return;
@@ -1388,7 +1391,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       return;
     }
   }
-  
+
   IDirect3DSurface8 *render_target;
   hr = _d3d_device->GetRenderTarget(&render_target);
   if (FAILED(hr)) {
@@ -1462,7 +1465,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       tex->get_format() != format ||
       tex->get_texture_type() != texture_type) {
     // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, tex->get_z_size(), 
+    tex->setup_texture(texture_type, w, h, tex->get_z_size(),
                        component_type, format);
   }
 
@@ -1493,12 +1496,12 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // Since we might not be able to Lock the back buffer, we will
     // need to copy it to a temporary surface of the appropriate type
     // first.
-    hr = _d3d_device->CreateImageSurface(w, h, _screen->_display_mode.Format, 
-					 &temp_surface);
+    hr = _d3d_device->CreateImageSurface(w, h, _screen->_display_mode.Format,
+           &temp_surface);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-	<< "CreateImageSurface failed in copy_pixel_buffer()"
-	<< D3DERRORSTRING(hr);
+  << "CreateImageSurface failed in copy_pixel_buffer()"
+  << D3DERRORSTRING(hr);
       backbuffer->Release();
       return false;
     }
@@ -1519,29 +1522,29 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     if (_screen->_presentation_params.Windowed) {
       // GetFrontBuffer() retrieves the entire desktop for a monitor,
       // so we need to reserve space for that.
-      
+
       // We have to use GetMonitorInfo(), since this GSG may not be
       // for the primary monitor.
       MONITORINFO minfo;
       minfo.cbSize = sizeof(MONITORINFO);
       GetMonitorInfo(_screen->_monitor, &minfo);
-      
+
       w = RECT_XSIZE(minfo.rcMonitor);
       h = RECT_YSIZE(minfo.rcMonitor);
-      
+
       // set rect to client area of window in scrn coords
       ClientToScreen(_screen->_window, (POINT*)&rect.left);
       ClientToScreen(_screen->_window, (POINT*)&rect.right);
     }
-    
+
     // For GetFrontBuffer(), we need a temporary surface of type
     // A8R8G8B8.  Unlike GetBackBuffer(), GetFrontBuffer() implicitly
     // performs a copy.
     hr = _d3d_device->CreateImageSurface(w, h, D3DFMT_A8R8G8B8, &temp_surface);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-	<< "CreateImageSurface failed in copy_pixel_buffer()"
-	<< D3DERRORSTRING(hr);
+  << "CreateImageSurface failed in copy_pixel_buffer()"
+  << D3DERRORSTRING(hr);
       return false;
     }
 
@@ -1549,7 +1552,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
 
     if (hr == D3DERR_DEVICELOST) {
       dxgsg8_cat.error()
-	<< "copy_pixel_buffer failed: device lost\n";
+  << "copy_pixel_buffer failed: device lost\n";
       temp_surface->Release();
       return false;
     }
@@ -1565,8 +1568,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
 
-  DXTextureContext8::d3d_surface_to_texture(rect, temp_surface, 
-					    copy_inverted, tex, z);
+  DXTextureContext8::d3d_surface_to_texture(rect, temp_surface,
+              copy_inverted, tex, z);
 
   RELEASE(temp_surface, dxgsg8, "temp_surface", RELEASE_ONCE);
 
@@ -1643,6 +1646,27 @@ reset() {
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
+
+  // check for render to texture support
+  D3DDEVICE_CREATION_PARAMETERS creation_parameters;
+
+  _supports_render_texture = false;
+  hr = _d3d_device->GetCreationParameters (&creation_parameters);
+  if (SUCCEEDED (hr)) {
+    hr = _screen->_d3d8->CheckDeviceFormat (
+        creation_parameters.AdapterOrdinal,
+        creation_parameters.DeviceType,
+        _screen->_display_mode.Format,
+        D3DUSAGE_RENDERTARGET,
+        D3DRTYPE_TEXTURE,
+        _render_to_texture_d3d_format);
+    if (SUCCEEDED (hr)) {
+      _supports_render_texture = true;
+    }
+  }
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug() << "Render to Texture Support = " << _supports_render_texture << "\n";
+  }
 
   _supports_3d_texture = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_VOLUMEMAP) != 0);
   if (_supports_3d_texture) {
@@ -1735,7 +1759,7 @@ reset() {
 
   // turn on dithering if the rendertarget is < 8bits/color channel
   bool dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(_screen->_presentation_params.BackBufferFormat)
-			 && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
+       && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
   _d3d_device->SetRenderState(D3DRS_DITHERENABLE, dither_enabled);
 
   _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
@@ -2083,7 +2107,7 @@ set_state_and_transform(const RenderState *target,
     _internal_transform = _cs_transform->compose(transform);
     do_issue_transform();
   }
-  
+
   if (target == _state_rs) {
     return;
   }
@@ -2095,87 +2119,87 @@ set_state_and_transform(const RenderState *target,
   // There might be some physical limits to the actual target
   // attributes we issue.  Impose them now.
   _target._texture = _target._texture->filter_to_max(_max_texture_stages);
-  
+
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
   }
-  
+
   if (_target._antialias != _state._antialias) {
     // Antialias not implemented under DX8
     _state._antialias = _target._antialias;
   }
-  
+
   if (_target._clip_plane != _state._clip_plane) {
     do_issue_clip_plane();
     _state._clip_plane = _target._clip_plane;
   }
-  
+
   if (_target._color != _state._color) {
     do_issue_color();
     _state._color = _target._color;
   }
-  
+
   if (_target._color_scale != _state._color_scale) {
     do_issue_color_scale();
     _state._color_scale = _target._color_scale;
   }
-  
+
   if (_target._cull_face != _state._cull_face) {
     do_issue_cull_face();
     _state._cull_face = _target._cull_face;
   }
-  
+
   if (_target._depth_offset != _state._depth_offset) {
     do_issue_depth_offset();
     _state._depth_offset = _target._depth_offset;
   }
-  
+
   if (_target._depth_test != _state._depth_test) {
     do_issue_depth_test();
     _state._depth_test = _target._depth_test;
   }
-  
+
   if (_target._depth_write != _state._depth_write) {
     do_issue_depth_write();
     _state._depth_write = _target._depth_write;
   }
-  
+
   if (_target._fog != _state._fog) {
     do_issue_fog();
     _state._fog = _target._fog;
   }
-  
+
   if (_target._render_mode != _state._render_mode) {
     do_issue_render_mode();
     _state._render_mode = _target._render_mode;
   }
-  
+
   if (_target._rescale_normal != _state._rescale_normal) {
     do_issue_rescale_normal();
     _state._rescale_normal = _target._rescale_normal;
   }
-  
+
   if (_target._shade_model != _state._shade_model) {
     do_issue_shade_model();
     _state._shade_model = _target._shade_model;
   }
-  
+
   // Shaders not implemented under DX8
   if (_target._shader != _state._shader) {
     _state._shader = _target._shader;
   }
-  
+
   if (_target._tex_gen != _state._tex_gen) {
     _state._texture = 0;
     _state._tex_gen = _target._tex_gen;
   }
-  
+
   if (_target._tex_matrix != _state._tex_matrix) {
     _state._texture = 0;
     _state._tex_matrix = _target._tex_matrix;
   }
-  
+
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -2184,7 +2208,7 @@ set_state_and_transform(const RenderState *target,
     _state._color_write = _target._color_write;
     _state._color_blend = _target._color_blend;
   }
-  
+
   if (_target._texture != _state._texture) {
     do_issue_texture();
     _state._texture = _target._texture;
@@ -2194,7 +2218,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_material();
     _state._material = _target._material;
   }
-  
+
   if (_target._light != _state._light) {
     do_issue_light();
     _state._light = _target._light;
@@ -2489,7 +2513,7 @@ do_issue_texture() {
     if (_state._tex_matrix->has_stage(stage)) {
       tex_mat = _state._tex_matrix->get_transform(stage);
     }
-    
+
     // Issue the texgen mode.
     TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
     bool any_point_sprite = false;
@@ -2499,7 +2523,7 @@ do_issue_texture() {
     case TexGenAttrib::M_light_vector:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
-      
+
     case TexGenAttrib::M_eye_sphere_map:
       {
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
@@ -2523,7 +2547,7 @@ do_issue_texture() {
       // transform.  In the case of a vector, we should not apply the
       // pos component of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2532,7 +2556,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_cube_map:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
       tex_mat = tex_mat->compose(_inv_cs_transform);
       texcoord_dimensions = 3;
@@ -2544,7 +2568,7 @@ do_issue_texture() {
       // the case of a normal, we should not apply the pos component
       // of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2553,7 +2577,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_normal:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
@@ -2564,7 +2588,7 @@ do_issue_texture() {
       // coordinates to world coordinates; i.e. apply the
       // camera transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2573,18 +2597,18 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_position:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
-      
+
     case TexGenAttrib::M_point_sprite:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       any_point_sprite = true;
       break;
     }
-    
+
     _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
@@ -2601,12 +2625,12 @@ do_issue_texture() {
       } else {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-	DWORD transform_flags = texcoord_dimensions;
-	if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
-	  // If we have a projected texture matrix, we also need to
-	  // set D3DTTFF_COUNT4.
-	  transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
-	}
+  DWORD transform_flags = texcoord_dimensions;
+  if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
+    // If we have a projected texture matrix, we also need to
+    // set D3DTTFF_COUNT4.
+    transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
+  }
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
@@ -2741,12 +2765,12 @@ do_issue_blending() {
   if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-	_d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
       } else {
-	_d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	_d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
-	_d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+  _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+  _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       }
     }
     return;
@@ -2788,10 +2812,10 @@ do_issue_blending() {
       break;
     }
 
-    _d3d_device->SetRenderState(D3DRS_SRCBLEND, 
-				get_blend_func(color_blend->get_operand_a()));
-    _d3d_device->SetRenderState(D3DRS_DESTBLEND, 
-				get_blend_func(color_blend->get_operand_b()));
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND,
+        get_blend_func(color_blend->get_operand_a()));
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND,
+        get_blend_func(color_blend->get_operand_b()));
     return;
   }
 
@@ -3069,7 +3093,7 @@ report_texmgr_stats() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_context
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_context(DXScreenData *new_context) {
@@ -3110,13 +3134,13 @@ set_render_target() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_texture_blend_mode
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
   case TextureStage::M_modulate:
-    // emulates GL_MODULATE glTexEnv mode 
+    // emulates GL_MODULATE glTexEnv mode
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
@@ -3160,7 +3184,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TFACTOR);
-      
+
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
@@ -3171,63 +3195,63 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
     // M_combine mode begins a collection of more sophisticated modes,
     // which match up more closely with DirectX's built-in modes.
     _d3d_device->SetTextureStageState
-      (i, D3DTSS_COLOROP, 
+      (i, D3DTSS_COLOROP,
        get_texture_operation(stage->get_combine_rgb_mode(),
                              stage->get_rgb_scale()));
 
     switch (stage->get_num_combine_rgb_operands()) {
     case 3:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_COLORARG0, 
+        (i, D3DTSS_COLORARG0,
          get_texture_argument(stage->get_combine_rgb_source2(),
                               stage->get_combine_rgb_operand2()));
       // fall through
-      
+
     case 2:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_COLORARG2, 
+        (i, D3DTSS_COLORARG2,
          get_texture_argument(stage->get_combine_rgb_source1(),
                               stage->get_combine_rgb_operand1()));
       // fall through
 
     case 1:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_COLORARG1, 
+        (i, D3DTSS_COLORARG1,
          get_texture_argument(stage->get_combine_rgb_source0(),
                               stage->get_combine_rgb_operand0()));
       // fall through
-      
+
     default:
       break;
     }
 
     _d3d_device->SetTextureStageState
-      (i, D3DTSS_ALPHAOP, 
+      (i, D3DTSS_ALPHAOP,
        get_texture_operation(stage->get_combine_alpha_mode(),
                              stage->get_alpha_scale()));
 
     switch (stage->get_num_combine_alpha_operands()) {
     case 3:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_ALPHAARG0, 
+        (i, D3DTSS_ALPHAARG0,
          get_texture_argument(stage->get_combine_alpha_source2(),
                               stage->get_combine_alpha_operand2()));
       // fall through
-      
+
     case 2:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_ALPHAARG2, 
+        (i, D3DTSS_ALPHAARG2,
          get_texture_argument(stage->get_combine_alpha_source1(),
                               stage->get_combine_alpha_operand1()));
       // fall through
 
     case 1:
       _d3d_device->SetTextureStageState
-        (i, D3DTSS_ALPHAARG1, 
+        (i, D3DTSS_ALPHAARG1,
          get_texture_argument(stage->get_combine_alpha_source0(),
                               stage->get_combine_alpha_operand0()));
       // fall through
-      
+
     default:
       break;
     }
@@ -3306,7 +3330,7 @@ dx_cleanup() {
 //               screen
 ////////////////////////////////////////////////////////////////////
 HRESULT DXGraphicsStateGuardian8::
-reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params, 
+reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
                  DXScreenData **screen) {
   HRESULT hr;
 
@@ -3334,9 +3358,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
         << " presentation_params = "
         << presentation_params->BackBufferWidth << "x" << presentation_params->BackBufferHeight << "\n";
     }
-    
+
     get_engine()->reset_all_windows(false);// reset old swapchain by releasing
-    
+
     if (_screen->_swap_chain) {  //other windows might be using bigger buffers
       _presentation_reset.BackBufferWidth = max(_presentation_reset.BackBufferWidth, presentation_params->BackBufferWidth);
       _presentation_reset.BackBufferHeight = max(_presentation_reset.BackBufferHeight, presentation_params->BackBufferHeight);
@@ -3357,12 +3381,12 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     // cheap to replace.
     release_all_vertex_buffers();
     release_all_index_buffers();
-    
+
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
       return hr;
     }
-    
+
     get_engine()->reset_all_windows(true);// reset with new swapchains by creating
     if (screen) {
       *screen = NULL;
@@ -3378,7 +3402,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // release the old swapchain and create a new one
   if (_screen && _screen->_swap_chain) {
     _screen->_swap_chain->Release();
-    wdxdisplay8_cat.debug() 
+    wdxdisplay8_cat.debug()
       << "swap chain " << _screen->_swap_chain << " is released\n";
     _screen->_swap_chain = NULL;
     hr = _d3d_device->CreateAdditionalSwapChain(presentation_params, &_screen->_swap_chain);
@@ -3397,7 +3421,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::check_cooperative_level
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 check_cooperative_level() {
@@ -3479,7 +3503,7 @@ show_frame() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::create_swap_chain
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 create_swap_chain(DXScreenData *new_context) {
@@ -3710,10 +3734,10 @@ get_texture_argument_modifier(TextureStage::CombineOperand operand) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
-		  unsigned int primitive_count,
-		  unsigned int first_vertex, 
-		  unsigned int num_vertices,
-		  const unsigned char *buffer, size_t stride) {
+      unsigned int primitive_count,
+      unsigned int first_vertex,
+      unsigned int num_vertices,
+      const unsigned char *buffer, size_t stride) {
 
   // It appears that the common ATI driver seems to fail to draw
   // anything in the DrawPrimitiveUP() call if the address range of
@@ -3728,12 +3752,12 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     // Actually, the buffer doesn't fit within the required limit
     // anyway.  Go ahead and draw it and hope for the best.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-				 buffer_start, stride);
+         buffer_start, stride);
 
   } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-				 buffer_start, stride);
+         buffer_start, stride);
 
   } else {
     // We have a problem--the buffer crosses over a 0x10000 boundary.
@@ -3742,8 +3766,8 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     unsigned char *safe_buffer_start = get_safe_buffer_start();
     memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-				 safe_buffer_start, stride);
-    
+         safe_buffer_start, stride);
+
   }
 }
 
@@ -3760,11 +3784,11 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
-			  unsigned int min_index, unsigned int max_index,
-			  unsigned int num_primitives,
-			  const unsigned char *index_data, 
-			  D3DFORMAT index_type,
-			  const unsigned char *buffer, size_t stride) {
+        unsigned int min_index, unsigned int max_index,
+        unsigned int num_primitives,
+        const unsigned char *index_data,
+        D3DFORMAT index_type,
+        const unsigned char *buffer, size_t stride) {
   // As above, we'll hack the case of the buffer crossing the 0x10000
   // boundary.
   const unsigned char *buffer_start = buffer + stride * min_index;

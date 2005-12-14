@@ -54,11 +54,13 @@ public:
                                     D3DFORMAT *pSuggestedPixFmt,
                                     bool bForce16bppZBuffer,
                                     bool bVerboseMode = false);
-  
+
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
 protected:
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, const string &name);
+  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size);
 
 private:
   bool init();
@@ -90,7 +92,7 @@ private:
     GUID  DX7_DeviceGUID;
     DWORD VendorID, DeviceID;
   };
-  
+
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
   bool __is_dx8_1;
