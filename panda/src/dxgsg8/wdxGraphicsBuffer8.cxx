@@ -155,6 +155,7 @@ begin_render_texture() {
       }
     }
 
+/*
     // render to cubemap face
     IDirect3DCubeTexture8 *direct_3d_cube_texture;
 
@@ -174,6 +175,8 @@ begin_render_texture() {
         // error: invalid cube map face index
       }
     }
+*/
+
   }
 }
 
@@ -254,6 +257,40 @@ select_cube_map(int cube_map_index) {
   DCAST_INTO_V(dxgsg, _gsg);
 
   _cube_map_index = cube_map_index;
+
+  HRESULT hr;
+  UINT mipmap_level;
+  int render_target_index;
+  DXTextureContext8 *dx_texture_context8;
+
+  mipmap_level = 0;
+  render_target_index = 0;
+  dx_texture_context8 = _dx_texture_context8;
+
+  if (_direct_3d_surface) {
+      _direct_3d_surface -> Release ( );
+      _direct_3d_surface = NULL;
+  }
+
+  // render to cubemap face
+  IDirect3DCubeTexture8 *direct_3d_cube_texture;
+
+  direct_3d_cube_texture = dx_texture_context8 -> _d3d_cube_texture;
+  if (direct_3d_cube_texture) {
+    if (_cube_map_index >= 0 && _cube_map_index < 6) {
+      hr = direct_3d_cube_texture -> GetCubeMapSurface (
+        (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
+      if (SUCCEEDED (hr)) {
+        hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface,
+          _z_stencil_buffer);
+        if (SUCCEEDED (hr)) {
+
+        }
+      }
+    } else {
+      // error: invalid cube map face index
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
