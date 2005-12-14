@@ -89,7 +89,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             #*# Debug:
             if not hasattr(ship, "acceleration"):
                 self.ship.acceleration = 60
-                self.ship.maxSpeed = 12
+                self.ship.maxSpeed = 14
                 self.ship.reverseAcceleration = 10
                 self.ship.maxReverseSpeed = 2
                 self.ship.turnRate = 3
@@ -887,6 +887,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 speed *= self.ship.maxReverseSpeed
 
         #speed *= 1.0 - dt * 0.05
+
+        # modify based on sail damage
+        speed *= self.ship.Sp
+        speed /= self.ship.maxSp
         physObject.setVelocity(speed)
 
         #rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
