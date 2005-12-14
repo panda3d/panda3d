@@ -252,13 +252,13 @@ select_cube_map(int cube_map_index) {
   render_target_index = 0;
   dx_texture_context9 = _dx_texture_context9;
 
-  // render to cubemap face
-  IDirect3DCubeTexture9 *direct_3d_cube_texture;
-
   if (_direct_3d_surface) {
       _direct_3d_surface -> Release ( );
       _direct_3d_surface = NULL;
   }
+
+  // render to cubemap face
+  IDirect3DCubeTexture9 *direct_3d_cube_texture;
 
   direct_3d_cube_texture = dx_texture_context9 -> _d3d_cube_texture;
   if (direct_3d_cube_texture) {
