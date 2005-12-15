@@ -59,7 +59,7 @@ MayaShaderColorDef() {
   _wrap_u = true;
   _wrap_v = true;
 
-  _alpha_is_luminance = false;
+  _has_alpha_channel = false;
 
   _blend_type = BT_unspecified;
 
@@ -101,7 +101,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
   _wrap_v = copy._wrap_v;
 
   _blend_type = copy._blend_type;
-  _alpha_is_luminance = copy._alpha_is_luminance;
+  _has_alpha_channel = copy._has_alpha_channel;
 
   _repeat_uv = copy._repeat_uv;
   _offset = copy._offset;
@@ -278,21 +278,13 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         _has_texture = false;
         set_string_attribute(color, "fileTextureName", "");
       }
-      /*
-      // Asad: testcode
-      bool file_has_alpha = false;
-      get_bool_attribute(color, "fileHasAlpha", file_has_alpha);
-      if (file_has_alpha) {
-        maya_cat.info() << _texture_filename << " : has alpha" << endl;
-      }
-      */
     }
 
     get_vec2f_attribute(color, "coverage", _coverage);
     get_vec2f_attribute(color, "translateFrame", _translate_frame);
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
 
-    get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
+    //get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
 
     get_bool_attribute(color, "mirror", _mirror);
     get_bool_attribute(color, "stagger", _stagger);
@@ -403,10 +395,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         string pla_name = pla[j].name().asChar();
         // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
         if (pla_name.find("outAlpha") != string::npos) {
-          maya_cat.debug() << pl.name().asChar() << " ignoring: " << pla_name << endl;
-          // In this case the artist is wanting to retain alpha at the result
-          // So make sure that this alpha is not thrown out by the egg file
-          _alpha_is_luminance = true;
+          // top texture has an alpha channel, so make sure that this alpha is retained by egg file
+          maya_cat.debug() << pl.name().asChar() << ":has alpha channel" << pla_name << endl;
+          _has_alpha_channel = true;
           continue;
         }
         if (!first) {

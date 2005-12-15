@@ -1755,6 +1755,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
     mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
     _uvset_names.push_back(maya_uvset_names[ui].asChar());
+
+    // Get the tex_names that are connected to those uvnames
     mesh.getAssociatedUVSetTextures(maya_uvset_names[ui], moa);
     string t_n("");
     for (size_t ui=0; ui<moa.length(); ++ui){
@@ -1764,9 +1766,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
     _tex_names.push_back(t_n);
   }
-
-  // Get the tex_names that are connected to those uvnames
-  //make_tex_names(mesh, mesh_object);
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -2317,14 +2316,27 @@ void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
                       const MItMeshPolygon *pi) {
 
-  //mayaegg_cat.spam() << "  set_shader_attributes : begin\n";
+  // determine if the base texture or any of the top texture need to be rgb only
+  MayaShaderColorDef *color_def = NULL;
+  bool is_rgb = false;
+  int i;
+  for (i=0; i<(int)shader._color.size(); ++i) {
+    color_def = shader.get_color_def(i);
+    if (color_def->_has_texture && i != (int)shader._color.size()-1) {
+      if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_modulate) {
+        // read the _has_alpha_cahnnel to figure out rgb or rgba
+        //if (!color_def->_has_alpha_channel) {
+        //Maya's multiply is slightly different than panda's. Hence we are dropping the alpha.
+        is_rgb = true; // modulate forces the alpha to be ignored
+        //}
+      }
+    }
+  }
 
   // In Maya, a polygon is either textured or colored.  The texture,
   // if present, replaces the color. Also now there could be multiple textures
-  MayaShaderColorDef *color_def = NULL;
   const MayaShaderColorDef &trans_def = shader._transparency;
-  //for (size_t i=0; i<shader._color.size(); ++i) {
-  for (int i=shader._color.size()-1; i>=0; --i) {
+  for (i=shader._color.size()-1; i>=0; --i) {
     color_def = shader.get_color_def(i);
     mayaegg_cat.spam() << "slot " << i << ":got color_def: " << color_def << endl;
     if (color_def->_has_texture || trans_def._has_texture) {
@@ -2401,13 +2413,19 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           // last shader on the list is the base one, which should always pick up the alpha
           // from the texture file. But the top textures may have to strip the alpha
           if (i!=shader._color.size()-1) {
-            // read the _alpha_is_luminance to figure out env_type
             tex.set_env_type((EggTexture::EnvType)color_def->_blend_type);
-            // multitexture modulate mode should always turn alpha
-            // off. The texture and textures.txa will determine
-            // whether to keep it or not
             if (tex.get_env_type() == EggTexture::ET_modulate) {
-              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
+              if (color_def->_has_alpha_channel) {
+                // lets caution the artist that they should not be using a alpha channel on
+                // this texture. 
+                maya_cat.spam() 
+                  << color_def->_texture_name 
+                  << " should not have alpha channel in multiply mode: ignoring\n";
+              }
+              if (is_rgb) {
+                //tex.set_alpha_mode(EggRenderMode::AM_off);  // force alpha off
+                tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
+              }
             }
           }
         }
@@ -2424,6 +2442,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
       }
       
       mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
+      if (is_rgb && i == (int)shader._color.size()-1) {
+        // make base layer rgb only
+        tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
+      }
       EggTexture *new_tex =
         _textures.create_unique_texture(tex, ~0);
       

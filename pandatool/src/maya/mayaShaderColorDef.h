@@ -95,7 +95,7 @@ public:
   bool _wrap_u;
   bool _wrap_v;
 
-  bool _alpha_is_luminance;
+  bool _has_alpha_channel;
   
   LVector2f _repeat_uv;
   LVector2f _offset;
