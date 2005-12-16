@@ -245,10 +245,10 @@ of the world, see INSTALL.txt in this directory.
 *********************************************************************
 
   - All of the commands below have been collected in    
-    P:\win\install\wintools\etc\setup_env.csh.  To do all the Cygwin 
+    P:\win\install\wintools\etc\setup2.csh.  To do all the Cygwin 
     steps below automatically, from the tcsh prompt do:
     > cd P:/win/install/wintools/etc
-    > source setup_env.csh
+    > source setup2.csh
 
 ---------------------------------------------------------------------
   CAUTION: setup_env.csh: 
