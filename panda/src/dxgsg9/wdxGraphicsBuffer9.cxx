@@ -29,7 +29,6 @@
     // can be specified via the DXGraphicsStateGuardian9 member
     // _render_to_texture_d3d_format  default = D3DFMT_X8R8G8B8
 
-  // LOST DEVICE case for D3DPOOL_DEFAULT buffers
   // should check texture creation with CheckDepthStencilMatch
   // support copy from texture to ram?
     // check D3DCAPS2_DYNAMICTEXTURES
@@ -102,58 +101,62 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
 begin_render_texture() {
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
 
-  HRESULT hr;
-  bool state;
-  int render_target_index;
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
 
-  state = false;
-  render_target_index = 0;
+    DXGraphicsStateGuardian9 *dxgsg;
+    DCAST_INTO_V(dxgsg, _gsg);
 
-  // save render context
-  hr = dxgsg -> _d3d_device -> GetRenderTarget (render_target_index,
-    &_back_buffer);
-  if (SUCCEEDED (hr)) {
-    hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_z_stencil_buffer);
-    if (SUCCEEDED (hr)) {
-      state = true;
-    }
-  }
+    HRESULT hr;
+    bool state;
+    int render_target_index;
 
-  // set render context
-  if (state && _dx_texture_context9)
-  {
-    int tex_index;
-    DXTextureContext9 *dx_texture_context9;
+    state = false;
+    render_target_index = 0;
 
-    // ***** assume 0 ???
-    tex_index = 0;
+    if (dxgsg -> _d3d_device) {
+      Texture *tex = get_texture(0);
+      tex->set_render_to_texture(true);
+      TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
 
-    Texture *tex = get_texture(tex_index);
+      _dx_texture_context9 = DCAST (DXTextureContext9, tc);
 
-    // ***** ??? CAST
-
-    // use saved dx_texture_context9
-    dx_texture_context9 = _dx_texture_context9;
-
-    UINT mipmap_level;
-
-    mipmap_level = 0;
-    _direct_3d_surface = NULL;
-
-    // render to texture 2D
-    IDirect3DTexture9 *direct_3d_texture;
-
-    direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
-    if (direct_3d_texture) {
-      hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
+      // save render context
+      hr = dxgsg -> _d3d_device -> GetRenderTarget (render_target_index,
+        &_back_buffer);
       if (SUCCEEDED (hr)) {
-        hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
-          _direct_3d_surface);
+        hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_z_stencil_buffer);
         if (SUCCEEDED (hr)) {
+          state = true;
+        }
+      }
 
+      // set render context
+      if (state && _dx_texture_context9)
+      {
+        DXTextureContext9 *dx_texture_context9;
+
+        // use saved dx_texture_context9
+        dx_texture_context9 = _dx_texture_context9;
+
+        UINT mipmap_level;
+
+        mipmap_level = 0;
+        _direct_3d_surface = NULL;
+
+        // render to texture 2D
+        IDirect3DTexture9 *direct_3d_texture;
+
+        direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
+        if (direct_3d_texture) {
+          hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
+          if (SUCCEEDED (hr)) {
+            hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
+              _direct_3d_surface);
+            if (SUCCEEDED (hr)) {
+
+            }
+          }
         }
       }
     }
@@ -171,59 +174,38 @@ begin_render_texture() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
 end_render_texture() {
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
 
-// is this really needed ??? seems to work without it though
-/*
+    if (_gsg != (GraphicsStateGuardian *)NULL) {
 
-  // Find the color texture, if there is one. That one can be bound to
-  // the framebuffer.  All others must be marked RTM_copy_to_texture.
+      DXGraphicsStateGuardian9 *dxgsg;
+      DCAST_INTO_V(dxgsg, _gsg);
 
-  int tex_index = -1;
-  for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
-          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
-          (tex_index < 0)) {
-        tex_index = i;
-      } else {
-        _textures[i]._rtm_mode = RTM_copy_texture;
+      if (dxgsg -> _d3d_device) {
+      // restore render context
+      HRESULT hr;
+      int render_target_index;
+
+      render_target_index = 0;
+
+      if (_back_buffer) {
+        hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _back_buffer);
+        if (SUCCEEDED (hr)) {
+          _back_buffer -> Release ( );
+        }
+        _back_buffer = NULL;
+      }
+      if (_z_stencil_buffer) {
+        hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (_z_stencil_buffer);
+        if (SUCCEEDED (hr)) {
+          _z_stencil_buffer -> Release ( );
+        }
+        _z_stencil_buffer = NULL;
+      }
+      if (_direct_3d_surface) {
+        _direct_3d_surface -> Release ( );
+        _direct_3d_surface = NULL;
       }
     }
-  }
-
-  if (tex_index >= 0) {
-    Texture *tex = get_texture(tex_index);
-    TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
-    nassertv(tc != (TextureContext *)NULL);
-  }
-
-*/
-
-  // restore render context
-  HRESULT hr;
-  int render_target_index;
-
-  render_target_index = 0;
-
-  if (_back_buffer) {
-    hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _back_buffer);
-    if (SUCCEEDED (hr)) {
-      _back_buffer -> Release ( );
-    }
-    _back_buffer = NULL;
-  }
-  if (_z_stencil_buffer) {
-    hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (_z_stencil_buffer);
-    if (SUCCEEDED (hr)) {
-      _z_stencil_buffer -> Release ( );
-    }
-    _z_stencil_buffer = NULL;
-  }
-  if (_direct_3d_surface) {
-    _direct_3d_surface -> Release ( );
-    _direct_3d_surface = NULL;
   }
 }
 
@@ -238,42 +220,49 @@ end_render_texture() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
 select_cube_map(int cube_map_index) {
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
 
-  _cube_map_index = cube_map_index;
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
 
-  HRESULT hr;
-  UINT mipmap_level;
-  int render_target_index;
-  DXTextureContext9 *dx_texture_context9;
+    DXGraphicsStateGuardian9 *dxgsg;
+    DCAST_INTO_V(dxgsg, _gsg);
 
-  mipmap_level = 0;
-  render_target_index = 0;
-  dx_texture_context9 = _dx_texture_context9;
+    _cube_map_index = cube_map_index;
 
-  if (_direct_3d_surface) {
-      _direct_3d_surface -> Release ( );
-      _direct_3d_surface = NULL;
-  }
+    HRESULT hr;
+    UINT mipmap_level;
+    int render_target_index;
+    DXTextureContext9 *dx_texture_context9;
 
-  // render to cubemap face
-  IDirect3DCubeTexture9 *direct_3d_cube_texture;
+    mipmap_level = 0;
+    render_target_index = 0;
+    dx_texture_context9 = _dx_texture_context9;
 
-  direct_3d_cube_texture = dx_texture_context9 -> _d3d_cube_texture;
-  if (direct_3d_cube_texture) {
-      if (_cube_map_index >= 0 && _cube_map_index < 6) {
-      hr = direct_3d_cube_texture -> GetCubeMapSurface (
-        (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
-      if (SUCCEEDED (hr)) {
-        hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
-        _direct_3d_surface);
-        if (SUCCEEDED (hr)) {
+    if (_direct_3d_surface) {
+        _direct_3d_surface -> Release ( );
+        _direct_3d_surface = NULL;
+    }
 
+    if (dxgsg -> _d3d_device) {
+
+      // render to cubemap face
+      IDirect3DCubeTexture9 *direct_3d_cube_texture;
+
+      direct_3d_cube_texture = dx_texture_context9 -> _d3d_cube_texture;
+      if (direct_3d_cube_texture) {
+          if (_cube_map_index >= 0 && _cube_map_index < 6) {
+          hr = direct_3d_cube_texture -> GetCubeMapSurface (
+            (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
+          if (SUCCEEDED (hr)) {
+            hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
+            _direct_3d_surface);
+            if (SUCCEEDED (hr)) {
+
+            }
+          }
+        } else {
+          // error: invalid cube map face index
         }
       }
-    } else {
-      // error: invalid cube map face index
     }
   }
 }
@@ -381,49 +370,23 @@ open_buffer() {
 
   // create texture
   int tex_index;
-  UINT texture_depth;
-  DXTextureContext9 *dx_texture_context9;
 
   state = false;
   _is_valid = false;
 
-// **** assume tex_index is 0 ???
+  // assume tex_index is 0
   tex_index = 0;
-  texture_depth = 1;
 
   Texture *tex = get_texture(tex_index);
+
+  // SET render to texture
+  tex->set_render_to_texture(true);
+
   TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
-
-// ***** ??? CAST
-  dx_texture_context9 = (DXTextureContext9 *) tc;
-
-  // release managed texture
-  if (dx_texture_context9 -> _d3d_texture) {
-    dx_texture_context9 -> _d3d_texture -> Release ( );
-  }
-  dx_texture_context9 -> _d3d_texture = NULL;
-  dx_texture_context9 -> _d3d_2d_texture = NULL;
-  dx_texture_context9 -> _d3d_volume_texture = NULL;
-  dx_texture_context9 -> _d3d_cube_texture = NULL;
-
-  // save dx_texture_context9
-  _dx_texture_context9 = dx_texture_context9;
-
-  // create render texture
-  if (wdxGraphicsBuffer9::create_render_texture (
-    get_x_size ( ),
-    get_y_size ( ),
-    texture_depth,
-    dxgsg -> _render_to_texture_d3d_format,
-    dx_texture_context9,
-    dxgsg -> _d3d_device)) {
-
-    // override texture managed format
-    dx_texture_context9 -> _d3d_format = dxgsg -> _render_to_texture_d3d_format;
-    dx_texture_context9 -> _has_mipmaps = false;
+  if (tc != NULL) {
+    _dx_texture_context9 = DCAST (DXTextureContext9, tc);
 
     _is_valid = true;
-
     state = true;
   }
 
@@ -449,76 +412,5 @@ process_1_event() {
   TranslateMessage(&msg);
   // Call window_proc
   DispatchMessage(&msg);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::create_render_texture
-//       Access: Private
-//  Description: Creates a texture that can be rendered into
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsBuffer9::
-create_render_texture (UINT texture_width, UINT texture_height, UINT texture_depth, D3DFORMAT texture_format, DXTextureContext9 *dx_texture_context9, IDirect3DDevice9 *direct_3d_device)
-{
-  bool state;
-  HRESULT hr;
-  DWORD usage;
-  D3DPOOL pool;
-  UINT mip_level_count;
-  D3DFORMAT pixel_format;
-  int texture_type;
-
-  state = false;
-
-  texture_type = dx_texture_context9 -> _texture -> get_texture_type ( );
-
-  // assume 1 mip level
-  mip_level_count = 1;
-
-  // REQUIRED pool and usage
-  pool = D3DPOOL_DEFAULT;
-  usage = D3DUSAGE_RENDERTARGET;
-
-// ???
-// usage |= D3DUSAGE_DYNAMIC;
-
-  pixel_format = texture_format;
-
-  switch (texture_type)
-  {
-    case Texture::TT_2d_texture:
-        hr = direct_3d_device->CreateTexture
-        (texture_width, texture_height, mip_level_count, usage,
-        pixel_format, pool, &dx_texture_context9 -> _d3d_2d_texture, NULL);
-        dx_texture_context9 -> _d3d_texture = dx_texture_context9 -> _d3d_2d_texture;
-        break;
-
-    case Texture::TT_3d_texture:
-        // DX9 does not support rendering to volume textures so this should fail
-        hr = direct_3d_device->CreateVolumeTexture
-        (texture_width, texture_height, texture_depth, mip_level_count, usage,
-        pixel_format, pool, &dx_texture_context9 -> _d3d_volume_texture, NULL);
-        dx_texture_context9 -> _d3d_texture = dx_texture_context9 -> _d3d_volume_texture;
-        break;
-
-    case Texture::TT_cube_map:
-        hr = direct_3d_device->CreateCubeTexture
-        (texture_width, mip_level_count, usage,
-        pixel_format, pool, &dx_texture_context9 -> _d3d_cube_texture, NULL);
-        dx_texture_context9 -> _d3d_texture = dx_texture_context9 -> _d3d_cube_texture;
-        break;
-
-    default:
-        break;
-  }
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "create_render_texture failed" << D3DERRORSTRING(hr);
-  }
-  else {
-    state = true;
-  }
-
-  return state;
 }
 

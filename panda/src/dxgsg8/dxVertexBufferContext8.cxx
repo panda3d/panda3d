@@ -190,6 +190,11 @@ DXVertexBufferContext8::
 void DXVertexBufferContext8::
 create_vbuffer(DXScreenData &scrn) {
   if (_vbuffer != NULL) {
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "deleting vertex buffer " << _vbuffer << "\n";
+    }
+
     RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
     _vbuffer = NULL;
   }
@@ -199,7 +204,7 @@ create_vbuffer(DXScreenData &scrn) {
   HRESULT hr = scrn._d3d_device->CreateVertexBuffer
 //    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
 //     _fvf, D3DPOOL_MANAGED, &_vbuffer);
-      (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
+     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
      _fvf, D3DPOOL_DEFAULT, &_vbuffer);
   if (FAILED(hr)) {
     dxgsg8_cat.warning()

@@ -3374,13 +3374,15 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     // regenerated, a prerequisite to calling Reset().  Actually, this
     // shouldn't be necessary, because all of our textures and
     // vbuffers are stored in the D3DPOOL_MANAGED memory class.
-    //    release_all();
+    release_all();
 
     // Just to be extra-conservative for now, we'll go ahead and
     // release the vbuffers and ibuffers at least; they're relatively
     // cheap to replace.
     release_all_vertex_buffers();
     release_all_index_buffers();
+
+    _prepared_objects->update(this);
 
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
@@ -3436,6 +3438,10 @@ check_cooperative_level() {
   switch (hr) {
   case D3DERR_DEVICENOTRESET:
     _dx_is_ready = false;
+
+    // call this just in case
+    _prepared_objects->update (this);
+
     hr = reset_d3d_device(&_screen->_presentation_params);
     if (FAILED(hr)) {
       // I think this shouldnt fail unless I've screwed up the

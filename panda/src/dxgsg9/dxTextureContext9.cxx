@@ -633,26 +633,43 @@ create_texture(DXScreenData &scrn) {
     mip_level_count = 1;
   }
 
+  DWORD usage;
+  D3DPOOL pool;
+
+  if (_texture->get_render_to_texture ()) {
+    // REQUIRED
+    pool = D3DPOOL_DEFAULT;
+    usage = D3DUSAGE_RENDERTARGET;
+
+// *****
+    target_pixel_format = D3DFMT_X8R8G8B8;
+  }
+  else {
+    pool = D3DPOOL_MANAGED;
+//    pool = D3DPOOL_DEFAULT;
+    usage = 0;
+  }
+
   switch (_texture->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
     hr = scrn._d3d_device->CreateTexture
-      (target_width, target_height, mip_level_count, 0x0,
-       target_pixel_format, D3DPOOL_MANAGED, &_d3d_2d_texture, NULL);
+      (target_width, target_height, mip_level_count, usage,
+       target_pixel_format, pool, &_d3d_2d_texture, NULL);
     _d3d_texture = _d3d_2d_texture;
     break;
 
   case Texture::TT_3d_texture:
     hr = scrn._d3d_device->CreateVolumeTexture
-      (target_width, target_height, target_depth, mip_level_count, 0x0,
-       target_pixel_format, D3DPOOL_MANAGED, &_d3d_volume_texture, NULL);
+      (target_width, target_height, target_depth, mip_level_count, usage,
+       target_pixel_format, pool, &_d3d_volume_texture, NULL);
     _d3d_texture = _d3d_volume_texture;
     break;
 
   case Texture::TT_cube_map:
     hr = scrn._d3d_device->CreateCubeTexture
-      (target_width, mip_level_count, 0x0,
-       target_pixel_format, D3DPOOL_MANAGED, &_d3d_cube_texture, NULL);
+      (target_width, mip_level_count, usage,
+       target_pixel_format, pool, &_d3d_cube_texture, NULL);
     _d3d_texture = _d3d_cube_texture;
     break;
   }
