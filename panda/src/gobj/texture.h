@@ -129,7 +129,7 @@ PUBLISHED:
 
     // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
     FT_shadow,
-    
+
     // Returned by string_filter_type() for an invalid match.
     FT_invalid
   };
@@ -173,10 +173,10 @@ PUBLISHED:
   void generate_normalization_cube_map(int size);
 
   virtual bool read(const Filename &fullpath, int z = 0,
-		    int primary_file_num_channels = 0);
-  virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
-		    int z = 0,
-		    int primary_file_num_channels = 0, int alpha_file_channel = 0);
+        int primary_file_num_channels = 0);
+  virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+        int z = 0,
+        int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath, int z = 0) const;
 
   bool read_pages(Filename fullpath_pattern, int z_size = 0);
@@ -186,7 +186,7 @@ PUBLISHED:
   bool store(PNMImage &pnmimage, int z = 0) const;
 
   Texture *load_related(const PT(InternalName) &suffix) const;
-  
+
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;
   INLINE bool has_alpha_filename() const;
@@ -213,6 +213,7 @@ PUBLISHED:
   void set_magfilter(FilterType filter);
   void set_anisotropic_degree(int anisotropic_degree);
   void set_border_color(const Colorf &color);
+  void set_render_to_texture(bool render_to_texture);
 
   INLINE WrapMode get_wrap_u() const;
   INLINE WrapMode get_wrap_v() const;
@@ -221,6 +222,7 @@ PUBLISHED:
   INLINE FilterType get_magfilter() const;
   INLINE int get_anisotropic_degree() const;
   INLINE Colorf get_border_color() const;
+  INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
 
   virtual bool has_ram_image() const;
@@ -268,7 +270,7 @@ public:
 
   static bool is_mipmap(FilterType type);
 
-  TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
 
   // These bits are used as parameters to Texture::mark_dirty() and
@@ -302,7 +304,7 @@ protected:
 
   bool reconsider_z_size(int z);
   bool reconsider_image_properties(int x_size, int y_size, int num_components,
-				   ComponentType component_type, int z);
+           ComponentType component_type, int z);
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
@@ -351,6 +353,7 @@ protected:
   int _anisotropic_degree;
   bool _keep_ram_image;
   Colorf _border_color;
+  bool _render_to_texture;
   bool _match_framebuffer_format;
 
   // A Texture keeps a list (actually, a map) of all the

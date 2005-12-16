@@ -58,6 +58,7 @@ Texture(const string &name) :
   _keep_ram_image = true;
   _all_dirty_flags = 0;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _render_to_texture = false;
   _match_framebuffer_format = false;
 
   _texture_type = TT_2d_texture;
@@ -126,7 +127,7 @@ Texture::
 //               as a separate texture from the original, so it will
 //               be duplicated in texture memory (and may be
 //               independently modified if desired).
-//               
+//
 //               If the Texture is an AviTexture, the resulting
 //               duplicate may be animated independently of the
 //               original.
@@ -145,8 +146,8 @@ make_copy() {
 //               modify_ram_image().
 ////////////////////////////////////////////////////////////////////
 void Texture::
-setup_texture(Texture::TextureType texture_type, int x_size, int y_size, 
-              int z_size, Texture::ComponentType component_type, 
+setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
+              int z_size, Texture::ComponentType component_type,
               Texture::Format format) {
   if (texture_type == TT_cube_map) {
     // Cube maps must always consist of six square images.
@@ -291,11 +292,11 @@ read(const Filename &fullpath, int z, int primary_file_num_channels) {
   if (textures_header_only) {
     if (!image.read_header(fullpath)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read: " << fullpath << endl;
+  << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
     image = PNMImage(1, 1, image.get_num_channels(), image.get_maxval(),
-		     image.get_type());
+         image.get_type());
     image.fill(0.2, 0.3, 1.0);
     if (image.has_alpha()) {
       image.alpha_fill(1.0);
@@ -304,7 +305,7 @@ read(const Filename &fullpath, int z, int primary_file_num_channels) {
   } else {
     if (!image.read(fullpath, NULL, false)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read: " << fullpath << endl;
+  << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
   }
@@ -345,11 +346,11 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   if (textures_header_only) {
     if (!image.read_header(fullpath)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read: " << fullpath << endl;
+  << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
     image = PNMImage(1, 1, image.get_num_channels(), image.get_maxval(),
-		     image.get_type());
+         image.get_type());
     image.fill(0.2, 0.3, 1.0);
     if (image.has_alpha()) {
       image.alpha_fill(1.0);
@@ -358,7 +359,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   } else {
     if (!image.read(fullpath, NULL, false)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read: " << fullpath << endl;
+  << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
   }
@@ -367,12 +368,12 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   if (textures_header_only) {
     if (!alpha_image.read_header(alpha_fullpath)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read: " << alpha_fullpath << endl;
+  << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
       return false;
     }
-    alpha_image = PNMImage(1, 1, alpha_image.get_num_channels(), 
-			   alpha_image.get_maxval(),
-			   alpha_image.get_type());
+    alpha_image = PNMImage(1, 1, alpha_image.get_num_channels(),
+         alpha_image.get_maxval(),
+         alpha_image.get_type());
     alpha_image.fill(1.0);
     if (alpha_image.has_alpha()) {
       alpha_image.alpha_fill(1.0);
@@ -381,11 +382,11 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   } else {
     if (!alpha_image.read(alpha_fullpath, NULL, true)) {
       gobj_cat.error()
-	<< "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
+  << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
       return false;
     }
   }
-    
+
   if (!has_name()) {
     set_name(fullpath.get_basename_wo_extension());
   }
@@ -405,7 +406,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
       image.get_y_size() != alpha_image.get_y_size()) {
     gobj_cat.info()
       << "Automatically rescaling " << alpha_fullpath.get_basename()
-      << " from " << alpha_image.get_x_size() << " by " 
+      << " from " << alpha_image.get_x_size() << " by "
       << alpha_image.get_y_size() << " to " << image.get_x_size()
       << " by " << image.get_y_size() << "\n";
 
@@ -424,7 +425,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   // grayscale value from the second image.
   image.add_alpha();
 
-  if (alpha_file_channel == 4 || 
+  if (alpha_file_channel == 4 ||
       (alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
     // Use the alpha channel.
     for (int x = 0; x < image.get_x_size(); x++) {
@@ -614,8 +615,8 @@ load(const PNMImage &pnmimage, int z) {
   }
 
   if (!reconsider_image_properties(pnmimage.get_x_size(), pnmimage.get_y_size(),
-				   pnmimage.get_num_channels(), component_type,
-				   z)) {
+           pnmimage.get_num_channels(), component_type,
+           z)) {
     return false;
   }
 
@@ -627,12 +628,12 @@ load(const PNMImage &pnmimage, int z) {
   // _image component.
   bool has_alpha = pnmimage.has_alpha();
   bool is_grayscale = pnmimage.is_grayscale();
-    
+
   if (maxval == 255) {
     // Most common case: one byte per pixel, and the source image
     // shows a maxval of 255.  No scaling is necessary.
     int idx = get_expected_ram_page_size() * z;
-    
+
     for (int j = _y_size-1; j >= 0; j--) {
       for (int i = 0; i < _x_size; i++) {
         if (is_grayscale) {
@@ -649,12 +650,12 @@ load(const PNMImage &pnmimage, int z) {
     }
 
     nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
-    
+
   } else if (maxval == 65535) {
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     int idx = get_expected_ram_page_size() * z;
-    
+
     for (int j = _y_size-1; j >= 0; j--) {
       for (int i = 0; i < _x_size; i++) {
         if (is_grayscale) {
@@ -671,14 +672,14 @@ load(const PNMImage &pnmimage, int z) {
     }
 
     nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
-    
+
   } else if (maxval <= 255) {
     // A less common case: one byte per pixel, but the maxval is
     // something other than 255.  In this case, we should scale the
     // pixel values up to the appropriate amount.
     int idx = get_expected_ram_page_size() * z;
     double scale = 255.0 / (double)maxval;
-    
+
     for (int j = _y_size-1; j >= 0; j--) {
       for (int i = 0; i < _x_size; i++) {
         if (is_grayscale) {
@@ -695,14 +696,14 @@ load(const PNMImage &pnmimage, int z) {
     }
 
     nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
-    
+
   } else {
     // Another uncommon case: two bytes per pixel, and the maxval is
     // something other than 65535.  Again, we must scale the pixel
     // values.
     int idx = get_expected_ram_page_size() * z;
     double scale = 65535.0 / (double)maxval;
-    
+
     for (int j = _y_size-1; j >= 0; j--) {
       for (int i = 0; i < _x_size; i++) {
         if (is_grayscale) {
@@ -815,14 +816,14 @@ load_related(const PT(InternalName) &suffix) const {
     return (Texture*)NULL;
   }
   Filename main = get_fullpath();
-  main.set_basename_wo_extension(main.get_basename_wo_extension() + 
+  main.set_basename_wo_extension(main.get_basename_wo_extension() +
                                  suffix->get_name());
   Texture *res;
   if (has_alpha_fullpath()) {
     Filename alph = get_alpha_fullpath();
     alph.set_basename_wo_extension(alph.get_basename_wo_extension() +
                                    suffix->get_name());
-    res = TexturePool::load_texture(main, alph, 
+    res = TexturePool::load_texture(main, alph,
                                     _primary_file_num_channels,
                                     _alpha_file_channel);
   } else {
@@ -856,7 +857,7 @@ set_wrap_u(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_v(Texture::WrapMode wrap) {
   if (_wrap_v != wrap) {
-    mark_dirty(DF_wrap); 
+    mark_dirty(DF_wrap);
     _wrap_v = wrap;
   }
 }
@@ -869,7 +870,7 @@ set_wrap_v(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_w(Texture::WrapMode wrap) {
   if (_wrap_w != wrap) {
-    mark_dirty(DF_wrap); 
+    mark_dirty(DF_wrap);
     _wrap_w = wrap;
   }
 }
@@ -935,6 +936,19 @@ set_border_color(const Colorf &color) {
     mark_dirty(DF_border);
     _border_color = color;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_render_to_texture
+//       Access: Published
+//  Description: Specifies the solid color of the texture's border.
+//               Some OpenGL implementations use a border for tiling
+//               textures; in Panda, it is only used for specifying
+//               the clamp color.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_render_to_texture(bool render_to_texture) {
+    _render_to_texture = render_to_texture;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1243,7 +1257,7 @@ is_mipmap(FilterType filter_type) {
   case FT_nearest_mipmap_linear:
   case FT_linear_mipmap_linear:
     return true;
-    
+
   default:
     return false;
   }
@@ -1266,7 +1280,7 @@ is_mipmap(FilterType filter_type) {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 TextureContext *Texture::
-prepare_now(PreparedGraphicsObjects *prepared_objects, 
+prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1454,7 +1468,7 @@ reload_ram_image() {
   if (_texture_type == TT_1d_texture || _texture_type == TT_2d_texture) {
     gobj_cat.info()
       << "Reloading texture " << get_name() << "\n";
-    
+
     make_ram_image();
     if (has_alpha_fullpath()) {
       read(get_fullpath(), get_alpha_fullpath(),
@@ -1534,7 +1548,7 @@ reconsider_z_size(int z) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 reconsider_image_properties(int x_size, int y_size, int num_components,
-			    Texture::ComponentType component_type, int z) {
+          Texture::ComponentType component_type, int z) {
   if (!_loaded_from_disk || num_components != _num_components) {
     // Come up with a default format based on the number of channels.
     // But only do this the first time the file is loaded, or if the
@@ -1544,19 +1558,19 @@ reconsider_image_properties(int x_size, int y_size, int num_components,
     case 1:
       _format = F_luminance;
       break;
-      
+
     case 2:
       _format = F_luminance_alpha;
       break;
-      
+
     case 3:
       _format = F_rgb;
       break;
-      
+
     case 4:
       _format = F_rgba;
       break;
-      
+
     default:
       // Eh?
       nassertr(false, false);
@@ -1751,33 +1765,33 @@ make_from_bam(const FactoryParams &params) {
       // This texture does have a filename, so try to load it from disk.
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
       if (!manager->get_filename().empty()) {
-	// If texture filename was given relative to the bam filename,
-	// expand it now.
-	Filename bam_dir = manager->get_filename().get_dirname();
+  // If texture filename was given relative to the bam filename,
+  // expand it now.
+  Filename bam_dir = manager->get_filename().get_dirname();
         vfs->resolve_filename(filename, bam_dir);
-	if (!alpha_filename.empty()) {
-	  vfs->resolve_filename(alpha_filename, bam_dir);
-	}
+  if (!alpha_filename.empty()) {
+    vfs->resolve_filename(alpha_filename, bam_dir);
+  }
       }
 
       switch (texture_type) {
       case TT_1d_texture:
       case TT_2d_texture:
-	if (alpha_filename.empty()) {
-	  me = TexturePool::load_texture(filename, primary_file_num_channels);
-	} else {
-	  me = TexturePool::load_texture(filename, alpha_filename, 
-					 primary_file_num_channels, alpha_file_channel);
-	}
-	break;
+  if (alpha_filename.empty()) {
+    me = TexturePool::load_texture(filename, primary_file_num_channels);
+  } else {
+    me = TexturePool::load_texture(filename, alpha_filename,
+           primary_file_num_channels, alpha_file_channel);
+  }
+  break;
 
       case TT_3d_texture:
-	me = TexturePool::load_3d_texture(filename);
-	break;
+  me = TexturePool::load_3d_texture(filename);
+  break;
 
       case TT_cube_map:
-	me = TexturePool::load_cube_map(filename);
-	break;
+  me = TexturePool::load_cube_map(filename);
+  break;
       }
     }
   }
@@ -1824,7 +1838,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     // written.
     set_format(format);
   }
-  
+
   if (has_rawdata) {
     // In the rawdata case, we must always set the format.
     _format = format;
@@ -1835,9 +1849,9 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     _component_type = (ComponentType)scan.get_uint8();
     _component_width = scan.get_uint8();
     _loaded_from_disk = false;
-    
+
     PN_uint32 u_size = scan.get_uint32();
-    
+
     // fill the _image buffer with image data
     string temp_buff = scan.extract_bytes(u_size);
     _image = PTA_uchar::empty_array((int) u_size);
@@ -1868,7 +1882,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // Otherwise, we just write out the filename, and assume whoever
   // loads the bam file later will have access to the image file on
   // disk.
-  bool has_rawdata = 
+  bool has_rawdata =
     (bam_texture_mode == BTM_rawdata || (has_ram_image() && filename.empty()));
 
   switch (bam_texture_mode) {
@@ -1886,23 +1900,23 @@ write_datagram(BamWriter *manager, Datagram &me) {
     alpha_filename = get_alpha_fullpath();
     if (!has_bam_dir || filename.find_on_searchpath(bam_dir) == -1) {
       if (filename.find_on_searchpath(get_texture_path()) == -1) {
-	filename.find_on_searchpath(get_model_path());
+  filename.find_on_searchpath(get_model_path());
       }
     }
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << "Texture file " << get_filename()
-	<< " found as " << filename << "\n";
+  << " found as " << filename << "\n";
     }
     if (!has_bam_dir || alpha_filename.find_on_searchpath(bam_dir) == -1) {
       if (alpha_filename.find_on_searchpath(get_texture_path()) == -1) {
-	alpha_filename.find_on_searchpath(get_model_path());
+  alpha_filename.find_on_searchpath(get_model_path());
       }
     }
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << "Alpha image " << get_alpha_filename()
-	<< " found as " << alpha_filename << "\n";
+  << " found as " << alpha_filename << "\n";
     }
     break;
 
@@ -1972,7 +1986,7 @@ operator << (ostream &out, Texture::FilterType ft) {
 
   case Texture::FT_shadow:
     return out << "shadow";
-  
+
   case Texture::FT_invalid:
     return out << "invalid";
   }

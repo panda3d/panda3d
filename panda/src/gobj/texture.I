@@ -399,6 +399,19 @@ get_border_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_render_to_texture
+//       Access: Published
+//  Description: Returns the solid color of the texture's border.
+//               Some OpenGL implementations use a border for tiling
+//               textures; in Panda, it is only used for specifying
+//               the clamp color.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+get_render_to_texture() const {
+  return _render_to_texture;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::uses_mipmaps
 //       Access: Public
 //  Description: Returns true if the minfilter settings on this
