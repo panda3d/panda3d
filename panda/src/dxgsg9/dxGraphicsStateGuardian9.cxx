@@ -117,9 +117,6 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
-
-  // default render to texture format
-  _render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1743,7 +1740,15 @@ reset() {
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
 
   _supports_render_texture = false;
+
   hr = _d3d_device->GetCreationParameters (&creation_parameters);
+
+  // default render to texture format
+//  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
+
+  // match the display mode format for render to texture
+  _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
+
   if (SUCCEEDED (hr)) {
     hr = _screen->_d3d9->CheckDeviceFormat (
         creation_parameters.AdapterOrdinal,
@@ -1751,7 +1756,7 @@ reset() {
         _screen->_display_mode.Format,
         D3DUSAGE_RENDERTARGET,
         D3DRTYPE_TEXTURE,
-        _render_to_texture_d3d_format);
+        _screen->_render_to_texture_d3d_format);
     if (SUCCEEDED (hr)) {
       _supports_render_texture = true;
     }

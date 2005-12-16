@@ -208,6 +208,7 @@ struct DXScreenData {
   D3DDISPLAYMODE _display_mode;
   D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
   D3DADAPTER_IDENTIFIER9 _dx_device_id;
+  D3DFORMAT _render_to_texture_d3d_format;
 };
 
 

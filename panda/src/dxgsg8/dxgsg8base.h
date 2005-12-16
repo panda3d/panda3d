@@ -74,7 +74,7 @@ typedef DWORD DXShaderHandle;
     type var;                       \
     ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
-    
+
 #define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
   if((HANDLE!=NULL)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL; }
 
@@ -90,7 +90,7 @@ typedef DWORD DXShaderHandle;
 #define RELEASE_ONCE false
 
 
-// uncomment to add refcnt debug output 
+// uncomment to add refcnt debug output
 #define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
@@ -112,7 +112,7 @@ typedef DWORD DXShaderHandle;
 
 #define PRINT_REFCNT(MODULE,p) { ULONG refcnt;  (p)->AddRef();  refcnt=(p)->Release(); \
                                  MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; }
-                                 
+
 #else
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)   { \
    ULONG refcnt;                                        \
@@ -128,7 +128,7 @@ typedef DWORD DXShaderHandle;
    }}
 
 #define PRINT_REFCNT(MODULE,p)
-#endif    
+#endif
 
 #ifdef DO_PSTATS
 #define DO_PSTATS_STUFF(XX) XX;
@@ -206,6 +206,7 @@ struct DXScreenData {
   D3DDISPLAYMODE _display_mode;
   D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
   D3DADAPTER_IDENTIFIER8 _dx_device_id;
+  D3DFORMAT _render_to_texture_d3d_format;
 };
 
 

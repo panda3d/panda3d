@@ -234,8 +234,6 @@ protected:
   static unsigned char *_temp_buffer;
   static unsigned char *_safe_buffer_start;
 
-  D3DFORMAT _render_to_texture_d3d_format;
-
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
