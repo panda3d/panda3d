@@ -430,10 +430,13 @@ class ClientRepository(ConnectionRepository):
             else:
                 distObj.deleteOrDelay()
         else:
-            ClientRepository.notify.warning(
-                "Disable failed. DistObj "
-                + str(doId) +
-                " is not in dictionary, ownerView=%s" % ownerView)
+            self._logFailedDisable(doId, ownerView)
+
+    def _logFailedDisable(self, doId, ownerView):
+        ClientRepository.notify.warning(
+            "Disable failed. DistObj "
+            + str(doId) +
+            " is not in dictionary, ownerView=%s" % ownerView)
 
     def handleDelete(self, di):
         # overridden by ToontownClientRepository
