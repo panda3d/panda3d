@@ -114,7 +114,7 @@ write(ostream &out, int indent_level) const {
 //               code and sends it to any interested
 //               VrpnTrackerDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnTracker::
+void VRPN_CALLBACK VrpnTracker::
 vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;
   if (vrpn_cat.is_spam()) {
@@ -143,7 +143,7 @@ vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
 //               code and sends it to any interested
 //               VrpnTrackerDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnTracker::
+void VRPN_CALLBACK VrpnTracker::
 vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;
   if (vrpn_cat.is_spam()) {
@@ -174,7 +174,7 @@ vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
 //               code and sends it to any interested
 //               VrpnTrackerDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnTracker::
+void VRPN_CALLBACK VrpnTracker::
 vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;
   if (vrpn_cat.is_spam()) {

@@ -867,7 +867,7 @@ poll_dial(const string &dial) {
 //  Description: Callback function that merely passes the data down
 //               to the appropriate non-static function
 ////////////////////////////////////////////////////////////////////
-void VrpnClient::
+void VRPN_CALLBACK VrpnClient::
 st_tracker_position(void *userdata, const vrpn_TRACKERCB info) {
   VrpnClientInfo *data = (VrpnClientInfo *)userdata;
   ((VrpnClient *)data->self)->tracker_position(data->device_name, info);
@@ -879,7 +879,7 @@ st_tracker_position(void *userdata, const vrpn_TRACKERCB info) {
 //  Description: Callback function that merely passes the data down
 //               to the appropriate non-static function
 ////////////////////////////////////////////////////////////////////
-void VrpnClient::
+void VRPN_CALLBACK VrpnClient::
 st_tracker_velocity(void *userdata, const vrpn_TRACKERVELCB info) {
   VrpnClientInfo *data = (VrpnClientInfo *)userdata;
   ((VrpnClient *)data->self)->tracker_velocity(data->device_name, info);
@@ -890,7 +890,7 @@ st_tracker_velocity(void *userdata, const vrpn_TRACKERVELCB info) {
 //  Description: Callback function that merely passes the data down
 //               to the appropriate non-static function
 ////////////////////////////////////////////////////////////////////
-void VrpnClient::
+void VRPN_CALLBACK VrpnClient::
 st_tracker_acceleration(void *userdata, const vrpn_TRACKERACCCB info) {
   VrpnClientInfo *data = (VrpnClientInfo *)userdata;
   ((VrpnClient *)data->self)->tracker_acceleration(data->device_name, info);

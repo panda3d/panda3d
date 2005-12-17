@@ -60,7 +60,7 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  static void
+  static void VRPN_CALLBACK
   vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info);
 
 private:

@@ -59,11 +59,11 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  static void
+  static void VRPN_CALLBACK
   vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info);
-  static void
+  static void VRPN_CALLBACK
   vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info);
-  static void
+  static void VRPN_CALLBACK
   vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info);
 
 private:

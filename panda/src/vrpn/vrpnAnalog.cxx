@@ -112,7 +112,7 @@ write(ostream &out, int indent_level) const {
 //               code and sends it to any interested
 //               VrpnAnalogDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnAnalog::
+void VRPN_CALLBACK VrpnAnalog::
 vrpn_analog_callback(void *userdata, const vrpn_ANALOGCB info) {
   VrpnAnalog *self = (VrpnAnalog *)userdata;
 

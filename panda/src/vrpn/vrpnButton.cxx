@@ -112,7 +112,7 @@ write(ostream &out, int indent_level) const {
 //               code and sends it to any interested
 //               VrpnButtonDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnButton::
+void VRPN_CALLBACK VrpnButton::
 vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info) {
   VrpnButton *self = (VrpnButton *)userdata;
   if (vrpn_cat.is_debug()) {

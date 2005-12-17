@@ -112,7 +112,7 @@ write(ostream &out, int indent_level) const {
 //               code and sends it to any interested
 //               VrpnDialDevices.
 ////////////////////////////////////////////////////////////////////
-void VrpnDial::
+void VRPN_CALLBACK VrpnDial::
 vrpn_dial_callback(void *userdata, const vrpn_DIALCB info) {
   VrpnDial *self = (VrpnDial *)userdata;
 
