@@ -1724,10 +1724,17 @@ run_reading_header() {
   _redirect = get_header_value("Location");
 
   // The server might have given us just a filename for the redirect.
-  // In that case, it's relative to the same server.
+  // In that case, it's relative to the same server.  If it's a
+  // relative path, it's relative to the same directory.
   if (_redirect.has_path() && !_redirect.has_authority()) {
-    _redirect.set_scheme(_document_spec.get_url().get_scheme());
-    _redirect.set_authority(_document_spec.get_url().get_authority());
+    URLSpec url = _document_spec.get_url();
+    Filename path = _redirect.get_path();
+    if (path.is_local()) {
+      Filename rel_to = Filename(url.get_path()).get_dirname();
+      _redirect.set_path(Filename(rel_to, path));
+    }
+    _redirect.set_scheme(url.get_scheme());
+    _redirect.set_authority(url.get_authority());
   }
 
   _state = S_read_header;
@@ -1811,6 +1818,7 @@ run_reading_header() {
         }
         reset_url(_request.get_url(), new_url);
         _request.set_url(new_url);
+	_want_ssl = _request.get_url().is_ssl();
         make_header();
         make_request_text();
 
