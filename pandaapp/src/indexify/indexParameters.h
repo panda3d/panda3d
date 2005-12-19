@@ -81,8 +81,10 @@ extern Filename prev_icon;
 extern Filename next_icon;
 extern Filename up_icon;
 extern Filename movie_icon;
+extern Filename sound_icon;
 
 const PNMImage &get_movie_icon();
+const PNMImage &get_sound_icon();
 
 // True to regenerate every image, whether it appears to need it or
 // not.

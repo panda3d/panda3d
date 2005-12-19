@@ -23,6 +23,7 @@ extern const char *default_left_icon_filename;
 extern const char *default_right_icon_filename;
 extern const char *default_up_icon_filename;
 extern const char *default_movie_icon_filename;
+extern const char *default_sound_icon_filename;
 
 extern const unsigned char default_left_icon[];
 extern const int default_left_icon_len;

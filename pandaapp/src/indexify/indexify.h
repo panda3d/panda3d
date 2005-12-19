@@ -55,6 +55,7 @@ public:
   Filename _roll_dir_root;
   string _photo_extension;
   string _movie_extension;
+  string _sound_extension;
   Filename _font_filename;
   bool _generate_icons;
   double _font_aa_factor;

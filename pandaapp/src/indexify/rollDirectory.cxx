@@ -121,7 +121,8 @@ get_desc() const {
 //  Description: Scans the directory for all the listed photos.
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
-scan(const string &photo_extension, const string &movie_extension) {
+scan(const string &photo_extension, const string &movie_extension,
+     const string &sound_extension) {
   bool reverse_order = false;
   bool explicit_list = false;
 
@@ -191,7 +192,8 @@ scan(const string &photo_extension, const string &movie_extension) {
 	  try_filename = Filename(_dir, _basename + "0" + word + "." + photo_extension);
 	}
 	if (try_filename.exists()) {
-          add_photo(try_filename.get_basename(), movie_extension);
+          add_photo(try_filename.get_basename(), movie_extension, 
+		    sound_extension);
 	} else {
 	  nout << "Frame " << word << " not found in " << _name << "\n";
 	}
@@ -231,7 +233,7 @@ scan(const string &photo_extension, const string &movie_extension) {
     for (ci = contents.begin(); ci != contents.end(); ++ci) {
       Filename basename = (*ci);
       if (basename.get_extension() == photo_extension) {
-        add_photo(basename, movie_extension);
+        add_photo(basename, movie_extension, sound_extension);
       }
     }
   }
@@ -692,8 +694,9 @@ insert_html_comment(ostream &html, Filename cm_filename) {
 //               list.
 ////////////////////////////////////////////////////////////////////
 void RollDirectory::
-add_photo(const Filename &basename, const string &movie_extension) {
-  Photo *photo = new Photo(this, basename, movie_extension);
+add_photo(const Filename &basename, const string &movie_extension,
+	  const string &sound_extension) {
+  Photo *photo = new Photo(this, basename, movie_extension, sound_extension);
   _photos.push_back(photo);
 }
 

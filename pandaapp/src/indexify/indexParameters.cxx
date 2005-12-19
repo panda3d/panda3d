@@ -44,6 +44,7 @@ Filename prev_icon;
 Filename next_icon;
 Filename up_icon;
 Filename movie_icon;
+Filename sound_icon;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_movie_icon
@@ -66,6 +67,29 @@ get_movie_icon() {
   }
 
   return movie_icon_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_sound_icon
+//  Description: Reads the sound icon filename and returns it as an
+//               image, if possible.  Returns a valid image if
+//               successful, an invalid one otherwise.
+////////////////////////////////////////////////////////////////////
+const PNMImage &
+get_sound_icon() {
+  static PNMImage sound_icon_image;
+  static bool got_image = false;
+
+  if (!got_image) {
+    if (!sound_icon.empty()) {
+      Filename icon_filename(archive_dir, sound_icon);
+      nout << "Reading " << icon_filename << "\n";
+      sound_icon_image.read(icon_filename);
+    }
+    got_image = true;
+  }
+
+  return sound_icon_image;
 }
 
 bool force_regenerate = false;

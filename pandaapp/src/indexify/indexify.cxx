@@ -145,11 +145,20 @@ Indexify() {
      &Indexify::dispatch_string, NULL, &_movie_extension);
 
   add_option
+    ("S", "extension", 0,
+     "Specifies the filename extension (without a leading dot) to identify "
+     "sound files within the roll directories.  This is normally mp3.  If "
+     "a file exists with the same name as a given photo but with this "
+     "extension, it is taken to be a sound clip associated with the photo, "
+     "and a link will be generated to play the clip.",
+     &Indexify::dispatch_string, NULL, &_sound_extension);
+
+  add_option
     ("i", "", 0,
      "Indicates that default navigation icon images should be generated "
      "into a directory called \"icons\" which will be created within the "
      "directory named by -a.  This is meaningful only if -iprev, -inext, "
-     "-iup, and -imovie are not explicitly specified.",
+     "-iup, -imovie, and -isound are not explicitly specified.",
      &Indexify::dispatch_none, &_generate_icons);
 
   add_option
@@ -253,6 +262,13 @@ Indexify() {
      &Indexify::dispatch_filename, NULL, &movie_icon);
 
   add_option
+    ("isound", "filename", 0,
+     "Specifies the relative pathname from the archive directory (or "
+     "absolute pathname) to the \"sound\" icon.  This is used only if "
+     "there are one or more sound files found in the directory.",
+     &Indexify::dispatch_filename, NULL, &sound_icon);
+
+  add_option
     ("copyreduced", "", 0,
      "Instead of generating index files, copy key files (such as "
      "*.cm, *.ds) from the full image directory into the reduced "
@@ -262,6 +278,7 @@ Indexify() {
 
   _photo_extension = "jpg";
   _movie_extension = "mov";
+  _sound_extension = "mp3";
   _text_maker = (PNMTextMaker *)NULL;
   _font_aa_factor = 4.0;
 }
@@ -488,6 +505,22 @@ post_command_line() {
 	output.write((const char *)default_movie_icon, default_movie_icon_len);
       }
     }
+    if (sound_icon.empty()) {
+      sound_icon = Filename("icons", default_sound_icon_filename);
+      Filename icon_filename(archive_dir, sound_icon);
+      if (force_regenerate || !icon_filename.exists()) {
+	nout << "Generating " << icon_filename << "\n";
+	icon_filename.make_dir();
+	icon_filename.set_binary();
+      
+	ofstream output;
+	if (!icon_filename.open_write(output)) {
+	  nout << "Unable to write to " << icon_filename << "\n";
+	  exit(1);
+	}
+	output.write((const char *)default_sound_icon, default_sound_icon_len);
+      }
+    }
   }
 
   finalize_parameters();
@@ -546,7 +579,7 @@ run() {
   RollDirs::iterator di;
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
-    if (!roll_dir->scan(_photo_extension, _movie_extension)) {
+    if (!roll_dir->scan(_photo_extension, _movie_extension, _sound_extension)) {
       nout << "Unable to read " << *roll_dir << "\n";
       all_ok = false;
     }

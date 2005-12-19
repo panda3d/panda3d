@@ -205,6 +205,12 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
           int icon_y = label_y - movie_icon_image.get_y_size();
           
           index_image.blend_sub_image(movie_icon_image, icon_x, icon_y);
+        } else if (photo->_has_sound && get_sound_icon().is_valid()) {
+          const PNMImage &sound_icon_image = get_sound_icon();
+          int icon_x = label_x - width / 2 - sound_icon_image.get_x_size();
+          int icon_y = label_y - sound_icon_image.get_y_size();
+          
+          index_image.blend_sub_image(sound_icon_image, icon_x, icon_y);
         }
       }
     }
@@ -457,6 +463,18 @@ copy_reduced(const Filename &archive_dir) {
         }
       }
     }
+
+    if (photo->_has_sound) {
+      // Also copy the sound clip to the reduced directory.
+      Filename sound_filename(_dir->get_dir(), photo->get_sound());
+      if (sound_filename.exists()) {
+        sound_filename.set_binary();
+        Filename reduced_dir(archive_dir, "reduced/" + _dir->get_basename());
+        if (!copy_file(sound_filename, reduced_dir)) {
+          return false;
+        }
+      }
+    }
   }
 
   return true;
@@ -506,6 +524,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
   }
   Filename full(full_dir, photo->get_basename());
   Filename movie(full_dir, photo->get_movie());
+  Filename sound(full_dir, photo->get_sound());
 
   Filename reduced_dir("../../reduced", _dir->get_basename());
   Filename reduced(reduced_dir, photo->get_basename());
@@ -654,6 +673,50 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
       sprintf(buffer, "%.1f", size_float);
       html
         << "<a href=\"" << movie << "\">Play movie ("
+        << buffer << " " << size_units << ")</a></p>\n";
+    }
+  }
+
+  if (photo->_has_sound) {
+    html << "<p>";
+    if (!sound_icon.empty()) {
+      // Show the sound icon if we got one.
+      Filename sound_icon_href = compose_href("../..", sound_icon);
+      html << "<img src=\"" << sound_icon_href << "\" alt=\"\">";
+    }
+
+    // Determine the size of the file.
+    streampos size = 0;
+    ifstream stream;
+    Filename sound_filename(_dir->get_dir(), photo->get_sound());
+    sound_filename.set_binary();
+    if (sound_filename.open_read(stream)) {
+      // Seek to the end and get the stream position there.
+      stream.seekg(0, ios::end);
+      size = stream.tellg();
+    }
+
+    static const streampos MB = 1024 * 1024;
+    static const streampos GB = 1024 * 1024 * 1024;
+    string size_units;
+    double size_float;
+
+    if (size > GB) {
+      size_units = "GB";
+      size_float = (double)size / (double)GB;
+    } else if (size > MB) {
+      size_units = "MB";
+      size_float = (double)size / (double)MB;
+    }
+
+    if (size_units.empty()) {
+      html
+        << "<a href=\"" << sound << "\">Play sound clip</a></p>\n";
+    } else {
+      char buffer[128];
+      sprintf(buffer, "%.1f", size_float);
+      html
+        << "<a href=\"" << sound << "\">Play sound clip ("
         << buffer << " " << size_units << ")</a></p>\n";
     }
   }

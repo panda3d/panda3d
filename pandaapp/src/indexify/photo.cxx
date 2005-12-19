@@ -27,7 +27,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Photo::
-Photo(RollDirectory *dir, const Filename &basename, const string &movie_extension) :
+Photo(RollDirectory *dir, const Filename &basename, 
+      const string &movie_extension, const string &sound_extension) :
   _dir(dir),
   _basename(basename)
 {
@@ -60,6 +61,14 @@ Photo(RollDirectory *dir, const Filename &basename, const string &movie_extensio
     _has_movie = true;
   }
 
+  _has_sound = false;
+  Filename sound_filename(_dir->get_dir(), _basename);
+  sound_filename.set_extension(sound_extension);
+  if (sound_filename.exists()) {
+    _sound = sound_filename.get_basename();
+    _has_sound = true;
+  }
+
   _has_cm = false;
   Filename cm_filename(_dir->get_dir(), _basename);
   cm_filename.set_extension("cm");
@@ -89,6 +98,17 @@ get_basename() const {
 const Filename &Photo::
 get_movie() const {
   return _movie;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Photo::get_sound
+//       Access: Public
+//  Description: Returns the filename of the sound clip associated
+//               with the photo, if any.
+////////////////////////////////////////////////////////////////////
+const Filename &Photo::
+get_sound() const {
+  return _sound;
 }
 
 ////////////////////////////////////////////////////////////////////
