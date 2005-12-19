@@ -130,13 +130,13 @@ Indexify() {
      &Indexify::dispatch_none, &draw_frames);
 
   add_option
-    ("e", "extension", 0,
+    ("pe", "extension", 0,
      "Specifies the filename extension (without a leading dot) to identify "
      "photo files within the roll directories.  This is normally jpg.",
      &Indexify::dispatch_string, NULL, &_photo_extension);
 
   add_option
-    ("m", "extension", 0,
+    ("me", "extension", 0,
      "Specifies the filename extension (without a leading dot) to identify "
      "movie files within the roll directories.  This is normally mov.  If "
      "a file exists with the same name as a given photo but with this "
@@ -145,7 +145,7 @@ Indexify() {
      &Indexify::dispatch_string, NULL, &_movie_extension);
 
   add_option
-    ("S", "extension", 0,
+    ("se", "extension", 0,
      "Specifies the filename extension (without a leading dot) to identify "
      "sound files within the roll directories.  This is normally mp3.  If "
      "a file exists with the same name as a given photo but with this "
