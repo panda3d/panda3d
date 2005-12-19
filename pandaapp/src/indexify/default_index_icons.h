@@ -33,6 +33,8 @@ extern const unsigned char default_up_icon[];
 extern const int default_up_icon_len;
 extern const unsigned char default_movie_icon[];
 extern const int default_movie_icon_len;
+extern const unsigned char default_sound_icon[];
+extern const int default_sound_icon_len;
 
 #endif
 
