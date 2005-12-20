@@ -83,11 +83,11 @@ of the world, see INSTALL.txt in this directory.
   - Click Finish when done
 
   - Run P:\msvs7_1\VS\SETUP.EXE, or install from the MSDN 
-    'Visual Studio.NET' CD. Click on 'Windows Component Update' 
+    'Visual Studio.NET 2003' CD. Click on 'Windows Component Update' 
     (if it is highlighted, else click '2').  Click 'Continue' 
     (Selecting 'Do not use this machine to host web projects').  
 
-  - After installing components, you are ready to install VC7 in .NET 
+  - After installing components, you are ready to install VC7.1 in .NET 
     setup Step 2. Enter this step and enter "VR Studio" for the username.
     On the 'Select items to install page', you need uncheck things to
     avoid wasting gigs of extra space and install time.  
@@ -106,7 +106,7 @@ of the world, see INSTALL.txt in this directory.
   Step 4: Install Cygwin (v1.3.5 or above should work)
 *********************************************************************
 
-  - Latest version currently is 1.5.7-1 (Jan 31 2004)
+  - Latest version currently is 1.5.18-1 (as of Dec 20, 2005)
   - As of 1.3.11, cygwin seems stable enough to install from the 
     internet, go to http://cygwin.com and click on "install cygwin now"
   - The most reliable download server is http://mirrors.rcn.net. 
@@ -228,10 +228,8 @@ of the world, see INSTALL.txt in this directory.
 
   - Copy important startup files into your home directory:
     > cd P:/win/install/wintools/panda
-    > cp .cshrc .emacs Configrc Config.pp.sample /<home root>/<login>
-    > cd /<home root>/<login>
-    > mv Config.pp.sample Config.pp
-    > mv Configrc Config.prc
+    > cp .cshrc .emacs Config.prc Config.pp /<home root>/<login>
+    > cd $HOME
 
   - Make sure the contents of .cshrc are correct for your setup.  In 
     particular, make sure the definition for PANDA_ROOT matches the 
@@ -251,14 +249,14 @@ of the world, see INSTALL.txt in this directory.
     > source setup2.csh
 
 ---------------------------------------------------------------------
-  CAUTION: setup_env.csh: 
+  CAUTION: setup2.csh: 
   Some of the drives may need to be mapped manually from windows. If you
   have a cdrom or some other drive mapped to the following drives, 
   you need to unmount those and map to some other drives.  See the 
   "Connect the network drives" segment below
 ---------------------------------------------------------------------
 
-  These are the steps setup_env.csh performs (so you don't have to):
+  These are the steps setup2.csh performs (so you don't have to):
   - Make the following directories (don't worry if they already exist)
       > mkdir /bin /etc/ /tmp /usr
       > mkdir /c /f /g /h /i /j /p
@@ -335,12 +333,17 @@ of the world, see INSTALL.txt in this directory.
       > mount -s C:/Program\ Files/Intel/Compiler60/IA32 /ia32
 
 *********************************************************************
-  Step 7:  Testing VC7 environment in shell
+  Step 7:  Testing VC7.1 environment in shell
 *********************************************************************
 
-  - After finishing this process, make sure you are using VC7 in your
-    shell by typing 'cl' at the prompt.  If you have VC7 you will see: 
-
+  - After finishing this process, make sure you are using VC7.1 in your
+    shell by typing 'cl' at the prompt.  If you have VC7.1 you will see: 
+    
+    Microsoft (R) 32-bit C/C++ Optimizing Compiler Version 13.10.3077 for 80x86
+    Copyright (C) Microsoft Corporation 1984-2002. All rights reserved.
+    
+    If you have VC7, you will see:
+    
     Microsoft (R)32-bit C/C++ Optimizing Compiler Version 13.00.9466 for 80x86 
     Copyright (C) Microsoft Corporation 1984-2001.
 
@@ -358,11 +361,23 @@ of the world, see INSTALL.txt in this directory.
 
 
   - If it does not, try running 
-      > source ~/player/wintools/etc/setup_env.csh
+      > source ~/player/wintools/etc/setup2.csh
     again to get it to do the cmd (ignore file-exists errors)
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET\ 2003 /msvc7
     This should create the softlink mount, or you can just run the 
     cmd manually yourself.
+------------------------------------------------------------------------------    
+  NOTE:
+  	If you installed Microsoft's .NET Framework (from Windows Update, for
+  	example) before installing Microsoft Visual Studio .NET 2003, you may
+  	experience a problem when compiling C code.  The short 8.3 file name
+  	for the VC7.1 directory used by some configuration scripts is MICROS~1.NET.
+  	If Microsoft's .NET Framework is installed first it will take MICROS~1.NET
+  	as its 8.3 name and VC7.1 will be MICROS~2.NET.  To correct this, move
+  	both directories out of the Program Files directory, then move VC back
+  	first, followed by .NET Framework.  This should rename VC's 8.3 filename
+  	to MICROS~1.NET.
+------------------------------------------------------------------------------
 
 *********************************************************************
   Step 8: Copy files needed by attach scripts
@@ -414,7 +429,7 @@ of the world, see INSTALL.txt in this directory.
   - Update environment variables (win2000/XP).  Note: You should only 
     need to do this if you intend to invoke Emacs from a non-Cygwin 
     prompt.  If you will always be using Cygwin, simply edit your 
-    .cshrc file to add:
+    .cshrc file to add the following to your path there:
        /c/emacs-21.3/bin
     - Select "Start Menu->Control Panel"
     - Select "System" icon.
@@ -456,6 +471,11 @@ of the world, see INSTALL.txt in this directory.
 
     > cvs co otp (only if local toontown will be built)
     > cvs co toontown (only if local toontown will be built)
+    > cvs co wintools (only if local wintools will be used)     
+    > cvs co pandatool (only if local pandatool will be built)
+    > cvs co ttmodels (only if local ttmodels will be built)
+    > cvs co otp_servers_built (only if local otp_server will be run)     
+
 
   - Now choose either A (commit) or B (anonymous) access:
 
@@ -467,21 +487,10 @@ of the world, see INSTALL.txt in this directory.
         unable to do so just make sure you edit your .cshrc file to 
         reflect this for the SFROOT variable.
 
-        Tell somebody like David Rose, Dave Schuyler, or Mark Mine 
-        to add your new sourceforge username to the list of Panda3D 
-        developers.
+        Tell somebody like David Rose or Dave Schuyler to add your 
+        new sourceforge username to the list of Panda3D developers.
 
-      2. setup ssh and access through the corporate firewall to
-         cvs.sourceforge.net
-
-        - make a directory ~/.ssh and copy the file from
-          /p/win/install/wintools/etc/ssh_config to a file named
-          ~/.ssh/config 
-
-        - Alternatively, you can copy the config file to
-          /etc/ssh_config instead of to your ~/.ssh directory, but you
-          probably shouldn't do this, since it will just make it
-          difficult to detect errors in reading your ~/.ssh directory.
+      2. setup ssh access cvs.sourceforge.net
 
         - If you have not generated a key before on another machine,
           generate a dsa key now with:
@@ -495,18 +504,14 @@ of the world, see INSTALL.txt in this directory.
 
           If the above does not put a file in ~/.ssh, check that
           your /etc/passwd file has an entry for your username and that
-          it points to the correct home directory for you.
+          it points to the correct home directory for you (e.g. /home/<username> ).
 
         - Register your generated ssh public key (id_dsa.pub) at 
           https://sourceforge.net/account/editsshkeys.php
 
-      3. type this at the shell or/and put it into your .cshrc
-          > setenv CVS_RSH /bin/ssh
+      3. check that your .cshrc file has the SFROOT variable set to be something like this:
 
-      4. check out these trees in ~/player (only if a local version
-         will be built) with:
-
-          > setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
+          setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
 
     B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
 
@@ -528,11 +533,6 @@ of the world, see INSTALL.txt in this directory.
      > cvs -d $SFROOT co panda (only if local panda will be built)
      > cvs -d $SFROOT co direct (only if local direct will be built)
      
-  - NOTE: If you are having trouble connecting to SourceForge, check
-    /etc/passwd to make sure your home directly is listed correctly.
-    If it is not, ssh won't be able to find your $HOME/.ssh/config
-    file and therefore won't correctly use the proxy tunnel.
-      
   - Choose which optimize level you want. This is set in Config.pp in
     your $HOME directory.  Look for #define OPTIMIZE and follow
     instructions above that.  You can only choose an arbitrary
@@ -559,9 +559,19 @@ of the world, see INSTALL.txt in this directory.
 
   - Note: if you get an error stating that 'ppremake' cannot be found,
     make sure that you are attached to WINTOOLS:install and try again.
+    You may need to check out a personal copy of WINTOOLS and attach
+    to that in your .cshrc file before this will work.
 
-  After the make is done, kill your current tcsh window and open another 
-  using your shortcut from before.
+  After the make is done successfully, modify your .cshrc file so the
+  following lines look like this:
+
+	# Generic settings
+	setenv DTOOL /home/cbrunner/player/dtool
+	source $DTOOL/built/etc/dtool.cshrc personal
+	cta wintools personal  
+  
+  Open another Cygwin window using your shortcut from before and make
+  sure everything starts up OK before killing the old window and proceding.
 
   - Note all these "cta" attach commands can be placed in your .cshrc
 
@@ -620,63 +630,103 @@ of the world, see INSTALL.txt in this directory.
   > ppremake
   > make install
   Exit the shell and create a new one
+  
+*********************************************************************
+  Step 17: (Optional) Build $PANDATOOL
+*********************************************************************
+
+  > cta dtool personal  
+  > cta panda personal
+  > cta direct personal
+  > cta otp personal (optional)
+  > cta toontown personal (optional)
+  > cta pandatool personal
+  > cd $PANDATOOL
+  > ppremake
+  > make install
+  Exit the shell and create a new one
+  
+*********************************************************************
+  Step 18: (Optional) Build $TTMODELS
+*********************************************************************
+
+  > cta dtool personal  
+  > cta panda personal
+  > cta direct personal
+  > cta otp personal
+  > cta toontown personal
+  > cta pandatool personal
+  > cta ttmodels personal
+  > cd $TTMODELS
+  > ppremake
+  > make install
+  Exit the shell and create a new one
+  
+NOTE: You need to make sure you have a licensing solution for the various
+modeling apps involved in building Toontown models (e.g. C:\FlexLM).
+
+NOTE: It may be easier (and much less time consuming) to checkout a pre-built
+version of the model tree.  The checkout_built.sh script is in
+$WINTOOLS/built/bin.
+  > cd ~/player
+  > checkout_built.sh ttmodels
+This will create a ttmodels directory with all the models already built for you.
 
 *********************************************************************
-  Step 17: (Optional) Generate Python Code
+  Step 19: (Optional) Generate Python Code
 *********************************************************************
 
   > genPyCode
   > genPyCode -n (for publishes)
 
 *********************************************************************
-  Step 18: (Optional) Set up a local server
+  Step 20: (Optional) Set up a local server
 *********************************************************************
 
-    > mkdir /c/otp_server
-    > cp /p/toontown_server/otp_server/* /c/toonsrv
-    > cd /c/toonsrv
-  - Be sure to set the execute bit for all .dll and .exe files
-    > chmod +x *.dll *.exe
-  - Make sure your Windows account on your machine is an administrator
-    type, or else you would not be able to start/stop services.  
-    To check:
-       - Start -> Settings -> Control Panel -> User Accounts
-       - If your account does not have "Administrators" under the 
-         "Group" column, Pick your account from the list, then hit 
-         "Properties" button, then in "Other" pick "Administrator" 
-         from the drop down list, then click Ok, Ok
-  - Copy the local_example.par and toontown_example.par to local.par
-    and toontown.par
-    > cp local_example.par local.par
-    > cp toontown_example.par toontown.par
+  - Copy local.par.example to local.par:
+    > cd ~/player/otp_servers_built/windows_intel_32/bin
+    > cp local.par.example local.par
   - Edit local.par and modify the file locations listed to the correct paths
-  - Edit toontown.par and uncomment the following lines:
-	  #DC_FILE=gateway.dc
-	  #DC_FILE=pirates.dc
+    (This may just involve changing "username" to your unix username)
+  - Edit local.par and uncomment one of the following lines corresponding
+    to the project being used:
+	  
+	ADDKEY=TOONTOWN_DEV
+	#ADDKEY=PIRATES_DEV
+	#ADDKEY=ALL_DEV
   
-  - To run the server, simply execute otp_server.exe. It may be best to run this
-    in its own window.
+  - To run the server, simply execute otp_server.exe. It would be best to
+    run this in its own window.
 
 *********************************************************************
-  Step 19: (Optional) Launch a local Toontown Client and Server
+  Step 21: (Optional) Launch a local Toontown Server and Client
 *********************************************************************
 
-  - Add the following lines to your Config.prc file in $HOME
+  - Add the following lines to your Config.prc file in $HOME if they are
+    not already there.
     
       account-old-auth 1
       verify-ssl 0
       dc-multiple-inheritance 1
       want-otp-server 1
       
-  - To start the Toontown AI server, first start up Python Emacs
+  - To start the Toontown Uberdog server, first start up Python Emacs
     > runPythonEmacs
   - In Emacs launch a Python shell
-    > Alt-x   (This will bring up an Emacs command line)
+    > Alt-x   (This will bring up an Emacs minibuffer line)
+    > py-shell
+  - From the Python command line type the following:
+    > from toontown.uberdog.Start import *
+  - This will start a Toontown uberdog server
+  - To start the Toontown AI server, start up another Python Emacs session
+    > runPythonEmacs
+  - In Emacs launch a Python shell
+    > Alt-x
     > py-shell
   - From the Python command line type the following:
     > from toontown.ai.AIStart import *
-  - This will start a Toontown game server
-  - To start a client, you will need to open a new Python Emacs session.
+  - This will start a Toontown game (AI) server
+  - To start a client, you will need to open yet another Python Emacs session.
     From the cygwin command prompt, type:
     > runPythonEmacs
   - In Emacs launch another Python shell as before
@@ -684,7 +734,7 @@ of the world, see INSTALL.txt in this directory.
     > py-shell
   - In this Python command prompt, enter:
     > from toontown.toonbase.ToontownStart import *
-  - After the server and the client have started up, the game should
+  - After the servers and the client have started up, the game should
     prompt to create an account.  After the account is created the
     game will run as normal, but locally.
     
