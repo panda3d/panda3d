@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectGlobals import *
 from DirectUtil import *
 import math

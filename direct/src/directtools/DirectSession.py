@@ -1,4 +1,4 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectGlobals import *
 from DirectUtil import*
 from DirectCameraControl import *
@@ -17,7 +17,7 @@ import types
 import string
 from direct.showbase import Loader
 
-class DirectSession(PandaObject):
+class DirectSession(DirectObject):
 
     # post this to the bboard to make sure DIRECT doesn't turn on
     DIRECTdisablePost = 'disableDIRECT'
@@ -801,7 +801,7 @@ class DirectSession(PandaObject):
         for iRay in self.iRayList:
             iRay.removeUnpickable(item)
 
-class DisplayRegionContext(PandaObject):
+class DisplayRegionContext(DirectObject):
     regionCount = 0
     def __init__(self, cam):
         self.cam = cam
@@ -926,7 +926,7 @@ class DisplayRegionContext(PandaObject):
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
 
-class DisplayRegionList(PandaObject):
+class DisplayRegionList(DirectObject):
     def __init__(self):
         self.displayRegionList = []
         i = 0

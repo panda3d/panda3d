@@ -1,6 +1,6 @@
 """ Class used to create and control radamec device """
 from math import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
@@ -16,7 +16,7 @@ FAST_X = 0
 FAST_Y = 1
 FAST_Z = 2
 
-class DirectFastrak(PandaObject):
+class DirectFastrak(DirectObject):
     fastrakCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectFastrak')
 

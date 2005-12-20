@@ -1,4 +1,4 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from ClusterClient import *
 import string
 

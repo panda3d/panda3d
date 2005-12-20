@@ -4,7 +4,7 @@ This is an adaption of AppShell.py found in Python and Tkinter Programming
 by John E. Grayson which is a streamlined adaptation of GuiAppD.py, originally
 created by Doug Hellmann (doughellmann@mindspring.com).
 """
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from tkFileDialog import *
 import Dial
@@ -38,7 +38,7 @@ def resetVariableDict():
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
 # to use as a container if you wish.  If no toplevel passed in, create one
-class AppShell(Pmw.MegaWidget, PandaObject):
+class AppShell(Pmw.MegaWidget, DirectObject):
     appversion      = '1.0'
     appname         = 'Generic Application Frame'
     copyright       = ('Copyright 2004 Walt Disney Imagineering.' +

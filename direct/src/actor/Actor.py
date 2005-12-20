@@ -1,10 +1,10 @@
 """Actor module: contains the Actor class"""
 
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from pandac.PandaModules import LODNode
 import types
 
-class Actor(PandaObject, NodePath):
+class Actor(DirectObject, NodePath):
     """
     Actor class: Contains methods for creating, manipulating
     and playing animations on characters

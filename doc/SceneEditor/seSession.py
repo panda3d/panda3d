@@ -8,7 +8,7 @@
 # Also, the way of selecting, renaming and some hot-key controls are changed.
 #
 #################################################################
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import*
 from direct.interval.IntervalGlobal import *
@@ -24,7 +24,7 @@ import types
 import string
 from direct.showbase import Loader
 
-class SeSession(PandaObject):  ### Customized DirectSession
+class SeSession(DirectObject):  ### Customized DirectSession
 
     def __init__(self):
         # Establish a global pointer to the direct object early on
@@ -748,7 +748,7 @@ class SeSession(PandaObject):  ### Customized DirectSession
         return
     
 
-class DisplayRegionContext(PandaObject):
+class DisplayRegionContext(DirectObject):
     regionCount = 0
     def __init__(self, cam):
         self.cam = cam
@@ -873,7 +873,7 @@ class DisplayRegionContext(PandaObject):
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
 
-class DisplayRegionList(PandaObject):
+class DisplayRegionList(DirectObject):
     def __init__(self):
         self.displayRegionList = []
         i = 0

@@ -1,4 +1,4 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectUtil import *
 from DirectGeometry import *
 from DirectGlobals import *
@@ -9,7 +9,7 @@ CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
 Y_AXIS = Vec3(0,1,0)
 
-class DirectCameraControl(PandaObject):
+class DirectCameraControl(DirectObject):
     def __init__(self):
         # Create the grid
         self.startT = 0.0

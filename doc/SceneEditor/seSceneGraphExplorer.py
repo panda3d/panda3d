@@ -8,7 +8,7 @@
 # Do forget to check the seTree. 
 #
 #################################################################
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from seTree import *
 
@@ -37,7 +37,7 @@ DEFAULT_MENU_ITEMS = [
     'Align Tool',
     'Separator']
 
-class seSceneGraphExplorer(Pmw.MegaWidget, PandaObject):
+class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
     def __init__(self, parent = None, nodePath = render, **kw): 
         # Define the megawidget options.

@@ -34,7 +34,7 @@ class TaskManagerPanel(AppShell):
         self.ignore('TaskManager-setVerbose')
         self.taskMgrWidget.onDestroy()
 
-class TaskManagerWidget(PandaObject):
+class TaskManagerWidget(DirectObject):
     """
     TaskManagerWidget class: this class contains methods for creating
     a panel to control taskManager tasks.

@@ -3,7 +3,7 @@ from OnscreenText import *
 from OnscreenGeom import *
 from OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
-from direct.showbase import PandaObject
+from direct.showbase import DirectObject
 from direct.task import Task
 import string
 from direct.showbase import ShowBase
@@ -93,7 +93,7 @@ Code Overview:
     are left unused.  If so, an error is raised.
 """
 
-class DirectGuiBase(PandaObject.PandaObject):
+class DirectGuiBase(DirectObject.DirectObject):
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'

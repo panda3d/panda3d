@@ -1,6 +1,6 @@
 """OnscreenText module: contains the OnscreenText class"""
 
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 import DirectGuiGlobals
 import types
 
@@ -14,7 +14,7 @@ ScreenPrompt = 3
 NameConfirm = 4
 BlackOnWhite = 5
 
-class OnscreenText(PandaObject, NodePath):
+class OnscreenText(DirectObject, NodePath):
 
     def __init__(self, text = '',
                  style = Plain,

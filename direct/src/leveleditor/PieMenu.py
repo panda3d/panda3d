@@ -1,8 +1,8 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGeometry import *
 from direct.task import Task
 
-class PieMenu(NodePath, PandaObject):
+class PieMenu(NodePath, DirectObject):
     def __init__(self, visibleMenu, menuItems,
                  action = None, fUpdateOnlyOnChange = 1):
         NodePath.__init__(self)

@@ -11,11 +11,11 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
 
-class DirectGrid(NodePath,PandaObject):
+class DirectGrid(NodePath,DirectObject):
     def __init__(self):
         # Initialize superclass
         NodePath.__init__(self)

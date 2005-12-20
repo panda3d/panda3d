@@ -1,9 +1,9 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGeometry import *
 
 from pandac.PandaModules import NodePath
 
-class Mopath(PandaObject):
+class Mopath(DirectObject):
 
     nameIndex = 1
 

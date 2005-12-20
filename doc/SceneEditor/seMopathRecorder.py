@@ -13,7 +13,7 @@
 #################################################################
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from direct.directtools.DirectGlobals import *
@@ -37,7 +37,7 @@ PRF_UTILITIES = [
     'lambda s = self: s.playbackMarker.setZ(render, 0.0)',
     'lambda s = self: s.followTerrain(10.0)']
 
-class MopathRecorder(AppShell, PandaObject):
+class MopathRecorder(AppShell, DirectObject):
     # Override class variables here
     appname = 'Mopath Recorder Panel'
     frameWidth      = 450

@@ -1,5 +1,5 @@
 """ Class used to create and control joybox device """
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectDeviceManager import *
 from direct.directtools.DirectUtil import *
 from direct.gui import OnscreenText
@@ -32,7 +32,7 @@ JOYBOX_MIN = ANALOG_MIN + ANALOG_DEADBAND
 JOYBOX_MAX = ANALOG_MAX - ANALOG_DEADBAND
 JOYBOX_RANGE = JOYBOX_MAX - JOYBOX_MIN
 
-class DirectJoybox(PandaObject):
+class DirectJoybox(DirectObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
     hprMultiplier = 1.0

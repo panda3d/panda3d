@@ -1,4 +1,4 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from Tree import *
 
@@ -17,7 +17,7 @@ DEFAULT_MENU_ITEMS = [
     'Place', 'Set Name', 'Set Color', 'Explore',
     'Separator']
 
-class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
+class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
     def __init__(self, parent = None, nodePath = render, **kw):
         # Define the megawidget options.

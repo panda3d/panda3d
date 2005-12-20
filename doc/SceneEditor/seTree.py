@@ -16,7 +16,7 @@ import os
 import sys
 import string
 from direct.showbase.TkGlobal import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 
 # Initialize icon directory
 ICONDIR = getModelPath().findFile(Filename('icons')).toOsSpecific()

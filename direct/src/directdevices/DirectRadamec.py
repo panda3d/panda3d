@@ -1,6 +1,6 @@
 """ Class used to create and control radamec device """
 from math import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
@@ -17,7 +17,7 @@ RAD_TILT = 1
 RAD_ZOOM = 2
 RAD_FOCUS = 3
 
-class DirectRadamec(PandaObject):
+class DirectRadamec(DirectObject):
     radamecCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectRadamec')
     

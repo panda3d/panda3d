@@ -13,7 +13,7 @@
 #################################################################
 
 from pandac.PandaModules import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 import math

@@ -1,5 +1,5 @@
 """ Finite State Machine Inspector module """
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askstring

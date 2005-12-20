@@ -1,4 +1,4 @@
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
@@ -46,7 +46,7 @@ class DirectNodePath(NodePath):
     def getMax(self):
         return self.bbox.getMax()
 
-class SelectedNodePaths(PandaObject):
+class SelectedNodePaths(DirectObject):
     def __init__(self):
         self.reset()
         self.tagList = []

@@ -12,13 +12,13 @@
 #
 #################################################################
 
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
 from direct.task import Task
 
-class DirectManipulationControl(PandaObject):
+class DirectManipulationControl(DirectObject):
     def __init__(self):
         # Create the grid
         self.objectHandles = ObjectHandles()
@@ -506,7 +506,7 @@ class DirectManipulationControl(PandaObject):
             # Let everyone know that something was moved
             messenger.send('DIRECT_manipulateObjectCleanup')
 
-class ObjectHandles(NodePath,PandaObject):
+class ObjectHandles(NodePath,DirectObject):
     def __init__(self):
         # Initialize the superclass
         NodePath.__init__(self)

@@ -2,7 +2,7 @@
 Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from Valuator import *
 from direct.task import Task

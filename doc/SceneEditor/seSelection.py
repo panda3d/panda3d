@@ -11,7 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
@@ -56,7 +56,7 @@ class DirectNodePath(NodePath):
     def getMax(self):
         return self.bbox.getMax()
 
-class SelectedNodePaths(PandaObject):
+class SelectedNodePaths(DirectObject):
     def __init__(self):
         self.reset()
 

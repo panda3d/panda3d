@@ -1,5 +1,5 @@
 from direct.directbase.DirectStart import *
-from direct.showbase.PandaObject import *
+from direct.showbase.DirectObject import *
 from PieMenu import *
 from direct.gui.DirectGuiGlobals import *
 from direct.showbase.TkGlobal import *
@@ -412,7 +412,7 @@ def DNASetBaselineString(baseline, text):
         baseline.add(text)
 
 
-class LevelEditor(NodePath, PandaObject):
+class LevelEditor(NodePath, DirectObject):
     """Class used to create a Toontown LevelEditor object"""
 
     # Init the list of callbacks:
@@ -4927,7 +4927,7 @@ class DNAWallStyle:
             'Cornice Color: %s\n' % self.cornice_color
             )
 
-class OldLevelEditor(NodePath, PandaObject):
+class OldLevelEditor(NodePath, DirectObject):
     pass
 
 class LevelEditorPanel(Pmw.MegaToplevel):
