@@ -2,7 +2,7 @@
 
 from pandac.PandaModules import *
 from direct.showbase.MessengerGlobal import *
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 import Interval
 import types
 

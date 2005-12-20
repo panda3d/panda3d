@@ -1,6 +1,7 @@
 """Interval module: contains the Interval class"""
 
-from direct.showbase.DirectObject import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *
 from direct.task import Task
 from direct.showbase import PythonUtil

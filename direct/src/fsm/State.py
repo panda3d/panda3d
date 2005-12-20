@@ -1,7 +1,8 @@
 
 """State module: contains State class"""
 
-from direct.showbase.DirectObject import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.DirectObject import DirectObject
 import types
 
 # This gets set by a dconfig variable in ShowBase.py

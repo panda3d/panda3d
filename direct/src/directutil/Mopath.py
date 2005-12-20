@@ -1,4 +1,4 @@
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGeometry import *
 
 from pandac.PandaModules import NodePath

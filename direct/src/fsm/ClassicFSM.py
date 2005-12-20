@@ -4,7 +4,8 @@ This module and class exist only for backward compatibility with
 existing code.  New code should use the FSM module instead.
 """
 
-from direct.showbase.DirectObject import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.DirectObject import DirectObject
 import types
 import weakref
 

@@ -149,7 +149,7 @@ def oscmd(cmd):
     else:
         res = os.system(cmd)
     if res != 0:
-	exit("")
+        exit("")
 
 def getbuilding(opts):
     building = 0
@@ -1180,7 +1180,7 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
     if (COMPILER=="MSVC7"):
-       	altdep = "built/bin/interrogate.exe"
+               altdep = "built/bin/interrogate.exe"
         wobj = "built/tmp/"+obj
         fn = CompileIgateMSVC7
     if (COMPILER=="LINUXA"):
@@ -1234,11 +1234,11 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
     if (COMPILER=="MSVC7"):
-       	altdep = "built/bin/interrogate_module.exe"
+               altdep = "built/bin/interrogate_module.exe"
         wobj = "built/tmp/"+obj[:-4]+".obj"
         fn = CompileImodMSVC7
     if (COMPILER=="LINUXA"):
-       	altdep = "built/bin/interrogate_module"
+               altdep = "built/bin/interrogate_module"
         wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileImodLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return

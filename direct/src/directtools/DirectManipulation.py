@@ -1,4 +1,4 @@
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *

@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PhysicsManagerGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal

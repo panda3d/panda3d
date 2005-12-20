@@ -1,7 +1,8 @@
 
 """StateData module: contains StateData class"""
 
-from direct.showbase.DirectObject import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.DirectObject import DirectObject
 
 from direct.directnotify import DirectNotifyGlobal
 
@@ -11,7 +12,7 @@ class StateData(DirectObject):
     State Machine (ClassicFSM).
     """
 
-    notify = DirectNotifyGlobal.directNotify.newCategory('StateData')
+    notify = directNotify.newCategory('StateData')
 
     def __init__(self, doneEvent):
         self.doneEvent = doneEvent

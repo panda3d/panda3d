@@ -1,5 +1,5 @@
 """ Class used to create and control joybox device """
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from DirectDeviceManager import *
 from direct.directtools.DirectUtil import *
 from direct.gui import OnscreenText

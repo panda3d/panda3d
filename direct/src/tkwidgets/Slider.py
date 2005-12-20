@@ -81,15 +81,15 @@ class Slider(Valuator):
 class SliderWidget(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
 
-	# Define the megawidget options.
-	INITOPT = Pmw.INITOPT
-	optiondefs = (
+        # Define the megawidget options.
+        INITOPT = Pmw.INITOPT
+        optiondefs = (
             # Appearance
-	    ('style',           VALUATOR_MINI,      INITOPT),
+            ('style',           VALUATOR_MINI,      INITOPT),
             ('relief',          RAISED,             self.setRelief),
             ('borderwidth',     2,                  self.setBorderwidth),
             ('background',      'grey75',           self.setBackground),
-	    ('fliparrow',       0,                  INITOPT),
+            ('fliparrow',       0,                  INITOPT),
             # Behavior
             # Bounds
             ('min',             0.0,            self.setMin),
@@ -106,14 +106,14 @@ class SliderWidget(Pmw.MegaWidget):
             ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-	)
-	self.defineoptions(kw, optiondefs)
+        )
+        self.defineoptions(kw, optiondefs)
 
-	# Initialise the base class (after defining the options).
-	Pmw.MegaWidget.__init__(self, parent)
+        # Initialise the base class (after defining the options).
+        Pmw.MegaWidget.__init__(self, parent)
 
-	# Create the components.
-	interior = self.interior()
+        # Create the components.
+        interior = self.interior()
 
         # Current value
         self.value = self['value']
@@ -199,36 +199,36 @@ class SliderWidget(Pmw.MegaWidget):
             self._maxLabel.pack(side = LEFT)
 
         # Create slider
-	if self['style'] == VALUATOR_MINI:
+        if self['style'] == VALUATOR_MINI:
 
-	    # Create the arrow button to invoke slider
-	    self._arrowBtn = self.createcomponent(
+            # Create the arrow button to invoke slider
+            self._arrowBtn = self.createcomponent(
                 'arrowbutton',
                 (), None,
                 Canvas, (interior,), borderwidth = 0,
                 relief = FLAT, width = 14, height = 14,
                 scrollregion = (-7,-7,7,7))
-	    self._arrowBtn.pack(expand = 1, fill = BOTH)
+            self._arrowBtn.pack(expand = 1, fill = BOTH)
             self._arrowBtn.create_polygon(-5, -5, 5, -5, 0, 5,
                                           fill = 'grey50',
                                           tags = 'arrow')
             self._arrowBtn.create_line(-5, 5, 5, 5,
                                        fill = 'grey50',
                                        tags = 'arrow')
-	    # Create the dropdown window.
-	    self._popup = self.createcomponent(
+            # Create the dropdown window.
+            self._popup = self.createcomponent(
                 'popup',
                 (), None,
                 Toplevel, (interior,),
                 relief = RAISED, borderwidth = 2)
-	    self._popup.withdraw()
-	    self._popup.overrideredirect(1)
+            self._popup.withdraw()
+            self._popup.overrideredirect(1)
 
             # Create popup slider
             createSlider(self._popup)
 
-	    # Bind events to the arrow button.
-	    self._arrowBtn.bind('<1>', self._postSlider)
+            # Bind events to the arrow button.
+            self._arrowBtn.bind('<1>', self._postSlider)
             self._arrowBtn.bind('<Enter>', self.highlightWidget)
             self._arrowBtn.bind('<Leave>', self.restoreWidget)
             # Need to unpost the popup if the arrow Button is unmapped (eg: 
@@ -236,10 +236,10 @@ class SliderWidget(Pmw.MegaWidget):
             # displayed.
             self._arrowBtn.bind('<Unmap>', self._unpostSlider)
             
-	    # Bind events to the dropdown window.
-	    self._popup.bind('<Escape>', self._unpostSlider)
-	    self._popup.bind('<ButtonRelease-1>', self._widgetBtnRelease)
-	    self._popup.bind('<ButtonPress-1>', self._widgetBtnPress)
+            # Bind events to the dropdown window.
+            self._popup.bind('<Escape>', self._unpostSlider)
+            self._popup.bind('<ButtonRelease-1>', self._widgetBtnRelease)
+            self._popup.bind('<ButtonPress-1>', self._widgetBtnPress)
             self._popup.bind('<Motion>', self._widgetMove)
             
             self._widget.bind('<Left>', self._decrementValue)
@@ -248,14 +248,14 @@ class SliderWidget(Pmw.MegaWidget):
             self._widget.bind('<Shift-Right>', self._bigIncrementValue)
             self._widget.bind('<Home>', self._goToMin)
             self._widget.bind('<End>', self._goToMax)
-	else:
+        else:
             createSlider(interior)
             self._widget['command'] = self._firstScaleCommand
-	    self._widget.bind('<ButtonRelease-1>', self._scaleBtnRelease)
-	    self._widget.bind('<ButtonPress-1>', self._scaleBtnPress)
+            self._widget.bind('<ButtonRelease-1>', self._scaleBtnRelease)
+            self._widget.bind('<ButtonPress-1>', self._scaleBtnPress)
             
-	# Check keywords and initialise options.
-	self.initialiseoptions(SliderWidget)
+        # Check keywords and initialise options.
+        self.initialiseoptions(SliderWidget)
 
         # Adjust relief
         if not kw.has_key('relief'):
@@ -265,7 +265,7 @@ class SliderWidget(Pmw.MegaWidget):
         self.updateIndicator(self['value'])
 
     def destroy(self):
-	if (self['style'] == VALUATOR_MINI) and self._isPosted:
+        if (self['style'] == VALUATOR_MINI) and self._isPosted:
             Pmw.popgrab(self._popup)
         Pmw.MegaWidget.destroy(self)
 
@@ -416,10 +416,10 @@ class SliderWidget(Pmw.MegaWidget):
         self._fPressInside = 0
 
     def _unpostOnNextRelease(self, event = None):
-	self._fUnpost = 1
+        self._fUnpost = 1
 
     def _unpostSlider(self, event=None):
-	if not self._isPosted:
+        if not self._isPosted:
             # It is possible to get events on an unposted popup.  For
             # example, by repeatedly pressing the space key to post
             # and unpost the popup.  The <space> event may be
@@ -433,9 +433,9 @@ class SliderWidget(Pmw.MegaWidget):
         # can't redirect it.  Also, return the grab to the next active
         # window in the stack, if any.
         Pmw.popgrab(self._popup)
-	self._popup.withdraw()
+        self._popup.withdraw()
 
-	self._isPosted = 0
+        self._isPosted = 0
 
         # Raise up arrow button
         self.interior()['relief'] = RAISED
