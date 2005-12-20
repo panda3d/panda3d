@@ -31,6 +31,7 @@ class DoInterestManager(DirectObject.DirectObject):
     Top level Interest Manager
     """
     notify = directNotify.newCategory("DoInterestManager")
+    InterestDebug = base.config.GetBool('interest-debug', True)
 
     # 'handle' is a number that represents a single interest set that the
     # client has requested; the interest set may be modified
@@ -60,6 +61,9 @@ class DoInterestManager(DirectObject.DirectObject):
         else:
             scopeId = NO_SCOPE
         DoInterestManager._interests[handle] = [description, STATE_ACTIVE, scopeId, event]
+        if self.InterestDebug:
+            print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
+                handle, parentId, zoneIdList, description, event)
         self._sendAddInterest(handle, scopeId, parentId, zoneIdList)
         assert self.printInterestsIfDebug()
         return handle
@@ -79,6 +83,8 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._interests[handle][STATE] = STATE_PENDING_DEL
             DoInterestManager._interests[handle][SCOPE] = scopeId
             DoInterestManager._interests[handle][EVENT] = event
+            if self.InterestDebug:
+                print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (handle, event)
             self._sendRemoveInterest(handle, scopeId)
         else:
             DoInterestManager.notify.warning("removeInterest: handle not found: %s" % (handle))
@@ -105,7 +111,10 @@ class DoInterestManager(DirectObject.DirectObject):
                 scopeId = NO_SCOPE
             DoInterestManager._interests[handle][SCOPE] = scopeId
             DoInterestManager._interests[handle][EVENT] = event
-            
+
+            if self.InterestDebug:
+                print 'INTEREST DEBUG: alterInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
+                    handle, parentId, zoneIdList, description, event)
             self._sendAddInterest(handle, scopeId, parentId, zoneIdList)
             exists = True
             assert self.printInterestsIfDebug()
@@ -130,6 +139,7 @@ class DoInterestManager(DirectObject.DirectObject):
             # skip over the 'no scope' id
             if scopeId != NO_SCOPE:
                 break
+        DoInterestManager._ScopeIdSerialNum = scopeId
         return DoInterestManager._ScopeIdSerialNum
 
     def _considerRemoveInterest(self, handle):
@@ -217,6 +227,8 @@ class DoInterestManager(DirectObject.DirectObject):
         assert DoInterestManager.notify.debugCall()
         handle = di.getUint16()
         scopeId = di.getUint32()
+        if self.InterestDebug:
+            print 'INTEREST DEBUG: interestDone(): handle=%s' % handle
         DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received handle %s, scope %s" % (
             handle, scopeId))
