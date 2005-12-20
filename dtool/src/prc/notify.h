@@ -151,7 +151,7 @@ private:
     } \
   }
 
-#define nassert_raise(message) 
+#define nassert_raise(message) Notify::write_string(message)
 
 #define enter_debugger_if(condition) ((void)0)
 
