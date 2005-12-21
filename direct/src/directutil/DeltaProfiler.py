@@ -25,4 +25,3 @@ class DeltaProfiler:
             # The printing time is not included in the timing.
             # This is intentional.
             self.priorTime=time()
-    
