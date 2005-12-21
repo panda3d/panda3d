@@ -6,7 +6,7 @@ from ConnectionRepository import *
 
 DefaultTimeout = 8.0
 if __debug__:
-    DefaultTimeout = config.GetInt("async-request-default-timeout", 8.0)
+    DefaultTimeout = config.GetFloat("async-request-default-timeout", 8.0)
     BreakOnTimeout = config.GetBool("async-request-break-on-timeout", 0)
 
 _asyncRequests={}
