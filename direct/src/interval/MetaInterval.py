@@ -66,7 +66,7 @@ class MetaInterval(CMetaInterval):
         if kw:
             self.notify.error("Unexpected keyword parameters: %s" % (kw.keys()))
 
-        # We must allow the old style: Track([ ival0, ival1, ... ]) as
+        # We must allow the old style: Track([ival0, ival1, ...]) as
         # well as the new style: Track(ival0, ival1, ...)
 
         # Note: this breaks in the case of a Track with one tuple:
@@ -259,8 +259,8 @@ class MetaInterval(CMetaInterval):
     def addTrack(self, list, name, relTime, relTo, duration):
         # Adds a "track list".  This is a list of tuples of the form:
         #
-        #   ( <delay>, <Interval>,
-        #       PREVIOUS_END | PREVIOUS_START | TRACK_START )
+        #   (<delay>, <Interval>,
+        #       PREVIOUS_END | PREVIOUS_START | TRACK_START)
         #
         # where <delay> is a relative time, in seconds, for the
         # <Interval> to start, relative to either the end of the

@@ -464,9 +464,9 @@ def exitState():
     print 'exitState'
 
 fsm = ClassicFSM.ClassicFSM('stopLight',
-          [ State.State('red', enterState, exitState, ['green']),
+          [State.State('red', enterState, exitState, ['green']),
             State.State('yellow', enterState, exitState, ['red']),
-            State.State('green', enterState, exitState, ['yellow']) ],
+            State.State('green', enterState, exitState, ['yellow'])],
           'red',
           'red')
 

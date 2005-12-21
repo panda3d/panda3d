@@ -47,9 +47,9 @@ class ClassicFSM(DirectObject):
         final state as:
 
         fsm = ClassicFSM.ClassicFSM('stopLight',
-          [ State.State('red', enterRed, exitRed, ['green']),
+          [State.State('red', enterRed, exitRed, ['green']),
             State.State('yellow', enterYellow, exitYellow, ['red']),
-            State.State('green', enterGreen, exitGreen, ['yellow']) ],
+            State.State('green', enterGreen, exitGreen, ['yellow'])],
           'red',
           'red')
 

@@ -87,6 +87,6 @@ class Logger:
         else:
             minutes = 0
         seconds = int(math.ceil(dt))
-        return("%02d:%02d:%02d:%02d: " % (days, hours, minutes, seconds) )
+        return("%02d:%02d:%02d:%02d: " % (days, hours, minutes, seconds))
 
 

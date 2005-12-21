@@ -29,7 +29,7 @@ fUseCVS = base.config.GetBool("level-editor-use-cvs", 1)
 # Colors used by all color menus
 DEFAULT_COLORS = [
     Vec4(1,1,1,1),
-    Vec4(0.75, 0.75, 0.75, 1.0 ),
+    Vec4(0.75, 0.75, 0.75, 1.0),
     Vec4(0.5, 0.5, 0.5, 1.0),
     Vec4(0.25, 0.25, 0.25, 1.0)
     ]
@@ -47,7 +47,7 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   ]
 BUILDING_HEIGHTS = [10, 14, 20, 24, 25, 30]
 NUM_WALLS = [1,2,3]
-LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop', 'kartshop' ]
+LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop', 'kartshop']
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -1532,7 +1532,7 @@ class LevelEditor(NodePath, DirectObject):
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
         # Headquarters do not have doors
-        if specialType not in [ 'hq', 'kartshop' ]:
+        if specialType not in ['hq', 'kartshop']:
             newDNADoor = self.createDoor('landmark_door')
             newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
@@ -2372,7 +2372,7 @@ class LevelEditor(NodePath, DirectObject):
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
         handlesToCam = direct.widget.getPos(direct.camera)
-        handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
+        handlesToCam = handlesToCam * (direct.dr.near/handlesToCam[1])
         if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.remove('manipulateCamera')

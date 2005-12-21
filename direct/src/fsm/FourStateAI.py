@@ -47,13 +47,13 @@ class FourStateAI:
         """
         names is a list of state names
             E.g.
-                ['off', 'opening', 'open', 'closing', 'closed', ]
+                ['off', 'opening', 'open', 'closing', 'closed',]
 
             e.g. 2:
-                ['off', 'locking', 'locked', 'unlocking', 'unlocked', ]
+                ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
 
             e.g. 3:
-                ['off', 'deactivating', 'deactive', 'activating', 'activated', ]
+                ['off', 'deactivating', 'deactive', 'activating', 'activated',]
         
         durations is a list of durations in seconds or None values.
             The list of duration values should be the same length

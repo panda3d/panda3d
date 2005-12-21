@@ -217,7 +217,7 @@ class AsyncRequest(DirectObject):
         self.accept(
             self.air.getDatabaseGenerateResponseEvent(context),
             self._doCreateObject, [name, className, values])
-        ## newDBRequestGen = config.GetBool( #HACK:
+        ## newDBRequestGen = config.GetBool(#HACK:
         ##     'new-database-request-generate', 1)
         ## if newDBRequestGen:
         ##     self.accept(

@@ -227,9 +227,9 @@ class DisplayConnection:
 
     def sendCamOffset(self,xyz,hpr):
         ClusterClient.notify.debug("send cam offset...")
-        ClusterClient.notify.debug( ("packet %d xyz,hpr=%f %f %f %f %f %f" %
+        ClusterClient.notify.debug(("packet %d xyz,hpr=%f %f %f %f %f %f" %
              (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
-             hpr[0],hpr[1],hpr[2])) )
+             hpr[0],hpr[1],hpr[2])))
         datagram = self.msgHandler.makeCamOffsetDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 
@@ -247,9 +247,9 @@ class DisplayConnection:
 
     def sendMoveCam(self,xyz,hpr):
         ClusterClient.notify.debug("send cam move...")
-        ClusterClient.notify.debug( ("packet %d xyz,hpr=%f %f %f %f %f %f" %
+        ClusterClient.notify.debug(("packet %d xyz,hpr=%f %f %f %f %f %f" %
              (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
-             hpr[0],hpr[1],hpr[2])) )
+             hpr[0],hpr[1],hpr[2])))
         datagram = self.msgHandler.makeCamMovementDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 

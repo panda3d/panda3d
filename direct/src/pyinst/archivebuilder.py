@@ -76,6 +76,6 @@ def Dependencies(script):
     #if ispkg:
     #    rslt.append(k+'.__init__', v.__file__)
     #else:
-    rslt.append( (k, v.__file__) )
+    rslt.append((k, v.__file__))
   return rslt
 

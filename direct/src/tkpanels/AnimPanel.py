@@ -292,12 +292,12 @@ class ActorControl(Pmw.MegaWidget):
             activebackground = '#909090',
             text = self['text'])
         # Top level menu
-        labelMenu = Menu(self._label, tearoff = 0 )
+        labelMenu = Menu(self._label, tearoff = 0)
         
         # Menu to select display mode
         self.unitsVar = IntVar()
         self.unitsVar.set(FRAMES)
-        displayMenu = Menu(labelMenu, tearoff = 0 )        
+        displayMenu = Menu(labelMenu, tearoff = 0)        
         displayMenu.add_radiobutton(label = 'Frame count',
                                     value = FRAMES,
                                     variable = self.unitsVar,

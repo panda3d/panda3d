@@ -347,7 +347,7 @@ class InspectorWindow:
         
     def pop(self):
         if len(self.inspectors) > 1:
-            self.inspectors = self.inspectors[ : -1]
+            self.inspectors = self.inspectors[:-1]
             self.update()
 
     def dive(self):

@@ -48,13 +48,13 @@ class FourState:
         names is a list of state names
         
         E.g.
-            ['off', 'opening', 'open', 'closing', 'closed', ]
+            ['off', 'opening', 'open', 'closing', 'closed',]
         
         e.g. 2:
-            ['off', 'locking', 'locked', 'unlocking', 'unlocked', ]
+            ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
         
         e.g. 3:
-            ['off', 'deactivating', 'deactive', 'activating', 'activated', ]
+            ['off', 'deactivating', 'deactive', 'activating', 'activated',]
         
         durations is a list of time values (floats) or None values.
         

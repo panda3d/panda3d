@@ -237,7 +237,7 @@ def generateNativeWrappers():
     pandaModules = open(pandaModulesFilename, 'w')
 
     # Copy in any helper classes from the extensions_native directory
-    extensionHelperFiles = [ 'extension_native_helpers.py' ]
+    extensionHelperFiles = ['extension_native_helpers.py']
     for name in extensionHelperFiles:
         inFilename = os.path.join(extensionsDir, name)
         outFilename = os.path.join(outputCodeDir, name)
