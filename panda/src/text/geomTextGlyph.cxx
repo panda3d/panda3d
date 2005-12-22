@@ -39,9 +39,9 @@ GeomTextGlyph(DynamicTextGlyph *glyph, const GeomVertexData *data) :
   // Initially, there is only one glyph in the Geom.  There might be
   // additional Glyphs later when we flatten the graph and call
   // Geom::unify().
-  _glyphs.reserve(1);
-  _glyphs.push_back(glyph);
   if (glyph != (DynamicTextGlyph *)NULL) {
+    _glyphs.reserve(1);
+    _glyphs.push_back(glyph);
     glyph->_geom_count++;
   }
 }
@@ -58,7 +58,9 @@ GeomTextGlyph(const GeomTextGlyph &copy) :
 {
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    (*gi)->_geom_count++;
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    glyph->_geom_count++;
   }
 }
 
@@ -73,12 +75,16 @@ operator = (const GeomTextGlyph &copy) {
   
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    (*gi)->_geom_count--;
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    glyph->_geom_count--;
     nassertv((*gi)->_geom_count >= 0);
   }
   _glyphs = copy._glyphs;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    (*gi)->_geom_count++;
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    glyph->_geom_count++;
   }
 }
 
@@ -91,8 +97,10 @@ GeomTextGlyph::
 ~GeomTextGlyph() {
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    (*gi)->_geom_count--;
-    nassertv((*gi)->_geom_count >= 0);
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    glyph->_geom_count--;
+    nassertv(glyph->_geom_count >= 0);
   }
 }
 
@@ -153,7 +161,9 @@ output(ostream &out) const {
   out << ", glyphs: [";
   Glyphs::const_iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    out << " " << (*gi)->get_character();
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    out << " " << glyph->get_character();
   }
   out << " ]";
 }
@@ -170,7 +180,9 @@ write(ostream &out, int indent_level) const {
     << "Glyphs: [";
   Glyphs::const_iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    out << " " << (*gi)->get_character();
+    DynamicTextGlyph *glyph = (*gi);
+    nassertv(glyph != (DynamicTextGlyph *)NULL);
+    out << " " << glyph->get_character();
   }
   out << " ]\n";
 }
