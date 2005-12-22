@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "graphicsBuffer.h"
 #include "dxgsg9base.h"
-
+#include "dxTextureContext9.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wdxGraphicsBuffer9

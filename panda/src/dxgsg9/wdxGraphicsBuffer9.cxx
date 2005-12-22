@@ -18,6 +18,7 @@
 
 #include "wdxGraphicsPipe9.h"
 #include "wdxGraphicsBuffer9.h"
+#include "dxGraphicsStateGuardian9.h"
 #include "pStatTimer.h"
 
 
