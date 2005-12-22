@@ -19,6 +19,7 @@
 #include "config_dxgsg7.h"
 #include "dxGraphicsStateGuardian7.h"
 #include "dxTextureContext7.h"
+#include "dxGeomMunger7.h"
 #include "wdxGraphicsPipe7.h"
 #include "wdxGraphicsWindow7.h"
 #include "graphicsPipeSelection.h"
