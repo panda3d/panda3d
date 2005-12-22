@@ -570,6 +570,50 @@ get_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_border_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_border_color(const Colorf &border_color) {
+  _border_color = border_color;
+  _flags |= F_has_border_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_border_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_border_color() {
+  _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _flags &= ~F_has_border_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_border_color
+//       Access: Published
+//  Description: Returns true if a border color has been
+//               specified for the texture.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_border_color() const {
+  return (_flags & F_has_border_color) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_border_color
+//       Access: Published
+//  Description: Returns the border color if one has been
+//               specified, or (0, 0, 0, 1) otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &EggTexture::
+get_border_color() const {
+  return _border_color;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_uv_name
 //       Access: Published
 //  Description: Specifies the named set of texture coordinates that

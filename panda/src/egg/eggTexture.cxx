@@ -49,6 +49,7 @@ EggTexture(const string &tref_name, const string &filename)
   _tex_gen = TG_unspecified;
   _priority = 0;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _flags = 0;
   _alpha_file_channel = 0;
   _multitexture_sort = 0;
@@ -92,6 +93,7 @@ operator = (const EggTexture &copy) {
   _stage_name = copy._stage_name;
   _priority = copy._priority;
   _color = copy._color;
+  _border_color = copy._border_color;
   _uv_name = copy._uv_name;
   _rgb_scale = 1;
   _alpha_scale = 1;
@@ -240,6 +242,17 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> blendb { " << _color[2] << " }\n";
     indent(out, indent_level + 2)
       << "<Scalar> blenda { " << _color[3] << " }\n";
+  }
+
+  if (has_border_color()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> borderr { " << _border_color[0] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> borderg { " << _border_color[1] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> borderb { " << _border_color[2] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> bordera { " << _border_color[3] << " }\n";
   }
 
   if (has_uv_name()) {
@@ -680,6 +693,12 @@ string_wrap_mode(const string &string) {
     return WM_repeat;
   } else if (cmp_nocase_uh(string, "clamp") == 0) {
     return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "border_color") == 0) {
+    return WM_border_color;
   } else {
     return WM_unspecified;
   }
@@ -1060,6 +1079,12 @@ ostream &operator << (ostream &out, EggTexture::WrapMode mode) {
     return out << "repeat";
   case EggTexture::WM_clamp:
     return out << "clamp";
+  case EggTexture::WM_mirror:
+    return out << "mirror";
+  case EggTexture::WM_mirror_once:
+    return out << "mirror_once";
+  case EggTexture::WM_border_color:
+    return out << "border_color";
   }
 
   nassertr(false, out);

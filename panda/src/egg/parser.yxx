@@ -560,6 +560,26 @@ texture_body:
     color[3] = value;
     texture->set_color(color);
 
+  } else if (cmp_nocase_uh(name, "borderr") == 0) {
+    Colorf border_color = texture->get_border_color();
+    border_color[0] = value;
+    texture->set_border_color(border_color);
+
+  } else if (cmp_nocase_uh(name, "borderg") == 0) {
+    Colorf border_color = texture->get_border_color();
+    border_color[1] = value;
+    texture->set_border_color(border_color);
+
+  } else if (cmp_nocase_uh(name, "borderb") == 0) {
+    Colorf border_color = texture->get_border_color();
+    border_color[2] = value;
+    texture->set_border_color(border_color);
+
+  } else if (cmp_nocase_uh(name, "bordera") == 0) {
+    Colorf border_color = texture->get_border_color();
+    border_color[3] = value;
+    texture->set_border_color(border_color);
+
   } else if (cmp_nocase_uh(name, "uv_name") == 0) {
     texture->set_uv_name(strval);
 

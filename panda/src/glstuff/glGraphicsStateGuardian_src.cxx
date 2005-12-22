@@ -673,8 +673,9 @@ reset() {
   }
 
   _border_clamp = GL_CLAMP;
-  if (has_extension("GL_ARB_texture_border_clamp") ||
-      is_at_least_version(1, 3)) {
+  if (CLP(support_clamp_to_border) &&
+      (has_extension("GL_ARB_texture_border_clamp") ||
+       is_at_least_version(1, 3))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
   }
 

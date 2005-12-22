@@ -28,6 +28,13 @@ ConfigVariableBool CLP(ignore_clamp)
    PRC_DESC("Configure this true to disable texture clamp mode (all textures "
             "repeat, a little cheaper for software renderers)."));
 
+ConfigVariableBool CLP(support_clamp_to_border)
+  ("gl-support-clamp-to-border", true,
+   PRC_DESC("Configure this true to enable the use of the clamp_to_border "
+            "if the GL claims to support it, or false not to use it even "
+            "if it appears to be available.  (On some OpenGL drivers, "
+            "enabling this mode can force software rendering.)"));
+
 ConfigVariableBool CLP(ignore_filters)
   ("gl-ignore-filters", false,
    PRC_DESC("Configure this true to disable any texture filters at all (forcing "

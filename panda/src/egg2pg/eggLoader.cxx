@@ -927,76 +927,12 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
-  switch (egg_tex->determine_wrap_u()) {
-  case EggTexture::WM_repeat:
-    tex->set_wrap_u(Texture::WM_repeat);
-    break;
+  tex->set_wrap_u(convert_wrap_mode(egg_tex->determine_wrap_u()));
+  tex->set_wrap_v(convert_wrap_mode(egg_tex->determine_wrap_v()));
+  tex->set_wrap_w(convert_wrap_mode(egg_tex->determine_wrap_w()));
 
-  case EggTexture::WM_clamp:
-    if (egg_ignore_clamp) {
-      egg2pg_cat.warning()
-        << "Ignoring clamp request\n";
-      tex->set_wrap_u(Texture::WM_repeat);
-    } else {
-      tex->set_wrap_u(Texture::WM_clamp);
-    }
-    break;
-
-  case EggTexture::WM_unspecified:
-    break;
-
-  default:
-    egg2pg_cat.warning()
-      << "Unexpected texture wrap flag: "
-      << (int)egg_tex->determine_wrap_u() << "\n";
-  }
-
-  switch (egg_tex->determine_wrap_v()) {
-  case EggTexture::WM_repeat:
-    tex->set_wrap_v(Texture::WM_repeat);
-    break;
-
-  case EggTexture::WM_clamp:
-    if (egg_ignore_clamp) {
-      egg2pg_cat.warning()
-        << "Ignoring clamp request\n";
-      tex->set_wrap_v(Texture::WM_repeat);
-    } else {
-      tex->set_wrap_v(Texture::WM_clamp);
-    }
-    break;
-
-  case EggTexture::WM_unspecified:
-    break;
-
-  default:
-    egg2pg_cat.warning()
-      << "Unexpected texture wrap flag: "
-      << (int)egg_tex->determine_wrap_v() << "\n";
-  }
-
-  switch (egg_tex->determine_wrap_w()) {
-  case EggTexture::WM_repeat:
-    tex->set_wrap_w(Texture::WM_repeat);
-    break;
-
-  case EggTexture::WM_clamp:
-    if (egg_ignore_clamp) {
-      egg2pg_cat.warning()
-        << "Ignoring clamp request\n";
-      tex->set_wrap_w(Texture::WM_repeat);
-    } else {
-      tex->set_wrap_w(Texture::WM_clamp);
-    }
-    break;
-
-  case EggTexture::WM_unspecified:
-    break;
-
-  default:
-    egg2pg_cat.warning()
-      << "Unexpected texture wrap flag: "
-      << (int)egg_tex->determine_wrap_w() << "\n";
+  if (egg_tex->has_border_color()) {
+    tex->set_border_color(egg_tex->get_border_color());
   }
 
   switch (egg_tex->get_minfilter()) {
@@ -1232,6 +1168,40 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 4-component texture " << egg_tex->get_name() << "\n";
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::convert_wrap_mode
+//       Access: Private
+//  Description: Returns the Texture::WrapMode enum corresponding to
+//               the EggTexture::WrapMode.  Returns WM_repeat if the
+//               wrap mode is unspecified.
+////////////////////////////////////////////////////////////////////
+Texture::WrapMode EggLoader::
+convert_wrap_mode(EggTexture::WrapMode wrap_mode) const {
+  switch (wrap_mode) {
+  case EggTexture::WM_clamp:
+    return Texture::WM_clamp;
+
+  case EggTexture::WM_repeat:
+    return Texture::WM_repeat;
+
+  case EggTexture::WM_mirror:
+    return Texture::WM_mirror;
+
+  case EggTexture::WM_mirror_once:
+    return Texture::WM_mirror_once;
+
+  case EggTexture::WM_border_color:
+    return Texture::WM_border_color;
+
+  case EggTexture::WM_unspecified:
+    return Texture::WM_repeat;
+  }
+
+  egg2pg_cat.warning()
+    << "Unexpected texture wrap flag: " << (int)wrap_mode << "\n";
+  return Texture::WM_repeat;
 }
 
 ////////////////////////////////////////////////////////////////////

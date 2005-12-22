@@ -146,7 +146,7 @@ parse_cg_profile(const string &id, bool vertex)
   }
   return CG_PROFILE_UNKNOWN;
 }
-#endif HAVE_CGGL
+#endif  // HAVE_CGGL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::try_cg_compile

@@ -34,8 +34,8 @@
 ////////////////////////////////////////////////////////////////////
 BamWriter::
 BamWriter(DatagramSink *sink, const Filename &name) :
-  _target(sink),
-  _filename(name)
+  _filename(name),
+  _target(sink)
 {
 }
 

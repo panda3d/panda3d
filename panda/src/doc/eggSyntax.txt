@@ -182,6 +182,24 @@ appear before they are referenced.
     Although less often used, for 3-d textures wrapw may also be
     specified, and it behaves similarly to wrapu and wrapv.
 
+    There are other legal values in addtional to REPEAT and CLAMP.
+    The full list is:
+
+      CLAMP
+      REPEAT
+      MIRROR
+      MIRROR_ONCE
+      BORDER_COLOR
+
+  <Scalar> borderr { red-value }
+  <Scalar> borderg { green-value }
+  <Scalar> borderb { blue-value }
+  <Scalar> bordera { alpha-value }
+
+    These define the "border color" of the texture, which is
+    particularly important when one of the wrap modes, above, is
+    BORDER_COLOR.
+
   <Scalar> type { texture-type }
 
     This may be one of the following attributes:

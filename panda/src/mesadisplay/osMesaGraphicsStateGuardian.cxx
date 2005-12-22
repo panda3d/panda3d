@@ -73,7 +73,7 @@ get_extension_func(const char *, const char *name) {
   // Mesa functions to "mgl", they're still stored as "gl" in the
   // OSMesaGetProcAddress() lookup table.
   string fullname = string("gl") + string(name);
-  return OSMesaGetProcAddress(fullname.c_str());
+  return (void *)OSMesaGetProcAddress(fullname.c_str());
 
 #else
   // Otherwise, too bad.  No extension functions for you.  We could

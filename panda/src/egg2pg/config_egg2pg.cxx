@@ -40,8 +40,6 @@ ConfigVariableBool egg_ignore_mipmaps
 ("egg-ignore-mipmaps", false);
 ConfigVariableBool egg_ignore_filters
 ("egg-ignore-filters", false);
-ConfigVariableBool egg_ignore_clamp
-("egg-ignore-clamp", false);
 ConfigVariableBool egg_ignore_decals
 ("egg-ignore-decals", false);
 ConfigVariableBool egg_flatten

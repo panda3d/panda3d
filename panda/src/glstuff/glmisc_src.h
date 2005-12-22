@@ -23,6 +23,7 @@
 
 extern ConfigVariableBool CLP(cheap_textures);
 extern ConfigVariableBool CLP(ignore_clamp);
+extern ConfigVariableBool CLP(support_clamp_to_border);
 extern ConfigVariableBool CLP(ignore_filters);
 extern ConfigVariableBool CLP(ignore_mipmaps);
 extern ConfigVariableBool CLP(force_mipmaps);

@@ -70,7 +70,8 @@ PUBLISHED:
     F_luminance_alpha, F_luminance_alphamask
   };
   enum WrapMode {
-    WM_unspecified, WM_repeat, WM_clamp
+    WM_unspecified, WM_clamp, WM_repeat,
+    WM_mirror, WM_mirror_once, WM_border_color
   };
   enum FilterType {
     // Note that these type values match up, name-for-name, with a
@@ -213,6 +214,11 @@ PUBLISHED:
   INLINE bool has_color() const;
   INLINE const Colorf &get_color() const;
 
+  INLINE void set_border_color(const Colorf &border_color);
+  INLINE void clear_border_color();
+  INLINE bool has_border_color() const;
+  INLINE const Colorf &get_border_color() const;
+
   INLINE void set_uv_name(const string &uv_name);
   INLINE void clear_uv_name();
   INLINE bool has_uv_name() const;
@@ -275,6 +281,7 @@ private:
     F_has_color              = 0x0080,
     F_has_rgb_scale          = 0x0100,
     F_has_alpha_scale        = 0x0200,
+    F_has_border_color       = 0x0400,
   };
 
   TextureType _texture_type;
@@ -288,6 +295,7 @@ private:
   string _stage_name;
   int _priority;
   Colorf _color;
+  Colorf _border_color;
   string _uv_name;
   int _rgb_scale;
   int _alpha_scale;
