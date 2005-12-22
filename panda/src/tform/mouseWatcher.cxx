@@ -1040,8 +1040,18 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         float left, right, bottom, top;
         _display_region->get_dimensions(left, right, bottom, top);
 
-        LVecBase2f new_f((f[0] - left) / (right - left), 
-                         (f[1] - bottom) / (top - bottom));
+	// Need to translate this into DisplayRegion [0, 1] space
+	float x = (f[0] + 1.0f) / 2.0f;
+	// Scale in DR space
+	float xp = (x - left) / (right - left);
+	// Translate back into [-1, 1] space
+	float xpp = (xp * 2.0f) - 1.0f;
+
+	float y = (f[1] + 1.0f) / 2.0f;
+	float yp = (y - bottom) / (top - bottom);
+	float ypp = (yp * 2.0f) - 1.0f;
+	
+	LVecBase2f new_f(xpp, ypp);
         LVecBase2f new_p(p[0] - xo, p[1] - xo);
 
         set_mouse(new_f, new_p);
