@@ -372,9 +372,7 @@ sub CTAttachCompute {
 
           $item = $root . "/built/lib" ;
           #if ( -e $item ) {
-      if ( $ENV{"PENV"} eq "WIN32" ) {
           &CTAttachMod( "PATH", $item, $root, $proj ) ;
-      }
       &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
           #}
 
