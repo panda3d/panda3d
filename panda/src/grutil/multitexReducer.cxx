@@ -450,6 +450,12 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     CPT(RenderState) geom_net_state = 
       state->compose(node->get_geom_state(gi));
 
+    if (grutil_cat.is_debug()) {
+      grutil_cat.debug()
+        << "geom " << gi << " net_state =\n";
+      geom_net_state->write(cerr, 2);
+    }
+
     // Get out the net TextureAttrib and TexMatrixAttrib from the state.
     const RenderAttrib *attrib;
     const TextureAttrib *ta = NULL;
@@ -459,14 +465,28 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       ta = DCAST(TextureAttrib, attrib);
     }
 
-    if (ta != (TextureAttrib *)NULL && ta->get_num_on_stages() >= 2) {
+    if (ta == (TextureAttrib *)NULL) {
+      // No texture should be on the Geom.
+      CPT(RenderState) geom_state = node->get_geom_state(gi);
+      geom_state = geom_state->remove_attrib(TextureAttrib::get_class_type());
+      node->set_geom_state(gi, geom_state);
+
+    } else if (ta->get_num_on_stages() < 2) {
+      // Just a single texture on the Geom; we don't really need to do
+      // anything to flatten the textures, then.  But we should ensure
+      // that the correct TextureAttrib is applied to the Geom.
+      CPT(RenderState) geom_state = node->get_geom_state(gi);
+      geom_state = geom_state->add_attrib(ta);
+      node->set_geom_state(gi, geom_state);
+
+    } else {
       // Ok, we have multitexture.  Record the Geom.
       CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
       attrib = geom_net_state->get_attrib(TexMatrixAttrib::get_class_type());
       if (attrib != (const RenderAttrib *)NULL) {
         tma = DCAST(TexMatrixAttrib, attrib);
       }
-
+      
       StageList stage_list;
       
       int num_stages = ta->get_num_on_stages();
@@ -475,13 +495,13 @@ scan_geom_node(GeomNode *node, const RenderState *state,
         Texture *tex = ta->get_on_texture(stage);
         if (tex->get_x_size() != 0 && tex->get_y_size() != 0) {
           stage_list.push_back(StageInfo(stage, ta, tma));
-
+          
         } else {
           grutil_cat.info()
             << "Ignoring invalid texture stage " << stage->get_name() << "\n";
         }
       }
-
+      
       if (stage_list.size() >= 2) {
         record_stage_list(stage_list, GeomInfo(state, geom_net_state, node, gi));
       }
