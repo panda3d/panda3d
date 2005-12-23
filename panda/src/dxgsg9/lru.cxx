@@ -861,7 +861,7 @@ void Lru::partial_lru_update (int maximum_updates)
 
     if (total_page_updates < maximum_updates)
     {
-      for (index = 0; index < start_priority; index++)
+      for (index = 0; index <= start_priority; index++)
       {
         LruPage *next_lru_page;
 
@@ -905,6 +905,12 @@ void Lru::partial_lru_update (int maximum_updates)
           break;
         }
       }
+    }
+
+    if (total_page_updates < maximum_updates)
+    {
+      this -> _m.start_priority_index = 0;
+      this -> _m.start_update_lru_page = 0;
     }
 
     this -> update_page_priorities ( );
