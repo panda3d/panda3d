@@ -33,11 +33,15 @@ public:
   DXVertexBufferContext9(GeomVertexArrayData *data);
   virtual ~DXVertexBufferContext9();
 
+  void free_vbuffer(void);
+  void allocate_vbuffer(DXScreenData &scrn);
   void create_vbuffer(DXScreenData &scrn);
   void upload_data();
 
   IDirect3DVertexBuffer9 *_vbuffer;
   int _fvf;
+  int _managed;
+  LruPage *_lru_page;
 
 public:
   static TypeHandle get_class_type() {

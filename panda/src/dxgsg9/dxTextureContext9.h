@@ -59,6 +59,7 @@ private:
   IDirect3DVolumeTexture9 *_d3d_volume_texture;
   IDirect3DCubeTexture9 *_d3d_cube_texture;
 
+  int _managed;
   bool _has_mipmaps;
 
 public:

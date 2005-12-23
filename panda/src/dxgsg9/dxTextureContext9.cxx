@@ -47,6 +47,7 @@ DXTextureContext9(Texture *tex) :
   _d3d_volume_texture = NULL;
   _d3d_cube_texture = NULL;
   _has_mipmaps = false;
+  _managed = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,15 +638,35 @@ create_texture(DXScreenData &scrn) {
   D3DPOOL pool;
 
   if (_texture->get_render_to_texture ()) {
-    // REQUIRED
+    // REQUIRED PARAMETERS
+    _managed = false;
     pool = D3DPOOL_DEFAULT;
     usage = D3DUSAGE_RENDERTARGET;
     target_pixel_format = scrn._render_to_texture_d3d_format;
   }
   else {
-    pool = D3DPOOL_MANAGED;
-//    pool = D3DPOOL_DEFAULT;
-    usage = 0;
+    _managed = scrn._managed_textures;
+    if (_managed)
+    {
+      pool = D3DPOOL_MANAGED;
+      usage = 0;
+    }
+    else
+    {
+      if (scrn._supports_dynamic_textures)
+      {
+        pool = D3DPOOL_DEFAULT;
+        usage = D3DUSAGE_DYNAMIC;
+      }
+      else
+      {
+        // can't lock textures so go back to managed for now
+        // need to use UpdateTexture or UpdateSurface
+        _managed = true;
+        pool = D3DPOOL_MANAGED;
+        usage = 0;
+      }
+    }
   }
 
   switch (_texture->get_texture_type()) {

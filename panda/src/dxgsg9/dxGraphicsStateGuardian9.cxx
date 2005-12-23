@@ -64,6 +64,11 @@
 #include <d3dx9.h>
 #include <mmsystem.h>
 
+
+#define DEBUG_LRU false
+#define DEFAULT_ENABLE_LRU true
+
+
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
 
 D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
@@ -117,6 +122,14 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
+
+  _gsg_managed_textures = false;
+  _gsg_managed_vertex_buffers = false;
+  _gsg_managed_index_buffers = false;
+
+  _enable_lru = DEFAULT_ENABLE_LRU;
+
+  _lru = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,6 +143,12 @@ DXGraphicsStateGuardian9::
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
   }
   free_nondx_resources();
+
+  if (_lru)
+  {
+    delete _lru;
+    _lru = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,6 +334,11 @@ void DXGraphicsStateGuardian9::
 apply_vertex_buffer(VertexBufferContext *vbc) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
+  if (_lru)
+  {
+    _lru -> access_page (dvbc -> _lru_page);
+  }
+
   if (dvbc->_vbuffer == NULL) {
     // Attempt to create a new vertex buffer.
     if (vertex_buffers &&
@@ -415,6 +439,11 @@ prepare_index_buffer(GeomPrimitive *data) {
 void DXGraphicsStateGuardian9::
 apply_index_buffer(IndexBufferContext *ibc) {
   DXIndexBufferContext9 *dibc = DCAST(DXIndexBufferContext9, ibc);
+
+  if (_lru)
+  {
+    _lru -> access_page (dibc -> _lru_page);
+  }
 
   if (dibc->_ibuffer == NULL) {
     // Attempt to create a new index buffer.
@@ -679,6 +708,12 @@ prepare_lens() {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 begin_frame() {
+
+  if (_lru)
+  {
+    _lru -> begin_frame ( );
+  }
+
   return GraphicsStateGuardian::begin_frame();
 }
 
@@ -765,6 +800,47 @@ end_scene() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 end_frame() {
+
+  if (_lru)
+  {
+    int frames;
+    int maximum_updates;
+
+// LRU *****
+    maximum_updates = 10;
+    _lru -> partial_lru_update (maximum_updates);
+//    _lru -> update_entire_lru ( );
+
+    frames = 256;
+    if ((_lru -> _m.current_frame_identifier % frames) == 0)
+    {
+      if (dxgsg9_cat.is_debug())
+      {
+        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "\n";
+        dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "\n";
+        dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
+        dxgsg9_cat.debug() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
+        dxgsg9_cat.debug() << "*  total_lifetime_page_outs " << _lru -> _m.total_lifetime_page_outs << "\n";
+        dxgsg9_cat.debug() << "*  total_page_access " << _lru -> _m.total_page_access << " avg page access " << ((float) _lru -> _m.total_page_access / (float) frames) << "\n";
+        dxgsg9_cat.debug() << "*  total_lru_pages_in_pool " << _lru -> _m.total_lru_pages_in_pool << "\n";
+        dxgsg9_cat.debug() << "*  total_lru_pages_in_free_pool " << _lru -> _m.total_lru_pages_in_free_pool << "\n";
+
+        _lru -> _m.total_page_access = 0;
+
+        _lru -> count_priority_level_pages ( );
+
+        int index;
+
+        for (index = 0; index < LPP_TotalPriorities; index++)
+        {
+          if (_lru -> _m.lru_page_count_array [index])
+          {
+            dxgsg9_cat.debug() << "*  priority " << index << " pages " << _lru -> _m.lru_page_count_array [index] << "\n";
+          }
+        }
+      }
+    }
+  }
 
 #if defined(DO_PSTATS)
   if (_texmgrmem_total_pcollector.is_active()) {
@@ -983,7 +1059,7 @@ draw_tristrips(const GeomTristrips *primitive) {
       } else {
         // Indexed, client arrays, one long triangle strip.
         D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-  draw_indexed_primitive_up
+        draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            primitive->get_num_vertices() - 2,
@@ -1001,7 +1077,7 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Indexed, client arrays, one long triangle strip.
-  draw_primitive_up(D3DPT_TRIANGLESTRIP,
+        draw_primitive_up(D3DPT_TRIANGLESTRIP,
         primitive->get_num_vertices() - 2,
         primitive->get_first_vertex(),
         primitive->get_num_vertices(),
@@ -1039,7 +1115,7 @@ draw_tristrips(const GeomTristrips *primitive) {
           unsigned int max = maxs.get_data1i();
           _d3d_device->DrawIndexedPrimitive
             (D3DPT_TRIANGLESTRIP,
-       0,
+             0,
              min, max - min + 1,
              start, ends[i] - start - 2);
 
@@ -1058,7 +1134,7 @@ draw_tristrips(const GeomTristrips *primitive) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
           unsigned int min = mins.get_data1i();
           unsigned int max = maxs.get_data1i();
-    draw_indexed_primitive_up
+          draw_indexed_primitive_up
             (D3DPT_TRIANGLESTRIP,
              min, max,
              ends[i] - start - 2,
@@ -1091,7 +1167,7 @@ draw_tristrips(const GeomTristrips *primitive) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-    draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
+          draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
           first_vertex + start,
           ends[i] - start,
           array_data, stride);
@@ -1158,7 +1234,7 @@ draw_trifans(const GeomTrifans *primitive) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         unsigned int min = mins.get_data1i();
         unsigned int max = maxs.get_data1i();
-  draw_indexed_primitive_up
+        draw_indexed_primitive_up
           (D3DPT_TRIANGLEFAN,
            min, max,
            ends[i] - start - 2,
@@ -1191,7 +1267,7 @@ draw_trifans(const GeomTrifans *primitive) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-  draw_primitive_up(D3DPT_TRIANGLEFAN,
+        draw_primitive_up(D3DPT_TRIANGLEFAN,
         ends[i] - start - 2,
         first_vertex,
         ends[i] - start,
@@ -1666,6 +1742,81 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   return true;
 }
 
+
+bool vertex_buffer_page_in_function (LruPage *lru_page)
+{
+  DXGraphicsStateGuardian9 *gsg;
+  DXVertexBufferContext9 *vertex_buffer;
+
+  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
+  vertex_buffer = (DXVertexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
+
+  // allocate vertex buffer
+  vertex_buffer -> allocate_vbuffer (*(gsg->_screen));
+
+  // update vertex buffer
+  vertex_buffer -> upload_data ( );
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page IN VB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
+bool vertex_buffer_page_out_function (LruPage *lru_page)
+{
+  DXVertexBufferContext9 *vertex_buffer;
+
+  vertex_buffer = (DXVertexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
+  vertex_buffer -> free_vbuffer ( );
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page OUT VB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
+bool index_buffer_page_in_function (LruPage *lru_page)
+{
+  DXGraphicsStateGuardian9 *gsg;
+  DXIndexBufferContext9 *index_buffer;
+
+  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
+  index_buffer = (DXIndexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
+
+  // allocate vertex buffer
+  index_buffer -> allocate_ibuffer (*(gsg->_screen));
+
+  // update vertex buffer
+  index_buffer -> upload_data ( );
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page IN IB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
+bool index_buffer_page_out_function (LruPage *lru_page)
+{
+  DXIndexBufferContext9 *index_buffer;
+
+  index_buffer = (DXIndexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
+  index_buffer -> free_ibuffer ( );
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page OUT IB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::reset
 //       Access: Public, Virtual
@@ -1735,6 +1886,60 @@ reset() {
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
+
+  _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
+
+  _screen->_managed_textures = _gsg_managed_textures;
+  _screen->_managed_vertex_buffers = _gsg_managed_vertex_buffers;
+  _screen->_managed_index_buffers = _gsg_managed_index_buffers;
+
+  UINT available_texture_memory;
+
+  available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug() << "*** GetAvailableTextureMem = " <<  available_texture_memory << "\n";
+  }
+  _available_texture_memory = available_texture_memory;
+
+  if (_lru)
+  {
+    delete _lru;
+    _lru = 0;
+  }
+
+  if (_enable_lru)
+  {
+    if (available_texture_memory >= 256000000)
+    {
+//      _enable_lru = false;
+    }
+  }
+
+  if (_enable_lru)
+  {
+    int maximum_memory;
+    int maximum_pages;
+    Lru *lru;
+
+maximum_memory = available_texture_memory;
+
+// TEST LRU *****
+maximum_memory = 20000000;
+maximum_pages = 20000;
+
+    lru = new Lru (maximum_memory, maximum_pages);
+    if (lru)
+    {
+      lru -> _m.minimum_memory = 1000000;
+
+      lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
+      lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
+
+      lru -> _m.context = (void *) this;
+    }
+
+    _lru = lru;
+  }
 
   // check for render to texture support
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
@@ -3207,6 +3412,8 @@ set_context(DXScreenData *new_context) {
   _screen = new_context;
   _d3d_device = _screen->_d3d_device;   //copy this one field for speed of deref
   _swap_chain = _screen->_swap_chain;   //copy this one field for speed of deref
+
+  _screen->_dxgsg9 = this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3487,9 +3694,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     }
 
     // Calling this forces all of the textures and vbuffers to be
-    // regenerated, a prerequisite to calling Reset().  Actually, this
-    // shouldn't be necessary, because all of our textures and
-    // vbuffers are stored in the D3DPOOL_MANAGED memory class.
+    // regenerated, a prerequisite to calling Reset().
     release_all();
 
     // Just to be extra-conservative for now, we'll go ahead and
@@ -3498,6 +3703,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
+    // must be called before reset
     _prepared_objects->update(this);
 
     hr = _d3d_device->Reset(&_presentation_reset);
@@ -3942,4 +4148,3 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
        index_data, index_type, safe_buffer_start - stride * min_index, stride);
   }
 }
-

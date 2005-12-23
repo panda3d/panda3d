@@ -25,6 +25,8 @@
 #include "config_dxgsg9.h"
 #include <d3dx9.h>
 
+#define DEBUG_VERTEX_BUFFER false
+
 TypeHandle DXVertexBufferContext9::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +48,8 @@ DXVertexBufferContext9(GeomVertexArrayData *data) :
   int num_columns = array_format->get_num_columns();
 
   _fvf = 0;
+  _managed = -1;
+  _lru_page = 0;
 
   if (n < num_columns &&
       array_format->get_column(n)->get_name() == InternalName::get_vertex()) {
@@ -170,14 +174,84 @@ DXVertexBufferContext9(GeomVertexArrayData *data) :
 ////////////////////////////////////////////////////////////////////
 DXVertexBufferContext9::
 ~DXVertexBufferContext9() {
+
+  free_vbuffer ( );
+
+  if (_lru_page)
+  {
+    _lru_page -> _m.lru -> remove_page (_lru_page);
+    _lru_page -> _m.lru -> free_page (_lru_page);
+    _lru_page = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXVertexBufferContext9::free_vbuffer
+//       Access: Public
+//  Description: Frees vertex buffer memory.
+////////////////////////////////////////////////////////////////////
+void DXVertexBufferContext9::
+free_vbuffer(void) {
+
   if (_vbuffer != NULL) {
-    if (dxgsg9_cat.is_debug()) {
+    if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
         << "deleting vertex buffer " << _vbuffer << "\n";
     }
 
-    RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
+    if (DEBUG_VERTEX_BUFFER)
+    {
+      RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
+    }
+    else
+    {
+      _vbuffer -> Release ( );
+    }
+
     _vbuffer = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXVertexBufferContext9::allocate_vbuffer
+//       Access: Public
+//  Description: Allocates vertex buffer memory.
+////////////////////////////////////////////////////////////////////
+void DXVertexBufferContext9::
+allocate_vbuffer(DXScreenData &scrn) {
+
+  int data_size;
+  HRESULT hr;
+  DWORD usage;
+  D3DPOOL pool;
+
+  data_size = get_data()->get_data_size_bytes();
+
+  _managed = scrn._managed_vertex_buffers;
+  if (_managed)
+  {
+    pool = D3DPOOL_MANAGED;
+    usage = D3DUSAGE_WRITEONLY;
+  }
+  else
+  {
+    pool = D3DPOOL_DEFAULT;
+    usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
+  }
+
+  hr = scrn._d3d_device->CreateVertexBuffer
+      (data_size, usage, _fvf, pool, &_vbuffer, NULL);
+  if (FAILED(hr)) {
+    dxgsg9_cat.warning()
+      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+    _vbuffer = NULL;
+  } else {
+    if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << "created vertex buffer " << _vbuffer << ": "
+        << get_data()->get_num_rows() << " vertices "
+        << *get_data()->get_array_format() << "\n";
+    }
   }
 }
 
@@ -189,30 +263,45 @@ DXVertexBufferContext9::
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext9::
 create_vbuffer(DXScreenData &scrn) {
-  if (_vbuffer != NULL) {
-    RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
-    _vbuffer = NULL;
+
+  free_vbuffer ( );
+
+  if (_lru_page)
+  {
+    _lru_page -> _m.lru -> remove_page (_lru_page);
+    _lru_page -> _m.lru -> free_page (_lru_page);
+    _lru_page = 0;
   }
 
   PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector);
 
-  HRESULT hr = scrn._d3d_device->CreateVertexBuffer
+  int data_size;
 
-//    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
-//    _fvf, D3DPOOL_MANAGED, &_vbuffer, NULL);
-      (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
-      _fvf, D3DPOOL_DEFAULT, &_vbuffer, NULL);
+  data_size = get_data()->get_data_size_bytes();
 
-  if (FAILED(hr)) {
-    dxgsg9_cat.warning()
-      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
-    _vbuffer = NULL;
-  } else {
-    if (dxgsg9_cat.is_debug()) {
-      dxgsg9_cat.debug()
-        << "created vertex buffer " << _vbuffer << ": "
-        << get_data()->get_num_rows() << " vertices "
-        << *get_data()->get_array_format() << "\n";
+  this -> allocate_vbuffer(scrn);
+
+  if (_vbuffer)
+  {
+    if (_managed == false)
+    {
+      Lru *lru;
+
+      lru = scrn._dxgsg9 -> _lru;
+      if (lru)
+      {
+        LruPage *lru_page;
+
+        lru_page = lru -> allocate_page (data_size);
+        if (lru_page)
+        {
+          lru_page -> _m.type = GPT_VertexBuffer;
+          lru_page -> _m.lru_page_type.pointer = this;
+
+          lru -> add_cached_page (LPP_New, lru_page);
+          _lru_page = lru_page;
+        }
+      }
     }
   }
 }
@@ -236,11 +325,17 @@ upload_data() {
       << " bytes into vertex buffer " << _vbuffer << "\n";
   }
 
+  HRESULT hr;
   BYTE *local_pointer;
 
-//  HRESULT hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, 0);
-  HRESULT hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
-
+  if (_managed)
+  {
+    hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, 0);
+  }
+  else
+  {
+    hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
+  }
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);

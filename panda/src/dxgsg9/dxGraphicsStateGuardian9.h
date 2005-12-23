@@ -33,6 +33,16 @@
 #include "fog.h"
 #include "pointerToArray.h"
 
+#include "lru.h"
+
+enum GsgPageType
+{
+  GPT_Error,
+  GPT_Texture,
+  GPT_VertexBuffer,
+  GPT_IndexBuffer,
+};
+
 class Light;
 
 class DXVertexBufferContext9;
@@ -186,8 +196,9 @@ protected:
 
   INLINE static unsigned char *get_safe_buffer_start();
 
-protected:
+public:
   DXScreenData *_screen;
+protected:
   LPDIRECT3DDEVICE9 _d3d_device;  // same as _screen->_d3d_device, cached for spd
   IDirect3DSwapChain9 *_swap_chain;
   D3DPRESENT_PARAMETERS _presentation_reset;  // This is built during reset device
@@ -234,6 +245,14 @@ protected:
   static unsigned char *_temp_buffer;
   static unsigned char *_safe_buffer_start;
 
+  int _gsg_managed_textures;
+  int _gsg_managed_vertex_buffers;
+  int _gsg_managed_index_buffers;
+  int _enable_lru;
+  UINT _available_texture_memory;
+
+  Lru *_lru;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -259,6 +278,8 @@ private:
   friend class wdxGraphicsWindowGroup9;
   friend class DXTextureContext9;
   friend class wdxGraphicsBuffer9;
+  friend class DXVertexBufferContext9;
+  friend class DXIndexBufferContext9;
 };
 
 #include "dxGraphicsStateGuardian9.I"

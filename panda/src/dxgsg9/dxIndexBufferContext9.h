@@ -33,10 +33,14 @@ public:
   DXIndexBufferContext9(GeomPrimitive *data);
   virtual ~DXIndexBufferContext9();
 
+  void free_ibuffer(void);
+  void allocate_ibuffer(DXScreenData &scrn);
   void create_ibuffer(DXScreenData &scrn);
   void upload_data();
 
   IDirect3DIndexBuffer9 *_ibuffer;
+  int _managed;
+  LruPage *_lru_page;
 
 public:
   static TypeHandle get_class_type() {

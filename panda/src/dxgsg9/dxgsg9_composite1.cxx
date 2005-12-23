@@ -8,4 +8,5 @@
 #include "wdxGraphicsPipe9.cxx"
 #include "wdxGraphicsWindow9.cxx"
 #include "dxGraphicsDevice9.cxx"
+#include "lru.cxx"
 
