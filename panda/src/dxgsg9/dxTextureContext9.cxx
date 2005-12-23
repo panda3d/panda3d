@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxTextureContext9.h"
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
 #include "pStatTimer.h"
+#include "dxTextureContext9.h"
 #include <d3dx9tex.h>
 #include <assert.h>
 #include <time.h>
@@ -48,6 +48,7 @@ DXTextureContext9(Texture *tex) :
   _d3d_cube_texture = NULL;
   _has_mipmaps = false;
   _managed = -1;
+  _lru_page = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,6 +62,14 @@ DXTextureContext9::
     dxgsg9_cat.spam()
       << "Deleting texture context for " << _texture->get_name() << "\n";
   }
+
+  if (_lru_page)
+  {
+    _lru_page -> _m.lru -> remove_page (_lru_page);
+    _lru_page -> _m.lru -> free_page (_lru_page);
+    _lru_page = 0;
+  }
+
   delete_texture();
   TextureContext::~TextureContext();
 }
@@ -637,7 +646,7 @@ create_texture(DXScreenData &scrn) {
   DWORD usage;
   D3DPOOL pool;
 
-  if (_texture->get_render_to_texture ()) {
+  if (_texture->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
     pool = D3DPOOL_DEFAULT;
@@ -690,6 +699,8 @@ create_texture(DXScreenData &scrn) {
       (target_width, mip_level_count, usage,
        target_pixel_format, pool, &_d3d_cube_texture, NULL);
     _d3d_texture = _d3d_cube_texture;
+
+    target_height = target_width;
     break;
   }
 
@@ -713,6 +724,99 @@ create_texture(DXScreenData &scrn) {
 
   // PRINT_REFCNT(dxgsg9, scrn._d3d9);
 
+  float bytes_per_texel;
+
+  bytes_per_texel = 1.0f;
+  switch (target_pixel_format)
+  {
+    case D3DFMT_R3G3B2:
+    case D3DFMT_A8:
+    case D3DFMT_A8P8:
+    case D3DFMT_P8:
+    case D3DFMT_L8:
+    case D3DFMT_A4L4:
+      bytes_per_texel = 1.0f;
+      break;
+
+    case D3DFMT_R16F:
+    case D3DFMT_CxV8U8:
+    case D3DFMT_V8U8:
+    case D3DFMT_R5G6B5:
+    case D3DFMT_X1R5G5B5:
+    case D3DFMT_A1R5G5B5:
+    case D3DFMT_A4R4G4B4:
+    case D3DFMT_L16:
+    case D3DFMT_A8L8:
+    case D3DFMT_A8R3G3B2:
+    case D3DFMT_X4R4G4B4:
+      bytes_per_texel = 2.0f;
+      break;
+
+    case D3DFMT_R8G8B8:
+      bytes_per_texel = 3.0f;
+      break;
+
+    case D3DFMT_G16R16F:
+    case D3DFMT_Q8W8V8U8:
+    case D3DFMT_V16U16:
+    case D3DFMT_R32F:
+    case D3DFMT_A8R8G8B8:
+    case D3DFMT_X8R8G8B8:
+    case D3DFMT_A2B10G10R10:
+    case D3DFMT_A8B8G8R8:
+    case D3DFMT_X8B8G8R8:
+    case D3DFMT_G16R16:
+    case D3DFMT_A2R10G10B10:
+      bytes_per_texel = 4.0f;
+      break;
+
+    case D3DFMT_G32R32F:
+    case D3DFMT_A16B16G16R16F:
+    case D3DFMT_Q16W16V16U16:
+    case D3DFMT_A16B16G16R16:
+      bytes_per_texel = 8.0f;
+      break;
+
+    case D3DFMT_A32B32G32R32F:
+      bytes_per_texel = 16.0f;
+      break;
+
+    default:
+      dxgsg9_cat.error()
+        << "D3D create_texture ( ) unknown texture format\n";
+      break;
+  }
+
+  // must not put render to texture into LRU
+  if (_lru_page == 0 && _managed == false && _texture->get_render_to_texture ( ) == false)
+  {
+    int data_size;
+    Lru *lru;
+
+    data_size = target_width * target_height * target_depth;
+    data_size = (int) ((float) data_size * bytes_per_texel);
+    if (_has_mipmaps)
+    {
+      data_size = (int) ((float) data_size * 1.3f);
+    }
+
+    lru = scrn._dxgsg9 -> _lru;
+    if (lru)
+    {
+      LruPage *lru_page;
+
+      lru_page = lru -> allocate_page (data_size);
+      if (lru_page)
+      {
+        lru_page -> _m.type = GPT_Texture;
+        lru_page -> _m.lru_page_type.pointer = this;
+
+        lru -> add_cached_page (LPP_New, lru_page);
+        _lru_page = lru_page;
+      }
+    }
+  }
+
   return true;
 
  error_exit:
@@ -731,6 +835,7 @@ create_texture(DXScreenData &scrn) {
 ////////////////////////////////////////////////////////////////////
 void DXTextureContext9::
 delete_texture() {
+
   if (_d3d_texture == NULL) {
     // dont bother printing the msg below, since we already released it.
     return;

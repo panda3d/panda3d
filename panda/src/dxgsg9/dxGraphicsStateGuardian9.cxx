@@ -66,7 +66,7 @@
 
 
 #define DEBUG_LRU false
-#define DEFAULT_ENABLE_LRU false
+#define DEFAULT_ENABLE_LRU !true
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -195,6 +195,11 @@ apply_texture(int i, TextureContext *tc) {
 #endif
 
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+
+  if (_lru)
+  {
+    _lru -> access_page (dtc -> _lru_page);
+  }
 
   int dirty = dtc->get_dirty_flags();
 
@@ -811,12 +816,25 @@ end_frame() {
     _lru -> partial_lru_update (maximum_updates);
 //    _lru -> update_entire_lru ( );
 
+
+    if (false && dxgsg9_cat.is_debug())
+    {
+        dxgsg9_cat.debug() << "*  start_priority_index " << _lru -> _m.start_priority_index << "\n";
+        dxgsg9_cat.debug() << "*  start_update_lru_page " << _lru -> _m.start_update_lru_page << "\n";
+    }
+
     frames = 256;
     if ((_lru -> _m.current_frame_identifier % frames) == 0)
     {
       if (dxgsg9_cat.is_debug())
       {
+        UINT available_texture_memory;
+
+        available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
+
         dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "\n";
+        dxgsg9_cat.debug() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
+        dxgsg9_cat.debug() << "*  DX delta_memory " << available_texture_memory - _lru -> _m.available_memory << "\n";
         dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "\n";
         dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
         dxgsg9_cat.debug() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
@@ -1817,6 +1835,39 @@ bool index_buffer_page_out_function (LruPage *lru_page)
   return true;
 }
 
+bool texture_page_in_function (LruPage *lru_page)
+{
+  DXGraphicsStateGuardian9 *gsg;
+  DXTextureContext9 *texture;
+
+  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
+  texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
+
+  texture -> create_texture (*(gsg->_screen));
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page IN TEX " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
+bool texture_page_out_function (LruPage *lru_page)
+{
+  DXTextureContext9 *texture;
+
+  texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
+  texture -> delete_texture ( );
+
+  if (DEBUG_LRU && dxgsg9_cat.is_debug())
+  {
+    dxgsg9_cat.debug() << "  *** page OUT TEX " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
+  }
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::reset
 //       Access: Public, Virtual
@@ -1924,7 +1975,7 @@ reset() {
 maximum_memory = available_texture_memory;
 
 // TEST LRU *****
-maximum_memory = 20000000;
+maximum_memory = 55000000;
 maximum_pages = 20000;
 
     lru = new Lru (maximum_memory, maximum_pages);
@@ -1934,6 +1985,7 @@ maximum_pages = 20000;
 
       lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
       lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
+      lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
 
       lru -> _m.context = (void *) this;
     }

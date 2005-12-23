@@ -23,6 +23,8 @@
 #include "texture.h"
 #include "textureContext.h"
 
+#include "lru.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DXTextureContext9
 // Description :
@@ -60,6 +62,11 @@ private:
   IDirect3DCubeTexture9 *_d3d_cube_texture;
 
   int _managed;
+
+public:
+  LruPage *_lru_page;
+
+private:
   bool _has_mipmaps;
 
 public:
