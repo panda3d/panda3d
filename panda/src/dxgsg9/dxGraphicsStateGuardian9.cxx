@@ -66,7 +66,7 @@
 
 
 #define DEBUG_LRU false
-#define DEFAULT_ENABLE_LRU true
+#define DEFAULT_ENABLE_LRU false
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -123,9 +123,9 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _gsg_managed_textures = false;
-  _gsg_managed_vertex_buffers = false;
-  _gsg_managed_index_buffers = false;
+  _gsg_managed_textures = !false;
+  _gsg_managed_vertex_buffers = !false;
+  _gsg_managed_index_buffers = !false;
 
   _enable_lru = DEFAULT_ENABLE_LRU;
 
