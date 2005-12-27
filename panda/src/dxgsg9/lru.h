@@ -58,6 +58,9 @@ public:
       unsigned int in_cache : 1;
       unsigned int in_memory : 1;
       unsigned int on_disk : 1;
+      unsigned int pre_allocated : 1;
+      unsigned int allocated : 1;
+      unsigned int in_lru : 1;
     };
 
     int first_frame_identifier;   // creation time
@@ -119,7 +122,6 @@ public:
 
   void update_entire_lru ( );
   void partial_lru_update (int maximum_updates);
-  void partial_lru_update_old (int approximate_maximum_updates);
 
   // set maximum number of page updates per frame
   // pause/resume updates/current_frame_identifier
