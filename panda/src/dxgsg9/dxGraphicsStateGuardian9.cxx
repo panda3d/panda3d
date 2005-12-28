@@ -67,6 +67,7 @@
 
 #define DEBUG_LRU false
 #define DEFAULT_ENABLE_LRU true
+#define DEFAULT_ENABLE_DX_MANAGED false
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -123,9 +124,9 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _gsg_managed_textures = false;
-  _gsg_managed_vertex_buffers = false;
-  _gsg_managed_index_buffers = false;
+  _gsg_managed_textures = DEFAULT_ENABLE_DX_MANAGED;
+  _gsg_managed_vertex_buffers = DEFAULT_ENABLE_DX_MANAGED;
+  _gsg_managed_index_buffers = DEFAULT_ENABLE_DX_MANAGED;
 
   _enable_lru = DEFAULT_ENABLE_LRU;
 
@@ -834,7 +835,8 @@ end_frame() {
 
         dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "\n";
         dxgsg9_cat.debug() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
-        dxgsg9_cat.debug() << "*  DX delta_memory " << available_texture_memory - _lru -> _m.available_memory << "\n";
+//        dxgsg9_cat.debug() << "*  DX delta_memory " << available_texture_memory - _lru -> _m.available_memory << "\n";
+        dxgsg9_cat.debug() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
         dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "\n";
         dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
         dxgsg9_cat.debug() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
