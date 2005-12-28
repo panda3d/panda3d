@@ -1,3 +1,20 @@
+// Filename: lru.h
+// Created by: aignacio (12Dec05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights
+// reserved.
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef LRU_H
 #define LRU_H
@@ -30,6 +47,16 @@ typedef union _LruPageType
 }
 LruPageType;
 
+typedef struct
+{
+  int total_pages;
+  int total_pages_in;
+  int total_pages_out;
+  int total_memory_in;
+  int total_memory_out;
+}
+PageTypeStatistics;
+
 typedef bool (*LruPageTypeFunction) (LruPage *lru_page);
 
 class LruPage
@@ -45,7 +72,7 @@ public:
 
   typedef struct _LruPageVariables
   {
-    LruPageType lru_page_type;
+    LruPageType lru_page_type;  // pointer to memory type
 
     int size;
     LruPagePriority priority;
@@ -53,7 +80,7 @@ public:
 
     struct
     {
-      unsigned int type : 4;
+      unsigned int type : 8;
       unsigned int lock : 1;
       unsigned int in_cache : 1;
       unsigned int in_memory : 1;
@@ -77,7 +104,7 @@ public:
     int total_usage;
     int update_total_usage;
 
-    int identifier; // this is also the number of pages created during the lifetime of the LRU
+    int identifier;
 
     float average_frame_utilization;
 
@@ -97,7 +124,7 @@ class Lru
 {
 public:
 
-  Lru (int maximum_memory, int maximum_pages);
+  Lru (int maximum_memory, int maximum_pages, int maximum_page_types);
   ~Lru ( );
 
   bool register_lru_page_type (int index, LruPageTypeFunction page_in_function, LruPageTypeFunction page_out_function);
@@ -130,6 +157,8 @@ public:
 
   void count_priority_level_pages (void);
 
+  void calculate_lru_statistics (void);
+
 private:
   bool page_out_lru (int memory_required);
   void update_page_priorities (void);
@@ -148,6 +177,7 @@ public:
 
     int maximum_memory;
     int minimum_memory;    // target amount of memory to keep free if possible
+    int maximum_page_types;
 
     int total_lifetime_page_ins;
     int total_lifetime_page_outs;
@@ -164,12 +194,11 @@ public:
     int maximum_page_updates_per_frame;    // unused pages
 
     int start_priority_index;
-    int update_overflow;
     LruPage *start_update_lru_page;
 
-    int identifier;
+    int identifier;  // this is also the number of pages created during the lifetime of the LRU
 
-    float weight;
+    float weight;  // used for exponential moving average
     float maximum_frame_bandwidth_utilization;
 
     float frame_bandwidth_factor;
@@ -189,6 +218,8 @@ public:
     int total_lru_pages_in_free_pool;
     LruPage **lru_page_pool;
     LruPage **lru_page_free_pool;
+
+    PageTypeStatistics *page_type_statistics_array;
   }
   LruVariables;
 
@@ -203,6 +234,5 @@ bool default_page_out_function (LruPage *lru_page);
 
 void test_ema (void);
 void test_lru (void);
-
 
 #endif

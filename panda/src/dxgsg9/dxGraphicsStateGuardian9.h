@@ -37,10 +37,11 @@
 
 enum GsgPageType
 {
-  GPT_Error,
   GPT_Texture,
   GPT_VertexBuffer,
   GPT_IndexBuffer,
+
+  GPT_TotalPageTypes
 };
 
 class Light;

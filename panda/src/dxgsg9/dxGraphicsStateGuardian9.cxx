@@ -66,7 +66,7 @@
 
 
 #define DEBUG_LRU false
-#define DEFAULT_ENABLE_LRU !true
+#define DEFAULT_ENABLE_LRU true
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -123,9 +123,9 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _gsg_managed_textures = !false;
-  _gsg_managed_vertex_buffers = !false;
-  _gsg_managed_index_buffers = !false;
+  _gsg_managed_textures = false;
+  _gsg_managed_vertex_buffers = false;
+  _gsg_managed_index_buffers = false;
 
   _enable_lru = DEFAULT_ENABLE_LRU;
 
@@ -819,8 +819,8 @@ end_frame() {
 
     if (false && dxgsg9_cat.is_debug())
     {
-        dxgsg9_cat.debug() << "*  start_priority_index " << _lru -> _m.start_priority_index << "\n";
-        dxgsg9_cat.debug() << "*  start_update_lru_page " << _lru -> _m.start_update_lru_page << "\n";
+      dxgsg9_cat.debug() << "*  start_priority_index " << _lru -> _m.start_priority_index << "\n";
+      dxgsg9_cat.debug() << "*  start_update_lru_page " << _lru -> _m.start_update_lru_page << "\n";
     }
 
     frames = 256;
@@ -855,6 +855,24 @@ end_frame() {
           {
             dxgsg9_cat.debug() << "*  priority " << index << " pages " << _lru -> _m.lru_page_count_array [index] << "\n";
           }
+        }
+
+        _lru -> calculate_lru_statistics ( );
+
+        for (index = 0; index < _lru -> _m.maximum_page_types; index++)
+        {
+          PageTypeStatistics *page_type_statistics;
+
+          page_type_statistics = &_lru -> _m.page_type_statistics_array [index];
+          dxgsg9_cat.debug() << "\n" <<
+              " page type " << index <<
+              "  total pages " << page_type_statistics -> total_pages <<
+              "  in " << page_type_statistics -> total_pages_in <<
+              "  size " << page_type_statistics -> total_memory_in <<
+              "  out " << page_type_statistics -> total_pages_out <<
+              "  size " << page_type_statistics -> total_memory_out <<
+              "\n";
+
         }
       }
     }
@@ -1970,6 +1988,7 @@ reset() {
   {
     int maximum_memory;
     int maximum_pages;
+    int maximum_page_types;
     Lru *lru;
 
 maximum_memory = available_texture_memory;
@@ -1977,8 +1996,9 @@ maximum_memory = available_texture_memory;
 // TEST LRU *****
 maximum_memory = 55000000;
 maximum_pages = 20000;
+maximum_page_types = GPT_TotalPageTypes;
 
-    lru = new Lru (maximum_memory, maximum_pages);
+    lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
     if (lru)
     {
       lru -> _m.minimum_memory = 1000000;

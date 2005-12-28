@@ -1,10 +1,24 @@
+// Filename: lru.cxx
+// Created by: aignacio (12Dec05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights
+// reserved.
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
 
+//#include "stdafx.h"
 
 #define LRU_UNIT_TEST 0
-
-#if LRU_UNIT_TEST
-#include "stdafx.h"
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,32 +30,35 @@
 #define HIGH_PRIORITY_SCALE 4
 #define LOW_PRIORITY_RANGE 25
 
-float calculate_exponential_moving_average (float value, float weight, float average)
-{
-    return ((value - average) * weight) + average;
-}
 
-bool default_page_in_function (LruPage *lru_page)
-{
-  char string [256];
+////////////////////////////////////////////////////////////////////
+//       Class : Lru
+// Description : Least Recently Used algorithm implementation:
+// In the Lru, each "memory page" has an associated class LruPage.
+// The Lru has a range of priorities from LPP_Highest to
+// LPP_PagedOut. Each priority has a doubly linked list of LruPages.
+// The algorithim uses an adaptive method based on the average
+// utilization of each page per frame (or time slice). The
+// average utilization is calculated with an exponetial moving
+// average. This is superior to a standard average since a standard
+// average becomes less and less adaptive the longer a page exists.
+// The average utilization is used to set the priority of each page.
+// A higher average utilization automatically raises the priority
+// of a page and a lower average utilization automatically lowers
+// the priority of a page. Therefore, pages with a higher average
+// utilization have a higher chance of being kept in memory or
+// cached and pages with a lower average utilization have a higher
+// chance of being paged out.  When a page is paged in and there
+// is not enough memory available, then the lowest priority pages
+// will be paged out first until there is enough memory available.
+////////////////////////////////////////////////////////////////////
 
-  sprintf (string, "  PAGE IN %d\n", lru_page -> _m.identifier);
-  OutputDebugString (string);
-
-  return true;
-}
-bool default_page_out_function (LruPage *lru_page)
-{
-  char string [256];
-
-  sprintf (string, "  PAGE OUT %d\n", lru_page -> _m.identifier);
-  OutputDebugString (string);
-
-  return true;
-}
-
-
-Lru::Lru (int maximum_memory, int maximum_pages)
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
 {
   if (this)
   {
@@ -51,6 +68,7 @@ Lru::Lru (int maximum_memory, int maximum_pages)
 
     this -> _m.maximum_memory = maximum_memory;
     this -> _m.maximum_pages = maximum_pages;
+    this -> _m.maximum_page_types = maximum_page_types;
     this -> _m.available_memory = maximum_memory;
     this -> _m.current_frame_identifier = 1;
     this -> _m.weight = 0.20f;
@@ -83,9 +101,19 @@ Lru::Lru (int maximum_memory, int maximum_pages)
         }
       }
     }
+
+    if (maximum_page_types > 0)
+    {
+      this -> _m.page_type_statistics_array = new PageTypeStatistics [maximum_page_types];
+    }
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 Lru::~Lru ( )
 {
   int index;
@@ -130,8 +158,19 @@ Lru::~Lru ( )
       lru_page = next_lru_page;
     }
   }
+
+  if (this -> _m.page_type_statistics_array)
+  {
+    delete this -> _m.page_type_statistics_array;
+  }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LruPage::Constructor
+//       Access: Protected
+//  Description: Internal function only.
+//               Call  Lru::allocate_page instead.
+////////////////////////////////////////////////////////////////////
 LruPage::LruPage ( )
 {
   if (this)
@@ -140,11 +179,33 @@ LruPage::LruPage ( )
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LruPage::Destructor
+//       Access: Protected
+//  Description: Internal function only.
+//               Call  Lru::free_page instead.
+////////////////////////////////////////////////////////////////////
 LruPage::~LruPage ( )
 {
 
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LruPage::change_priority
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void LruPage::change_priority (int delta)
+{
+  this -> _m.priority_change += delta;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::register_lru_page_type
+//       Access: Public
+//  Description: Registers a specific type of page and its
+//               required page in and out functions.
+////////////////////////////////////////////////////////////////////
 bool Lru::register_lru_page_type (int index, LruPageTypeFunction page_in_function, LruPageTypeFunction page_out_function)
 {
   bool state;
@@ -160,11 +221,11 @@ bool Lru::register_lru_page_type (int index, LruPageTypeFunction page_in_functio
   return state;
 }
 
-void LruPage::change_priority (int delta)
-{
-  this -> _m.priority_change += delta;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::allocate_page
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 LruPage * Lru::allocate_page (int size)
 {
   LruPage *lru_page;
@@ -180,6 +241,7 @@ LruPage * Lru::allocate_page (int size)
         this -> _m.total_lru_pages_in_free_pool--;
 
         memset (&lru_page -> _m, 0, sizeof (LruPage::LruPageVariables));
+        lru_page -> _m.pre_allocated = true;
       }
       else
       {
@@ -214,6 +276,12 @@ LruPage * Lru::allocate_page (int size)
       this -> _m.total_pages++;
       this -> _m.identifier++;
     }
+    else
+    {
+
+// ERROR: could not allocate LruPage
+
+    }
   }
   else
   {
@@ -225,6 +293,11 @@ LruPage * Lru::allocate_page (int size)
   return lru_page;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::update_start_update_lru_page
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void Lru::update_start_update_lru_page (LruPage *lru_page)
 {
   if (lru_page)
@@ -252,6 +325,11 @@ void Lru::update_start_update_lru_page (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::free_page
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void Lru::free_page (LruPage *lru_page)
 {
   if (this -> _m.total_pages > 0)
@@ -294,6 +372,11 @@ void Lru::free_page (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::add_page
+//       Access: Public
+//  Description: Adds a page to the LRU based on the given priority.
+////////////////////////////////////////////////////////////////////
 void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
 {
   if (lru_page)
@@ -315,6 +398,12 @@ void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::add_cached_page
+//       Access: Public
+//  Description: Adds a page that is already paged in to the LRU
+//               based on the given priority.
+////////////////////////////////////////////////////////////////////
 void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
 {
   if (lru_page)
@@ -337,6 +426,11 @@ void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::remove_page
+//       Access: Public
+//  Description: Removes a page from the LRU.
+////////////////////////////////////////////////////////////////////
 void Lru::remove_page (LruPage *lru_page)
 {
   if (lru_page)
@@ -379,16 +473,33 @@ void Lru::remove_page (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::lock_page
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void Lru::lock_page (LruPage *lru_page)
 {
   lru_page -> _m.lock = true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::unlock_page
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void Lru::unlock_page (LruPage *lru_page)
 {
   lru_page -> _m.lock = false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::access_page
+//       Access: Public
+//  Description: This must always be called before accessing or
+//               using a page's memory since it pages in the page
+//               if it is currently paged out.
+////////////////////////////////////////////////////////////////////
 void Lru::access_page (LruPage *lru_page)
 {
   if (lru_page)
@@ -453,12 +564,23 @@ void Lru::access_page (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::set_maximum_frame_bandwidth_utilization
+//       Access: Public
+//  Description: This must be called before accessing or using a
+//               page since it pages in the page if it is paged out.
+////////////////////////////////////////////////////////////////////
 void Lru::set_maximum_frame_bandwidth_utilization (float maximum_frame_bandwidth_utilization)
 {
   this -> _m.maximum_frame_bandwidth_utilization = maximum_frame_bandwidth_utilization;
   this -> _m.frame_bandwidth_factor = (float) LPP_TotalPriorities / this -> _m.maximum_frame_bandwidth_utilization;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::begin_frame
+//       Access: Public
+//  Description: This must be called before each frame.
+////////////////////////////////////////////////////////////////////
 void Lru::begin_frame ( )
 {
   this -> _m.current_frame_identifier++;
@@ -470,6 +592,12 @@ void Lru::begin_frame ( )
   this -> _m.total_page_outs = 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::update_page_priorities
+//       Access: Public
+//  Description: This updates the priority of a page that has a
+//               change in priority.
+////////////////////////////////////////////////////////////////////
 void Lru::update_page_priorities (void)
 {
   int index;
@@ -499,8 +627,17 @@ void Lru::update_page_priorities (void)
   this -> _m.total_lru_page_priority_changes = 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::update_lru_page
+//       Access: Public
+//  Description: This updates the page's average utilization and
+//               adds it to the array of pages with changed
+//               priorities if there was a change in priority.
+////////////////////////////////////////////////////////////////////
 void Lru::update_lru_page (LruPage *lru_page)
 {
+
+#if LRU_UNIT_TEST
   if (false)
   {
     char string [256];
@@ -508,6 +645,7 @@ void Lru::update_lru_page (LruPage *lru_page)
     sprintf (string, "  UPDATE %d\n", lru_page -> _m.identifier);
     OutputDebugString (string);
   }
+#endif
 
   if (lru_page -> _m.lock == false && lru_page -> _m.in_cache)
   {
@@ -582,8 +720,18 @@ void Lru::update_lru_page (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::update_lru_page_old
+//       Access: Public
+//  Description: This updates the page's average utilization and
+//               adds it to the array of pages with changed
+//               priorities if there was a change in priority.
+//               Old method.
+////////////////////////////////////////////////////////////////////
 void Lru::update_lru_page_old (LruPage *lru_page)
 {
+
+#if LRU_UNIT_TEST
   if (false)
   {
     char string [256];
@@ -591,6 +739,7 @@ void Lru::update_lru_page_old (LruPage *lru_page)
     sprintf (string, "  UPDATE %d\n", lru_page -> _m.identifier);
     OutputDebugString (string);
   }
+#endif
 
   if (lru_page -> _m.lock == false)
   {
@@ -707,6 +856,13 @@ void Lru::update_lru_page_old (LruPage *lru_page)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::update_entire_lru
+//       Access: Public
+//  Description: This updates all the pages in the Lru.
+//               Lru::partial_lru_update should be called instead
+//               due to performance reasons.
+////////////////////////////////////////////////////////////////////
 void Lru::update_entire_lru ( )
 {
   if (this -> _m.total_pages > 0)
@@ -733,6 +889,12 @@ void Lru::update_entire_lru ( )
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::partial_lru_update
+//       Access: Public
+//  Description: This only updates a number of pages up to the
+//               specified maximum_updates.
+////////////////////////////////////////////////////////////////////
 void Lru::partial_lru_update (int maximum_updates)
 {
   int total_page_updates;
@@ -865,6 +1027,11 @@ void Lru::partial_lru_update (int maximum_updates)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::unlock_all_pages
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void Lru::unlock_all_pages (void)
 {
   if (this -> _m.total_pages > 0)
@@ -889,6 +1056,13 @@ void Lru::unlock_all_pages (void)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::page_out_lru
+//       Access: Public
+//  Description: Pages out the lowest priority pages until the
+//               memory_required is satisfied.  This will unlock
+//               all pages if needed.
+////////////////////////////////////////////////////////////////////
 bool Lru::page_out_lru (int memory_required)
 {
   bool state;
@@ -962,6 +1136,12 @@ bool Lru::page_out_lru (int memory_required)
   return state;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::count_priority_level_pages
+//       Access: Public
+//  Description: Debug function. Counts the number of pages for each
+//               priority level.
+////////////////////////////////////////////////////////////////////
 void Lru::count_priority_level_pages (void)
 {
   int index;
@@ -987,8 +1167,100 @@ void Lru::count_priority_level_pages (void)
   }
 }
 
+void Lru::calculate_lru_statistics (void)
+{
+  if (this -> _m.maximum_page_types > 0)
+  {
+    int index;
+
+    memset (this -> _m.page_type_statistics_array, 0, sizeof (PageTypeStatistics) * this -> _m.maximum_page_types);
+    for (index = 0; index < LPP_TotalPriorities; index++)
+    {
+      LruPage *lru_page;
+      LruPage *next_lru_page;
+      PageTypeStatistics *page_type_statistics;
+
+      lru_page = this -> _m.lru_page_array [index];
+      while (lru_page)
+      {
+        volatile int type;
+
+        next_lru_page = lru_page -> _m.next;
+
+        type = lru_page -> _m.type;
+        page_type_statistics = &this -> _m.page_type_statistics_array [type];
+        page_type_statistics -> total_pages++;
+
+        if (lru_page -> _m.in_cache)
+        {
+          page_type_statistics -> total_pages_in++;
+          page_type_statistics -> total_memory_in += lru_page -> _m.size;
+        }
+        else
+        {
+          page_type_statistics -> total_pages_out++;
+          page_type_statistics -> total_memory_out += lru_page -> _m.size;
+        }
+
+        lru_page = next_lru_page;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: calculate_exponential_moving_average
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+float calculate_exponential_moving_average (float value, float weight, float average)
+{
+    return ((value - average) * weight) + average;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: default_page_in_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool default_page_in_function (LruPage *lru_page)
+{
+
+#if LRU_UNIT_TEST
+  char string [256];
+
+  sprintf (string, "  PAGE IN %d\n", lru_page -> _m.identifier);
+  OutputDebugString (string);
+#endif
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: default_page_out_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool default_page_out_function (LruPage *lru_page)
+{
+
+#if LRU_UNIT_TEST
+  char string [256];
+
+  sprintf (string, "  PAGE OUT %d\n", lru_page -> _m.identifier);
+  OutputDebugString (string);
+#endif
+
+  return true;
+}
+
 #if LRU_UNIT_TEST
 
+////////////////////////////////////////////////////////////////////
+//     Function: test_ema
+//       Access:
+//  Description: Unit test function for ema.
+////////////////////////////////////////////////////////////////////
 void test_ema (void)
 {
   int index;
@@ -1016,17 +1288,24 @@ void test_ema (void)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: test_lru
+//       Access:
+//  Description: Unit test function for Lru.
+////////////////////////////////////////////////////////////////////
 void test_lru (void)
 {
   int maximum_memory;
   int maximum_pages;
+  int maximum_page_types;
   Lru *lru;
 
   test_ema ( );
 
   maximum_memory = 3000000;
   maximum_pages = 3;
-  lru = new Lru (maximum_memory, maximum_pages);
+  maximum_page_types = 4;
+  lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
   if (lru)
   {
     lru -> _m.minimum_memory = 1000000;
@@ -1121,10 +1400,10 @@ void test_lru (void)
       }
       else
       {
-        int approximate_maximum_updates;
+        int maximum_updates;
 
-        approximate_maximum_updates = 3;
-        lru -> partial_lru_update (approximate_maximum_updates);
+        maximum_updates = 3;
+        lru -> partial_lru_update (maximum_updates);
       }
     }
 
