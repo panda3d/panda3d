@@ -26,8 +26,9 @@
 
 #include "lru.h"
 
-#define HIGH_PRIORITY_SCALE 4
-#define LOW_PRIORITY_RANGE 25
+
+static const int HIGH_PRIORITY_SCALE = 4;
+static const int LOW_PRIORITY_RANGE = 25;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -59,51 +60,45 @@
 ////////////////////////////////////////////////////////////////////
 Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
 {
-  if (this)
-  {
-    int index;
+  if(this) {
+    int  index;
 
-    memset (&this -> _m, 0, sizeof (LruVariables));
+    memset(&this->_m, 0, sizeof (LruVariables));
 
-    this -> _m.maximum_memory = maximum_memory;
-    this -> _m.maximum_pages = maximum_pages;
-    this -> _m.maximum_page_types = maximum_page_types;
-    this -> _m.available_memory = maximum_memory;
-    this -> _m.current_frame_identifier = 1;
-    this -> _m.weight = 0.20f;
+    this->_m.maximum_memory = maximum_memory;
+    this->_m.maximum_pages  = maximum_pages;
+    this->_m.maximum_page_types = maximum_page_types;
+    this->_m.available_memory = maximum_memory;
+    this->_m.current_frame_identifier = 1;
+    this->_m.weight = 0.20f;
 
-    this -> set_maximum_frame_bandwidth_utilization (2000000.0f);
+    this->set_maximum_frame_bandwidth_utilization(2000000.0f);
 
-    for (index = 0; index < MAXIMUM_LRU_PAGE_TYPES; index++)
-    {
-      this -> _m.page_in_function_array [index] = default_page_in_function;
-      this -> _m.page_out_function_array [index] = default_page_out_function;
+    for(index = 0; index < MAXIMUM_LRU_PAGE_TYPES; index++) {
+      this->_m.page_in_function_array[index] = default_page_in_function;
+      this->_m.page_out_function_array[index] = default_page_out_function;
     }
 
-    if (maximum_pages > 0)
-    {
+    if(maximum_pages > 0) {
       this -> _m.lru_page_pool = new LruPage * [maximum_pages];
       this -> _m.lru_page_free_pool = new LruPage * [maximum_pages];
-      for (index = 0; index < maximum_pages; index++)
-      {
-        LruPage *lru_page;
+      for(index = 0; index < maximum_pages; index++) {
+        LruPage  * lru_page;
 
         lru_page = new LruPage ( );
-        if (lru_page)
-        {
-          lru_page -> _m.pre_allocated = true;
-          this -> _m.lru_page_pool [index] = lru_page;
+        if(lru_page) {
+          lru_page->_m.pre_allocated = true;
+          this->_m.lru_page_pool[index] = lru_page;
         }
-        else
-        {
+        else {
 // ERROR
         }
       }
     }
 
-    if (maximum_page_types > 0)
-    {
-      this -> _m.page_type_statistics_array = new PageTypeStatistics [maximum_page_types];
+    if(maximum_page_types > 0) {
+      this -> _m.page_type_statistics_array =
+        new PageTypeStatistics [maximum_page_types];
     }
 
 #if ENABLE_MUTEX
@@ -120,20 +115,16 @@ Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
 ////////////////////////////////////////////////////////////////////
 Lru::~Lru ( )
 {
-  int index;
-  LruPage *lru_page;
+  int        index;
+  LruPage  * lru_page;
 
   // free pre-allocated LruPages
-  if (this -> _m.maximum_pages > 0)
-  {
-    if (this -> _m.lru_page_free_pool)
-    {
-      for (index = 0; index < this -> _m.maximum_pages; index++)
-      {
-        lru_page = this -> _m.lru_page_pool [index];
-        if (lru_page -> _m.in_lru)
-        {
-          this -> remove_page (lru_page);
+  if(this->_m.maximum_pages > 0) {
+    if(this->_m.lru_page_free_pool) {
+      for(index = 0; index < this->_m.maximum_pages; index++) {
+        lru_page = this->_m.lru_page_pool[index];
+        if(lru_page->_m.in_lru) {
+          this->remove_page(lru_page);
         }
 
         delete lru_page;
@@ -141,36 +132,31 @@ Lru::~Lru ( )
 
       delete this -> _m.lru_page_free_pool;
     }
-    if (this -> _m.lru_page_pool)
-    {
+    if(this->_m.lru_page_pool) {
       delete this -> _m.lru_page_pool;
     }
   }
 
   // free dynamically allocated LruPages
-  for (index = 0; index < LPP_TotalPriorities; index++)
-  {
-    LruPage *next_lru_page;
+  for(index = 0; index < LPP_TotalPriorities; index++) {
+    LruPage  * next_lru_page;
 
-    lru_page = this -> _m.lru_page_array [index];
-    while (lru_page)
-    {
-      next_lru_page = lru_page -> _m.next;
+    lru_page = this->_m.lru_page_array[index];
+    while(lru_page) {
+      next_lru_page = lru_page->_m.next;
 
-      delete lru_page;
+      delete  lru_page;
 
       lru_page = next_lru_page;
     }
   }
 
-  if (this -> _m.page_type_statistics_array)
-  {
+  if(this->_m.page_type_statistics_array) {
     delete this -> _m.page_type_statistics_array;
   }
 
 #if ENABLE_MUTEX
-  if (this -> _m.mutex)
-  {
+  if(this->_m.mutex) {
     delete this -> _m.mutex;
   }
 #endif
@@ -185,9 +171,8 @@ Lru::~Lru ( )
 ////////////////////////////////////////////////////////////////////
 LruPage::LruPage ( )
 {
-  if (this)
-  {
-    memset (&this -> _m, 0, sizeof (LruPageVariables));
+  if(this) {
+    memset(&this->_m, 0, sizeof (LruPageVariables));
   }
 }
 
@@ -209,7 +194,7 @@ LruPage::~LruPage ( )
 ////////////////////////////////////////////////////////////////////
 void LruPage::change_priority (int delta)
 {
-  this -> _m.priority_change += delta;
+  this->_m.priority_change += delta;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,16 +203,17 @@ void LruPage::change_priority (int delta)
 //  Description: Registers a specific type of page and its
 //               required page in and out functions.
 ////////////////////////////////////////////////////////////////////
-bool Lru::register_lru_page_type (int index, LruPageTypeFunction page_in_function, LruPageTypeFunction page_out_function)
+bool Lru::register_lru_page_type (int index,
+  LruPageTypeFunction page_in_function,
+  LruPageTypeFunction page_out_function)
 {
-  bool state;
+  bool  state;
 
   state = false;
-  if (index >=0 && index < MAXIMUM_LRU_PAGE_TYPES)
-  {
-      this -> _m.page_in_function_array [index] = page_in_function;
-      this -> _m.page_out_function_array [index] = page_out_function;
-      state = true;
+  if(index >= 0 && index < MAXIMUM_LRU_PAGE_TYPES) {
+    this->_m.page_in_function_array[index] = page_in_function;
+    this->_m.page_out_function_array[index] = page_out_function;
+    state = true;
   }
 
   return state;
@@ -238,65 +224,56 @@ bool Lru::register_lru_page_type (int index, LruPageTypeFunction page_in_functio
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LruPage * Lru::allocate_page (int size)
+LruPage *Lru::allocate_page (int size)
 {
-  LruPage *lru_page;
+  LruPage  * lru_page;
 
   lru_page = 0;
-  if (size <= this -> _m.maximum_memory)
-  {
-    if (this -> _m.maximum_pages)
-    {
-      if (this -> _m.total_lru_pages_in_free_pool > 0)
-      {
-        lru_page = this -> _m.lru_page_free_pool [this -> _m.total_lru_pages_in_free_pool - 1];
-        this -> _m.total_lru_pages_in_free_pool--;
+  if(size <= this->_m.maximum_memory) {
+    if(this->_m.maximum_pages) {
+      if(this->_m.total_lru_pages_in_free_pool > 0) {
+        lru_page =
+          this->_m.lru_page_free_pool [this->_m.total_lru_pages_in_free_pool - 1];
+        this->_m.total_lru_pages_in_free_pool--;
 
         memset (&lru_page -> _m, 0, sizeof (LruPage::LruPageVariables));
-        lru_page -> _m.pre_allocated = true;
+        lru_page->_m.pre_allocated = true;
       }
-      else
-      {
-        if (this -> _m.total_lru_pages_in_pool < this -> _m.maximum_pages)
-        {
-          lru_page = this -> _m.lru_page_pool [this -> _m.total_lru_pages_in_pool];
-          this -> _m.total_lru_pages_in_pool++;
+      else {
+        if(this->_m.total_lru_pages_in_pool < this->_m.maximum_pages) {
+          lru_page = this->_m.lru_page_pool[this->_m.total_lru_pages_in_pool];
+          this->_m.total_lru_pages_in_pool++;
         }
-        else
-        {
+        else {
           // out of pre-allocated LruPages so dynamically allocate a page
           lru_page = new LruPage ( );
         }
       }
     }
-    else
-    {
+    else {
       lru_page = new LruPage;
     }
-    if (lru_page)
-    {
-      lru_page -> _m.lru = this;
-      lru_page -> _m.size = size;
-      lru_page -> _m.first_frame_identifier = this -> _m.current_frame_identifier;
-      lru_page -> _m.last_frame_identifier = this -> _m.current_frame_identifier;
+    if(lru_page) {
+      lru_page->_m.lru = this;
+      lru_page->_m.size = size;
+      lru_page->_m.first_frame_identifier = this->_m.current_frame_identifier;
+      lru_page->_m.last_frame_identifier = this->_m.current_frame_identifier;
 
-      lru_page -> _m.allocated = true;
-      lru_page -> _m.identifier = this -> _m.identifier;
+      lru_page->_m.allocated = true;
+      lru_page->_m.identifier = this->_m.identifier;
 
-      lru_page -> _m.average_frame_utilization = 1.0f;
+      lru_page->_m.average_frame_utilization = 1.0f;
 
-      this -> _m.total_pages++;
-      this -> _m.identifier++;
+      this->_m.total_pages++;
+      this->_m.identifier++;
     }
-    else
-    {
+    else {
 
 // ERROR: could not allocate LruPage
 
     }
   }
-  else
-  {
+  else {
 
 // ERROR: requested page size is larger than maximum memory size
 
@@ -312,26 +289,20 @@ LruPage * Lru::allocate_page (int size)
 ////////////////////////////////////////////////////////////////////
 void Lru::update_start_update_lru_page (LruPage *lru_page)
 {
-  if (lru_page)
-  {
-    if (this ->_m.start_update_lru_page == lru_page)
-    {
-      if (lru_page -> _m.next)
-      {
-        this -> _m.start_update_lru_page = lru_page -> _m.next;
+  if(lru_page) {
+    if(this->_m.start_update_lru_page == lru_page) {
+      if(lru_page->_m.next) {
+        this->_m.start_update_lru_page = lru_page->_m.next;
       }
-      else
-      {
-        if ((this -> _m.start_priority_index + 1) >= LPP_TotalPriorities)
-        {
-          this -> _m.start_priority_index = 0;
+      else {
+        if((this->_m.start_priority_index + 1) >= LPP_TotalPriorities) {
+          this->_m.start_priority_index = 0;
         }
-        else
-        {
-          this -> _m.start_priority_index = this -> _m.start_priority_index + 1;
+        else {
+          this->_m.start_priority_index = this->_m.start_priority_index + 1;
         }
 
-        this -> _m.start_update_lru_page = 0;
+        this->_m.start_update_lru_page = 0;
       }
     }
   }
@@ -344,42 +315,35 @@ void Lru::update_start_update_lru_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::free_page (LruPage *lru_page)
 {
-  if (this -> _m.total_pages > 0)
-  {
-    if (lru_page)
-    {
-      LruMutexHolder (this -> _m.mutex);
+  if(this->_m.total_pages > 0) {
+    if(lru_page) {
+      LruMutexHolder(this->_m.mutex);
 
-      this -> update_start_update_lru_page (lru_page);
+      this->update_start_update_lru_page(lru_page);
 
-      if (lru_page -> _m.in_cache)
-      {
-        this -> _m.available_memory += lru_page -> _m.size;
+      if(lru_page->_m.in_cache) {
+        this->_m.available_memory += lru_page->_m.size;
       }
 
-      if (lru_page -> _m.pre_allocated)
-      {
-        if (this -> _m.maximum_pages)
-        {
-          lru_page -> _m.allocated = false;
-          this -> _m.lru_page_free_pool [this -> _m.total_lru_pages_in_free_pool] = lru_page;
-          this -> _m.total_lru_pages_in_free_pool++;
+      if(lru_page->_m.pre_allocated) {
+        if(this->_m.maximum_pages) {
+          lru_page->_m.allocated = false;
+          this->_m.lru_page_free_pool [this->_m.total_lru_pages_in_free_pool] =
+            lru_page;
+          this->_m.total_lru_pages_in_free_pool++;
         }
-        else
-        {
+        else {
 // ERROR: this case should not happen
         }
       }
-      else
-      {
+      else {
         delete lru_page;
       }
 
-      this -> _m.total_pages--;
+      this->_m.total_pages--;
     }
   }
-  else
-  {
+  else {
 
 // ERROR: tried to free a page when 0 pages allocated
 
@@ -393,24 +357,22 @@ void Lru::free_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
 {
-  if (lru_page)
-  {
-    LruMutexHolder (this -> _m.mutex);
+  if(lru_page) {
+    LruMutexHolder(this->_m.mutex);
 
-    LruPage *first_lru_page;
+    LruPage * first_lru_page;
 
-    lru_page -> _m.priority = priority;
+    lru_page->_m.priority = priority;
 
-    first_lru_page = this -> _m.lru_page_array [lru_page -> _m.priority];
-    if (first_lru_page)
-    {
-      first_lru_page -> _m.previous = lru_page;
-      lru_page -> _m.next = first_lru_page;
+    first_lru_page = this->_m.lru_page_array[lru_page->_m.priority];
+    if(first_lru_page) {
+      first_lru_page->_m.previous = lru_page;
+      lru_page->_m.next = first_lru_page;
     }
 
-    this -> _m.lru_page_array [lru_page -> _m.priority] = lru_page;
+    this->_m.lru_page_array[lru_page->_m.priority] = lru_page;
 
-    lru_page -> _m.in_lru = true;
+    lru_page->_m.in_lru = true;
   }
 }
 
@@ -422,25 +384,23 @@ void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
 {
-  if (lru_page)
-  {
-    LruMutexHolder (this -> _m.mutex);
+  if(lru_page) {
+    LruMutexHolder(this->_m.mutex);
 
-    lru_page -> _m.in_cache = true;
+    lru_page->_m.in_cache = true;
 
-    if (lru_page -> _m.size > this -> _m.available_memory)
-    {
-        int memory_required;
+    if(lru_page->_m.size > this->_m.available_memory) {
+      int  memory_required;
 
-        memory_required = lru_page -> _m.size - this -> _m.available_memory;
+      memory_required = lru_page->_m.size - this->_m.available_memory;
 
-        // unload page(s)
-        this -> page_out_lru (memory_required);
+      // unload page(s)
+      this->page_out_lru(memory_required);
     }
 
-    this -> _m.available_memory -= lru_page -> _m.size;
+    this->_m.available_memory -= lru_page->_m.size;
 
-    this -> add_page (priority, lru_page);
+    this->add_page(priority, lru_page);
   }
 }
 
@@ -451,48 +411,40 @@ void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::remove_page (LruPage *lru_page)
 {
-  if (this)
-  {
-    if (this -> _m.total_pages > 0)
-    {
-      if (lru_page)
-      {
-        LruMutexHolder (this -> _m.mutex);
+  if(this) {
+    if(this->_m.total_pages > 0) {
+      if(lru_page) {
+        LruMutexHolder(this->_m.mutex);
 
-        this -> update_start_update_lru_page (lru_page);
+        this->update_start_update_lru_page(lru_page);
 
-        if (lru_page -> _m.previous)
-        {
-          lru_page -> _m.previous -> _m.next = lru_page -> _m.next;
-          if (lru_page -> _m.next)
-          {
-            lru_page -> _m.next -> _m.previous = lru_page -> _m.previous;
+        if(lru_page->_m.previous) {
+          lru_page->_m.previous->_m.next = lru_page->_m.next;
+          if(lru_page->_m.next) {
+            lru_page->_m.next->_m.previous = lru_page->_m.previous;
           }
         }
-        else
-        {
-          this -> _m.lru_page_array [lru_page -> _m.priority] = lru_page -> _m.next;
-          if (lru_page -> _m.next)
-          {
-            lru_page -> _m.next -> _m.previous = 0;
+        else {
+          this->_m.lru_page_array[lru_page->_m.priority] =
+            lru_page->_m.next;
+          if(lru_page->_m.next) {
+            lru_page->_m.next->_m.previous = 0;
           }
         }
 
-        lru_page -> _m.next = 0;
-        lru_page -> _m.previous = 0;
+        lru_page->_m.next = 0;
+        lru_page->_m.previous = 0;
 
-        lru_page -> _m.in_lru = false;
+        lru_page->_m.in_lru = false;
       }
     }
-    else
-    {
+    else {
 
 // ERROR: tried to remove a page when 0 pages are allocated
 
     }
   }
-  else
-  {
+  else {
 
 // ERROR: Lru == 0, this should not happen
 
@@ -506,7 +458,7 @@ void Lru::remove_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::lock_page (LruPage *lru_page)
 {
-  lru_page -> _m.lock = true;
+  lru_page->_m.lock = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,7 +468,7 @@ void Lru::lock_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::unlock_page (LruPage *lru_page)
 {
-  lru_page -> _m.lock = false;
+  lru_page->_m.lock = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -528,68 +480,62 @@ void Lru::unlock_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::access_page (LruPage *lru_page)
 {
-  if (lru_page)
-  {
-    if (lru_page -> _m.current_frame_identifier == this -> _m.current_frame_identifier)
-    {
-      lru_page -> _m.current_frame_usage++;
+  if(lru_page) {
+    if(lru_page->_m.current_frame_identifier
+       == this->_m.current_frame_identifier) {
+      lru_page->_m.current_frame_usage++;
     }
-    else
-    {
+    else {
       // first update this frame
-      lru_page -> _m.last_frame_identifier = lru_page -> _m.current_frame_identifier;
-      lru_page -> _m.current_frame_identifier = this -> _m.current_frame_identifier;
-      lru_page -> _m.last_frame_usage = lru_page -> _m.current_frame_usage;
-      lru_page -> _m.current_frame_usage = 1;
-      lru_page -> _m.total_frame_page_faults = 0;
+      lru_page->_m.last_frame_identifier = lru_page->_m.current_frame_identifier;
+      lru_page->_m.current_frame_identifier = this->_m.current_frame_identifier;
+      lru_page->_m.last_frame_usage = lru_page->_m.current_frame_usage;
+      lru_page->_m.current_frame_usage = 1;
+      lru_page->_m.total_frame_page_faults = 0;
     }
 
     // check if the page is out
-    if (lru_page -> _m.in_cache == false)
-    {
-      bool state;
+    if(lru_page->_m.in_cache == false) {
+      bool  state;
 
       state = true;
 
-      LruMutexHolder (this -> _m.mutex);
+      LruMutexHolder(this->_m.mutex);
 
       // check memory usage
-      if (lru_page -> _m.size > this -> _m.available_memory)
-      {
-          int memory_required;
+      if(lru_page->_m.size > this->_m.available_memory) {
+        int  memory_required;
 
-          memory_required = lru_page -> _m.size - this -> _m.available_memory;
+        memory_required = lru_page->_m.size - this->_m.available_memory;
 
-          // unload page(s)
-          state = this -> page_out_lru (memory_required);
+        // unload page(s)
+        state = this->page_out_lru(memory_required);
       }
 
       // load the page in
-      if (state)
-      {
+      if(state) {
         // PAGE IN CALLBACK
-        if (this -> _m.page_in_function_array [lru_page -> _m.type] (lru_page))
-        {
-          this -> _m.available_memory -= lru_page -> _m.size;
-          lru_page -> _m.in_cache = true;
+        if(this->_m.page_in_function_array[lru_page->_m.type](lru_page)) {
+          this->_m.available_memory -= lru_page->_m.size;
+          lru_page->_m.in_cache = true;
 
           // CHANGE THE PAGE PRIORITY FROM LPP_PageOut TO LPP_New
-          this -> remove_page (lru_page);
-          this -> add_page (LPP_New, lru_page);
-          lru_page -> _m.average_frame_utilization = 1.0f;
+          this->remove_page(lru_page);
+          this->add_page(LPP_New, lru_page);
+          lru_page->_m.average_frame_utilization = 1.0f;
 
-          this -> _m.total_lifetime_page_ins++;
+          this->_m.total_lifetime_page_ins++;
         }
       }
 
-      lru_page -> _m.total_frame_page_faults++;
-      lru_page -> _m.total_page_faults++;
+      lru_page->_m.total_frame_page_faults++;
+      lru_page->_m.total_page_faults++;
     }
 
-    lru_page -> _m.total_usage++;
-    lru_page -> _m.update_total_usage++;
+    lru_page->_m.total_usage++;
+    lru_page->_m.update_total_usage++;
 
-    this -> _m.total_page_access++;
+    this->_m.total_page_access++;
   }
 }
 
@@ -599,10 +545,14 @@ void Lru::access_page (LruPage *lru_page)
 //  Description: This must be called before accessing or using a
 //               page since it pages in the page if it is paged out.
 ////////////////////////////////////////////////////////////////////
-void Lru::set_maximum_frame_bandwidth_utilization (float maximum_frame_bandwidth_utilization)
+void Lru::set_maximum_frame_bandwidth_utilization
+  (float maximum_frame_bandwidth_utilization)
 {
-  this -> _m.maximum_frame_bandwidth_utilization = maximum_frame_bandwidth_utilization;
-  this -> _m.frame_bandwidth_factor = (float) LPP_TotalPriorities / this -> _m.maximum_frame_bandwidth_utilization;
+  this->_m.maximum_frame_bandwidth_utilization =
+    maximum_frame_bandwidth_utilization;
+
+  this->_m.frame_bandwidth_factor = (float) LPP_TotalPriorities
+    / this->_m.maximum_frame_bandwidth_utilization;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,13 +562,13 @@ void Lru::set_maximum_frame_bandwidth_utilization (float maximum_frame_bandwidth
 ////////////////////////////////////////////////////////////////////
 void Lru::begin_frame ( )
 {
-  this -> _m.current_frame_identifier++;
+  this->_m.current_frame_identifier++;
 
-  this -> _m.total_page_ins_last_frame = this -> _m.total_page_ins;
-  this -> _m.total_page_outs = this -> _m.total_page_outs;
+  this->_m.total_page_ins_last_frame = this->_m.total_page_ins;
+  this->_m.total_page_outs = this->_m.total_page_outs;
 
-  this -> _m.total_page_ins = 0;
-  this -> _m.total_page_outs = 0;
+  this->_m.total_page_ins = 0;
+  this->_m.total_page_outs = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -629,31 +579,31 @@ void Lru::begin_frame ( )
 ////////////////////////////////////////////////////////////////////
 void Lru::update_page_priorities (void)
 {
-  int index;
-  LruPage *lru_page;
+  int        index;
+  LruPage  * lru_page;
 
-  for (index = 0; index < this -> _m.total_lru_page_priority_changes; index++)
+  for(index = 0; index < this->_m.total_lru_page_priority_changes;
+      index++)
   {
-    int priority;
+    int  priority;
 
-    lru_page = this -> _m.lru_page_priority_change_array [index];
+    lru_page = this->_m.lru_page_priority_change_array[index];
 
-    this -> remove_page (lru_page);
+    this->remove_page(lru_page);
 
-    priority = ((int) lru_page -> _m.priority + lru_page -> _m.priority_change);
-    if (priority < 0)
-    {
+    priority
+    = (( int ) lru_page->_m.priority + lru_page->_m.priority_change);
+    if(priority < 0) {
       priority = 0;
     }
-    if (priority >= LPP_TotalPriorities)
-    {
+    if(priority >= LPP_TotalPriorities) {
       priority = LPP_TotalPriorities - 1;
     }
 
-    this -> add_page ((LruPagePriority) priority, lru_page);
-    lru_page -> _m.priority_change = 0;
+    this->add_page(( LruPagePriority ) priority, lru_page);
+    lru_page->_m.priority_change = 0;
   }
-  this -> _m.total_lru_page_priority_changes = 0;
+  this->_m.total_lru_page_priority_changes = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -667,83 +617,88 @@ void Lru::update_lru_page (LruPage *lru_page)
 {
 
 #if LRU_UNIT_TEST
-  if (false)
-  {
-    char string [256];
+  if(false) {
+    char  string[256];
 
-    sprintf (string, "  UPDATE %d\n", lru_page -> _m.identifier);
-    OutputDebugString (string);
+    sprintf(string, "  UPDATE %d\n", lru_page->_m.identifier);
+    OutputDebugString(string);
   }
 #endif
 
-  if (lru_page -> _m.lock == false && lru_page -> _m.in_cache)
-  {
+  if(lru_page->_m.lock == false && lru_page->_m.in_cache) {
     int delta_priority;
 
     delta_priority = 0;
-//    if (lru_page -> _m.total_usage > 0)
+//  if (lru_page -> _m.total_usage > 0)
     {
       int lifetime_frames;
 
-      lifetime_frames = this -> _m.current_frame_identifier - lru_page -> _m.first_frame_identifier;
-      if (lifetime_frames >= 1)
-      {
-        if (lru_page -> _m.update_frame_identifier)
-        {
+      lifetime_frames = this->_m.current_frame_identifier -
+        lru_page->_m.first_frame_identifier;
+      if(lifetime_frames >= 1) {
+        if(lru_page->_m.update_frame_identifier) {
           int target_priority;
           int integer_update_frames;
           float update_frames;
           float one_over_update_frames;
           float update_average_frame_utilization;
 
-          integer_update_frames = (this -> _m.current_frame_identifier - lru_page -> _m.update_frame_identifier);
-          if (integer_update_frames > 0)
-          {
-            update_frames = (float) integer_update_frames;
+          integer_update_frames = (this->_m.current_frame_identifier -
+            lru_page->_m.update_frame_identifier);
+          if(integer_update_frames > 0) {
+            update_frames = ( float ) integer_update_frames;
             one_over_update_frames = 1.0f / update_frames;
 
-            update_average_frame_utilization = (float) (lru_page -> _m.update_total_usage) * one_over_update_frames;
+            update_average_frame_utilization =
+              (float) (lru_page->_m.update_total_usage)* one_over_update_frames;
 
-            lru_page -> _m.average_frame_utilization = calculate_exponential_moving_average (update_average_frame_utilization, this -> _m.weight, lru_page -> _m.average_frame_utilization);
+            lru_page->_m.average_frame_utilization =
+              calculate_exponential_moving_average(
+                 update_average_frame_utilization, this->_m.weight,
+                 lru_page->_m.average_frame_utilization);
 
-            target_priority = lru_page -> _m.priority;
-            if (lru_page -> _m.average_frame_utilization >= 1.0f)
-            {
+            target_priority = lru_page->_m.priority;
+            if(lru_page->_m.average_frame_utilization >= 1.0f) {
               int integer_average_frame_utilization;
 
-              integer_average_frame_utilization = (int) ((lru_page -> _m.average_frame_utilization - 1.0f) * (float) HIGH_PRIORITY_SCALE);
-              if (integer_average_frame_utilization >= LPP_New)
-              {
+              integer_average_frame_utilization =
+                (int) ((lru_page->_m.average_frame_utilization - 1.0f) *
+                (float) HIGH_PRIORITY_SCALE);
+              if(integer_average_frame_utilization >= LPP_New) {
                 integer_average_frame_utilization = LPP_New;
               }
-              integer_average_frame_utilization = LPP_New - integer_average_frame_utilization;
+              integer_average_frame_utilization = LPP_New -
+                integer_average_frame_utilization;
               target_priority = integer_average_frame_utilization;
             }
-            else
-            {
+            else {
               int integer_average_frame_utilization;
 
-              integer_average_frame_utilization = (int) (lru_page -> _m.average_frame_utilization * (float) LOW_PRIORITY_RANGE);
-              integer_average_frame_utilization = LOW_PRIORITY_RANGE - integer_average_frame_utilization;
+              integer_average_frame_utilization = (int)
+                 (lru_page->_m.average_frame_utilization *
+                 (float) LOW_PRIORITY_RANGE);
+              integer_average_frame_utilization = LOW_PRIORITY_RANGE -
+                integer_average_frame_utilization;
               target_priority = LPP_New + integer_average_frame_utilization;
             }
 
-            delta_priority = target_priority - lru_page -> _m.priority;
-            lru_page -> change_priority (delta_priority);
+            delta_priority = target_priority - lru_page->_m.priority;
+            lru_page->change_priority(delta_priority);
           }
         }
 
-        lru_page -> _m.update_frame_identifier = this -> _m.current_frame_identifier;
-        lru_page -> _m.update_total_usage = 0;
+        lru_page->_m.update_frame_identifier = this->_m.current_frame_identifier;
+        lru_page->_m.update_total_usage = 0;
       }
     }
 
-    if (lru_page -> _m.priority_change)
-    {
-      if (this -> _m.total_lru_page_priority_changes < FRAME_MAXIMUM_PRIORITY_CHANGES)
+    if(lru_page->_m.priority_change) {
+      if(this->_m.total_lru_page_priority_changes
+         < FRAME_MAXIMUM_PRIORITY_CHANGES)
       {
-        this -> _m.lru_page_priority_change_array [this -> _m.total_lru_page_priority_changes] = lru_page;
-        this -> _m.total_lru_page_priority_changes++;
+        this->_m.lru_page_priority_change_array
+          [this->_m.total_lru_page_priority_changes] = lru_page;
+        this->_m.total_lru_page_priority_changes++;
       }
     }
   }
@@ -761,125 +716,122 @@ void Lru::update_lru_page_old (LruPage *lru_page)
 {
 
 #if LRU_UNIT_TEST
-  if (false)
-  {
-    char string [256];
+  if(false) {
+    char  string[256];
 
-    sprintf (string, "  UPDATE %d\n", lru_page -> _m.identifier);
-    OutputDebugString (string);
+    sprintf(string, "  UPDATE %d\n", lru_page->_m.identifier);
+    OutputDebugString(string);
   }
 #endif
 
-  if (lru_page -> _m.lock == false)
-  {
-    int delta_priority;
+  if(lru_page->_m.lock == false) {
+    int  delta_priority;
 
     delta_priority = 0;
-    if (false && lru_page -> _m.total_usage > 0)
-    {
+    if(false && lru_page->_m.total_usage > 0) {
       int lifetime_frames;
 
-      lifetime_frames = this -> _m.current_frame_identifier - lru_page -> _m.first_frame_identifier;
-      if (lifetime_frames >= 10)
-      {
+      lifetime_frames = this->_m.current_frame_identifier -
+        lru_page->_m.first_frame_identifier;
+      if(lifetime_frames >= 10) {
         float one_over_update_frames;
 
-        if (lru_page -> _m.update_frame_identifier)
-        {
+        if(lru_page->_m.update_frame_identifier) {
           int target_priority;
           int integer_update_frames;
           float update_frames;
           float update_average_frame_utilization;
           float average_frame_bandwidth_utilization;
 
-          integer_update_frames = (this -> _m.current_frame_identifier - lru_page -> _m.update_frame_identifier);
-          if (integer_update_frames > 0)
-          {
-            update_frames = (float) integer_update_frames;
+          integer_update_frames = (this->_m.current_frame_identifier -
+            lru_page->_m.update_frame_identifier);
+          if(integer_update_frames > 0) {
+            update_frames = ( float ) integer_update_frames;
             one_over_update_frames = 1.0f / update_frames;
 
-            update_average_frame_utilization = (float) (lru_page -> _m.update_total_usage) * one_over_update_frames;
+            update_average_frame_utilization =
+              (float) (lru_page->_m.update_total_usage) *
+              one_over_update_frames;
 
-            lru_page -> _m.average_frame_utilization = calculate_exponential_moving_average (update_average_frame_utilization, this -> _m.weight, lru_page -> _m.average_frame_utilization);
+            lru_page->_m.average_frame_utilization =
+              calculate_exponential_moving_average (
+                 update_average_frame_utilization, this->_m.weight,
+                 lru_page->_m.average_frame_utilization);
 
-            average_frame_bandwidth_utilization = lru_page -> _m.average_frame_utilization * lru_page -> _m.size;
-            target_priority = (int) (average_frame_bandwidth_utilization * this -> _m.frame_bandwidth_factor);
+            average_frame_bandwidth_utilization =
+              lru_page->_m.average_frame_utilization *
+              lru_page->_m.size;
+
+            target_priority = (int) (average_frame_bandwidth_utilization *
+              this->_m.frame_bandwidth_factor);
 
             target_priority = (LPP_TotalPriorities - 1) - target_priority;
-            if (target_priority < 0)
-            {
+            if(target_priority < 0) {
               target_priority = 0;
             }
-            if (target_priority >= LPP_TotalPriorities)
-            {
+            if(target_priority >= LPP_TotalPriorities) {
               target_priority = LPP_TotalPriorities - 1;
             }
 
-            delta_priority = target_priority - lru_page -> _m.priority;
-            lru_page -> change_priority (delta_priority);
+            delta_priority = target_priority - lru_page->_m.priority;
+            lru_page->change_priority(delta_priority);
           }
         }
 
-        lru_page -> _m.update_frame_identifier = this -> _m.current_frame_identifier;
-        lru_page -> _m.update_total_usage = 0;
+        lru_page->_m.update_frame_identifier =
+          this->_m.current_frame_identifier;
+
+        lru_page->_m.update_total_usage = 0;
       }
     }
 
-    if (delta_priority == 0)
-    {
-      if (this -> _m.current_frame_identifier == lru_page -> _m.current_frame_identifier)
-      {
-        // page used during this frame twice or more => increase priority
-        if (lru_page -> _m.current_frame_usage >= 2)
-        {
-          if (lru_page -> _m.priority >= LPP_High)
-          {
-            lru_page -> change_priority (-2);
+    if(delta_priority == 0) {
+      if(this->_m.current_frame_identifier
+        == lru_page->_m.current_frame_identifier) {
+        // page used during this frame twice or more =>
+        // increase priority
+        if(lru_page->_m.current_frame_usage >= 2) {
+          if(lru_page->_m.priority >= LPP_High) {
+            lru_page->change_priority(-2);
           }
         }
 
-        if (lru_page -> _m.total_frame_page_faults >= 1)
-        {
+        if(lru_page->_m.total_frame_page_faults >= 1) {
           // multiple page faults this frame => increase priority
-          if (lru_page -> _m.total_frame_page_faults >= 2)
-          {
-            if (lru_page -> _m.priority >= LPP_High)
-            {
-              lru_page -> change_priority (-2);
+          if(lru_page->_m.total_frame_page_faults >= 2) {
+            if(lru_page->_m.priority >= LPP_High) {
+              lru_page->change_priority(-2);
             }
           }
-          else
-          {
+          else {
             // single page faults this frame => increase priority
-            if (lru_page -> _m.priority >= LPP_High)
-            {
-              lru_page -> change_priority (-1);
+            if(lru_page->_m.priority >= LPP_High) {
+              lru_page->change_priority(-1);
             }
           }
         }
       }
-      else
-      {
+      else {
         // page not used this frame
-        int last_access_delta;
+        int  last_access_delta;
 
-        last_access_delta = this -> _m.current_frame_identifier - lru_page -> _m.current_frame_identifier;
-        if (last_access_delta > 1)
-        {
-          if (lru_page -> _m.priority < LPP_Low)
-          {
-            lru_page -> change_priority (+1);
+        last_access_delta
+        = this->_m.current_frame_identifier
+          - lru_page->_m.current_frame_identifier;
+        if(last_access_delta > 1) {
+          if(lru_page->_m.priority < LPP_Low) {
+            lru_page->change_priority(+1);
           }
         }
       }
     }
 
-    if (lru_page -> _m.priority_change)
-    {
-      if (this -> _m.total_lru_page_priority_changes < FRAME_MAXIMUM_PRIORITY_CHANGES)
-      {
-        this -> _m.lru_page_priority_change_array [this -> _m.total_lru_page_priority_changes] = lru_page;
-        this -> _m.total_lru_page_priority_changes++;
+    if(lru_page->_m.priority_change) {
+      if(this->_m.total_lru_page_priority_changes
+         < FRAME_MAXIMUM_PRIORITY_CHANGES) {
+        this->_m.lru_page_priority_change_array
+          [this->_m.total_lru_page_priority_changes ]= lru_page;
+        this->_m.total_lru_page_priority_changes++;
       }
     }
   }
@@ -894,29 +846,27 @@ void Lru::update_lru_page_old (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::update_entire_lru ( )
 {
-  if (this -> _m.total_pages > 0)
-  {
+  if(this->_m.total_pages > 0) {
     int index;
     LruPage *lru_page;
 
-    LruMutexHolder (this -> _m.mutex);
+    LruMutexHolder(this->_m.mutex);
 
-    for (index = 0; index < LPP_TotalPriorities; index++)
-    {
-      LruPage *next_lru_page;
+    for(index = 0; index < LPP_TotalPriorities; index++) {
 
-      lru_page = this -> _m.lru_page_array [index];
-      while (lru_page)
-      {
-        next_lru_page = lru_page -> _m.next;
+      LruPage  * next_lru_page;
 
-        this -> update_lru_page (lru_page);
+      lru_page = this->_m.lru_page_array[index];
+      while(lru_page) {
+        next_lru_page = lru_page->_m.next;
+
+        this->update_lru_page(lru_page);
 
         lru_page = next_lru_page;
       }
     }
 
-    this -> update_page_priorities ( );
+    this->update_page_priorities( );
   }
 }
 
@@ -931,62 +881,51 @@ void Lru::partial_lru_update (int maximum_updates)
   int total_page_updates;
 
   total_page_updates = 0;
-  if (this -> _m.total_pages > 0)
-  {
+  if(this->_m.total_pages > 0) {
     int index;
     int start_priority;
     LruPage *lru_page;
 
-    LruMutexHolder (this -> _m.mutex);
+    LruMutexHolder(this->_m.mutex);
 
-    start_priority = this -> _m.start_priority_index;
+    start_priority = this->_m.start_priority_index;
 
     {
-      for (index = start_priority; index < LPP_TotalPriorities; index++)
-      {
+      for(index = start_priority;  index < LPP_TotalPriorities; index++) {
+
         LruPage *next_lru_page;
 
-        if (index == start_priority)
-        {
-          if (this -> _m.start_update_lru_page)
-          {
-            lru_page = this -> _m.start_update_lru_page;
+        if(index == start_priority) {
+          if(this->_m.start_update_lru_page) {
+            lru_page = this->_m.start_update_lru_page;
           }
-          else
-          {
-            lru_page = this -> _m.lru_page_array [index];
+          else {
+            lru_page = this->_m.lru_page_array[index];
           }
         }
-        else
-        {
-          lru_page = this -> _m.lru_page_array [index];
+        else {
+          lru_page = this->_m.lru_page_array[index];
         }
-        while (lru_page)
-        {
-          next_lru_page = lru_page -> _m.next;
+        while(lru_page) {
+          next_lru_page = lru_page->_m.next;
 
-          this -> update_lru_page (lru_page);
+          this->update_lru_page(lru_page);
 
           total_page_updates++;
-          if (total_page_updates >= maximum_updates)
-          {
-            if (next_lru_page)
-            {
-              this -> _m.start_priority_index = index;
-              this -> _m.start_update_lru_page = next_lru_page;
+          if(total_page_updates >= maximum_updates) {
+            if(next_lru_page) {
+              this->_m.start_priority_index = index;
+              this->_m.start_update_lru_page = next_lru_page;
             }
-            else
-            {
-              if ((index + 1) >= LPP_TotalPriorities)
-              {
-                this -> _m.start_priority_index = 0;
+            else {
+              if((index + 1) >= LPP_TotalPriorities) {
+                this->_m.start_priority_index = 0;
               }
-              else
-              {
-                this -> _m.start_priority_index = index + 1;
+              else {
+                this->_m.start_priority_index = index + 1;
               }
 
-              this -> _m.start_update_lru_page = 0;
+              this->_m.start_update_lru_page = 0;
             }
 
             break;
@@ -995,46 +934,37 @@ void Lru::partial_lru_update (int maximum_updates)
           lru_page = next_lru_page;
         }
 
-        if (total_page_updates >= maximum_updates)
-        {
+        if(total_page_updates >= maximum_updates) {
           break;
         }
       }
     }
 
-    if (total_page_updates < maximum_updates)
-    {
-      for (index = 0; index <= start_priority; index++)
-      {
+    if(total_page_updates < maximum_updates) {
+      for(index = 0;  index <= start_priority;  index++) {
         LruPage *next_lru_page;
 
-        lru_page = this -> _m.lru_page_array [index];
-        while (lru_page)
-        {
-          next_lru_page = lru_page -> _m.next;
+        lru_page = this->_m.lru_page_array[index];
+        while(lru_page) {
+          next_lru_page = lru_page->_m.next;
 
-          this -> update_lru_page (lru_page);
+          this->update_lru_page(lru_page);
 
           total_page_updates++;
-          if (total_page_updates >= maximum_updates)
-          {
-            if (next_lru_page)
-            {
-              this -> _m.start_priority_index = index;
-              this -> _m.start_update_lru_page = next_lru_page;
+          if(total_page_updates >= maximum_updates) {
+            if(next_lru_page) {
+              this->_m.start_priority_index = index;
+              this->_m.start_update_lru_page = next_lru_page;
             }
-            else
-            {
-              if ((index + 1) >= LPP_TotalPriorities)
-              {
-                this -> _m.start_priority_index = 0;
+            else {
+              if((index + 1) >= LPP_TotalPriorities) {
+                this->_m.start_priority_index = 0;
               }
-              else
-              {
-                this -> _m.start_priority_index = index + 1;
+              else {
+                this->_m.start_priority_index = index + 1;
               }
 
-              this -> _m.start_update_lru_page = 0;
+              this->_m.start_update_lru_page = 0;
             }
 
             break;
@@ -1043,20 +973,18 @@ void Lru::partial_lru_update (int maximum_updates)
           lru_page = next_lru_page;
         }
 
-        if (total_page_updates >= maximum_updates)
-        {
+        if(total_page_updates >= maximum_updates) {
           break;
         }
       }
     }
 
-    if (total_page_updates < maximum_updates)
-    {
-      this -> _m.start_priority_index = 0;
-      this -> _m.start_update_lru_page = 0;
+    if(total_page_updates < maximum_updates) {
+      this->_m.start_priority_index  = 0;
+      this->_m.start_update_lru_page = 0;
     }
 
-    this -> update_page_priorities ( );
+    this->update_page_priorities( );
   }
 }
 
@@ -1067,21 +995,18 @@ void Lru::partial_lru_update (int maximum_updates)
 ////////////////////////////////////////////////////////////////////
 void Lru::unlock_all_pages (void)
 {
-  if (this -> _m.total_pages > 0)
-  {
-    int index;
+  if(this->_m.total_pages > 0) {
+    int  index;
 
-    for (index = 0; index < LPP_TotalPriorities; index++)
-    {
+    for(index = 0;  index < LPP_TotalPriorities; index++) {
       LruPage *lru_page;
       LruPage *next_lru_page;
 
-      lru_page = this -> _m.lru_page_array [index];
-      while (lru_page)
-      {
-        next_lru_page = lru_page -> _m.next;
+      lru_page = this->_m.lru_page_array[index];
+      while(lru_page) {
+        next_lru_page = lru_page->_m.next;
 
-        lru_page -> _m.lock = false;
+        lru_page->_m.lock = false;
 
         lru_page = next_lru_page;
       }
@@ -1103,41 +1028,35 @@ bool Lru::page_out_lru (int memory_required)
 
   state = false;
   attempts = 0;
-  if (this -> _m.total_pages > 0)
-  {
-    LruMutexHolder (this -> _m.mutex);
+  if(this->_m.total_pages > 0) {
+    LruMutexHolder(this->_m.mutex);
 
-    do
-    {
+    do {
       int index;
 
-      // page out lower priority pages first
-      for (index = LPP_PageOut - 1; index >= 0; index--)
-      {
+// page out lower priority pages first
+      for(index = LPP_PageOut - 1;  index >= 0;  index--) {
         LruPage *lru_page;
         LruPage *next_lru_page;
 
-        lru_page = this -> _m.lru_page_array [index];
-        while (lru_page)
-        {
-          next_lru_page = lru_page -> _m.next;
+        lru_page = this->_m.lru_page_array[index];
+        while(lru_page) {
+          next_lru_page = lru_page->_m.next;
 
-          if (lru_page -> _m.lock == false && lru_page -> _m.in_cache)
-          {
-            memory_required -= lru_page -> _m.size;
-            this -> _m.available_memory += lru_page -> _m.size;
-            lru_page -> _m.in_cache = false;
+          if(lru_page->_m.lock == false && lru_page->_m.in_cache) {
+            memory_required -= lru_page->_m.size;
+            this->_m.available_memory += lru_page->_m.size;
+            lru_page->_m.in_cache = false;
 
-            // PAGE OUT CALLBACK
-            this -> _m.page_out_function_array [lru_page -> _m.type] (lru_page);
-            this -> _m.total_lifetime_page_outs++;
+// PAGE OUT CALLBACK
+            this->_m.page_out_function_array[lru_page->_m.type](lru_page);
+            this->_m.total_lifetime_page_outs++;
 
-            // MOVE THE PAGE TO THE LPP_PageOut PRIORITY
-            this -> remove_page (lru_page);
-            this -> add_page (LPP_PageOut, lru_page);
+// MOVE THE PAGE TO THE LPP_PageOut PRIORITY
+            this->remove_page(lru_page);
+            this->add_page(LPP_PageOut, lru_page);
 
-            if (memory_required <= 0)
-            {
+            if(memory_required <= 0) {
               break;
             }
           }
@@ -1145,27 +1064,23 @@ bool Lru::page_out_lru (int memory_required)
           lru_page = next_lru_page;
         }
 
-        if (memory_required <= 0)
-        {
+        if(memory_required <= 0) {
           break;
         }
       }
 
-      if (memory_required > 0)
-      {
-        // WARNING: pages could not be freed, all pages unlocked
+      if(memory_required > 0) {
+// WARNING: pages could not be freed, all pages unlocked
 
-        this -> unlock_all_pages ( );
+        this->unlock_all_pages( );
         state = false;
       }
-      else
-      {
+      else {
         state = true;
       }
 
       attempts++;
-    }
-    while (state == false && attempts < 2);
+    }  while(state == false && attempts < 2);
   }
 
   return state;
@@ -1179,28 +1094,26 @@ bool Lru::page_out_lru (int memory_required)
 ////////////////////////////////////////////////////////////////////
 void Lru::count_priority_level_pages (void)
 {
-  int index;
+  int  index;
 
-  LruMutexHolder (this -> _m.mutex);
+  LruMutexHolder(this->_m.mutex);
 
-  for (index = 0; index < LPP_TotalPriorities; index++)
-  {
+  for(index = 0; index < LPP_TotalPriorities; index++) {
     int total_pages;
     LruPage *lru_page;
     LruPage *next_lru_page;
 
     total_pages = 0;
-    lru_page = this -> _m.lru_page_array [index];
-    while (lru_page)
-    {
-      next_lru_page = lru_page -> _m.next;
+    lru_page = this->_m.lru_page_array[index];
+    while(lru_page) {
+      next_lru_page = lru_page->_m.next;
 
       total_pages++;
 
       lru_page = next_lru_page;
     }
 
-    this -> _m.lru_page_count_array [index] = total_pages;
+    this->_m.lru_page_count_array[index] = total_pages;
   }
 }
 
@@ -1211,39 +1124,35 @@ void Lru::count_priority_level_pages (void)
 ////////////////////////////////////////////////////////////////////
 void Lru::calculate_lru_statistics (void)
 {
-  LruMutexHolder (this -> _m.mutex);
+  LruMutexHolder(this->_m.mutex);
 
-  if (this -> _m.maximum_page_types > 0)
-  {
-    int index;
+  if(this->_m.maximum_page_types > 0) {
+    int  index;
 
-    memset (this -> _m.page_type_statistics_array, 0, sizeof (PageTypeStatistics) * this -> _m.maximum_page_types);
-    for (index = 0; index < LPP_TotalPriorities; index++)
-    {
+    memset(this->_m.page_type_statistics_array, 0,
+           sizeof (PageTypeStatistics) * this->_m.maximum_page_types);
+    for(index = 0;  index < LPP_TotalPriorities;  index++) {
       LruPage *lru_page;
       LruPage *next_lru_page;
       PageTypeStatistics *page_type_statistics;
 
-      lru_page = this -> _m.lru_page_array [index];
-      while (lru_page)
-      {
-        int type;
+      lru_page = this->_m.lru_page_array[index];
+      while(lru_page) {
+        int  type;
 
-        next_lru_page = lru_page -> _m.next;
+        next_lru_page = lru_page->_m.next;
 
-        type = lru_page -> _m.type;
-        page_type_statistics = &this -> _m.page_type_statistics_array [type];
-        page_type_statistics -> total_pages++;
+        type = lru_page->_m.type;
+        page_type_statistics = &this->_m.page_type_statistics_array[type];
+        page_type_statistics->total_pages++;
 
-        if (lru_page -> _m.in_cache)
-        {
-          page_type_statistics -> total_pages_in++;
-          page_type_statistics -> total_memory_in += lru_page -> _m.size;
+        if(lru_page->_m.in_cache) {
+          page_type_statistics->total_pages_in++;
+          page_type_statistics->total_memory_in += lru_page->_m.size;
         }
-        else
-        {
-          page_type_statistics -> total_pages_out++;
-          page_type_statistics -> total_memory_out += lru_page -> _m.size;
+        else {
+          page_type_statistics->total_pages_out++;
+          page_type_statistics->total_memory_out += lru_page->_m.size;
         }
 
         lru_page = next_lru_page;
@@ -1257,9 +1166,10 @@ void Lru::calculate_lru_statistics (void)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float calculate_exponential_moving_average (float value, float weight, float average)
+float calculate_exponential_moving_average(float value,
+  float weight, float average)
 {
-    return ((value - average) * weight) + average;
+  return ((value - average) * weight) + average;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1267,14 +1177,14 @@ float calculate_exponential_moving_average (float value, float weight, float ave
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool default_page_in_function (LruPage *lru_page)
+bool default_page_in_function(LruPage *lru_page)
 {
 
 #if LRU_UNIT_TEST
-  char string [256];
+  char  string[256];
 
-  sprintf (string, "  PAGE IN %d\n", lru_page -> _m.identifier);
-  OutputDebugString (string);
+  sprintf(string, "  PAGE IN %d\n", lru_page->_m.identifier);
+  OutputDebugString(string);
 #endif
 
   return true;
@@ -1285,14 +1195,14 @@ bool default_page_in_function (LruPage *lru_page)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool default_page_out_function (LruPage *lru_page)
+bool default_page_out_function(LruPage *lru_page)
 {
 
 #if LRU_UNIT_TEST
-  char string [256];
+  char  string[256];
 
-  sprintf (string, "  PAGE OUT %d\n", lru_page -> _m.identifier);
-  OutputDebugString (string);
+  sprintf(string, "  PAGE OUT %d\n", lru_page->_m.identifier);
+  OutputDebugString(string);
 #endif
 
   return true;
@@ -1305,30 +1215,28 @@ bool default_page_out_function (LruPage *lru_page)
 //       Access:
 //  Description: Unit test function for ema.
 ////////////////////////////////////////////////////////////////////
-void test_ema (void)
+void test_ema(void)
 {
-  int index;
-  float usage;
-  float weight;
-  float average;
+  int    index;
+  float  usage;
+  float  weight;
+  float  average;
 
-  weight = 0.2f;
+  weight  = 0.2f;
   average = 1.0f;
-  for (index = 0; index < 50; index++)
-  {
-    if (index < 25)
-    {
+  for(index = 0; index < 50; index++) {
+    if(index < 25) {
       usage = (float) (index & 0x01);
     }
-    else
-    {
+    else {
       usage = 0.0f;
     }
-    average = calculate_exponential_moving_average (usage, weight, average);
+    average =
+      calculate_exponential_moving_average(usage, weight, average);
 
-    char string [256];
-    sprintf (string, "%d  %f\n", index, average);
-    OutputDebugString (string);
+    char  string[256];
+    sprintf(string, "%d  %f\n", index, average);
+    OutputDebugString(string);
   }
 }
 
@@ -1337,22 +1245,21 @@ void test_ema (void)
 //       Access:
 //  Description: Unit test function for Lru.
 ////////////////////////////////////////////////////////////////////
-void test_lru (void)
+void test_lru(void)
 {
   int maximum_memory;
   int maximum_pages;
   int maximum_page_types;
   Lru *lru;
 
-  test_ema ( );
+  test_ema( );
 
   maximum_memory = 3000000;
   maximum_pages = 3;
   maximum_page_types = 4;
   lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
-  if (lru)
-  {
-    lru -> _m.minimum_memory = 1000000;
+  if(lru) {
+    lru->_m.minimum_memory = 1000000;
 
     LruPage *lru_page_0;
     LruPage *lru_page_1;
@@ -1361,106 +1268,91 @@ void test_lru (void)
     LruPage *lru_page_4;
     LruPage *lru_page_5;
 
-    lru_page_0 = lru -> allocate_page (1000000);
-    if (lru_page_0)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_0);
+    lru_page_0 = lru->allocate_page(1000000);
+    if(lru_page_0) {
+      lru->add_page(LPP_PageOut, lru_page_0);
     }
 
-    lru_page_1 = lru -> allocate_page (1000000);
-    if (lru_page_1)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_1);
+    lru_page_1 = lru->allocate_page(1000000);
+    if(lru_page_1) {
+      lru->add_page(LPP_PageOut, lru_page_1);
     }
 
-    lru_page_2 = lru -> allocate_page (1000000);
-    if (lru_page_2)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_2);
+    lru_page_2 = lru->allocate_page(1000000);
+    if(lru_page_2) {
+      lru->add_page(LPP_PageOut, lru_page_2);
     }
 
-    lru_page_3 = lru -> allocate_page (1000000);
-    if (lru_page_3)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_3);
+    lru_page_3 = lru->allocate_page(1000000);
+    if(lru_page_3) {
+      lru->add_page(LPP_PageOut, lru_page_3);
     }
 
-    lru_page_4 = lru -> allocate_page (1000000);
-    if (lru_page_4)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_4);
+    lru_page_4 = lru->allocate_page(1000000);
+    if(lru_page_4) {
+      lru->add_page(LPP_PageOut, lru_page_4);
     }
 
-    lru_page_5 = lru -> allocate_page (1000000);
-    if (lru_page_5)
-    {
-      lru -> add_page (LPP_PageOut, lru_page_5);
+    lru_page_5 = lru->allocate_page(1000000);
+    if(lru_page_5) {
+      lru->add_page(LPP_PageOut, lru_page_5);
     }
 
     int index;
     int total_frames;
 
     total_frames = 300;
-    for (index = 0; index < total_frames; index++)
-    {
-      char string [256];
+    for(index = 0;  index < total_frames;  index++) {
+      char  string[256];
 
-      sprintf (string, "FRAME %d\n", index);
-      OutputDebugString (string);
+      sprintf(string, "FRAME %d\n", index);
+      OutputDebugString(string);
 
-      lru -> begin_frame ( );
+      lru->begin_frame( );
 
-      if (index <= 5)
-      {
-        lru -> access_page (lru_page_0);
+      if(index <= 5) {
+        lru->access_page(lru_page_0);
       }
 
-      lru -> access_page (lru_page_1);
-      lru -> access_page (lru_page_1);
+      lru->access_page(lru_page_1);
+      lru->access_page(lru_page_1);
 
-      if (index & 0x01)
-      {
-        lru -> access_page (lru_page_2);
+      if(index & 0x01) {
+        lru->access_page(lru_page_2);
       }
 
-      if ((index % 10) == 0)
-      {
-        lru -> access_page (lru_page_3);
+      if((index % 10) == 0) {
+        lru->access_page(lru_page_3);
       }
 
-      if (index >= 100)
-      {
-        lru -> access_page (lru_page_4);
+      if(index >= 100) {
+        lru->access_page(lru_page_4);
       }
 
-      if (index >= 200)
-      {
-        lru -> access_page (lru_page_5);
+      if(index >= 200) {
+        lru->access_page(lru_page_5);
       }
 
-      if (false)
-      {
-        lru -> update_entire_lru ( );
+      if(false) {
+        lru->update_entire_lru( );
       }
-      else
-      {
-        int maximum_updates;
+      else {
+        int  maximum_updates;
 
         maximum_updates = 3;
-        lru -> partial_lru_update (maximum_updates);
+        lru->partial_lru_update(maximum_updates);
       }
     }
 
-    if (!true)
-    {
-      lru -> remove_page (lru_page_2);
-      lru -> free_page (lru_page_2);
+    if(!true) {
+      lru->remove_page(lru_page_2);
+      lru->free_page(lru_page_2);
 
-      lru -> remove_page (lru_page_3);
-      lru -> free_page (lru_page_3);
+      lru->remove_page(lru_page_3);
+      lru->free_page(lru_page_3);
 
-      lru -> remove_page (lru_page_1);
-      lru -> free_page (lru_page_1);
+      lru->remove_page(lru_page_1);
+      lru->free_page(lru_page_1);
     }
 
     delete lru;

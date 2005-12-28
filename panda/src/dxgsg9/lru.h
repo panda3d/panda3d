@@ -29,8 +29,9 @@
 #define LruMutexHolder(mutex)
 #endif
 
-#define MAXIMUM_LRU_PAGE_TYPES 8
-#define FRAME_MAXIMUM_PRIORITY_CHANGES 256
+
+static const int MAXIMUM_LRU_PAGE_TYPES = 8;
+static const int FRAME_MAXIMUM_PRIORITY_CHANGES = 256;
 
 
 class Lru;
@@ -199,8 +200,8 @@ public:
 
     int total_page_access;
 
-    int minimum_page_out_frames;           // number of frames required before page out
-    int maximum_page_updates_per_frame;    // unused pages
+    int minimum_page_out_frames; // number of frames required before page out
+    int maximum_page_updates_per_frame; // unused pages
 
     int start_priority_index;
     LruPage *start_update_lru_page;
