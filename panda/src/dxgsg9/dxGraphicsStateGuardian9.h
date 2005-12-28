@@ -118,6 +118,8 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
+  bool check_dx_allocation (HRESULT result, int allocation_size, int attempts);
+
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();

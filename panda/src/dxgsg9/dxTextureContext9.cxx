@@ -678,52 +678,6 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
-  switch (_texture->get_texture_type()) {
-  case Texture::TT_1d_texture:
-  case Texture::TT_2d_texture:
-    hr = scrn._d3d_device->CreateTexture
-      (target_width, target_height, mip_level_count, usage,
-       target_pixel_format, pool, &_d3d_2d_texture, NULL);
-    _d3d_texture = _d3d_2d_texture;
-    break;
-
-  case Texture::TT_3d_texture:
-    hr = scrn._d3d_device->CreateVolumeTexture
-      (target_width, target_height, target_depth, mip_level_count, usage,
-       target_pixel_format, pool, &_d3d_volume_texture, NULL);
-    _d3d_texture = _d3d_volume_texture;
-    break;
-
-  case Texture::TT_cube_map:
-    hr = scrn._d3d_device->CreateCubeTexture
-      (target_width, mip_level_count, usage,
-       target_pixel_format, pool, &_d3d_cube_texture, NULL);
-    _d3d_texture = _d3d_cube_texture;
-
-    target_height = target_width;
-    break;
-  }
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "D3D create_texture failed!" << D3DERRORSTRING(hr);
-    goto error_exit;
-  }
-
-  if (dxgsg9_cat.is_debug()) {
-    dxgsg9_cat.debug()
-      << "create_texture: " << _texture->get_name()
-      << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
-      << " => " << D3DFormatStr(target_pixel_format) << endl;
-  }
-
-  hr = fill_d3d_texture_pixels();
-  if (FAILED(hr)) {
-    goto error_exit;
-  }
-
-  // PRINT_REFCNT(dxgsg9, scrn._d3d9);
-
   float bytes_per_texel;
 
   bytes_per_texel = 1.0f;
@@ -787,18 +741,79 @@ create_texture(DXScreenData &scrn) {
       break;
   }
 
+  int data_size;
+
+  data_size = target_width * target_height * target_depth;
+  data_size = (int) ((float) data_size * bytes_per_texel);
+  if (_has_mipmaps)
+  {
+    data_size = (int) ((float) data_size * 1.3f);
+  }
+  if (_texture->get_texture_type() == Texture::TT_cube_map)
+  {
+    data_size *= 6;
+  }
+
+  int attempts;
+
+  attempts = 0;
+  do
+  {
+    switch (_texture->get_texture_type()) {
+    case Texture::TT_1d_texture:
+    case Texture::TT_2d_texture:
+      hr = scrn._d3d_device->CreateTexture
+        (target_width, target_height, mip_level_count, usage,
+         target_pixel_format, pool, &_d3d_2d_texture, NULL);
+      _d3d_texture = _d3d_2d_texture;
+      break;
+
+    case Texture::TT_3d_texture:
+      hr = scrn._d3d_device->CreateVolumeTexture
+        (target_width, target_height, target_depth, mip_level_count, usage,
+         target_pixel_format, pool, &_d3d_volume_texture, NULL);
+      _d3d_texture = _d3d_volume_texture;
+      break;
+
+    case Texture::TT_cube_map:
+      hr = scrn._d3d_device->CreateCubeTexture
+        (target_width, mip_level_count, usage,
+         target_pixel_format, pool, &_d3d_cube_texture, NULL);
+      _d3d_texture = _d3d_cube_texture;
+
+      target_height = target_width;
+      break;
+    }
+
+    attempts++;
+  }
+  while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
+
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "D3D create_texture failed!" << D3DERRORSTRING(hr);
+    goto error_exit;
+  }
+
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "create_texture: " << _texture->get_name()
+      << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
+      << " => " << D3DFormatStr(target_pixel_format) << endl;
+  }
+
+  hr = fill_d3d_texture_pixels();
+  if (FAILED(hr)) {
+    goto error_exit;
+  }
+
+  // PRINT_REFCNT(dxgsg9, scrn._d3d9);
+
+
   // must not put render to texture into LRU
   if (_lru_page == 0 && _managed == false && _texture->get_render_to_texture ( ) == false)
   {
-    int data_size;
     Lru *lru;
-
-    data_size = target_width * target_height * target_depth;
-    data_size = (int) ((float) data_size * bytes_per_texel);
-    if (_has_mipmaps)
-    {
-      data_size = (int) ((float) data_size * 1.3f);
-    }
 
     lru = scrn._dxgsg9 -> _lru;
     if (lru)

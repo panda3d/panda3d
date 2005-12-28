@@ -1034,7 +1034,7 @@ bool Lru::page_out_lru (int memory_required)
     do {
       int index;
 
-// page out lower priority pages first
+      // page out lower priority pages first
       for(index = LPP_PageOut - 1;  index >= 0;  index--) {
         LruPage *lru_page;
         LruPage *next_lru_page;
@@ -1048,11 +1048,11 @@ bool Lru::page_out_lru (int memory_required)
             this->_m.available_memory += lru_page->_m.size;
             lru_page->_m.in_cache = false;
 
-// PAGE OUT CALLBACK
+            // PAGE OUT CALLBACK
             this->_m.page_out_function_array[lru_page->_m.type](lru_page);
             this->_m.total_lifetime_page_outs++;
 
-// MOVE THE PAGE TO THE LPP_PageOut PRIORITY
+            // MOVE THE PAGE TO THE LPP_PageOut PRIORITY
             this->remove_page(lru_page);
             this->add_page(LPP_PageOut, lru_page);
 

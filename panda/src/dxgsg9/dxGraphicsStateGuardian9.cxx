@@ -1978,31 +1978,53 @@ reset() {
 
   if (_enable_lru)
   {
-    if (available_texture_memory >= 256000000)
-    {
-//      _enable_lru = false;
-    }
-  }
-
-  if (_enable_lru)
-  {
     int maximum_memory;
     int maximum_pages;
     int maximum_page_types;
     Lru *lru;
 
-maximum_memory = available_texture_memory;
+int minimum_memory_requirement;
+int optimum_memory_requirement;
+int free_memory_requirement;
 
-// TEST LRU *****
-maximum_memory = 55000000;
+// THESE NEED TO SPECIFIED SOMEHOW
+minimum_memory_requirement = 64000000;
+optimum_memory_requirement = 128000000;
+free_memory_requirement = 5000000; // allow DirectX some space in case of fragmentation, ...
 maximum_pages = 20000;
-maximum_page_types = GPT_TotalPageTypes;
+
+maximum_memory = available_texture_memory - free_memory_requirement;
+if (!false)
+{
+  if (maximum_memory < minimum_memory_requirement)
+  {
+     // video memory is way too low, so take all of it
+     maximum_memory = available_texture_memory;
+
+     // should warn user about low video memory
+
+  }
+  else
+  {
+     if (maximum_memory >= optimum_memory_requirement)
+     {
+        // cap video memory used
+        maximum_memory = optimum_memory_requirement;
+     }
+  }
+}
+else
+{
+  // TEST LRU *****
+  maximum_memory = 55000000;
+  maximum_pages = 20000;
+}
+
+    maximum_page_types = GPT_TotalPageTypes;
 
     lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
     if (lru)
     {
-      lru -> _m.minimum_memory = 1000000;
-
       lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
       lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
       lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
@@ -4219,4 +4241,49 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
       (primitive_type, min_index, max_index - min_index + 1, num_primitives,
        index_data, index_type, safe_buffer_start - stride * min_index, stride);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::check_dx_allocation
+//       Access:
+//  Description: This function is called after the creation of
+//               textures, vertex buffers, and index buffers to
+//               check if DirectX is out of memory. If DirectX is
+//               out of memory and the LRU is being used, then
+//               page out some memory. This function is a fail-safe
+//               just in case another process takes allocates video
+//               memory, DirectX is fragmented, or there are some
+//               borderline memory allocation cases, ...
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+check_dx_allocation (HRESULT result, int allocation_size, int attempts)
+{
+  bool retry;
+
+  retry = false;
+  if (attempts <= 4)
+  {
+    switch (result) {
+      case D3D_OK:
+        break;
+
+      case D3DERR_OUTOFVIDEOMEMORY:
+        if (_lru) {
+          // increase the page out size as the number of attempts increases
+          if (_lru -> page_out_lru (allocation_size * attempts)) {
+            retry = true;
+          }
+        }
+        break;
+
+      case E_OUTOFMEMORY:
+        // ??? is this case system memory
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return retry;
 }

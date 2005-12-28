@@ -591,6 +591,12 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     wdxdisplay9_cat.warning() << "SetForegroundWindow() failed!\n";
   }
 
+  // TURN THIS ON IF MULTITHREADED DX IS NEEDED
+  if (false)
+  {
+    dwBehaviorFlags |= D3DCREATE_MULTITHREADED;
+  }
+
   if (is_fullscreen()) {
     // CREATE FULLSCREEN BUFFERS
 

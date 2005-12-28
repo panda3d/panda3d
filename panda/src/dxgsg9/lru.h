@@ -169,8 +169,9 @@ public:
 
   void calculate_lru_statistics (void);
 
-private:
   bool page_out_lru (int memory_required);
+
+private:
   void update_page_priorities (void);
   void update_lru_page (LruPage *lru_page);
   void update_lru_page_old (LruPage *lru_page);
@@ -186,7 +187,7 @@ public:
     int current_frame_identifier;
 
     int maximum_memory;
-    int minimum_memory;    // target amount of memory to keep free if possible
+    int minimum_memory; // target amount of memory to keep free if possible
     int maximum_page_types;
 
     int total_lifetime_page_ins;
@@ -200,15 +201,12 @@ public:
 
     int total_page_access;
 
-    int minimum_page_out_frames; // number of frames required before page out
-    int maximum_page_updates_per_frame; // unused pages
-
     int start_priority_index;
     LruPage *start_update_lru_page;
 
-    int identifier;  // this is also the number of pages created during the lifetime of the LRU
+    int identifier; // the number of pages created during the lifetime of the LRU
 
-    float weight;  // used for exponential moving average
+    float weight; // used for exponential moving average
     float maximum_frame_bandwidth_utilization;
 
     float frame_bandwidth_factor;
@@ -219,17 +217,16 @@ public:
     int total_lru_page_priority_changes;
     LruPage *lru_page_priority_change_array [FRAME_MAXIMUM_PRIORITY_CHANGES];
 
-    void *context;
-
-    int lru_page_count_array [LPP_TotalPriorities];
-
     int maximum_pages;
     int total_lru_pages_in_pool;
     int total_lru_pages_in_free_pool;
     LruPage **lru_page_pool;
     LruPage **lru_page_free_pool;
 
+    int lru_page_count_array [LPP_TotalPriorities];
     PageTypeStatistics *page_type_statistics_array;
+
+    void *context;  // user specified data
 
 #if ENABLE_MUTEX
     Mutex *mutex;

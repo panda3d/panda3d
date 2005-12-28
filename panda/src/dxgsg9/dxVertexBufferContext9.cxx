@@ -239,8 +239,17 @@ allocate_vbuffer(DXScreenData &scrn) {
     usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
   }
 
-  hr = scrn._d3d_device->CreateVertexBuffer
-      (data_size, usage, _fvf, pool, &_vbuffer, NULL);
+  int attempts;
+
+  attempts = 0;
+  do
+  {
+    hr = scrn._d3d_device->CreateVertexBuffer
+        (data_size, usage, _fvf, pool, &_vbuffer, NULL);
+    attempts++;
+  }
+  while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
+
   if (FAILED(hr)) {
     dxgsg9_cat.warning()
       << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);

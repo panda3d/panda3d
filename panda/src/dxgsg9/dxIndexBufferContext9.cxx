@@ -114,8 +114,17 @@ allocate_ibuffer(DXScreenData &scrn) {
     pool = D3DPOOL_DEFAULT;
   }
 
-  HRESULT hr = scrn._d3d_device->CreateIndexBuffer
-    (data_size, usage, index_type, pool, &_ibuffer, NULL);
+  int attempts;
+  HRESULT hr;
+
+  attempts = 0;
+  do
+  {
+     hr = scrn._d3d_device->CreateIndexBuffer
+      (data_size, usage, index_type, pool, &_ibuffer, NULL);
+     attempts++;
+  }
+  while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
 
   if (FAILED(hr)) {
     dxgsg9_cat.warning()
