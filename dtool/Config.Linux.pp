@@ -56,7 +56,7 @@
 #define HAVE_IOS_TYPEDEFS 1
 
 // Can we safely call getenv() at static init time?
-#define STATIC_INIT_GETENV
+#define STATIC_INIT_GETENV 1
 
 // Can we read the file /proc/self/environ to determine our
 // environment variables at static init time?
