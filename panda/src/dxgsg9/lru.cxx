@@ -26,7 +26,6 @@
 
 #include "lru.h"
 
-
 #define HIGH_PRIORITY_SCALE 4
 #define LOW_PRIORITY_RANGE 25
 
@@ -106,6 +105,11 @@ Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
     {
       this -> _m.page_type_statistics_array = new PageTypeStatistics [maximum_page_types];
     }
+
+#if ENABLE_MUTEX
+    this -> _m.mutex = new Mutex ( );
+#endif
+
   }
 }
 
@@ -163,6 +167,14 @@ Lru::~Lru ( )
   {
     delete this -> _m.page_type_statistics_array;
   }
+
+#if ENABLE_MUTEX
+  if (this -> _m.mutex)
+  {
+    delete this -> _m.mutex;
+  }
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -336,6 +348,8 @@ void Lru::free_page (LruPage *lru_page)
   {
     if (lru_page)
     {
+      LruMutexHolder (this -> _m.mutex);
+
       this -> update_start_update_lru_page (lru_page);
 
       if (lru_page -> _m.in_cache)
@@ -381,6 +395,8 @@ void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
 {
   if (lru_page)
   {
+    LruMutexHolder (this -> _m.mutex);
+
     LruPage *first_lru_page;
 
     lru_page -> _m.priority = priority;
@@ -408,6 +424,8 @@ void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
 {
   if (lru_page)
   {
+    LruMutexHolder (this -> _m.mutex);
+
     lru_page -> _m.in_cache = true;
 
     if (lru_page -> _m.size > this -> _m.available_memory)
@@ -433,12 +451,14 @@ void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::remove_page (LruPage *lru_page)
 {
-  if (lru_page)
+  if (this)
   {
     if (this -> _m.total_pages > 0)
     {
       if (lru_page)
       {
+        LruMutexHolder (this -> _m.mutex);
+
         this -> update_start_update_lru_page (lru_page);
 
         if (lru_page -> _m.previous)
@@ -470,6 +490,12 @@ void Lru::remove_page (LruPage *lru_page)
 // ERROR: tried to remove a page when 0 pages are allocated
 
     }
+  }
+  else
+  {
+
+// ERROR: Lru == 0, this should not happen
+
   }
 }
 
@@ -525,6 +551,8 @@ void Lru::access_page (LruPage *lru_page)
 
       state = true;
 
+      LruMutexHolder (this -> _m.mutex);
+
       // check memory usage
       if (lru_page -> _m.size > this -> _m.available_memory)
       {
@@ -548,6 +576,7 @@ void Lru::access_page (LruPage *lru_page)
           // CHANGE THE PAGE PRIORITY FROM LPP_PageOut TO LPP_New
           this -> remove_page (lru_page);
           this -> add_page (LPP_New, lru_page);
+          lru_page -> _m.average_frame_utilization = 1.0f;
 
           this -> _m.total_lifetime_page_ins++;
         }
@@ -870,6 +899,8 @@ void Lru::update_entire_lru ( )
     int index;
     LruPage *lru_page;
 
+    LruMutexHolder (this -> _m.mutex);
+
     for (index = 0; index < LPP_TotalPriorities; index++)
     {
       LruPage *next_lru_page;
@@ -905,6 +936,8 @@ void Lru::partial_lru_update (int maximum_updates)
     int index;
     int start_priority;
     LruPage *lru_page;
+
+    LruMutexHolder (this -> _m.mutex);
 
     start_priority = this -> _m.start_priority_index;
 
@@ -1072,6 +1105,8 @@ bool Lru::page_out_lru (int memory_required)
   attempts = 0;
   if (this -> _m.total_pages > 0)
   {
+    LruMutexHolder (this -> _m.mutex);
+
     do
     {
       int index;
@@ -1146,6 +1181,8 @@ void Lru::count_priority_level_pages (void)
 {
   int index;
 
+  LruMutexHolder (this -> _m.mutex);
+
   for (index = 0; index < LPP_TotalPriorities; index++)
   {
     int total_pages;
@@ -1167,8 +1204,15 @@ void Lru::count_priority_level_pages (void)
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lru::calculate_lru_statistics
+//       Access: Public
+//  Description: Debug function.
+////////////////////////////////////////////////////////////////////
 void Lru::calculate_lru_statistics (void)
 {
+  LruMutexHolder (this -> _m.mutex);
+
   if (this -> _m.maximum_page_types > 0)
   {
     int index;
@@ -1183,7 +1227,7 @@ void Lru::calculate_lru_statistics (void)
       lru_page = this -> _m.lru_page_array [index];
       while (lru_page)
       {
-        volatile int type;
+        int type;
 
         next_lru_page = lru_page -> _m.next;
 

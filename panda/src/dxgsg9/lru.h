@@ -19,6 +19,15 @@
 #ifndef LRU_H
 #define LRU_H
 
+#define ENABLE_MUTEX 1
+
+#if ENABLE_MUTEX
+#include "pmutex.h"
+#include "mutexHolder.h"
+#define LruMutexHolder(mutex) MutexHolder(mutex)
+#else
+#define LruMutexHolder(mutex)
+#endif
 
 #define MAXIMUM_LRU_PAGE_TYPES 8
 #define FRAME_MAXIMUM_PRIORITY_CHANGES 256
@@ -220,6 +229,10 @@ public:
     LruPage **lru_page_free_pool;
 
     PageTypeStatistics *page_type_statistics_array;
+
+#if ENABLE_MUTEX
+    Mutex *mutex;
+#endif
   }
   LruVariables;
 
