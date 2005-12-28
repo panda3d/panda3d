@@ -38,7 +38,7 @@ class EXPCL_DTOOL ExecutionEnvironment {
 private:
   ExecutionEnvironment();
 
-public:
+PUBLISHED:
   INLINE static bool has_environment_variable(const string &var);
   INLINE static string get_environment_variable(const string &var);
   INLINE static void set_environment_variable(const string &var, const string &value);

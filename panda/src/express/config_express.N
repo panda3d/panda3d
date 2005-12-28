@@ -1,6 +1,7 @@
 forcetype PandaSystem
 forcetype DSearchPath
 forcetype DSearchPath::Results
+forcetype ExecutionEnvironment
 forcetype Filename
 forcetype GlobPattern
 forcetype Notify
