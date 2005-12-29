@@ -403,8 +403,9 @@ class FSM(DirectObject.DirectObject):
         """
         Print out something useful about the fsm
         """
+        className = self.__class__.__name__
         if self.state:
-            str = ("FSM " + self.name + ' in state "' + self.state + '"')
+            str = ('%s FSM:%s in state "%s"' % (className, self.name, self.state))
         else:
-            str = ("FSM " + self.name + ' not in any state')
+            str = ('%s FSM:%s not in any state' % (className, self.name))
         return str
