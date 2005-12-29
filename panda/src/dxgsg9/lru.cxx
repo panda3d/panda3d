@@ -484,6 +484,7 @@ void Lru::access_page (LruPage *lru_page)
     if(lru_page->_m.current_frame_identifier
        == this->_m.current_frame_identifier) {
       lru_page->_m.current_frame_usage++;
+      this->_m.total_page_all_access_size += lru_page->_m.size;
     }
     else {
       // first update this frame
@@ -492,6 +493,8 @@ void Lru::access_page (LruPage *lru_page)
       lru_page->_m.last_frame_usage = lru_page->_m.current_frame_usage;
       lru_page->_m.current_frame_usage = 1;
       lru_page->_m.total_frame_page_faults = 0;
+
+      this->_m.total_page_access_size += lru_page->_m.size;
     }
 
     // check if the page is out

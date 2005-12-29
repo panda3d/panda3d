@@ -200,6 +200,8 @@ public:
     int total_page_outs;
 
     int total_page_access;
+    double total_page_access_size;
+    double total_page_all_access_size;
 
     int start_priority_index;
     LruPage *start_update_lru_page;

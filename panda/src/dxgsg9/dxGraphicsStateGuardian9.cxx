@@ -842,8 +842,12 @@ end_frame() {
         dxgsg9_cat.debug() << "*  total_page_access " << _lru -> _m.total_page_access << " avg page access " << ((float) _lru -> _m.total_page_access / (float) frames) << "\n";
         dxgsg9_cat.debug() << "*  total_lru_pages_in_pool " << _lru -> _m.total_lru_pages_in_pool << "\n";
         dxgsg9_cat.debug() << "*  total_lru_pages_in_free_pool " << _lru -> _m.total_lru_pages_in_free_pool << "\n";
+        dxgsg9_cat.debug() << "*  avg unique page access size " << (_lru -> _m.total_page_access_size / (double) frames) << "\n";
+        dxgsg9_cat.debug() << "*  avg of all page access size " << ((_lru -> _m.total_page_access_size + _lru -> _m.total_page_all_access_size) / (double) frames) << "\n";
 
         _lru -> _m.total_page_access = 0;
+        _lru -> _m.total_page_access_size = 0;
+        _lru -> _m.total_page_all_access_size = 0;
 
         _lru -> count_priority_level_pages ( );
 
