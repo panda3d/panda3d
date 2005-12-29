@@ -522,7 +522,6 @@ void Lru::access_page (LruPage *lru_page)
           // CHANGE THE PAGE PRIORITY FROM LPP_PageOut TO LPP_New
           this->remove_page(lru_page);
           this->add_page(LPP_New, lru_page);
-          lru_page->_m.average_frame_utilization = 1.0f;
 
           this->_m.total_lifetime_page_ins++;
         }
@@ -880,6 +879,11 @@ void Lru::partial_lru_update (int maximum_updates)
 {
   int total_page_updates;
 
+  if (maximum_updates <= 0) {
+    // enforce a minimum number of updates
+    maximum_updates = 1;
+  }
+
   total_page_updates = 0;
   if(this->_m.total_pages > 0) {
     int index;
@@ -1035,7 +1039,7 @@ bool Lru::page_out_lru (int memory_required)
       int index;
 
       // page out lower priority pages first
-      for(index = LPP_PageOut - 1;  index >= 0;  index--) {
+      for(index = LPP_PageOut - 1; index >= 0; index--) {
         LruPage *lru_page;
         LruPage *next_lru_page;
 
@@ -1070,8 +1074,7 @@ bool Lru::page_out_lru (int memory_required)
       }
 
       if(memory_required > 0) {
-// WARNING: pages could not be freed, all pages unlocked
-
+        // WARNING: pages could not be freed, all pages unlocked
         this->unlock_all_pages( );
         state = false;
       }
@@ -1080,7 +1083,7 @@ bool Lru::page_out_lru (int memory_required)
       }
 
       attempts++;
-    }  while(state == false && attempts < 2);
+    } while(state == false && attempts < 2);
   }
 
   return state;
