@@ -38,7 +38,6 @@ extern ConfigVariableInt dx_multisample_antialiasing_level;
 extern ConfigVariableBool dx_use_triangle_mipgen_filter;
 extern ConfigVariableBool dx_broken_max_index;
 
-
 // debug flags we might want to use in full optimized build
 extern ConfigVariableBool dx_ignore_mipmaps;
 extern ConfigVariableBool dx_mipmap_everything;
@@ -60,6 +59,14 @@ extern ConfigVariableInt dx_force_backface_culling;
 extern ConfigVariableDouble dx_global_miplevel_bias;
 extern ConfigVariableBool dx_debug_view_mipmaps;
 #endif
+
+// LRU configuration variables
+extern ConfigVariableBool dx_management;
+extern ConfigVariableBool dx_lru_management;
+extern ConfigVariableInt dx_lru_maximum_pages;
+extern ConfigVariableInt dx_lru_free_memory_requirement;
+extern ConfigVariableInt dx_lru_minimum_memory_requirement;
+extern ConfigVariableInt dx_lru_maximum_memory_requirement;
 
 extern EXPCL_PANDADX void init_libdxgsg9();
 

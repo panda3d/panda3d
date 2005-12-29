@@ -124,11 +124,11 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _gsg_managed_textures = DEFAULT_ENABLE_DX_MANAGED;
-  _gsg_managed_vertex_buffers = DEFAULT_ENABLE_DX_MANAGED;
-  _gsg_managed_index_buffers = DEFAULT_ENABLE_DX_MANAGED;
+  _gsg_managed_textures = dx_management;
+  _gsg_managed_vertex_buffers = dx_management;
+  _gsg_managed_index_buffers = dx_management;
 
-  _enable_lru = DEFAULT_ENABLE_LRU;
+  _enable_lru = dx_lru_management;
 
   _lru = 0;
 }
@@ -833,11 +833,11 @@ end_frame() {
 
         available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
 
-        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "\n";
+        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << "\n";
         dxgsg9_cat.debug() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
 //        dxgsg9_cat.debug() << "*  DX delta_memory " << available_texture_memory - _lru -> _m.available_memory << "\n";
         dxgsg9_cat.debug() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
-        dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "\n";
+        dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "/" << _lru -> _m.maximum_memory << "\n";
         dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
         dxgsg9_cat.debug() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
         dxgsg9_cat.debug() << "*  total_lifetime_page_outs " << _lru -> _m.total_lifetime_page_outs << "\n";
@@ -1972,69 +1972,79 @@ reset() {
   }
   _available_texture_memory = available_texture_memory;
 
-  if (_lru)
-  {
+  if (_lru) {
     delete _lru;
     _lru = 0;
   }
 
-  if (_enable_lru)
-  {
+  if (dx_management == false && _enable_lru) {
+    int error;
     int maximum_memory;
     int maximum_pages;
-    int maximum_page_types;
     Lru *lru;
 
-int minimum_memory_requirement;
-int optimum_memory_requirement;
-int free_memory_requirement;
+    int absolute_minimum_memory_requirement;
+    int minimum_memory_requirement;
+    int maximum_memory_requirement;
+    int free_memory_requirement;
 
-// THESE NEED TO SPECIFIED SOMEHOW
-minimum_memory_requirement = 64000000;
-optimum_memory_requirement = 128000000;
-free_memory_requirement = 5000000; // allow DirectX some space in case of fragmentation, ...
-maximum_pages = 20000;
+    maximum_pages = dx_lru_maximum_pages;
 
-maximum_memory = available_texture_memory - free_memory_requirement;
-if (!false)
+    absolute_minimum_memory_requirement = 5000000;
+    minimum_memory_requirement = dx_lru_minimum_memory_requirement;
+    maximum_memory_requirement = dx_lru_maximum_memory_requirement;
+    free_memory_requirement = dx_lru_free_memory_requirement;
+
+
+    error = false;
+    maximum_memory = available_texture_memory - free_memory_requirement;
+    if (maximum_memory < minimum_memory_requirement) {
+       if (maximum_memory < absolute_minimum_memory_requirement) {
+         // video memory size is too small
+          error = true;
+       }
+       else {
+         // video memory is way too low, so take all of it
+         maximum_memory = available_texture_memory;
+
+         // need to warn user about low video memory
+// *****
 {
-  if (maximum_memory < minimum_memory_requirement)
-  {
-     // video memory is way too low, so take all of it
-     maximum_memory = available_texture_memory;
 
-     // should warn user about low video memory
-
-  }
-  else
-  {
-     if (maximum_memory >= optimum_memory_requirement)
-     {
-        // cap video memory used
-        maximum_memory = optimum_memory_requirement;
-     }
-  }
 }
-else
-{
-  // TEST LRU *****
-  maximum_memory = 55000000;
-  maximum_pages = 20000;
-}
-
-    maximum_page_types = GPT_TotalPageTypes;
-
-    lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
-    if (lru)
-    {
-      lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
-      lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
-      lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
-
-      lru -> _m.context = (void *) this;
+      }
+    }
+    else {
+      if (maximum_memory_requirement != 0) {
+        if (maximum_memory >= maximum_memory_requirement) {
+          // cap video memory used
+          maximum_memory = maximum_memory_requirement;
+        }
+      }
     }
 
-    _lru = lru;
+    // no LRU if there is an error, go back to DirectX managed
+    if (error) {
+      _gsg_managed_textures = true;
+      _gsg_managed_vertex_buffers = true;
+      _gsg_managed_index_buffers = true;
+    } else {
+
+      int maximum_page_types;
+
+      maximum_page_types = GPT_TotalPageTypes;
+
+      lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
+      if (lru) {
+        lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
+        lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
+        lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
+
+        lru -> _m.context = (void *) this;
+      }
+
+      _lru = lru;
+    }
   }
 
   // check for render to texture support

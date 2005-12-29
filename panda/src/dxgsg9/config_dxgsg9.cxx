@@ -129,6 +129,38 @@ ConfigVariableBool dx_force_anisotropic_filtering
 ConfigVariableBool link_tristrips
 ("link-tristrips", false);
 
+// true = use DirectX management of video memory
+// false = use LRU management of video memory or no management at all
+ConfigVariableBool dx_management
+("dx-management", false);
+
+// dx_management must be true or this is ignored
+// true = enable LRU management of video memory
+// false = no video memory management
+ConfigVariableBool dx_lru_management
+("dx-lru-management", true);
+
+// number of LRU pages to pre-allocate
+// if the maximum is reached, then LRU pages will be dynamically allocated/freed
+ConfigVariableInt dx_lru_maximum_pages
+("dx-lru-maximum-pages", 20000);
+
+// this is the amount of video memory the LRU will not use
+// this will allow DirectX some space in case of memory fragmentation, ...
+// this does not apply if dx_lru_minimum_memory_requirement is not met
+ConfigVariableInt dx_lru_free_memory_requirement
+("dx-lru-free-memory-requirement", 5000000);
+
+// this is like the minimum recommended amount of video memory
+ConfigVariableInt dx_lru_minimum_memory_requirement
+("dx-lru-minimum-memory-requirement", 64000000);
+
+// this is used to cap the amount of memory used
+// 0 = use all available DirectX video memory
+ConfigVariableInt dx_lru_maximum_memory_requirement
+("dx-lru-maximum-memory-requirement", 128000000);
+
+
 ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();
 }
