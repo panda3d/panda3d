@@ -812,20 +812,19 @@ end_frame() {
     int frames;
     int maximum_updates;
 
-// LRU *****
-    maximum_updates = 10;
+    // LRU update
+    maximum_updates = dx_lru_maximum_page_updates_per_frame;
     _lru -> partial_lru_update (maximum_updates);
-//    _lru -> update_entire_lru ( );
 
-
+    // LRU debug
     if (false && dxgsg9_cat.is_debug())
     {
       dxgsg9_cat.debug() << "*  start_priority_index " << _lru -> _m.start_priority_index << "\n";
       dxgsg9_cat.debug() << "*  start_update_lru_page " << _lru -> _m.start_update_lru_page << "\n";
     }
 
-    frames = 256;
-    if ((_lru -> _m.current_frame_identifier % frames) == 0)
+    frames = dx_lru_debug_frames_til_output;
+    if (dx_lru_debug && frames > 0 && (_lru -> _m.current_frame_identifier % frames) == 0)
     {
       if (dxgsg9_cat.is_debug())
       {
@@ -833,9 +832,8 @@ end_frame() {
 
         available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
 
-        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << "\n";
+        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << " upf " << dx_lru_maximum_page_updates_per_frame << " fto " << dx_lru_debug_frames_til_output << "\n";
         dxgsg9_cat.debug() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
-//        dxgsg9_cat.debug() << "*  DX delta_memory " << available_texture_memory - _lru -> _m.available_memory << "\n";
         dxgsg9_cat.debug() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
         dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "/" << _lru -> _m.maximum_memory << "\n";
         dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";

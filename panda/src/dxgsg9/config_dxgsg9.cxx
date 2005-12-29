@@ -160,6 +160,19 @@ ConfigVariableInt dx_lru_minimum_memory_requirement
 ConfigVariableInt dx_lru_maximum_memory_requirement
 ("dx-lru-maximum-memory-requirement", 128000000);
 
+// this is the number of LRU pages the LRU will update per frame
+// do not set this too high or it will degrade performance
+ConfigVariableInt dx_lru_maximum_page_updates_per_frame
+("dx-lru-maximum-page-updates-per-frame", 10);
+
+// lru debug on/off
+ConfigVariableBool dx_lru_debug
+("dx-lru-debug", false);
+
+// if dx_lru_debug == true && if notify-level-dxgsg9 == debug
+// number of frames to wait until printing out the LRU status
+ConfigVariableInt dx_lru_debug_frames_til_output
+("dx-lru-debug-frames-til-output", 500);
 
 ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();

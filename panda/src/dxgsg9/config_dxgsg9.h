@@ -67,6 +67,11 @@ extern ConfigVariableInt dx_lru_maximum_pages;
 extern ConfigVariableInt dx_lru_free_memory_requirement;
 extern ConfigVariableInt dx_lru_minimum_memory_requirement;
 extern ConfigVariableInt dx_lru_maximum_memory_requirement;
+extern ConfigVariableInt dx_lru_maximum_page_updates_per_frame;
+
+// LRU debug variables
+extern ConfigVariableBool dx_lru_debug;
+extern ConfigVariableInt dx_lru_debug_frames_til_output;
 
 extern EXPCL_PANDADX void init_libdxgsg9();
 
