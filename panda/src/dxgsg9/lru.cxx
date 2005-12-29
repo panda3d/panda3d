@@ -30,29 +30,6 @@
 static const int HIGH_PRIORITY_SCALE = 4;
 static const int LOW_PRIORITY_RANGE = 25;
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : Lru
-// Description : Least Recently Used algorithm implementation:
-// In the Lru, each "memory page" has an associated class LruPage.
-// The Lru has a range of priorities from LPP_Highest to
-// LPP_PagedOut. Each priority has a doubly linked list of LruPages.
-// The algorithim uses an adaptive method based on the average
-// utilization of each page per frame (or time slice). The
-// average utilization is calculated with an exponetial moving
-// average. This is superior to a standard average since a standard
-// average becomes less and less adaptive the longer a page exists.
-// The average utilization is used to set the priority of each page.
-// A higher average utilization automatically raises the priority
-// of a page and a lower average utilization automatically lowers
-// the priority of a page. Therefore, pages with a higher average
-// utilization have a higher chance of being kept in memory or
-// cached and pages with a lower average utilization have a higher
-// chance of being paged out.  When a page is paged in and there
-// is not enough memory available, then the lowest priority pages
-// will be paged out first until there is enough memory available.
-////////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Lru::Constructor
 //       Access: Public
