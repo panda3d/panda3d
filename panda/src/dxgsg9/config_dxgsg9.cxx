@@ -130,22 +130,23 @@ ConfigVariableBool link_tristrips
 ("link-tristrips", false);
 
 // true = use DirectX management of video memory
-// false = use LRU management of video memory or no management at all
+// false = see dx_lru_management config variable below
 ConfigVariableBool dx_management
 ("dx-management", false);
 
-// dx_management must be true or this is ignored
+// valid only if dx_management == false
 // true = enable LRU management of video memory
 // false = no video memory management
 ConfigVariableBool dx_lru_management
 ("dx-lru-management", true);
 
 // number of LRU pages to pre-allocate
-// if the maximum is reached, then LRU pages will be dynamically allocated/freed
+// if the maximum number of pages is used up,
+// then LRU pages will be dynamically allocated/freed
 ConfigVariableInt dx_lru_maximum_pages
 ("dx-lru-maximum-pages", 20000);
 
-// this is the amount of video memory the LRU will not use
+// the amount of video memory the LRU will try not to use
 // this will allow DirectX some space in case of memory fragmentation, ...
 // this does not apply if dx_lru_minimum_memory_requirement is not met
 ConfigVariableInt dx_lru_free_memory_requirement
@@ -155,12 +156,12 @@ ConfigVariableInt dx_lru_free_memory_requirement
 ConfigVariableInt dx_lru_minimum_memory_requirement
 ("dx-lru-minimum-memory-requirement", 64000000);
 
-// this is used to cap the amount of memory used
+// used to cap the amount of video memory used
 // 0 = use all available DirectX video memory
 ConfigVariableInt dx_lru_maximum_memory_requirement
 ("dx-lru-maximum-memory-requirement", 128000000);
 
-// this is the number of LRU pages the LRU will update per frame
+// the number of LRU pages the LRU will update per frame
 // do not set this too high or it will degrade performance
 ConfigVariableInt dx_lru_maximum_page_updates_per_frame
 ("dx-lru-maximum-page-updates-per-frame", 10);
@@ -169,7 +170,7 @@ ConfigVariableInt dx_lru_maximum_page_updates_per_frame
 ConfigVariableBool dx_lru_debug
 ("dx-lru-debug", false);
 
-// if dx_lru_debug == true && if notify-level-dxgsg9 == debug
+// valid only if dx_lru_debug == true && notify-level-dxgsg9 == debug
 // number of frames to wait until printing out the LRU status
 ConfigVariableInt dx_lru_debug_frames_til_output
 ("dx-lru-debug-frames-til-output", 500);
