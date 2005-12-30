@@ -429,34 +429,50 @@ open_buffer() {
 
 // ***** CREATE A DEPTH STENCIL BUFFER IF NEEDED
 
+HRESULT hr;
+IDirect3DSurface9 *_depth_stencil_surface;
+
+hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_depth_stencil_surface);
+if (SUCCEEDED  (hr))
 {
-/*
-  HRESULT hr;
+  D3DSURFACE_DESC surface_description;
 
-  UINT width;
-  UINT height;
-  D3DFORMAT format;
-  D3DMULTISAMPLE_TYPE multisample_type;
-  DWORD multisample_quality;
-  BOOL discard;
+  hr = _depth_stencil_surface -> GetDesc (&surface_description);
+  if (SUCCEEDED  (hr))
+  {
+    UINT width;
+    UINT height;
+    D3DFORMAT format;
+    D3DMULTISAMPLE_TYPE multisample_type;
+    DWORD multisample_quality;
+    BOOL discard;
 
-  width = ;
-  height = ;
-  format = ;
-  multisample_type = ;
-  multisample_quality = ;
-  discard = true;
+    width = tex -> get_x_size ( );
+    height = tex -> get_y_size ( );
+    format = surface_description.Format;
+    multisample_type = surface_description.MultiSampleType;
+    multisample_quality = surface_description.MultiSampleQuality;
+    discard = true;
 
-  hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
-    width, height, format, multisample_type, multisample_quality,
-    discard, &this -> _new_z_stencil_surface, NULL);
-  if (SUCCEEDED  (hr)) {
+    hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
+      width, height, format, multisample_type, multisample_quality,
+      discard, &this -> _new_z_stencil_surface, NULL);
+    if (SUCCEEDED  (hr)) {
 
-  } else {
-    dxgsg9_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+    } else {
+      dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    }
+  }
+  else
+  {
+    dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
   }
 
-*/
+  _depth_stencil_surface -> Release ( );
+}
+else
+{
+  dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
 }
 
     {
