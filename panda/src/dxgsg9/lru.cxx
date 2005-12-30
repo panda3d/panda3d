@@ -558,13 +558,11 @@ void Lru::begin_frame ( )
 ////////////////////////////////////////////////////////////////////
 void Lru::update_page_priorities (void)
 {
-  int        index;
-  LruPage  * lru_page;
+  int index;
+  LruPage *lru_page;
 
-  for(index = 0; index < this->_m.total_lru_page_priority_changes;
-      index++)
-  {
-    int  priority;
+  for(index = 0; index < this->_m.total_lru_page_priority_changes; index++) {
+    int priority;
 
     lru_page = this->_m.lru_page_priority_change_array[index];
 
