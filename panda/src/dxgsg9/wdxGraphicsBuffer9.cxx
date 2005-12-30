@@ -34,6 +34,8 @@
   // support copy from texture to ram?
     // check D3DCAPS2_DYNAMICTEXTURES
 
+#define FL << "\n" << __FILE__ << " " << __LINE__ << "\n"
+
 TypeHandle wdxGraphicsBuffer9::_type_handle;
 
 
@@ -124,13 +126,18 @@ begin_render_texture() {
       _dx_texture_context9 = DCAST (DXTextureContext9, tc);
 
       // save render context
-      hr = dxgsg -> _d3d_device -> GetRenderTarget (render_target_index,
-        &_back_buffer);
+      hr = dxgsg -> _d3d_device -> GetRenderTarget (render_target_index, &_back_buffer);
       if (SUCCEEDED (hr)) {
         hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_z_stencil_buffer);
         if (SUCCEEDED (hr)) {
           state = true;
         }
+        else {
+          dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+        }
+      }
+      else {
+        dxgsg9_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
       }
 
       // set render context
@@ -159,9 +166,15 @@ begin_render_texture() {
                 hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (this -> _new_z_stencil_surface);
                 if (SUCCEEDED (hr)) {
 
+                } else {
+                  dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
                 }
               }
+            } else {
+              dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
             }
+          } else {
+            dxgsg9_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
           }
         }
       }
@@ -197,6 +210,8 @@ end_render_texture() {
         hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _back_buffer);
         if (SUCCEEDED (hr)) {
           _back_buffer -> Release ( );
+        } else {
+          dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
         }
         _back_buffer = NULL;
       }
@@ -204,6 +219,8 @@ end_render_texture() {
         hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (_z_stencil_buffer);
         if (SUCCEEDED (hr)) {
           _z_stencil_buffer -> Release ( );
+        } else {
+          dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
         }
         _z_stencil_buffer = NULL;
       }
@@ -266,12 +283,19 @@ select_cube_map(int cube_map_index) {
                 hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (this -> _new_z_stencil_surface);
                 if (SUCCEEDED (hr)) {
 
+                } else {
+                  dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
                 }
               }
+            } else {
+              dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
             }
+          } else {
+            dxgsg9_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
           }
         } else {
           // error: invalid cube map face index
+          dxgsg9_cat.error ( ) << "Invalid Cube Map Face Index " << _cube_map_index FL;
         }
       }
     }
@@ -426,9 +450,10 @@ open_buffer() {
   hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
     width, height, format, multisample_type, multisample_quality,
     discard, &this -> _new_z_stencil_surface, NULL);
-  if (SUCCEEDED  (hr))
-  {
+  if (SUCCEEDED  (hr)) {
 
+  } else {
+    dxgsg9_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
   }
 
 */
