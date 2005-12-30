@@ -232,14 +232,6 @@ apply_texture(int i, TextureContext *tc) {
   wrap_v = tex->get_wrap_v();
   wrap_w = tex->get_wrap_w();
 
-/*
-  _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrap_u));
-  _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
-  _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSW, get_texture_wrap_mode(wrap_w));
-
-  _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR,
-            Colorf_to_D3DCOLOR(tex->get_border_color()));
-*/
   _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSU, get_texture_wrap_mode(wrap_u));
   _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSV, get_texture_wrap_mode(wrap_v));
   _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSW, get_texture_wrap_mode(wrap_w));
@@ -250,7 +242,6 @@ apply_texture(int i, TextureContext *tc) {
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
 
-//  _d3d_device->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
   _d3d_device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
 
   D3DTEXTUREFILTERTYPE new_mag_filter;
@@ -260,7 +251,6 @@ apply_texture(int i, TextureContext *tc) {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
 
-//  _d3d_device->SetTextureStageState(i, D3DTSS_MAGFILTER, new_mag_filter);
   _d3d_device->SetSamplerState(i, D3DSAMP_MAGFILTER, new_mag_filter);
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
@@ -289,10 +279,6 @@ apply_texture(int i, TextureContext *tc) {
     new_min_filter = D3DTEXF_ANISOTROPIC;
   }
 
-/*
-  _d3d_device->SetTextureStageState(i, D3DTSS_MINFILTER, new_min_filter);
-  _d3d_device->SetTextureStageState(i, D3DTSS_MIPFILTER, new_mip_filter);
-*/
   _d3d_device->SetSamplerState(i, D3DSAMP_MINFILTER, new_min_filter);
   _d3d_device->SetSamplerState(i, D3DSAMP_MIPFILTER, new_mip_filter);
 
@@ -1974,78 +1960,81 @@ reset() {
   }
   _available_texture_memory = available_texture_memory;
 
+/*
   if (_lru) {
     delete _lru;
     _lru = 0;
   }
+*/
 
-  if (dx_management == false && _enable_lru) {
-    int error;
-    int maximum_memory;
-    int maximum_pages;
-    Lru *lru;
+  if (_lru == 0)
+  {
+    if (dx_management == false && _enable_lru) {
+      int error;
+      int maximum_memory;
+      int maximum_pages;
+      Lru *lru;
 
-    int absolute_minimum_memory_requirement;
-    int minimum_memory_requirement;
-    int maximum_memory_requirement;
-    int free_memory_requirement;
+      int absolute_minimum_memory_requirement;
+      int minimum_memory_requirement;
+      int maximum_memory_requirement;
+      int free_memory_requirement;
 
-    maximum_pages = dx_lru_maximum_pages;
+      maximum_pages = dx_lru_maximum_pages;
 
-    absolute_minimum_memory_requirement = 5000000;
-    minimum_memory_requirement = dx_lru_minimum_memory_requirement;
-    maximum_memory_requirement = dx_lru_maximum_memory_requirement;
-    free_memory_requirement = dx_lru_free_memory_requirement;
+      absolute_minimum_memory_requirement = 5000000;
+      minimum_memory_requirement = dx_lru_minimum_memory_requirement;
+      maximum_memory_requirement = dx_lru_maximum_memory_requirement;
+      free_memory_requirement = dx_lru_free_memory_requirement;
 
+      error = false;
+      maximum_memory = available_texture_memory - free_memory_requirement;
+      if (maximum_memory < minimum_memory_requirement) {
+         if (maximum_memory < absolute_minimum_memory_requirement) {
+           // video memory size is too small
+            error = true;
+         }
+         else {
+           // video memory is way too low, so take all of it
+           maximum_memory = available_texture_memory;
 
-    error = false;
-    maximum_memory = available_texture_memory - free_memory_requirement;
-    if (maximum_memory < minimum_memory_requirement) {
-       if (maximum_memory < absolute_minimum_memory_requirement) {
-         // video memory size is too small
-          error = true;
-       }
-       else {
-         // video memory is way too low, so take all of it
-         maximum_memory = available_texture_memory;
+           // need to warn user about low video memory
+  // *****
+  {
 
-         // need to warn user about low video memory
-// *****
-{
-
-}
-      }
-    }
-    else {
-      if (maximum_memory_requirement != 0) {
-        if (maximum_memory >= maximum_memory_requirement) {
-          // cap video memory used
-          maximum_memory = maximum_memory_requirement;
+  }
         }
       }
-    }
-
-    // no LRU if there is an error, go back to DirectX managed
-    if (error) {
-      _gsg_managed_textures = true;
-      _gsg_managed_vertex_buffers = true;
-      _gsg_managed_index_buffers = true;
-    } else {
-
-      int maximum_page_types;
-
-      maximum_page_types = GPT_TotalPageTypes;
-
-      lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
-      if (lru) {
-        lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
-        lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
-        lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
-
-        lru -> _m.context = (void *) this;
+      else {
+        if (maximum_memory_requirement != 0) {
+          if (maximum_memory >= maximum_memory_requirement) {
+            // cap video memory used
+            maximum_memory = maximum_memory_requirement;
+          }
+        }
       }
 
-      _lru = lru;
+      // no LRU if there is an error, go back to DirectX managed
+      if (error) {
+        _gsg_managed_textures = true;
+        _gsg_managed_vertex_buffers = true;
+        _gsg_managed_index_buffers = true;
+      } else {
+
+        int maximum_page_types;
+
+        maximum_page_types = GPT_TotalPageTypes;
+        lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
+        if (lru) {
+          lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
+          lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
+          lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
+
+          lru -> _m.context = (void *) this;
+        }
+
+        _lru = lru;
+      }
     }
   }
 
