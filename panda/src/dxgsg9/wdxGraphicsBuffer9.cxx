@@ -54,6 +54,7 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _z_stencil_buffer = NULL;
   _direct_3d_surface = NULL;
   _dx_texture_context9 = NULL;
+  _new_z_stencil_surface = NULL;
 
 // is this correct ???
   // Since the pbuffer never gets flipped, we get screenshots from the
@@ -152,10 +153,14 @@ begin_render_texture() {
         if (direct_3d_texture) {
           hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
-            hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
-              _direct_3d_surface);
+            hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _direct_3d_surface);
             if (SUCCEEDED (hr)) {
+              if (this -> _new_z_stencil_surface) {
+                hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (this -> _new_z_stencil_surface);
+                if (SUCCEEDED (hr)) {
 
+                }
+              }
             }
           }
         }
@@ -255,9 +260,14 @@ select_cube_map(int cube_map_index) {
             (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
             hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index,
-            _direct_3d_surface);
+              _direct_3d_surface);
             if (SUCCEEDED (hr)) {
+              if (this -> _new_z_stencil_surface) {
+                hr = dxgsg -> _d3d_device -> SetDepthStencilSurface (this -> _new_z_stencil_surface);
+                if (SUCCEEDED (hr)) {
 
+                }
+              }
             }
           }
         } else {
@@ -349,6 +359,12 @@ close_buffer() {
       dx_texture_context9 -> _d3d_volume_texture = NULL;
       dx_texture_context9 -> _d3d_cube_texture = NULL;
     }
+
+    // release new depth stencil buffer if one was created
+    if (this -> _new_z_stencil_surface) {
+      this -> _new_z_stencil_surface -> Release ( );
+      this -> _new_z_stencil_surface = NULL;
+    }
   }
 
   _cube_map_index = -1;
@@ -387,8 +403,41 @@ open_buffer() {
   if (tc != NULL) {
     _dx_texture_context9 = DCAST (DXTextureContext9, tc);
 
-    _is_valid = true;
-    state = true;
+// ***** CREATE A DEPTH STENCIL BUFFER IF NEEDED
+
+{
+/*
+  HRESULT hr;
+
+  UINT width;
+  UINT height;
+  D3DFORMAT format;
+  D3DMULTISAMPLE_TYPE multisample_type;
+  DWORD multisample_quality;
+  BOOL discard;
+
+  width = ;
+  height = ;
+  format = ;
+  multisample_type = ;
+  multisample_quality = ;
+  discard = true;
+
+  hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
+    width, height, format, multisample_type, multisample_quality,
+    discard, &this -> _new_z_stencil_surface, NULL);
+  if (SUCCEEDED  (hr))
+  {
+
+  }
+
+*/
+}
+
+    {
+      _is_valid = true;
+      state = true;
+    }
   }
 
   return state;

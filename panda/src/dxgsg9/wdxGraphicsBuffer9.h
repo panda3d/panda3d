@@ -65,6 +65,8 @@ private:
   IDirect3DSurface9 *_direct_3d_surface;
   DXTextureContext9 *_dx_texture_context9;
 
+  IDirect3DSurface9 *_new_z_stencil_surface;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
