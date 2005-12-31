@@ -1,5 +1,6 @@
 """
-ShipPilot.py is for avatars pilotting ships (or more accurately, a ship as the avatar).
+ShipPilot.py is for avatars pilotting ships (or more accurately, a ship
+as the avatar).
 
 A control such as this one provides:
     - creation of the collision nodes
@@ -16,17 +17,17 @@ animations based on control events.
 
 from direct.showbase.ShowBaseGlobal import *
 
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from pandac.PandaModules import PhysicsManager
 import math
 
-import PhysicsWalker
+from PhysicsWalker import PhysicsWalker
 
 #import LineStream
 
-class ShipPilot(PhysicsWalker.PhysicsWalker):
+class ShipPilot(PhysicsWalker):
 
-    notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
+    notify = directNotify.newCategory("PhysicsWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     
     useLifter = 0
@@ -35,9 +36,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
-        assert(self.debugPrint("PhysicsWalker(gravity=%s, standableGround=%s)"%(
-                gravity, standableGround)))
-        PhysicsWalker.PhysicsWalker.__init__(self, gravity = -32.1740, standableGround=0.707,
+        assert self.debugPrint(
+            "PhysicsWalker(gravity=%s, standableGround=%s)"%(
+            gravity, standableGround))
+        PhysicsWalker.__init__(
+            self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0)
         self.__gravity=gravity
         self.__standableGround=standableGround
@@ -63,8 +66,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.isAirborne = 0
         self.highMark = 0
         self.ship = None
-
-
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
@@ -100,7 +101,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
-        self.cRay = CollisionRay(0.0, 0.0, CollisionHandlerRayStart, 0.0, 0.0, -1.0)
+        self.cRay = CollisionRay(
+            0.0, 0.0, CollisionHandlerRayStart, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('PW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
@@ -139,7 +141,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             # If the shadow where not pointed strait down, we would need to
             # get magnitude of the vector.  Since it is strait down, we'll
             # just get the z:
-            #spammy --> assert self.debugPrint("getAirborneHeight() returning %s"%(height.getZ(),))
+            #spammy --> assert self.debugPrint(
+            #spammy -->     "getAirborneHeight() returning %s"%(height.getZ(),))
             assert onScreenDebug.add("height", height.getZ())
             return height.getZ() - self.floorOffset
         else: # useCollisionHandlerQueue
@@ -168,7 +171,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # This is a sphere on the ground to detect barrier collisions
         if 0:
             self.avatarRadius = avatarRadius
-            self.cSphere = CollisionTube(Point3(0.0, 0.0, 0.0), Point3(0.0, 40.0, 0.0), avatarRadius)
+            self.cSphere = CollisionTube(
+                Point3(0.0, 0.0, 0.0), Point3(0.0, 40.0, 0.0), avatarRadius)
             cSphereNode = CollisionNode('SP.cSphereNode')
             cSphereNode.addSolid(self.cSphere)
             self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
@@ -194,29 +198,35 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         if 1:
             # Front sphere:
-            self.cBowSphere = CollisionSphere(0.0, self.frontSphereOffset, -5.0, avatarRadius)
+            self.cBowSphere = CollisionSphere(
+                0.0, self.frontSphereOffset, -5.0, avatarRadius)
             cBowSphereNode = CollisionNode('SP.cBowSphereNode')
             cBowSphereNode.addSolid(self.cBowSphere)
-            self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
+            self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(
+                cBowSphereNode)
 
             cBowSphereNode.setFromCollideMask(self.cSphereBitMask)
             cBowSphereNode.setIntoCollideMask(BitMask32.allOff())
 
             self.cBowSphereNode = cBowSphereNode
 
-            self.pusher.addCollider(self.cBowSphereNodePath, self.avatarNodePath)
+            self.pusher.addCollider(
+                self.cBowSphereNodePath, self.avatarNodePath)
             
             # Back sphere:
-            self.cSternSphere = CollisionSphere(0.0, self.backSphereOffset, -5.0, avatarRadius)
+            self.cSternSphere = CollisionSphere(
+                0.0, self.backSphereOffset, -5.0, avatarRadius)
             cSternSphereNode = CollisionNode('SP.cSternSphereNode')
             cSternSphereNode.addSolid(self.cSternSphere)
-            self.cSternSphereNodePath = self.avatarNodePath.attachNewNode(cSternSphereNode)
+            self.cSternSphereNodePath = self.avatarNodePath.attachNewNode(
+                cSternSphereNode)
             self.cSternSphereBitMask = bitmask
 
             cSternSphereNode.setFromCollideMask(self.cSphereBitMask)
             cSternSphereNode.setIntoCollideMask(BitMask32.allOff())
 
-            self.pusher.addCollider(self.cSternSphereNodePath, self.avatarNodePath)
+            self.pusher.addCollider(
+                self.cSternSphereNodePath, self.avatarNodePath)
 
             # hide other things on my ship that these spheres might collide
             # with and which I dont need anyways...
@@ -478,8 +488,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 self.oneTimeCollide()
 
     def getCollisionsActive(self):
-        assert(self.debugPrint("getCollisionsActive() returning=%s"%(
-            self.collisionsActive,)))
+        assert self.debugPrint(
+            "getCollisionsActive() returning=%s"%(self.collisionsActive,))
         return self.collisionsActive
     
     def placeOnFloor(self):
@@ -489,7 +499,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         current walker.
         """
         self.oneTimeCollide()
-        self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.getAirborneHeight())
+        self.avatarNodePath.setZ(
+            self.avatarNodePath.getZ()-self.getAirborneHeight())
 
     def oneTimeCollide(self):
         """
@@ -497,7 +508,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
-        assert(self.debugPrint("oneTimeCollide()"))
+        assert self.debugPrint("oneTimeCollide()")
         tempCTrav = CollisionTraverser("oneTimeCollide")
         if self.useHeightRay:
             if self.useLifter:
@@ -595,13 +606,18 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         """
         if __debug__:
             if self.wantDebugIndicator:
-                onScreenDebug.append("localAvatar pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
-                onScreenDebug.append("localAvatar h = % 10.4f\n"%(base.localAvatar.getH(),))
-                #onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
+                onScreenDebug.append("localAvatar pos = %s\n"%(
+                    base.localAvatar.getPos().pPrintValues(),))
+                onScreenDebug.append("localAvatar h = % 10.4f\n"%(
+                    base.localAvatar.getH(),))
+                #onScreenDebug.append("localAvatar anim = %s\n"%(
+                #    base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
-        #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
-        #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+        #rotAvatarToPhys=Mat3.rotateMatNormaxis(
+        #    -self.avatarNodePath.getH(), Vec3.up())
+        #rotPhysToAvatar=Mat3.rotateMatNormaxis(
+        #    self.avatarNodePath.getH(), Vec3.up())
         contact=self.actorNode.getContactVector()
         
         depth=physObject.getPosition().getZ()
@@ -610,7 +626,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             pass
         else:
             # self.buoyancy.setVector(Vec3.zero())
-            physObject.setPosition(Point3(physObject.getPosition().getX(), physObject.getPosition().getY(), 0.0))
+            physObject.setPosition(Point3(
+                physObject.getPosition().getX(),
+                physObject.getPosition().getY(),
+                0.0))
             self.actorNode.updateTransform()
             #self.buoyancy.setVector(Vec3(0, 0, -depth))
 
@@ -708,13 +727,13 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             if (airborneHeight > self.avatarRadius*0.5
                     or physObject.getVelocity().getZ() > 0.0
                     ): # Check stair angles before changing this.
-                # ...the avatar is airborne (maybe a lot or a tiny amount).
+                # The avatar is airborne (maybe a lot or a tiny amount).
                 self.isAirborne = 1
             else:
-                # ...the avatar is very close to the ground (close enough to be
-                # considered on the ground).
+                # The avatar is very close to the ground (close
+                # enough to be considered on the ground).
                 if self.isAirborne and physObject.getVelocity().getZ() <= 0.0:
-                    # ...the avatar has landed.
+                    # the avatar has landed.
                     contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
                         messenger.send("jumpHardLand")
@@ -726,12 +745,12 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                     #self.__jumpButton=0
                     messenger.send("jumpStart")
                     if 0:
-                        # ...jump away from walls and with with the slope normal.
+                        # Jump away from walls and with with the slope normal.
                         jumpVec=Vec3(contact+Vec3.up())
                         #jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
                         jumpVec.normalize()
                     else:
-                        # ...jump straight up, even if next to a wall.
+                        # Jump straight up, even if next to a wall.
                         jumpVec=Vec3.up()
                     jumpVec*=self.avatarControlJumpForce
                     physObject.addImpulse(Vec3(jumpVec))
@@ -742,7 +761,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
         else:
             if contact!=Vec3.zero():
-                # ...the avatar has touched something (but might not be on the ground).
+                # The avatar has touched something (but might
+                # not be on the ground).
                 contactLength = contact.length()
                 contact.normalize()
                 angle=contact.dot(Vec3.up())
@@ -807,7 +827,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # Check to see if we're moving at all:
         physVel = physObject.getVelocity()
         physVelLen = physVel.length()
-        if (physVelLen!=0. or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero()):
+        if (physVelLen!=0.
+                or self.__speed 
+                or self.__slideSpeed 
+                or self.__rotationSpeed 
+                or moveToGround!=Vec3.zero()):
             distance = dt * self.__speed
             goForward = True
             if (distance < 0):
@@ -824,7 +848,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
             # rotMat is the rotation matrix corresponding to
             # our previous heading.
-            rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+            rotMat=Mat3.rotateMatNormaxis(
+                self.avatarNodePath.getH(), Vec3.up())
             step=rotMat.xform(self.__vel)
 
             #newVector = self.acForce.getLocalVector()+Vec3(step)
@@ -909,7 +934,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
-        # Clear the contact vector so we can tell if we contact something next frame:
+        # Clear the contact vector so we can
+        # tell if we contact something next frame
         self.actorNode.setContactVector(Vec3.zero())
 
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
@@ -959,14 +985,15 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     
     def reset(self):
         assert(self.debugPrint("reset()"))
-        self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
+        self.actorNode.getPhysicsObject().resetPosition(
+            self.avatarNodePath.getPos())
         self.priorParent.setVector(Vec3.zero())
         self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
         if __debug__:
             contact=self.actorNode.getContactVector()
-            onScreenDebug.add("priorParent po",
-                self.priorParent.getVector(self.actorNode.getPhysicsObject()).pPrintValues())
+            onScreenDebug.add("priorParent po", self.priorParent.getVector(
+                self.actorNode.getPhysicsObject()).pPrintValues())
             onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
             onScreenDebug.add("contact", contact.pPrintValues())
 
@@ -990,7 +1017,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # spawn the new task
         taskMgr.add(self.handleAvatarControls, taskName, 25)
         if self.physVelocityIndicator:
-            taskMgr.add(self.avatarPhysicsIndicator, "AvatarControlsIndicator%s"%(id(self),), 35)
+            taskMgr.add(
+                self.avatarPhysicsIndicator,
+                "AvatarControlsIndicator%s"%(id(self),), 35)
 
     def disableAvatarControls(self):
         """

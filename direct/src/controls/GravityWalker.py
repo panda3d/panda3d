@@ -15,14 +15,13 @@ animations based on walker events.
 """
 from direct.showbase.ShowBaseGlobal import *
 
-
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase import DirectObject
 import math
 
 
 class GravityWalker(DirectObject.DirectObject):
-    notify = DirectNotifyGlobal.directNotify.newCategory("GravityWalker")
+    notify = directNotify.newCategory("GravityWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
 
@@ -163,7 +162,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
-        #assert(self.debugPrint("getSpeeds()"))
+        #assert self.debugPrint("getSpeeds()")
         return (self.speed, self.rotationSpeed, self.slideSpeed)
 
     def setAvatar(self, avatar):
@@ -369,8 +368,8 @@ class GravityWalker(DirectObject.DirectObject):
                 self.cTrav.removeCollider(self.cRayNodePath)
 
     def getCollisionsActive(self):
-        assert(self.debugPrint("getCollisionsActive() returning=%s"%(
-            self.collisionsActive,)))
+        assert self.debugPrint("getCollisionsActive() returning=%s"%(
+            self.collisionsActive,))
         return self.collisionsActive
 
     def placeOnFloor(self):
@@ -478,7 +477,7 @@ class GravityWalker(DirectObject.DirectObject):
         if self.lifter.isOnGround():
             if self.isAirborne:
                 self.isAirborne = 0
-                assert(self.debugPrint("isAirborne 0 due to isOnGround() true"))
+                assert self.debugPrint("isAirborne 0 due to isOnGround() true")
                 impact = self.lifter.getImpactVelocity()
                 if impact < -30.0:
                     messenger.send("jumpHardLand")
@@ -488,7 +487,7 @@ class GravityWalker(DirectObject.DirectObject):
                     if impact < -5.0:
                         self.startJumpDelay(0.2)
                     # else, ignore the little potholes.
-            assert(self.isAirborne == 0)
+            assert self.isAirborne == 0
             self.priorParent = Vec3.zero()
             if jump and self.mayJump:
                 # The jump button is down and we're close
@@ -496,10 +495,10 @@ class GravityWalker(DirectObject.DirectObject):
                 self.lifter.addVelocity(self.avatarControlJumpForce)
                 messenger.send("jumpStart")
                 self.isAirborne = 1
-                assert(self.debugPrint("isAirborne 1 due to jump"))
+                assert self.debugPrint("isAirborne 1 due to jump")
         else:
             if self.isAirborne == 0:
-                assert(self.debugPrint("isAirborne 1 due to isOnGround() false"))
+                assert self.debugPrint("isAirborne 1 due to isOnGround() false")
             self.isAirborne = 1
 
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
