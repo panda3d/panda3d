@@ -25,6 +25,7 @@ base.startDirect(fWantDirect = 1, fWantTk = 1)
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
 fUseCVS = base.config.GetBool("level-editor-use-cvs", 1)
+useSnowTree = base.config.GetBool("use-snow-tree",0)
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -467,6 +468,8 @@ class LevelEditor(NodePath, DirectObject):
         self.visitedEdges = []
 
         self.zoneLabels = []
+
+        
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
@@ -601,6 +604,13 @@ class LevelEditor(NodePath, DirectObject):
         self.panel.twentyFootButton.invoke()
         # Update scene graph explorer
         self.panel.sceneGraphExplorer.update()
+
+        # Karting
+        # the key is the barricade number,  the data is a two element list,
+        # first number is the first bldg group that uses this
+        # the second is the last bldg group that uses this
+        self.outerBarricadeDict = {}
+        self.innerBarricadeDict = {}
 
     # ENABLE/DISABLE
     def enable(self):
@@ -3377,15 +3387,31 @@ class LevelEditor(NodePath, DirectObject):
         self.reparentStreetBuildings(self.NPToplevel)
         return newGroup
 
-    def makeNewBuildingGroup(self, sequenceNum, side):
-        print "-------------------------- new building group %s ------------------------" % sequenceNum
+    def makeNewBuildingGroup(self, sequenceNum, side, curveName):
+        print "-------------------------- new building group %s  curveName=%s------------------------" % (sequenceNum , curveName)
         # Now create a new group with just the buildings
         self.addGroup(self.NPToplevel)
         newGroup = self.NPParent
-        groupName = 'Buildings_' + side + "-" + str(sequenceNum)
+        groupName = ''
+        #if curveName == "urban_curveside_inner_1_1":
+        #    import pdb; pdb.set_trace()
+        
+        if 'curveside' in curveName:
+            #we want to preserve which group the side street is closest to
+            print "special casing %s" % curveName
+            parts = curveName.split('_')
+            groupName = 'Buildings_' + side + "-" + parts[3] + "_" + parts[4]
+            print "groupname = %s" % groupName
+        else:        
+            groupName = 'Buildings_' + side + "-" + str(sequenceNum)
         newGroup.setName(groupName)
         self.setName(newGroup, groupName)
         direct.setActiveParent(newGroup)
+
+        if 'barricade_curve' in curveName:
+            parts = curveName.split('_')
+            origBarricadeNum = parts[3]
+            self.updateBarricadeDict(side, int(origBarricadeNum),  sequenceNum)
 
     def adjustPropChildren(self, nodePath, maxPropOffset = -4):
         for np in nodePath.getChildrenAsList():
@@ -3461,22 +3487,64 @@ class LevelEditor(NodePath, DirectObject):
         if streetCurveFilename:
             modelFile = loader.loadModel(Filename.fromOsSpecific(streetCurveFilename))
             #curves = modelFile.findAllMatches('**/+ClassicNurbsCurve').asList()
-            curves = {'inner':[], 'outer':[]}
+            curves = {'inner':[], 'outer':[],'innersidest':[], 'outersidest':[]}
             curvesInner = modelFile.findAllMatches('**/*curve_inner*').asList()
+            print("-------------- curvesInner-----------------")
+            print curvesInner
             curvesOuter = modelFile.findAllMatches('**/*curve_outer*').asList()
+            print("---------------- curvesOuter---------------")
+            print curvesOuter
+            curveInnerSideSts = modelFile.findAllMatches('**/*curveside_inner*').asList()
+            print("--------- curveInnerSideSts----------")
+            print curveInnerSideSts
+            
+            curveOuterSideSts = modelFile.findAllMatches('**/*curveside_outer*').asList()
+            print("----------- curveOuterSideSits ----------")
+            print curveOuterSideSts
+
             # return an ordered list
-            for i in range(len(curvesInner)):
+            for i in range(len(curvesInner) +1 ): #RAU don't forget, these curves are 1 based
                 curve = modelFile.find('**/*curve_inner_'+str(i))
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
                     curveType = curve.getName().split("_")[0]
                     curves['inner'].append([curve.node(),curveType])
-            for i in range(len(curvesOuter)):
+                    
+            for i in range(len(curvesOuter) +1 ):
                 curve = modelFile.find('**/*curve_outer_'+str(i))
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
                     curveType = curve.getName().split("_")[0]
                     curves['outer'].append([curve.node(),curveType])
+
+            maxNum = len(curvesInner)
+            if len(curvesOuter) > maxNum:
+                maxNum = len(curvesOuter)
+            
+            maxNum += 2; #track ends in a barricade, and add 1 since 1 based
+            #RAU also do special processing for the side streets
+            # side streets are numbered differently and could be non consecutive
+            # curveside_inner_28_1, curveside_outer_28_1, curveside_inner_28_2,
+            # curveside_outer_28_2 (two side streets closest to main building track 28)
+            for i in range(maxNum):
+                for barricade in ['innerbarricade','outerbarricade']:
+                    curve = modelFile.find('**/*curveside_inner_'+ barricade + '_' + str(i) )
+                    if not curve.isEmpty():
+                        # Mark whether it is a section of buildings or trees
+                        curveType = curve.getName().split("_")[0]
+                        curves['innersidest'].append([curve.node(),curveType])
+                        print "adding innersidest %s" % curve.getName()
+
+            for i in range(maxNum):
+                for barricade in ['innerbarricade','outerbarricade']:                
+                    curve = modelFile.find('**/*curveside_outer_'+ barricade + '_' + str(i) )
+                    if not curve.isEmpty():
+                        # Mark whether it is a section of buildings or trees
+                        curveType = curve.getName().split("_")[0]
+                        curves['outersidest'].append([curve.node(),curveType])
+                        print "adding outersidest %s" % curve.getName()                        
+            
+            
             print "loaded curves: %s" % curves
             return curves
         else:
@@ -3497,9 +3565,9 @@ class LevelEditor(NodePath, DirectObject):
         print "e"
         return newNodePath
 
-    def getBldg(self, bldgIndex, bldgs):
+    def getBldg(self, bldgIndex, bldgs, forceDuplicate = False):
         numBldgs = len(bldgs)
-        if bldgIndex < numBldgs:
+        if bldgIndex < numBldgs and not forceDuplicate:
             # Use original
             print "using original bldg"
             bldg = bldgs[bldgIndex]
@@ -3526,11 +3594,36 @@ class LevelEditor(NodePath, DirectObject):
                 print "making flatbuilding copy"
                 bldg = self.duplicateFlatBuilding(oldDNANode)
         return bldg, bldgIndex
+
+    def updateBarricadeDict(self, side, barricadeOrigNum, curBldgGroupIndex):
+        barricadeDict = None
+        if (side == 'outer'):
+            barricadeDict = self.outerBarricadeDict
+        elif (side == 'inner'):
+            barricadeDict = self.innerBarricadeDict
+        else:
+            print("unhandled side %s" % side)
+            return
+
+        if not barricadeDict.has_key(barricadeOrigNum):
+            barricadeDict[barricadeOrigNum] = [curBldgGroupIndex, curBldgGroupIndex]
+
+        if curBldgGroupIndex < barricadeDict[barricadeOrigNum][0]:
+            barricadeDict[barricadeOrigNum][0] = curBldgGroupIndex
+
+        if barricadeDict[barricadeOrigNum][1] < curBldgGroupIndex:
+            barricadeDict[barricadeOrigNum][1] = curBldgGroupIndex
         
+        print "---------- %s barricadeDict origNum=%d  data=(%d,%d)" %(side, barricadeOrigNum, barricadeDict[barricadeOrigNum][0], barricadeDict[barricadeOrigNum][1] )           
+    
     def makeStreetAlongCurve(self):
         curves = self.loadStreetCurve()
         if curves == None:
             return
+
+        self.outerBarricadeDict = {}
+        self.innerBarricadeDict = {}
+        
 
         direct.grid.fXyzSnap = 0
         direct.grid.fHprSnap = 0
@@ -3542,7 +3635,11 @@ class LevelEditor(NodePath, DirectObject):
         currPoint = Point3(0)
         bldgIndex = 0
 
+        #populate side streets
+        self.makeSideStreets(curves)
+
         # Populate buildings on both sides of the street
+        #sides = ['inner', 'outer','innersidest','outersidest']
         sides = ['inner', 'outer']
         maxGroupWidth = 500
         for side in sides:
@@ -3550,19 +3647,25 @@ class LevelEditor(NodePath, DirectObject):
             # Subdivide the curve into different groups.  
             bldgGroupIndex = 0
             curGroupWidth = 0
-            self.makeNewBuildingGroup(bldgGroupIndex, side)
+            curveName = '';
+            if len(curves[side]):
+                initialCurve, initialCurveType = curves[side][0]
+                if initialCurve:
+                    curveName = initialCurve.getName()
+            self.makeNewBuildingGroup(bldgGroupIndex, side, curveName)
             
             for curve, curveType in curves[side]:
-                print "----------------- curve(%s): %s --------------- " % (side, curve)
+                print "----------------- curve(%s,%s): %s --------------- " % (side,curve.getName(), curve)
+                #import pdb; pdb.set_trace()
                 currT = 0
-                endT = curve.getMaxT()
+                endT = curve.getMaxT()             
 
                 while currT < endT:
                     if curveType == 'urban':
                         bldg, bldgIndex = self.getBldg(bldgIndex, bldgs)
                         curve.getPoint(currT, currPoint)
 
-                        if side == "inner":
+                        if side == "inner" or side == "innersidest" :
                             heading = 90
                         else:
                             heading = -90
@@ -3577,7 +3680,7 @@ class LevelEditor(NodePath, DirectObject):
 
                         # Shift building forward if it is on the out track, since we just turned it away from
                         # the direction of the track
-                        if side == "outer":
+                        if side == "outer" or side == "outersidest":
                             bldg.setPos(currPoint)
 
                         self.updateSelectedPose([bldg])
@@ -3597,6 +3700,16 @@ class LevelEditor(NodePath, DirectObject):
                                                 "prop_tree_small_ur",
                                                 "prop_tree_large_ur",
                                                 "prop_tree_large_ul"])
+
+                        #use snow if necessaryy
+
+                        if (useSnowTree):
+                            tree = whrandom.choice(["prop_snow_tree_small_ul",
+                                                    "prop_snow_tree_small_ur",
+                                                    "prop_snow_tree_large_ur",
+                                                    "prop_snow_tree_large_ul"])
+                            
+                        
                         self.addProp(tree)
                         for selectedNode in direct.selected:
                             # Move it
@@ -3623,6 +3736,41 @@ class LevelEditor(NodePath, DirectObject):
                         print "currT after adding tunnel = %s" % currT
                         # force move to next curve
                         currT = endT + 1
+                    elif curveType == 'barricade':
+                        print "adding barricade (%s) %s, curT = %d" % (side,curve.getName(),currT)
+                        barricadeWidth = curve.calcLength()
+                        print "barricade width = %f" % barricadeWidth
+
+                        simple =1
+                        if (simple):
+                            curGroupWidth += barricadeWidth
+                            # force move to next curve
+                            currT = endT + 1
+                        else:                                              
+                            #add a prop_tree to force it to be shown
+                            curve.getPoint(currT, currPoint)
+                            #trees are spaced anywhere from 40-80 ft apart
+                            #treeWidth = whrandom.randint(40,80)
+                            treeWidth = barricadeWidth
+                            curGroupWidth += treeWidth
+                            # Adjust grid orientation based upon next point along curve
+                            currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
+                        
+                            # Add some trees
+                            tree = whrandom.choice(["prop_snow_tree_small_ul",
+                                                "prop_snow_tree_small_ur",
+                                                "prop_snow_tree_large_ur",
+                                                "prop_snow_tree_large_ul"])
+                            self.addProp(tree)
+                            for selectedNode in direct.selected:
+                                # Move it
+                                selectedNode.setPos(currPoint)
+                                # Snap objects to grid and update DNA if necessary
+                                self.updateSelectedPose(direct.selected.getSelectedAsList())
+                        
+
+                      
+                    
                     
                     # Check if we need a new group yet
                     if curGroupWidth > maxGroupWidth:
@@ -3630,14 +3778,168 @@ class LevelEditor(NodePath, DirectObject):
                         diffGroup = curGroupWidth - maxGroupWidth
                         while diffGroup > 0:
                             bldgGroupIndex += 1
-                            self.makeNewBuildingGroup(bldgGroupIndex, side)
+                            self.makeNewBuildingGroup(bldgGroupIndex, side, curve.getName())
                             print "adding group %s (%s)" % (bldgGroupIndex, diffGroup)
                             diffGroup -= maxGroupWidth
                         curGroupWidth = 0
                     print currT, curGroupWidth
 
-                        
 
+    def makeSideStreets(self, curves):
+        """ Each side in a sidestreet MUST be in 1 building group, otherwise the 2nd half
+        of a building group could be very far away. This would cause the stashing and
+        unstashing code to go off kilter.
+        """
+
+        direct.grid.fXyzSnap = 0
+        direct.grid.fHprSnap = 0
+        self.panel.fPlaneSnap.set(0)
+        bldgGroup = self.consolidateStreetBuildings()
+        bldgs = bldgGroup.getChildrenAsList()
+
+        # streetWidth puts buildings on the edge of the street, not the middle
+        currPoint = Point3(0)
+        bldgIndex = 0
+
+        # Populate buildings on both sides of the street
+        #sides = ['inner', 'outer','innersidest','outersidest']
+        sides = ['innersidest', 'outersidest']
+        maxGroupWidth = 50000
+        for side in sides:
+            print "Building street for %s side" % side
+            # Subdivide the curve into different groups.  
+            bldgGroupIndex = 0
+            curGroupWidth = 0
+
+            
+            for curve, curveType in curves[side]:
+                print "----------------- curve(%s,%s): %s --------------- " % (side,curve.getName(), curve)
+                #import pdb; pdb.set_trace()
+                currT = 0
+                endT = curve.getMaxT()
+
+                #RAU side streets still too long, lets try arbitrarily dividing it in half
+                #endT = endT / 2
+
+                print ("endT = %f" % endT)
+                #if (maxGroupWidth < endT):
+                #    self.notify.debug("changing endT from %f to %f" % (endT, maxGroupWidth))
+                #    endT = maxGroupWidth                    
+                
+
+                currGroupWidth = 0
+                self.makeNewBuildingGroup(bldgGroupIndex,side, curve.getName())
+
+                while currT < endT:
+                    if curveType == 'urban':
+                        bldg, bldgIndex = self.getBldg(bldgIndex, bldgs, forceDuplicate = True)
+                        curve.getPoint(currT, currPoint)
+
+                        if side == "inner" or side == "innersidest" :
+                            heading = 90
+                        else:
+                            heading = -90
+                        bldg.setPos(currPoint)
+                        bldgWidth = self.getBuildingWidth(bldg)
+
+                        curGroupWidth += bldgWidth
+                        # Adjust grid orientation based upon next point along curve
+                        currT, currPoint = self.findBldgEndPoint(bldgWidth, curve, currT, currPoint, rd = 0)
+                        bldg.lookAt(Point3(currPoint))
+                        bldg.setH(bldg, heading)
+
+                        # Shift building forward if it is on the out track, since we just turned it away from
+                        # the direction of the track
+                        if side == "outer" or side == "outersidest":
+                            bldg.setPos(currPoint)
+
+                        self.updateSelectedPose([bldg])
+                        self.adjustPropChildren(bldg)
+                        direct.reparent(bldg, fWrt = 1)
+                        print bldgIndex
+                    elif curveType == 'trees':
+                        curve.getPoint(currT, currPoint)
+                        # trees are spaced anywhere from 40-80 ft apart
+                        treeWidth = whrandom.randint(40,80)
+                        curGroupWidth += treeWidth
+                        # Adjust grid orientation based upon next point along curve
+                        currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
+
+                        # Add some trees
+                        tree = whrandom.choice(["prop_tree_small_ul",
+                                                "prop_tree_small_ur",
+                                                "prop_tree_large_ur",
+                                                "prop_tree_large_ul"])
+
+                        #use snow tree if necessary
+                        if (useSnowTree):
+                            tree = whrandom.choice(["prop_snow_tree_small_ul",
+                                                    "prop_snow_tree_small_ur",
+                                                    "prop_snow_tree_large_ur",
+                                                    "prop_snow_tree_large_ul"])
+                            
+
+                        self.addProp(tree)
+                        for selectedNode in direct.selected:
+                            # Move it
+                            selectedNode.setPos(currPoint)
+                            # Snap objects to grid and update DNA if necessary
+                            self.updateSelectedPose(direct.selected.getSelectedAsList())
+                    elif curveType == 'bridge':
+                        # Don't add any dna for the bridge sections, but add the length
+                        # of the bridge so we can increment our building groups correctly
+                        print "adding bridge (%s), curT = %s" % (side, currT)
+                        bridgeWidth = 1050
+                        curGroupWidth += bridgeWidth
+                        #currT, currPoint = self.findBldgEndPoint(bridgeWidth, curve, currT, currPoint, rd = 0)
+                        print "currT after adding bridge = %s" % currT
+                        # force move to next curve
+                        currT = endT + 1
+                    elif curveType == 'tunnel':
+                        # Don't add any dna for the tunnel sections, but add the length
+                        # of the bridge so we can increment our building groups correctly
+                        print "adding tunnel (%s), curT = %s" % (side, currT)
+                        tunnelWidth = 775
+                        curGroupWidth += tunnelWidth
+                        #currT, currPoint = self.findBldgEndPoint(tunnelWidth, curve, currT, currPoint, rd = 0)
+                        print "currT after adding tunnel = %s" % currT
+                        # force move to next curve
+                        currT = endT + 1
+                    elif curveType == 'barricade':
+                        print "adding barricade (%s) %s, curT = %d" % (side,curve.getName(),currT)
+                        barricadeWidth = curve.calcLength()
+                        print "barricade width = %f" % barricadeWidth
+
+                        simple =1
+                        if (simple):
+                            curGroupWidth += barricadeWidth
+                            # force move to next curve
+                            currT = endT + 1
+                        else:                                              
+                            #add a prop_tree to force it to be shown
+                            curve.getPoint(currT, currPoint)
+                            #trees are spaced anywhere from 40-80 ft apart
+                            #treeWidth = whrandom.randint(40,80)
+                            treeWidth = barricadeWidth
+                            curGroupWidth += treeWidth
+                            # Adjust grid orientation based upon next point along curve
+                            currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
+                        
+                            # Add some trees
+                            tree = whrandom.choice(["prop_snow_tree_small_ul",
+                                                "prop_snow_tree_small_ur",
+                                                "prop_snow_tree_large_ur",
+                                                "prop_snow_tree_large_ul"])
+                            self.addProp(tree)
+                            for selectedNode in direct.selected:
+                                # Move it
+                                selectedNode.setPos(currPoint)
+                                # Snap objects to grid and update DNA if necessary
+                                self.updateSelectedPose(direct.selected.getSelectedAsList())
+
+                #done with for loop, increment bldgGroupIndex
+                bldgGroupIndex += 1    
+ 
     def findBldgEndPoint(self, bldgWidth, curve, currT, currPoint,
                          startT = None, endT = None, tolerance = 0.1, rd = 0):
         if startT == None:
