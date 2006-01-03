@@ -22,9 +22,6 @@
 
 
 // ISSUES:
-  // size issues
-    // texture size must not exeeed the original frame buffer width
-    // or height due to the size of the original depth/stencil buffer
   // render to texure format
     // can be specified via the DXGraphicsStateGuardian8 member
     // _render_to_texture_d3d_format  default = D3DFMT_X8R8G8B8
@@ -32,6 +29,8 @@
   // should check texture creation with CheckDepthStencilMatch
   // support copy from texture to ram?
     // check D3DCAPS2_DYNAMICTEXTURES
+
+#define FL << "\n" << __FILE__ << " " << __LINE__ << "\n"
 
 TypeHandle wdxGraphicsBuffer8::_type_handle;
 
@@ -53,6 +52,7 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _z_stencil_buffer = NULL;
   _direct_3d_surface = NULL;
   _dx_texture_context8 = NULL;
+  _new_z_stencil_surface = NULL;
 
 // is this correct ???
   // Since the pbuffer never gets flipped, we get screenshots from the
@@ -67,6 +67,7 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsBuffer8::
 ~wdxGraphicsBuffer8() {
+  this -> close_buffer ( );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,6 +127,12 @@ begin_render_texture() {
         if (SUCCEEDED (hr)) {
           state = true;
         }
+        else {
+          dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+        }
+      }
+      else {
+        dxgsg8_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
       }
 
       // set render context
@@ -148,11 +155,23 @@ begin_render_texture() {
         if (direct_3d_texture) {
           hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
-            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface,
-              _z_stencil_buffer);
+            IDirect3DSurface8 *z_stencil_buffer;
+
+            if (this -> _new_z_stencil_surface) {
+              z_stencil_buffer = this -> _new_z_stencil_surface;
+            }
+            else {
+              z_stencil_buffer = _z_stencil_buffer;
+            }
+
+            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface, z_stencil_buffer);
             if (SUCCEEDED (hr)) {
 
+            } else {
+              dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
             }
+          } else {
+            dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
           }
         }
       }
@@ -186,6 +205,8 @@ end_render_texture() {
           _z_stencil_buffer);
         if (SUCCEEDED (hr)) {
           _back_buffer -> Release ( );
+        } else {
+          dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
         }
         _back_buffer = NULL;
       }
@@ -245,14 +266,26 @@ select_cube_map(int cube_map_index) {
           hr = direct_3d_cube_texture -> GetCubeMapSurface (
             (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
-            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface,
-              _z_stencil_buffer);
+            IDirect3DSurface8 *z_stencil_buffer;
+
+            if (this -> _new_z_stencil_surface) {
+              z_stencil_buffer = this -> _new_z_stencil_surface;
+            }
+            else {
+              z_stencil_buffer = _z_stencil_buffer;
+            }
+
+            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface, z_stencil_buffer);
             if (SUCCEEDED (hr)) {
 
+            } else {
+              dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
             }
+          } else {
+            dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
           }
         } else {
-          // error: invalid cube map face index
+          dxgsg8_cat.error ( ) << "Invalid Cube Map Face Index " << _cube_map_index FL;
         }
       }
     }
@@ -340,6 +373,12 @@ close_buffer() {
       dx_texture_context8 -> _d3d_volume_texture = NULL;
       dx_texture_context8 -> _d3d_cube_texture = NULL;
     }
+
+    // release new depth stencil buffer if one was created
+    if (this -> _new_z_stencil_surface) {
+      this -> _new_z_stencil_surface -> Release ( );
+      this -> _new_z_stencil_surface = NULL;
+    }
   }
 
   _cube_map_index = -1;
@@ -371,15 +410,75 @@ open_buffer() {
 
   Texture *tex = get_texture(tex_index);
 
-  // SET render to texture
+  // render to texture must be set
   tex->set_render_to_texture(true);
 
   TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
   if (tc != NULL) {
+    HRESULT hr;
+    IDirect3DSurface8 *_depth_stencil_surface;
+
     _dx_texture_context8 = DCAST (DXTextureContext8, tc);
 
-    _is_valid = true;
-    state = true;
+    // create a depth stencil buffer if needed
+    hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_depth_stencil_surface);
+    if (SUCCEEDED  (hr))
+    {
+      D3DSURFACE_DESC surface_description;
+
+      // get and copy the current depth stencil's parameters for the new buffer
+      hr = _depth_stencil_surface -> GetDesc (&surface_description);
+      if (SUCCEEDED  (hr)) {
+        UINT width;
+        UINT height;
+        D3DFORMAT format;
+        D3DMULTISAMPLE_TYPE multisample_type;
+//        DWORD multisample_quality;
+        BOOL discard;
+
+        width = tex -> get_x_size ( );
+        height = tex -> get_y_size ( );
+
+//        dxgsg8_cat.error ( ) << "-------------RTT SIZE " << "t width " << width << " t height " << height << "\n";
+
+        if (surface_description.Width < width || surface_description.Height < height) {
+          format = surface_description.Format;
+          multisample_type = surface_description.MultiSampleType;
+//          multisample_quality = surface_description.MultiSampleQuality;
+          discard = false;
+
+          hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
+            width, height, format, multisample_type, /* multisample_quality,
+            discard, */ &this -> _new_z_stencil_surface);
+          if (SUCCEEDED  (hr)) {
+
+//            dxgsg8_cat.error ( ) << "-------------CreatedDepthStencilSurface for RTT \n";
+
+            state = true;
+
+          } else {
+            dxgsg8_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+          }
+        }
+        else {
+          // no need to create a separate depth stencil buffer since
+          // the current depth stencil buffer size is big enough
+          state = true;
+        }
+      }
+      else {
+        dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+      }
+
+      _depth_stencil_surface -> Release ( );
+    }
+    else {
+      dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+    }
+
+    if (state) {
+      _is_valid = true;
+    }
   }
 
   return state;
