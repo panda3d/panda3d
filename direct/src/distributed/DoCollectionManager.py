@@ -308,7 +308,7 @@ class DoCollectionManager:
                         print "isInDoTables found " \
                             "%s in parentId:%s zoneId:%s"%(
                             doId, parentId, zoneId)
-            return inDoHierarchy or (do.doId in self.doId2do)
+            return inDoHierarchy or (doId in self.doId2do)
 
     def removeDOFromTables(self, do):
         assert self.notify.debugStateCall(self)
