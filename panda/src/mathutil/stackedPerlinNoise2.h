@@ -31,18 +31,32 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StackedPerlinNoise2 {
 PUBLISHED:
-  StackedPerlinNoise2(double sx, double sy, int num_levels = 3,
+  INLINE StackedPerlinNoise2();
+  StackedPerlinNoise2(double sx, double sy, int num_levels = 2,
                       double scale_factor = 4.0f, double amp_scale = 0.5f,
                       int table_size = 256, unsigned long seed = 0);
+  StackedPerlinNoise2(const StackedPerlinNoise2 &copy);
+  void operator = (const StackedPerlinNoise2 &copy);
+
+  void add_level(const PerlinNoise2 &level, double amp = 1.0);
+  void clear();
 
   INLINE double noise(double x, double y);
   INLINE float noise(const LVecBase2f &value);
   double noise(const LVecBase2d &value);
 
-private:
-  double _amp_scale;
+  INLINE double operator ()(double x, double y);
+  INLINE float operator ()(const LVecBase2f &value);
+  INLINE double operator ()(const LVecBase2d &value);
 
-  typedef pvector<PerlinNoise2> Noises;
+private:
+  class Noise {
+  public:
+    PerlinNoise2 _noise;
+    double _amp;
+  };
+
+  typedef pvector<Noise> Noises;
   Noises _noises;
 };
 

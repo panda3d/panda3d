@@ -19,21 +19,6 @@
 #include "perlinNoise2.h"
 #include "cmath.h"
 
-LVector2d PerlinNoise2::_grad_table[8] = {
-  // Four corners.
-  LVector2d(1, 1),
-  LVector2d(1, -1),
-  LVector2d(-1, 1),
-  LVector2d(-1, -1),
-
-  // Four edges.  Here we scale by 1.707 to make all the vectors equal
-  // length, and to make their lengths consistent with PerlinNoise3.
-  LVector2d(1.707, 0),
-  LVector2d(0, 1.707),
-  LVector2d(-1.707, 0),
-  LVector2d(0, -1.707),
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise2::Constructor
 //       Access: Published
@@ -77,22 +62,25 @@ noise(const LVecBase2d &value) {
   double y = vec._v.v._1;
 
   // Find unit square that contains point.
-  int X = cmod((int)cfloor(x), _table_size);
-  int Y = cmod((int)cfloor(y), _table_size);
+  double xf = cfloor(x);
+  double yf = cfloor(y);
+
+  int X = ((int)xf) & _table_size_mask;
+  int Y = ((int)yf) & _table_size_mask;
 
   // Find relative x,y of point in square.
-  x -= cfloor(x);
-  y -= cfloor(y);        
+  x -= xf;
+  y -= yf;        
 
   // Compute fade curves for each of x,y.
   double u = fade(x);
   double v = fade(y);
 
-  // Hash coordinates of the 4 square corners . . .
+  // Hash coordinates of the 4 square corners (A, B, A + 1, and B + 1)
   int A = _index[X] + Y;
   int B = _index[X + 1] + Y;
   
-  // . . . and add blended results from 8 corners of cube.
+  // and add blended results from 4 corners of square.
   double result =
     lerp(v, lerp(u, grad(_index[A], x, y), 
                  grad(_index[B], x - 1, y)), 

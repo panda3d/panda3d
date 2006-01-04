@@ -19,28 +19,6 @@
 #include "perlinNoise3.h"
 #include "cmath.h"
 
-LVector3d PerlinNoise3::_grad_table[16] = {
-  LVector3d(1, 1, 0),
-  LVector3d(-1, 1, 0),
-  LVector3d(1, -1, 0),
-  LVector3d(-1, -1, 0),
-
-  LVector3d(1, 0, 1),
-  LVector3d(-1, 0, 1),
-  LVector3d(1, 0, -1),
-  LVector3d(-1, 0, -1),
-
-  LVector3d(0, 1, 1),
-  LVector3d(0, -1, 1),
-  LVector3d(0, 1, -1),
-  LVector3d(0, -1, -1),
-
-  LVector3d(1, 1, 0),
-  LVector3d(0, -1, 1),
-  LVector3d(-1, 1, 0),
-  LVector3d(0, -1, -1),
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise3::Constructor
 //       Access: Published
@@ -90,21 +68,26 @@ noise(const LVecBase3d &value) {
   double z = vec._v.v._2;
 
   // Find unit cube that contains point.
-  int X = cmod((int)cfloor(x), _table_size);
-  int Y = cmod((int)cfloor(y), _table_size);
-  int Z = cmod((int)cfloor(z), _table_size);
+  double xf = cfloor(x);
+  double yf = cfloor(y);
+  double zf = cfloor(z);
+
+  int X = ((int)xf) & _table_size_mask;
+  int Y = ((int)yf) & _table_size_mask;
+  int Z = ((int)zf) & _table_size_mask;
 
   // Find relative x,y,z of point in cube.
-  x -= cfloor(x);
-  y -= cfloor(y);        
-  z -= cfloor(z);
+  x -= xf;
+  y -= yf;        
+  z -= zf;
 
   // Compute fade curves for each of x,y,z.
   double u = fade(x);
   double v = fade(y);
   double w = fade(z);
 
-  // Hash coordinates of the 8 cube corners . . .
+  // Hash coordinates of the 8 cube corners.  The 8 corners correspond
+  // to AA, BA, AB, BB, AA + 1, BA + 1, AB + 1, and BB + 1.
   int A = _index[X] + Y;
   int AA = _index[A] + Z;
   int AB = _index[A + 1] + Z;
@@ -112,7 +95,7 @@ noise(const LVecBase3d &value) {
   int BA = _index[B] + Z;
   int BB = _index[B + 1] + Z;     
   
-  // . . . and add blended results from 8 corners of cube.
+  // and add blended results from 8 corners of cube.
   double result =
     lerp(w, lerp(v, lerp(u, grad(_index[AA], x, y, z), 
                          grad(_index[BA], x - 1, y, z)), 

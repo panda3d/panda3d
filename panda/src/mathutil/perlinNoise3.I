@@ -18,6 +18,49 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::Default Constructor
+//       Access: Published
+//  Description: The default constructor makes an invalid PerlinNoise3
+//               object.  You must at least pass in a scale of each
+//               dimension.  
+//
+//               This constructor exists only so you can create a
+//               temporary placeholder PerlinNoise3 object, and later
+//               fill it in with the assignment operator.
+////////////////////////////////////////////////////////////////////
+INLINE PerlinNoise3::
+PerlinNoise3() :
+  PerlinNoise(0, 1)
+{
+  _input_xform.fill(0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::Copy Constructor
+//       Access: Published
+//  Description: Makes an exact copy of the existing PerlinNoise
+//               object, including its random seed.
+////////////////////////////////////////////////////////////////////
+INLINE PerlinNoise3::
+PerlinNoise3(const PerlinNoise3 &copy) :
+  PerlinNoise(copy),
+  _input_xform(copy._input_xform)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::Copy Assignment Operator
+//       Access: Published
+//  Description: Makes an exact copy of the existing PerlinNoise
+//               object, including its random seed.
+////////////////////////////////////////////////////////////////////
+INLINE void PerlinNoise3::
+operator = (const PerlinNoise3 &copy) {
+  PerlinNoise::operator = (copy);
+  _input_xform = copy._input_xform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise3::noise
 //       Access: Published
 //  Description: Returns the noise function of the three inputs.
@@ -38,6 +81,36 @@ noise(const LVecBase3f &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::operator ()
+//       Access: Published
+//  Description: Returns the noise function of the three inputs.
+////////////////////////////////////////////////////////////////////
+INLINE double PerlinNoise3::
+operator ()(double x, double y, double z) {
+  return noise(x, y, z);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::noise
+//       Access: Published
+//  Description: Returns the noise function of the three inputs.
+////////////////////////////////////////////////////////////////////
+INLINE float PerlinNoise3::
+operator ()(const LVecBase3f &value) {
+  return noise(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::noise
+//       Access: Published
+//  Description: Returns the noise function of the three inputs.
+////////////////////////////////////////////////////////////////////
+INLINE double PerlinNoise3::
+operator ()(const LVecBase3d &value) {
+  return noise(value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise3::grad
 //       Access: Private, Static
 //  Description: Returns the dot product of a random gradient vector
@@ -46,17 +119,38 @@ noise(const LVecBase3f &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise3::
 grad(int hash, double x, double y, double z) {
-  // Convert lo 4 bits of hash code into 12 gradient directions.
-
-  int h = hash & 15;
-  return _grad_table[h].dot(LVector3d(x, y, z));
-
+  // Convert low 4 bits of hash code into 12 gradient directions.
   /*
-    This is Perlin's reference code, but the table lookup above is
-    slightly faster (no jump instructions) and produces exactly the
-    same results.
+    This is Perlin's reference code, but the switch statement below is
+    slightly faster and produces exactly the same results.
+  int h = hash & 15;
   double u = (h < 8) ? x : y;
   double v = (h < 4) ? y : ((h == 12 || h == 14) ? x : z);
   return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
   */
+
+  switch (hash & 15) {
+  case 0: return x + y;
+  case 1: return -x + y;
+  case 2: return x - y;
+  case 3: return -x - y;
+
+  case 4: return x + z;
+  case 5: return -x + z;
+  case 6: return x - z;
+  case 7: return -x - z;
+
+  case 8: return y + z;
+  case 9: return -y + z;
+  case 10: return y - z;
+  case 11: return -y - z;
+
+  case 12: return x + y;
+  case 13: return -y + z;
+  case 14: return -x + y;
+  case 15: return -y - z;
+  }
+
+  nassertr(false, 0);
+  return 0;
 }

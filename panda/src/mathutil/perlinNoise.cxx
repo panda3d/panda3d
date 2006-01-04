@@ -33,9 +33,21 @@ bool PerlinNoise::_got_first_seed = false;
 PerlinNoise::
 PerlinNoise(int table_size, unsigned long seed) :
   _table_size(table_size),
+  _table_size_mask(table_size - 1),
   _mersenne(seed != 0 ? seed : get_next_seed())
 {
-  // The _index table is just a randomly shuffled index.
+  // It is necessary for _table_size to be a power of 2.
+#ifndef NDEBUG
+  if (_table_size != 0) {
+    bool table_size_power_2 = ((_table_size ^ _table_size_mask) == (_table_size + _table_size_mask));
+    nassertd(table_size_power_2) {
+      _table_size = 0;
+      _table_size_mask = 0;
+    }
+  }
+#endif  // NDEBUG
+
+  // The _index table is just a randomly shuffled index
   // table.
   _index.reserve(_table_size * 2);
   int i;
@@ -55,4 +67,33 @@ PerlinNoise(int table_size, unsigned long seed) :
   for (i = 0; i < _table_size; ++i) {
     _index.push_back(_index[i]);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise::Copy Constructor
+//       Access: Protected
+//  Description: Makes an exact copy of the existing PerlinNoise
+//               object, including its random seed.
+////////////////////////////////////////////////////////////////////
+PerlinNoise::
+PerlinNoise(const PerlinNoise &copy) :
+  _table_size(copy._table_size),
+  _table_size_mask(copy._table_size_mask),
+  _mersenne(copy._mersenne),
+  _index(copy._index)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise::Copy Assignment Operator
+//       Access: Protected
+//  Description: Makes an exact copy of the existing PerlinNoise
+//               object, including its random seed.
+////////////////////////////////////////////////////////////////////
+void PerlinNoise::
+operator = (const PerlinNoise &copy) {
+  _table_size = copy._table_size;
+  _table_size_mask = copy._table_size_mask;
+  _mersenne = copy._mersenne;
+  _index = copy._index;
 }

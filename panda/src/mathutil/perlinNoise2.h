@@ -31,21 +31,26 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PerlinNoise2 : public PerlinNoise {
 PUBLISHED:
+  INLINE PerlinNoise2();
   PerlinNoise2(double sx, double sy,
 	       int table_size = 256,
 	       unsigned long seed = 0);
+  INLINE PerlinNoise2(const PerlinNoise2 &copy);
+  INLINE void operator = (const PerlinNoise2 &copy);
 
   INLINE double noise(double x, double y);
   INLINE float noise(const LVecBase2f &value);
   double noise(const LVecBase2d &value);
+
+  INLINE double operator ()(double x, double y);
+  INLINE float operator ()(const LVecBase2f &value);
+  INLINE double operator ()(const LVecBase2d &value);
   
 private:
   INLINE static double grad(int hash, double x, double y);
 
 private:
   LMatrix3d _input_xform;
-
-  static LVector2d _grad_table[8];
 };
 
 #include "perlinNoise2.I"

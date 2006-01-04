@@ -34,6 +34,8 @@
 class EXPCL_PANDA PerlinNoise {
 protected:
   PerlinNoise(int table_size, unsigned long seed);
+  PerlinNoise(const PerlinNoise &copy);
+  void operator = (const PerlinNoise &copy);
 
   INLINE static double fade(double t);
   INLINE static double lerp(double t, double a, double b);
@@ -49,6 +51,7 @@ PUBLISHED:
 
 protected:
   int _table_size;
+  int _table_size_mask;
 
   Mersenne _mersenne;
   static Mersenne _next_seed;
