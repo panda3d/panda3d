@@ -3114,12 +3114,12 @@ do_issue_texture() {
       } else {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-  DWORD transform_flags = texcoord_dimensions;
-  if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
-    // If we have a projected texture matrix, we also need to
-    // set D3DTTFF_COUNT4.
-    transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
-  }
+        DWORD transform_flags = texcoord_dimensions;
+        if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
+          // If we have a projected texture matrix, we also need to
+          // set D3DTTFF_COUNT4.
+          transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
+        }
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
@@ -3137,7 +3137,117 @@ do_issue_texture() {
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < num_old_stages; i++) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    _d3d_device->SetTexture(i, NULL);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::do_issue_blending
+//       Access: Protected, Virtual
+//  Description: Called after any of the things that might change
+//               blending state have changed, this function is
+//               responsible for setting the appropriate color
+//               blending mode based on the current properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+do_issue_blending() {
+  // Handle the color_write attrib.  If color_write is off, then
+  // all the other blending-related stuff doesn't matter.  If the
+  // device doesn't support color-write, we use blending tricks
+  // to effectively disable color write.
+  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
+    if (_target._color_write != _state._color_write) {
+      if (_screen->_can_direct_disable_color_writes) {
+        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
+      } else {
+        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+        _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+      }
+    }
+    return;
+  } else {
+    if (_target._color_write != _state._color_write) {
+      if (_screen->_can_direct_disable_color_writes) {
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
+      }
+    }
+  }
+
+  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
+  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
+  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
+
+  // Is there a color blend set?
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
+    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+    switch (color_blend_mode) {
+    case ColorBlendAttrib::M_add:
+      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+      break;
+
+    case ColorBlendAttrib::M_subtract:
+      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
+      break;
+
+    case ColorBlendAttrib::M_inv_subtract:
+      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
+      break;
+
+    case ColorBlendAttrib::M_min:
+      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MIN);
+      break;
+
+    case ColorBlendAttrib::M_max:
+      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX);
+      break;
+    }
+
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND,
+        get_blend_func(color_blend->get_operand_a()));
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND,
+        get_blend_func(color_blend->get_operand_b()));
+    return;
+  }
+
+  // No color blend; is there a transparency set?
+  switch (transparency_mode) {
+  case TransparencyAttrib::M_none:
+  case TransparencyAttrib::M_binary:
+    break;
+
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_multisample:
+  case TransparencyAttrib::M_multisample_mask:
+  case TransparencyAttrib::M_dual:
+    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+    _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+    _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    return;
+
+  default:
+    dxgsg9_cat.error()
+      << "invalid transparency mode " << (int)transparency_mode << endl;
+    break;
+  }
+
+  // Nothing's set, so disable blending.
+  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::disable_texturing
+//       Access: Protected
+//  Description: Turns off any texturing that is currently enabled.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+disable_texturing() {
+  _target._texture = DCAST(TextureAttrib, TextureAttrib::make_off());
+  do_issue_texture();
+  _state._texture = _target._texture;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3237,104 +3347,6 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_blend_mode
-//       Access: Protected, Virtual
-//  Description: Called after any of the things that might change
-//               blending state have changed, this function is
-//               responsible for setting the appropriate color
-//               blending mode based on the current properties.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-do_issue_blending() {
-
-  // Handle the color_write attrib.  If color_write is off, then
-  // all the other blending-related stuff doesn't matter.  If the
-  // device doesn't support color-write, we use blending tricks
-  // to effectively disable color write.
-  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
-    if (_target._color_write != _state._color_write) {
-      if (_screen->_can_direct_disable_color_writes) {
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
-      } else {
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-  _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
-  _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-      }
-    }
-    return;
-  } else {
-    if (_target._color_write != _state._color_write) {
-      if (_screen->_can_direct_disable_color_writes) {
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
-      }
-    }
-  }
-
-  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
-  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
-  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
-
-  // Is there a color blend set?
-  if (color_blend_mode != ColorBlendAttrib::M_none) {
-    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-    switch (color_blend_mode) {
-    case ColorBlendAttrib::M_add:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-      break;
-
-    case ColorBlendAttrib::M_subtract:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
-      break;
-
-    case ColorBlendAttrib::M_inv_subtract:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
-      break;
-
-    case ColorBlendAttrib::M_min:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MIN);
-      break;
-
-    case ColorBlendAttrib::M_max:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX);
-      break;
-    }
-
-    _d3d_device->SetRenderState(D3DRS_SRCBLEND,
-        get_blend_func(color_blend->get_operand_a()));
-    _d3d_device->SetRenderState(D3DRS_DESTBLEND,
-        get_blend_func(color_blend->get_operand_b()));
-    return;
-  }
-
-  // No color blend; is there a transparency set?
-  switch (transparency_mode) {
-  case TransparencyAttrib::M_none:
-  case TransparencyAttrib::M_binary:
-    break;
-
-  case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_multisample:
-  case TransparencyAttrib::M_multisample_mask:
-  case TransparencyAttrib::M_dual:
-    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-    _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-    _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-    return;
-
-  default:
-    dxgsg9_cat.error()
-      << "invalid transparency mode " << (int)transparency_mode << endl;
-    break;
-  }
-
-  // Nothing's set, so disable blending.
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::free_nondx_resources
 //       Access: Public
 //  Description: Frees some memory that was explicitly allocated
@@ -3359,14 +3371,18 @@ free_d3d_device() {
 
   _dx_is_ready = false;
 
-  if (_d3d_device != NULL)
-    for(int i = 0;i<D3D_MAXTEXTURESTAGES;i++)
-      _d3d_device->SetTexture(i, NULL);  // d3d should release this stuff internally anyway, but whatever
+  if (_d3d_device != NULL) {
+    for(int i = 0; i < D3D_MAXTEXTURESTAGES; i++) {
+      // d3d should release this stuff internally anyway, but whatever
+      _d3d_device->SetTexture(i, NULL); 
+    }
+  }
 
   release_all();
 
-  if (_d3d_device != NULL)
+  if (_d3d_device != NULL) {
     RELEASE(_d3d_device, dxgsg9, "d3dDevice", RELEASE_DOWN_TO_ZERO);
+  }
 
   free_nondx_resources();
 

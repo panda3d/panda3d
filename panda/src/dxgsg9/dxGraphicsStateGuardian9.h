@@ -137,6 +137,8 @@ protected:
   void do_issue_texture();
   void do_issue_blending();
 
+  void disable_texturing();
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
