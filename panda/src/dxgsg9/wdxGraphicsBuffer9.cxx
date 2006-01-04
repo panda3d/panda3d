@@ -158,6 +158,10 @@ DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::begin_render_texture\n"; DBG_
 
         direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
         if (direct_3d_texture) {
+
+hr = dxgsg -> _d3d_device -> SetTexture (0, NULL);
+hr = dxgsg -> _d3d_device -> SetTexture (1, NULL);
+
           hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
             hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _direct_3d_surface);
