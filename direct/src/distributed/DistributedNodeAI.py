@@ -122,6 +122,11 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def setXYZH(self, x, y, z, h):
         self.setPos(x, y, z)
         self.setH(h)
+    def getXYZH(self):
+        pos = self.getPos()
+        h = self.getH()
+        return pos[0],pos[1],pos[2],h
+    
     def d_setXYZH(self, x, y, z, h):
         self.sendUpdate("setXYZH", [x, y, z, h])
 

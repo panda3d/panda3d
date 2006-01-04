@@ -107,7 +107,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
             pos = av.getPos(self)
             zoneId = self.getZoneFromXYZ(pos)
         else:
-            # zone already calcualte, position of object might not
+            # zone already calculated, position of object might not
             # give the correct zone
             pos = None
             zoneId = useZoneId

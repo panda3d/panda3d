@@ -28,7 +28,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         DistributedNode.DistributedNode.__init__(self, cr)
         # Let the derived classes instantiate the NodePath
         self.visAvatar = None
-        self.visContext = None
+        self.gridVisContext = None
         # Do we have grid lines visualized?
         if __debug__:
             self.haveGridLines = 0
@@ -73,14 +73,14 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         self.stopProcessVisibility()
         self.visAvatar = avatar
         self.visZone = None
-        self.visContext = self.cr.addInterest(self.getDoId(), 0, self.uniqueName("visibility"))
+        self.gridVisContext = self.cr.addInterest(self.getDoId(), 0, self.uniqueName("visibility"))
         taskMgr.add(self.processVisibility, self.taskName("processVisibility"))
 
     def stopProcessVisibility(self,clearAll=False):
         taskMgr.remove(self.taskName("processVisibility"))
-        if self.visContext is not None:
-            self.cr.removeInterest(self.visContext)
-            self.visContext = None
+        if self.gridVisContext is not None:
+            self.cr.removeInterest(self.gridVisContext)
+            self.gridVisContext = None
         self.visAvatar = None
         self.visZone = None
 
@@ -102,10 +102,10 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
             assert self.notify.debug("processVisibility: %s: not on the grid" % (self.doId))
             # If we are viewingRadius away from this entire grid,
             # remove interest in any current visZone we may have
-            if self.visContext:
-                self.cr.removeInterest(self.visContext)
+            if self.gridVisContext:
+                self.cr.removeInterest(self.gridVisContext)
                 self.visZone = None
-                self.visContext = None
+                self.gridVisContext = None
             return Task.cont
         # Compute which zone we are in
         zoneId = int(self.startingZone + ((row * self.gridSize) + col))
@@ -117,13 +117,13 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         else:
             assert self.notify.debug("processVisibility: %s: new interest" % (self.doId))
             self.visZone = zoneId
-            if not self.visContext:
-                self.visContext = self.cr.addInterest(self.getDoId(), self.visZone,
+            if not self.gridVisContext:
+                self.gridVisContext = self.cr.addInterest(self.getDoId(), self.visZone,
                                                       self.uniqueName("visibility"))
             else:
                 assert self.notify.debug("processVisibility: %s: altering interest to zoneId: %s" %
                                          (self.doId, zoneId))
-                self.cr.alterInterest(self.visContext, self.getDoId(), self.visZone)
+                self.cr.alterInterest(self.gridVisContext, self.getDoId(), self.visZone)
                 # If the visAvatar is parented to this grid, also do a setLocation
                 parentId = self.visAvatar.parentId
                 oldZoneId = self.visAvatar.zoneId

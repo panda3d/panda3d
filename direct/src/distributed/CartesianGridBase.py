@@ -3,13 +3,18 @@
 
 class CartesianGridBase:
     def isValidZone(self, zoneId):
-        if self.style == "Cartesian":
+        def checkBounds(self=self,zoneId=zoneId):
             if ((zoneId < self.startingZone) or
                 (zoneId > self.startingZone + self.gridSize * self.gridSize - 1)):
                 return 0
             return 1
+        if self.style == "Cartesian":
+            return checkBounds()
         elif self.style == "CartesianStated":
-            return 1
+            if zoneId >= 0 and zoneId < self.startingZone:
+                return 1
+            else:
+                return checkBounds()
         else:
             return 0
     
