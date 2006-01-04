@@ -66,8 +66,10 @@
 
 
 #define DEBUG_LRU false
-#define DEFAULT_ENABLE_LRU true
-#define DEFAULT_ENABLE_DX_MANAGED false
+
+
+#define DBG_S if (false) {
+#define DBG_E }
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -529,6 +531,8 @@ do_clear(const RenderBuffer &buffer) {
   DWORD main_flags = 0;
   DWORD aux_flags = 0;
 
+DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
+
   //set appropriate flags
   if (buffer_type & RenderBuffer::T_back) {
     main_flags |=  D3DCLEAR_TARGET;
@@ -545,6 +549,9 @@ do_clear(const RenderBuffer &buffer) {
   }
 
   if ((main_flags | aux_flags) != 0) {
+
+DBG_S dxgsg9_cat.error ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
+
     HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, _d3dcolor_clear_value,
                                     _depth_clear_value, (DWORD)_stencil_clear_value);
     if (FAILED(hr) && main_flags == D3DCLEAR_TARGET && aux_flags != 0) {
@@ -593,6 +600,9 @@ do_clear(const RenderBuffer &buffer) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 prepare_display_region() {
+
+// DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
+
   if (_current_display_region == (DisplayRegion*)0L) {
     dxgsg9_cat.error()
       << "Invalid NULL display region in prepare_display_region()\n";
@@ -600,8 +610,12 @@ prepare_display_region() {
   } else if (_current_display_region != _actual_display_region) {
     _actual_display_region = _current_display_region;
 
+// DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
+
     int l, u, w, h;
     _actual_display_region->get_region_pixels_i(l, u, w, h);
+
+DBG_S dxgsg9_cat.error ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 
     // Create the viewport
     D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
@@ -701,33 +715,13 @@ prepare_lens() {
 bool DXGraphicsStateGuardian9::
 begin_frame() {
 
+DBG_S dxgsg9_cat.error ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
+
+  GraphicsStateGuardian::begin_frame();
+
   if (_lru)
   {
     _lru -> begin_frame ( );
-  }
-
-  return GraphicsStateGuardian::begin_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::begin_scene
-//       Access: Public, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the beginning of drawing commands for a "scene"
-//               (usually a particular DisplayRegion) within a frame.
-//               All 3-D drawing commands, except the clear operation,
-//               must be enclosed within begin_scene() .. end_scene().
-//
-//               The return value is true if successful (in which case
-//               the scene will be drawn and end_scene() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_scene() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian9::
-begin_scene() {
-  if (!GraphicsStateGuardian::begin_scene()) {
-    return false;
   }
 
   HRESULT hr = _d3d_device->BeginScene();
@@ -754,6 +748,54 @@ begin_scene() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::begin_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the beginning of drawing commands for a "scene"
+//               (usually a particular DisplayRegion) within a frame.
+//               All 3-D drawing commands, except the clear operation,
+//               must be enclosed within begin_scene() .. end_scene().
+//
+//               The return value is true if successful (in which case
+//               the scene will be drawn and end_scene() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_scene() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+begin_scene() {
+  if (!GraphicsStateGuardian::begin_scene()) {
+    return false;
+  }
+
+DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
+
+/*
+  HRESULT hr = _d3d_device->BeginScene();
+
+  if (FAILED(hr)) {
+    if (hr == D3DERR_DEVICELOST) {
+      if (dxgsg9_cat.is_debug()) {
+        dxgsg9_cat.debug()
+          << "BeginScene returns D3DERR_DEVICELOST" << endl;
+      }
+
+      check_cooperative_level();
+
+    } else {
+      dxgsg9_cat.error()
+        << "BeginScene failed, unhandled error hr == "
+        << D3DERRORSTRING(hr) << endl;
+      throw_event("panda3d-render-error");
+    }
+    return false;
+  }
+*/
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::end_scene
 //       Access: Public, Virtual
 //  Description: Called between begin_frame() and end_frame() to mark
@@ -764,6 +806,10 @@ begin_scene() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 end_scene() {
+
+DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
+
+/*
   HRESULT hr = _d3d_device->EndScene();
 
   if (FAILED(hr)) {
@@ -781,6 +827,8 @@ end_scene() {
     }
     return;
   }
+*/
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -792,6 +840,26 @@ end_scene() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 end_frame() {
+
+DBG_S dxgsg9_cat.error ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
+
+  HRESULT hr = _d3d_device->EndScene();
+
+  if (FAILED(hr)) {
+    if (hr == D3DERR_DEVICELOST) {
+      if (dxgsg9_cat.is_debug()) {
+        dxgsg9_cat.debug()
+          << "EndScene returns DeviceLost\n";
+      }
+      check_cooperative_level();
+
+    } else {
+      dxgsg9_cat.error()
+        << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
+      throw_event("panda3d-render-error");
+    }
+    return;
+  }
 
   if (_lru)
   {
@@ -3905,6 +3973,9 @@ show_frame() {
   if (_d3d_device == NULL) {
     return;
   }
+
+DBG_S dxgsg9_cat.error ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"; DBG_E
+
 
   HRESULT hr;
 
