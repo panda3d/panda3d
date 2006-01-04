@@ -297,6 +297,19 @@ class DoCollectionManager:
             and location != (0xffffffff, 0xffffffff)
             and location != (0, 0))
 
+    if __debug__:
+        def isInDoTables(self, doId):
+            assert self.notify.debugStateCall(self)
+            inDoHierarchy = False
+            for parentId, parentZoneDict in self.__doHierarchy.values():
+                for zoneId, zoneDoSet in parentZoneDict.values():
+                    if doId in zoneDoSet:
+                        inDoHierarchy = True
+                        print "isInDoTables found " \
+                            "%s in parentId:%s zoneId:%s"%(
+                            doId, parentId, zoneId)
+            return inDoHierarchy or (do.doId in self.doId2do)
+
     def removeDOFromTables(self, do):
         assert self.notify.debugStateCall(self)
         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
