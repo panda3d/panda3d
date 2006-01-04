@@ -2021,7 +2021,14 @@ reset() {
 
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
+  _supports_texture_constant_color = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_PERSTAGECONSTANT) != 0);
   _supports_texture_dot3 = true;
+
+  if (_supports_texture_constant_color) {
+    _constant_color_operand = D3DTA_CONSTANT;
+  } else {
+    _constant_color_operand = D3DTA_TFACTOR;
+  }
 
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
 
@@ -3682,7 +3689,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_LERP);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
       _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, _constant_color_operand);
 
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
       _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
@@ -3771,15 +3778,7 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   if (stage->uses_color()) {
     // Set up the constant color for this stage.
 
-    // Actually, DX8 doesn't support a per-stage constant color, but
-    // it does support one TEXTUREFACTOR color for the whole pipeline.
-    // This does mean you can't have two different blends in effect
-    // with different colors on the same object.  However, DX9 does
-    // support a per-stage constant color with the D3DTA_CONSTANT
-    // argument--so we should implement that when this code gets
-    // ported to DX9.
-
-    D3DCOLOR texture_factor;
+    D3DCOLOR constant_color;
     if (stage->involves_color_scale() && _color_scale_enabled) {
       Colorf color = stage->get_color();
       color.set(color[0] * _current_color_scale[0],
@@ -3787,11 +3786,18 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
                 color[2] * _current_color_scale[2],
                 color[3] * _current_color_scale[3]);
       _texture_involves_color_scale = true;
-      texture_factor = Colorf_to_D3DCOLOR(color);
+      constant_color = Colorf_to_D3DCOLOR(color);
     } else {
-      texture_factor = Colorf_to_D3DCOLOR(stage->get_color());
+      constant_color = Colorf_to_D3DCOLOR(stage->get_color());
     }
-    _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, texture_factor);
+    if (_supports_texture_constant_color) {
+      _d3d_device->SetTextureStageState(i, D3DTSS_CONSTANT, constant_color);
+    } else {
+      // This device doesn't supoprt a per-stage constant color, so we
+      // have to fall back to a single constant color for the overall
+      // texture pipeline.
+      _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, constant_color);
+    }
   }
 }
 
@@ -4172,14 +4178,14 @@ get_texture_operation(TextureStage::CombineMode mode, int scale) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::get_texture_argument
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Returns the D3DTA value corresponding to the
 //               indicated TextureStage::CombineSource and
 //               TextureStage::CombineOperand enumerated types.
 ////////////////////////////////////////////////////////////////////
 DWORD DXGraphicsStateGuardian9::
 get_texture_argument(TextureStage::CombineSource source,
-                     TextureStage::CombineOperand operand) {
+                     TextureStage::CombineOperand operand) const {
   switch (source) {
   case TextureStage::CS_undefined:
   case TextureStage::CS_texture:
@@ -4187,7 +4193,7 @@ get_texture_argument(TextureStage::CombineSource source,
 
   case TextureStage::CS_constant:
   case TextureStage::CS_constant_color_scale:
-    return D3DTA_TFACTOR | get_texture_argument_modifier(operand);
+    return _constant_color_operand | get_texture_argument_modifier(operand);
 
   case TextureStage::CS_primary_color:
     return D3DTA_DIFFUSE | get_texture_argument_modifier(operand);

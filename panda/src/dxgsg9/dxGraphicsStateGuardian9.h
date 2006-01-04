@@ -181,8 +181,8 @@ protected:
   static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type);
   static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
   static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
-  static DWORD get_texture_argument(TextureStage::CombineSource source,
-                                    TextureStage::CombineOperand operand);
+  DWORD get_texture_argument(TextureStage::CombineSource source,
+			     TextureStage::CombineOperand operand) const;
   static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
 
   void draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
@@ -242,6 +242,8 @@ protected:
 
   bool _overlay_windows_supported;
   bool _tex_stats_retrieval_impossible;
+  bool _supports_texture_constant_color;
+  DWORD _constant_color_operand;
 
   static D3DMATRIX _d3d_ident_mat;
 
