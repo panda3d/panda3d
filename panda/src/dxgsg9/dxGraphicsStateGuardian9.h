@@ -256,6 +256,8 @@ protected:
 
   Lru *_lru;
 
+  DWORD _last_fvf;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

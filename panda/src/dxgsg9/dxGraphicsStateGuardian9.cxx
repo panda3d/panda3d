@@ -133,6 +133,7 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
   _enable_lru = dx_lru_management;
 
   _lru = 0;
+  _last_fvf = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,15 +383,21 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
   }
 
-//  HRESULT hr = _d3d_device->SetVertexShader(dvbc->_fvf);
-  HRESULT hr = _d3d_device->SetFVF(dvbc->_fvf);
-#ifndef NDEBUG
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "SetVertexShader(0x" << (void*)dvbc->_fvf
-      << ") failed" << D3DERRORSTRING(hr);
+  if (dvbc->_fvf != _last_fvf) {
+    HRESULT hr = _d3d_device->SetFVF(dvbc->_fvf);
+  #ifndef NDEBUG
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "SetVertexShader(0x" << (void*)dvbc->_fvf
+        << ") failed" << D3DERRORSTRING(hr);
+    }
+  #endif
+    _last_fvf = dvbc->_fvf;
   }
-#endif
+  else
+  {
+//    dxgsg9_cat.error() << "EQUAL FVF\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2259,6 +2266,8 @@ reset() {
   // this is a new DX8 state that lets you do additional operations other than ADD (e.g. subtract/max/min)
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
   _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+
+  _last_fvf = 0;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 }
