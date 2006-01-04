@@ -254,7 +254,10 @@ class AsyncRequest(DirectObject):
     def _doCreateObject(self, name, className, values, doId):
         assert self.notify.debugCall()
         assert not self.__deleted
+        isInDoId2do = doId in self.air.doId2do
         distObj = self.air.generateGlobalObject(doId, className, values)
+        if not isInDoId2do:
+            self.air.doId2do.pop(doId, None)
         self._checkCompletion(name, None, distObj)
 
     def finish(self):
