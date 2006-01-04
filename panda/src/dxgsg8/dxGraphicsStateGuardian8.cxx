@@ -217,7 +217,9 @@ apply_texture(int i, TextureContext *tc) {
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
 
-  _d3d_device->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
+  if (aniso_degree >= 1) {
+    _d3d_device->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
+  }
 
   D3DTEXTUREFILTERTYPE new_mag_filter;
   if (aniso_degree <= 1) {
