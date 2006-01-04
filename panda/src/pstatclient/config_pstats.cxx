@@ -31,7 +31,7 @@ ConfigVariableString pstats_name
 ("pstats-name", "Panda Stats");
 
 ConfigVariableDouble pstats_max_rate
-("pstats-max-rate", 30.0);
+("pstats-max-rate", 1000.0);
 
 ConfigVariableBool pstats_threaded_write
 ("pstats-threaded-write", false);
