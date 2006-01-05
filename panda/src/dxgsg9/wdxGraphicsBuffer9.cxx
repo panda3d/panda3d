@@ -158,10 +158,11 @@ DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::begin_render_texture\n"; DBG_
 
         direct_3d_texture = dx_texture_context9 -> _d3d_2d_texture;
         if (direct_3d_texture) {
-	  // Make sure texturing is fully disabled (and all of our
-	  // textures are therefore unbound in the GSG) before we try
-	  // to render to this texture.
-	  dxgsg->disable_texturing();
+
+          // Make sure texturing is fully disabled (and all of our
+          // textures are therefore unbound in the GSG) before we try
+          // to render to this texture.
+          dxgsg->disable_texturing();
 
           hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
@@ -286,10 +287,16 @@ select_cube_map(int cube_map_index) {
 
       direct_3d_cube_texture = dx_texture_context9 -> _d3d_cube_texture;
       if (direct_3d_cube_texture) {
-          if (_cube_map_index >= 0 && _cube_map_index < 6) {
+        if (_cube_map_index >= 0 && _cube_map_index < 6) {
           hr = direct_3d_cube_texture -> GetCubeMapSurface (
             (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
           if (SUCCEEDED (hr)) {
+
+            // Make sure texturing is fully disabled (and all of our
+            // textures are therefore unbound in the GSG) before we try
+            // to render to this texture.
+            dxgsg->disable_texturing();
+
             hr = dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, _direct_3d_surface);
             if (SUCCEEDED (hr)) {
               if (this -> _new_z_stencil_surface) {
