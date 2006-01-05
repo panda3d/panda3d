@@ -1987,7 +1987,7 @@ bool texture_page_out_function (LruPage *lru_page)
 void DXGraphicsStateGuardian9::reset_render_states (void)
 {
   memset (_texture_render_states_array, 0, sizeof (TextureRenderStates) * MAXIMUM_TEXTURES);
-  memset (_texture_stage_states_array, 0, sizeof (TextureStageStates) * MAXIMUM_TEXTURE_STAGES);
+  memset (_texture_stage_states_array, 0, sizeof (TextureStageStates) * D3D_MAXTEXTURESTAGES);
 
   _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
   _normalize_normals = false;
@@ -3422,7 +3422,7 @@ free_d3d_device() {
   if (_d3d_device != NULL) {
     for(int i = 0; i < D3D_MAXTEXTURESTAGES; i++) {
       // d3d should release this stuff internally anyway, but whatever
-      _d3d_device->SetTexture(i, NULL); 
+      _d3d_device->SetTexture(i, NULL);
     }
   }
 
