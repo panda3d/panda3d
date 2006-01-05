@@ -521,8 +521,7 @@ void Lru::access_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 //     Function: Lru::set_maximum_frame_bandwidth_utilization
 //       Access: Public
-//  Description: This must be called before accessing or using a
-//               page since it pages in the page if it is paged out.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Lru::set_maximum_frame_bandwidth_utilization
   (float maximum_frame_bandwidth_utilization)
@@ -568,8 +567,7 @@ void Lru::update_page_priorities (void)
 
     this->remove_page(lru_page);
 
-    priority
-    = (( int ) lru_page->_m.priority + lru_page->_m.priority_change);
+    priority = (( int ) lru_page->_m.priority + lru_page->_m.priority_change);
     if(priority < 0) {
       priority = 0;
     }
@@ -577,7 +575,7 @@ void Lru::update_page_priorities (void)
       priority = LPP_TotalPriorities - 1;
     }
 
-    this->add_page(( LruPagePriority ) priority, lru_page);
+    this->add_page((LruPagePriority) priority, lru_page);
     lru_page->_m.priority_change = 0;
   }
   this->_m.total_lru_page_priority_changes = 0;
@@ -586,9 +584,15 @@ void Lru::update_page_priorities (void)
 ////////////////////////////////////////////////////////////////////
 //     Function: Lru::update_lru_page
 //       Access: Public
-//  Description: This updates the page's average utilization and
-//               adds it to the array of pages with changed
-//               priorities if there was a change in priority.
+//  Description: This updates the page's average utilization.
+//               Priority LPP_New is considered to be average usage
+//               of 1.0 (which means the page is used once per frame
+//               on average).  Priorities < LPP_New are for pages
+//               used more than once per frame and Priorities >
+//               LPP_New are for pages used less than once per frame.
+//               If there was a change in priority, then adds it to
+//               the array of lru pages with changed priorities
+//               which will be updated later.
 ////////////////////////////////////////////////////////////////////
 void Lru::update_lru_page (LruPage *lru_page)
 {
@@ -604,69 +608,66 @@ void Lru::update_lru_page (LruPage *lru_page)
 
   if(lru_page->_m.lock == false && lru_page->_m.in_cache) {
     int delta_priority;
+    int lifetime_frames;
 
     delta_priority = 0;
-//  if (lru_page -> _m.total_usage > 0)
-    {
-      int lifetime_frames;
 
-      lifetime_frames = this->_m.current_frame_identifier -
-        lru_page->_m.first_frame_identifier;
-      if(lifetime_frames >= 1) {
-        if(lru_page->_m.update_frame_identifier) {
-          int target_priority;
-          int integer_update_frames;
-          float update_frames;
-          float one_over_update_frames;
-          float update_average_frame_utilization;
+    lifetime_frames = this->_m.current_frame_identifier -
+      lru_page->_m.first_frame_identifier;
+    if(lifetime_frames >= 1) {
+      if(lru_page->_m.update_frame_identifier) {
+        int target_priority;
+        int integer_update_frames;
+        float update_frames;
+        float one_over_update_frames;
+        float update_average_frame_utilization;
 
-          integer_update_frames = (this->_m.current_frame_identifier -
-            lru_page->_m.update_frame_identifier);
-          if(integer_update_frames > 0) {
-            update_frames = ( float ) integer_update_frames;
-            one_over_update_frames = 1.0f / update_frames;
+        integer_update_frames = (this->_m.current_frame_identifier -
+          lru_page->_m.update_frame_identifier);
+        if(integer_update_frames > 0) {
+          update_frames = ( float ) integer_update_frames;
+          one_over_update_frames = 1.0f / update_frames;
 
-            update_average_frame_utilization =
-              (float) (lru_page->_m.update_total_usage)* one_over_update_frames;
+          update_average_frame_utilization =
+            (float) (lru_page->_m.update_total_usage)* one_over_update_frames;
 
-            lru_page->_m.average_frame_utilization =
-              calculate_exponential_moving_average(
-                 update_average_frame_utilization, this->_m.weight,
-                 lru_page->_m.average_frame_utilization);
+          lru_page->_m.average_frame_utilization =
+            calculate_exponential_moving_average(
+               update_average_frame_utilization, this->_m.weight,
+               lru_page->_m.average_frame_utilization);
 
-            target_priority = lru_page->_m.priority;
-            if(lru_page->_m.average_frame_utilization >= 1.0f) {
-              int integer_average_frame_utilization;
+          target_priority = lru_page->_m.priority;
+          if(lru_page->_m.average_frame_utilization >= 1.0f) {
+            int integer_average_frame_utilization;
 
-              integer_average_frame_utilization =
-                (int) ((lru_page->_m.average_frame_utilization - 1.0f) *
-                (float) HIGH_PRIORITY_SCALE);
-              if(integer_average_frame_utilization >= LPP_New) {
-                integer_average_frame_utilization = LPP_New;
-              }
-              integer_average_frame_utilization = LPP_New -
-                integer_average_frame_utilization;
-              target_priority = integer_average_frame_utilization;
+            integer_average_frame_utilization =
+              (int) ((lru_page->_m.average_frame_utilization - 1.0f) *
+              (float) HIGH_PRIORITY_SCALE);
+            if(integer_average_frame_utilization >= LPP_New) {
+              integer_average_frame_utilization = LPP_New;
             }
-            else {
-              int integer_average_frame_utilization;
-
-              integer_average_frame_utilization = (int)
-                 (lru_page->_m.average_frame_utilization *
-                 (float) LOW_PRIORITY_RANGE);
-              integer_average_frame_utilization = LOW_PRIORITY_RANGE -
-                integer_average_frame_utilization;
-              target_priority = LPP_New + integer_average_frame_utilization;
-            }
-
-            delta_priority = target_priority - lru_page->_m.priority;
-            lru_page->change_priority(delta_priority);
+            integer_average_frame_utilization = LPP_New -
+              integer_average_frame_utilization;
+            target_priority = integer_average_frame_utilization;
           }
-        }
+          else {
+            int integer_average_frame_utilization;
 
-        lru_page->_m.update_frame_identifier = this->_m.current_frame_identifier;
-        lru_page->_m.update_total_usage = 0;
+            integer_average_frame_utilization = (int)
+               (lru_page->_m.average_frame_utilization *
+               (float) LOW_PRIORITY_RANGE);
+            integer_average_frame_utilization = LOW_PRIORITY_RANGE -
+              integer_average_frame_utilization;
+            target_priority = LPP_New + integer_average_frame_utilization;
+          }
+
+          delta_priority = target_priority - lru_page->_m.priority;
+          lru_page->change_priority(delta_priority);
+        }
       }
+
+      lru_page->_m.update_frame_identifier = this->_m.current_frame_identifier;
+      lru_page->_m.update_total_usage = 0;
     }
 
     if(lru_page->_m.priority_change) {
