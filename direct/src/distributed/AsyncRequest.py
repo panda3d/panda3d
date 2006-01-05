@@ -248,7 +248,7 @@ class AsyncRequest(DirectObject):
             context=self.air.allocateContext()
         self.accept(
             self.air.getDatabaseGenerateResponseEvent(context),
-            self._checkCompletion, [name])
+            self._checkCompletion, [name, None])
         self.air.requestDatabaseGenerate(className, context, values=values)
     
     def _doCreateObject(self, name, className, values, doId):
