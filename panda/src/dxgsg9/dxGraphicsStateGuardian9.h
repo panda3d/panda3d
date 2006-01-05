@@ -185,7 +185,7 @@ protected:
   static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
   static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
   DWORD get_texture_argument(TextureStage::CombineSource source,
-			     TextureStage::CombineOperand operand) const;
+           TextureStage::CombineOperand operand) const;
   static DWORD get_texture_argument_modifier(TextureStage::CombineOperand operand);
 
   void draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
@@ -292,7 +292,7 @@ protected:
   TextureStageStates;
 
   TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
-  TextureStageStates _texture_stage_states_array [MAXIMUM_TEXTURE_STAGES];
+  TextureStageStates _texture_stage_states_array [D3D_MAXTEXTURESTAGES];
 
 public:
   virtual TypeHandle get_type() const {
