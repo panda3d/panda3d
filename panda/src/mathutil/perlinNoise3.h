@@ -42,13 +42,13 @@ PUBLISHED:
   INLINE void set_scale(const LVecBase3f &scale);
   INLINE void set_scale(const LVecBase3d &scale);
 
-  INLINE double noise(double x, double y, double z);
-  INLINE float noise(const LVecBase3f &value);
-  double noise(const LVecBase3d &value);
+  INLINE double noise(double x, double y, double z) const;
+  INLINE float noise(const LVecBase3f &value) const;
+  double noise(const LVecBase3d &value) const;
 
-  INLINE double operator ()(double x, double y, double z);
-  INLINE float operator ()(const LVecBase3f &value);
-  INLINE double operator ()(const LVecBase3d &value);
+  INLINE double operator ()(double x, double y, double z) const;
+  INLINE float operator ()(const LVecBase3f &value) const;
+  INLINE double operator ()(const LVecBase3d &value) const;
   
 private:
   void init_unscaled_xform();

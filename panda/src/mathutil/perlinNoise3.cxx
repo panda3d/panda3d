@@ -25,7 +25,7 @@
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 double PerlinNoise3::
-noise(const LVecBase3d &value) {
+noise(const LVecBase3d &value) const {
   // Convert the vector to our local coordinate space.
   LVecBase3d vec = _input_xform.xform_point(value);
 

@@ -123,7 +123,7 @@ set_scale(const LVecBase2d &value) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise2::
-noise(double x, double y) {
+noise(double x, double y) const {
   return noise(LVecBase2d(x, y));
 }
 
@@ -133,7 +133,7 @@ noise(double x, double y) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE float PerlinNoise2::
-noise(const LVecBase2f &value) {
+noise(const LVecBase2f &value) const {
   return (float)noise(value[0], value[1]);
 }
 
@@ -143,7 +143,7 @@ noise(const LVecBase2f &value) {
 //  Description: Returns the noise function of the two inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise2::
-operator ()(double x, double y) {
+operator ()(double x, double y) const {
   return noise(x, y);
 }
 
@@ -153,7 +153,7 @@ operator ()(double x, double y) {
 //  Description: Returns the noise function of the two inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE float PerlinNoise2::
-operator ()(const LVecBase2f &value) {
+operator ()(const LVecBase2f &value) const {
   return noise(value);
 }
 
@@ -163,7 +163,7 @@ operator ()(const LVecBase2f &value) {
 //  Description: Returns the noise function of the two inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise2::
-operator ()(const LVecBase2d &value) {
+operator ()(const LVecBase2d &value) const {
   return noise(value);
 }
 

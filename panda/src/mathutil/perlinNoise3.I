@@ -123,7 +123,7 @@ set_scale(const LVecBase3d &value) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise3::
-noise(double x, double y, double z) {
+noise(double x, double y, double z) const {
   return noise(LVecBase3d(x, y, z));
 }
 
@@ -133,7 +133,7 @@ noise(double x, double y, double z) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE float PerlinNoise3::
-noise(const LVecBase3f &value) {
+noise(const LVecBase3f &value) const {
   return (float)noise(value[0], value[1], value[2]);
 }
 
@@ -143,7 +143,7 @@ noise(const LVecBase3f &value) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise3::
-operator ()(double x, double y, double z) {
+operator ()(double x, double y, double z) const {
   return noise(x, y, z);
 }
 
@@ -153,7 +153,7 @@ operator ()(double x, double y, double z) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE float PerlinNoise3::
-operator ()(const LVecBase3f &value) {
+operator ()(const LVecBase3f &value) const {
   return noise(value);
 }
 
@@ -163,7 +163,7 @@ operator ()(const LVecBase3f &value) {
 //  Description: Returns the noise function of the three inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE double PerlinNoise3::
-operator ()(const LVecBase3d &value) {
+operator ()(const LVecBase3d &value) const {
   return noise(value);
 }
 
