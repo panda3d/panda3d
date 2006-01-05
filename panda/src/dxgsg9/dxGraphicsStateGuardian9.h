@@ -101,6 +101,7 @@ public:
   virtual bool framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                                        const RenderBuffer &rb);
 
+  void reset_render_states (void);
   virtual void reset();
 
   virtual void apply_fog(Fog *fog);
@@ -261,6 +262,37 @@ protected:
   Lru *_lru;
 
   DWORD _last_fvf;
+  bool _normalize_normals;
+
+  #define MAXIMUM_TEXTURES 16
+  #define MAXIMUM_TEXTURE_STAGES 16
+
+  typedef struct
+  {
+    DWORD address_u;
+    DWORD address_v;
+    DWORD address_w;
+    DWORD border_color;
+    DWORD maximum_anisotropy;
+    DWORD mag_filter;
+    DWORD min_filter;
+    DWORD mip_filter;
+  }
+  TextureRenderStates;
+
+  typedef struct
+  {
+    DWORD color_op;
+    DWORD color_arg1;
+    DWORD color_arg2;
+    DWORD alpha_op;
+    DWORD alpha_arg1;
+    DWORD alpha_arg2;
+  }
+  TextureStageStates;
+
+  TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
+  TextureStageStates _texture_stage_states_array [MAXIMUM_TEXTURE_STAGES];
 
 public:
   virtual TypeHandle get_type() const {

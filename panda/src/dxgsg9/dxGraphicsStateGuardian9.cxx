@@ -231,22 +231,48 @@ apply_texture(int i, TextureContext *tc) {
 
   Texture *tex = tc->_texture;
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
+
+  DWORD address_u;
+  DWORD address_v;
+  DWORD address_w;
+
   wrap_u = tex->get_wrap_u();
   wrap_v = tex->get_wrap_v();
   wrap_w = tex->get_wrap_w();
 
-  _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSU, get_texture_wrap_mode(wrap_u));
-  _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSV, get_texture_wrap_mode(wrap_v));
-  _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSW, get_texture_wrap_mode(wrap_w));
+  address_u = get_texture_wrap_mode(wrap_u);
+  address_v = get_texture_wrap_mode(wrap_v);
+  address_w = get_texture_wrap_mode(wrap_w);
 
-  _d3d_device->SetSamplerState(i, D3DSAMP_BORDERCOLOR,
-            Colorf_to_D3DCOLOR(tex->get_border_color()));
+  if (_texture_render_states_array [i].address_u != address_u) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSU, address_u);
+    _texture_render_states_array [i].address_u = address_u;
+  }
+  if (_texture_render_states_array [i].address_v != address_v) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSV, address_v);
+    _texture_render_states_array [i].address_v = address_v;
+  }
+  if (_texture_render_states_array [i].address_w != address_w) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSW, address_w);
+    _texture_render_states_array [i].address_w = address_w;
+  }
+
+  DWORD border_color;
+  border_color = Colorf_to_D3DCOLOR(tex->get_border_color());
+
+  if (_texture_render_states_array [i].border_color != border_color) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_BORDERCOLOR, border_color);
+    _texture_render_states_array [i].border_color = border_color;
+  }
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
 
   if (aniso_degree >= 1) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
+    if (_texture_render_states_array [i].maximum_anisotropy != aniso_degree) {
+      _d3d_device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
+      _texture_render_states_array [i].maximum_anisotropy = aniso_degree;
+    }
   }
 
   D3DTEXTUREFILTERTYPE new_mag_filter;
@@ -256,7 +282,10 @@ apply_texture(int i, TextureContext *tc) {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  _d3d_device->SetSamplerState(i, D3DSAMP_MAGFILTER, new_mag_filter);
+  if (_texture_render_states_array [i].mag_filter != new_mag_filter) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_MAGFILTER, new_mag_filter);
+    _texture_render_states_array [i].mag_filter = new_mag_filter;
+  }
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
   D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter());
@@ -284,8 +313,14 @@ apply_texture(int i, TextureContext *tc) {
     new_min_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  _d3d_device->SetSamplerState(i, D3DSAMP_MINFILTER, new_min_filter);
-  _d3d_device->SetSamplerState(i, D3DSAMP_MIPFILTER, new_mip_filter);
+  if (_texture_render_states_array [i].min_filter != new_min_filter) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_MINFILTER, new_min_filter);
+    _texture_render_states_array [i].min_filter = new_min_filter;
+  }
+  if (_texture_render_states_array [i].mip_filter != new_mip_filter) {
+    _d3d_device->SetSamplerState(i, D3DSAMP_MIPFILTER, new_mip_filter);
+    _texture_render_states_array [i].mip_filter = new_mip_filter;
+  }
 
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
 }
@@ -393,10 +428,6 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
   #endif
     _last_fvf = dvbc->_fvf;
-  }
-  else
-  {
-//    dxgsg9_cat.error() << "EQUAL FVF\n";
   }
 }
 
@@ -1953,6 +1984,17 @@ bool texture_page_out_function (LruPage *lru_page)
   return true;
 }
 
+void DXGraphicsStateGuardian9::reset_render_states (void)
+{
+  memset (_texture_render_states_array, 0, sizeof (TextureRenderStates) * MAXIMUM_TEXTURES);
+  memset (_texture_stage_states_array, 0, sizeof (TextureStageStates) * MAXIMUM_TEXTURE_STAGES);
+
+  _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+  _normalize_normals = false;
+
+  _last_fvf = 0;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::reset
 //       Access: Public, Virtual
@@ -2274,7 +2316,7 @@ reset() {
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
   _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-  _last_fvf = 0;
+  this -> reset_render_states ( );
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 }
@@ -2435,12 +2477,18 @@ do_issue_rescale_normal() {
 
   switch (mode) {
   case RescaleNormalAttrib::M_none:
-    _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+    if (_normalize_normals != false) {
+      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+      _normalize_normals = false;
+    }
     break;
 
   case RescaleNormalAttrib::M_rescale:
   case RescaleNormalAttrib::M_normalize:
-    _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+    if (_normalize_normals != true) {
+      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+      _normalize_normals = true;
+    }
     break;
 
   case RescaleNormalAttrib::M_auto:
@@ -3423,7 +3471,7 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::do_auto_rescale_normal
 //       Access: Protected
-//  Description: Issues the appropriate GL commands to either rescale
+//  Description: Issues the appropriate DX commands to either rescale
 //               or normalize the normals according to the current
 //               transform.
 ////////////////////////////////////////////////////////////////////
@@ -3431,16 +3479,22 @@ void DXGraphicsStateGuardian9::
 do_auto_rescale_normal() {
   if (_external_transform->has_identity_scale()) {
     // If there's no scale, don't normalize anything.
-    _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+    if (_normalize_normals != false) {
+      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+      _normalize_normals = false;
+    }
 
   } else {
     // If there is a scale, turn on normalization.
-    _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+    if (_normalize_normals != true) {
+      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+      _normalize_normals = true;
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_light_color
+//     Function: DXGraphicsStateGuardian9::get_light_color
 //       Access: Public
 //  Description: Returns the array of four floats that should be
 //               issued as the light's color, as scaled by the current
