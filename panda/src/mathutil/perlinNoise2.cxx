@@ -20,35 +20,6 @@
 #include "cmath.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::Constructor
-//       Access: Published
-//  Description: Randomizes the tables to make a unique noise
-//               function.
-//
-//               If seed is nonzero, it is used to define the tables;
-//               if it is zero a random seed is generated.
-////////////////////////////////////////////////////////////////////
-PerlinNoise2::
-PerlinNoise2(double sx, double sy,
-	     int table_size, unsigned long seed) :
-  PerlinNoise(table_size, seed)
-{
-  // Come up with a random rotation to apply to the input coordinates.
-  // This will reduce the problem of the singularities on the axes, by
-  // sending the axes in some crazy direction.
-  double rot = random_real(360.0f);
-  _input_xform = LMatrix3d::rotate_mat(rot);
-
-  // And come up with a random translation too, just so the
-  // singularity at (0, 0) is also unpredicatable.
-  _input_xform.set_row(2, LVecBase2d(random_real_unit(),
-				     random_real_unit()));
-
-  // Finally, apply the user's input scale.
-  _input_xform = LMatrix3d::scale_mat(1.0f / sx, 1.0f / sy) * _input_xform;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise2::noise
 //       Access: Published
 //  Description: Returns the noise function of the three inputs.
@@ -88,4 +59,23 @@ noise(const LVecBase2d &value) {
               grad(_index[B + 1], x - 1, y - 1)));
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::init_unscaled_xform
+//       Access: Private
+//  Description: Come up with a random rotation to apply to the input
+//               coordinates. This will reduce the problem of the
+//               singularities on the axes, by sending the axes in
+//               some crazy direction.
+////////////////////////////////////////////////////////////////////
+void PerlinNoise2::
+init_unscaled_xform() {
+  double rot = random_real(360.0f);
+  _unscaled_xform = LMatrix3d::rotate_mat(rot);
+
+  // And come up with a random translation too, just so the
+  // singularity at (0, 0) is also unpredicatable.
+  _unscaled_xform.set_row(2, LVecBase2d(random_real_unit(),
+					random_real_unit()));
 }

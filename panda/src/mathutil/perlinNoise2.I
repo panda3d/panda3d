@@ -20,19 +20,34 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise2::Default Constructor
 //       Access: Published
-//  Description: The default constructor makes an invalid PerlinNoise2
-//               object.  You must at least pass in a scale of each
-//               dimension.  
-//
-//               This constructor exists only so you can create a
-//               temporary placeholder PerlinNoise2 object, and later
-//               fill it in with the assignment operator.
+//  Description: Randomizes the tables to make a unique noise
+//               function.  Uses a default scale (noise frequency),
+//               table size, and seed.
 ////////////////////////////////////////////////////////////////////
 INLINE PerlinNoise2::
 PerlinNoise2() :
-  PerlinNoise(0, 1)
+  PerlinNoise(256, 0)
 {
-  _input_xform.fill(0.0f);
+  init_unscaled_xform();
+  _input_xform = _unscaled_xform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::Constructor
+//       Access: Published
+//  Description: Randomizes the tables to make a unique noise
+//               function.
+//
+//               If seed is nonzero, it is used to define the tables;
+//               if it is zero a random seed is generated.
+////////////////////////////////////////////////////////////////////
+INLINE PerlinNoise2::
+PerlinNoise2(double sx, double sy,
+	     int table_size, unsigned long seed) :
+  PerlinNoise(table_size, seed)
+{
+  init_unscaled_xform();
+  set_scale(sx, sy);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +59,7 @@ PerlinNoise2() :
 INLINE PerlinNoise2::
 PerlinNoise2(const PerlinNoise2 &copy) :
   PerlinNoise(copy),
+  _unscaled_xform(copy._unscaled_xform),
   _input_xform(copy._input_xform)
 {
 }
@@ -57,7 +73,48 @@ PerlinNoise2(const PerlinNoise2 &copy) :
 INLINE void PerlinNoise2::
 operator = (const PerlinNoise2 &copy) {
   PerlinNoise::operator = (copy);
+  _unscaled_xform = copy._unscaled_xform;
   _input_xform = copy._input_xform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::set_scale
+//       Access: Published
+//  Description: Changes the scale (frequency) of the noise.
+////////////////////////////////////////////////////////////////////
+INLINE void PerlinNoise2::
+set_scale(double scale) {
+  set_scale(scale, scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::set_scale
+//       Access: Published
+//  Description: Changes the scale (frequency) of the noise.
+////////////////////////////////////////////////////////////////////
+INLINE void PerlinNoise2::
+set_scale(double x, double y) {
+  set_scale(LVecBase2d(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::set_scale
+//       Access: Published
+//  Description: Changes the scale (frequency) of the noise.
+////////////////////////////////////////////////////////////////////
+INLINE void PerlinNoise2::
+set_scale(const LVecBase2f &value) {
+  set_scale(value[0], value[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise2::set_scale
+//       Access: Published
+//  Description: Changes the scale (frequency) of the noise.
+////////////////////////////////////////////////////////////////////
+INLINE void PerlinNoise2::
+set_scale(const LVecBase2d &value) {
+  _input_xform = LMatrix3d::scale_mat(1.0f / value[0], 1.0f / value[1]) * _unscaled_xform;
 }
 
 ////////////////////////////////////////////////////////////////////

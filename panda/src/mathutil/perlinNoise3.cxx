@@ -20,40 +20,6 @@
 #include "cmath.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise3::Constructor
-//       Access: Published
-//  Description: Randomizes the tables to make a unique noise
-//               function.
-//
-//               If seed is nonzero, it is used to define the tables;
-//               if it is zero a random seed is generated.
-////////////////////////////////////////////////////////////////////
-PerlinNoise3::
-PerlinNoise3(double sx, double sy, double sz,
-	     int table_size, unsigned long seed) :
-  PerlinNoise(table_size, seed)
-{
-  // Come up with a random rotation to apply to the input coordinates.
-  // This will reduce the problem of the singularities on the axes, by
-  // sending the axes in some crazy direction.
-  LRotationd rot(random_real_unit(),
-		 random_real_unit(),
-		 random_real_unit(),
-		 random_real_unit());
-  rot.normalize();
-  rot.extract_to_matrix(_input_xform);
-
-  // And come up with a random translation too, just so the
-  // singularity at (0, 0, 0) is also unpredicatable.
-  _input_xform.set_row(3, LVecBase3d(random_real_unit(),
-				     random_real_unit(),
-				     random_real_unit()));
-
-  // Finally, apply the user's input scale.
-  _input_xform = LMatrix4d::scale_mat(1.0f / sx, 1.0f / sy, 1.0f / sz) * _input_xform;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise3::noise
 //       Access: Published
 //  Description: Returns the noise function of the three inputs.
@@ -107,4 +73,28 @@ noise(const LVecBase3d &value) {
                    grad(_index[BB + 1], x - 1, y - 1, z - 1))));
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerlinNoise3::init_unscaled_xform
+//       Access: Private
+//  Description: Come up with a random rotation to apply to the input
+//               coordinates. This will reduce the problem of the
+//               singularities on the axes, by sending the axes in
+//               some crazy direction.
+////////////////////////////////////////////////////////////////////
+void PerlinNoise3::
+init_unscaled_xform() {
+  LRotationd rot(random_real_unit(),
+		 random_real_unit(),
+		 random_real_unit(),
+		 random_real_unit());
+  rot.normalize();
+  rot.extract_to_matrix(_unscaled_xform);
+
+  // And come up with a random translation too, just so the
+  // singularity at (0, 0, 0) is also unpredicatable.
+  _unscaled_xform.set_row(3, LVecBase3d(random_real_unit(),
+					random_real_unit(),
+					random_real_unit()));
 }

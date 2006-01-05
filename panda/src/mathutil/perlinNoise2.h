@@ -32,11 +32,16 @@
 class EXPCL_PANDA PerlinNoise2 : public PerlinNoise {
 PUBLISHED:
   INLINE PerlinNoise2();
-  PerlinNoise2(double sx, double sy,
-	       int table_size = 256,
-	       unsigned long seed = 0);
+  INLINE PerlinNoise2(double sx, double sy,
+		      int table_size = 256,
+		      unsigned long seed = 0);
   INLINE PerlinNoise2(const PerlinNoise2 &copy);
   INLINE void operator = (const PerlinNoise2 &copy);
+
+  INLINE void set_scale(double scale);
+  INLINE void set_scale(double sx, double sy);
+  INLINE void set_scale(const LVecBase2f &scale);
+  void set_scale(const LVecBase2d &scale);
 
   INLINE double noise(double x, double y);
   INLINE float noise(const LVecBase2f &value);
@@ -47,9 +52,11 @@ PUBLISHED:
   INLINE double operator ()(const LVecBase2d &value);
   
 private:
+  void init_unscaled_xform();
   INLINE static double grad(int hash, double x, double y);
 
 private:
+  LMatrix3d _unscaled_xform;
   LMatrix3d _input_xform;
 };
 
