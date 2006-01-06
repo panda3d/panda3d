@@ -31,7 +31,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 
   // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
   // dont think this makes much difference
-  
+
   __asm {
         push ebx   ; want to save this in case this fn is inlined
         push ecx
@@ -147,5 +147,71 @@ get_safe_buffer_start() {
   }
 
   return _safe_buffer_start;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_render_state
+//       Access:
+//  Description: This function creates a common layer between DX
+//               and Panda for SetRenderState. It also keeps avoids
+//               setting redundant render states.
+////////////////////////////////////////////////////////////////////
+INLINE HRESULT DXGraphicsStateGuardian9::
+set_render_state (D3DRENDERSTATETYPE state, DWORD value)
+{
+  HRESULT hr;
+
+  hr = D3D_OK;
+  if (_render_state_array [state] != value)
+  {
+    hr = _d3d_device->SetRenderState(state, value);
+    _render_state_array [state] = value;
+  }
+
+  return hr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_texture_stage_state
+//       Access:
+//  Description: This function creates a common layer between DX
+//               and Panda. It also keeps avoids setting redundant
+//               render states.
+////////////////////////////////////////////////////////////////////
+INLINE HRESULT DXGraphicsStateGuardian9::
+set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value)
+{
+  HRESULT hr;
+
+  hr = D3D_OK;
+  if (_texture_stage_states_array [stage].state_array [type] != value)
+  {
+    hr = _d3d_device->SetTextureStageState(stage, type, value);
+    _texture_stage_states_array [stage].state_array [type] = value;
+  }
+
+  return hr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_sampler_state
+//       Access:
+//  Description: This function creates a common layer between DX
+//               and Panda. It also keeps avoids setting redundant
+//               render states.
+////////////////////////////////////////////////////////////////////
+INLINE HRESULT DXGraphicsStateGuardian9::
+set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value)
+{
+  HRESULT hr;
+
+  hr = D3D_OK;
+  if (_texture_render_states_array [sampler].state_array [type] != value)
+  {
+    hr = _d3d_device->SetSamplerState(sampler, type, value);
+    _texture_render_states_array [sampler].state_array [type] = value;
+  }
+
+  return hr;
 }
 

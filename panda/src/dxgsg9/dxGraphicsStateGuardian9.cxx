@@ -190,7 +190,7 @@ apply_texture(int i, TextureContext *tc) {
   if (tc == (TextureContext *)NULL) {
     // The texture wasn't bound properly or something, so ensure
     // texturing is disabled and just return.
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
     return;
   }
 
@@ -224,7 +224,7 @@ apply_texture(int i, TextureContext *tc) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg9_cat.error()
   << "Unable to re-create texture " << *dtc->_texture << endl;
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+      set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
   }
@@ -244,35 +244,20 @@ apply_texture(int i, TextureContext *tc) {
   address_v = get_texture_wrap_mode(wrap_v);
   address_w = get_texture_wrap_mode(wrap_w);
 
-  if (_texture_render_states_array [i].address_u != address_u) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSU, address_u);
-    _texture_render_states_array [i].address_u = address_u;
-  }
-  if (_texture_render_states_array [i].address_v != address_v) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSV, address_v);
-    _texture_render_states_array [i].address_v = address_v;
-  }
-  if (_texture_render_states_array [i].address_w != address_w) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_ADDRESSW, address_w);
-    _texture_render_states_array [i].address_w = address_w;
-  }
+  set_sampler_state(i, D3DSAMP_ADDRESSU, address_u);
+  set_sampler_state(i, D3DSAMP_ADDRESSV, address_v);
+  set_sampler_state(i, D3DSAMP_ADDRESSW, address_w);
 
   DWORD border_color;
   border_color = Colorf_to_D3DCOLOR(tex->get_border_color());
 
-  if (_texture_render_states_array [i].border_color != border_color) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_BORDERCOLOR, border_color);
-    _texture_render_states_array [i].border_color = border_color;
-  }
+  set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
 
   if (aniso_degree >= 1) {
-    if (_texture_render_states_array [i].maximum_anisotropy != aniso_degree) {
-      _d3d_device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
-      _texture_render_states_array [i].maximum_anisotropy = aniso_degree;
-    }
+    set_sampler_state(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
   }
 
   D3DTEXTUREFILTERTYPE new_mag_filter;
@@ -282,10 +267,7 @@ apply_texture(int i, TextureContext *tc) {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  if (_texture_render_states_array [i].mag_filter != new_mag_filter) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_MAGFILTER, new_mag_filter);
-    _texture_render_states_array [i].mag_filter = new_mag_filter;
-  }
+  set_sampler_state(i, D3DSAMP_MAGFILTER, new_mag_filter);
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
   D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter());
@@ -313,14 +295,8 @@ apply_texture(int i, TextureContext *tc) {
     new_min_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  if (_texture_render_states_array [i].min_filter != new_min_filter) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_MINFILTER, new_min_filter);
-    _texture_render_states_array [i].min_filter = new_min_filter;
-  }
-  if (_texture_render_states_array [i].mip_filter != new_mip_filter) {
-    _d3d_device->SetSamplerState(i, D3DSAMP_MIPFILTER, new_mip_filter);
-    _texture_render_states_array [i].mip_filter = new_mip_filter;
-  }
+  set_sampler_state(i, D3DSAMP_MINFILTER, new_min_filter);
+  set_sampler_state(i, D3DSAMP_MIPFILTER, new_mip_filter);
 
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
 }
@@ -1032,24 +1008,24 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       // handling, meaning only the world matrix affects these
       // vertices--and by accident or design, the first matrix,
       // D3DTS_WORLDMATRIX(0), *is* the world matrix.
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+      set_render_state(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
       break;
     case 2:
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_1WEIGHTS);
+      set_render_state(D3DRS_VERTEXBLEND, D3DVBF_1WEIGHTS);
       break;
     case 3:
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_2WEIGHTS);
+      set_render_state(D3DRS_VERTEXBLEND, D3DVBF_2WEIGHTS);
       break;
     case 4:
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_3WEIGHTS);
+      set_render_state(D3DRS_VERTEXBLEND, D3DVBF_3WEIGHTS);
       break;
     }
 
     if (animation.get_indexed_transforms()) {
       // Set up indexed vertex blending.
-      _d3d_device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, TRUE);
+      set_render_state(D3DRS_INDEXEDVERTEXBLENDENABLE, TRUE);
     } else {
-      _d3d_device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+      set_render_state(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
     }
 
     const TransformTable *table = vertex_data->get_transform_table();
@@ -1070,8 +1046,8 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   } else {
     // We're not using vertex blending.
     if (_vertex_blending_enabled) {
-      _d3d_device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
-      _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+      set_render_state(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+      set_render_state(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
       _vertex_blending_enabled = false;
     }
 
@@ -1522,8 +1498,8 @@ end_draw_primitives() {
   // Turn off vertex blending--it seems to cause problems if we leave
   // it on.
   if (_vertex_blending_enabled) {
-    _d3d_device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
-    _d3d_device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+    set_render_state(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+    set_render_state(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
     _vertex_blending_enabled = false;
   }
 
@@ -1986,11 +1962,33 @@ bool texture_page_out_function (LruPage *lru_page)
 
 void DXGraphicsStateGuardian9::reset_render_states (void)
 {
-  memset (_texture_render_states_array, 0, sizeof (TextureRenderStates) * MAXIMUM_TEXTURES);
-  memset (_texture_stage_states_array, 0, sizeof (TextureStageStates) * D3D_MAXTEXTURESTAGES);
+  int index;
+  int maximum_texture_stages;
 
-  _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
-  _normalize_normals = false;
+  maximum_texture_stages = D3D_MAXTEXTURESTAGES;
+
+  // set to invalid values so that the state will always be set the first time
+  memset (_render_state_array, -1, sizeof (_render_state_array));
+  memset (_texture_stage_states_array, -1, sizeof (_texture_stage_states_array));
+
+  // states that may be set intially to -1 by the user, so set it to D3D's default value
+  _render_state_array [D3DRS_FOGCOLOR] = 0;
+  _render_state_array [D3DRS_AMBIENT] = 0;
+
+  // set to D3D default values or invalid values so that the state will always be set the first time
+  memset (_texture_render_states_array, 0, sizeof (_texture_render_states_array));
+
+  // states that may be set intially to 0 by the user, so set it to D3D's default value
+  for (index = 0; index < MAXIMUM_TEXTURES; index++) {
+    TextureRenderStates *texture_render_states;
+
+    texture_render_states = &_texture_render_states_array [index];
+    texture_render_states -> state_array [D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+    texture_render_states -> state_array [D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+    texture_render_states -> state_array [D3DSAMP_MAXANISOTROPY] = 1;
+  }
+
+  set_render_state(D3DRS_NORMALIZENORMALS, false);
 
   _last_fvf = 0;
 }
@@ -2053,6 +2051,8 @@ reset() {
       << "\nD3DPMISCCAPS_TSSARGTEMP = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0)
       << "\n";
   }
+
+  this -> reset_render_states ( );
 
   _max_vertices_per_array = d3d_caps.MaxVertexIndex;
   _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
@@ -2207,28 +2207,28 @@ reset() {
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
 
-  _d3d_device->SetRenderState(D3DRS_AMBIENT, 0x0);
+  set_render_state(D3DRS_AMBIENT, 0x0);
 
   _clip_plane_bits = 0;
-  _d3d_device->SetRenderState(D3DRS_CLIPPLANEENABLE , 0x0);
+  set_render_state(D3DRS_CLIPPLANEENABLE , 0x0);
 
-  _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
+  set_render_state(D3DRS_CLIPPING, true);
 
   // these both reflect d3d defaults
   _color_writemask = 0xFFFFFFFF;
 
-  _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+  set_render_state(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
-  _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+  set_render_state(D3DRS_ZWRITEENABLE, TRUE);
 
 /* ***** DX9 ??? D3DRS_EDGEANTIALIAS NOT IN DX9 */
-//  _d3d_device->SetRenderState(D3DRS_EDGEANTIALIAS, false);
+//  set_render_state(D3DRS_EDGEANTIALIAS, false);
 
-  _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+  set_render_state(D3DRS_ZENABLE, D3DZB_FALSE);
 
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+  set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 
-  _d3d_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
+  set_render_state(D3DRS_FOGENABLE, FALSE);
 
   _projection_mat = LMatrix4f::ident_mat();
   _has_scene_graph_color = false;
@@ -2273,7 +2273,7 @@ reset() {
 
       // range-based fog only works with vertex fog in dx7/8
       if (dx_use_rangebased_fog && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGRANGE)) {
-        _d3d_device->SetRenderState(D3DRS_RANGEFOGENABLE, true);
+        set_render_state(D3DRS_RANGEFOGENABLE, true);
       }
     }
   }
@@ -2281,42 +2281,40 @@ reset() {
   _screen->_can_direct_disable_color_writes = ((_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) != 0);
 
   // Lighting, let's turn it off initially.
-  _d3d_device->SetRenderState(D3DRS_LIGHTING, false);
+  set_render_state(D3DRS_LIGHTING, false);
 
   // turn on dithering if the rendertarget is < 8bits/color channel
   bool dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(_screen->_presentation_params.BackBufferFormat)
        && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
-  _d3d_device->SetRenderState(D3DRS_DITHERENABLE, dither_enabled);
+  set_render_state(D3DRS_DITHERENABLE, dither_enabled);
 
-  _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
+  set_render_state(D3DRS_CLIPPING, true);
 
   // Stencil test is off by default
-  _d3d_device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+  set_render_state(D3DRS_STENCILENABLE, FALSE);
 
   // Antialiasing.
 /* ***** DX9 ??? D3DRS_EDGEANTIALIAS NOT IN DX9 */
-//  _d3d_device->SetRenderState(D3DRS_EDGEANTIALIAS, FALSE);
+//  set_render_state(D3DRS_EDGEANTIALIAS, FALSE);
 
   _current_fill_mode = RenderModeAttrib::M_filled;
-  _d3d_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+  set_render_state(D3DRS_FILLMODE, D3DFILL_SOLID);
 
   // must do SetTSS here because redundant states are filtered out by
   // our code based on current values above, so initial conditions
   // must be correct
-  _d3d_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);  // disables texturing
+  set_texture_stage_state(0, D3DTSS_COLOROP, D3DTOP_DISABLE);  // disables texturing
 
   _cull_face_mode = CullFaceAttrib::M_cull_none;
-  _d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+  set_render_state(D3DRS_CULLMODE, D3DCULL_NONE);
 
-  _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);
-  _d3d_device->SetRenderState(D3DRS_ALPHAREF, 255);
-  _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+  set_render_state(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);
+  set_render_state(D3DRS_ALPHAREF, 255);
+  set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
 
   // this is a new DX8 state that lets you do additional operations other than ADD (e.g. subtract/max/min)
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
-  _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-
-  this -> reset_render_states ( );
+  set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 }
@@ -2334,10 +2332,10 @@ apply_fog(Fog *fog) {
   Fog::Mode panda_fogmode = fog->get_mode();
   D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
 
-  _d3d_device->SetRenderState((D3DRENDERSTATETYPE)_do_fog_type, d3dfogmode);
+  set_render_state((D3DRENDERSTATETYPE)_do_fog_type, d3dfogmode);
 
   const Colorf &fog_colr = fog->get_color();
-  _d3d_device->SetRenderState(D3DRS_FOGCOLOR,
+  set_render_state(D3DRS_FOGCOLOR,
                               MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
 
   // do we need to adjust fog start/end values based on D3DPRASTERCAPS_WFOG/D3DPRASTERCAPS_ZFOG ?
@@ -2349,9 +2347,9 @@ apply_fog(Fog *fog) {
       float onset, opaque;
       fog->get_linear_range(onset, opaque);
 
-      _d3d_device->SetRenderState(D3DRS_FOGSTART,
+      set_render_state(D3DRS_FOGSTART,
                                    *((LPDWORD) (&onset)));
-      _d3d_device->SetRenderState(D3DRS_FOGEND,
+      set_render_state(D3DRS_FOGEND,
                                    *((LPDWORD) (&opaque)));
     }
     break;
@@ -2360,7 +2358,7 @@ apply_fog(Fog *fog) {
     {
       // Exponential fog is always camera-relative.
       float fog_density = fog->get_exp_density();
-      _d3d_device->SetRenderState(D3DRS_FOGDENSITY,
+      set_render_state(D3DRS_FOGDENSITY,
                                    *((LPDWORD) (&fog_density)));
     }
     break;
@@ -2400,13 +2398,13 @@ do_issue_alpha_test() {
   const AlphaTestAttrib *attrib = _target._alpha_test;
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
-    _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+    set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
 
   } else {
     //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
-    _d3d_device->SetRenderState(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
-    _d3d_device->SetRenderState(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
-    _d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+    set_render_state(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
+    set_render_state(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
+    set_render_state(D3DRS_ALPHATESTENABLE, TRUE);
   }
 }
 
@@ -2423,15 +2421,15 @@ do_issue_render_mode() {
   switch (mode) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
-    _d3d_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+    set_render_state(D3DRS_FILLMODE, D3DFILL_SOLID);
     break;
 
   case RenderModeAttrib::M_wireframe:
-    _d3d_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+    set_render_state(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
     break;
 
   case RenderModeAttrib::M_point:
-    _d3d_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_POINT);
+    set_render_state(D3DRS_FILLMODE, D3DFILL_POINT);
     break;
 
   default:
@@ -2441,10 +2439,10 @@ do_issue_render_mode() {
 
   // This might also specify the point size.
   float point_size = attrib->get_thickness();
-  _d3d_device->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&point_size));
+  set_render_state(D3DRS_POINTSIZE, *((DWORD*)&point_size));
 
   if (attrib->get_perspective()) {
-    _d3d_device->SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
+    set_render_state(D3DRS_POINTSCALEENABLE, TRUE);
 
     LVector3f height(0.0f, point_size, 1.0f);
     height = height * _projection_mat;
@@ -2452,12 +2450,12 @@ do_issue_render_mode() {
 
     float zero = 0.0f;
     float one_over_s2 = 1.0f / (s * s);
-    _d3d_device->SetRenderState(D3DRS_POINTSCALE_A, *((DWORD*)&zero));
-    _d3d_device->SetRenderState(D3DRS_POINTSCALE_B, *((DWORD*)&zero));
-    _d3d_device->SetRenderState(D3DRS_POINTSCALE_C, *((DWORD*)&one_over_s2));
+    set_render_state(D3DRS_POINTSCALE_A, *((DWORD*)&zero));
+    set_render_state(D3DRS_POINTSCALE_B, *((DWORD*)&zero));
+    set_render_state(D3DRS_POINTSCALE_C, *((DWORD*)&one_over_s2));
 
   } else {
-    _d3d_device->SetRenderState(D3DRS_POINTSCALEENABLE, FALSE);
+    set_render_state(D3DRS_POINTSCALEENABLE, FALSE);
   }
 
   _current_fill_mode = mode;
@@ -2477,18 +2475,12 @@ do_issue_rescale_normal() {
 
   switch (mode) {
   case RescaleNormalAttrib::M_none:
-    if (_normalize_normals != false) {
-      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
-      _normalize_normals = false;
-    }
+    set_render_state(D3DRS_NORMALIZENORMALS, false);
     break;
 
   case RescaleNormalAttrib::M_rescale:
   case RescaleNormalAttrib::M_normalize:
-    if (_normalize_normals != true) {
-      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
-      _normalize_normals = true;
-    }
+    set_render_state(D3DRS_NORMALIZENORMALS, true);
     break;
 
   case RescaleNormalAttrib::M_auto:
@@ -2512,10 +2504,10 @@ do_issue_depth_test() {
   const DepthTestAttrib *attrib = _target._depth_test;
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
-    _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+    set_render_state(D3DRS_ZENABLE, D3DZB_FALSE);
   } else {
-    _d3d_device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-    _d3d_device->SetRenderState(D3DRS_ZFUNC, (D3DCMPFUNC) mode);
+    set_render_state(D3DRS_ZENABLE, D3DZB_TRUE);
+    set_render_state(D3DRS_ZFUNC, (D3DCMPFUNC) mode);
   }
 }
 
@@ -2528,9 +2520,9 @@ void DXGraphicsStateGuardian9::
 do_issue_depth_write() {
   const DepthWriteAttrib *attrib = _target._depth_write;
   if (attrib->get_mode() == DepthWriteAttrib::M_on) {
-    _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+    set_render_state(D3DRS_ZWRITEENABLE, TRUE);
   } else {
-    _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+    set_render_state(D3DRS_ZWRITEENABLE, FALSE);
   }
 }
 
@@ -2546,13 +2538,13 @@ do_issue_cull_face() {
 
   switch (_cull_face_mode) {
   case CullFaceAttrib::M_cull_none:
-    _d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+    set_render_state(D3DRS_CULLMODE, D3DCULL_NONE);
     break;
   case CullFaceAttrib::M_cull_clockwise:
-    _d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+    set_render_state(D3DRS_CULLMODE, D3DCULL_CW);
     break;
   case CullFaceAttrib::M_cull_counter_clockwise:
-    _d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+    set_render_state(D3DRS_CULLMODE, D3DCULL_CCW);
     break;
   default:
     dxgsg9_cat.error()
@@ -2570,12 +2562,12 @@ void DXGraphicsStateGuardian9::
 do_issue_fog() {
   const FogAttrib *attrib = _target._fog;
   if (!attrib->is_off()) {
-    _d3d_device->SetRenderState(D3DRS_FOGENABLE, TRUE);
+    set_render_state(D3DRS_FOGENABLE, TRUE);
     Fog *fog = attrib->get_fog();
     nassertv(fog != (Fog *)NULL);
     apply_fog(fog);
   } else {
-    _d3d_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
+    set_render_state(D3DRS_FOGENABLE, FALSE);
   }
 }
 
@@ -2590,7 +2582,7 @@ do_issue_depth_offset() {
   int offset = attrib->get_offset();
 
 /* ***** DX9 ??? D3DRS_ZBIAS NOT IN DX9 ??? RENAMED D3DRS_DEPTHBIAS ??? */
-  _d3d_device->SetRenderState(D3DRS_DEPTHBIAS, offset);
+  set_render_state(D3DRS_DEPTHBIAS, offset);
 
 }
 
@@ -2604,11 +2596,11 @@ do_issue_shade_model() {
   const ShadeModelAttrib *attrib = _target._shade_model;
   switch (attrib->get_mode()) {
   case ShadeModelAttrib::M_smooth:
-    _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+    set_render_state(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
     break;
 
   case ShadeModelAttrib::M_flat:
-    _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
+    set_render_state(D3DRS_SHADEMODE, D3DSHADE_FLAT);
     break;
   }
 }
@@ -2957,39 +2949,39 @@ do_issue_material() {
 
   if (material->has_diffuse()) {
     // If the material specifies an diffuse color, use it.
-    _d3d_device->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+    set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
   } else {
     // Otherwise, the diffuse color comes from the object color.
     if (_has_material_force_color) {
       cur_material.Diffuse = *(D3DCOLORVALUE *)_material_force_color.get_data();
-      _d3d_device->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+      set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
     } else {
-      _d3d_device->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+      set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
     }
   }
   if (material->has_ambient()) {
     // If the material specifies an ambient color, use it.
-    _d3d_device->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
+    set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
   } else {
     // Otherwise, the ambient color comes from the object color.
     if (_has_material_force_color) {
       cur_material.Ambient = *(D3DCOLORVALUE *)_material_force_color.get_data();
-      _d3d_device->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
+      set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
     } else {
-      _d3d_device->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
+      set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
     }
   }
 
   if (material->has_specular()) {
-    _d3d_device->SetRenderState(D3DRS_SPECULARENABLE, TRUE);
+    set_render_state(D3DRS_SPECULARENABLE, TRUE);
   } else {
-    _d3d_device->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+    set_render_state(D3DRS_SPECULARENABLE, FALSE);
   }
 
   if (material->get_local()) {
-    _d3d_device->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
+    set_render_state(D3DRS_LOCALVIEWER, TRUE);
   } else {
-    _d3d_device->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
+    set_render_state(D3DRS_LOCALVIEWER, FALSE);
   }
 
   _d3d_device->SetMaterial(&cur_material);
@@ -3058,12 +3050,12 @@ do_issue_texture() {
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
 
     case TexGenAttrib::M_eye_sphere_map:
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         // This texture matrix, applied on top of the texcoord
         // computed by D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR,
@@ -3084,7 +3076,7 @@ do_issue_texture() {
       // transform.  In the case of a vector, we should not apply the
       // pos component of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -3093,7 +3085,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_cube_map:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
       tex_mat = tex_mat->compose(_inv_cs_transform);
       texcoord_dimensions = 3;
@@ -3105,7 +3097,7 @@ do_issue_texture() {
       // the case of a normal, we should not apply the pos component
       // of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -3114,7 +3106,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_normal:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
@@ -3125,7 +3117,7 @@ do_issue_texture() {
       // coordinates to world coordinates; i.e. apply the
       // camera transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -3134,19 +3126,19 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_position:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
 
     case TexGenAttrib::M_point_sprite:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       any_point_sprite = true;
       break;
     }
 
-    _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
+    set_render_state(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
       if (tex_mat->is_2d() && texcoord_dimensions <= 2) {
@@ -3157,7 +3149,7 @@ do_issue_texture() {
               m(3, 0), m(3, 1), m(3, 3), 0.0f,
               0.0f, 0.0f, 0.0f, 1.0f);
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+        set_texture_stage_state(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           D3DTTFF_COUNT2);
       } else {
         LMatrix4f m = tex_mat->get_mat();
@@ -3168,12 +3160,12 @@ do_issue_texture() {
           // set D3DTTFF_COUNT4.
           transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
         }
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+        set_texture_stage_state(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
 
     } else {
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+      set_texture_stage_state(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                         D3DTTFF_DISABLE);
       // For some reason, "disabling" texture coordinate transforms
       // doesn't seem to be sufficient.  We'll load an identity matrix
@@ -3184,7 +3176,7 @@ do_issue_texture() {
 
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < num_old_stages; i++) {
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
     _d3d_device->SetTexture(i, NULL);
   }
 }
@@ -3206,19 +3198,19 @@ do_issue_blending() {
   if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
+        set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
+        set_render_state(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
       } else {
-        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-        _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
-        _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+        set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+        set_render_state(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+        set_render_state(D3DRS_DESTBLEND, D3DBLEND_ONE);
       }
     }
     return;
   } else {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
+        set_render_state(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
       }
     }
   }
@@ -3229,33 +3221,33 @@ do_issue_blending() {
 
   // Is there a color blend set?
   if (color_blend_mode != ColorBlendAttrib::M_none) {
-    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
 
     switch (color_blend_mode) {
     case ColorBlendAttrib::M_add:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
       break;
 
     case ColorBlendAttrib::M_subtract:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
+      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
       break;
 
     case ColorBlendAttrib::M_inv_subtract:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
+      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
       break;
 
     case ColorBlendAttrib::M_min:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MIN);
+      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_MIN);
       break;
 
     case ColorBlendAttrib::M_max:
-      _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX);
+      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_MAX);
       break;
     }
 
-    _d3d_device->SetRenderState(D3DRS_SRCBLEND,
+    set_render_state(D3DRS_SRCBLEND,
         get_blend_func(color_blend->get_operand_a()));
-    _d3d_device->SetRenderState(D3DRS_DESTBLEND,
+    set_render_state(D3DRS_DESTBLEND,
         get_blend_func(color_blend->get_operand_b()));
     return;
   }
@@ -3270,10 +3262,10 @@ do_issue_blending() {
   case TransparencyAttrib::M_multisample:
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
-    _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-    _d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-    _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+    set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
     return;
 
   default:
@@ -3283,7 +3275,7 @@ do_issue_blending() {
   }
 
   // Nothing's set, so disable blending.
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+  set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3308,7 +3300,7 @@ disable_texturing() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 enable_lighting(bool enable) {
-  _d3d_device->SetRenderState(D3DRS_LIGHTING, (DWORD)enable);
+  set_render_state(D3DRS_LIGHTING, (DWORD)enable);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3327,7 +3319,7 @@ set_ambient_light(const Colorf &color) {
         c[2] * _light_color_scale[2],
         c[3] * _light_color_scale[3]);
 
-  _d3d_device->SetRenderState(D3DRS_AMBIENT, Colorf_to_D3DCOLOR(c));
+  set_render_state(D3DRS_AMBIENT, Colorf_to_D3DCOLOR(c));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3363,7 +3355,7 @@ enable_clip_plane(int plane_id, bool enable) {
   } else {
     _clip_plane_bits &= ~((DWORD)1 << plane_id);
   }
-  _d3d_device->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
+  set_render_state(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3479,17 +3471,10 @@ void DXGraphicsStateGuardian9::
 do_auto_rescale_normal() {
   if (_external_transform->has_identity_scale()) {
     // If there's no scale, don't normalize anything.
-    if (_normalize_normals != false) {
-      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
-      _normalize_normals = false;
-    }
-
+    set_render_state(D3DRS_NORMALIZENORMALS, false);
   } else {
     // If there is a scale, turn on normalization.
-    if (_normalize_normals != true) {
-      _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
-      _normalize_normals = true;
-    }
+    set_render_state(D3DRS_NORMALIZENORMALS, true);
   }
 }
 
@@ -3717,81 +3702,81 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
   case TextureStage::M_modulate:
     // emulates GL_MODULATE glTexEnv mode
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
+    set_texture_stage_state(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_decal:
     // emulates GL_DECAL glTexEnv mode
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_BLENDTEXTUREALPHA);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_BLENDTEXTUREALPHA);
+    set_texture_stage_state(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_replace:
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+    set_texture_stage_state(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
     break;
 
   case TextureStage::M_add:
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_ADD);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_ADD);
+    set_texture_stage_state(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
 
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-    _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+    set_texture_stage_state(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     break;
 
   case TextureStage::M_blend:
   case TextureStage::M_blend_color_scale:
     {
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_LERP);
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, _constant_color_operand);
+      set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_LERP);
+      set_texture_stage_state(i, D3DTSS_COLORARG0, D3DTA_TEXTURE);
+      set_texture_stage_state(i, D3DTSS_COLORARG2, D3DTA_CURRENT);
+      set_texture_stage_state(i, D3DTSS_COLORARG1, _constant_color_operand);
 
-      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-      _d3d_device->SetTextureStageState(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+      set_texture_stage_state(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+      set_texture_stage_state(i, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+      set_texture_stage_state(i, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
     }
     break;
 
   case TextureStage::M_combine:
     // M_combine mode begins a collection of more sophisticated modes,
     // which match up more closely with DirectX's built-in modes.
-    _d3d_device->SetTextureStageState
+    set_texture_stage_state
       (i, D3DTSS_COLOROP,
        get_texture_operation(stage->get_combine_rgb_mode(),
                              stage->get_rgb_scale()));
 
     switch (stage->get_num_combine_rgb_operands()) {
     case 3:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_COLORARG0,
          get_texture_argument(stage->get_combine_rgb_source2(),
                               stage->get_combine_rgb_operand2()));
       // fall through
 
     case 2:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_COLORARG2,
          get_texture_argument(stage->get_combine_rgb_source1(),
                               stage->get_combine_rgb_operand1()));
       // fall through
 
     case 1:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_COLORARG1,
          get_texture_argument(stage->get_combine_rgb_source0(),
                               stage->get_combine_rgb_operand0()));
@@ -3801,28 +3786,28 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
       break;
     }
 
-    _d3d_device->SetTextureStageState
+    set_texture_stage_state
       (i, D3DTSS_ALPHAOP,
        get_texture_operation(stage->get_combine_alpha_mode(),
                              stage->get_alpha_scale()));
 
     switch (stage->get_num_combine_alpha_operands()) {
     case 3:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_ALPHAARG0,
          get_texture_argument(stage->get_combine_alpha_source2(),
                               stage->get_combine_alpha_operand2()));
       // fall through
 
     case 2:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_ALPHAARG2,
          get_texture_argument(stage->get_combine_alpha_source1(),
                               stage->get_combine_alpha_operand1()));
       // fall through
 
     case 1:
-      _d3d_device->SetTextureStageState
+      set_texture_stage_state
         (i, D3DTSS_ALPHAARG1,
          get_texture_argument(stage->get_combine_alpha_source0(),
                               stage->get_combine_alpha_operand0()));
@@ -3840,9 +3825,9 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   }
 
   if (stage->get_saved_result()) {
-    _d3d_device->SetTextureStageState(i, D3DTSS_RESULTARG, D3DTA_TEMP);
+    set_texture_stage_state(i, D3DTSS_RESULTARG, D3DTA_TEMP);
   } else {
-    _d3d_device->SetTextureStageState(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
+    set_texture_stage_state(i, D3DTSS_RESULTARG, D3DTA_CURRENT);
   }
 
   if (stage->uses_color()) {
@@ -3861,12 +3846,12 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
       constant_color = Colorf_to_D3DCOLOR(stage->get_color());
     }
     if (_supports_texture_constant_color) {
-      _d3d_device->SetTextureStageState(i, D3DTSS_CONSTANT, constant_color);
+      set_texture_stage_state(i, D3DTSS_CONSTANT, constant_color);
     } else {
       // This device doesn't supoprt a per-stage constant color, so we
       // have to fall back to a single constant color for the overall
       // texture pipeline.
-      _d3d_device->SetRenderState(D3DRS_TEXTUREFACTOR, constant_color);
+      set_render_state(D3DRS_TEXTUREFACTOR, constant_color);
     }
   }
 }
@@ -4412,7 +4397,7 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
 //               check if DirectX is out of memory. If DirectX is
 //               out of memory and the LRU is being used, then
 //               page out some memory. This function is a fail-safe
-//               just in case another process takes allocates video
+//               just in case another process allocates video
 //               memory, DirectX is fragmented, or there are some
 //               borderline memory allocation cases, ...
 ////////////////////////////////////////////////////////////////////
@@ -4448,3 +4433,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 
   return retry;
 }
+
+
+
+

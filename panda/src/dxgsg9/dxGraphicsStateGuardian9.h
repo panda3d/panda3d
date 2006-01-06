@@ -121,6 +121,10 @@ public:
 
   bool check_dx_allocation (HRESULT result, int allocation_size, int attempts);
 
+  INLINE HRESULT set_render_state (D3DRENDERSTATETYPE state, DWORD value);
+  INLINE HRESULT set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
+  INLINE HRESULT set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value);
+
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
@@ -262,37 +266,31 @@ protected:
   Lru *_lru;
 
   DWORD _last_fvf;
-  bool _normalize_normals;
 
   #define MAXIMUM_TEXTURES 16
-  #define MAXIMUM_TEXTURE_STAGES 16
 
-  typedef struct
-  {
-    DWORD address_u;
-    DWORD address_v;
-    DWORD address_w;
-    DWORD border_color;
-    DWORD maximum_anisotropy;
-    DWORD mag_filter;
-    DWORD min_filter;
-    DWORD mip_filter;
-  }
-  TextureRenderStates;
 
-  typedef struct
-  {
-    DWORD color_op;
-    DWORD color_arg1;
-    DWORD color_arg2;
-    DWORD alpha_op;
-    DWORD alpha_arg1;
-    DWORD alpha_arg2;
+  // from D3DRENDERSTATETYPE + pad
+  #define MAXIMUM_RENDER_STATES 256
+
+  // from D3DTEXTURESTAGESTATETYPE + pad
+  #define MAXIMUM_TEXTURE_STAGE_STATES 40
+  typedef struct {
+    DWORD state_array [MAXIMUM_TEXTURE_STAGE_STATES];
   }
   TextureStageStates;
 
-  TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
+  // from D3DSAMPLERSTATETYPE + pad
+  #define MAXIMUM_TEXTURE_RENDER_STATES 16
+  typedef struct {
+    DWORD state_array [MAXIMUM_TEXTURE_RENDER_STATES];
+  }
+  TextureRenderStates;
+
+  // from D3DRENDERSTATETYPE
+  DWORD _render_state_array [MAXIMUM_RENDER_STATES];
   TextureStageStates _texture_stage_states_array [D3D_MAXTEXTURESTAGES];
+  TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
 
 public:
   virtual TypeHandle get_type() const {
