@@ -2086,15 +2086,7 @@ reset() {
   }
   _available_texture_memory = available_texture_memory;
 
-/*
-  if (_lru) {
-    delete _lru;
-    _lru = 0;
-  }
-*/
-
-  if (_lru == 0)
-  {
+  if (_lru == 0) {
     if (dx_management == false && _enable_lru) {
       int error;
       int maximum_memory;
@@ -2118,6 +2110,9 @@ reset() {
       if (maximum_memory < minimum_memory_requirement) {
          if (maximum_memory < absolute_minimum_memory_requirement) {
            // video memory size is too small
+
+            dxgsg9_cat.error() << "Available video memory is too low " << _available_texture_memory << "\n";
+
             error = true;
          }
          else {
@@ -2125,10 +2120,7 @@ reset() {
            maximum_memory = available_texture_memory;
 
            // need to warn user about low video memory
-  // *****
-  {
-
-  }
+           dxgsg9_cat.warning() << "Available video memory " << _available_texture_memory << " is below the minimum requirement of " << minimum_memory_requirement << "\n";
         }
       }
       else {
@@ -2137,6 +2129,9 @@ reset() {
             // cap video memory used
             maximum_memory = maximum_memory_requirement;
           }
+        } else {
+          // take all video memory
+
         }
       }
 
@@ -2152,6 +2147,7 @@ reset() {
         maximum_page_types = GPT_TotalPageTypes;
         lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
         if (lru) {
+          // register page in and out callbacks
           lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
           lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
           lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
@@ -2169,14 +2165,9 @@ reset() {
 
   _supports_render_texture = false;
 
-  hr = _d3d_device->GetCreationParameters (&creation_parameters);
-
   // default render to texture format
-//  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
-
-  // match the display mode format for render to texture
-  _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
-
+  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
+  hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
     hr = _screen->_d3d9->CheckDeviceFormat (
         creation_parameters.AdapterOrdinal,
@@ -2186,12 +2177,17 @@ reset() {
         D3DRTYPE_TEXTURE,
         _screen->_render_to_texture_d3d_format);
     if (SUCCEEDED (hr)) {
+      // match the display mode format for render to texture
+      _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
       _supports_render_texture = true;
     }
   }
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug() << "Render to Texture Support = " << _supports_render_texture << "\n";
   }
+
+  // override default config setting since it is really supported or not ???
+//  support_render_texture = _supports_render_texture;
 
   _supports_3d_texture = ((d3d_caps.TextureCaps & D3DPTEXTURECAPS_VOLUMEMAP) != 0);
   if (_supports_3d_texture) {
