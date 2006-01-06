@@ -32,7 +32,8 @@
     cMetaInterval.I cMetaInterval.h \
     hideInterval.I hideInterval.h \
     showInterval.I showInterval.h \
-    waitInterval.I waitInterval.h
+    waitInterval.I waitInterval.h \
+    lerp_helpers.h
 
   #define IGATESCAN all
 #end lib_target

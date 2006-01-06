@@ -22,11 +22,6 @@
 #include "directbase.h"
 
 //
-// This header file is only included within .cxx files in this
-// directory.
-//
-
-//
 // The functions defined here include some trivial template functions
 // for handling basic lerp computations, common to several .cxx files
 // here.
