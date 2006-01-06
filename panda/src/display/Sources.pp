@@ -32,7 +32,8 @@
     graphicsDevice.h graphicsDevice.I \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    lensStack.I lensStack.h
+    lensStack.I lensStack.h \
+    lru.h
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
@@ -50,7 +51,8 @@
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsDevice.cxx \
     parasiteBuffer.cxx \
-    windowProperties.cxx
+    windowProperties.cxx \
+    lru.cxx
 
   #define INSTALL_HEADERS \
     standardMunger.I standardMunger.h \
