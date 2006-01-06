@@ -30,7 +30,7 @@
     dxTextureContext9.h dxTextureContext9.I \
     dxGeomMunger9.h dxGeomMunger9.I \
     dxGraphicsDevice9.h \
-    lru.h
+    ../display/lru.h
     
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
@@ -42,7 +42,6 @@
     wdxGraphicsPipe9.cxx \
     wdxGraphicsWindow9.cxx \
     wdxGraphicsBuffer9.cxx \
-    lru.cxx
 
 
 #end lib_target
