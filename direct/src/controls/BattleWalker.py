@@ -59,7 +59,7 @@ class BattleWalker(GravityWalker.GravityWalker):
         if self.lifter.isOnGround():
             if self.isAirborne:
                 self.isAirborne = 0
-                assert(self.debugPrint("isAirborne 0 due to isOnGround() true"))
+                assert self.debugPrint("isAirborne 0 due to isOnGround() true")
                 impact = self.lifter.getImpactVelocity()
                 if impact < -30.0:
                     messenger.send("jumpHardLand")
@@ -69,7 +69,7 @@ class BattleWalker(GravityWalker.GravityWalker):
                     if impact < -5.0:
                         self.startJumpDelay(0.2)
                     # else, ignore the little potholes.
-            assert(self.isAirborne == 0)
+            assert self.isAirborne == 0
             self.priorParent = Vec3.zero()
             if jump and self.mayJump:
                 # The jump button is down and we're close
@@ -77,10 +77,10 @@ class BattleWalker(GravityWalker.GravityWalker):
                 self.lifter.addVelocity(self.avatarControlJumpForce)
                 messenger.send("jumpStart")
                 self.isAirborne = 1
-                assert(self.debugPrint("isAirborne 1 due to jump"))
+                assert self.debugPrint("isAirborne 1 due to jump")
         else:
             if self.isAirborne == 0:
-                assert(self.debugPrint("isAirborne 1 due to isOnGround() false"))
+                assert self.debugPrint("isAirborne 1 due to isOnGround() false")
             self.isAirborne = 1
 
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)

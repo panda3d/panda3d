@@ -1092,7 +1092,7 @@ class Actor(DirectObject, NodePath):
         """
         animControlDict = self.__animControlDict.get(lodName)
         # if this assertion fails, named lod was not present
-        assert(animControlDict != None)
+        assert animControlDict != None
 
         animDict = animControlDict.get(partName)
         if animDict == None:
@@ -1212,7 +1212,6 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("%s is not a character!" % (modelPath))
             model.reparentTo(self.__geomNode)
         else:
-
             # Maybe the model file also included some animations.  If
             # so, try to bind them immediately and put them into the
             # animControlDict.
