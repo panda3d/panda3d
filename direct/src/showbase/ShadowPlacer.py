@@ -148,4 +148,4 @@ class ShadowPlacer(DirectObject.DirectObject):
                 self.activeCount, self.count, self.cTrav.getNumColliders())
                 self.notify.debug(message)
                 onScreenDebug.add("ShadowPlacers", message)
-            return 1 # to allow assert(self.debugDisplay())
+            return 1 # to allow assert self.debugDisplay()
