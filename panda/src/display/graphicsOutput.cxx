@@ -59,7 +59,7 @@ static CubeFaceDef cube_faces[6] = {
   CubeFaceDef("positive_z", LPoint3f(0, 0, 1), LVector3f(0, -1, 0)),
   CubeFaceDef("negative_z", LPoint3f(0, 0, -1), LVector3f(0, -1, 0))
 };
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::Constructor
 //       Access: Protected
@@ -68,7 +68,7 @@ static CubeFaceDef cube_faces[6] = {
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::
-GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
+GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                const string &name) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -131,7 +131,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   default:
     display_cat.warning()
-      << "Invalid background-color specification: " 
+      << "Invalid background-color specification: "
       << background_color.get_string_value() << "\n";
   }
 }
@@ -174,8 +174,8 @@ GraphicsOutput::
   // pointers do.  However, we do need to zero out their pointers to
   // us.
   TotalDisplayRegions::iterator dri;
-  for (dri = _total_display_regions.begin(); 
-       dri != _total_display_regions.end(); 
+  for (dri = _total_display_regions.begin();
+       dri != _total_display_regions.end();
        ++dri) {
     (*dri)->_window = NULL;
   }
@@ -230,18 +230,18 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
     tex->clear_ram_image();
   }
   tex->set_match_framebuffer_format(true);
-  
+
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
   tex->set_x_size(get_x_size());
   tex->set_y_size(get_y_size());
-  
+
   RenderTexture result;
   result._texture = tex;
   result._rtm_mode = mode;
   _textures.push_back(result);
-  
+
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
 
@@ -274,7 +274,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
 //       Access: Published
 //  Description: This is a deprecated interface that made sense back
 //               when GraphicsOutputs could only render into one
-//               texture at a time.  From now on, use 
+//               texture at a time.  From now on, use
 //               clear_render_textures and add_render_texture
 //               instead.
 ////////////////////////////////////////////////////////////////////
@@ -340,8 +340,8 @@ set_inverted(bool inverted) {
       // All of our DisplayRegions need to recompute their pixel
       // positions now.
       TotalDisplayRegions::iterator dri;
-      for (dri = _total_display_regions.begin(); 
-           dri != _total_display_regions.end(); 
+      for (dri = _total_display_regions.begin();
+           dri != _total_display_regions.end();
            ++dri) {
         (*dri)->compute_pixels(_x_size, _y_size);
       }
@@ -516,29 +516,29 @@ create_texture_card_vdata(int x, int y)
 {
   int xru = Texture::up_to_power_2(x);
   int yru = Texture::up_to_power_2(y);
-  
+
   float xhi = (x * 1.0f) / xru;
   float yhi = (y * 1.0f) / yru;
-  
+
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
-  
+
   PT(GeomVertexData) vdata = new GeomVertexData
     ("card", format, Geom::UH_static);
 
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
-  
+
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
-  
+
   texcoord.add_data2f( 0.0f,  yhi);
   texcoord.add_data2f( 0.0f, 0.0f);
   texcoord.add_data2f(  xhi,  yhi);
   texcoord.add_data2f(  xhi, 0.0f);
-  
+
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
@@ -561,10 +561,10 @@ set_size_and_recalc(int x, int y) {
   _x_size = x;
   _y_size = y;
   _has_size = true;
-  
+
   TotalDisplayRegions::iterator dri;
-  for (dri = _total_display_regions.begin(); 
-       dri != _total_display_regions.end(); 
+  for (dri = _total_display_regions.begin();
+       dri != _total_display_regions.end();
        ++dri) {
     (*dri)->compute_pixels(x,y);
   }
@@ -602,7 +602,7 @@ get_texture_card() {
     _texture_card = new Geom(vdata);
     _texture_card->add_primitive(strip);
   }
-  
+
   PT(GeomNode) gnode = new GeomNode("texture card");
   gnode->add_geom(_texture_card);
   NodePath path(gnode);
@@ -619,7 +619,7 @@ get_texture_card() {
       break;
     }
   }
-  
+
   return path;
 }
 
@@ -689,9 +689,9 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
     return buffer;
   }
-  
-  bool allow_bind = 
-    (prefer_texture_buffer && support_render_texture && 
+
+  bool allow_bind =
+    (prefer_texture_buffer && support_render_texture &&
      gsg->get_supports_render_texture() && !to_ram);
 
   // If the user so indicated in the Config.prc file, try to create a
@@ -714,9 +714,9 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     int orig_mode = sb_props.get_frame_buffer_mode();
     int sb_mode = (orig_mode & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer;
     sb_props.set_frame_buffer_mode(sb_mode);
-    
+
     if (sb_mode != orig_mode) {
-      PT(GraphicsStateGuardian) sb_gsg = 
+      PT(GraphicsStateGuardian) sb_gsg =
         engine->make_gsg(gsg->get_pipe(), sb_props, gsg);
       if (sb_gsg != (GraphicsStateGuardian *)NULL) {
         buffer = engine->make_buffer(sb_gsg, name, sort, x_size, y_size);
@@ -755,13 +755,21 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     if (buffer->is_valid()) {
       return buffer;
     }
-    
+
     bool removed = engine->remove_window(buffer);
     nassertr(removed, NULL);
     buffer = (GraphicsOutput *)NULL;
   }
 
   // Looks like we have to settle for a parasite buffer.
+
+  // make sure the size is not bigger than the display buffer by 
+  // continually halving the requested buffer size
+  while (!(x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
+    x_size >>= 1;
+    y_size >>= 1;
+  }
+
   if (x_size <= host->get_x_size() && y_size <= host->get_y_size()) {
     buffer = engine->make_parasite(host, name, sort, x_size, y_size);
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
@@ -806,8 +814,8 @@ static ShowBuffersCubeMapRegions cube_map_regions[6] = {
 //               rig.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsOutput::
-make_cube_map(const string &name, int size, NodePath &camera_rig, 
-	      DrawMask camera_mask, bool to_ram) {
+make_cube_map(const string &name, int size, NodePath &camera_rig,
+        DrawMask camera_mask, bool to_ram) {
   if (!to_ram) {
     // Check the limits imposed by the GSG.  (However, if we're
     // rendering the texture to RAM only, these limits may be
@@ -865,7 +873,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
     camera->set_camera_mask(camera_mask);
     NodePath camera_np = camera_rig.attach_new_node(camera);
     camera_np.look_at(cube_faces[i]._look_at, cube_faces[i]._up);
-    
+
     DisplayRegion *dr;
     if (show_buffers) {
       const ShowBuffersCubeMapRegions &r = cube_map_regions[i];
@@ -894,7 +902,7 @@ GraphicsOutput *GraphicsOutput::
 get_host() {
   return this;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::request_open
 //       Access: Public, Virtual
@@ -906,7 +914,7 @@ get_host() {
 void GraphicsOutput::
 request_open() {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::request_close
 //       Access: Public, Virtual
@@ -919,7 +927,7 @@ request_open() {
 void GraphicsOutput::
 request_close() {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::set_close_now
 //       Access: Public, Virtual
@@ -942,7 +950,7 @@ reset_window(bool swapchain) {
   display_cat.info()
     << "Resetting " << get_type() << "\n";
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::begin_frame
 //       Access: Public, Virtual
@@ -956,7 +964,7 @@ bool GraphicsOutput::
 begin_frame() {
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "begin_frame(): " << get_type() << " " 
+      << "begin_frame(): " << get_type() << " "
       << get_name() << " " << (void *)this << "\n";
   }
 
@@ -966,7 +974,7 @@ begin_frame() {
 
   // Track the size of some other graphics output, if desired.
   auto_resize();
-  
+
   if (needs_context()) {
     if (!make_context()) {
       return false;
@@ -975,9 +983,9 @@ begin_frame() {
 
   // Okay, we already have a GSG, so activate it.
   make_current();
-  
+
   begin_render_texture();
-  
+
   _cube_map_index = -1;
   _cube_map_dr = NULL;
 
@@ -999,7 +1007,7 @@ clear() {
   if (is_any_clear_active()) {
     if (display_cat.is_spam()) {
       display_cat.spam()
-        << "clear(): " << get_type() << " " 
+        << "clear(): " << get_type() << " "
         << get_name() << " " << (void *)this << "\n";
     }
 
@@ -1022,7 +1030,7 @@ void GraphicsOutput::
 end_frame() {
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "end_frame(): " << get_type() << " " 
+      << "end_frame(): " << get_type() << " "
       << get_name() << " " << (void *)this << "\n";
   }
 
@@ -1031,7 +1039,7 @@ end_frame() {
 
   // Handle all render-to-texture operations that use bind-to-texture
   end_render_texture();
-  
+
   // Handle all render-to-texture operations that use copy-to-texture
   for (int i=0; i<count_textures(); i++) {
     RenderTextureMode rtm_mode = get_rtm_mode(i);
@@ -1042,7 +1050,7 @@ end_frame() {
     Texture *texture = get_texture(i);
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
-    
+
     if ((rtm_mode == RTM_copy_texture)||
         (rtm_mode == RTM_copy_ram)||
         ((rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
@@ -1074,12 +1082,12 @@ end_frame() {
     }
   }
   _trigger_copy = false;
-  
+
   // If we're not single-buffered, we're now ready to flip.
   if (!_gsg->get_properties().is_single_buffered()) {
     _flip_ready = true;
   }
-  
+
   // In one-shot mode, we request the GraphicsEngine to delete the
   // window after we have rendered a frame.
   if (_one_shot) {
@@ -1089,13 +1097,13 @@ end_frame() {
     if (!show_buffers) {
       _active = false;
       _delete_flag = true;
-      
+
       // We have to be sure to remove all of the display regions
       // immediately, so that circular reference counts can be cleared
       // up (each display region keeps a pointer to a CullResult,
       // which can hold all sorts of pointers).
       remove_all_display_regions();
-      
+
       // If we were rendering directly to texture, we can't delete the
       // buffer until the texture is gone too.
       for (int i=0; i<count_textures(); i++) {
@@ -1109,7 +1117,7 @@ end_frame() {
     // we'll end up holding a reference to the textures forever.
     clear_render_textures();
   }
-  
+
   _cube_map_index = -1;
   _cube_map_dr = NULL;
 }
@@ -1172,9 +1180,9 @@ change_scenes(DisplayRegion *new_dr) {
           // In render-to-texture mode, switch the rendering backend to
           // the new cube map face, so that the subsequent frame will be
           // rendered to the new face.
-          
+
           select_cube_map(new_cube_map_index);
-          
+
         } else if (old_cube_map_index != -1) {
           // In copy-to-texture mode, copy the just-rendered framebuffer
           // to the old cube map face.
@@ -1187,10 +1195,10 @@ change_scenes(DisplayRegion *new_dr) {
           }
           RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
           if (rtm_mode == RTM_copy_ram) {
-            _gsg->framebuffer_copy_to_ram(texture, old_cube_map_index, 
+            _gsg->framebuffer_copy_to_ram(texture, old_cube_map_index,
                                           old_cube_map_dr, buffer);
           } else {
-            _gsg->framebuffer_copy_to_texture(texture, old_cube_map_index, 
+            _gsg->framebuffer_copy_to_texture(texture, old_cube_map_index,
                                               old_cube_map_dr, buffer);
           }
         }
