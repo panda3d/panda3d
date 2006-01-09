@@ -74,7 +74,7 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         del self.pusher
 
     def setCollisionsActive(self, active = 1):
-        assert(self.debugPrint("setCollisionsActive(active%s)"%(active,)))
+        assert self.debugPrint("setCollisionsActive(active%s)"%(active,))
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
@@ -100,12 +100,12 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls"))
+        assert self.debugPrint("enableAvatarControls")
         pass
 
     def disableAvatarControls(self):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls"))
+        assert self.debugPrint("disableAvatarControls")
         pass

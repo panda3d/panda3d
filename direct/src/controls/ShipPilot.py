@@ -68,7 +68,7 @@ class ShipPilot(PhysicsWalker):
         self.ship = None
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
-        assert(self.debugPrint("setWalkSpeed()"))
+        assert self.debugPrint("setWalkSpeed()")
         self.avatarControlForwardSpeed=forward
         self.avatarControlJumpForce=0.0
         self.avatarControlReverseSpeed=reverse
@@ -235,7 +235,7 @@ class ShipPilot(PhysicsWalker):
                 shipCollWall.stash()
             
     def takedownPhysics(self):
-        assert(self.debugPrint("takedownPhysics()"))
+        assert self.debugPrint("takedownPhysics()")
         if hasattr(self, "phys"):
             for i in self.nodes:
                 i.removeNode()
@@ -244,7 +244,7 @@ class ShipPilot(PhysicsWalker):
             self.ship.worldVelocity = Vec3.zero()
             
     def setupPhysics(self, avatarNodePath):
-        assert(self.debugPrint("setupPhysics()"))
+        assert self.debugPrint("setupPhysics()")
         if avatarNodePath is None:
             return
         assert not avatarNodePath.isEmpty()
@@ -375,7 +375,7 @@ class ShipPilot(PhysicsWalker):
         """
         Set up the avatar collisions
         """
-        assert(self.debugPrint("initializeCollisions()"))
+        assert self.debugPrint("initializeCollisions()")
         self.cTrav = collisionTraverser
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
@@ -384,7 +384,7 @@ class ShipPilot(PhysicsWalker):
         self.backSphereOffset = backSphereOffset
 
     def deleteCollisions(self):
-        assert(self.debugPrint("deleteCollisions()"))
+        assert self.debugPrint("deleteCollisions()")
         del self.cTrav
 
         if self.useHeightRay:
@@ -413,7 +413,7 @@ class ShipPilot(PhysicsWalker):
         """
         indicator is a NodePath
         """
-        assert(self.debugPrint("setAvatarPhysicsIndicator()"))
+        assert self.debugPrint("setAvatarPhysicsIndicator()")
         self.cSphereNodePath.show()
         if indicator:
             # Indicator Node:
@@ -465,7 +465,7 @@ class ShipPilot(PhysicsWalker):
         return Task.cont
 
     def setCollisionsActive(self, active = 1):
-        assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
+        assert self.debugPrint("collisionsActive(active=%s)"%(active,))
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
@@ -963,11 +963,11 @@ class ShipPilot(PhysicsWalker):
         return Task.cont
     
     def doDeltaPos(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.debugPrint("doDeltaPos()")
         self.needToDeltaPos = 1
     
     def setPriorParentVector(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.debugPrint("doDeltaPos()")
         
         #print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
         if __debug__:
@@ -976,15 +976,15 @@ class ShipPilot(PhysicsWalker):
                               self.__oldPosDelta.pPrintValues())
         
         velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
-        assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
-        assert(self.debugPrint("  velocity=%s"%(velocity,)))
+        assert self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,))
+        assert self.debugPrint("  velocity=%s"%(velocity,))
         self.priorParent.setVector(Vec3(velocity))
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
     
     def reset(self):
-        assert(self.debugPrint("reset()"))
+        assert self.debugPrint("reset()")
         self.actorNode.getPhysicsObject().resetPosition(
             self.avatarNodePath.getPos())
         self.priorParent.setVector(Vec3.zero())
@@ -1004,7 +1004,7 @@ class ShipPilot(PhysicsWalker):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls()"))
+        assert self.debugPrint("enableAvatarControls()")
         assert self.collisionsActive
 
         if __debug__:
@@ -1025,7 +1025,7 @@ class ShipPilot(PhysicsWalker):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls()"))
+        assert self.debugPrint("disableAvatarControls()")
         taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
 

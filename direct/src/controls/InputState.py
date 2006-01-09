@@ -18,7 +18,7 @@ class InputState(DirectObject.DirectObject):
 
     def __init__(self):
         self.state = {}
-        assert(self.debugPrint("InputState()"))
+        assert self.debugPrint("InputState()")
         self.watching = {}
         self.forcing = {}
     
@@ -85,7 +85,7 @@ class InputState(DirectObject.DirectObject):
         del self.state[name]
     
     def set(self, name, isSet):
-        assert(self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet)))
+        assert self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet))
         self.state[name] = isSet
         # We change the name before sending it because this may
         # be the same name that messenger used to call InputState.set()

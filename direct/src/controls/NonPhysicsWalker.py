@@ -38,7 +38,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.stopThisFrame = 0
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
-        assert(self.debugPrint("setWalkSpeed()"))
+        assert self.debugPrint("setWalkSpeed()")
         self.avatarControlForwardSpeed=forward
         #self.avatarControlJumpForce=jump
         self.avatarControlReverseSpeed=reverse
@@ -137,7 +137,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.cSphereNodePath.setTag(key, value)
 
     def setCollisionsActive(self, active = 1):
-        assert(self.debugPrint("setCollisionsActive(active%s)"%(active,)))
+        assert self.debugPrint("setCollisionsActive(active%s)"%(active,))
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
@@ -257,10 +257,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         return Task.cont
     
     def doDeltaPos(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.debugPrint("doDeltaPos()")
     
     def reset(self):
-        assert(self.debugPrint("reset()"))
+        assert self.debugPrint("reset()")
 
     def getVelocity(self):
         return self.vel
@@ -269,7 +269,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls"))
+        assert self.debugPrint("enableAvatarControls")
         assert self.collisionsActive
 
         taskName = "AvatarControls-%s"%(id(self),)
@@ -282,7 +282,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls"))
+        assert self.debugPrint("disableAvatarControls")
         taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
     

@@ -39,7 +39,7 @@ class DevWalker(DirectObject.DirectObject):
         self.task = None
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
-        assert(self.debugPrint("setWalkSpeed()"))
+        assert self.debugPrint("setWalkSpeed()")
         self.avatarControlForwardSpeed=forward
         #self.avatarControlJumpForce=jump
         self.avatarControlReverseSpeed=reverse
@@ -155,7 +155,7 @@ class DevWalker(DirectObject.DirectObject):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls"))
+        assert self.debugPrint("enableAvatarControls")
 
         if self.task:
             # remove any old
@@ -168,7 +168,7 @@ class DevWalker(DirectObject.DirectObject):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls"))
+        assert self.debugPrint("disableAvatarControls")
         if self.task:
             self.task.remove()
             self.task = None

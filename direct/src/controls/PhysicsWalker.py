@@ -64,7 +64,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     """
     def spawnTest(self):
-        assert(self.debugPrint("\n\nspawnTest()\n"))
+        assert self.debugPrint("\n\nspawnTest()\n")
         if not self.wantDebugIndicator:
             return
         from pandac.PandaModules import *
@@ -108,7 +108,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     """
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
-        assert(self.debugPrint("setWalkSpeed()"))
+        assert self.debugPrint("setWalkSpeed()")
         self.avatarControlForwardSpeed=forward
         self.avatarControlJumpForce=jump
         self.avatarControlReverseSpeed=reverse
@@ -213,7 +213,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
 
     def setupPhysics(self, avatarNodePath):
-        assert(self.debugPrint("setupPhysics()"))
+        assert self.debugPrint("setupPhysics()")
         # Connect to Physics Manager:
         self.actorNode=ActorNode("PW physicsActor")
         self.actorNode.getPhysicsObject().setOriented(1)
@@ -269,7 +269,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         Set up the avatar collisions
         """
-        assert(self.debugPrint("initializeCollisions()"))
+        assert self.debugPrint("initializeCollisions()")
         
         assert not avatarNodePath.isEmpty()
         
@@ -291,7 +291,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         indicator is a NodePath
         """
-        assert(self.debugPrint("setAvatarPhysicsIndicator()"))
+        assert self.debugPrint("setAvatarPhysicsIndicator()")
         self.cSphereNodePath.show()
         if indicator:
             # Indicator Node:
@@ -343,7 +343,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         return Task.cont
 
     def deleteCollisions(self):
-        assert(self.debugPrint("deleteCollisions()"))
+        assert self.debugPrint("deleteCollisions()")
         del self.cTrav
 
         if self.useHeightRay:
@@ -360,7 +360,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
-        assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
+        assert self.debugPrint("collisionsActive(active=%s)"%(active,))
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
@@ -398,7 +398,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
-        assert(self.debugPrint("oneTimeCollide()"))
+        assert self.debugPrint("oneTimeCollide()")
         tempCTrav = CollisionTraverser("oneTimeCollide")
         if self.useHeightRay:
             if self.useLifter:
@@ -692,11 +692,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         return Task.cont
     
     def doDeltaPos(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.debugPrint("doDeltaPos()")
         self.needToDeltaPos = 1
     
     def setPriorParentVector(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.debugPrint("doDeltaPos()")
         
         print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
         if __debug__:
@@ -705,15 +705,15 @@ class PhysicsWalker(DirectObject.DirectObject):
                               self.__oldPosDelta.pPrintValues())
         
         velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
-        assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
-        assert(self.debugPrint("  velocity=%s"%(velocity,)))
+        assert self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,))
+        assert self.debugPrint("  velocity=%s"%(velocity,))
         self.priorParent.setVector(Vec3(velocity))
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
     
     def reset(self):
-        assert(self.debugPrint("reset()"))
+        assert self.debugPrint("reset()")
         self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         self.priorParent.setVector(Vec3.zero())
         self.highMark = 0
@@ -733,7 +733,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls()"))
+        assert self.debugPrint("enableAvatarControls()")
         assert self.collisionsActive
 
         if __debug__:
@@ -752,7 +752,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls()"))
+        assert self.debugPrint("disableAvatarControls()")
         taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
 
