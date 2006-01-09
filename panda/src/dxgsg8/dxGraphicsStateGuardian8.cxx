@@ -1632,6 +1632,9 @@ reset() {
       << "\nD3DTEXOPCAPS_MULTIPLYADD = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0)
       << "\nD3DTEXOPCAPS_LERP = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0)
       << "\nD3DPMISCCAPS_TSSARGTEMP = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0)
+      << "\nVertexShaderVersion = " << D3DSHADER_VERSION_MAJOR (d3d_caps.VertexShaderVersion) << "." << D3DSHADER_VERSION_MINOR (d3d_caps.VertexShaderVersion)
+      << "\nPixelShaderVersion = " << D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion) << "." << D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion)
+      << "\nMaxVertexShaderConst = " << d3d_caps.MaxVertexShaderConst
       << "\n";
   }
 

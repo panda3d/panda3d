@@ -597,6 +597,9 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     dwBehaviorFlags |= D3DCREATE_MULTITHREADED;
   }
 
+  // option
+// dwBehaviorFlags |= D3DCREATE_PUREDEVICE;
+
   if (is_fullscreen()) {
     // CREATE FULLSCREEN BUFFERS
 
