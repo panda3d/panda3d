@@ -65,8 +65,8 @@ class RandomNumGen:
 
         # the maximum for N ought to be 0x80000000, but Python treats
         # that as a negative number.
-        assert (N >= 0)
-        assert (N <= 0x7fffffff)
+        assert N >= 0
+        assert N <= 0x7fffffff
 
         # the cast to 'long' prevents python from importing warnings.py,
         # presumably to warn that the multiplication result is too
@@ -122,7 +122,7 @@ class RandomNumGen:
 
     def randint(self, a,b):
         """returns integer in [a,b]"""
-        assert (a <= b)
+        assert a <= b
         range = b-a+1
         r = self.__rand(range)
         return a+r

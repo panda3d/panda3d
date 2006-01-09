@@ -52,7 +52,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
     def setParentingRules(self, style, rule):
         assert self.notify.debug("setParentingRules: style: %s, rule: %s" % (style, rule))
         rules = rule.split(self.RuleSeparator)
-        assert(len(rules) == 3)
+        assert len(rules) == 3
         self.style = style
         self.startingZone = int(rules[0])
         self.gridSize = int(rules[1])

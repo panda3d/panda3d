@@ -8,7 +8,7 @@ CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a li
 # This should be created by the game specific "start" file
 #ShowBase()
 # Instead of creating a show base, assert that one has already been created
-assert(base)
+assert base
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()

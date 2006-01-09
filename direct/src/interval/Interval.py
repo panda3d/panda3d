@@ -77,7 +77,7 @@ class Interval(DirectObject):
         elif state == CInterval.SStarted:
             # Support modifying t while the interval is playing.  We
             # assume is_playing() will be true in this state.
-            assert(self.isPlaying())
+            assert self.isPlaying()
             self.privInterrupt()
             self.privStep(t)
             self.setupResume()

@@ -32,7 +32,7 @@ class Loader:
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise.
         """
-        assert(Loader.notify.debug("Loading model: %s" % (modelPath)))
+        assert Loader.notify.debug("Loading model: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
         node = self.loader.loadSync(Filename(modelPath))
@@ -52,7 +52,7 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        assert(Loader.notify.debug("Loading model once: %s" % (modelPath)))
+        assert Loader.notify.debug("Loading model once: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -76,7 +76,7 @@ class Loader:
         want to load a model and immediately set a transform on it.
         But also consider loadModelCopy().
         """
-        assert(Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode)))
+        assert Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -93,7 +93,7 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        assert(Loader.notify.debug("Loading model copy: %s" % (modelPath)))
+        assert Loader.notify.debug("Loading model copy: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -116,7 +116,7 @@ class Loader:
 
         However, if you're loading a font, see loadFont(), below.
         """
-        assert(Loader.notify.debug("Loading model once node: %s" % (modelPath)))
+        assert Loader.notify.debug("Loading model once node: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
         return ModelPool.loadModel(modelPath)
@@ -125,7 +125,7 @@ class Loader:
         """
         modelPath is a string.
         """
-        assert(Loader.notify.debug("Unloading model: %s" % (modelPath)))
+        assert Loader.notify.debug("Unloading model: %s" % (modelPath))
         ModelPool.releaseModel(modelPath)
 
     # font loading funcs
@@ -145,7 +145,7 @@ class Loader:
         standard font file (like a TTF file) that is supported by
         FreeType.
         """
-        assert(Loader.notify.debug("Loading font: %s" % (modelPath)))
+        assert Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
 
@@ -196,12 +196,12 @@ class Loader:
         TexturePool class. Returns None if not found
         """
         if alphaPath is None:
-            assert(Loader.notify.debug("Loading texture: %s" % (texturePath)))
+            assert Loader.notify.debug("Loading texture: %s" % (texturePath))
             if phaseChecker:
                 phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath)
         else:
-            assert(Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath)))
+            assert Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath))
             if phaseChecker:
                 phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, alphaPath)
@@ -216,7 +216,7 @@ class Loader:
         Returns a 3-D Texture object, suitable for rendering
         volumetric textures, if successful, or None if not.
         """
-        assert(Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern)))
+        assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
         if phaseChecker:
             phaseChecker(texturePattern)
         texture = TexturePool.load3dTexture(texturePattern)
@@ -232,7 +232,7 @@ class Loader:
         None if not.
 
         """
-        assert(Loader.notify.debug("Loading cube map: %s" % (texturePattern)))
+        assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
         if phaseChecker:
             phaseChecker(texturePattern)
         texture = TexturePool.loadCubeMap(texturePattern)
@@ -251,12 +251,12 @@ class Loader:
         The texture parameter may be the return value of any previous
         call to loadTexture(), load3DTexture(), or loadCubeMap().
         """
-        assert(Loader.notify.debug("Unloading texture: %s" % (texture)))
+        assert Loader.notify.debug("Unloading texture: %s" % (texture))
         TexturePool.releaseTexture(texture)
 
     # sound loading funcs
     def loadSfx(self, name):
-        assert(Loader.notify.debug("Loading sound: %s" % (name)))
+        assert Loader.notify.debug("Loading sound: %s" % (name))
         if phaseChecker:
             phaseChecker(name)
         # should return a valid sound obj even if soundMgr is invalid
@@ -269,7 +269,7 @@ class Loader:
         return sound
 
     def loadMusic(self, name):
-        assert(Loader.notify.debug("Loading sound: %s" % (name)))
+        assert Loader.notify.debug("Loading sound: %s" % (name))
         # should return a valid sound obj even if musicMgr is invalid
         sound = None
         if (name):

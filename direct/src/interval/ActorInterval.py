@@ -195,7 +195,7 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
             LerpAnimInterval.lerpAnimNum += 1
 
         blendType = self.stringBlendType(blendType)
-        assert(blendType != self.BTInvalid)
+        assert blendType != self.BTInvalid
 
         # Initialize superclass
         CLerpAnimEffectInterval.__init__(self, name, duration, blendType)

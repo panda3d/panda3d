@@ -43,8 +43,8 @@ class Timer:
         return self.currT
 
     def resume(self):
-        assert(self.currT <= self.finalT)
-        assert(self.started == 0)
+        assert self.currT <= self.finalT
+        assert self.started == 0
         self.start(self.finalT - self.currT, self.name)
 
     def restart(self):

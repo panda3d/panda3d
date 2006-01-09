@@ -101,14 +101,14 @@ class ClassicFSM(DirectObject):
         return str
 
     def enterInitialState(self, argList=[]):
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
         if self.__currentState == self.__initialState:
             return
         
-        assert(self.__currentState == None)
+        assert self.__currentState == None
         self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
 
     # setters and getters
 
@@ -170,8 +170,8 @@ class ClassicFSM(DirectObject):
         """
         Exit the current state
         """
-        assert(self.__internalStateInFlux)
-        assert(ClassicFSM.notify.debug("[%s]: exiting %s" % (self.__name, self.__currentState.getName())))
+        assert self.__internalStateInFlux
+        assert ClassicFSM.notify.debug("[%s]: exiting %s" % (self.__name, self.__currentState.getName()))
         self.__currentState.exit(argList)
         # Only send the state change event if we are inspecting it
         # If this event turns out to be generally useful, we can
@@ -185,10 +185,10 @@ class ClassicFSM(DirectObject):
         """
         Enter a given state, if it exists
         """
-        assert(self.__internalStateInFlux)
+        assert self.__internalStateInFlux
         stateName = aState.getName()
         if (stateName in self.__states):
-            assert(ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name, stateName)))
+            assert ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name, stateName))
             self.__currentState = aState
             # Only send the state change event if we are inspecting it
             # If this event turns out to be generally useful, we can
@@ -212,11 +212,11 @@ class ClassicFSM(DirectObject):
         """__transition(self, State, enterArgList, exitArgList)
         Exit currentState and enter given one
         """
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
         self.__internalStateInFlux = 1
         self.__exitCurrent(exitArgList)
         self.__enter(aState, enterArgList)
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
 
     def request(self, aStateName, enterArgList=[], exitArgList=[],
                 force=0):
@@ -230,7 +230,7 @@ class ClassicFSM(DirectObject):
         # exitState() function for the previous state.  This is not
         # supported because we're not fully transitioned into the new
         # state yet.
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
 
         if not self.__currentState:
             # Make this a warning for now
@@ -318,7 +318,7 @@ class ClassicFSM(DirectObject):
         ClassicFSM transitions, letting the same fn be used for different states
         that may not have the same out transitions.
         """
-        assert(not self.__internalStateInFlux)
+        assert not self.__internalStateInFlux
         if not self.__currentState:
             # Make this a warning for now
             ClassicFSM.notify.warning("[%s]: request: never entered initial state" %

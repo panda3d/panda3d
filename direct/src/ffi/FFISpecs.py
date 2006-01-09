@@ -311,7 +311,7 @@ class MethodSpecification(FunctionSpecification):
             if (i < (len(thislessArgTypes)-1)):
                 file.write(', ')
         file.write(')\n')       
-        indent(file, nesting+2, 'assert(self.this != 0)\n')
+        indent(file, nesting+2, 'assert self.this != 0\n')
         if self.typeDescriptor.userManagesMemory:
             indent(file, nesting+2, 'self.userManagesMemory = 1\n')
 
@@ -389,7 +389,7 @@ class MethodSpecification(FunctionSpecification):
         # normal system, it actually deletes the old Python object causing the C++ memory
         # to be deleted then returns a new Python shadow object with the old C++ pointer... BAD!
         if self.getFinalName() in augmentedAssignments:
-            indent(file, nesting+2, 'assert(self.this == returnValue)\n')
+            indent(file, nesting+2, 'assert self.this == returnValue\n')
             indent(file, nesting+2, 'return self\n')
         else:
             returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()

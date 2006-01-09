@@ -96,14 +96,14 @@ class DistributedObject(DistributedObjectBase):
             except Exception, e: print "%serror printing status"%(spaces,), e
 
     def setNeverDisable(self, bool):
-        assert((bool == 1) or (bool == 0))
+        assert (bool == 1) or (bool == 0)
         self.neverDisable = bool
 
     def getNeverDisable(self):
         return self.neverDisable
 
     def setCacheable(self, bool):
-        assert((bool == 1) or (bool == 0))
+        assert (bool == 1) or (bool == 0)
         self.cacheable = bool
 
     def getCacheable(self):
@@ -167,7 +167,7 @@ class DistributedObject(DistributedObjectBase):
         Sends a message to the world after the object has been
         generated and all of its required fields filled in.
         """
-        assert(self.notify.debug('announceGenerate(): %s' % (self.doId)))
+        assert self.notify.debug('announceGenerate(): %s' % (self.doId))
         if self.activeState != ESGenerated:
             self.activeState = ESGenerated
             messenger.send(self.uniqueName("generate"), [self])
@@ -176,7 +176,7 @@ class DistributedObject(DistributedObjectBase):
         """
         Inheritors should redefine this to take appropriate action on disable
         """
-        assert(self.notify.debug('disable(): %s' % (self.doId)))
+        assert self.notify.debug('disable(): %s' % (self.doId))
         if self.activeState != ESDisabled:
             self.activeState = ESDisabled
             self.__callbacks = {}
@@ -203,7 +203,7 @@ class DistributedObject(DistributedObjectBase):
         """
         Inheritors should redefine this to take appropriate action on delete
         """
-        assert(self.notify.debug('delete(): %s' % (self.doId)))
+        assert self.notify.debug('delete(): %s' % (self.doId))
         try:
             self.DistributedObject_deleted
         except:
@@ -339,10 +339,10 @@ class DistributedObject(DistributedObjectBase):
             if base.localAvatar.doId in avIds:
                 # We found localToon's id; stop here.
                 self.__barrierContext = (context, name)
-                assert(self.notify.debug('setBarrierData(%s, %s)' % (context, name)))
+                assert self.notify.debug('setBarrierData(%s, %s)' % (context, name))
                 return
 
-        assert(self.notify.debug('setBarrierData(%s)' % (None)))
+        assert self.notify.debug('setBarrierData(%s)' % (None))
         self.__barrierContext = None
 
     def doneBarrier(self, name = None):
@@ -359,13 +359,13 @@ class DistributedObject(DistributedObjectBase):
         if self.__barrierContext != None:
             context, aiName = self.__barrierContext
             if name == None or name == aiName:
-                assert(self.notify.debug('doneBarrier(%s, %s)' % (context, aiName)))
+                assert self.notify.debug('doneBarrier(%s, %s)' % (context, aiName))
                 self.sendUpdate("setBarrierReady", [context])
                 self.__barrierContext = None
             else:
-                assert(self.notify.debug('doneBarrier(%s) ignored; current barrier is %s' % (name, aiName)))
+                assert self.notify.debug('doneBarrier(%s) ignored; current barrier is %s' % (name, aiName))
         else:
-            assert(self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name)))
+            assert self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name))
 
     def addInterest(self, zoneId, note="", event=None):
         self.cr.addInterest(self.getDoId(), zoneId, note, event)

@@ -89,7 +89,7 @@ class FourState:
         off (and so is state 2 which is oposite of 4 and therefore 
         oposite of 'on').
         """
-        assert(self.debugPrint("FourState(names=%s)"%(names)))
+        assert self.debugPrint("FourState(names=%s)"%(names))
         self.track = None
         self.stateTime = 0.0
         self.names = names
@@ -130,7 +130,7 @@ class FourState:
         self.fsm.enterInitialState()
     
     def setTrack(self, track):
-        assert(self.debugPrint("setTrack(track=%s)"%(track,)))
+        assert self.debugPrint("setTrack(track=%s)"%(track,))
         if self.track is not None:
             self.track.pause()
             self.track = None
@@ -146,27 +146,27 @@ class FourState:
     # If the client wants the state changed it needs to
     # send a request to the AI.
     #def setIsOn(self, isOn):
-    #    assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
+    #    assert self.debugPrint("setIsOn(isOn=%s)"%(isOn,))
     #    pass
     
     def isOn(self):
-        assert(self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex)))
+        assert self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex))
         return self.stateIndex==4
 
     def changedOnState(self, isOn):
         """
         Allow derived classes to overide this.
         """
-        assert(self.debugPrint("changedOnState(isOn=%s)"%(isOn,)))
+        assert self.debugPrint("changedOnState(isOn=%s)"%(isOn,))
     
     ##### state 0 #####
     
     def enterState0(self):
-        assert(self.debugPrint("enter0()"))
+        assert self.debugPrint("enter0()")
         self.enterStateN(0)
     
     def exitState0(self):
-        assert(self.debugPrint("exit0()"))
+        assert self.debugPrint("exit0()")
         # It's important for FourStates to broadcast their state
         # when they are generated on the client. Before I put this in,
         # if a door was generated and went directly to an 'open' state,
@@ -176,39 +176,39 @@ class FourState:
     ##### state 1 #####
     
     def enterState1(self):
-        assert(self.debugPrint("enterState1()"))
+        assert self.debugPrint("enterState1()")
         self.enterStateN(1)
     
     def exitState1(self):
-        assert(self.debugPrint("exitState1()"))
+        assert self.debugPrint("exitState1()")
     
     ##### state 2 #####
     
     def enterState2(self):
-        assert(self.debugPrint("enterState2()"))
+        assert self.debugPrint("enterState2()")
         self.enterStateN(2)
     
     def exitState2(self):
-        assert(self.debugPrint("exitState2()"))
+        assert self.debugPrint("exitState2()")
     
     ##### state 3 #####
     
     def enterState3(self):
-        assert(self.debugPrint("enterState3()"))
+        assert self.debugPrint("enterState3()")
         self.enterStateN(3)
     
     def exitState3(self):
-        assert(self.debugPrint("exitState3()"))
+        assert self.debugPrint("exitState3()")
     
     ##### state 4 #####
     
     def enterState4(self):
-        assert(self.debugPrint("enterState4()"))
+        assert self.debugPrint("enterState4()")
         self.enterStateN(4)
         self.changedOnState(1)
     
     def exitState4(self):
-        assert(self.debugPrint("exitState4()"))
+        assert self.debugPrint("exitState4()")
         self.changedOnState(0)
     
     if __debug__:

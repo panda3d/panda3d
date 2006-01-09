@@ -99,7 +99,7 @@ class MetaInterval(CMetaInterval):
         # in the list right away.  There's no good reason to do this,
         # except that it makes it easier for the programmer to detect
         # when a MetaInterval is misdefined at creation time.
-        assert(self.validateComponents(self.ivals))
+        assert self.validateComponents(self.ivals)
 
 
 
@@ -112,7 +112,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals.append(ival)
         self.__ivalsDirty = 1
-        assert(self.validateComponent(ival))
+        assert self.validateComponent(ival)
 
     def extend(self, ivals):
         # Appends a list of intervals to the list so far.
@@ -132,7 +132,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals.insert(index, ival)
         self.__ivalsDirty = 1
-        assert(self.validateComponent(ival))
+        assert self.validateComponent(ival)
 
     def pop(self, index = None):
         # Returns element index (or the last element) and removes it
@@ -180,7 +180,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals[index] = value
         self.__ivalsDirty = 1
-        assert(self.validateComponent(value))
+        assert self.validateComponent(value)
 
     def __delitem__(self, index):
         if isinstance(self.ivals, types.TupleType):
@@ -198,7 +198,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals[i : j] = s
         self.__ivalsDirty = 1
-        assert(self.validateComponents(s))
+        assert self.validateComponents(s)
 
     def __delslice__(self, i, j):
         if isinstance(self.ivals, types.TupleType):
@@ -210,13 +210,13 @@ class MetaInterval(CMetaInterval):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
         if isinstance(other, MetaInterval):
-            assert(self.__class__ == other.__class__)
+            assert self.__class__ == other.__class__
             ivals = other.ivals
         else:
             ivals = list(other)
         self.ivals += ivals
         self.__ivalsDirty = 1
-        assert(self.validateComponents(ivals))
+        assert self.validateComponents(ivals)
         return self
 
     def __add__(self, other):

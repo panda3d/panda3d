@@ -259,7 +259,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             distObj.generate()
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
@@ -268,7 +268,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
@@ -330,7 +330,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             distObj.generate()
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
@@ -339,7 +339,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
@@ -372,7 +372,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2ownerView[doId]
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
@@ -380,7 +380,7 @@ class ClientRepository(ConnectionRepository):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cacheOwner.retrieve(doId)
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             # put it in the dictionary:
             self.doId2ownerView[doId] = distObj
             # and update it.
@@ -754,7 +754,7 @@ class ClientRepository(ConnectionRepository):
     ##     # server.
     ## 
     ##     id = obj.doId
-    ##     assert(self.isLocalId(id))
+    ##     assert self.isLocalId(id)
     ##     self.sendDeleteMsg(id, 1)
     ##     obj.zone = zoneId
     ##     self.send(obj.dclass.clientFormatGenerate(obj, id, zoneId, []))

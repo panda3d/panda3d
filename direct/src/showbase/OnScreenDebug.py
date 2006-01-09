@@ -74,7 +74,7 @@ class OnScreenDebug:
 
     def add(self, key, value):
         self.data[key] = (self.frame, value)
-        return 1 # to allow assert(onScreenDebug.add("foo", bar))
+        return 1 # to allow assert onScreenDebug.add("foo", bar)
 
     def has(self, key):
         return key in self.data

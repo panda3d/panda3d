@@ -18,7 +18,7 @@ class CRCache:
         """
         Delete each item in the cache then clear all references to them
         """
-        assert(self.checkCache())
+        assert self.checkCache()
         CRCache.notify.debug("Flushing the cache")
         for distObj in self.dict.values():
             distObj.deleteOrDelay()
@@ -28,8 +28,8 @@ class CRCache:
 
     def cache(self, distObj):
         # Only distributed objects are allowed in the cache
-        assert(isinstance(distObj, DistributedObject.DistributedObject))
-        assert(self.checkCache())
+        assert isinstance(distObj, DistributedObject.DistributedObject)
+        assert self.checkCache()
         # Get the doId
         doId = distObj.getDoId()
         # Error check
@@ -53,10 +53,10 @@ class CRCache:
                 oldestDistObj.deleteOrDelay()
                 
         # Make sure that the fifo and the dictionary are sane
-        assert(len(self.dict) == len(self.fifo))
+        assert len(self.dict) == len(self.fifo)
 
     def retrieve(self, doId):
-        assert(self.checkCache())
+        assert self.checkCache()
         if self.dict.has_key(doId):
             # Find the object
             distObj = self.dict[doId]
@@ -74,8 +74,8 @@ class CRCache:
         return self.dict.has_key(doId)
     
     def delete(self, doId):
-        assert(self.checkCache())
-        assert(self.dict.has_key(doId))
+        assert self.checkCache()
+        assert self.dict.has_key(doId)
         # Look it up
         distObj = self.dict[doId]
         # Remove it from the dict and fifo
@@ -90,5 +90,5 @@ class CRCache:
         from pandac.PandaModules import NodePath
         for obj in self.dict.values():
             if isinstance(obj, NodePath):
-                assert(not obj.isEmpty() and obj.getTopNode() != render.node())
+                assert not obj.isEmpty() and obj.getTopNode() != render.node()
         return 1

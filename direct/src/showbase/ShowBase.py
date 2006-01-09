@@ -323,7 +323,7 @@ class ShowBase(DirectObject.DirectObject):
         Creates the default GraphicsPipe, which will be used to make
         windows unless otherwise specified.
         """
-        assert(self.pipe == None)
+        assert self.pipe == None
         selection = GraphicsPipeSelection.getGlobalPtr()
         selection.printPipeTypes()
         self.pipe = selection.makeDefaultPipe()

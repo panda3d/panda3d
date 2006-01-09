@@ -996,7 +996,7 @@ class LevelEditor(NodePath, DirectObject):
         else:
             newZoneId = newZone
         # Ensure we have vis data
-        assert(self.nodeDict)
+        assert self.nodeDict
         # Hide the old zone (if there is one)
         if self.__zoneId != None:
             for i in self.nodeDict[self.__zoneId]:
@@ -6110,7 +6110,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         """Delete the selected sign or sign baseline"""
         if (self.currentBaselineDNA):
             # Remove the baseline:
-            assert(int((self.baselineMenu.curselection())[0]) == self.currentBaselineIndex)
+            assert int((self.baselineMenu.curselection())[0]) == self.currentBaselineIndex
             DNARemoveChildOfClass(self.currentSignDNA, DNA_SIGN_BASELINE,
                 self.currentBaselineIndex-1)
             self.baselineMenu.delete(self.currentBaselineIndex)
@@ -6121,7 +6121,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.replaceSelected()
         elif (self.currentSignDNA):
             # Remove the sign:
-            assert(int((self.baselineMenu.curselection())[0]) == 0)
+            assert int((self.baselineMenu.curselection())[0]) == 0
             le = self.levelEditor
             le.removeSign(le.DNATarget, le.DNATargetParent)
             self.currentBaselineDNA=None

@@ -34,7 +34,7 @@ class ParticleInterval(Interval):
         self.parent = parent
         self.worldRelative = worldRelative
         self.fLoop = loop
-        assert(duration > 0.0 or loop == 1)
+        assert duration > 0.0 or loop == 1
         # Initialize superclass
         Interval.__init__(self, name, duration)
 

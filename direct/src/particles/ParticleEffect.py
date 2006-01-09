@@ -26,7 +26,7 @@ class ParticleEffect(NodePath):
         self.renderParent = None
 
     def start(self, parent=None, renderParent=None):
-        assert(self.notify.debug('start() - name: %s' % self.name))
+        assert self.notify.debug('start() - name: %s' % self.name)
         self.renderParent = renderParent
         self.enable()
         if parent != None:

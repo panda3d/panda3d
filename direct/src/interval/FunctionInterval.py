@@ -40,7 +40,7 @@ class FunctionInterval(Interval.Interval):
         if (name == None):
             name = 'Func-%s-%d' % (function.__name__, FunctionInterval.functionIntervalNum)
             FunctionInterval.functionIntervalNum += 1
-        assert(isinstance(name, types.StringType))
+        assert isinstance(name, types.StringType)
         # Record any arguments
         self.extraArgs = extraArgs
         self.kw = kw
@@ -269,7 +269,7 @@ class PosHprScaleInterval(FunctionInterval):
 class Func(FunctionInterval):
     def __init__(self, *args, **kw):
         function = args[0]
-        assert(callable(function))
+        assert callable(function)
         extraArgs = args[1:]
         kw['extraArgs'] = extraArgs
         FunctionInterval.__init__(self, function, **kw)

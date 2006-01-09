@@ -122,7 +122,7 @@ class DistributedObjectOV(DistributedObjectBase):
         Sends a message to the world after the object has been
         generated and all of its required fields filled in.
         """
-        assert(self.notify.debug('announceGenerate(): %s' % (self.doId)))
+        assert self.notify.debug('announceGenerate(): %s' % (self.doId))
         if self.activeState != ESGenerated:
             self.activeState = ESGenerated
             messenger.send(self.uniqueName("generate"), [self])
@@ -131,7 +131,7 @@ class DistributedObjectOV(DistributedObjectBase):
         """
         Inheritors should redefine this to take appropriate action on disable
         """
-        assert(self.notify.debug('disable(): %s' % (self.doId)))
+        assert self.notify.debug('disable(): %s' % (self.doId))
         if self.activeState != ESDisabled:
             self.activeState = ESDisabled
 
@@ -154,7 +154,7 @@ class DistributedObjectOV(DistributedObjectBase):
         """
         Inheritors should redefine this to take appropriate action on delete
         """
-        assert(self.notify.debug('delete(): %s' % (self.doId)))
+        assert self.notify.debug('delete(): %s' % (self.doId))
         try:
             self.DistributedObjectOV_deleted
         except:

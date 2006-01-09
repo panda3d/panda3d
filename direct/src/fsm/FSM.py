@@ -161,7 +161,7 @@ class FSM(DirectObject.DirectObject):
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
         # by transitioning to the "Off" state.
-        assert(self.state)
+        assert self.state
         if self.state != 'Off':
             self.__setState('Off')
 
@@ -187,7 +187,7 @@ class FSM(DirectObject.DirectObject):
         bypasses the filterState() function, and just calls
         exitState() followed by enterState()."""
 
-        assert(isinstance(request, types.StringTypes))
+        assert isinstance(request, types.StringTypes)
         self.notify.debug("%s.forceTransition(%s, %s" % (self.name, request, str(args)[1:]))
 
         if not self.state:
@@ -209,7 +209,7 @@ class FSM(DirectObject.DirectObject):
         sequence.
         """
 
-        assert(isinstance(request, types.StringTypes))
+        assert isinstance(request, types.StringTypes)
         self.notify.debug("%s.demand(%s, %s" % (self.name, request, str(args)[1:]))
         if not self.state:
             # Queue up the request.
@@ -242,7 +242,7 @@ class FSM(DirectObject.DirectObject):
         which will queue these requests up and apply when the
         transition is complete)."""
 
-        assert(isinstance(request, types.StringTypes))
+        assert isinstance(request, types.StringTypes)
         self.notify.debug("%s.request(%s, %s" % (self.name, request, str(args)[1:]))
 
         if not self.state:
@@ -317,7 +317,7 @@ class FSM(DirectObject.DirectObject):
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.
-        assert(self.notify.debug("%s ignoring request %s from state %s." % (self.name, request, self.state)))
+        assert self.notify.debug("%s ignoring request %s from state %s." % (self.name, request, self.state))
         return None
 
     def filterOff(self, request, args):
@@ -334,7 +334,7 @@ class FSM(DirectObject.DirectObject):
 
     def requestNext(self, *args):
         """request the 'next' state in the predefined state array"""
-        assert (self.state in self.stateArray)
+        assert self.state in self.stateArray
 
         curIndex = self.stateArray.index(self.state)
         newIndex = (curIndex + 1) % len(self.stateArray)
@@ -343,7 +343,7 @@ class FSM(DirectObject.DirectObject):
 
     def requestPrev(self, *args):
         """request the 'previous' state in the predefined state array"""
-        assert (self.state in self.stateArray)
+        assert self.state in self.stateArray
 
         curIndex = self.stateArray.index(self.state)
         newIndex = (curIndex - 1) % len(self.stateArray)
@@ -354,8 +354,8 @@ class FSM(DirectObject.DirectObject):
     def __setState(self, newState, *args):
         # Internal function to change unconditionally to the indicated
         # state.
-        assert(self.state)
-        assert(self.notify.debug("%s to state %s." % (self.name, newState)))
+        assert self.state
+        assert self.notify.debug("%s to state %s." % (self.name, newState))
         
         self.oldState = self.state
         self.newState = newState
@@ -384,13 +384,13 @@ class FSM(DirectObject.DirectObject):
 
         if self.__requestQueue:
             request = self.__requestQueue.pop(0)
-            assert(self.notify.debug("%s continued queued request." % (self.name)))
+            assert self.notify.debug("%s continued queued request." % (self.name))
             request()
 
     def __callTransitionFunc(self, name, *args):
         # Calls the appropriate enter or exit function when
         # transitioning between states, if it exists.
-        assert(self.state == None)
+        assert self.state == None
 
         func = getattr(self, name, None)
         if func:

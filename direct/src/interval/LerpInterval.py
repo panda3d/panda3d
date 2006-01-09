@@ -24,7 +24,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
             LerpNodePathInterval.lerpNodePathNum += 1
 
         blendType = self.stringBlendType(blendType)
-        assert(blendType != self.BTInvalid)
+        assert blendType != self.BTInvalid
 
         if other == None:
             other = NodePath()

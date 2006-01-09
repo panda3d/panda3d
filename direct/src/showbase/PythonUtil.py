@@ -1023,7 +1023,7 @@ class ParamObj:
     # END PARAMSET SUBCLASS
     
     def __init__(self, *args, **kwArgs):
-        assert(issubclass(self.ParamSet, ParamObj.ParamSet))
+        assert issubclass(self.ParamSet, ParamObj.ParamSet)
         # If you pass in a ParamSet obj, its values will be applied to this
         # object in the constructor.
         params = None
@@ -1678,7 +1678,7 @@ def weightedRand(valDict, rng=random.random):
         if totalWeight <= randomWeight:
             return selections[i]
 
-    assert(True, "Should never get here")
+    assert True, "Should never get here"
     return selections[-1]
 
 def randUint31(rng=random.random):
@@ -1745,8 +1745,8 @@ class Enum:
         self._stringTable = {}
 
         # make sure we don't overwrite an existing element of the class
-        assert(self._checkExistingMembers(items))
-        assert(uniqueElements(items))
+        assert self._checkExistingMembers(items)
+        assert uniqueElements(items)
 
         i = start
         for item in items:
@@ -1756,7 +1756,7 @@ class Enum:
             if len(item) == 0:
                 continue
             # make sure there are no invalid characters
-            assert(Enum._checkValidIdentifier(item))
+            assert Enum._checkValidIdentifier(item)
             self.__dict__[item] = i
             self._stringTable[i] = item
             i += 1

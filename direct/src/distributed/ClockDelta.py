@@ -96,7 +96,7 @@ class ClockDelta(DirectObject.DirectObject):
         timeDelta is equal to the amount of time, in seconds,
         that has been added to the global clock
         """
-        assert(self.notify.debug("adjusting timebase by %f seconds" % timeDelta))
+        assert self.notify.debug("adjusting timebase by %f seconds" % timeDelta)
         # adjust our timebase by the same amount
         self.delta += timeDelta
 
@@ -142,7 +142,7 @@ class ClockDelta(DirectObject.DirectObject):
             # of some other request, and our local timestamp may have
             # been resynced since then: ergo, the timestamp in this
             # request is meaningless.
-            assert(self.notify.debug("Ignoring request for resync from %s within %.3f s." % (avId, now - self.lastResync)))
+            assert self.notify.debug("Ignoring request for resync from %s within %.3f s." % (avId, now - self.lastResync))
             return -1
 
         # The timestamp value will be a timestamp that we sent out

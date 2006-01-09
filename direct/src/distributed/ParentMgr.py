@@ -126,7 +126,7 @@ class ParentMgr:
                                   (repr(child), token))
                 child.reparentTo(self.token2nodepath[token])
                 # remove this child from the child->parent table
-                assert (self.pendingChild2parentToken[child] == token)
+                assert self.pendingChild2parentToken[child] == token
                 del self.pendingChild2parentToken[child]
 
     def unregisterParent(self, token):
