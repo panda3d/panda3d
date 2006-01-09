@@ -96,14 +96,14 @@ class DistributedObject(DistributedObjectBase):
             except Exception, e: print "%serror printing status"%(spaces,), e
 
     def setNeverDisable(self, bool):
-        assert (bool == 1) or (bool == 0)
+        assert bool == 1 or bool == 0
         self.neverDisable = bool
 
     def getNeverDisable(self):
         return self.neverDisable
 
     def setCacheable(self, bool):
-        assert (bool == 1) or (bool == 0)
+        assert bool == 1 or bool == 0
         self.cacheable = bool
 
     def getCacheable(self):
