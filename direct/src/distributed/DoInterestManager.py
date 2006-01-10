@@ -41,7 +41,8 @@ class DoInterestManager(DirectObject.DirectObject):
     # 'handle' is a number that represents a single interest set that the
     # client has requested; the interest set may be modified
     _HandleSerialNum = 0
-    _HandleMask = 0xFFFF
+    # high bit is reserved for server interests
+    _HandleMask = 0x7FFF
 
     # 'scope' refers to a single request to change an interest set
     _ScopeIdSerialNum = 100
