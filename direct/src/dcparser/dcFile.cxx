@@ -42,6 +42,7 @@
 DCFile::
 DCFile() {
   _all_objects_valid = true;
+  _inherited_fields_stale = false;
 
   setup_default_keywords();
 }
@@ -83,6 +84,7 @@ clear() {
   setup_default_keywords();
 
   _all_objects_valid = true;
+  _inherited_fields_stale = false;
 }
 
 #ifdef WITHIN_PANDA
@@ -343,19 +345,6 @@ get_field_by_index(int index_number) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCFile::all_objects_valid
-//       Access: Published
-//  Description: Returns true if all of the classes read from the DC
-//               file were defined and valid, or false if any of them
-//               were undefined ("bogus classes").  If this is true,
-//               we might have read a partial file.
-////////////////////////////////////////////////////////////////////
-bool DCFile::
-all_objects_valid() const {
-  return _all_objects_valid;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_num_import_modules
 //       Access: Published
 //  Description: Returns the number of import lines read from the .dc
@@ -510,6 +499,11 @@ get_hash() const {
 ////////////////////////////////////////////////////////////////////
 void DCFile::
 generate_hash(HashGenerator &hashgen) const {
+  if (dc_virtual_inheritance) {
+    // Just to make the hash number change in this case.
+    hashgen.add_int(1);
+  }
+
   hashgen.add_int(_classes.size());
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
@@ -696,7 +690,7 @@ set_new_index_number(DCField *field) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::setup_default_keywords
-//       Access: Public
+//       Access: Private
 //  Description: Adds an entry for each of the default keywords that
 //               are defined for every DCFile for legacy reasons.
 ////////////////////////////////////////////////////////////////////
@@ -727,5 +721,24 @@ setup_default_keywords() {
     
     _default_keywords.add_keyword(keyword);
     _things_to_delete.push_back(keyword);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::rebuild_inherited_fields
+//       Access: Private
+//  Description: Reconstructs the inherited fields table of all
+//               classes.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+rebuild_inherited_fields() {
+  _inherited_fields_stale = false;
+
+  Classes::iterator ci;
+  for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
+    (*ci)->clear_inherited_fields();
+  }
+  for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
+    (*ci)->rebuild_inherited_fields();
   }
 }

@@ -28,6 +28,28 @@ get_dc_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_name
+//       Access: Published
+//  Description: Returns the name of this class.
+////////////////////////////////////////////////////////////////////
+INLINE const string &DCClass::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_number
+//       Access: Published
+//  Description: Returns a unique index number associated with this
+//               class.  This is defined implicitly when the .dc
+//               file(s) are read.
+////////////////////////////////////////////////////////////////////
+INLINE int DCClass::
+get_number() const {
+  return _number;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::is_struct
 //       Access: Published
 //  Description: Returns true if the class has been identified with

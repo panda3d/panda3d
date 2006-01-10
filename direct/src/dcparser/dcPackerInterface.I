@@ -42,16 +42,6 @@ check_match(const DCPackerInterface *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::set_name
-//       Access: Public
-//  Description: Sets the name of this field.
-////////////////////////////////////////////////////////////////////
-INLINE void DCPackerInterface::
-set_name(const string &name) {
-  _name = name;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::has_fixed_byte_size
 //       Access: Public
 //  Description: Returns true if this field type always packs to the

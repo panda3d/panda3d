@@ -32,9 +32,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCField::
-DCField()
+DCField() : 
+  _dclass(NULL)
 #ifdef WITHIN_PANDA
-  : _field_update_pcollector("DCField")
+  ,
+  _field_update_pcollector("DCField")
 #endif
 {
   _number = -1;
@@ -57,7 +59,8 @@ DCField()
 ////////////////////////////////////////////////////////////////////
 DCField::
 DCField(const string &name, DCClass *dclass) : 
-  DCPackerInterface(name) 
+  DCPackerInterface(name),
+  _dclass(dclass)
 #ifdef WITHIN_PANDA
   ,
   _field_update_pcollector(dclass->_class_update_pcollector, name)
@@ -83,18 +86,6 @@ DCField(const string &name, DCClass *dclass) :
 ////////////////////////////////////////////////////////////////////
 DCField::
 ~DCField() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::get_number
-//       Access: Published
-//  Description: Returns a unique index number associated with this
-//               field.  This is defined implicitly when the .dc
-//               file(s) are read.
-////////////////////////////////////////////////////////////////////
-int DCField::
-get_number() const {
-  return _number;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,155 +239,6 @@ validate_ranges(const string &packed_data) const {
   }
 
   return (packer.get_num_unpacked_bytes() == packed_data.length());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::has_default_value
-//       Access: Published
-//  Description: Returns true if a default value has been explicitly
-//               established for this field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-has_default_value() const {
-  return _has_default_value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::get_default_value
-//       Access: Published
-//  Description: Returns the default value for this field.  If a
-//               default value has been explicitly set
-//               (e.g. has_default_value() returns true), returns that
-//               value; otherwise, returns an implicit default for the
-//               field.
-////////////////////////////////////////////////////////////////////
-const string &DCField::
-get_default_value() const {
-  if (_default_value_stale) {
-    ((DCField *)this)->refresh_default_value();
-  }
-  return _default_value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_required
-//       Access: Published
-//  Description: Returns true if the "required" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_required() const {
-  return has_keyword("required");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_broadcast
-//       Access: Published
-//  Description: Returns true if the "broadcast" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_broadcast() const {
-  return has_keyword("broadcast");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_ram
-//       Access: Published
-//  Description: Returns true if the "ram" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_ram() const {
-  return has_keyword("ram");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_db
-//       Access: Published
-//  Description: Returns true if the "db" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_db() const {
-  return has_keyword("db");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_clsend
-//       Access: Published
-//  Description: Returns true if the "clsend" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_clsend() const {
-  return has_keyword("clsend");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_clrecv
-//       Access: Published
-//  Description: Returns true if the "clrecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_clrecv() const {
-  return has_keyword("clrecv");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_ownsend
-//       Access: Published
-//  Description: Returns true if the "ownsend" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_ownsend() const {
-  return has_keyword("ownsend");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_ownrecv
-//       Access: Published
-//  Description: Returns true if the "ownrecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_ownrecv() const {
-  return has_keyword("ownrecv");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::is_airecv
-//       Access: Published
-//  Description: Returns true if the "airecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-is_airecv() const {
-  return has_keyword("airecv");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : DCField::output
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void DCField::
-output(ostream &out) const {
-  output(out, true);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : DCField::
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void DCField::
-write(ostream &out, int indent_level) const {
-  write(out, false, indent_level);
 }
 
 #ifdef HAVE_PYTHON
@@ -623,7 +465,6 @@ ai_format_update(int do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *
   packer.raw_pack_uint8(1);
   packer.RAW_PACK_CHANNEL(to_id);
   packer.RAW_PACK_CHANNEL(from_id);
-  //packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);
@@ -683,27 +524,16 @@ pack_default_value(DCPackData &pack_data, bool &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::set_number
-//       Access: Public
-//  Description: Assigns the unique number to this field.  This is
-//               normally called only by the DCClass interface as the
-//               field is added.
+//     Function: DCField::set_name
+//       Access: Public, Virtual
+//  Description: Sets the name of this field.
 ////////////////////////////////////////////////////////////////////
 void DCField::
-set_number(int number) {
-  _number = number;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::set_default_value
-//       Access: Public
-//  Description: Establishes a default value for this field.
-////////////////////////////////////////////////////////////////////
-void DCField::
-set_default_value(const string &default_value) {
-  _default_value = default_value;
-  _has_default_value = true;
-  _default_value_stale = false;
+set_name(const string &name) {
+  DCPackerInterface::set_name(name);
+  if (_dclass != (DCClass *)NULL) {
+    _dclass->_dc_file->mark_inherited_fields_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -48,7 +48,8 @@ public:
   virtual ~DCField();
 
 PUBLISHED:
-  int get_number() const;
+  INLINE int get_number() const;
+  INLINE DCClass *get_class() const;
 
   virtual DCField *as_field();
   virtual const DCField *as_field() const;
@@ -64,21 +65,21 @@ PUBLISHED:
 
   bool validate_ranges(const string &packed_data) const;
 
-  bool has_default_value() const;
-  const string &get_default_value() const;
+  INLINE bool has_default_value() const;
+  INLINE const string &get_default_value() const;
 
-  bool is_required() const;
-  bool is_broadcast() const;
-  bool is_ram() const;
-  bool is_db() const;
-  bool is_clsend() const;
-  bool is_clrecv() const;
-  bool is_ownsend() const;
-  bool is_ownrecv() const;
-  bool is_airecv() const;
+  INLINE bool is_required() const;
+  INLINE bool is_broadcast() const;
+  INLINE bool is_ram() const;
+  INLINE bool is_db() const;
+  INLINE bool is_clsend() const;
+  INLINE bool is_clrecv() const;
+  INLINE bool is_ownsend() const;
+  INLINE bool is_ownrecv() const;
+  INLINE bool is_airecv() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  INLINE void output(ostream &out) const;
+  INLINE void write(ostream &out, int indent_level) const;
 
 #ifdef HAVE_PYTHON
   bool pack_args(DCPacker &packer, PyObject *sequence) const;
@@ -96,14 +97,17 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
+  virtual void set_name(const string &name);
 
-  void set_number(int number);
-  void set_default_value(const string &default_value);
+  INLINE void set_number(int number);
+  INLINE void set_class(DCClass *dclass);
+  INLINE void set_default_value(const string &default_value);
 
 protected:
   void refresh_default_value();
 
 protected:
+  DCClass *_dclass;
   int _number;
   bool _default_value_stale;
   bool _has_default_value;
@@ -120,5 +124,7 @@ INLINE ostream &operator << (ostream &out, const DCField &field) {
   field.output(out);
   return out;
 }
+
+#include "dcField.I"
 
 #endif

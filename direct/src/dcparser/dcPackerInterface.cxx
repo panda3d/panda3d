@@ -191,6 +191,16 @@ check_match(const string &description, DCFile *dcfile) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::set_name
+//       Access: Public, Virtual
+//  Description: Sets the name of this field.
+////////////////////////////////////////////////////////////////////
+void DCPackerInterface::
+set_name(const string &name) {
+  _name = name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::calc_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during

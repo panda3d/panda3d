@@ -59,7 +59,7 @@ PUBLISHED:
 
   DCField *get_field_by_index(int index_number) const;
 
-  bool all_objects_valid() const;
+  INLINE bool all_objects_valid() const;
 
   int get_num_import_modules() const;
   string get_import_module(int n) const;
@@ -87,9 +87,12 @@ public:
   void add_thing_to_delete(DCDeclaration *decl);
 
   void set_new_index_number(DCField *field);
+  INLINE void check_inherited_fields();
+  INLINE void mark_inherited_fields_stale();
 
 private:
   void setup_default_keywords();
+  void rebuild_inherited_fields();
 
   typedef pvector<DCClass *> Classes;
   Classes _classes;
@@ -124,7 +127,10 @@ private:
   FieldsByIndex _fields_by_index;
 
   bool _all_objects_valid;
+  bool _inherited_fields_stale;
 };
+
+#include "dcFile.I"
 
 #endif
 

@@ -93,7 +93,7 @@ PUBLISHED:
   bool check_match(const string &description, DCFile *dcfile = NULL) const;
 
 public:
-  INLINE void set_name(const string &name);
+  virtual void set_name(const string &name);
   INLINE bool has_fixed_byte_size() const;
   INLINE size_t get_fixed_byte_size() const;
   INLINE bool has_fixed_structure() const;

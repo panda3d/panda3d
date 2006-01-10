@@ -18,7 +18,8 @@
   #define SOURCES \
      dcAtomicField.h dcClass.h dcClass.I \
      dcDeclaration.h \
-     dcField.h dcFile.h \
+     dcField.h dcField.I \
+     dcFile.h dcFile.I \
      dcKeyword.h dcKeywordList.h \
      dcLexer.lxx  \
      dcLexerDefs.h dcMolecularField.h dcParser.yxx dcParserDefs.h  \

@@ -40,7 +40,21 @@ ConfigVariableBool dc_multiple_inheritance
           "supported, but field numbers will be numbered sequentially, "
           "which may be required to support old code that assumed this."));
 
+ConfigVariableBool dc_virtual_inheritance
+("dc-virtual-inheritance", false,
+ PRC_DESC("Set this true to support proper virtual inheritance in the "
+	  "dc file, so that diamond-of-death type constructs can be used.  "
+	  "This also enables shadowing (overloading) of inherited method "
+	  "names from a base class."));
+
 #endif  // WITHIN_PANDA
+
+class SortFieldsByIndex {
+public:
+  inline bool operator ()(const DCField *a, const DCField *b) const {
+    return a->get_number() < b->get_number();
+  }
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::Constructor
@@ -110,49 +124,26 @@ as_class() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_name
+//     Function: DCClass::get_num_parents
 //       Access: Published
-//  Description: Returns the name of this class.
-////////////////////////////////////////////////////////////////////
-const string &DCClass::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_number
-//       Access: Published
-//  Description: Returns a unique index number associated with this
-//               class.  This is defined implicitly when the .dc
-//               file(s) are read.
+//  Description: Returns the number of base classes this class
+//               inherits from.
 ////////////////////////////////////////////////////////////////////
 int DCClass::
-get_number() const {
-  return _number;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::has_parent
-//       Access: Published
-//  Description: Returns true if this class inherits from some other
-//               class, false if it does not.
-////////////////////////////////////////////////////////////////////
-bool DCClass::
-has_parent() const {
-  return !_parents.empty();
+get_num_parents() const {
+  return _parents.size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_parent
 //       Access: Published
-//  Description: Returns the parent class this class inherits from, if
-//               any.  It is an error to call this unless has_parent()
-//               returned true.
+//  Description: Returns the nth parent class this class inherits
+//               from.
 ////////////////////////////////////////////////////////////////////
 DCClass *DCClass::
-get_parent() const {
-  nassertr(has_parent(), NULL);
-  return _parents.front();
+get_parent(int n) const {
+  nassertr(n >= 0 && n < (int)_parents.size(), NULL);
+  return _parents[n];
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -283,14 +274,25 @@ get_field_by_index(int index_number) const {
 ////////////////////////////////////////////////////////////////////
 int DCClass::
 get_num_inherited_fields() const {
-  int num_fields = get_num_fields();
+  if (dc_virtual_inheritance) {
+    if (_dc_file != (DCFile *)NULL) {
+      _dc_file->check_inherited_fields();
+    }
+    if (_inherited_fields.empty()) {
+      ((DCClass *)this)->rebuild_inherited_fields();
+    }
+    return (int)_inherited_fields.size();
 
-  Parents::const_iterator pi;
-  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
-    num_fields += (*pi)->get_num_inherited_fields();
+  } else {
+    int num_fields = get_num_fields();
+
+    Parents::const_iterator pi;
+    for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+      num_fields += (*pi)->get_num_inherited_fields();
+    }
+    
+    return num_fields;
   }
-
-  return num_fields;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -307,17 +309,29 @@ get_num_inherited_fields() const {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_inherited_field(int n) const {
-  Parents::const_iterator pi;
-  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
-    int psize = (*pi)->get_num_inherited_fields();
-    if (n < psize) {
-      return (*pi)->get_inherited_field(n);
+  if (dc_virtual_inheritance) {
+    if (_dc_file != (DCFile *)NULL) {
+      _dc_file->check_inherited_fields();
     }
+    if (_inherited_fields.empty()) {
+      ((DCClass *)this)->rebuild_inherited_fields();
+    }
+    nassertr(n >= 0 && n < (int)_inherited_fields.size(), NULL);
+    return _inherited_fields[n];
 
-    n -= psize;
+  } else {
+    Parents::const_iterator pi;
+    for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+      int psize = (*pi)->get_num_inherited_fields();
+      if (n < psize) {
+	return (*pi)->get_inherited_field(n);
+      }
+      
+      n -= psize;
+    }
+    
+    return get_field(n);
   }
-
-  return get_field(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1264,16 +1278,91 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::clear_inherited_fields
+//       Access: Public
+//  Description: Empties the list of inherited fields for the class,
+//               so that it may be rebuilt.  This is normally only
+//               called by DCFile::rebuild_inherited_fields().
+////////////////////////////////////////////////////////////////////
+void DCClass::
+clear_inherited_fields() {
+  _inherited_fields.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::rebuild_inherited_fields
+//       Access: Public
+//  Description: Recomputes the list of inherited fields for the class.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+rebuild_inherited_fields() {
+  typedef pset<string> Names;
+  Names names;
+
+  _inherited_fields.clear();
+  
+  // First, get a list of all of the inherited field names.
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    const DCClass *parent = (*pi);
+    int num_inherited_fields = parent->get_num_inherited_fields();
+    for (int i = 0; i < num_inherited_fields; ++i) {
+      const DCField *field = parent->get_inherited_field(i);
+      names.insert(field->get_name());
+    }
+  }
+
+  // Also get the local field names.  Any local unnamed fields are
+  // immediately added to the _inherited_fields list, since the
+  // unnamed fields are not inherited.
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    DCField *field = (*fi);
+    if (field->get_name().empty()) {
+      _inherited_fields.push_back(field);
+    } else {
+      names.insert(field->get_name());
+    }
+  }
+
+  // And now build up the table.  We use get_field_by_name() to
+  // extract each one, to guarantee that the index we build exactly
+  // matches the return value of get_field_by_name().
+  
+  Names::const_iterator ni;
+  for (ni = names.begin(); ni != names.end(); ++ni) {
+    // Note that we only list the named fields in the inherited field
+    // list.  Thus, the unnamed fields, if any, are not inherited.
+    if (!(*ni).empty()) {
+      DCField *field = get_field_by_name(*ni);
+      nassertv(field != (DCField *)NULL);
+      _inherited_fields.push_back(field);
+    }
+  }
+
+  // Finally, sort the list in global field index order.  This will
+  // put the inherited fields at the top of the list.
+  ::sort(_inherited_fields.begin(), _inherited_fields.end(),
+	 SortFieldsByIndex());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::add_field
 //       Access: Public
 //  Description: Adds the newly-allocated field to the class.  The
 //               class becomes the owner of the pointer and will
 //               delete it when it destructs.  Returns true if the
 //               field is successfully added, or false if there was a
-//               name conflict.
+//               name conflict or some other problem.
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
 add_field(DCField *field) {
+  nassertr(field->get_class() == this || field->get_class() == NULL, false);
+  field->set_class(this);
+  if (_dc_file != (DCFile *)NULL) {
+    _dc_file->mark_inherited_fields_stale();
+  }
+
   if (!field->get_name().empty()) {
     if (field->get_name() == _name) {
       // This field is a constructor.
@@ -1326,6 +1415,7 @@ add_field(DCField *field) {
 void DCClass::
 add_parent(DCClass *parent) {
   _parents.push_back(parent);
+  _dc_file->mark_inherited_fields_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

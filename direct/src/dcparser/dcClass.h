@@ -29,10 +29,12 @@
 #include "configVariableBool.h"
 
 extern ConfigVariableBool dc_multiple_inheritance;
+extern ConfigVariableBool dc_virtual_inheritance;
 
 #else  // WITHIN_PANDA
 
 static const bool dc_multiple_inheritance = true;
+static const bool dc_virtual_inheritance = true;
 
 #endif  // WITHIN_PANDA
 
@@ -56,17 +58,18 @@ PUBLISHED:
 
   INLINE DCFile *get_dc_file() const;
 
-  const string &get_name() const;
-  int get_number() const;
+  INLINE const string &get_name() const;
+  INLINE int get_number() const;
 
-  bool has_parent() const;
-  DCClass *get_parent() const;
+  int get_num_parents() const;
+  DCClass *get_parent(int n) const;
   
   bool has_constructor() const;
   DCField *get_constructor() const;
 
   int get_num_fields() const;
   DCField *get_field(int n) const;
+
   DCField *get_field_by_name(const string &name) const;
   DCField *get_field_by_index(int index_number) const;
 
@@ -129,6 +132,8 @@ public:
   void output_instance(ostream &out, bool brief, const string &prename, 
                        const string &name, const string &postname) const;
   void generate_hash(HashGenerator &hashgen) const;
+  void clear_inherited_fields();
+  void rebuild_inherited_fields();
 
   bool add_field(DCField *field);
   void add_parent(DCClass *parent);
@@ -155,7 +160,7 @@ private:
   DCField *_constructor;
 
   typedef pvector<DCField *> Fields;
-  Fields _fields;
+  Fields _fields, _inherited_fields;
 
   typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
