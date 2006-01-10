@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcField.h"
+#include "dcFile.h"
 #include "dcPacker.h"
 #include "dcClass.h"
 #include "hashGenerator.h"
