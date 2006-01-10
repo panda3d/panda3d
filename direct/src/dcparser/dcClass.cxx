@@ -274,7 +274,7 @@ get_field_by_index(int index_number) const {
 ////////////////////////////////////////////////////////////////////
 int DCClass::
 get_num_inherited_fields() const {
-  if (dc_virtual_inheritance) {
+  if (dc_multiple_inheritance && dc_virtual_inheritance) {
     if (_dc_file != (DCFile *)NULL) {
       _dc_file->check_inherited_fields();
     }
@@ -309,7 +309,7 @@ get_num_inherited_fields() const {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_inherited_field(int n) const {
-  if (dc_virtual_inheritance) {
+  if (dc_multiple_inheritance && dc_virtual_inheritance) {
     if (_dc_file != (DCFile *)NULL) {
       _dc_file->check_inherited_fields();
     }
