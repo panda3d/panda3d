@@ -8,3 +8,4 @@
 #include "graphicsBuffer.cxx"
 #include "graphicsOutput.cxx"
 #include "parasiteBuffer.cxx"
+#include "lru.cxx"
