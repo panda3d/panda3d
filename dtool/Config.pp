@@ -434,8 +434,8 @@
 #defer HAVE_CG $[libtest $[CG_LPATH],$[CG_LIBS]]
 
 // Is CgGL installed, and where?
-#define CGGL_IPATH $[CG_IPATH]
-#define CGGL_LPATH $[CG_LPATH]
+#defer CGGL_IPATH $[CG_IPATH]
+#defer CGGL_LPATH $[CG_LPATH]
 #define CGGL_LIBS $[if $[WINDOWS_PLATFORM],cgGL.lib,CgGL]
 #defer HAVE_CGGL $[and $[HAVE_CG],$[libtest $[CGGL_LPATH],$[CGGL_LIBS]]]
 
