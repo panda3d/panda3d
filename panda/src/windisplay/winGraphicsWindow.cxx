@@ -546,10 +546,13 @@ fullscreen_restored(WindowProperties &) {
 //               or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
-do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
-  windisplay_cat.info()
-    << "Got reshape request (" << x_origin << ", " << y_origin
-    << ", " << x_size << ", " << y_size << ")\n";
+do_reshape_request(int x_origin, int y_origin, bool has_origin,
+		   int x_size, int y_size) {
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "Got reshape request (" << x_origin << ", " << y_origin
+      << ", " << has_origin << ", " << x_size << ", " << y_size << ")\n";
+  }
   if (!is_fullscreen()) {
     // Compute the appropriate size and placement for the window,
     // including decorations.
@@ -558,9 +561,18 @@ do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
             x_origin + x_size, y_origin + y_size);
     WINDOWINFO wi;
     GetWindowInfo(_hWnd, &wi);
-    AdjustWindowRectEx(&view_rect, wi.dwStyle, false, wi.dwExStyle);
+    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-    SetWindowPos(_hWnd, NULL, view_rect.left, view_rect.top,
+    if (_properties.has_origin()) {
+      x_origin = view_rect.left;
+      y_origin = view_rect.top;
+      
+    } else {
+      x_origin = CW_USEDEFAULT;
+      y_origin = CW_USEDEFAULT;
+    }
+
+    SetWindowPos(_hWnd, NULL, x_origin, y_origin,
                  view_rect.right - view_rect.left,
                  view_rect.bottom - view_rect.top,
                  SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);

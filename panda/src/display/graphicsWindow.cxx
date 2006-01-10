@@ -583,18 +583,25 @@ set_properties_now(WindowProperties &properties) {
     } else {
       reshape_props.set_size(_properties.get_x_size(), _properties.get_y_size());
     }
+
     if (properties.has_origin() && !is_fullscreen()) {
       reshape_props.set_origin(properties.get_x_origin(), properties.get_y_origin());
-    } else {
+    } else if (_properties.has_origin()) {
       reshape_props.set_origin(_properties.get_x_origin(), _properties.get_y_origin());
+    }
+
+    bool has_origin = reshape_props.has_origin();
+    int x_origin = 0, y_origin = 0;
+    if (has_origin) {
+      x_origin = reshape_props.get_x_origin();
+      y_origin = reshape_props.get_y_origin();
     }
     
     if (reshape_props.get_x_size() != _properties.get_x_size() ||
         reshape_props.get_y_size() != _properties.get_y_size() ||
-        reshape_props.get_x_origin() != _properties.get_x_origin() ||
-        reshape_props.get_y_origin() != _properties.get_y_origin()) {
-      if (do_reshape_request(reshape_props.get_x_origin(),
-                             reshape_props.get_y_origin(),
+	(has_origin && (x_origin != _properties.get_x_origin() ||
+			y_origin != _properties.get_y_origin()))) {
+      if (do_reshape_request(x_origin, y_origin, has_origin,
                              reshape_props.get_x_size(),
                              reshape_props.get_y_size())) {
         system_changed_size(reshape_props.get_x_size(), 
@@ -660,7 +667,8 @@ reset_window(bool swapchain) {
 //               or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindow::
-do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
+do_reshape_request(int x_origin, int y_origin, bool has_origin,
+		   int x_size, int y_size) {
   return false;
 }
 

@@ -67,7 +67,7 @@ protected:
   virtual void fullscreen_minimized(WindowProperties &properties);
   virtual void fullscreen_restored(WindowProperties &properties);
 
-  virtual bool do_reshape_request(int x_origin, int y_origin, 
+  virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
 
   virtual void handle_reshape();
