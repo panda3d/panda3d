@@ -631,16 +631,16 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("no lod named: %s" % (lodName))
             return
 
+        # remove the part
+        if (partBundleDict.has_key(partName)):
+            partBundleDict[partName].removeNode()
+            del(partBundleDict[partName])
+
         # find the corresponding anim control dict
         animControlDict = self.__animControlDict.get(lodName)
         if not animControlDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return
-
-        # remove the part
-        if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].removeNode()
-            del(partBundleDict[partName])
 
         # remove the animations
         if (animControlDict.has_key(partName)):
