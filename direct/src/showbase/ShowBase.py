@@ -52,11 +52,7 @@ class ShowBase(DirectObject.DirectObject):
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
 
         self.printEnvDebugInfo()
-
-        if self.config.GetBool('use-vfs', 1):
-            vfs = VirtualFileSystem.getGlobalPtr()
-        else:
-            vfs = None
+        vfs = VirtualFileSystem.getGlobalPtr()
 
         self.nextWindowIndex = 1
 
