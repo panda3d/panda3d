@@ -24,6 +24,7 @@
 #include "dcmsgtypes.h"
 
 #include "dcClassParameter.h"
+#include <algorithm>
 
 #ifdef WITHIN_PANDA
 #include "pStatTimer.h"
@@ -274,10 +275,9 @@ get_field_by_index(int index_number) const {
 ////////////////////////////////////////////////////////////////////
 int DCClass::
 get_num_inherited_fields() const {
-  if (dc_multiple_inheritance && dc_virtual_inheritance) {
-    if (_dc_file != (DCFile *)NULL) {
-      _dc_file->check_inherited_fields();
-    }
+  if (dc_multiple_inheritance && dc_virtual_inheritance && 
+      _dc_file != (DCFile *)NULL) {
+    _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
@@ -309,10 +309,9 @@ get_num_inherited_fields() const {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_inherited_field(int n) const {
-  if (dc_multiple_inheritance && dc_virtual_inheritance) {
-    if (_dc_file != (DCFile *)NULL) {
-      _dc_file->check_inherited_fields();
-    }
+  if (dc_multiple_inheritance && dc_virtual_inheritance && 
+      _dc_file != (DCFile *)NULL) {
+    _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
@@ -1342,8 +1341,8 @@ rebuild_inherited_fields() {
 
   // Finally, sort the list in global field index order.  This will
   // put the inherited fields at the top of the list.
-  ::sort(_inherited_fields.begin(), _inherited_fields.end(),
-	 SortFieldsByIndex());
+  sort(_inherited_fields.begin(), _inherited_fields.end(),
+       SortFieldsByIndex());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1388,7 +1387,8 @@ add_field(DCField *field) {
     }
   }
 
-  if (!is_struct()) {
+  if (_dc_file != (DCFile *)NULL && 
+      (dc_virtual_inheritance || !is_struct())) {
     if (dc_multiple_inheritance) {
       _dc_file->set_new_index_number(field);
     } else {
