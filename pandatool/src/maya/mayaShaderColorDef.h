@@ -96,6 +96,7 @@ public:
   bool _wrap_v;
 
   bool _has_alpha_channel;
+  bool _keep_alpha;
   
   LVector2f _repeat_uv;
   LVector2f _offset;

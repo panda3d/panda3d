@@ -2326,8 +2326,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
       if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_modulate) {
         // read the _has_alpha_cahnnel to figure out rgb or rgba
         //if (!color_def->_has_alpha_channel) {
-        //Maya's multiply is slightly different than panda's. Hence we are dropping the alpha.
-        is_rgb = true; // modulate forces the alpha to be ignored
+        // Maya's multiply is slightly different than panda's. Unless, _keep_alpha is set, 
+        // we are dropping the alpha.
+        if (!color_def->_keep_alpha)
+          is_rgb = true; // modulate forces the alpha to be ignored
         //}
       }
     }

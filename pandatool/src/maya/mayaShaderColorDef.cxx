@@ -60,6 +60,7 @@ MayaShaderColorDef() {
   _wrap_v = true;
 
   _has_alpha_channel = false;
+  _keep_alpha = false;
 
   _blend_type = BT_unspecified;
 
@@ -102,6 +103,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
 
   _blend_type = copy._blend_type;
   _has_alpha_channel = copy._has_alpha_channel;
+  _keep_alpha = copy._keep_alpha;
 
   _repeat_uv = copy._repeat_uv;
   _offset = copy._offset;
@@ -336,13 +338,11 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
   } else if (color.hasFn(MFn::kLayeredTexture)) {
     maya_cat.debug() << "Found layered texture" << endl;
 
-    MFnDependencyNode layered_fn(color);
-
-    MPlugArray color_pa;
-    layered_fn.getConnections(color_pa);
-
     int blendValue;
     MStatus status;
+    MPlugArray color_pa;
+    MFnDependencyNode layered_fn(color);
+    layered_fn.getConnections(color_pa);
     MPlug inputsPlug = layered_fn.findPlug("inputs", &status);
     MPlug blendModePlug = layered_fn.findPlug("blendMode", &status);
 
@@ -377,6 +377,8 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           break;
         case 6:
           bt = BT_modulate;
+          get_bool_attribute(color, "keepAlpha", _keep_alpha);
+          maya_cat.info() << "keepAlpha: " << _keep_alpha << endl;
           break;
         case 4:
           bt = BT_add;
