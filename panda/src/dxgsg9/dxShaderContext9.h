@@ -1,10 +1,10 @@
-// Filename: glShaderContext_src.h
-// Created by: jyelon (01Sep05)
+// Filename: dxShaderContext9.h
+// Created by: aignacio (Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -16,23 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef DXSHADERCONTEXT9_H
+#define DXSHADERCONTEXT9_H
+
+#include "dtool_config.h"
+#include "dxGraphicsStateGuardian9.h"
 #include "pandabase.h"
-#ifdef HAVE_CGGL
+#ifdef HAVE_CGDX9
 #include "Cg/cgGL.h"
+#include "Cg/CgGL.h"
+#include "Cg/CgD3D9.h"
 #endif
 #include "string_utils.h"
 #include "internalName.h"
 #include "shaderExpansion.h"
 #include "shaderContext.h"
 
+
+#define CLP(name) DX##name##9
+#define CLASSPREFIX_QUOTED "DX"
+#define CONFIGOBJ config_dxgsg9
+#define GLCAT dxgsg9_cat
+
+
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GLShaderContext
+//       Class : DXShaderContext9
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_GL CLP(ShaderContext): public ShaderContext {
+class EXPCL_PANDADX CLP(ShaderContext): public ShaderContext {
 public:
   typedef CLP(GraphicsStateGuardian) GSG;
 
@@ -51,7 +65,7 @@ public:
 
 private:
 
-#ifdef HAVE_CGGL
+#ifdef HAVE_CGDX9
   enum ShaderAutoValue {
     // This first batch of constants cleverly lines up
     // with the Cg constant values.  Don't insert anything.
@@ -156,5 +170,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glShaderContext_src.I"
+#include "dxShaderContext9.I"
 
+#endif

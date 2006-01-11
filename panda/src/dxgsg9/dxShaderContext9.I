@@ -1,10 +1,10 @@
-// Filename: glShaderContext_src.h
-// Created by: jyelon (01Sep05)
+// Filename: dxShaderContext9.i
+// Created by: aignacio (Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::valid
+//     Function: DXShaderContext9::valid
 //       Access: Public
 //  Description: Returns true if the shader is "valid", ie, if the
 //               compilation was successful.  The compilation could
@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 valid() {
-#ifdef HAVE_CGGL
+#ifdef HAVE_CGDX9
   if (_cg_context) return true;
 #endif
   return false;
