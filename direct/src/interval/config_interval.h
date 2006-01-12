@@ -28,7 +28,7 @@
 NotifyCategoryDecl(interval, EXPCL_DIRECT, EXPTP_DIRECT);
 
 extern ConfigVariableDouble interval_precision;
-extern ConfigVariableBool verify_intervals;
+extern EXPCL_DIRECT ConfigVariableBool verify_intervals;
 
 extern EXPCL_DIRECT void init_libinterval();
 
