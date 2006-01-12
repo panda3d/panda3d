@@ -55,7 +55,7 @@ public:
 
   INLINE bool valid(void);
   void bind(GSG *gsg);
-  void unbind();
+  void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg);
   void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
