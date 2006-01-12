@@ -657,8 +657,8 @@ class ShipPilot2(PhysicsWalker):
             if self.wantDebugIndicator:
                 onScreenDebug.append("localAvatar pos = %s\n"%(
                     base.localAvatar.getPos().pPrintValues(),))
-                onScreenDebug.append("localAvatar h = % 10.4f\n"%(
-                    base.localAvatar.getH(),))
+                onScreenDebug.append("localAvatar hpr = %s\n"%(
+                    base.localAvatar.getHpr().pPrintValues(),))
                 #onScreenDebug.append("localAvatar anim = %s\n"%(
                 #    base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
