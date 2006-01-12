@@ -301,8 +301,8 @@ class DoCollectionManager:
         def isInDoTables(self, doId):
             assert self.notify.debugStateCall(self)
             inDoHierarchy = False
-            for parentId, parentZoneDict in self.__doHierarchy.values():
-                for zoneId, zoneDoSet in parentZoneDict.values():
+            for parentId, parentZoneDict in self.__doHierarchy.items():
+                for zoneId, zoneDoSet in parentZoneDict.items():
                     if doId in zoneDoSet:
                         inDoHierarchy = True
                         print "isInDoTables found " \
