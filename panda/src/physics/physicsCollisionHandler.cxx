@@ -69,7 +69,7 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force, float a
     physics_debug("  vel pre  friction "<<vel<<" len "<<vel.length());
     float friction=friction_coefficient*angle;
     physics_debug("  friction "<<friction);
-    if (friction<0.0f && friction>1.0f) {
+    if (friction<0.0f || friction>1.0f) {
       cerr<<"\n\nfriction error "<<friction<<endl;
       friction=1.0f;
     }
