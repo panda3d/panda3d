@@ -42,7 +42,7 @@ ConfigVariableBool dc_multiple_inheritance
           "which may be required to support old code that assumed this."));
 
 ConfigVariableBool dc_virtual_inheritance
-("dc-virtual-inheritance", false,
+("dc-virtual-inheritance", true,
  PRC_DESC("Set this true to support proper virtual inheritance in the "
 	  "dc file, so that diamond-of-death type constructs can be used.  "
 	  "This also enables shadowing (overloading) of inherited method "
