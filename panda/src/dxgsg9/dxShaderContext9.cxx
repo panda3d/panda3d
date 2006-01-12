@@ -32,6 +32,9 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   s->parse_line(header, true, true);
 
 #ifdef HAVE_CGDX9
+
+  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n";
+
   _cg_context = (CGcontext)0;
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
@@ -47,6 +50,11 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
       return;
     }
 
+cgD3D9SetDevice(gsg -> _d3d_device);
+
+// IGNORE THIS FOR NOW, SEEMS TO BE LOADING IN API SPECIFIC PROFILES
+if (false)
+{
     // Parse any directives in the source.
     string directive;
     while (!s->parse_eof()) {
@@ -57,6 +65,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
         suggest_cg_profile(pieces[2], pieces[3]);
       }
     }
+}
 
     // Select a profile if no preferred profile specified in the source.
     if (_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN) {
@@ -272,7 +281,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   DWORD assembly_flags;
 
 // ?????
-  paramater_shadowing = TRUE;
+  paramater_shadowing = !TRUE;
   assembly_flags = 0;
 
   cgD3D9LoadProgram(_cg_program[SHADER_type_vert], paramater_shadowing, assembly_flags);
@@ -281,6 +290,9 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   _cg_errors = s->get_name() + ": compiled to "
     + cgGetProfileString(_cg_profile[SHADER_type_vert]) + " "
     + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
+
+  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n";
+
   return true;
 }
 #endif
@@ -327,14 +339,58 @@ bind(GSG *gsg) {
 #ifdef HAVE_CGDX9
   if (_cg_context != 0) {
 
+dxgsg9_cat.debug ( ) << "SHADER: bind \n";
+
+    // clear the last cached FVF to make sure the next SetFVF call goes through
+    gsg -> _last_fvf = 0;
+
     // Pass in k-parameters and transform-parameters
     issue_parameters(gsg);
 
+    HRESULT hr;
+
     // Bind the shaders.
 // ?????    cgD3D9EnableProfile(_cg_profile[SHADER_type_vert]);
-    cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
+    hr = cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9BindProgram vertex shader failed\n";
+    }
 // ?????    cgD3D9EnableProfile(_cg_profile[SHADER_type_frag]);
-    cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
+    hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9BindProgram pixel shader failed\n";
+    }
+
+
+    IDirect3DVertexShader9 *vertex_shader;
+    IDirect3DPixelShader9 *pixel_shader;
+
+    hr = gsg -> _d3d_device -> GetVertexShader (&vertex_shader);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "GetVertexShader ( ) failed "
+        << D3DERRORSTRING(hr);
+    }
+    hr = gsg -> _d3d_device -> GetPixelShader (&pixel_shader);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "GetPixelShader ( ) failed "
+        << D3DERRORSTRING(hr);
+    }
+
+dxgsg9_cat.debug ( )
+  << "SHADER: V "
+  << vertex_shader
+  << " P "
+  << pixel_shader
+  << " CG VS"
+  << _cg_program[SHADER_type_vert]
+  << " CG PS"
+  << _cg_program[SHADER_type_frag]
+  << "\n";
+
   }
 #endif
 }
@@ -345,12 +401,29 @@ bind(GSG *gsg) {
 //  Description: This function disables a currently-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-unbind()
+unbind(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
   if (_cg_context != 0) {
 // ?????    cgD3D9DisableProfile(_cg_profile[SHADER_type_vert]);
 // ?????    cgD3D9DisableProfile(_cg_profile[SHADER_type_frag]);
+    HRESULT hr;
+
+    hr = gsg -> _d3d_device -> SetVertexShader (NULL);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "SetVertexShader (NULL) failed "
+        << D3DERRORSTRING(hr);
+    }
+    hr = gsg -> _d3d_device -> SetPixelShader (NULL);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "SetPixelShader (NULL) failed "
+        << D3DERRORSTRING(hr);
+    }
+
+dxgsg9_cat.debug ( ) << "SHADER: unbind \n";
+
   }
 #endif
 }
@@ -665,11 +738,32 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
 vertex_declaration = 0;
 
+dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays \n";
+
 
   hr = gsg -> _d3d_device -> SetVertexDeclaration (vertex_declaration);
-  if (SUCCEEDED (hr))
-  {
+  if (FAILED (hr)) {
+    dxgsg9_cat.error()
+      << "SetVertexDeclaration failed "
+      << D3DERRORSTRING(hr);
+  }
 
+
+  UINT stream_number;
+  IDirect3DVertexBuffer9 *vertex_buffer;
+  UINT offset;
+  UINT stride;
+
+stream_number = 0;
+vertex_buffer = 0;
+offset = 0;
+stride = 0;
+
+  hr = gsg -> _d3d_device -> SetStreamSource (stream_number, vertex_buffer, offset, stride);
+  if (FAILED (hr)) {
+    dxgsg9_cat.error()
+      << "SetStreamSource failed "
+      << D3DERRORSTRING(hr);
   }
 
 // ?????          cgD3D9EnableClientState(_cg_varying[i].parameter);
@@ -708,7 +802,16 @@ disable_shader_texture_bindings(GSG *gsg)
       // This is probably faster - but maybe not as safe?
       // cgD3D9DisableTextureParameter(_cg_texbind[i].parameter);
 */
-      gsg -> _d3d_device -> SetTexture (texunit, NULL);
+      HRESULT hr;
+
+      hr = gsg -> _d3d_device -> SetTexture (texunit, NULL);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "SetTexture ("
+          << texunit
+          << ", NULL) failed "
+          << D3DERRORSTRING(hr);
+      }
     }
   }
 #endif
