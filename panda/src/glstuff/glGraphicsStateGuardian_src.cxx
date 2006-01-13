@@ -461,7 +461,8 @@ reset() {
   _supports_bgr = 
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
   _supports_rescale_normal = 
-    has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2);
+    CLP(support_rescale_normal) &&
+    (has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2));
 
   _supports_multisample = 
     has_extension("GL_ARB_multisample");
@@ -4840,8 +4841,14 @@ do_auto_rescale_normal() {
   if (_external_transform->has_identity_scale()) {
     // If there's no scale at all, don't do anything.
     GLP(Disable)(GL_NORMALIZE);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
+    }
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
+      if (GLCAT.is_spam()) {
+	GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
+      }
     }
     
   } else if (_external_transform->has_uniform_scale()) {
@@ -4849,15 +4856,28 @@ do_auto_rescale_normal() {
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Enable)(GL_RESCALE_NORMAL);
       GLP(Disable)(GL_NORMALIZE);
+      if (GLCAT.is_spam()) {
+	GLCAT.spam() << "glEnable(GL_RESCALE_NORMAL)\n";
+	GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
+      }
     } else {
       GLP(Enable)(GL_NORMALIZE);
+      if (GLCAT.is_spam()) {
+	GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
+      }
     }
   
   } else {
     // If there's a non-uniform scale, normalize everything.
     GLP(Enable)(GL_NORMALIZE);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
+    }
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
+      if (GLCAT.is_spam()) {
+	GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
+      }
     }
   }
 }

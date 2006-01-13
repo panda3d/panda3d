@@ -31,9 +31,16 @@ ConfigVariableBool CLP(ignore_clamp)
 ConfigVariableBool CLP(support_clamp_to_border)
   ("gl-support-clamp-to-border", true,
    PRC_DESC("Configure this true to enable the use of the clamp_to_border "
-            "if the GL claims to support it, or false not to use it even "
-            "if it appears to be available.  (On some OpenGL drivers, "
-            "enabling this mode can force software rendering.)"));
+            "extension if the GL claims to support it, or false not to "
+	    "use it even if it appears to be available.  (On some OpenGL "
+	    "drivers, enabling this mode can force software rendering.)"));
+
+ConfigVariableBool CLP(support_rescale_normal)
+  ("gl-support-rescale-normal", true,
+   PRC_DESC("Configure this true to enable the use of the rescale_normal "
+            "extension if the GL claims to support it, or false not to use "
+	    "it even if it appears to be available.  (This appears to be "
+	    "buggy on some drivers.)"));
 
 ConfigVariableBool CLP(ignore_filters)
   ("gl-ignore-filters", false,
