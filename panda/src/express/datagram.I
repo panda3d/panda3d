@@ -481,3 +481,8 @@ INLINE void
 generic_write_datagram(Datagram &dest, const string &value) {
   dest.add_string(value);
 }
+
+INLINE void
+generic_write_datagram(Datagram &dest, const wstring &value) {
+  dest.add_wstring(value);
+}

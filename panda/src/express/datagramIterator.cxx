@@ -110,6 +110,30 @@ get_fixed_string(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::get_wstring
+//       Access: Public
+//  Description: Extracts a variable-length wstring (with a 32-bit
+//               length field).
+////////////////////////////////////////////////////////////////////
+wstring DatagramIterator::
+get_wstring() {
+  // First, get the length of the string
+  PN_uint32 s_len = get_uint32();
+
+  nassertr(_datagram != (const Datagram *)NULL, wstring());
+  nassertr(_current_index + s_len * 2 <= _datagram->get_length(), wstring());
+
+  wstring result;
+  result.reserve(s_len);
+  while (s_len > 0) {
+    result += wchar_t(get_uint16());
+    --s_len;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::extract_bytes
 //       Access: Public
 //  Description: Extracts the indicated number of bytes in the

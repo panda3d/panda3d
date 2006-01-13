@@ -65,6 +65,7 @@ PUBLISHED:
   string get_string32();
   string get_z_string();
   string get_fixed_string(size_t size);
+  wstring get_wstring();
 
   INLINE void skip_bytes(size_t size);
   string extract_bytes(size_t size);
@@ -98,6 +99,8 @@ INLINE void
 generic_read_datagram(double &result, DatagramIterator &source);
 INLINE void
 generic_read_datagram(string &result, DatagramIterator &source);
+INLINE void
+generic_read_datagram(wstring &result, DatagramIterator &source);
 
 #include "datagramIterator.I"
 

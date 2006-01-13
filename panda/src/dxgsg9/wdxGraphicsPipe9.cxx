@@ -107,12 +107,13 @@ PT(GraphicsBuffer) wdxGraphicsPipe9::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
             int x_size, int y_size) {
 
-  if (support_render_texture && gsg->get_supports_render_texture ( )) {
+  //  if (support_render_texture && gsg->get_supports_render_texture ( )) {
     return new wdxGraphicsBuffer9(this, gsg, name, x_size, y_size);
-  }
+    /*  }
   else {
     return NULL;
   }
+    */
 }
 
 ////////////////////////////////////////////////////////////////////

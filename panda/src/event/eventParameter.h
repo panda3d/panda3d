@@ -46,6 +46,7 @@ PUBLISHED:
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
   INLINE EventParameter(const string &value);
+  INLINE EventParameter(const wstring &value);
 
   INLINE EventParameter(const EventParameter &copy);
   INLINE EventParameter &operator = (const EventParameter &copy);
@@ -62,6 +63,8 @@ PUBLISHED:
   INLINE double get_double_value() const;
   INLINE bool is_string() const;
   INLINE string get_string_value() const;
+  INLINE bool is_wstring() const;
+  INLINE wstring get_wstring_value() const;
 
   INLINE TypedWritableReferenceCount *get_ptr() const;
 
@@ -160,10 +163,12 @@ private:
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<int>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<double>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<std::string>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<std::wstring>);
 
 typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;
 typedef EventStoreValue<string> EventStoreString;
+typedef EventStoreValue<wstring> EventStoreWstring;
 
 #include "eventParameter.I"
 

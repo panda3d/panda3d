@@ -85,6 +85,7 @@ PUBLISHED:
   INLINE void add_string32(const string &str);
   INLINE void add_z_string(string str);
   INLINE void add_fixed_string(const string &str, size_t size);
+  void add_wstring(const wstring &str);
 
   void pad_bytes(size_t size);
   void append_data(const void *data, size_t size);
@@ -138,6 +139,8 @@ INLINE void
 generic_write_datagram(Datagram &dest, double value);
 INLINE void
 generic_write_datagram(Datagram &dest, const string &value);
+INLINE void
+generic_write_datagram(Datagram &dest, const wstring &value);
 
 
 #include "datagram.I"

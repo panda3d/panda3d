@@ -35,6 +35,7 @@ ConfigureFn(config_event) {
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
   EventStoreString::init_type("EventStoreString");
+  EventStoreWstring::init_type("EventStoreWstring");
 
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();

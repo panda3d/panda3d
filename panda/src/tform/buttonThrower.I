@@ -18,25 +18,166 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_button_down_event
+//       Access: Published
+//  Description: Specifies the generic event that is generated (if
+//               any) each time a key or button is depressed.  Unlike
+//               the specific events that are unique to each key, this
+//               same event name is used for *all* button events, and
+//               the name of the button pressed (possibly with
+//               modifier prefixes) will be sent as a parameter.
+//
+//               If this string is empty, no event is generated.  It
+//               is possible to generate both generic events and
+//               specific events for the same button.
+//
+//               See also set_keystroke_event().
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_button_down_event(const string &button_down_event) {
+  _button_down_event = button_down_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_button_down_event
+//       Access: Published
+//  Description: Returns the button_down_event that has been set on
+//               this ButtonThrower.  See set_button_down_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_button_down_event() const {
+  return _button_down_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_button_up_event
+//       Access: Published
+//  Description: Specifies the generic event that is generated (if
+//               any) each time a key or button is released.  See
+//               set_button_down_event().
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_button_up_event(const string &button_up_event) {
+  _button_up_event = button_up_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_button_up_event
+//       Access: Published
+//  Description: Returns the button_up_event that has been set on
+//               this ButtonThrower.  See set_button_up_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_button_up_event() const {
+  return _button_up_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_keystroke_event
+//       Access: Published
+//  Description: Specifies the event that is generated (if any) for
+//               each keystroke that is received.  A keystroke is
+//               different than a button event: it represents the
+//               semantic meaning of the sequence of keys that have
+//               been pressed.  For instance, pressing shift and 4
+//               together will generate the button event "shift-4",
+//               but it will generate the keystroke "$".
+//
+//               This event is generated with a single wstring
+//               parameter, which is a one-character string that
+//               contains the keystroke generated.  If this event
+//               string is empty, no event is generated.
+//
+//               See also set_button_down_event().
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_keystroke_event(const string &keystroke_event) {
+  _keystroke_event = keystroke_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_keystroke_event
+//       Access: Published
+//  Description: Returns the keystroke_event that has been set on this
+//               ButtonThrower.  See set_keystroke_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_keystroke_event() const {
+  return _keystroke_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_candidate_event
+//       Access: Published
+//  Description: Specifies the event that is generated (if any) for
+//               each IME candidate string event received.  Events of
+//               this nature are received only when the user is
+//               entering data using a Microsoft Input Method Editor,
+//               typically used for Asian languages such as Japanese
+//               or Korean.
+//
+//               If you are designing a typing user interface, you
+//               should track this event to support the use of the
+//               IME.  In response to this event, you should display
+//               the candidate string in the entry box, with the
+//               appropriate sections highlighted, so the user can
+//               scroll through the available choices.
+//
+//               This event is generated with four parameters, in
+//               order: the candidate string, the character at which
+//               to start the highlight, the character at which to end
+//               the highlight, and the current cursor position.
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_candidate_event(const string &candidate_event) {
+  _candidate_event = candidate_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_candidate_event
+//       Access: Published
+//  Description: Returns the candidate_event that has been set on this
+//               ButtonThrower.  See set_candidate_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_candidate_event() const {
+  return _candidate_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_move_event
+//       Access: Published
+//  Description: Specifies the event that is generated (if any) each
+//               time the mouse is moved within the window.
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_move_event(const string &move_event) {
+  _move_event = move_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_move_event
+//       Access: Published
+//  Description: Returns the move_event that has been set on this
+//               ButtonThrower.  See set_move_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_move_event() const {
+  return _move_event;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::set_prefix
 //       Access: Published
-//  Description: Sets the prefix which is prepended to all event names
-//               thrown by this object.
+//  Description: Sets the prefix which is prepended to all specific
+//               event names (that is, event names generated from the
+//               button name itself, as opposed to the generic event
+//               names like set_button_down_event) thrown by this
+//               object.
 ////////////////////////////////////////////////////////////////////
 INLINE void ButtonThrower::
 set_prefix(const string &prefix) {
   _prefix = prefix;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::has_prefix
-//       Access: Published
-//  Description: Returns true if the ButtonThrower has a prefix set,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool ButtonThrower::
-has_prefix() const {
-  return !_prefix.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,9 +186,35 @@ has_prefix() const {
 //  Description: Returns the prefix that has been set on this
 //               ButtonThrower.  See set_prefix().
 ////////////////////////////////////////////////////////////////////
-INLINE string ButtonThrower::
+INLINE const string &ButtonThrower::
 get_prefix() const {
   return _prefix;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_specific_flag
+//       Access: Published
+//  Description: Sets the flag that indicates whether specific events
+//               (events prefixed by set_prefix, and based on the
+//               event name) should be generated at all.  This is true
+//               by default, but may be disabled if you are only
+//               interested in the generic events (for instance,
+//               events like set_button_down_event).
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_specific_flag(bool specific_flag) {
+  _specific_flag = specific_flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_specific_flag
+//       Access: Published
+//  Description: Returns the flag that indicates whether specific
+//               events should be generated.  See set_specific_flag().
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonThrower::
+get_specific_flag() const {
+  return _specific_flag;
 }
 
 ////////////////////////////////////////////////////////////////////

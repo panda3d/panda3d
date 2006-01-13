@@ -84,6 +84,23 @@ dump_hex(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::add_wstring
+//       Access: Public
+//  Description: Adds a variable-length wstring to the datagram.
+////////////////////////////////////////////////////////////////////
+void Datagram::
+add_wstring(const wstring &str) {
+  // By convention, wstrings are marked with 32-bit lengths.
+  add_uint32(str.length());
+
+  // Now append each character in the string.  We store each code
+  // little-endian, for no real good reason.
+  wstring::const_iterator ci;
+  for (ci = str.begin(); ci != str.end(); ++ci) {
+    add_uint16(*ci);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Datagram::pad_bytes

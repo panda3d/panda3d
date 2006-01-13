@@ -76,6 +76,14 @@ EventParameter(double value) : _ptr(new EventStoreDouble(value)) { }
 INLINE EventParameter::
 EventParameter(const string &value) : _ptr(new EventStoreString(value)) { }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::Wstring constructor
+//       Access: Public
+//  Description: Defines an EventParameter that stores a wstring value.
+////////////////////////////////////////////////////////////////////
+INLINE EventParameter::
+EventParameter(const wstring &value) : _ptr(new EventStoreWstring(value)) { }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Copy constructor
@@ -190,6 +198,33 @@ INLINE string EventParameter::
 get_string_value() const {
   nassertr(is_string(), "");
   return ((const EventStoreString *)_ptr.p())->get_value();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::is_wstring
+//       Access: Public
+//  Description: Returns true if the EventParameter stores a wstring
+//               value, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EventParameter::
+is_wstring() const {
+  if (is_empty()) {
+    return false;
+  }
+  return _ptr->is_of_type(EventStoreWstring::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::get_wstring_value
+//       Access: Public
+//  Description: Retrieves the value stored in the EventParameter.  It
+//               is only valid to call this if is_wstring() has already
+//               returned true.
+////////////////////////////////////////////////////////////////////
+INLINE wstring EventParameter::
+get_wstring_value() const {
+  nassertr(is_wstring(), wstring());
+  return ((const EventStoreWstring *)_ptr.p())->get_value();
 }
 
 ////////////////////////////////////////////////////////////////////

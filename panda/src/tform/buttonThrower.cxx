@@ -43,6 +43,7 @@ ButtonThrower(const string &name) :
 
   _button_events = new ButtonEventList;
 
+  _specific_flag = true;
   _time_flag = false;
   _throw_buttons_active = false;
 }
@@ -247,7 +248,7 @@ write(ostream &out, int indent_level) const {
   if (_throw_buttons_active) {
     indent(out, indent_level)
       << "Processing keys:\n";
-    // Write the list of buttons that we're processing too.
+    // Write the list of buttons that we're processing.
     ThrowButtons::const_iterator ti;
     for (ti = _throw_buttons.begin(); ti != _throw_buttons.end(); ++ti) {
       ButtonHandle button = (*ti).first;
@@ -258,21 +259,96 @@ write(ostream &out, int indent_level) const {
           << (*di).get_prefix() << button.get_name() << "\n";
       }
     }
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::do_throw_event
+//     Function: ButtonThrower::do_specific_event
 //       Access: Private
 //  Description: Generates an event of the indicated name, adding on
 //               all of the user-requested parameters.
 ////////////////////////////////////////////////////////////////////
 void ButtonThrower::
-do_throw_event(const string &event_name, double time) {
-  Event *event = new Event(_prefix + event_name);
+do_specific_event(const string &event_name, double time) {
+  if (_specific_flag) {
+    PT(Event) event = new Event(_prefix + event_name);
+    
+    if (_time_flag) {
+      event->add_parameter(time);
+    }
+    
+    ParameterList::const_iterator pi;
+    for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
+      event->add_parameter(*pi);
+    }
+    
+    throw_event(event);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::do_general_event
+//       Access: Private
+//  Description: Generates an appropriate general event, if one is
+//               configured.
+////////////////////////////////////////////////////////////////////
+void ButtonThrower::
+do_general_event(const ButtonEvent &button_event, const string &button_name) {
+  string event_name;
+  switch (button_event._type) {
+  case ButtonEvent::T_down:
+    event_name = _button_down_event;
+    break;
+
+  case ButtonEvent::T_resume_down:
+    break;
+
+  case ButtonEvent::T_up:
+    event_name = _button_up_event;
+    break;
+
+  case ButtonEvent::T_keystroke:
+    event_name = _keystroke_event;
+    break;
+
+  case ButtonEvent::T_candidate:
+    event_name = _candidate_event;
+    break;
+
+  case ButtonEvent::T_move:
+    event_name = _move_event;
+    break;
+  }
+  if (event_name.empty()) {
+    // This general event is not configured.
+    return;
+  }
+
+  PT(Event) event = new Event(event_name);
 
   if (_time_flag) {
-    event->add_parameter(time);
+    event->add_parameter(button_event._time);
+  }
+
+  // Now add the appropriate parameters.
+  switch (button_event._type) {
+  case ButtonEvent::T_down:
+  case ButtonEvent::T_resume_down:
+  case ButtonEvent::T_up:
+    event->add_parameter(button_name);
+    break;
+
+  case ButtonEvent::T_keystroke:
+    event->add_parameter(wstring(1, button_event._keycode));
+    break;
+
+  case ButtonEvent::T_candidate:
+    event->add_parameter(button_event._candidate_string);
+    break;
+
+  case ButtonEvent::T_move:
+    event_name = _move_event;
+    break;
   }
 
   ParameterList::const_iterator pi;
@@ -321,7 +397,8 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
         if (!_throw_buttons_active || has_throw_button(_mods, be._button)) {
           // Process this button.
-          do_throw_event(event_name, be._time);
+          do_specific_event(event_name, be._time);
+	  do_general_event(be, event_name);
           
         } else {
           // Don't process this button; instead, pass it down to future
@@ -344,7 +421,8 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         // definition for the button at all, regardless of the state
         // of the modifier keys.
         if (!_throw_buttons_active || has_throw_button(be._button)) {
-          do_throw_event(event_name + "-up", be._time);
+          do_specific_event(event_name + "-up", be._time);
+	  do_general_event(be, event_name);
         }
         if (_throw_buttons_active) {
           // Now pass the event on to future generations.  We always
@@ -358,6 +436,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         // Some other kind of button event (e.g. keypress).  Don't
         // throw an event for this, but do pass it down.
         _button_events->add_event(be);
+	do_general_event(be, "");
       }
     }
   }

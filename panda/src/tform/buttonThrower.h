@@ -45,12 +45,25 @@ PUBLISHED:
   ButtonThrower(const string &name);
   ~ButtonThrower();
 
+  INLINE void set_button_down_event(const string &button_down_event);
+  INLINE const string &get_button_down_event() const;
+  INLINE void set_button_up_event(const string &button_up_event);
+  INLINE const string &get_button_up_event() const;
+  INLINE void set_keystroke_event(const string &keystroke_event);
+  INLINE const string &get_keystroke_event() const;
+  INLINE void set_candidate_event(const string &candidate_event);
+  INLINE const string &get_candidate_event() const;
+  INLINE void set_move_event(const string &move_event);
+  INLINE const string &get_move_event() const;
+
   INLINE void set_prefix(const string &prefix);
-  INLINE bool has_prefix() const;
-  INLINE string get_prefix() const;
+  INLINE const string &get_prefix() const;
+  INLINE void set_specific_flag(bool specific_flag);
+  INLINE bool get_specific_flag() const;
 
   INLINE void set_time_flag(bool time_flag);
   INLINE bool get_time_flag() const;
+  
 
   void add_parameter(const EventParameter &obj);
   int get_num_parameters() const;
@@ -72,13 +85,20 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  void do_throw_event(const string &event_name, double time);
+  void do_specific_event(const string &event_name, double time);
+  void do_general_event(const ButtonEvent &button_event, 
+			const string &event_name);
 
 private:
+  string _button_down_event;
+  string _button_up_event;
+  string _keystroke_event;
+  string _candidate_event;
+  string _move_event;
+  bool _specific_flag;
   string _prefix;
-  ModifierButtons _mods;
-
   bool _time_flag;
+  ModifierButtons _mods;
 
   typedef pvector<EventParameter> ParameterList;
   ParameterList _parameters;
