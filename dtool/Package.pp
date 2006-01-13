@@ -148,6 +148,21 @@
 #set CGGL_LIBS $[CGGL_LIBS]
 #set HAVE_CGGL $[HAVE_CGGL]
 
+#set CGDX8_IPATH $[unixfilename $[CGDX8_IPATH]]
+#set CGDX8_LPATH $[unixfilename $[CGDX8_LPATH]]
+#set CGDX8_LIBS $[CGDX8_LIBS]
+#set HAVE_CGDX8 $[HAVE_CGDX8]
+
+#set CGDX9_IPATH $[unixfilename $[CGDX9_IPATH]]
+#set CGDX9_LPATH $[unixfilename $[CGDX9_LPATH]]
+#set CGDX9_LIBS $[CGDX9_LIBS]
+#set HAVE_CGDX9 $[HAVE_CGDX9]
+
+#set CGDX10_IPATH $[unixfilename $[CGDX10_IPATH]]
+#set CGDX10_LPATH $[unixfilename $[CGDX10_LPATH]]
+#set CGDX10_LIBS $[CGDX10_LIBS]
+#set HAVE_CGDX10 $[HAVE_CGDX10]
+
 #set VRPN_IPATH $[unixfilename $[VRPN_IPATH]]
 #set VRPN_LPATH $[unixfilename $[VRPN_LPATH]]
 #set VRPN_LIBS $[VRPN_LIBS]

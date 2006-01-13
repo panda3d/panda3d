@@ -216,6 +216,27 @@
   #define cggl_libs $[CGGL_LIBS]
 #endif
 
+#if $[HAVE_CGDX8]
+  #define cgdx8_ipath $[wildcard $[CGDX8_IPATH]]
+  #define cgdx8_lpath $[wildcard $[CGDX8_LPATH]]
+  #define cgdx8_cflags $[CGDX8_CFLAGS]
+  #define cgdx8_libs $[CGDX8_LIBS]
+#endif
+
+#if $[HAVE_CGDX9]
+  #define cgdx9_ipath $[wildcard $[CGDX9_IPATH]]
+  #define cgdx9_lpath $[wildcard $[CGDX9_LPATH]]
+  #define cgdx9_cflags $[CGDX9_CFLAGS]
+  #define cgdx9_libs $[CGDX9_LIBS]
+#endif
+
+#if $[HAVE_CGDX10]
+  #define cgdx10_ipath $[wildcard $[CGDX10_IPATH]]
+  #define cgdx10_lpath $[wildcard $[CGDX10_LPATH]]
+  #define cgdx10_cflags $[CGDX10_CFLAGS]
+  #define cgdx10_libs $[CGDX10_LIBS]
+#endif
+
 #if $[HAVE_VRPN]
   #define vrpn_ipath $[wildcard $[VRPN_IPATH]]
   #define vrpn_lpath $[wildcard $[VRPN_LPATH]]

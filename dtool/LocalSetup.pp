@@ -51,6 +51,21 @@
 #else
 #print - Did not find Cg OpenGL API
 #endif
+#if $[HAVE_CGDX8]
+#print + Cg DX8 API
+#else
+#print - Did not find Cg DX8 API
+#endif
+#if $[HAVE_CGDX9]
+#print + Cg DX9 API
+#else
+#print - Did not find Cg DX9 API
+#endif
+#if $[HAVE_CGDX10]
+#print + Cg DX10 API
+#else
+#print - Did not find Cg DX10 API
+#endif
 #if $[HAVE_VRPN]
 #print + VRPN
 #else
@@ -175,6 +190,15 @@ $[cdefine HAVE_CG]
 
 /* Define if we have CGGL installed.  */
 $[cdefine HAVE_CGGL]
+
+/* Define if we have CGDX8 installed.  */
+$[cdefine HAVE_CGDX8]
+
+/* Define if we have CGDX9 installed.  */
+$[cdefine HAVE_CGDX9]
+
+/* Define if we have CGDX10 installed.  */
+$[cdefine HAVE_CGDX10]
 
 /* Define if we have zlib installed.  */
 $[cdefine HAVE_ZLIB]
