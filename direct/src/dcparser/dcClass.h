@@ -30,11 +30,13 @@
 
 extern ConfigVariableBool dc_multiple_inheritance;
 extern ConfigVariableBool dc_virtual_inheritance;
+extern ConfigVariableBool dc_sort_inheritance_by_file;
 
 #else  // WITHIN_PANDA
 
 static const bool dc_multiple_inheritance = true;
 static const bool dc_virtual_inheritance = true;
+static const bool dc_sort_inheritance_by_file = false;
 
 #endif  // WITHIN_PANDA
 
@@ -140,6 +142,8 @@ public:
   void set_number(int number);
 
 private:
+  void shadow_inherited_field(const string &name);
+
 #ifdef WITHIN_PANDA
   PStatCollector _class_update_pcollector;
   PStatCollector _class_generate_pcollector;

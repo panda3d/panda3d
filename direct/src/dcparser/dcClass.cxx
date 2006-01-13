@@ -48,6 +48,14 @@ ConfigVariableBool dc_virtual_inheritance
           "This also enables shadowing (overloading) of inherited method "
           "names from a base class."));
 
+ConfigVariableBool dc_sort_inheritance_by_file
+("dc-sort-inheritance-by-file", true,
+ PRC_DESC("This is a temporary hack.  This should be true if you are using "
+          "version 1.42 of the otp_server.exe binary, which sorted inherited "
+          "fields based on the order of the classes within the DC file, "
+          "rather than based on the order in which the references are made "
+          "within the class."));
+
 #endif  // WITHIN_PANDA
 
 class SortFieldsByIndex {
@@ -1300,49 +1308,81 @@ rebuild_inherited_fields() {
 
   _inherited_fields.clear();
   
-  // First, get a list of all of the inherited field names.
+  // First, all of the inherited fields from our parent are at the top
+  // of the list.
   Parents::const_iterator pi;
   for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
     const DCClass *parent = (*pi);
     int num_inherited_fields = parent->get_num_inherited_fields();
     for (int i = 0; i < num_inherited_fields; ++i) {
-      const DCField *field = parent->get_inherited_field(i);
-      names.insert(field->get_name());
+      DCField *field = parent->get_inherited_field(i);
+      if (field->get_name().empty()) {
+        // Unnamed fields are always inherited.  Except in the hack case.
+        if (!dc_sort_inheritance_by_file) {
+          _inherited_fields.push_back(field);
+        }
+
+      } else {
+        bool inserted = names.insert(field->get_name()).second;
+        if (inserted) {
+          // The earlier parent shadows the later parent.
+          _inherited_fields.push_back(field);
+        }
+      }
     }
   }
 
-  // Also get the local field names.  Any local unnamed fields are
-  // immediately added to the _inherited_fields list, since the
-  // unnamed fields are not inherited.
+  // Now add the local fields at the end of the list.  If any fields
+  // in this list were already defined by a parent, we will shadow the
+  // parent definition (that is, remove the parent's field from our
+  // list of inherited fields).
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     DCField *field = (*fi);
     if (field->get_name().empty()) {
-      _inherited_fields.push_back(field);
+      // Unnamed fields are always added. 
+     _inherited_fields.push_back(field);
+
     } else {
-      names.insert(field->get_name());
-    }
-  }
+      bool inserted = names.insert(field->get_name()).second;
+      if (!inserted) {
+        // This local field shadows an inherited field.  Remove the
+        // parent's field from our list.
+        shadow_inherited_field(field->get_name());
+      }
 
-  // And now build up the table.  We use get_field_by_name() to
-  // extract each one, to guarantee that the index we build exactly
-  // matches the return value of get_field_by_name().
-  
-  Names::const_iterator ni;
-  for (ni = names.begin(); ni != names.end(); ++ni) {
-    // Note that we only list the named fields in the inherited field
-    // list.  Thus, the unnamed fields, if any, are not inherited.
-    if (!(*ni).empty()) {
-      DCField *field = get_field_by_name(*ni);
-      nassertv(field != (DCField *)NULL);
+      // Now add the local field.
       _inherited_fields.push_back(field);
     }
   }
 
-  // Finally, sort the list in global field index order.  This will
-  // put the inherited fields at the top of the list.
-  sort(_inherited_fields.begin(), _inherited_fields.end(),
-       SortFieldsByIndex());
+  if (dc_sort_inheritance_by_file) {
+    // Temporary hack.
+    sort(_inherited_fields.begin(), _inherited_fields.end(), SortFieldsByIndex());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::shadow_inherited_field
+//       Access: Private
+//  Description: This is called only by rebuild_inherited_fields().
+//               It removes the named field from the list of
+//               _inherited_fields, presumably in preparation for
+//               adding a new definition below.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+shadow_inherited_field(const string &name) {
+  Fields::iterator fi;
+  for (fi = _inherited_fields.begin(); fi != _inherited_fields.end(); ++fi) {
+    DCField *field = (*fi);
+    if (field->get_name() == name) {
+      _inherited_fields.erase(fi);
+      return;
+    }
+  }
+
+  // If we get here, the named field wasn't in the list.  Huh.
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1388,7 +1428,7 @@ add_field(DCField *field) {
   }
 
   if (_dc_file != (DCFile *)NULL && 
-      (dc_virtual_inheritance || !is_struct())) {
+      ((dc_virtual_inheritance && dc_sort_inheritance_by_file) || !is_struct())) {
     if (dc_multiple_inheritance) {
       _dc_file->set_new_index_number(field);
     } else {

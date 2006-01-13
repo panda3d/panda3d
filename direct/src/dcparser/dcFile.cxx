@@ -501,7 +501,11 @@ void DCFile::
 generate_hash(HashGenerator &hashgen) const {
   if (dc_virtual_inheritance) {
     // Just to make the hash number change in this case.
-    hashgen.add_int(1);
+    if (dc_sort_inheritance_by_file) {
+      hashgen.add_int(1);
+    } else {
+      hashgen.add_int(2);
+    }
   }
 
   hashgen.add_int(_classes.size());
