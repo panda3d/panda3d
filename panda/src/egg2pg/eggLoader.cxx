@@ -2024,7 +2024,9 @@ make_vertex_data(const EggRenderState *render_state,
 
     if (vertex->has_normal()) {
       gvw.set_column(InternalName::get_normal());
-      gvw.add_data3f(LCAST(float, vertex->get_normal() * transform));
+      Normald orig_normal = vertex->get_normal();
+      Normald transformed_normal = normalize(orig_normal * transform);
+      gvw.add_data3f(LCAST(float, transformed_normal));
 
       if (is_dynamic) {
         EggMorphNormalList::const_iterator mni;
@@ -2033,7 +2035,10 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_normal(), morph.get_name());
           gvw.set_column(delta_name);
-          gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+	  Normald morphed_normal = orig_normal + morph.get_offset();
+	  Normald transformed_morphed_normal = normalize(morphed_normal * transform);
+	  LVector3d delta = transformed_morphed_normal - transformed_normal;
+	  gvw.add_data3f(LCAST(float, delta));
         }
       }
     }
