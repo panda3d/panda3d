@@ -42,6 +42,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexRewriter : public GeomVertexWriter, public GeomVertexReader {
 PUBLISHED:
+  INLINE GeomVertexRewriter();
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data);
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data,
                             const string &name);

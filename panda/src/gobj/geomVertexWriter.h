@@ -72,6 +72,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexWriter : public GeomEnums {
 PUBLISHED:
+  INLINE GeomVertexWriter();
   INLINE GeomVertexWriter(GeomVertexData *vertex_data);
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
                           const string &name);

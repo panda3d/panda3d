@@ -18,6 +18,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::Default Constructor
+//       Access: Published
+//  Description: Constructs an invalid GeomVertexRewriter.  You must use
+//               the assignment operator to assign a valid
+//               GeomVertexRewriter to this object before you can use
+//               it.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexRewriter::
+GeomVertexRewriter() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::Constructor
 //       Access: Published
 //  Description: Constructs a new rewriter to process the vertices of

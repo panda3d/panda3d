@@ -18,6 +18,21 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::Default Constructor
+//       Access: Published
+//  Description: Constructs an invalid GeomVertexWriter.  You must use
+//               the assignment operator to assign a valid
+//               GeomVertexWriter to this object before you can use
+//               it.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexWriter::
+GeomVertexWriter() :
+  _vertex_data(NULL)
+{
+  initialize();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Constructor
 //       Access: Published
 //  Description: Constructs a new writer to process the vertices of

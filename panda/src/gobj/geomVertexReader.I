@@ -18,6 +18,21 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::Default Constructor
+//       Access: Published
+//  Description: Constructs an invalid GeomVertexReader.  You must use
+//               the assignment operator to assign a valid
+//               GeomVertexReader to this object before you can use
+//               it.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexReader::
+GeomVertexReader() :
+  _vertex_data(NULL)
+{
+  initialize();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::Constructor
 //       Access: Published
 //  Description: Constructs a new reader to process the vertices of

@@ -59,6 +59,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexReader : public GeomEnums {
 PUBLISHED:
+  INLINE GeomVertexReader();
   INLINE GeomVertexReader(const GeomVertexData *vertex_data);
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
                           const string &name);
