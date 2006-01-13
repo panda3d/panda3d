@@ -76,7 +76,7 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
   // The glyph can be fit at (x, y).  Slot it.
   PT(DynamicTextGlyph) glyph = 
     new DynamicTextGlyph(character, this,
-			 x, y, x_size, y_size, margin);
+                         x, y, x_size, y_size, margin);
   _glyphs.push_back(glyph);
   return glyph;
 }

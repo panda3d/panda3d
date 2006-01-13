@@ -43,7 +43,7 @@ PerlinNoise2() :
 ////////////////////////////////////////////////////////////////////
 INLINE PerlinNoise2::
 PerlinNoise2(double sx, double sy,
-	     int table_size, unsigned long seed) :
+             int table_size, unsigned long seed) :
   PerlinNoise(table_size, seed)
 {
   init_unscaled_xform();

@@ -43,7 +43,7 @@ public:
   const string &get_name() const;
   const string &get_desc() const;
   bool scan(const string &photo_extension, const string &movie_extension,
-	    const string &sound_extension);
+            const string &sound_extension);
   void collect_index_images();
 
   bool sort_date_before(const RollDirectory &other) const;
@@ -59,7 +59,7 @@ public:
 
   bool generate_images(const Filename &archive_dir, PNMTextMaker *text_maker);
   bool generate_html(const Filename &archive_dir,
-		     const Filename &roll_dir_root);
+                     const Filename &roll_dir_root);
   const string &get_comment_html() const;
   const string &get_index_html() const;
 
@@ -72,14 +72,14 @@ public:
 
 private:
   void add_photo(const Filename &basename, const string &movie_extension,
-		 const string &sound_extension);
+                 const string &sound_extension);
   void add_contributing_filename(const Filename &filename);
   static bool insert_html_comment_body(ostream &html, istream &cm);
   static string format_basename(const string &basename);
   void generate_nav_buttons(ostream &html, 
-			    const Filename &prev_roll_filename,
-			    const Filename &next_roll_filename, 
-			    const string &up_href);
+                            const Filename &prev_roll_filename,
+                            const Filename &next_roll_filename, 
+                            const string &up_href);
   static bool compare_filenames(const string &a, const string &b);
 
 public:

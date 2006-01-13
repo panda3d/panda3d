@@ -565,7 +565,7 @@ get_most_important_light() const {
     nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, NodePath());
     if (!np.node()->is_exact_type(AmbientLight::get_class_type())) {
       if (best.is_empty() || compare(np, best)) {
-	best = np;
+        best = np;
       }
     }
   }

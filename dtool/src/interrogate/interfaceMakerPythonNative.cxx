@@ -331,17 +331,17 @@ std::string make_safe_name(const std::string & name)
 
     /*
     static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
-	std::string result = name;
+        std::string result = name;
 
-	size_t pos = result.find_first_not_of(safe_chars2);
-	while (pos != std::string::npos)
-	{
-		result[pos] = '_';
-		pos = result.find_first_not_of(safe_chars2);
-	}
+        size_t pos = result.find_first_not_of(safe_chars2);
+        while (pos != std::string::npos)
+        {
+                result[pos] = '_';
+                pos = result.find_first_not_of(safe_chars2);
+        }
 
-	return result;
-	*/
+        return result;
+        */
 }
 
 bool isInplaceFunction(const std::string &cppName)
@@ -640,8 +640,8 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
             GetThis << "    if(local_this == NULL) {\n";
             GetThis << "      // This might happen if Python called a reverse operator like __rsub__().\n";
-	    GetThis << "      Py_INCREF(Py_NotImplemented);\n";
-	    GetThis << "      return Py_NotImplemented;\n";
+            GetThis << "      Py_INCREF(Py_NotImplemented);\n";
+            GetThis << "      return Py_NotImplemented;\n";
             GetThis << "    }\n";
 
             write_function_for_top(out, func,GetThis.str());
@@ -1322,12 +1322,12 @@ write_module_class(ostream &out,  Object *obj) {
         out << "    if(local_this != NULL)\n";
         out << "    {\n";
         out << "       ostringstream os;\n";
-	if (need_repr == 2) {
-	  out << "       local_this->output(os);\n";
-	} else {
-	  out << "       local_this->python_repr(os, \""
-	      << classNameFromCppName(ClassName) << "\");\n";
-	}
+        if (need_repr == 2) {
+          out << "       local_this->output(os);\n";
+        } else {
+          out << "       local_this->python_repr(os, \""
+              << classNameFromCppName(ClassName) << "\");\n";
+        }
         out << "       std::string ss = os.str();\n";
         out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
         out << "    };\n";
@@ -1386,7 +1386,7 @@ write_module_class(ostream &out,  Object *obj) {
         << ".As_PyTypeObject().tp_doc =\n";
     output_quoted(out, 10, obj->_itype.get_comment());
     out << ";\n"
-	<< "#endif\n";
+        << "#endif\n";
   }
 
   // add bases///
@@ -2934,43 +2934,43 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "write") {
       if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
-	InterrogateFunction::Instances::const_iterator ii;
-	for (ii = ifunc._instances->begin();
-	     ii != ifunc._instances->end();
-	     ++ii) {
-	  CPPInstance *cppinst = (*ii).second;
-	  CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-	  
-	  if (cppfunc != NULL) {
-	    if (cppfunc->_parameters != NULL && 
-		cppfunc->_return_type != NULL && 
-		TypeManager::is_void(cppfunc->_return_type)) {
-	      if (cppfunc->_parameters->_parameters.size() == 1) {
-		CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
-		if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
-		  // write(ostream)
-		  return 1;
-		}
-	      }
+        InterrogateFunction::Instances::const_iterator ii;
+        for (ii = ifunc._instances->begin();
+             ii != ifunc._instances->end();
+             ++ii) {
+          CPPInstance *cppinst = (*ii).second;
+          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-	      if (cppfunc->_parameters->_parameters.size() == 2) {
-		CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
-		if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
-		  inst1 = cppfunc->_parameters->_parameters[1];
-		  if (inst1->_initializer != NULL) {
-		    // write(ostream, int = 0)
-		    return 1;
-		  }
-		  
-		  if (TypeManager::is_integer(inst1->_type)) {
-		    // write(ostream, int)
-		    return 2;
-		  }
-		}
-	      }
-	    }
-	  }
-	}   
+          if (cppfunc != NULL) {
+            if (cppfunc->_parameters != NULL && 
+                cppfunc->_return_type != NULL && 
+                TypeManager::is_void(cppfunc->_return_type)) {
+              if (cppfunc->_parameters->_parameters.size() == 1) {
+                CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
+                if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
+                  // write(ostream)
+                  return 1;
+                }
+              }
+
+              if (cppfunc->_parameters->_parameters.size() == 2) {
+                CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
+                if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
+                  inst1 = cppfunc->_parameters->_parameters[1];
+                  if (inst1->_initializer != NULL) {
+                    // write(ostream, int = 0)
+                    return 1;
+                  }
+
+                  if (TypeManager::is_integer(inst1->_type)) {
+                    // write(ostream, int)
+                    return 2;
+                  }
+                }
+              }
+            }
+          }
+        }   
       }
     }
   }
@@ -3000,31 +3000,31 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "python_repr") {
       if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
-	InterrogateFunction::Instances::const_iterator ii;
-	for (ii = ifunc._instances->begin();
-	     ii != ifunc._instances->end();
-	     ++ii) {
-	  CPPInstance *cppinst = (*ii).second;
-	  CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-	  
-	  if (cppfunc != NULL) {
-	    if (cppfunc->_parameters != NULL && 
-		cppfunc->_return_type != NULL && 
-		TypeManager::is_void(cppfunc->_return_type)) {
-	      if (cppfunc->_parameters->_parameters.size() == 2) {
-		CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
-		if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
-		  inst1 = cppfunc->_parameters->_parameters[1];
-		  if (TypeManager::is_string(inst1->_type) ||
-		      TypeManager::is_char_pointer(inst1->_type)) {
-		    // python_repr(ostream, string)
-		    return 1;
-		  }
-		}
-	      }
-	    }
-	  }
-	}   
+        InterrogateFunction::Instances::const_iterator ii;
+        for (ii = ifunc._instances->begin();
+             ii != ifunc._instances->end();
+             ++ii) {
+          CPPInstance *cppinst = (*ii).second;
+          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
+
+          if (cppfunc != NULL) {
+            if (cppfunc->_parameters != NULL && 
+                cppfunc->_return_type != NULL && 
+                TypeManager::is_void(cppfunc->_return_type)) {
+              if (cppfunc->_parameters->_parameters.size() == 2) {
+                CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
+                if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
+                  inst1 = cppfunc->_parameters->_parameters[1];
+                  if (TypeManager::is_string(inst1->_type) ||
+                      TypeManager::is_char_pointer(inst1->_type)) {
+                    // python_repr(ostream, string)
+                    return 1;
+                  }
+                }
+              }
+            }
+          }
+        }   
       }
     }
   }
@@ -3034,38 +3034,38 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "output") {
       if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
-	InterrogateFunction::Instances::const_iterator ii;
-	for (ii = ifunc._instances->begin();
-	     ii != ifunc._instances->end();
-	     ++ii) {
-	  CPPInstance *cppinst = (*ii).second;
-	  CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-	  
-	  if (cppfunc != NULL) {
-	    if (cppfunc->_parameters != NULL && 
-		cppfunc->_return_type != NULL && 
-		TypeManager::is_void(cppfunc->_return_type)) {
-	      if (cppfunc->_parameters->_parameters.size() == 1) {
-		CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
-		if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
-		  // output(ostream)
-		  return 2;
-		}
-	      }
+        InterrogateFunction::Instances::const_iterator ii;
+        for (ii = ifunc._instances->begin();
+             ii != ifunc._instances->end();
+             ++ii) {
+          CPPInstance *cppinst = (*ii).second;
+          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-	      if (cppfunc->_parameters->_parameters.size() >= 2) {
-		CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
-		if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
-		  inst1 = cppfunc->_parameters->_parameters[1];
-		  if (inst1->_initializer != NULL) {
-		    // output(ostream, foo = bar, ...)
-		    return 2;
-		  }
-		}
-	      }
-	    }
-	  }
-	}   
+          if (cppfunc != NULL) {
+            if (cppfunc->_parameters != NULL && 
+                cppfunc->_return_type != NULL && 
+                TypeManager::is_void(cppfunc->_return_type)) {
+              if (cppfunc->_parameters->_parameters.size() == 1) {
+                CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
+                if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
+                  // output(ostream)
+                  return 2;
+                }
+              }
+
+              if (cppfunc->_parameters->_parameters.size() >= 2) {
+                CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
+                if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
+                  inst1 = cppfunc->_parameters->_parameters[1];
+                  if (inst1->_initializer != NULL) {
+                    // output(ostream, foo = bar, ...)
+                    return 2;
+                  }
+                }
+              }
+            }
+          }
+        }   
       }
     }
   }
@@ -3097,15 +3097,15 @@ output_quoted(ostream &out, int indent_level, const std::string &str) {
     case '\n':
       out << "\\n\"\n";
       indent(out, indent_level)
-	<< '"';
+        << '"';
       break;
 
     default:
       if (!isprint(*si)) {
-	out << "\\" << oct << setw(3) << setfill('0') << (unsigned int)(*si)
-	    << dec;
+        out << "\\" << oct << setw(3) << setfill('0') << (unsigned int)(*si)
+            << dec;
       } else {
-	out << *si;
+        out << *si;
       }
     }
   }

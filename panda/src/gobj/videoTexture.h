@@ -73,7 +73,7 @@ public:
     AnimInterface::init_type();
     register_type(_type_handle, "VideoTexture",
                   Texture::get_class_type(),
-		  AnimInterface::get_class_type());
+                  AnimInterface::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

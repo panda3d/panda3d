@@ -75,10 +75,10 @@ QtessSurface(EggNurbsSurface *egg_surface) :
 
     if (QtessGlobals::_respect_egg) {
       if (egg_surface->get_u_subdiv() != 0) {
-	_num_u = egg_surface->get_u_subdiv();
+        _num_u = egg_surface->get_u_subdiv();
       }
       if (egg_surface->get_v_subdiv() != 0) {
-	_num_v = egg_surface->get_v_subdiv();
+        _num_v = egg_surface->get_v_subdiv();
       }
     }
   }
@@ -347,16 +347,16 @@ apply_match() {
         << "No surface to match " << get_name() << " to in U.\n";
     } else {
       if (qtess_cat.is_debug()) {
-	qtess_cat.debug()
+        qtess_cat.debug()
           << "Matching " << get_name() << " in U to " << m->get_name()
           << " in " << (_match_u_to_u?'U':'V') << ".\n";
       }
       if (_match_u_to_u) {
-	_tess_u = m->_tess_u;
-	_iso_u = m->_iso_u;
+        _tess_u = m->_tess_u;
+        _iso_u = m->_iso_u;
       } else {
-	_tess_u = m->_tess_v;
-	_iso_u = m->_iso_v;
+        _tess_u = m->_tess_v;
+        _iso_u = m->_iso_v;
       }
     }
   }
@@ -368,16 +368,16 @@ apply_match() {
         << "No surface to match " << get_name() << " in V.\n";
     } else {
       if (qtess_cat.is_debug()) {
-	qtess_cat.debug()
+        qtess_cat.debug()
           << "Matching " << get_name() << " in V to " << m->get_name()
           << " in " << (_match_v_to_v?'V':'U') << ".\n";
       }
       if (_match_v_to_v) {
-	_tess_v = m->_tess_v;
-	_iso_v = m->_iso_v;
+        _tess_v = m->_tess_v;
+        _iso_v = m->_iso_v;
       } else {
-	_tess_v = m->_tess_u;
-	_iso_v = m->_iso_u;
+        _tess_v = m->_tess_u;
+        _iso_v = m->_iso_u;
       }
     }
   }
@@ -448,9 +448,9 @@ do_uniform_tesselate(int &tris) const {
     }
     for (ui = 0; ui < num_u; ui++) {
       if (_iso_u.empty()) {
-	u = (double)ui / (double)(num_u-1);
+        u = (double)ui / (double)(num_u-1);
       } else {
-	u = _iso_u[ui] / _iso_u.back();
+        u = _iso_u[ui] / _iso_u.back();
       }
 
       PT(EggVertex) egg_vertex = evaluate_vertex(u, v);

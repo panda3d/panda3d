@@ -24,7 +24,7 @@
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXFVertex
+//       Class : DXFVertex
 // Description : Stored within DXFFile, this is the basic Vertex data
 //               of a DXF file.  When DXFFile::DoneEntity() is called,
 //               if the entity is a type to have vertices, then

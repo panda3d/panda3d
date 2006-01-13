@@ -26,7 +26,7 @@ class EggGroup;
 class pfMatrix;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MainProgram
+//       Class : MainProgram
 // Description : The vrml2egg program class.  This handles the user
 //               input and gets things going.
 ////////////////////////////////////////////////////////////////////
@@ -41,26 +41,26 @@ public:
   
   virtual boolean
   HandleGetopts(char flag, char *optarg, int &optind,
-		int argc, char **argv);
+                int argc, char **argv);
 
   virtual boolean
   HandleArgs(int &argc, char **&argv);
 
   void vrml_group(const VrmlNode *node, EggGroup *group,
-		  const pfMatrix &net_transform);
+                  const pfMatrix &net_transform);
   void vrml_transform(const VrmlNode *node, EggGroup *group,
-		      const pfMatrix &net_transform);
+                      const pfMatrix &net_transform);
   void vrml_shape(const VrmlNode *node, EggGroup *group,
-		  const pfMatrix &net_transform);
+                  const pfMatrix &net_transform);
 
   void vrml_grouping_node(const SFNodeRef &vrml, EggGroup *egg,
-			  const pfMatrix &net_transform,
-			  void (MainProgram::*process_func)
-			  (const VrmlNode *node, EggGroup *group,
-			   const pfMatrix &net_transform));
+                          const pfMatrix &net_transform,
+                          void (MainProgram::*process_func)
+                          (const VrmlNode *node, EggGroup *group,
+                           const pfMatrix &net_transform));
 
   void vrml_node(const SFNodeRef &vrml,
-		 EggGroup *egg, const pfMatrix &net_transform);
+                 EggGroup *egg, const pfMatrix &net_transform);
 
   typedef map<String, VrmlNode *> Nodes;
 

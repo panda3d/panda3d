@@ -815,15 +815,15 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
 
   if ( fileNameLen )
   {
-	fileName = (char *)malloc(sizeof(char)*++fileNameLen);
-	SAA_texture2DGetPicName( scene, texture, fileNameLen, fileName );
+        fileName = (char *)malloc(sizeof(char)*++fileNameLen);
+        SAA_texture2DGetPicName( scene, texture, fileNameLen, fileName );
   }
-	
+
   // make sure we are not being passed a NULL image, an empty image
   // string or the default image created by egg2soft
   if ( (fileName != NULL) && strlen( fileName ) && strcmp( fileName, 
         "/fat/people/gregw/new_test/PICTURES/default") &&
-				( strstr( fileName, "noIcon" ) == NULL) )
+                                ( strstr( fileName, "noIcon" ) == NULL) )
   {
     char *texName = NULL;
     char *texNamePath = NULL;
@@ -840,16 +840,16 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
 
     float transp;
 
-	// check for alpha
-	SAA_texture2DGetTransparency( scene, texture, &transp );
+        // check for alpha
+        SAA_texture2DGetTransparency( scene, texture, &transp );
 
-	if ( transp != 0.0f ) {
+        if ( transp != 0.0f ) {
         texName = (char *)malloc(sizeof(char)*(strlen(tmpName)+6));
         sprintf( texName, "%s.rgba", tmpName );
-	} else {
+        } else {
         texName = (char *)malloc(sizeof(char)*(strlen(tmpName)+5));
         sprintf( texName, "%s.rgb", tmpName );
-	}
+        }
 
     fileNameExt = (char *)malloc(sizeof(char)*(strlen(fileName)+5));
     sprintf( fileNameExt, "%s.pic", fileName ); 
@@ -972,9 +972,9 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert )
                 closest, numVert-1, vertices[closest].x, vertices[closest].y, 
                 vertices[closest].z, closestDist );
         }
-		}
+                }
 
-   	return( vertMap );
+        return( vertMap );
 }
 
 
@@ -1698,7 +1698,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         for ( i = 0; i < numTri; i++ )
         {    
             result = SAA_materialRelationGetT2DLocNbElements( scene, 
-							&materials[i], FALSE, &relinfo, &numTexTri[i] );
+                                                        &materials[i], FALSE, &relinfo, &numTexTri[i] );
 
             // polytex    
             if ( result == SI_SUCCESS )
@@ -3740,18 +3740,18 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                                     //models, numModels ), &type );
 
                             SAA_modelGetType( scene, &envelopes[i], &type );
-			
-			    if ( verbose >= 1 )
-			    {
+
+                            if ( verbose >= 1 )
+                            {
                                 fprintf( outStream, "envelope model type ");
-			
-				if ( type == SAA_MSMSH )
-					fprintf( outStream, "MESH\n" );
-				else if ( type == SAA_MNSRF )
-					fprintf( outStream, "NURBS\n" );
-				else
-					fprintf( outStream, "OTHER\n" );
-			   }
+
+                                if ( type == SAA_MSMSH )
+                                        fprintf( outStream, "MESH\n" );
+                                else if ( type == SAA_MNSRF )
+                                        fprintf( outStream, "NURBS\n" );
+                                else
+                                        fprintf( outStream, "OTHER\n" );
+                           }
 
                             int *envVtxIndices = NULL;
                             envVtxIndices = (int *)malloc(sizeof(int)*numEnvVertices[i]);
@@ -3813,9 +3813,9 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                             EggJoint *joint = 
                                 (EggJoint *)(skeleton->FindDescendent( name ));
 
-														// this doesn't seem to be necessary 4/7/99
+                                                                                                                // this doesn't seem to be necessary 4/7/99
                             //EggJoint *parent = (EggJoint *)joint->parent;
-														//assert(parent->IsA(NT_EggJoint));
+                                                                                                                //assert(parent->IsA(NT_EggJoint));
 
                             // for every envelope vertex 
                             for (j = 0; j < numEnvVertices[i]; j++)
@@ -4507,23 +4507,23 @@ MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     {
         for ( int i = 1; i < numShapes; i++ )
         {
-						SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );    
+                                                SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );    
 
-						// make sure soft gave us a reasonable number
-						if (!isNum(curveVal))
-							curveVal = 0.0f;
+                                                // make sure soft gave us a reasonable number
+                                                if (!isNum(curveVal))
+                                                        curveVal = 0.0f;
 
-						if ( verbose >= 2 )
-								fprintf( outStream, "at time %f, weightCurve[%d] for %s = %f\n",                     time, i, name, curveVal );
+                                                if ( verbose >= 2 )
+                                                                fprintf( outStream, "at time %f, weightCurve[%d] for %s = %f\n",                     time, i, name, curveVal );
 
 
             // derive table name from the model name
             tableName = MakeTableName( name, i );
 
-						// find and populate shape table
+                                                // find and populate shape table
             if ( verbose >= 2 )
                 fprintf( outStream, "Weight: looking for table '%s'\n", 
-								tableName );
+                                                                tableName );
 
             //find the morph table associated with this key shape
             thisTable = (SAnimTable *)(morphRoot->FindDescendent( tableName ));

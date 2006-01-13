@@ -331,7 +331,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
                     pDstWord = (WORD*)pDDSurfBytes;
-		    
+
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         BYTE r,g,b,a;
                         DWORD dwPixel = *pSrcWord;

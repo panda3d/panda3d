@@ -638,7 +638,7 @@ parse_comment(const FltBead *flt_bead, EggNode *egg_node) {
 bool FltToEggConverter::
 parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
   return parse_comment(flt_texture->get_comment(), 
-		       flt_texture->get_texture_filename(), egg_node);
+                       flt_texture->get_texture_filename(), egg_node);
 }
 
 ////////////////////////////////////////////////////////////////////

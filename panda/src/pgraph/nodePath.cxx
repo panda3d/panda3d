@@ -3780,7 +3780,7 @@ project_texture(TextureStage *stage, Texture *tex, const NodePath &projector) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_normal_map(Texture *normal_map, const string &texcoord_name,
-	       bool preserve_color) {
+               bool preserve_color) {
   clear_normal_map();
 
   // First, we apply the normal map itself, to the bottom layer.
@@ -3804,7 +3804,7 @@ set_normal_map(Texture *normal_map, const string &texcoord_name,
 
   // Finally, we enable M_light_vector texture coordinate generation.
   set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector, 
-	      texcoord_name, NodePath());
+              texcoord_name, NodePath());
 
   if (preserve_color) {
     // One more stage to get back the original color.
@@ -3836,14 +3836,14 @@ clear_normal_map() {
     for (int i = 0; i < ta->get_num_on_stages(); i++) {
       TextureStage *stage = ta->get_on_stage(i);
       if (stage->get_name() == "__normal_map") {
-	clear_texture(stage);
+        clear_texture(stage);
 
       } else if (stage->get_name() == "__normalization_map") {
-	clear_texture(stage);
-	clear_tex_gen(stage);
+        clear_texture(stage);
+        clear_tex_gen(stage);
 
       } else if (stage->get_name() == "__orig_color") {
-	clear_texture(stage);
+        clear_texture(stage);
       }
     }
   }
@@ -5783,7 +5783,7 @@ r_has_vertex_column(PandaNode *node, const InternalName *name) const {
       const Geom *geom = gnode->get_geom(i);
       CPT(GeomVertexData) vdata = geom->get_vertex_data();
       if (vdata->has_column(name)) {
-	return true;
+        return true;
       }
     }
   }

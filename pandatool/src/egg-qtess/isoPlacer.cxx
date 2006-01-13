@@ -63,35 +63,35 @@ get_scores(int subdiv, int across, double ratio,
     for (i = -1; i < _maxi; i++) {
       double u = (double)(i+1) / (double)(_maxi+1);
       if (s) {
-	surf->eval_point(u, v, pnext);
+        surf->eval_point(u, v, pnext);
       } else {
-	surf->eval_point(v, u, pnext);
+        surf->eval_point(v, u, pnext);
       }
 
       // We'll ignore consecutive equal points.  They don't contribute
       // to curvature or size.
       if (!pnext.almost_equal(p3)) {
-	num_points++;
-	p1 = p2;
-	p2 = p3;
-	p3 = pnext;
+        num_points++;
+        p1 = p2;
+        p2 = p3;
+        p3 = pnext;
 
-	v1 = v2;
-	v2 = p3 - p2;
-	double vlength = length(v2);
-	v2 /= vlength;
+        v1 = v2;
+        v2 = p3 - p2;
+        double vlength = length(v2);
+        v2 /= vlength;
 
-	if (i >= 0) {
-	  _sscore[i] += vlength;
-	}
+        if (i >= 0) {
+          _sscore[i] += vlength;
+        }
 
-	if (num_points >= 3) {
-	  // We only have a meaningful v1, v2 when we've read at least
-	  // three non-equal points.
-	  double d = v1.dot(v2);
-	  
-	  _cscore[i] += acos(max(min(d, 1.0), -1.0));
-	}
+        if (num_points >= 3) {
+          // We only have a meaningful v1, v2 when we've read at least
+          // three non-equal points.
+          double d = v1.dot(v2);
+
+          _cscore[i] += acos(max(min(d, 1.0), -1.0));
+        }
       }
     }
   }
@@ -143,8 +143,8 @@ place(int count, pvector<double> &iso_points) {
     // well as at least 50% more curvy than the average curvature, to
     // qualify as a bend point.
     if (_cscore[i] > _cscore[i-1]+0.001 && 
-	_cscore[i] > _cscore[i+1]+0.001 &&
-	_cscore[i] > 1.5 * avg_curve) {
+        _cscore[i] > _cscore[i+1]+0.001 &&
+        _cscore[i] > 1.5 * avg_curve) {
       bpoints.push_back(i);
     }
   }
@@ -161,7 +161,7 @@ place(int count, pvector<double> &iso_points) {
     if (bnext != bpoints.end() && (*bnext) - (*bi) < min_separation) {
       // Too close.  Remove one.
       if (_cscore[*bnext] > _cscore[*bi]) {
-	*bi = *bnext;
+        *bi = *bnext;
       }
       bpoints.erase(bnext);
     } else {
@@ -177,7 +177,7 @@ place(int count, pvector<double> &iso_points) {
     BendPoints::iterator mi = bi;
     for (++bi; bi != bpoints.end(); ++bi) {
       if (_cscore[*bi] < _cscore[*mi]) {
-	mi = bi;
+        mi = bi;
       }
     }
     bpoints.erase(mi);

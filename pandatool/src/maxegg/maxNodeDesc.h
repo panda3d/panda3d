@@ -85,8 +85,8 @@ class MaxNodeDesc : public ReferenceCount, public Namable {
   enum JointType {
     JT_none,         // Not a joint.
     JT_node_joint,    // Node that represents a joint in the geometry 
-					 // but not the actual joint itself
-	JT_joint,        // An actual joint in Max.
+                                         // but not the actual joint itself
+        JT_joint,        // An actual joint in Max.
     JT_pseudo_joint, // Not a joint in Max, but treated just like a
                      // joint for the purposes of the converter.
     JT_joint_parent, // A parent or ancestor of a joint or pseudo joint.

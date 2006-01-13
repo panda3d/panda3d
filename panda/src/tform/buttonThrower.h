@@ -87,7 +87,7 @@ public:
 private:
   void do_specific_event(const string &event_name, double time);
   void do_general_event(const ButtonEvent &button_event, 
-			const string &event_name);
+                        const string &event_name);
 
 private:
   string _button_down_event;

@@ -44,11 +44,11 @@ private:
   void get_coord_values();
   void get_polys();
   void get_vrml_colors(const VrmlNode *color_node, double transparency,
-		       pvector<Colorf> &color_list);
+                       pvector<Colorf> &color_list);
   void get_vrml_normals(const VrmlNode *normal_node, 
-			pvector<Normald> &normal_list);
+                        pvector<Normald> &normal_list);
   void get_vrml_uvs(const VrmlNode *texCoord_node, 
-		    pvector<TexCoordd> &uv_list);
+                    pvector<TexCoordd> &uv_list);
 
   bool get_colors();
   bool get_normals();
@@ -56,7 +56,7 @@ private:
   bool get_uvs();
   void assign_per_vertex_uvs();
   void make_polys(EggVertexPool *vpool, EggGroup *group,
-		  const LMatrix4d &net_transform);
+                  const LMatrix4d &net_transform);
   void compute_normals(EggGroup *group);
 
   class VrmlVertex {

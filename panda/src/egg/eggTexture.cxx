@@ -359,7 +359,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   if (eq & E_attributes) {
     //cout << "compared by attributes" << endl;
     if (_texture_type != other._texture_type ||
-	_format != other._format ||
+        _format != other._format ||
         _wrap_mode != other._wrap_mode ||
         _wrap_u != other._wrap_u ||
         _wrap_v != other._wrap_v ||
@@ -610,18 +610,18 @@ string_texture_type(const string &string) {
     return TT_1d_texture;
 
   } else if (cmp_nocase_uh(string, "2d") == 0 ||
-	     cmp_nocase_uh(string, "2dtexture") == 0 ||
-	     cmp_nocase_uh(string, "2d_texture") == 0) {
+             cmp_nocase_uh(string, "2dtexture") == 0 ||
+             cmp_nocase_uh(string, "2d_texture") == 0) {
     return TT_2d_texture;
 
   } else if (cmp_nocase_uh(string, "3d") == 0 ||
-	     cmp_nocase_uh(string, "3dtexture") == 0 ||
-	     cmp_nocase_uh(string, "3d_texture") == 0) {
+             cmp_nocase_uh(string, "3dtexture") == 0 ||
+             cmp_nocase_uh(string, "3d_texture") == 0) {
     return TT_2d_texture;
 
   } else if (cmp_nocase_uh(string, "cube") == 0 ||
-	     cmp_nocase_uh(string, "cubemap") == 0 ||
-	     cmp_nocase_uh(string, "cube_map") == 0) {
+             cmp_nocase_uh(string, "cubemap") == 0 ||
+             cmp_nocase_uh(string, "cube_map") == 0) {
     return TT_cube_map;
 
   } else {

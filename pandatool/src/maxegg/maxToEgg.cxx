@@ -29,11 +29,11 @@ MaxToEgg::MaxToEgg() : SomethingToEgg("3D Studio Max",".max")
 
   set_program_description("This program converts 3D Studio Max model files to egg.");
   /*add_option("p", "", 0,
-	     "Generate polygon output only.  Convert scene to triangle mesh "
-	     "before converting.", &MaxToEgg::dispatch_none, &alertOnBegin);*/
+             "Generate polygon output only.  Convert scene to triangle mesh "
+             "before converting.", &MaxToEgg::dispatch_none, &alertOnBegin);*/
   add_option("bface", "", 0,
-	     "Export all polygons as double-sided ",
-	     &MaxToEgg::dispatch_none, &doubleSided);
+             "Export all polygons as double-sided ",
+             &MaxToEgg::dispatch_none, &doubleSided);
   //Fill in the member variables.
   pMaxInterface = null;
   successfulOutput = false;
@@ -66,7 +66,7 @@ void MaxToEgg::Run(ULONG *selection_list, int len)
   Logger::Log( MTE, Logger::SAT_DEBUG_SPAM_LEVEL, "Setting Max Interface." );
   converter.setMaxInterface( pMaxInterface );
   Logger::Log( MTE, Logger::SAT_DEBUG_SPAM_LEVEL,
-	       "Setting converter's egg data." );
+               "Setting converter's egg data." );
   converter.set_egg_data( _data );
   // applies the parameters from the command line options
   apply_parameters(converter);
@@ -85,7 +85,7 @@ void MaxToEgg::Run(ULONG *selection_list, int len)
 
 
 /* SetMaxInterface(Interface *) - This is how we know how to traverse the Max
-   scene graph.  For this to be	a standalone application, we'd want to be able
+   scene graph.  For this to be a standalone application, we'd want to be able
    to build one of these interfaces for the input file.
 */
 void MaxToEgg::SetMaxInterface(Interface *pInterface) 

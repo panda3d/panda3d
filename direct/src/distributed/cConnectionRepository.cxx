@@ -248,13 +248,13 @@ check_datagram() {
     case CLIENT_OBJECT_UPDATE_FIELD:
     case STATESERVER_OBJECT_UPDATE_FIELD:
       if (_has_owner_view) {
-	if (!handle_update_field_owner()) {
-	  return false;
-	}
+        if (!handle_update_field_owner()) {
+          return false;
+        }
       } else {
-	if (!handle_update_field()) {
-	  return false;
-	}
+        if (!handle_update_field()) {
+          return false;
+        }
       }
       break;
 #endif  // HAVE_PYTHON
@@ -580,20 +580,20 @@ handle_update_field_owner() {
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (field->is_ownrecv()) {
-	// It's a good idea to ensure the reference count to distobjOV is
-	// raised while we call the update method--otherwise, the update
-	// method might get into trouble if it tried to delete the
-	// object from the doId2do map.
-	Py_INCREF(distobjOV);
-	// make a copy of the datagram iterator so that we can use the main
-	// iterator for the non-owner update
-	DatagramIterator _odi(_di);
-	dclass->receive_update(distobjOV, _odi); 
-	Py_DECREF(distobjOV);
+        // It's a good idea to ensure the reference count to distobjOV is
+        // raised while we call the update method--otherwise, the update
+        // method might get into trouble if it tried to delete the
+        // object from the doId2do map.
+        Py_INCREF(distobjOV);
+        // make a copy of the datagram iterator so that we can use the main
+        // iterator for the non-owner update
+        DatagramIterator _odi(_di);
+        dclass->receive_update(distobjOV, _odi); 
+        Py_DECREF(distobjOV);
       
-	if (PyErr_Occurred()) {
-	  return false;
-	}
+        if (PyErr_Occurred()) {
+          return false;
+        }
       }
     }
 
@@ -619,17 +619,17 @@ handle_update_field_owner() {
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (true) {//field->is_broadcast()) {
-	// It's a good idea to ensure the reference count to distobj is
-	// raised while we call the update method--otherwise, the update
-	// method might get into trouble if it tried to delete the
-	// object from the doId2do map.
-	Py_INCREF(distobj);
-	dclass->receive_update(distobj, _di); 
-	Py_DECREF(distobj);
+        // It's a good idea to ensure the reference count to distobj is
+        // raised while we call the update method--otherwise, the update
+        // method might get into trouble if it tried to delete the
+        // object from the doId2do map.
+        Py_INCREF(distobj);
+        dclass->receive_update(distobj, _di); 
+        Py_DECREF(distobj);
       
-	if (PyErr_Occurred()) {
-	  return false;
-	}
+        if (PyErr_Occurred()) {
+          return false;
+        }
       }
     }
 

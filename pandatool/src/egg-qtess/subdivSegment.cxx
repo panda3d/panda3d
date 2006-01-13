@@ -69,8 +69,8 @@ cut() {
     int mv = 0;
     for (c = 0; c < (int)_cuts.size(); c++) {
       if (mc == -1 || _cuts[c] - last > mv) {
-	mc = c;
-	mv = _cuts[c] - last;
+        mc = c;
+        mv = _cuts[c] - last;
       }
       last = _cuts[c];
     }

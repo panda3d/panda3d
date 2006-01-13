@@ -144,7 +144,7 @@ extern int thumb_interior_width;
 extern int thumb_interior_height;
 
 Filename compose_href(const Filename &rel_dir, const Filename &user_prefix,
-		      const Filename &basename = Filename());
+                      const Filename &basename = Filename());
 
 string escape_html(const string &input);
 bool copy_file(const Filename &source_file, const Filename &dest_dir);

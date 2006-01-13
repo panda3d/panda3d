@@ -22,8 +22,8 @@
 //          for performance and is treading on thin ice for function python or c++ will 
 //          course there types to other types.
 //
-//	The linking step will produce allot of warnings 
-//			warning LNK4049: locally defined symbol..
+//      The linking step will produce allot of warnings 
+//                      warning LNK4049: locally defined symbol..
 //
 //  Get a second coder to review this file and the generated  code ..
 //
@@ -135,49 +135,49 @@ struct Dtool_PyTypedObject
 ////////////////////////////////////////////////////////////////////////
 #define   Define_Dtool_Class(MODULE_NAME, CLASS_NAME, PUBLIC_NAME) \
 static  PyNumberMethods     Dtool_PyNumberMethods_##CLASS_NAME ={\
-	0,/*binaryfunc nb_add*/\
-	0,/*binaryfunc nb_subtract*/\
-	0,/*binaryfunc nb_multiply*/\
-	0,/*binaryfunc nb_divide*/\
-	0,/*binaryfunc nb_remainder*/\
-	0,/*binaryfunc nb_divmod*/\
-	0,/*ternaryfunc nb_power*/\
-	0,/*unaryfunc nb_negative*/\
-	0,/*unaryfunc nb_positive*/\
-	0,/*unaryfunc nb_absolute*/\
-	0,/*inquiry nb_nonzero*/\
-	0,/*unaryfunc nb_invert*/\
-	0,/*binaryfunc nb_lshift*/\
-	0,/*binaryfunc nb_rshift*/\
-	0,/*binaryfunc nb_and*/\
-	0,/*binaryfunc nb_xor*/\
-	0,/*binaryfunc nb_or*/\
-	0,/*coercion nb_coerce*/\
-	0,/*unaryfunc nb_int*/\
-	0,/*unaryfunc nb_long*/\
-	0,/*unaryfunc nb_float*/\
-	0,/*unaryfunc nb_oct*/\
-	0,/*unaryfunc nb_hex*/\
-	0,/*binaryfunc nb_inplace_add*/\
-	0,/*binaryfunc nb_inplace_subtract*/\
-	0,/*binaryfunc nb_inplace_multiply*/\
-	0,/*binaryfunc nb_inplace_divide*/\
-	0,/*binaryfunc nb_inplace_remainder*/\
-	0,/*ternaryfunc nb_inplace_power*/\
-	0,/*binaryfunc nb_inplace_lshift*/\
-	0,/*binaryfunc nb_inplace_rshift*/\
-	0,/*binaryfunc nb_inplace_and*/\
-	0,/*binaryfunc nb_inplace_xor*/\
-	0,/*binaryfunc nb_inplace_or*/\
-	0,/*binaryfunc nb_floor_divide*/\
-	0,/*binaryfunc nb_true_divide*/\
-	0,/*binaryfunc nb_inplace_floor_divide*/\
-	0,/*binaryfunc nb_inplace_true_divide*/\
+        0,/*binaryfunc nb_add*/\
+        0,/*binaryfunc nb_subtract*/\
+        0,/*binaryfunc nb_multiply*/\
+        0,/*binaryfunc nb_divide*/\
+        0,/*binaryfunc nb_remainder*/\
+        0,/*binaryfunc nb_divmod*/\
+        0,/*ternaryfunc nb_power*/\
+        0,/*unaryfunc nb_negative*/\
+        0,/*unaryfunc nb_positive*/\
+        0,/*unaryfunc nb_absolute*/\
+        0,/*inquiry nb_nonzero*/\
+        0,/*unaryfunc nb_invert*/\
+        0,/*binaryfunc nb_lshift*/\
+        0,/*binaryfunc nb_rshift*/\
+        0,/*binaryfunc nb_and*/\
+        0,/*binaryfunc nb_xor*/\
+        0,/*binaryfunc nb_or*/\
+        0,/*coercion nb_coerce*/\
+        0,/*unaryfunc nb_int*/\
+        0,/*unaryfunc nb_long*/\
+        0,/*unaryfunc nb_float*/\
+        0,/*unaryfunc nb_oct*/\
+        0,/*unaryfunc nb_hex*/\
+        0,/*binaryfunc nb_inplace_add*/\
+        0,/*binaryfunc nb_inplace_subtract*/\
+        0,/*binaryfunc nb_inplace_multiply*/\
+        0,/*binaryfunc nb_inplace_divide*/\
+        0,/*binaryfunc nb_inplace_remainder*/\
+        0,/*ternaryfunc nb_inplace_power*/\
+        0,/*binaryfunc nb_inplace_lshift*/\
+        0,/*binaryfunc nb_inplace_rshift*/\
+        0,/*binaryfunc nb_inplace_and*/\
+        0,/*binaryfunc nb_inplace_xor*/\
+        0,/*binaryfunc nb_inplace_or*/\
+        0,/*binaryfunc nb_floor_divide*/\
+        0,/*binaryfunc nb_true_divide*/\
+        0,/*binaryfunc nb_inplace_floor_divide*/\
+        0,/*binaryfunc nb_inplace_true_divide*/\
     };\
 static  PyMappingMethods    Dtool_PyMappingMethods_##CLASS_NAME ={\
-	0,/*inquiry mp_length */\
-	0,/*binaryfunc mp_subscript */\
-	0,/*objobjargproc mp_ass_subscript */\
+        0,/*inquiry mp_length */\
+        0,/*binaryfunc mp_subscript */\
+        0,/*objobjargproc mp_ass_subscript */\
 };\
 EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 {\
@@ -196,31 +196,31 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
     0,              /*tp_as_sequence*/\
     &Dtool_PyMappingMethods_##CLASS_NAME,              /*tp_as_mapping*/\
     0,     /*tp_hash */\
-	0,					/* tp_call */\
-	0,					/* tp_str */\
-	PyObject_GenericGetAttr,		/* tp_getattro */\
-	PyObject_GenericSetAttr,		/* tp_setattro */\
-	0,					/* tp_as_buffer */\
-	(Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */\
-	0,					/* tp_doc */\
-	0,					/* tp_traverse */\
-	0,					/* tp_clear */\
-	0,					/* tp_richcompare */\
-	0,					/* tp_weaklistoffset */\
-	0,					/* tp_iter */\
-	0,					/* tp_iternext */\
-    Dtool_Methods_##CLASS_NAME,			/* tp_methods */\
-	standard_type_members,					/* tp_members */\
-	0,		    	    /* tp_getset */\
-	0,      		    /* tp_base */\
-	0,					/* tp_dict */\
-	0,					/* tp_descr_get */\
-	0,					/* tp_descr_set */\
-	0,					/* tp_dictoffset */\
-    Dtool_Init_##CLASS_NAME,		/* tp_init */\
-	PyType_GenericAlloc, /* tp_alloc */\
-	Dtool_new_##CLASS_NAME,			/* tp_new */\
-	_PyObject_Del,					/* tp_free */\
+        0,                                      /* tp_call */\
+        0,                                      /* tp_str */\
+        PyObject_GenericGetAttr,                /* tp_getattro */\
+        PyObject_GenericSetAttr,                /* tp_setattro */\
+        0,                                      /* tp_as_buffer */\
+        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */\
+        0,                                      /* tp_doc */\
+        0,                                      /* tp_traverse */\
+        0,                                      /* tp_clear */\
+        0,                                      /* tp_richcompare */\
+        0,                                      /* tp_weaklistoffset */\
+        0,                                      /* tp_iter */\
+        0,                                      /* tp_iternext */\
+    Dtool_Methods_##CLASS_NAME,                 /* tp_methods */\
+        standard_type_members,                                  /* tp_members */\
+        0,                          /* tp_getset */\
+        0,                          /* tp_base */\
+        0,                                      /* tp_dict */\
+        0,                                      /* tp_descr_get */\
+        0,                                      /* tp_descr_set */\
+        0,                                      /* tp_dictoffset */\
+    Dtool_Init_##CLASS_NAME,            /* tp_init */\
+        PyType_GenericAlloc, /* tp_alloc */\
+        Dtool_new_##CLASS_NAME,                 /* tp_new */\
+        _PyObject_Del,                                  /* tp_free */\
 },\
     #CLASS_NAME,   \
     false,\
@@ -245,7 +245,7 @@ inline void    Dtool_Deallocate_General(PyObject * self)
 #define Define_Dtool_new(CLASS_NAME,CNAME)\
 PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds)\
 {\
-	PyObject * self = type->tp_alloc(type, 0);\
+        PyObject * self = type->tp_alloc(type, 0);\
     ((Dtool_PyInstDef *)self)->_signiture = PY_PANDA_SIGNITURE;\
     ((Dtool_PyInstDef *)self)->_ptr_to_object = NULL;\
     ((Dtool_PyInstDef *)self)->_memory_rules = false;\

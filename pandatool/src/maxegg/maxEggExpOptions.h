@@ -50,7 +50,7 @@ int ChunkLoadInt(ILoad *iload);
 bool ChunkLoadBool(ILoad *iload);
 void SetICustEdit(HWND wnd, int nIDDlgItem, char *text);
 BOOL CALLBACK MaxEggExpOptionsProc( HWND hWnd, UINT message, 
-					                          WPARAM wParam, LPARAM lParam );
+                                                                  WPARAM wParam, LPARAM lParam );
 
 class MaxEggExpOptions
 {
@@ -108,7 +108,7 @@ class MaxEggExpOptions
   IOResult Save(ISave *isave);
 
   //int DoExport(const TCHAR *name,ExpInterface *ei,
-	//       Interface *i, BOOL suppressPrompts=FALSE, DWORD options=0);
+        //       Interface *i, BOOL suppressPrompts=FALSE, DWORD options=0);
 };
 
 #endif // __MaxEggExpOptions__H

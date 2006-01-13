@@ -442,7 +442,7 @@ vec3:   '(' NUMBER NUMBER NUMBER ')'
         ;
 
 length_pair:
-	'(' length ',' length ')'
+        '(' length ',' length ')'
 {
   $$.set($2, $4, 0.0, 0.0);
   $<num_components>$ = 2;

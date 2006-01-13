@@ -150,15 +150,15 @@ TrueClock() {
       (QueryPerformanceFrequency((LARGE_INTEGER *)&int_frequency) != 0);
     if (_has_high_res) {
       if (int_frequency <= 0) {
-	express_cat.error()
-	  << "TrueClock::get_real_time() - frequency is negative!" << endl;
-	_has_high_res = false;
+        express_cat.error()
+          << "TrueClock::get_real_time() - frequency is negative!" << endl;
+        _has_high_res = false;
 
       } else {
-	_frequency = (double)int_frequency;
-	_recip_frequency = 1.0 / _frequency;
-	
-	QueryPerformanceCounter((LARGE_INTEGER *)&_init_count);
+        _frequency = (double)int_frequency;
+        _recip_frequency = 1.0 / _frequency;
+
+        QueryPerformanceCounter((LARGE_INTEGER *)&_init_count);
       }
     }
   }
@@ -295,9 +295,9 @@ correct_time(double time) {
     double corrected_time = time * _time_scale + _time_offset;
     double corrected_tod = tod + _tod_offset;
     if (corrected_time - corrected_tod > paranoid_clock_jump_error_max_delta &&
-	_time_scale > 0.00001) {
+        _time_scale > 0.00001) {
       express_cat.info()
-	<< "Force-adjusting time_scale to catch up to errors.\n";
+        << "Force-adjusting time_scale to catch up to errors.\n";
       set_time_scale(time, _time_scale * 0.5);
     }
 
@@ -338,25 +338,25 @@ correct_time(double time) {
       // since we last reported it.
       double ratio = _time_scale / _last_reported_time_scale;
       if (fabs(ratio - 1.0) > paranoid_clock_report_scale_factor) {
-	_time_scale_changed = true;
-	_last_reported_time_scale = _time_scale;
-	// Actually report it a little bit later, to give the time
-	// scale a chance to settle down.
-	_report_time_scale_time = tod + _tod_offset + keep_interval;
-	if (express_cat.is_debug()) {
-	  express_cat.debug()
-	    << "Will report time scale, now " << 100.0 / _time_scale
-	    << "%, tod_age = " << tod_age << ", time_age = " << time_age
-	    << ", ratio = " << ratio << "\n";
-	}
+        _time_scale_changed = true;
+        _last_reported_time_scale = _time_scale;
+        // Actually report it a little bit later, to give the time
+        // scale a chance to settle down.
+        _report_time_scale_time = tod + _tod_offset + keep_interval;
+        if (express_cat.is_debug()) {
+          express_cat.debug()
+            << "Will report time scale, now " << 100.0 / _time_scale
+            << "%, tod_age = " << tod_age << ", time_age = " << time_age
+            << ", ratio = " << ratio << "\n";
+        }
       }
     }
     
     // Clean out old entries in the timestamps queue.
     if (tod_age > keep_interval) {
       while (!_timestamps.empty() && 
-	     tod - _timestamps.front()._tod > keep_interval) {
-	_timestamps.pop_front();
+             tod - _timestamps.front()._tod > keep_interval) {
+        _timestamps.pop_front();
       }
     }
     
@@ -398,11 +398,11 @@ correct_time(double time) {
       // We caught up.
       _chase_clock = CC_keep_even;
       if (express_cat.is_debug()) {
-	express_cat.debug()
-	  << "Clock back down to real time.\n";
-	// Let's report the clock error now, so an app can resync now
-	// that we're at a good time.
-	++_error_count;
+        express_cat.debug()
+          << "Clock back down to real time.\n";
+        // Let's report the clock error now, so an app can resync now
+        // that we're at a good time.
+        ++_error_count;
       }
 
     } else {
@@ -420,18 +420,18 @@ correct_time(double time) {
       _chase_clock = CC_speed_up;
 
       if (express_cat.is_debug()) {
-	express_cat.debug()
-	  << "Clock is behind by " << (corrected_tod - corrected_time)
-	  << "s; speeding up to correct.\n";
+        express_cat.debug()
+          << "Clock is behind by " << (corrected_tod - corrected_time)
+          << "s; speeding up to correct.\n";
       }
     } else if ((corrected_time - corrected_tod) > paranoid_clock_chase_threshold) {
       // Oops, we're going too fast; need to slow down.
       _chase_clock = CC_slow_down;
 
       if (express_cat.is_debug()) {
-	express_cat.debug()
-	  << "Clock is ahead by " << (corrected_time - corrected_tod)
-	  << "s; slowing down to correct.\n";
+        express_cat.debug()
+          << "Clock is ahead by " << (corrected_time - corrected_tod)
+          << "s; slowing down to correct.\n";
       }
     }
     break;
@@ -441,11 +441,11 @@ correct_time(double time) {
       // We caught up.
       _chase_clock = CC_keep_even;
       if (express_cat.is_debug()) {
-	express_cat.debug()
-	  << "Clock back up to real time.\n";
-	// Let's report the clock error now, so an app can resync now
-	// that we're at a good time.
-	++_error_count;
+        express_cat.debug()
+          << "Clock back up to real time.\n";
+        // Let's report the clock error now, so an app can resync now
+        // that we're at a good time.
+        ++_error_count;
       }
 
     } else {

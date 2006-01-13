@@ -80,12 +80,12 @@ PUBLISHED:
 
   PNMReader *make_reader(const Filename &filename,
                          PNMFileType *type = NULL,
-			 bool report_unknown_type = true) const;
+                         bool report_unknown_type = true) const;
   PNMReader *make_reader(istream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          string magic_number = string(),
                          PNMFileType *type = NULL,
-			 bool report_unknown_type = true) const;
+                         bool report_unknown_type = true) const;
 
   PNMWriter *make_writer(const Filename &filename,
                          PNMFileType *type = NULL) const;

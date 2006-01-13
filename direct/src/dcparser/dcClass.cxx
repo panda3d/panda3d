@@ -44,9 +44,9 @@ ConfigVariableBool dc_multiple_inheritance
 ConfigVariableBool dc_virtual_inheritance
 ("dc-virtual-inheritance", true,
  PRC_DESC("Set this true to support proper virtual inheritance in the "
-	  "dc file, so that diamond-of-death type constructs can be used.  "
-	  "This also enables shadowing (overloading) of inherited method "
-	  "names from a base class."));
+          "dc file, so that diamond-of-death type constructs can be used.  "
+          "This also enables shadowing (overloading) of inherited method "
+          "names from a base class."));
 
 #endif  // WITHIN_PANDA
 
@@ -323,7 +323,7 @@ get_inherited_field(int n) const {
     for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
       int psize = (*pi)->get_num_inherited_fields();
       if (n < psize) {
-	return (*pi)->get_inherited_field(n);
+        return (*pi)->get_inherited_field(n);
       }
       
       n -= psize;
@@ -528,7 +528,7 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
 ////////////////////////////////////////////////////////////////////
 void DCClass::
 receive_update_broadcast_required_owner(PyObject *distobj,
-					DatagramIterator &di) const {
+                                        DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
@@ -542,14 +542,14 @@ receive_update_broadcast_required_owner(PyObject *distobj,
         field->is_required()) {
       packer.begin_unpack(field);
       if (field->is_ownrecv()) {
-	field->receive_update(packer, distobj);
+        field->receive_update(packer, distobj);
       } else {
-	// It's not an ownrecv field; skip over it. It's difficult
-	// to filter this on the server, ask Roger for the reason.
-	packer.unpack_skip();
+        // It's not an ownrecv field; skip over it. It's difficult
+        // to filter this on the server, ask Roger for the reason.
+        packer.unpack_skip();
       }
       if (!packer.end_unpack()) {
-	break;
+        break;
       }
     }
   }

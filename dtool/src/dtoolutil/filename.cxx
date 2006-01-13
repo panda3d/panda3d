@@ -607,8 +607,8 @@ get_filename_index(int index) const {
   if (_hash_end != _hash_start) {
     ostringstream strm;
     strm << _filename.substr(0, _hash_start) 
-	 << setw(_hash_end - _hash_start) << setfill('0') << index
-	 << _filename.substr(_hash_end);
+         << setw(_hash_end - _hash_start) << setfill('0') << index
+         << _filename.substr(_hash_end);
     file.set_fullpath(strm.str());
   }
   file.set_pattern(false);
@@ -863,7 +863,7 @@ make_true_case() {
   assert(l < MAX_PATH + 1);
 
   Filename true_case = Filename::from_os_specific(long_name);
-		  
+
   // Now sanity-check the true-case filename.  If it's not the same as
   // the source file, except for case, reject it.
   string orig_filename = get_fullpath();

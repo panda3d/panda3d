@@ -88,8 +88,8 @@ int addEventIn(const char *type, const char *name, const VrmlFieldValue *dflt = 
 int addEventOut(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
 int addExposedField(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
 int add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *), 
-	const char *typeString, const char *name,
-	const VrmlFieldValue *dflt);
+        const char *typeString, const char *name,
+        const VrmlFieldValue *dflt);
 int fieldType(const char *type);
 void enterNode(const char *);
 VrmlNode *exitNode();
@@ -298,7 +298,7 @@ nodeGut:
    ;
 
 fieldValue:
-	SFBOOL
+        SFBOOL
     |   SFCOLOR
     |   MFCOLOR
     |   SFFLOAT
@@ -386,26 +386,26 @@ endProto()
 
 int
 addField(const char *type, const char *name,
-	 const VrmlFieldValue *dflt)
+         const VrmlFieldValue *dflt)
 {
     return add(&VrmlNodeType::addField, type, name, dflt);
 }
 
 int
 addEventIn(const char *type, const char *name,
-	   const VrmlFieldValue *dflt)
+           const VrmlFieldValue *dflt)
 {
     return add(&VrmlNodeType::addEventIn, type, name, dflt);
 }
 int
 addEventOut(const char *type, const char *name,
-	    const VrmlFieldValue *dflt)
+            const VrmlFieldValue *dflt)
 {
   return add(&VrmlNodeType::addEventOut, type, name, dflt);
 }
 int
 addExposedField(const char *type, const char *name,
-		const VrmlFieldValue *dflt)
+                const VrmlFieldValue *dflt)
 {
     return add(&VrmlNodeType::addExposedField, type, name, dflt);
 }
@@ -525,9 +525,9 @@ enterField(const char *fieldName)
             return;
     
         const VrmlNodeType::NameTypeRec *typeRec =
-	  fr->nodeType->hasField(fieldName);
+          fr->nodeType->hasField(fieldName);
         if (typeRec != NULL) {
-	    fr->typeRec = typeRec;
+            fr->typeRec = typeRec;
             // Let the lexer know what field type to expect:
             expect(typeRec->type);
         }

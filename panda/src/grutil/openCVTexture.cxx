@@ -259,7 +259,7 @@ modify_page(int z) {
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
 reconsider_video_properties(const OpenCVTexture::VideoStream &stream, 
-			    int num_components, int z) {
+                            int num_components, int z) {
   double frame_rate = 0.0f;
   int num_frames = 0;
 
@@ -291,7 +291,7 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   }
 
   if (!reconsider_image_properties(x_size, y_size, num_components,
-				   T_unsigned_byte, z)) {
+                                   T_unsigned_byte, z)) {
     return false;
   }
 
@@ -342,68 +342,68 @@ update_frame(int frame) {
     }
     if (page._color.is_valid()) {
       nassertv(get_num_components() >= 3 && get_component_width() == 1);
-	
+
       const unsigned char *source = page._color.get_frame_data(frame);
       if (source != NULL) {
-	nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-	unsigned char *dest = _image.p() + get_expected_ram_page_size() * z;
-	  
-	int dest_row_width = (_x_size * _num_components * _component_width);
-	int source_row_width = get_video_width() * 3;
-	  
-	if (get_num_components() == 3) {
-	  // The easy case--copy the whole thing in, row by row.
-	  for (int y = 0; y < get_video_height(); ++y) {
-	    memcpy(dest, source, source_row_width);
-	    dest += dest_row_width;
-	    source += source_row_width;
-	  }
-	    
-	} else {
-	  // The harder case--interleave the color in with the alpha,
-	  // pixel by pixel.
-	  nassertv(get_num_components() == 4);
-	  for (int y = 0; y < get_video_height(); ++y) {
-	    int dx = 0;
-	    int sx = 0;
-	    for (int x = 0; x < get_video_width(); ++x) {
-	      dest[dx] = source[sx];
-	      dest[dx + 1] = source[sx + 1];
-	      dest[dx + 2] = source[sx + 2];
-	      dx += 4;
-	      sx += 3;
-	    }
-	    dest += dest_row_width;
-	    source += source_row_width;
-	  }
-	}
+        nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
+        unsigned char *dest = _image.p() + get_expected_ram_page_size() * z;
+
+        int dest_row_width = (_x_size * _num_components * _component_width);
+        int source_row_width = get_video_width() * 3;
+
+        if (get_num_components() == 3) {
+          // The easy case--copy the whole thing in, row by row.
+          for (int y = 0; y < get_video_height(); ++y) {
+            memcpy(dest, source, source_row_width);
+            dest += dest_row_width;
+            source += source_row_width;
+          }
+
+        } else {
+          // The harder case--interleave the color in with the alpha,
+          // pixel by pixel.
+          nassertv(get_num_components() == 4);
+          for (int y = 0; y < get_video_height(); ++y) {
+            int dx = 0;
+            int sx = 0;
+            for (int x = 0; x < get_video_width(); ++x) {
+              dest[dx] = source[sx];
+              dest[dx + 1] = source[sx + 1];
+              dest[dx + 2] = source[sx + 2];
+              dx += 4;
+              sx += 3;
+            }
+            dest += dest_row_width;
+            source += source_row_width;
+          }
+        }
       }
     }
     if (page._alpha.is_valid()) {
       nassertv(get_num_components() == 4 && get_component_width() == 1);
-	
+
       const unsigned char *source = page._alpha.get_frame_data(frame);
       if (source != NULL) {
-	nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-	unsigned char *dest = _image.p() + get_expected_ram_page_size() * z;
-	  
-	int dest_row_width = (_x_size * _num_components * _component_width);
-	int source_row_width = get_video_width() * 3;
-	  
-	// Interleave the alpha in with the color, pixel by pixel.
-	// Even though the alpha will probably be a grayscale video,
-	// the OpenCV library presents it as RGB.
-	for (int y = 0; y < get_video_height(); ++y) {
-	  int dx = 3;
-	  int sx = _alpha_file_channel;
-	  for (int x = 0; x < get_video_width(); ++x) {
-	    dest[dx] = source[sx];
-	    dx += 4;
-	    sx += 3;
-	  }
-	  dest += dest_row_width;
-	  source += source_row_width;
-	}
+        nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
+        unsigned char *dest = _image.p() + get_expected_ram_page_size() * z;
+
+        int dest_row_width = (_x_size * _num_components * _component_width);
+        int source_row_width = get_video_width() * 3;
+
+        // Interleave the alpha in with the color, pixel by pixel.
+        // Even though the alpha will probably be a grayscale video,
+        // the OpenCV library presents it as RGB.
+        for (int y = 0; y < get_video_height(); ++y) {
+          int dx = 3;
+          int sx = _alpha_file_channel;
+          for (int x = 0; x < get_video_width(); ++x) {
+            dest[dx] = source[sx];
+            dx += 4;
+            sx += 3;
+          }
+          dest += dest_row_width;
+          source += source_row_width;
+        }
       }
     }
   }

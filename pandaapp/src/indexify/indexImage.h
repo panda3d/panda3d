@@ -67,10 +67,10 @@ private:
   static void draw_box(PNMImage &image);
 
   static void draw_frame(PNMImage &image,
-			 int frame_left, int frame_top,
-			 int frame_width, int frame_height,
-			 int hole_left, int hole_top,
-			 int hole_width, int hole_height);
+                         int frame_left, int frame_top,
+                         int frame_width, int frame_height,
+                         int hole_left, int hole_top,
+                         int hole_width, int hole_height);
 
 private:
   RollDirectory *_dir;

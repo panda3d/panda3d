@@ -1276,16 +1276,16 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     // buffers are unbound, or the nVidia drivers may crash.
     if (_current_vbuffer_index != 0) {
       if (GLCAT.is_spam()) {
-	GLCAT.spam()
-	  << "unbinding vertex buffer\n";
+        GLCAT.spam()
+          << "unbinding vertex buffer\n";
       }
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
     if (_current_ibuffer_index != 0) {
       if (GLCAT.is_spam()) {
-	GLCAT.spam()
-	  << "unbinding index buffer\n";
+        GLCAT.spam()
+          << "unbinding index buffer\n";
       }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
@@ -2139,7 +2139,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   if (_current_vbuffer_index != gvbc->_index) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-	<< "binding vertex buffer " << gvbc->_index << "\n";
+        << "binding vertex buffer " << gvbc->_index << "\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
     _current_vbuffer_index = gvbc->_index;
@@ -2199,7 +2199,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   if (_current_vbuffer_index == gvbc->_index) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-	<< "unbinding vertex buffer\n";
+        << "unbinding vertex buffer\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
     _current_vbuffer_index = 0;
@@ -2239,8 +2239,8 @@ setup_array_data(const GeomVertexArrayData *data) {
     // are configured off.
     if (_current_vbuffer_index != 0) {
       if (GLCAT.is_spam()) {
-	GLCAT.spam()
-	  << "unbinding vertex buffer\n";
+        GLCAT.spam()
+          << "unbinding vertex buffer\n";
       }
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
@@ -2306,7 +2306,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
   if (_current_ibuffer_index != gibc->_index) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-	<< "binding index buffer " << gibc->_index << "\n";
+        << "binding index buffer " << gibc->_index << "\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
     _current_ibuffer_index = gibc->_index;
@@ -2366,7 +2366,7 @@ release_index_buffer(IndexBufferContext *ibc) {
   if (_current_ibuffer_index == gibc->_index) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-	<< "unbinding index buffer\n";
+        << "unbinding index buffer\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     _current_ibuffer_index = 0;
@@ -2406,8 +2406,8 @@ setup_primitive(const GeomPrimitive *data) {
     // are configured off.
     if (_current_ibuffer_index != 0) {
       if (GLCAT.is_spam()) {
-	GLCAT.spam()
-	  << "unbinding index buffer\n";
+        GLCAT.spam()
+          << "unbinding index buffer\n";
       }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
@@ -4847,7 +4847,7 @@ do_auto_rescale_normal() {
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
       if (GLCAT.is_spam()) {
-	GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
+        GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
       }
     }
     
@@ -4857,13 +4857,13 @@ do_auto_rescale_normal() {
       GLP(Enable)(GL_RESCALE_NORMAL);
       GLP(Disable)(GL_NORMALIZE);
       if (GLCAT.is_spam()) {
-	GLCAT.spam() << "glEnable(GL_RESCALE_NORMAL)\n";
-	GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
+        GLCAT.spam() << "glEnable(GL_RESCALE_NORMAL)\n";
+        GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
       }
     } else {
       GLP(Enable)(GL_NORMALIZE);
       if (GLCAT.is_spam()) {
-	GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
+        GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
       }
     }
   
@@ -4876,7 +4876,7 @@ do_auto_rescale_normal() {
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Disable)(GL_RESCALE_NORMAL);
       if (GLCAT.is_spam()) {
-	GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
+        GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
       }
     }
   }

@@ -21,11 +21,11 @@
 #ifdef HAVE_PYTHON
 
 PyMemberDef standard_type_members[] = {
-	{"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
-	{"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
-	{"this_signiture", T_INT, offsetof(Dtool_PyInstDef, _signiture), READONLY,"A type check signiture"},
-	{"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
-	{NULL}	/* Sentinel */
+        {"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
+        {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
+        {"this_signiture", T_INT, offsetof(Dtool_PyInstDef, _signiture), READONLY,"A type check signiture"},
+        {"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
+        {NULL}  /* Sentinel */
 };
 
 
@@ -160,7 +160,7 @@ PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject
     // if we get this far .. just wrap the thing in the known type ??
     //    better than aborting...I guess....
     /////////////////////////////////////////////////////
-	Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
+        Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
     if(self != NULL)
     {
         self->_ptr_to_object = local_this_in;
@@ -248,9 +248,9 @@ RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
       // There was already an entry in the dictionary for class_id.
       Dtool_PyTypedObject *other_type = (*result.first).second;
       interrogatedb_cat.warning()
-	<< "Classes " << otype->_name << " and " << other_type->_name
-	<< " share the same TypeHandle value (" << class_id 
-	<< "); check class definitions.\n";
+        << "Classes " << otype->_name << " and " << other_type->_name
+        << " share the same TypeHandle value (" << class_id 
+        << "); check class definitions.\n";
 
     } else {
       GetRunTimeTypeList().insert(class_id);
@@ -432,7 +432,7 @@ int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
                     Py_DECREF(args);
                 }
                 Py_DECREF(func);
-              	PyErr_Clear(); // just in case the function threw an error
+                PyErr_Clear(); // just in case the function threw an error
                 // only use if the cuntion  return an INT... hmm
                 if(res != NULL && PyInt_Check(res))
                 {

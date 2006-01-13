@@ -78,23 +78,23 @@ read(const Filename &filename) {
       complete_line = string();
 
       if (!line.empty()) {
-	QtessInputEntry entry;
-	
-	// Scan for the first colon followed by whitespace.
-	size_t colon = line.find(": ");
-	if (colon == string::npos) {
-	  qtess_cat.error()
+        QtessInputEntry entry;
+
+        // Scan for the first colon followed by whitespace.
+        size_t colon = line.find(": ");
+        if (colon == string::npos) {
+          qtess_cat.error()
             << _filename << ": line " << line_number
             << " has no colon followed by whitespace.\n";
-	  return false;
-	}
-	if (colon == 0) {
-	  qtess_cat.error()
+          return false;
+        }
+        if (colon == 0) {
+          qtess_cat.error()
             << _filename << ": line " << line_number 
             << " has no nodes.\n";
-	  return false;
-	}
-	
+          return false;
+        }
+
         // Split the line into two groups of words at the colon: names
         // before the colon, and params following it.
         vector_string names, params;
@@ -106,136 +106,136 @@ read(const Filename &filename) {
           entry.add_node_name(*ni);
         }
 
-	// Scan for things like ap, ad, ar, and pull them out of the
-	// stream.
-	vector_string::iterator ci, cnext;
-	ci = params.begin();
-	while (ci != params.end()) {
-	  cnext = ci;
-	  ++cnext;
-	  
-	  string param = *ci;
-	  bool invert = false;
-	  if (param[0] == '!' && param.size() > 1) {
-	    invert = true;
-	    param = param.substr(1);
-	  }
-	  if (tolower(param[0]) == 'a' && param.size() > 1) {
-	    switch (tolower(param[1])) {
-	    case 'p':
-	      entry._auto_place = !invert;
-	      break;
+        // Scan for things like ap, ad, ar, and pull them out of the
+        // stream.
+        vector_string::iterator ci, cnext;
+        ci = params.begin();
+        while (ci != params.end()) {
+          cnext = ci;
+          ++cnext;
 
-	    case 'd':
-	      entry._auto_distribute = !invert;
-	      break;
+          string param = *ci;
+          bool invert = false;
+          if (param[0] == '!' && param.size() > 1) {
+            invert = true;
+            param = param.substr(1);
+          }
+          if (tolower(param[0]) == 'a' && param.size() > 1) {
+            switch (tolower(param[1])) {
+            case 'p':
+              entry._auto_place = !invert;
+              break;
 
-	    case 'r':
+            case 'd':
+              entry._auto_distribute = !invert;
+              break;
+
+            case 'r':
               if (!string_to_double(param.substr(2), entry._curvature_ratio)) {
-		qtess_cat.error()
+                qtess_cat.error()
                   << _filename << ": line " << line_number 
                   << " - invalid field " << param << "\n";
-		return false;
-	      }
-	      break;
+                return false;
+              }
+              break;
 
-	    default:
-	      qtess_cat.error()
+            default:
+              qtess_cat.error()
                 << _filename << ": invalid parameters at line " 
                 << line_number << ".\n";
-	      return false;
-	    }
-	    params.erase(ci);
-	  } else {
-	    ci = cnext;
-	  }
-	}
-	
-	if (!params.empty()) {
-	  bool okflag = true;
-	  if (cmp_nocase(params[0], "omit")==0) {
-	    entry.set_omit();
+              return false;
+            }
+            params.erase(ci);
+          } else {
+            ci = cnext;
+          }
+        }
 
-	  } else if (cmp_nocase(params[0], "matchuu")==0) {
-	    entry.set_match_uu();
-	    if (params.size() > 1 && cmp_nocase(params[1], "matchvv")==0) {
-	      entry.set_match_vv();
-	    }
+        if (!params.empty()) {
+          bool okflag = true;
+          if (cmp_nocase(params[0], "omit")==0) {
+            entry.set_omit();
 
-	  } else if (cmp_nocase(params[0], "matchvv")==0) {
-	    entry.set_match_vv();
-	    if (params.size() > 1 && cmp_nocase(params[1], "matchuu")==0) {
-	      entry.set_match_uu();
-	    }
+          } else if (cmp_nocase(params[0], "matchuu")==0) {
+            entry.set_match_uu();
+            if (params.size() > 1 && cmp_nocase(params[1], "matchvv")==0) {
+              entry.set_match_vv();
+            }
 
-	  } else if (cmp_nocase(params[0], "matchuv")==0) {
-	    entry.set_match_uv();
-	    if (params.size() > 1 && cmp_nocase(params[1], "matchvu")==0) {
-	      entry.set_match_vu();
-	    }
+          } else if (cmp_nocase(params[0], "matchvv")==0) {
+            entry.set_match_vv();
+            if (params.size() > 1 && cmp_nocase(params[1], "matchuu")==0) {
+              entry.set_match_uu();
+            }
 
-	  } else if (cmp_nocase(params[0], "matchvu")==0) {
-	    entry.set_match_vu();
-	    if (params.size() > 1 && cmp_nocase(params[1], "matchuv")==0) {
-	      entry.set_match_uv();
-	    }
+          } else if (cmp_nocase(params[0], "matchuv")==0) {
+            entry.set_match_uv();
+            if (params.size() > 1 && cmp_nocase(params[1], "matchvu")==0) {
+              entry.set_match_vu();
+            }
 
-	  } else if (cmp_nocase(params[0], "minu")==0) {
-	    // minu #: minimum tesselation in U.
-	    if (params.size() < 2) {
-	      okflag = false;
-	    } else {
+          } else if (cmp_nocase(params[0], "matchvu")==0) {
+            entry.set_match_vu();
+            if (params.size() > 1 && cmp_nocase(params[1], "matchuv")==0) {
+              entry.set_match_uv();
+            }
+
+          } else if (cmp_nocase(params[0], "minu")==0) {
+            // minu #: minimum tesselation in U.
+            if (params.size() < 2) {
+              okflag = false;
+            } else {
               int value = 0;
               okflag = string_to_int(params[1], value);
-	      entry.set_min_u(value);
-	    }
+              entry.set_min_u(value);
+            }
 
-	  } else if (cmp_nocase(params[0], "minv")==0) {
-	    // minu #: minimum tesselation in V.
-	    if (params.size() < 2) {
-	      okflag = false;
-	    } else {
+          } else if (cmp_nocase(params[0], "minv")==0) {
+            // minu #: minimum tesselation in V.
+            if (params.size() < 2) {
+              okflag = false;
+            } else {
               int value = 0;
               okflag = string_to_int(params[1], value);
-	      entry.set_min_v(value);
-	    }
+              entry.set_min_v(value);
+            }
 
-	  } else if (tolower(params[0][0]) == 'i') {
-	    // "i#": per-isoparam tesselation.
+          } else if (tolower(params[0][0]) == 'i') {
+            // "i#": per-isoparam tesselation.
             int value = 0;
             okflag = string_to_int(params[0].substr(1), value);
             entry.set_per_isoparam(value);
 
-	  } else if (params[0][params[0].length() - 1] == '%') {
+          } else if (params[0][params[0].length() - 1] == '%') {
             double value = 0.0;
             okflag = string_to_double(params[0].substr(0, params[0].length() - 1), value);
-	    entry.set_importance(value / 100.0);
+            entry.set_importance(value / 100.0);
 
-	  } else if (params.size() == 1) {
-	    // One numeric parameter: the number of triangles.
+          } else if (params.size() == 1) {
+            // One numeric parameter: the number of triangles.
             int value = 0;
             okflag = string_to_int(params[0], value);
             entry.set_num_tris(value);
 
-	  } else if (params.size() >= 2) {
-	    // Two or more numeric parameters: the number of u by v quads,
-	    // followed by an optional list of specific isoparams.
+          } else if (params.size() >= 2) {
+            // Two or more numeric parameters: the number of u by v quads,
+            // followed by an optional list of specific isoparams.
             int u = 0, v = 0;
             okflag = string_to_int(params[0], u) && string_to_int(params[1], v);
-	    entry.set_uv(u, v, &params[2], params.size() - 2);
+            entry.set_uv(u, v, &params[2], params.size() - 2);
 
-	  } else {
-	    okflag = false;
-	  }
+          } else {
+            okflag = false;
+          }
 
-	  if (!okflag) {
-	    qtess_cat.error()
+          if (!okflag) {
+            qtess_cat.error()
               << _filename << ": invalid parameters at line " 
               << line_number << ".\n";
-	    return false;
-	  }
-	}
-	_entries.push_back(entry);
+            return false;
+          }
+        }
+        _entries.push_back(entry);
       }
     }
   }

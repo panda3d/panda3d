@@ -686,8 +686,8 @@ calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
     if (min_length >= max_length)
       return 0;
     if (buf1[min_length] != buf2[min_length] ||
-	buf1[min_length-1] != buf2[min_length-1] ||
-	buf1[min_length-2] != buf2[min_length-2]) {
+        buf1[min_length-1] != buf2[min_length-1] ||
+        buf1[min_length-2] != buf2[min_length-2]) {
       return 0;
     }
   }
@@ -725,11 +725,11 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
 
   // calc match length
   copy_length = (PN_uint16)calc_match_length(&buffer_new[new_pos],
-					     &buffer_orig[copy_pos],
-					     min(min((length_new - new_pos),
-						     (length_orig - copy_pos)),
-						 _MAX_RUN_LENGTH),
-					     0);
+                                             &buffer_orig[copy_pos],
+                                             min(min((length_new - new_pos),
+                                                     (length_orig - copy_pos)),
+                                                 _MAX_RUN_LENGTH),
+                                             0);
 
   // run through link table, see if we find any longer matches
   PN_uint32 match_offset;
@@ -738,11 +738,11 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
 
   while (match_offset != _NULL_VALUE) {
     match_length = (PN_uint16)calc_match_length(&buffer_new[new_pos],
-						&buffer_orig[match_offset],
-						min(min((length_new - new_pos),
-							(length_orig - match_offset)),
-						    _MAX_RUN_LENGTH),
-						copy_length);
+                                                &buffer_orig[match_offset],
+                                                min(min((length_new - new_pos),
+                                                        (length_orig - match_offset)),
+                                                    _MAX_RUN_LENGTH),
+                                                copy_length);
 
     // have we found a longer match?
     if (match_length > copy_length) {

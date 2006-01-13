@@ -58,7 +58,7 @@ IObjParam *MaxEggPlugin::iObjParams;
  */
 
 BOOL CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message, 
-					  WPARAM wParam, LPARAM lParam ) 
+                                          WPARAM wParam, LPARAM lParam ) 
 {
   MaxEggExpOptions *tempEgg;
   int sel, res;
@@ -189,10 +189,10 @@ void MaxEggPlugin::BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev 
   iObjParams = ip;
   if ( !hMaxEggParams ) {
     hMaxEggParams = ip->AddRollupPage(hInstance, 
-		                                  MAKEINTRESOURCE(IDD_PANEL),
-			                                MaxEggPluginOptionsDlgProc, 
-			                                GetString(IDS_PARAMS), 
-			                                (LPARAM)this );
+                                                  MAKEINTRESOURCE(IDD_PANEL),
+                                                        MaxEggPluginOptionsDlgProc, 
+                                                        GetString(IDS_PARAMS), 
+                                                        (LPARAM)this );
     ip->RegisterDlgWnd(hMaxEggParams);
   } else {
     SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, (LPARAM)this );
@@ -204,10 +204,10 @@ void MaxEggPlugin::BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev 
 void MaxEggPlugin::EndEditParams( IObjParam *ip, ULONG flags,Animatable *prev)
 {
   SaveCheckState();
-  if ( flags&END_EDIT_REMOVEUI ) {		
+  if ( flags&END_EDIT_REMOVEUI ) {
     ip->UnRegisterDlgWnd(hMaxEggParams);
     ip->DeleteRollupPage(hMaxEggParams);
-    hMaxEggParams = NULL;				
+    hMaxEggParams = NULL;
   } else {
     SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, NULL );
   }
@@ -375,7 +375,7 @@ public:
 };
 
 int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int flags, IPoint2 m, Matrix3& mat ) 
-{	
+{
   if (msg==MOUSE_POINT||msg==MOUSE_MOVE) {
     switch(point) {
     case 0:
@@ -384,9 +384,9 @@ int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int f
     case 1:
       mat.SetTrans(vpt->SnapPoint(m,m,NULL,SNAP_IN_PLANE));
       if (msg==MOUSE_POINT) return CREATE_STOP;
-      break;			
+      break;
     }
-  } else if (msg == MOUSE_ABORT) {		
+  } else if (msg == MOUSE_ABORT) {
     return CREATE_ABORT; 
   }
   return CREATE_CONTINUE;
@@ -437,11 +437,11 @@ void MaxEggPlugin::GetWorldBoundBox(TimeValue t, INode* inode, ViewExp* vpt, Box
 int MaxEggPlugin::HitTest(TimeValue t, INode *inode, int type, int crossing, int flags, IPoint2 *p, ViewExp *vpt) 
 {
   HitRegion hitRegion;
-  DWORD	savedLimits;
+  DWORD savedLimits;
   Matrix3 m;
-  GraphicsWindow *gw = vpt->getGW();	
+  GraphicsWindow *gw = vpt->getGW();
   Material *mtl = gw->getMaterial();
-  MakeHitRegion(hitRegion,type,crossing,4,p);	
+  MakeHitRegion(hitRegion,type,crossing,4,p);
   gw->setRndLimits(((savedLimits = gw->getRndLimits()) | GW_PICK) & ~GW_ILLUM);
   GetMat(t,inode,vpt,m);
   gw->setTransform(m);
@@ -484,7 +484,7 @@ Interval MaxEggPlugin::ObjectValidity(TimeValue t)
 {
   Interval ivalid;
   ivalid.SetInfinite();
-  return ivalid;	
+  return ivalid;
 }
 
 RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap) 

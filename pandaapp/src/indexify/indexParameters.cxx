@@ -238,10 +238,10 @@ escape_html(const string &input) {
     bool found_match = false;
     for (int i = 0; !found_match && tokens[i].name != NULL; i++) {
       if (code == tokens[i].code) {
-	result += '&';
-	result += tokens[i].name;
-	result += ';';
-	found_match = true;
+        result += '&';
+        result += tokens[i].name;
+        result += ';';
+        found_match = true;
       }
     }
 

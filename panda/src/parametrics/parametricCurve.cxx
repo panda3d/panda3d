@@ -796,11 +796,11 @@ r_find_length(float target_length, float &found_t,
       // Compute t value that corresponds to target_length
       // Maybe the point is in the left half of the segment?
       if (r_find_t(target_length, found_t, t1, tmid, p1, pmid)) {
-	return true;
+        return true;
       }
       // Maybe it's on the right half?
       if (r_find_t(target_length - left, found_t, tmid, t2, pmid, p2)) {
-	return true;
+        return true;
       }
     }
     return false;
@@ -908,8 +908,8 @@ r_find_t(float target_length, float &found_t,
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 find_t_linear(float target_length, float &found_t,
-	      float t1, float t2,
-	      const LPoint3f &p1, const LPoint3f &p2) const {
+              float t1, float t2,
+              const LPoint3f &p1, const LPoint3f &p2) const {
   const float length_tolerance = (p1-p2).length()/tolerance_divisor;
   const float t_tolerance = (t1+t2)/tolerance_divisor;
 
@@ -939,8 +939,8 @@ find_t_linear(float target_length, float &found_t,
     /*
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
-	<< "tleft " << tleft << " tright " << tright <<
-	" tmid " << tmid << " len " << len << endl;
+        << "tleft " << tleft << " tright " << tright <<
+        " tmid " << tmid << " len " << len << endl;
     }
     */
 
@@ -953,7 +953,7 @@ find_t_linear(float target_length, float &found_t,
     /*
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
-	<< "tright-tleft " << tright-tleft << " t_tolerance " << t_tolerance << endl;
+        << "tright-tleft " << tright-tleft << " t_tolerance " << t_tolerance << endl;
     }
     */
 

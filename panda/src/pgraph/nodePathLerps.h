@@ -326,8 +326,8 @@ private:
 
 PUBLISHED:
   HprScaleLerpFunctor(NodePath np, 
-		      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-		      LVecBase3f send)
+                      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
+                      LVecBase3f send)
     : LerpFunctor(), _node_path(np),
       _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
@@ -340,15 +340,15 @@ PUBLISHED:
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(false) {}
   HprScaleLerpFunctor(NodePath np, 
-		      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-		      LVecBase3f send, NodePath wrt)
+                      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
+                      LVecBase3f send, NodePath wrt)
     : LerpFunctor(), _node_path(np), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
       _sdiff_cache(send-sstart), _is_wrt(true), _wrt_path(wrt) {}
   HprScaleLerpFunctor(NodePath np, float hsx, float hsy,
-		      float hsz, float hex, float hey, float hez, float ssx,
-		      float ssy, float ssz, float sex, float sey, float sez,
-		      NodePath wrt)
+                      float hsz, float hex, float hey, float hez, float ssx,
+                      float ssy, float ssz, float sex, float sey, float sez,
+                      NodePath wrt)
     : LerpFunctor(), _node_path(np),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),

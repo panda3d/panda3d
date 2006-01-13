@@ -327,13 +327,13 @@ main(int argc, char *argv[]) {
       window->load_models(framework.get_models(), argc, argv);
 
       if (delete_models) {
-	for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
-	  Filename model = Filename::from_os_specific(argv[i]);
-	  if (model.exists()) {
-	    nout << "Deleting " << model << "\n";
-	    model.unlink();
-	  }
-	}
+        for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
+          Filename model = Filename::from_os_specific(argv[i]);
+          if (model.exists()) {
+            nout << "Deleting " << model << "\n";
+            model.unlink();
+          }
+        }
       }
     }
     window->loop_animations(hierarchy_match_flags);

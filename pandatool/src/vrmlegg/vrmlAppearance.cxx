@@ -33,11 +33,11 @@ VRMLAppearance(const VrmlNode *appearance) {
     const VrmlNode *texture = appearance->get_value("texture")._sfnode._p;
     if (texture != NULL) {
       if (strcmp(texture->_type->getName(), "ImageTexture") == 0) {
-	MFArray *url = texture->get_value("url")._mf;
-	if (!url->empty()) {
-	  const char *filename = (*url->begin())._sfstring;
-	  _tex = new EggTexture("tref", filename);
-	}
+        MFArray *url = texture->get_value("url")._mf;
+        if (!url->empty()) {
+          const char *filename = (*url->begin())._sfstring;
+          _tex = new EggTexture("tref", filename);
+        }
       }
     }
   }

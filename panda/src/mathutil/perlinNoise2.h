@@ -33,8 +33,8 @@ class EXPCL_PANDA PerlinNoise2 : public PerlinNoise {
 PUBLISHED:
   INLINE PerlinNoise2();
   INLINE PerlinNoise2(double sx, double sy,
-		      int table_size = 256,
-		      unsigned long seed = 0);
+                      int table_size = 256,
+                      unsigned long seed = 0);
   INLINE PerlinNoise2(const PerlinNoise2 &copy);
   INLINE void operator = (const PerlinNoise2 &copy);
 

@@ -44,7 +44,7 @@ public:
   // GUI-related methods
   MaxEggImporter();
   ~MaxEggImporter();
-  int		    ExtCount();        // Number of extensions supported 
+  int               ExtCount();        // Number of extensions supported 
   const TCHAR * Ext(int n);        // Extension #n (i.e. "EGG")
   const TCHAR * LongDesc();        // Long ASCII description (i.e. "Egg Importer") 
   const TCHAR * ShortDesc();       // Short ASCII description (i.e. "Egg")
@@ -53,8 +53,8 @@ public:
   const TCHAR * OtherMessage1();   // Other message #1
   const TCHAR * OtherMessage2();   // Other message #2
   unsigned int Version();          // Version number * 100 (i.e. v3.01 = 301) 
-  void	ShowAbout(HWND hWnd);      // Show DLL's "About..." box
-  int	DoImport(const TCHAR *name,ImpInterface *ei,Interface *i, BOOL suppressPrompts);
+  void  ShowAbout(HWND hWnd);      // Show DLL's "About..." box
+  int   DoImport(const TCHAR *name,ImpInterface *ei,Interface *i, BOOL suppressPrompts);
 
 public:
   // GUI-related fields

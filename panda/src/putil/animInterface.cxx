@@ -391,9 +391,9 @@ get_full_fframe() const {
       nassertr(_play_frames >= 0.0, 0.0);
       double f = cmod(get_f(), _play_frames * 2.0);
       if (f > _play_frames) {
-	return (_play_frames * 2.0 - f) + _start_frame;
+        return (_play_frames * 2.0 - f) + _start_frame;
       } else {
-	return f + _start_frame;
+        return f + _start_frame;
       }
     }
   }

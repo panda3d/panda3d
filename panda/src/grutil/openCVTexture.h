@@ -48,10 +48,10 @@ PUBLISHED:
   bool from_camera(int camera_index = -1, int z = 0);
 
   virtual bool read(const Filename &fullpath, int z = 0,
-		    int primary_file_num_channels = 0);
+                    int primary_file_num_channels = 0);
   virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
-		    int z = 0,
-		    int primary_file_num_channels = 0, int alpha_file_channel = 0);
+                    int z = 0,
+                    int primary_file_num_channels = 0, int alpha_file_channel = 0);
   virtual bool load(const PNMImage &pnmimage, int z = 0);
 
 public:
@@ -66,7 +66,7 @@ private:
 
   VideoPage &modify_page(int z);
   bool reconsider_video_properties(const VideoStream &stream, 
-				   int num_components, int z);
+                                   int num_components, int z);
   void do_update();
 
   class VideoStream {

@@ -141,7 +141,7 @@ set_uv(int u, int v, const string params[], int num_params) {
                                  DoubleAlmostMatches(value)),
                        _iso_v.end());
           break;
-	
+
         default:
           qtess_cat.warning()
             << "Ignoring invalid parameter: " << params[i] << "\n";
@@ -226,79 +226,79 @@ match(QtessSurface *surface) {
       // We have a winner!
       switch (_type) {
       case T_importance:
-	// A type of "Importance" is a special case.  This entry
-	// doesn't specify any kind of tesselation on the surface, and
-	// in fact doesn't preclude the surface from matching anything
-	// later.  It just specifies the relative importance of the
-	// surface to all the other surfaces.
-	if (qtess_cat.is_debug()) {
-	  qtess_cat.debug() 
+        // A type of "Importance" is a special case.  This entry
+        // doesn't specify any kind of tesselation on the surface, and
+        // in fact doesn't preclude the surface from matching anything
+        // later.  It just specifies the relative importance of the
+        // surface to all the other surfaces.
+        if (qtess_cat.is_debug()) {
+          qtess_cat.debug() 
             << "Assigning importance of " << _importance*100.0 
             << "% to " << name << "\n";
-	}
-	surface->set_importance(_importance);
-	return T_undefined;
+        }
+        surface->set_importance(_importance);
+        return T_undefined;
 
       case T_match_uu:
       case T_match_uv:
-	// Similarly for type "matchUU".  This indicates that all the
-	// surfaces that match this one must all share the
-	// U-tesselation with whichever surface first matched against
-	// the first node name.
-	if (nni == _node_names.begin() && _constrain_u==NULL) {
-	  // This is the lucky surface that dominates!
-	  _constrain_u = surface;
-	} else {
-	  if (_type == T_match_uu) {
-	    surface->set_match_u(&_constrain_u, true);
-	  } else {
-	    surface->set_match_v(&_constrain_u, false);
-	  }
-	}
-	return T_undefined;
+        // Similarly for type "matchUU".  This indicates that all the
+        // surfaces that match this one must all share the
+        // U-tesselation with whichever surface first matched against
+        // the first node name.
+        if (nni == _node_names.begin() && _constrain_u==NULL) {
+          // This is the lucky surface that dominates!
+          _constrain_u = surface;
+        } else {
+          if (_type == T_match_uu) {
+            surface->set_match_u(&_constrain_u, true);
+          } else {
+            surface->set_match_v(&_constrain_u, false);
+          }
+        }
+        return T_undefined;
 
       case T_match_vv:
       case T_match_vu:
-	// Ditto for "matchVV".
-	if (nni == _node_names.begin() && _constrain_v==NULL) {
-	  // This is the lucky surface that dominates!
-	  _constrain_v = surface;
-	} else {
-	  if (_type == T_match_vv) {
-	    surface->set_match_v(&_constrain_v, true);
-	  } else {
-	    surface->set_match_u(&_constrain_v, false);
-	  }
-	}
-	return T_undefined;
+        // Ditto for "matchVV".
+        if (nni == _node_names.begin() && _constrain_v==NULL) {
+          // This is the lucky surface that dominates!
+          _constrain_v = surface;
+        } else {
+          if (_type == T_match_vv) {
+            surface->set_match_v(&_constrain_v, true);
+          } else {
+            surface->set_match_u(&_constrain_v, false);
+          }
+        }
+        return T_undefined;
 
       case T_min_u:
-	// And for min U and V.
-	if (qtess_cat.is_debug()) {
-	  qtess_cat.debug()
+        // And for min U and V.
+        if (qtess_cat.is_debug()) {
+          qtess_cat.debug()
             << "Assigning minimum of " << _num_u << " in U to "
             << name << "\n";
-	}
-	surface->set_min_u(_num_u);
-	return T_undefined;
+        }
+        surface->set_min_u(_num_u);
+        return T_undefined;
 
       case T_min_v:
-	if (qtess_cat.is_debug()) {
-	  qtess_cat.debug()
+        if (qtess_cat.is_debug()) {
+          qtess_cat.debug()
             << "Assigning minimum of " << _num_v << " in V to "
             << name << "\n";
-	}
-	surface->set_min_v(_num_v);
-	return T_undefined;
+        }
+        surface->set_min_v(_num_v);
+        return T_undefined;
 
       default:
-	_surfaces.push_back(surface);
-	if (_auto_distribute) {
-	  _num_patches += surface->get_score(_curvature_ratio);
-	} else {
-	  _num_patches += surface->count_patches();
-	}
-	return _type;
+        _surfaces.push_back(surface);
+        if (_auto_distribute) {
+          _num_patches += surface->get_score(_curvature_ratio);
+        } else {
+          _num_patches += surface->count_patches();
+        }
+        return _type;
       }
     }
   }
@@ -343,9 +343,9 @@ count_tris(double tri_factor, int attempts) {
       
     case T_uv:
       if (!_iso_u.empty() && !_iso_v.empty() && !_auto_place) {
-	surface->tesselate_specific(_iso_u, _iso_v);
+        surface->tesselate_specific(_iso_u, _iso_v);
       } else {
-	surface->tesselate_uv(_num_u, _num_v, _auto_place, _curvature_ratio);
+        surface->tesselate_uv(_num_u, _num_v, _auto_place, _curvature_ratio);
       }
       break;
       
@@ -479,7 +479,7 @@ output(ostream &out) const {
 
   if (show_auto) {
     out << " " << (_auto_place?"":"!") << "ap"
-	<< " " << (_auto_distribute?"":"!") << "ad";
+        << " " << (_auto_distribute?"":"!") << "ad";
     if (_auto_place || _auto_distribute) {
       out << " ar" << _curvature_ratio;
     }

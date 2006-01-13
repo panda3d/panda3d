@@ -23,7 +23,7 @@
 #include "namable.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXFLayer
+//       Class : DXFLayer
 // Description : This represents a "layer" as read from the DXF file.
 //               A layer may be defined by reading the header part of
 //               the file, or it may be implicitly defined by an

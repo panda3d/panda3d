@@ -102,10 +102,10 @@ ConfigVariableBool vertex_arrays
           "to using immediate-mode commands like glVertex3f(), etc., to "
           "issue the vertices, which is potentially much slower than "
           "vertex arrays.  Setting this false also disables vertex buffers, "
-	  "effectively ignoring the setting of the vertex-buffers variable "
-	  "(since vertex buffers are a special case of vertex arrays in "
-	  "OpenGL).  This variable is normally not enabled in a production "
-	  "build.  This has no effect on DirectX rendering."));
+          "effectively ignoring the setting of the vertex-buffers variable "
+          "(since vertex buffers are a special case of vertex arrays in "
+          "OpenGL).  This variable is normally not enabled in a production "
+          "build.  This has no effect on DirectX rendering."));
 
 ConfigVariableBool display_lists
 ("display-lists", false,
@@ -192,9 +192,9 @@ extern EXPCL_PANDA ConfigVariableBool textures_header_only;
 ConfigVariableBool textures_header_only
 ("textures-header-only", false,
  PRC_DESC("If this is true, texture images will not actually be loaded from "
-	  "disk, but the image header information will be consulted to verify "
-	  "number of channels and so forth.  The texture images themselves "
-	  "will be generated in a default blue color."));
+          "disk, but the image header information will be consulted to verify "
+          "number of channels and so forth.  The texture images themselves "
+          "will be generated in a default blue color."));
 
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,

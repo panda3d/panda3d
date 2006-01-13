@@ -469,8 +469,8 @@ set_scale(const LVecBase3f &scale) const {
     // Don't inflate from 2-d to 3-d just because we got a uniform
     // scale.
     return make_pos_rotate_scale_shear2d(get_pos2d(), get_rotate2d(),
-					 LVecBase2f(scale[0], scale[0]),
-					 get_shear2d());
+                                         LVecBase2f(scale[0], scale[0]),
+                                         get_shear2d());
   }
 
   //  nassertr(has_components(), this);

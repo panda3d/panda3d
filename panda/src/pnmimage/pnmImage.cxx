@@ -162,7 +162,7 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   clear();
 
   PNMReader *reader = PNMImageHeader::make_reader(filename, type,
-						  report_unknown_type);
+                                                  report_unknown_type);
   if (reader == (PNMReader *)NULL) {
     return false;
   }

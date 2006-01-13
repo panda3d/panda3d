@@ -67,7 +67,7 @@ get_tex_scale() const {
     LVecBase2f(1.0f, 1.0f);
   }
   return LVecBase2f((float)_video_width / _x_size,
-		    (float)_video_height / _y_size);
+                    (float)_video_height / _y_size);
 }
 
 ////////////////////////////////////////////////////////////////////

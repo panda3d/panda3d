@@ -1818,7 +1818,7 @@ run_reading_header() {
         }
         reset_url(_request.get_url(), new_url);
         _request.set_url(new_url);
-	_want_ssl = _request.get_url().is_ssl();
+        _want_ssl = _request.get_url().is_ssl();
         make_header();
         make_request_text();
 

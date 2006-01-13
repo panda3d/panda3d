@@ -43,7 +43,7 @@ typedef pvector<VrmlFieldValue> MFArray;
 
 
 ostream &output_value(ostream &out, const VrmlFieldValue &value, int type,
-		      int indent = 0);
+                      int indent = 0);
 
 
 class VrmlNodeType {

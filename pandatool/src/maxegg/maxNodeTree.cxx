@@ -132,7 +132,7 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
   }
 
   Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, 
-	       "finished building complete hierarchy" );
+               "finished building complete hierarchy" );
   
   return all_ok;
 }
@@ -350,7 +350,7 @@ get_egg_table(MaxNodeDesc *node_desc) {
 
     EggTable *egg_table = new EggTable(node_desc->get_name());
     node_desc->_anim = new EggXfmSAnim("xform", 
-				       _egg_data->get_coordinate_system());
+                                       _egg_data->get_coordinate_system());
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
 
@@ -445,13 +445,13 @@ r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
   if (node_desc == _root) {
     node_joint =  new MaxNodeDesc(_root, max_node->GetName());
     _nodes.push_back(node_joint);
-	return node_joint;
-  }	else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
+        return node_joint;
+  }     else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
     node_joint =  new MaxNodeDesc(node_desc->_joint_entry, max_node->GetName());
     _nodes.push_back(node_joint);
-	return node_joint;
+        return node_joint;
   } else {
-	return r_build_joint(node_desc->_parent, max_node);	  
+        return r_build_joint(node_desc->_parent, max_node);
   }
 }
 

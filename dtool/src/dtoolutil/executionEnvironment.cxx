@@ -471,7 +471,7 @@ read_args() {
 
     if (index == 0) {
       if (_binary_name.empty())
-	_binary_name = arg;
+        _binary_name = arg;
     } else {
       _args.push_back(arg);
     }

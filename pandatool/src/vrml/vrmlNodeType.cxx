@@ -28,7 +28,7 @@ plist<VrmlNodeType*> VrmlNodeType::typeList;
 
 static ostream &
 output_array(ostream &out, const MFArray *mf,
-	     int type, int indent_level, int items_per_row) {
+             int type, int indent_level, int items_per_row) {
   if (mf->empty()) {
     out << "[ ]";
   } else {
@@ -37,14 +37,14 @@ output_array(ostream &out, const MFArray *mf,
     int col = 0;
     for (mi = mf->begin(); mi != mf->end(); ++mi) {
       if (col == 0) {
-	out << "\n";
-	indent(out, indent_level + 2);
+        out << "\n";
+        indent(out, indent_level + 2);
       }      
       output_value(out, (*mi), type, indent_level + 2);
       if (++col >= items_per_row) {
-	col = 0;
+        col = 0;
       } else {
-	out << " ";
+        out << " ";
       }
     }
     out << "\n";
@@ -55,7 +55,7 @@ output_array(ostream &out, const MFArray *mf,
 
 ostream & 
 output_value(ostream &out, const VrmlFieldValue &value, int type,
-	     int indent) {
+             int indent) {
   switch (type) {
   case SFBOOL:
     return out << (value._sfbool ? "TRUE" : "FALSE");
@@ -71,11 +71,11 @@ output_value(ostream &out, const VrmlFieldValue &value, int type,
     {
       out << '"';
       for (const char *p = value._sfstring; *p != '\0'; p++) {
-	if (*p == '"') {
-	  out << "\\\"";
-	} else {
-	  out << *p;
-	}
+        if (*p == '"') {
+          out << "\\\"";
+        } else {
+          out << *p;
+        }
       }
       return out << '"';
     }
@@ -86,11 +86,11 @@ output_value(ostream &out, const VrmlFieldValue &value, int type,
   case SFCOLOR:
   case SFVEC3F:
     return out << value._sfvec[0] << " " << value._sfvec[1] << " "
-	       << value._sfvec[2];
+               << value._sfvec[2];
 
   case SFROTATION:
     return out << value._sfvec[0] << " " << value._sfvec[1] << " "
-	       << value._sfvec[2] << " " << value._sfvec[3];
+               << value._sfvec[2] << " " << value._sfvec[3];
 
   case SFNODE:
     switch (value._sfnode._type) {
@@ -233,25 +233,25 @@ VrmlNodeType::find(const char *_name)
 
 void
 VrmlNodeType::addEventIn(const char *name, int type,
-			 const VrmlFieldValue *dflt)
+                         const VrmlFieldValue *dflt)
 {
     add(eventIns, name, type, dflt);
 };
 void
 VrmlNodeType::addEventOut(const char *name, int type,
-			  const VrmlFieldValue *dflt)
+                          const VrmlFieldValue *dflt)
 {
     add(eventOuts, name, type, dflt);
 };
 void
 VrmlNodeType::addField(const char *name, int type,
-		       const VrmlFieldValue *dflt)
+                       const VrmlFieldValue *dflt)
 {
     add(fields, name, type, dflt);
 };
 void
 VrmlNodeType::addExposedField(const char *name, int type,
-			      const VrmlFieldValue *dflt)
+                              const VrmlFieldValue *dflt)
 {
     char tmp[1000];
     add(fields, name, type, dflt);
@@ -263,7 +263,7 @@ VrmlNodeType::addExposedField(const char *name, int type,
 
 void
 VrmlNodeType::add(plist<NameTypeRec*> &recs, const char *name, int type,
-		  const VrmlFieldValue *dflt)
+                  const VrmlFieldValue *dflt)
 {
     NameTypeRec *r = new NameTypeRec;
     r->name = strdup(name);

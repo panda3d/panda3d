@@ -205,9 +205,9 @@ convert_max(bool from_selection) {
     case AC_pose:
       // pose: set to a specific frame, then get out the static geometry.
       sprintf(Logger::GetLogString(), "Extracting geometry from frame #%d.",
-	      start_frame); 
+              start_frame); 
       Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, Logger::GetLogString() );
-	  _current_frame = start_frame;
+          _current_frame = start_frame;
       // fall through
       
     case AC_none:
@@ -257,7 +257,7 @@ convert_max(bool from_selection) {
     Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "Converted, no errors." );
   } else {
     Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL,
-		"Errors encountered in conversion." );
+                "Errors encountered in conversion." );
   }
 
   maxInterface->ProgressEnd();
@@ -307,7 +307,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   double frame_stop = end_frame;
   while (frame <= frame_stop) {
     sprintf(Logger::GetLogString(), "Extracting geometry from frame #%lf.",
-	    frame); 
+            frame); 
     Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, Logger::GetLogString() );
     ostringstream name_strm;
     name_strm << "frame" << frame;
@@ -381,42 +381,42 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   int i;
 
   sprintf(Logger::GetLogString(), 
-	  "sf %lf ef %lf inc %lf ofr %lf.", 
-	  start_frame, end_frame, frame_inc, output_frame_rate );
+          "sf %lf ef %lf inc %lf ofr %lf.", 
+          start_frame, end_frame, frame_inc, output_frame_rate );
   Logger::Log(MNEG_GEOMETRY_GENERATION, Logger::SAT_LOW_LEVEL, 
-	      Logger::GetLogString() );
+              Logger::GetLogString() );
 
   TimeValue frame = start_frame;
   TimeValue frame_stop = end_frame;
   while (frame <= frame_stop) {
     _current_frame = frame;
     sprintf(Logger::GetLogString(), 
-	    "Current frame: %lf.", 
-	    _current_frame );
+            "Current frame: %lf.", 
+            _current_frame );
     Logger::Log(MNEG_GEOMETRY_GENERATION, Logger::SAT_LOW_LEVEL, 
-		Logger::GetLogString() );
+                Logger::GetLogString() );
 
     for (i = 0; i < num_nodes; i++) {
       // Find all joints in the hierarchy
       MaxNodeDesc *node_desc = _tree.get_node(i);
       if (node_desc->is_joint()) {
-	      tgroup = new EggGroup();
-	      INode *max_node = node_desc->get_max_node();
+              tgroup = new EggGroup();
+              INode *max_node = node_desc->get_max_node();
 
-	      if (node_desc->_parent && node_desc->_parent->is_joint()) {
-	      // If this joint also has a joint as a parent, the parent's 
-	      // transformation has to be divided out of this joint's TM
-	      get_joint_transform(max_node, node_desc->_parent->get_max_node(), 
-			                      tgroup);
-	      } else {
-	        get_joint_transform(max_node, NULL, tgroup);
-	      }
+              if (node_desc->_parent && node_desc->_parent->is_joint()) {
+              // If this joint also has a joint as a parent, the parent's 
+              // transformation has to be divided out of this joint's TM
+              get_joint_transform(max_node, node_desc->_parent->get_max_node(), 
+                                              tgroup);
+              } else {
+                get_joint_transform(max_node, NULL, tgroup);
+              }
         
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
         if (!anim->add_data(tgroup->get_transform3d())) {
-	        // *** log an error
-	      }
-	      delete tgroup;
+                // *** log an error
+              }
+              delete tgroup;
       }
     }
     
@@ -496,48 +496,48 @@ process_model_node(MaxNodeDesc *node_desc) {
       Mesh max_mesh;
       //Call the correct exporter based on what type of object this is.
       switch( state.obj->SuperClassID() ){
-	//A geometric object.
+        //A geometric object.
         case GEOMOBJECT_CLASS_ID:
-	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		       "Found a geometric object in the hierarchy!" );
+          Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                       "Found a geometric object in the hierarchy!" );
     egg_group = _tree.get_egg_group(node_desc);
-	  get_transform(max_node, egg_group);
+          get_transform(max_node, egg_group);
     
     //Try converting this geometric object to a mesh we can use.
-	  if (!state.obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) {
-	    Logger::Log(MTEC, Logger::SAT_OTHER_ERROR, 
-			"Cannot create geometry from state.obj!");
-	    // Logger::FunctionExit();
-	    return false;
-	  } 
-	  //Convert our state object to a TriObject.
-	  myMaxTriObject = (TriObject *) state.obj->ConvertToType(time, Class_ID(TRIOBJ_CLASS_ID, 0 ));
-	  // *** Want to figure this problem out 
-	  // If actual conversion was required, then we want to delete this 
-	  // new mesh later to avoid mem leaks. **BROKEN. doesnt delete
-	  
-	  //Now, get the mesh.
-	  max_mesh = myMaxTriObject->GetMesh();
-	  Logger::Log( MTEC, Logger::SAT_LOW_LEVEL, 
-		       "TriObject attached and mesh generated!" );
-	  
-	  make_polyset(max_node, &max_mesh, egg_group);
-	  
-	  if (myMaxTriObject != state.obj)
-	    delete myMaxTriObject;
-	  break;
+          if (!state.obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) {
+            Logger::Log(MTEC, Logger::SAT_OTHER_ERROR, 
+                        "Cannot create geometry from state.obj!");
+            // Logger::FunctionExit();
+            return false;
+          } 
+          //Convert our state object to a TriObject.
+          myMaxTriObject = (TriObject *) state.obj->ConvertToType(time, Class_ID(TRIOBJ_CLASS_ID, 0 ));
+          // *** Want to figure this problem out 
+          // If actual conversion was required, then we want to delete this 
+          // new mesh later to avoid mem leaks. **BROKEN. doesnt delete
+
+          //Now, get the mesh.
+          max_mesh = myMaxTriObject->GetMesh();
+          Logger::Log( MTEC, Logger::SAT_LOW_LEVEL, 
+                       "TriObject attached and mesh generated!" );
+
+          make_polyset(max_node, &max_mesh, egg_group);
+
+          if (myMaxTriObject != state.obj)
+            delete myMaxTriObject;
+          break;
 
         case SHAPE_CLASS_ID:
     if (state.obj->ClassID() == EDITABLE_SURF_CLASS_ID) {
-	    Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		         "Found a NURB object in the hierarchy!" );
+            Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                         "Found a NURB object in the hierarchy!" );
       NURBSSet getSet;
       if (GetNURBSSet(state.obj, time, getSet, TRUE)) {
         NURBSObject *nObj = getSet.GetNURBSObject(0);
         if (nObj->GetType() == kNCVCurve) {
           //It's a CV Curve, process it
           egg_group = _tree.get_egg_group(node_desc);
-      	  get_transform(max_node, egg_group);
+          get_transform(max_node, egg_group);
           make_nurbs_curve((NURBSCVCurve *)nObj, string(max_node->GetName()),
                            time, egg_group);
         }
@@ -546,25 +546,25 @@ process_model_node(MaxNodeDesc *node_desc) {
     break;
 
         case CAMERA_CLASS_ID:
-	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		       "Found a camera object in the hierarchy!" );
-	  break;
+          Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                       "Found a camera object in the hierarchy!" );
+          break;
 
         case LIGHT_CLASS_ID:
-	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		       "Found a light object in the hierarchy!" );
-	  break;
+          Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                       "Found a light object in the hierarchy!" );
+          break;
 
         case HELPER_CLASS_ID:
-	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		       "Found a helper object in the hierarchy!" );
-	  break;
+          Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                       "Found a helper object in the hierarchy!" );
+          break;
 /*        default:
           char buf[1024];
           sprintf(buf, "Unknown Superclass ID: %x, ClassID: %x,%x", state.obj->SuperClassID(),
             state.obj->ClassID().PartA(), state.obj->ClassID().PartB());
-	  Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
-		       buf ); */
+          Logger::Log( MTEC, Logger::SAT_HIGH_LEVEL, 
+                       buf ); */
 
       }
     }
@@ -688,7 +688,7 @@ get_transform(INode *max_node, EggGroup *egg_group) {
   Logger::FunctionEntry("MaxNodeEggGroup::ApplyTransformFromMaxNodeToEggGroup");
   if ( !egg_group ) {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_NULL_ERROR, 
-		 "Destination EggGroup is null!" );
+                 "Destination EggGroup is null!" );
     Logger::FunctionExit();
     return;
   }
@@ -770,11 +770,11 @@ get_transform(INode *max_node, EggGroup *egg_group) {
   row1 = pivot.GetRow(1);
   row2 = pivot.GetRow(2);
   row3 = pivot.GetRow(3);
-	
+
   LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
-		row1.x, row1.y, row1.z, 0.0f,
-		row2.x, row2.y, row2.z, 0.0f,
-		row3.x, row3.y, row3.z, 1.0f );
+                row1.x, row1.y, row1.z, 0.0f,
+                row2.x, row2.y, row2.z, 0.0f,
+                row3.x, row3.y, row3.z, 1.0f );
   // Now here's the tricky part. I believe this command strips out the node
   // "frame" which is the sum of all transformations enacted by the parent of
   // this node. This should reduce to the transformation relative to this 
@@ -783,10 +783,10 @@ get_transform(INode *max_node, EggGroup *egg_group) {
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Non-identity matrix applied to node!" );
+                 "Non-identity matrix applied to node!" );
   } else {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Resultant matrix too close to identity; no transformation applied!" );
+                 "Resultant matrix too close to identity; no transformation applied!" );
   }
   Logger::FunctionExit();
 }
@@ -819,11 +819,11 @@ get_object_transform(INode *max_node) {
   row1 = pivot.GetRow(1);
   row2 = pivot.GetRow(2);
   row3 = pivot.GetRow(3);
-	
+
   LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
-		row1.x, row1.y, row1.z, 0.0f,
-		row2.x, row2.y, row2.z, 0.0f,
-		row3.x, row3.y, row3.z, 1.0f );
+                row1.x, row1.y, row1.z, 0.0f,
+                row2.x, row2.y, row2.z, 0.0f,
+                row3.x, row3.y, row3.z, 1.0f );
   Logger::FunctionExit();
   return m4d;
 }
@@ -854,7 +854,7 @@ get_joint_transform(INode *max_node, EggGroup *egg_group) {
   Logger::FunctionEntry("MaxNodeEggGroup::ApplyTransformFromMaxNodeToEggGroup");
   if ( !egg_group ) {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_NULL_ERROR, 
-		 "Destination EggGroup is null!" );
+                 "Destination EggGroup is null!" );
     Logger::FunctionExit();
     return;
   }
@@ -866,11 +866,11 @@ get_joint_transform(INode *max_node, EggGroup *egg_group) {
   row1 = pivot.GetRow(1);
   row2 = pivot.GetRow(2);
   row3 = pivot.GetRow(3);
-	
+
   LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
-		row1.x, row1.y, row1.z, 0.0f,
-		row2.x, row2.y, row2.z, 0.0f,
-		row3.x, row3.y, row3.z, 1.0f );
+                row1.x, row1.y, row1.z, 0.0f,
+                row2.x, row2.y, row2.z, 0.0f,
+                row3.x, row3.y, row3.z, 1.0f );
   // Now here's the tricky part. I believe this command strips out the node
   // "frame" which is the sum of all transformations enacted by the parent of
   // this node. This should reduce to the transformation relative to this 
@@ -879,10 +879,10 @@ get_joint_transform(INode *max_node, EggGroup *egg_group) {
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Non-identity matrix applied to node!" );
+                 "Non-identity matrix applied to node!" );
   } else {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Resultant matrix too close to identity; no transformation applied!" );
+                 "Resultant matrix too close to identity; no transformation applied!" );
   }
   Logger::FunctionExit();
 }
@@ -914,7 +914,7 @@ get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
   Logger::FunctionEntry("MaxNodeEggGroup::ApplyTransformFromMaxNodeToEggGroup");
   if ( !egg_group ) {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_NULL_ERROR, 
-		 "Destination EggGroup is null!" );
+                 "Destination EggGroup is null!" );
     Logger::FunctionExit();
     return;
   }
@@ -926,11 +926,11 @@ get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
   row1 = pivot.GetRow(1);
   row2 = pivot.GetRow(2);
   row3 = pivot.GetRow(3);
-	
+
   LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
-		row1.x, row1.y, row1.z, 0.0f,
-		row2.x, row2.y, row2.z, 0.0f,
-		row3.x, row3.y, row3.z, 1.0f );
+                row1.x, row1.y, row1.z, 0.0f,
+                row2.x, row2.y, row2.z, 0.0f,
+                row3.x, row3.y, row3.z, 1.0f );
 
 if (parent_node) {
   parent_pivot = parent_node->GetNodeTM(_current_frame * GetTicksPerFrame());
@@ -939,11 +939,11 @@ if (parent_node) {
   row1 = parent_pivot.GetRow(1);
   row2 = parent_pivot.GetRow(2);
   row3 = parent_pivot.GetRow(3);
-	
+
   LMatrix4d pi_m4d(row0.x, row0.y, row0.z, 0.0f,
-		row1.x, row1.y, row1.z, 0.0f,
-		row2.x, row2.y, row2.z, 0.0f,
-		row3.x, row3.y, row3.z, 1.0f );
+                row1.x, row1.y, row1.z, 0.0f,
+                row2.x, row2.y, row2.z, 0.0f,
+                row3.x, row3.y, row3.z, 1.0f );
 
   // Now here's the tricky part. I believe this command strips out the node
   // "frame" which is the sum of all transformations enacted by the parent of
@@ -955,10 +955,10 @@ if (parent_node) {
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix4(m4d);
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Non-identity matrix applied to node!" );
+                 "Non-identity matrix applied to node!" );
   } else {
     Logger::Log( MNEG_GEOMETRY_GENERATION, Logger::SAT_DEBUG_SPAM_LEVEL, 
-		 "Resultant matrix too close to identity; no transformation applied!" );
+                 "Resultant matrix too close to identity; no transformation applied!" );
   }
   Logger::FunctionExit();
 }
@@ -1377,7 +1377,7 @@ make_nurbs_curve(NURBSCVCurve *curve, const string &name,
 void MaxToEggConverter::
 make_polyset(INode *max_node, Mesh *mesh,
              EggGroup *egg_group, Shader *default_shader) {
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Entered make_poly_set." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Entered make_poly_set." );
 
   //bool double_sided = false;
 
@@ -1392,7 +1392,7 @@ make_polyset(INode *max_node, Mesh *mesh,
 
   if (mesh->getNumFaces() == 0) {
     Logger::Log(MNEG_GEOMETRY_GENERATION, Logger::SAT_MEDIUM_LEVEL, 
-		"Ignoring empty mesh ");
+                "Ignoring empty mesh ");
     return;
   }
 
@@ -1430,10 +1430,10 @@ make_polyset(INode *max_node, Mesh *mesh,
   // will be identity; but if the node is under an instance
   // (particularly, for instance, a billboard) then the vertex space
   // will be different from world space.
- 	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before obtaining transform." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before obtaining transform." );
  LMatrix4d vertex_frame = get_object_transform(max_node) * 
                            egg_group->get_vertex_frame_inv();
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After obtaining transform." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After obtaining transform." );
 
 
   // *** Not quite sure how this vertex color flag is handled.  Check on later
@@ -1448,7 +1448,7 @@ make_polyset(INode *max_node, Mesh *mesh,
   */
 
   for ( int iFace=0; iFace < mesh->getNumFaces(); iFace++ ) {
- 	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Getting face." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Getting face." );
    EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
 
@@ -1513,19 +1513,19 @@ make_polyset(INode *max_node, Mesh *mesh,
     */
 
    // Get the vertices for the polygon.
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before getting vertices." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before getting vertices." );
 
-	for ( int iVertex=0; iVertex < 3; iVertex++ ) {
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Getting vertex." );
+        for ( int iVertex=0; iVertex < 3; iVertex++ ) {
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Getting vertex." );
 
-		EggVertex vert;
+                EggVertex vert;
 
       // Get the vertex position
       Point3 vertex = mesh->getVert(face.v[iVertex]);
       LPoint3d p3d(vertex.x, vertex.y, vertex.z);
       p3d = p3d * vertex_frame;
       vert.set_pos(p3d);
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After getting vertex pos before getting normal." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After getting vertex pos before getting normal." );
 
 
       // Get the vertex normal
@@ -1535,7 +1535,7 @@ make_polyset(INode *max_node, Mesh *mesh,
       //     explain why normals were weird previously
       n3d = n3d * vertex_frame;
       vert.set_normal(n3d);
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After getting normal." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "After getting normal." );
 
       // *** More shader stuff to ignore for now
       /*
@@ -1558,15 +1558,15 @@ make_polyset(INode *max_node, Mesh *mesh,
 
       // Get the UVs for this vertex
       if (mesh->getNumTVerts()) {
-	UVVert vertTexCoord = mesh->getTVert(mesh->tvFace[iFace].t[iVertex]);
-	vert.set_uv( TexCoordd(vertTexCoord.x, vertTexCoord.y));
-	sprintf(Logger::GetLogString(), 
-		"Got tex vertex %d of %d from local tex data.", 
-		iVertex, mesh->getNumTVerts() );
-	Logger::Log(MNEG_GEOMETRY_GENERATION, Logger::SAT_LOW_LEVEL, 
-		    Logger::GetLogString() );
+        UVVert vertTexCoord = mesh->getTVert(mesh->tvFace[iFace].t[iVertex]);
+        vert.set_uv( TexCoordd(vertTexCoord.x, vertTexCoord.y));
+        sprintf(Logger::GetLogString(), 
+                "Got tex vertex %d of %d from local tex data.", 
+                iVertex, mesh->getNumTVerts() );
+        Logger::Log(MNEG_GEOMETRY_GENERATION, Logger::SAT_LOW_LEVEL, 
+                    Logger::GetLogString() );
       }
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "after getting TVerts." );
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "after getting TVerts." );
 
 
       // *** Leaving out vertex colors for now
@@ -1609,15 +1609,15 @@ make_polyset(INode *max_node, Mesh *mesh,
     egg_poly->set_vertex(2, verts[0]);
   }
 
-	// *** More shader stuff to ignore
-	/*
+        // *** More shader stuff to ignore
+        /*
     // Now apply the shader.
     if (shader != (MayaShader *)NULL) {
       set_shader_attributes(*egg_poly, *shader);
     }
-	*/
-	Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before set_material_attributes" );
-	
+        */
+        Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Before set_material_attributes" );
+
     set_material_attributes(*egg_poly, max_node->GetMtl(), &face);
   }
    
@@ -1701,7 +1701,7 @@ Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vert
   
   int numNormals;
   Point3 vertexNormal;
-	
+
   // Is normal specified
   // SPCIFIED is not currently used, but may be used in future versions.
   if (rv->rFlags & SPECIFIED_NORMAL) {
@@ -1719,9 +1719,9 @@ Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vert
       // and find the vertex with the same smoothing group as the current face.
       // You will find multiple normals in the ern member.
       for (int i = 0; i < numNormals; i++) {
-	if (rv->ern[i].getSmGroup() & smGroup) {
-	  vertexNormal = rv->ern[i].getNormal();
-	}
+        if (rv->ern[i].getSmGroup() & smGroup) {
+          vertexNormal = rv->ern[i].getNormal();
+        }
       }
     }
   }
@@ -1821,7 +1821,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
           for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
             EggVertex *vert = (*vi);
             int max_vi = vert->get_external_index();
-  	  
+  
             for (int ji = 0; ji < skinMC->GetNumAssignedBones(max_vi); ++ji) {
               float weight = skinMC->GetBoneWeight(max_vi, ji);
               if (weight > 0.0f) {
@@ -1989,11 +1989,11 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
   bool has_trans_texture = false;
   
   Point3 diffuseColor = Point3(1, 1, 1);
-	
+
   Logger::FunctionEntry( "MaxToEggConverter::CreateEggTextureFromINode" );
 
   //First, get the material data associated with this node.
-//  maxMaterial = max_node->GetMtl();	
+//  maxMaterial = max_node->GetMtl();
   if ( !maxMaterial ) {
     Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
     Logger::FunctionExit();
@@ -2027,13 +2027,13 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
       maxBitmap = maxBitmapTex->GetBitmap(0);
       //Query some parameters of the bitmap to get the format option.
       if ( maxBitmap && maxBitmap->HasAlpha() ) {
-	has_trans_texture = true;
-	tex.set_format(EggTexture::F_rgba);
+        has_trans_texture = true;
+        tex.set_format(EggTexture::F_rgba);
       } else {
-	tex.set_format(EggTexture::F_rgb);
+        tex.set_format(EggTexture::F_rgb);
       }
       EggTexture *new_tex =
-	_textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
+        _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
     
       primitive.set_texture(new_tex);
     }
@@ -2067,17 +2067,17 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
     primitive.set_color(rgba);
 
   } else if ( maxMaterial->ClassID() == Class_ID(MULTI_CLASS_ID, 0 )) {
-	// It's a multi-material.  Find the submaterial for this face.
+        // It's a multi-material.  Find the submaterial for this face.
     // and call set_material_attributes again on the submaterial.
-	MtlID matID = face->getMatID();
-	if (matID < maxMaterial->NumSubMtls()) {
-	  set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
-	} else {
-		sprintf(Logger::GetLogString(),
-			    "SubMaterial ID %d is greater than the total submaterial for this material",
-				matID);
-	  Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
-	}
+        MtlID matID = face->getMatID();
+        if (matID < maxMaterial->NumSubMtls()) {
+          set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
+        } else {
+                sprintf(Logger::GetLogString(),
+                            "SubMaterial ID %d is greater than the total submaterial for this material",
+                                matID);
+          Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
+        }
   } else {
     // It's non-standard material. At the moment, let's just 
     // return
@@ -2111,11 +2111,11 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
   bool has_trans_texture = false;
   
   Point3 diffuseColor = Point3(1, 1, 1);
-	
+
   Logger::FunctionEntry( "MaxToEggConverter::CreateEggTextureFromINode" );
 
   //First, get the material data associated with this node.
-//  maxMaterial = max_node->GetMtl();	
+//  maxMaterial = max_node->GetMtl();
   if ( !maxMaterial ) {
     Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
     Logger::FunctionExit();
@@ -2128,19 +2128,19 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
      
     maxStandardMaterial = (StdMat *)maxMaterial;
 
-	// Access the Diffuse map and see if it's a Bitmap texture
+        // Access the Diffuse map and see if it's a Bitmap texture
     diffuseTexmap = maxMaterial->GetSubTexmap(ID_DI);
-	if (diffuseTexmap && (diffuseTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
+        if (diffuseTexmap && (diffuseTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
       has_diffuse_texture = true;
-	  diffuseBitmapTex = (BitmapTex *) diffuseTexmap;
-	}
+          diffuseBitmapTex = (BitmapTex *) diffuseTexmap;
+        }
 
     // Access the Opacity map and see if it's a Bitmap texture
-	transTexmap = maxMaterial->GetSubTexmap(ID_OP);
-	if (transTexmap && (transTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
+        transTexmap = maxMaterial->GetSubTexmap(ID_OP);
+        if (transTexmap && (transTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
       has_trans_texture = true;
-	  transBitmapTex = (BitmapTex *) transTexmap;
-	}
+          transBitmapTex = (BitmapTex *) transTexmap;
+        }
 
     if (has_diffuse_texture || has_trans_texture) {
       ostringstream name_strm;
@@ -2225,19 +2225,19 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
     primitive.set_color(rgba);
     
   } else if ( maxMaterial->ClassID() == Class_ID(MULTI_CLASS_ID, 0 )) {
-	// It's a multi-material.  Find the submaterial for this face.
+        // It's a multi-material.  Find the submaterial for this face.
     // and call set_material_attributes again on the submaterial.
-	MtlID matID = face->getMatID();
-	if (matID < maxMaterial->NumSubMtls()) {
-	  set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
-	} else {
-		sprintf(Logger::GetLogString(),
-			    "SubMaterial ID %d is greater than the total submaterial for this material",
-				matID);
-	  Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
-	}
+        MtlID matID = face->getMatID();
+        if (matID < maxMaterial->NumSubMtls()) {
+          set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
+        } else {
+                sprintf(Logger::GetLogString(),
+                            "SubMaterial ID %d is greater than the total submaterial for this material",
+                                matID);
+          Logger::Log(MTEC, Logger::SAT_NULL_ERROR, "maxMaterial is null!");
+        }
   } else {
-	// It's another non-standard material. At the moment, let's just 
+        // It's another non-standard material. At the moment, let's just 
     // return
     Logger::FunctionExit();
     return;
@@ -2350,7 +2350,7 @@ reparent_decals(EggGroupNode *egg_parent) {
       EggGroup *child_group = (EggGroup *) child;
       if (child_group->has_object_type("decalbase")) {
         if (decal_base != (EggNode *)NULL) {
-	  // error
+          // error
           okflag = false;
         }
         child_group->remove_object_type("decalbase");
@@ -2442,10 +2442,10 @@ Modifier* MaxToEggConverter::FindSkinModifier (INode* node, const Class_ID &type
       Modifier* mod = pDerObj->GetModifier(stackId);
 
       // Is this what we are looking for?
-			if (mod->ClassID() == type )
-				return mod;
-		}
-		
+                        if (mod->ClassID() == type )
+                                return mod;
+                }
+
     // continue with next derived object
     pObj = pDerObj->GetObjRef();
   }

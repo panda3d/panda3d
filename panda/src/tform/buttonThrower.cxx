@@ -398,7 +398,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         if (!_throw_buttons_active || has_throw_button(_mods, be._button)) {
           // Process this button.
           do_specific_event(event_name, be._time);
-	  do_general_event(be, event_name);
+          do_general_event(be, event_name);
           
         } else {
           // Don't process this button; instead, pass it down to future
@@ -422,7 +422,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         // of the modifier keys.
         if (!_throw_buttons_active || has_throw_button(be._button)) {
           do_specific_event(event_name + "-up", be._time);
-	  do_general_event(be, event_name);
+          do_general_event(be, event_name);
         }
         if (_throw_buttons_active) {
           // Now pass the event on to future generations.  We always
@@ -436,7 +436,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         // Some other kind of button event (e.g. keypress).  Don't
         // throw an event for this, but do pass it down.
         _button_events->add_event(be);
-	do_general_event(be, "");
+        do_general_event(be, "");
       }
     }
   }

@@ -497,24 +497,24 @@ scan_up_from(Filename &result, const Filename &dir,
     if (consider.scan_directory(files)) {
       vector_string::const_iterator fi;
       for (fi = files.begin(); fi != files.end(); ++fi) {
-	Globs::const_iterator gi;
-	for (gi = _prc_patterns.begin();
-	     gi != _prc_patterns.end();
-	     ++gi) {
-	  if ((*gi).matches(*fi)) {
-	    result = consider;
-	    return true;
-	  }
-	}
-	
-	for (gi = _prc_executable_patterns.begin();
-	     gi != _prc_executable_patterns.end();
-	     ++gi) {
-	  if ((*gi).matches(*fi)) {
-	    result = consider;
-	    return true;
-	  }
-	}
+        Globs::const_iterator gi;
+        for (gi = _prc_patterns.begin();
+             gi != _prc_patterns.end();
+             ++gi) {
+          if ((*gi).matches(*fi)) {
+            result = consider;
+            return true;
+          }
+        }
+
+        for (gi = _prc_executable_patterns.begin();
+             gi != _prc_executable_patterns.end();
+             ++gi) {
+          if ((*gi).matches(*fi)) {
+            result = consider;
+            return true;
+          }
+        }
       }
     }
   }

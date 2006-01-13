@@ -86,15 +86,15 @@ noise(const LVecBase3d &value) const {
 void PerlinNoise3::
 init_unscaled_xform() {
   LRotationd rot(random_real_unit(),
-		 random_real_unit(),
-		 random_real_unit(),
-		 random_real_unit());
+                 random_real_unit(),
+                 random_real_unit(),
+                 random_real_unit());
   rot.normalize();
   rot.extract_to_matrix(_unscaled_xform);
 
   // And come up with a random translation too, just so the
   // singularity at (0, 0, 0) is also unpredicatable.
   _unscaled_xform.set_row(3, LVecBase3d(random_real_unit(),
-					random_real_unit(),
-					random_real_unit()));
+                                        random_real_unit(),
+                                        random_real_unit()));
 }

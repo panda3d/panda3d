@@ -60,7 +60,7 @@ add_texture(Texture *tex, float texels_per_unit, bool resize) {
   } else {
     if(tex != (Texture *)NULL) {
       if (tex != (Texture *)NULL) {
-	_anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+        _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
       }
       if(resize) {
         // We scale the particle size by the size of the texture.

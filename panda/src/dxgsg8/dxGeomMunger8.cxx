@@ -37,7 +37,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (animation.get_animation_type() != AT_none) {
       dxgsg8_cat.debug()
         << "preparing animation type " << animation << " for " << *orig
-	<< "\n";
+        << "\n";
     }
   }
   // We have to build a completely new format that includes only the

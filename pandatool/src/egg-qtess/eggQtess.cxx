@@ -157,7 +157,7 @@ run() {
 
   } else {
     nout << _surfaces.size() << " NURBS surfaces found; "
-	 << default_entry.get_num_surfaces()
+         << default_entry.get_num_surfaces()
          << " unaccounted for by input file.\n";
   }
 

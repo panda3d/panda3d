@@ -560,7 +560,7 @@ compose_impl(const RenderAttrib *other) const {
       if ((*ai).first < (*ci)) {
         // Here is a stage that we have in the original, which is not
         // present in the secondary.
-	new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
+        new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
         new_attrib->_on_stages.push_back((*ai).first);
         ++ai;
 

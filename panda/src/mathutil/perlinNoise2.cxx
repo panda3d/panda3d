@@ -77,5 +77,5 @@ init_unscaled_xform() {
   // And come up with a random translation too, just so the
   // singularity at (0, 0) is also unpredicatable.
   _unscaled_xform.set_row(2, LVecBase2d(random_real_unit(),
-					random_real_unit()));
+                                        random_real_unit()));
 }

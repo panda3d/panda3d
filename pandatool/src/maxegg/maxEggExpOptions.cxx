@@ -235,7 +235,7 @@ choosingNodes(false), prev_type(AT_model) {
 }
 
 BOOL CALLBACK MaxEggExpOptionsProc( HWND hWnd, UINT message, 
-					                          WPARAM wParam, LPARAM lParam ) 
+                                                                  WPARAM wParam, LPARAM lParam ) 
 {
   char tempFilename[2048];
   //We pass in our plugin through the lParam variable. Let's convert it back.
@@ -653,27 +653,27 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
   //Set the various logging levels for the subsystems.
   Logger::SetOneErrorMask( ME, Logger::SAT_ALL );
   Logger::SetOneErrorMask( MTE, Logger::SAT_NULL_ERROR | 
-			   Logger::SAT_CRITICAL_ERROR | 
-			   Logger::SAT_PARAMETER_INVALID_ERROR | 
-			   Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL );
+                           Logger::SAT_CRITICAL_ERROR | 
+                           Logger::SAT_PARAMETER_INVALID_ERROR | 
+                           Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL );
   Logger::SetOneErrorMask( MTEC, Logger::SAT_NULL_ERROR | 
-			   Logger::SAT_CRITICAL_ERROR |
-			   Logger::SAT_PARAMETER_INVALID_ERROR | 
-			   Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
-			   Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL |
-			   Logger::SAT_DEBUG_SPAM_LEVEL );
+                           Logger::SAT_CRITICAL_ERROR |
+                           Logger::SAT_PARAMETER_INVALID_ERROR | 
+                           Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
+                           Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL |
+                           Logger::SAT_DEBUG_SPAM_LEVEL );
   Logger::SetOneErrorMask( MNEG, Logger::SAT_NULL_ERROR |
-			   Logger::SAT_CRITICAL_ERROR |
-			   Logger::SAT_PARAMETER_INVALID_ERROR | 
-			   Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
-			   Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL );
+                           Logger::SAT_CRITICAL_ERROR |
+                           Logger::SAT_PARAMETER_INVALID_ERROR | 
+                           Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
+                           Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL );
   Logger::SetOneErrorMask( MNEG_GEOMETRY_GENERATION, Logger::SAT_NULL_ERROR |
-			   Logger::SAT_CRITICAL_ERROR |
-			   Logger::SAT_PARAMETER_INVALID_ERROR | 
-			   Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
-			   Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL );
+                           Logger::SAT_CRITICAL_ERROR |
+                           Logger::SAT_PARAMETER_INVALID_ERROR | 
+                           Logger::SAT_OTHER_ERROR | Logger::SAT_HIGH_LEVEL |
+                           Logger::SAT_MEDIUM_LEVEL | Logger::SAT_LOW_LEVEL );
   Logger::SetOneErrorMask( LLOGGING, Logger::SAT_ALL );
-	
+
   Logger::FunctionEntry( "MaxEggPlugin::DoExport" );
 
   // Copy the output filename so that it can be modified if necessary
@@ -750,14 +750,14 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
   // would throw an exception.  That no longer happens, but this is still
   // here for good measure
   try {
-		Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before deleting pmteconverter");
+                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before deleting pmteconverter");
     delete pmteConverter; 
   } catch (...) {
-		Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before error message window");
+                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before error message window");
     MessageBox(ip->GetMAXHWnd(), "I just got an unknown exception.",
-	       "Panda3D Converter", MB_OK);
+               "Panda3D Converter", MB_OK);
   }
-		Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before logger function exit");
+                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before logger function exit");
   Logger::FunctionExit();
   //Free the error logger
   if ( Logger::globalLoggingInstance )

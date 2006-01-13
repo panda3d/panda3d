@@ -148,18 +148,18 @@ scan(const string &photo_extension, const string &movie_extension,
       string word;
       ds >> word;
       while (!ds.eof() && !ds.fail()) {
-	if (!_desc.empty()) {
-	  _desc += ' ';
-	}
-	_desc += word;
-	word = string();
-	ds >> word;
+        if (!_desc.empty()) {
+          _desc += ' ';
+        }
+        _desc += word;
+        word = string();
+        ds >> word;
       }
       if (!word.empty()) {
-	if (!_desc.empty()) {
-	  _desc += ' ';
-	}
-	_desc += word;
+        if (!_desc.empty()) {
+          _desc += ' ';
+        }
+        _desc += word;
       }
     }
   }
@@ -180,33 +180,33 @@ scan(const string &photo_extension, const string &movie_extension,
       string word;
       ls >> word;
       while (!ls.eof() && !ls.fail()) {
-	any_words = true;
-	Filename try_filename(_dir, word);
-	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, word + "." + photo_extension);
-	}
-	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, _basename + word + "." + photo_extension);
-	}
-	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, _basename + "0" + word + "." + photo_extension);
-	}
-	if (try_filename.exists()) {
+        any_words = true;
+        Filename try_filename(_dir, word);
+        if (!try_filename.exists()) {
+          try_filename = Filename(_dir, word + "." + photo_extension);
+        }
+        if (!try_filename.exists()) {
+          try_filename = Filename(_dir, _basename + word + "." + photo_extension);
+        }
+        if (!try_filename.exists()) {
+          try_filename = Filename(_dir, _basename + "0" + word + "." + photo_extension);
+        }
+        if (try_filename.exists()) {
           add_photo(try_filename.get_basename(), movie_extension, 
-		    sound_extension);
-	} else {
-	  nout << "Frame " << word << " not found in " << _name << "\n";
-	}
-	ls >> word;
+                    sound_extension);
+        } else {
+          nout << "Frame " << word << " not found in " << _name << "\n";
+        }
+        ls >> word;
       }
 
       if (!any_words) {
-	// An empty .ls file just means reverse the order.
-	reverse_order = true;
+        // An empty .ls file just means reverse the order.
+        reverse_order = true;
       } else {
-	// A non-empty .ls file has listed all the files we need; no
-	// need to scan the directory.
-	explicit_list = true;
+        // A non-empty .ls file has listed all the files we need; no
+        // need to scan the directory.
+        explicit_list = true;
       }
     }
   }
@@ -445,14 +445,14 @@ generate_html(const Filename &archive_dir, const Filename &roll_dir_root) {
       // If the comment file for the roll exists, insert its contents
       // here instead of the generic header.
       if (!insert_html_comment(comment_strm, cm_filename)) {
-	return false;
+        return false;
       }
       
     } else {
       comment_strm
-	<< "<h2>" << _name << "</h2>\n";
+        << "<h2>" << _name << "</h2>\n";
       if (!_desc.empty()) {
-	comment_strm << "<p>" << escape_html(_desc) << ".</p>\n";
+        comment_strm << "<p>" << escape_html(_desc) << ".</p>\n";
       }
     }
   }
@@ -695,7 +695,7 @@ insert_html_comment(ostream &html, Filename cm_filename) {
 ////////////////////////////////////////////////////////////////////
 void RollDirectory::
 add_photo(const Filename &basename, const string &movie_extension,
-	  const string &sound_extension) {
+          const string &sound_extension) {
   Photo *photo = new Photo(this, basename, movie_extension, sound_extension);
   _photos.push_back(photo);
 }

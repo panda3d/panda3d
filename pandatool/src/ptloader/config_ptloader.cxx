@@ -42,8 +42,8 @@ ConfigureFn(config_ptloader) {
 ConfigVariableEnum<DistanceUnit> ptloader_units
 ("ptloader-units", DU_invalid,
  PRC_DESC("Specifies the preferred units into which models will be converted "
-	  "when using libptloader to automatically convert files to Panda "
-	  "at load time, via e.g. \"pview myMayaFile.mb\"."));
+          "when using libptloader to automatically convert files to Panda "
+          "at load time, via e.g. \"pview myMayaFile.mb\"."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libptloader

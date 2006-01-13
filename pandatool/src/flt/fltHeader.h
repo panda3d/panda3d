@@ -59,7 +59,7 @@ public:
   PathReplace *get_path_replace();
   const PathReplace *get_path_replace() const;
   Filename convert_path(const Filename &orig_filename,
-			const DSearchPath &additional_path = DSearchPath());
+                        const DSearchPath &additional_path = DSearchPath());
 
   void set_flt_filename(const Filename &flt_filename);
   const Filename &get_flt_filename() const;

@@ -547,7 +547,7 @@ fullscreen_restored(WindowProperties &) {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 do_reshape_request(int x_origin, int y_origin, bool has_origin,
-		   int x_size, int y_size) {
+                   int x_size, int y_size) {
   if (windisplay_cat.is_debug()) {
     windisplay_cat.debug()
       << "Got reshape request (" << x_origin << ", " << y_origin
@@ -820,7 +820,7 @@ open_regular_window() {
 
   RECT win_rect;
   SetRect(&win_rect, x_origin, y_origin,
-	  x_origin + x_size, y_origin + y_size);
+          x_origin + x_size, y_origin + y_size);
   
   // compute window size based on desired client area size
   if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
@@ -2372,7 +2372,7 @@ ClearToBlack(HWND hWnd, const WindowProperties &props) {
   if (!props.has_origin()) {
     if (windisplay_cat.is_debug()) {
       windisplay_cat.debug()
-	<< "Skipping ClearToBlack, no origin specified yet.\n";
+        << "Skipping ClearToBlack, no origin specified yet.\n";
     }
     return;
   }

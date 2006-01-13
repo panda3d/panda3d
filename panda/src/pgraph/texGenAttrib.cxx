@@ -494,17 +494,17 @@ record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
   case M_light_vector:
     {
       if (!mode_def._light.is_empty()) {
-	Light *light_obj = mode_def._light.node()->as_light();
-	if (light_obj == (Light *)NULL) {
+        Light *light_obj = mode_def._light.node()->as_light();
+        if (light_obj == (Light *)NULL) {
 #ifndef NDEBUG
-	  ostringstream strm;
-	  strm << "Not a light: " << mode_def._light;
-	  nassert_raise(strm.str());
+          ostringstream strm;
+          strm << "Not a light: " << mode_def._light;
+          nassert_raise(strm.str());
 #endif
-	  mode_def._light = NodePath();
-	}
+          mode_def._light = NodePath();
+        }
       }
-	  
+
       _light_vectors.insert(stage);
       _geom_rendering |= Geom::GR_texcoord_light_vector;
       _num_light_vectors++;

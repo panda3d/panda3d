@@ -561,7 +561,7 @@ idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
 <*>{wsnnl}+     ;
     /* This is also whitespace, but we'll keep track of line number */
     /* to report in errors: */
-<*>{wsnnl}*\n{wsnnl}*	;
+<*>{wsnnl}*\n{wsnnl}*   ;
 
     /* This catch-all rule catches anything not covered by any of */
     /* the above: */

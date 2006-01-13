@@ -112,14 +112,14 @@ xfile:
         ;
 
 template:
-	 TOKEN_TEMPLATE singleword_name TOKEN_OBRACE class_id
+         TOKEN_TEMPLATE singleword_name TOKEN_OBRACE class_id
 {
   $$ = current_node;
   XFileTemplate *templ = new XFileTemplate(x_file, $2, $4);
   current_node->add_child(templ);
   current_node = templ;
 }
-	 template_parts TOKEN_CBRACE
+         template_parts TOKEN_CBRACE
 {
   $$ = current_node;
   current_node = $<u.node>5;
@@ -277,10 +277,10 @@ template_option_list:
         | template_option_list template_option_part
 {
 }
-	;
+        ;
 
 template_option_part:
-	singleword_name
+        singleword_name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -289,7 +289,7 @@ template_option_part:
     DCAST(XFileTemplate, current_node)->add_option(xtemplate);
   }
 }
-	| singleword_name class_id
+        | singleword_name class_id
 {
   XFileTemplate *xtemplate = x_file->find_template($2);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -305,16 +305,16 @@ template_option_part:
         ;
 
 singleword_name:
-	TOKEN_NAME
-	;
+        TOKEN_NAME
+        ;
 
 multiword_name: 
         TOKEN_NAME
-	| multiword_name TOKEN_NAME
+        | multiword_name TOKEN_NAME
 {
   $$ = $1 + " " + $2;
 }
-	| multiword_name TOKEN_INTEGER
+        | multiword_name TOKEN_INTEGER
 {
   $$ = $1 + " " + $<str>2;
 }
@@ -329,7 +329,7 @@ optional_multiword_name:
         ;
 
 class_id:
-  	TOKEN_GUID
+        TOKEN_GUID
         ;
 
 optional_class_id: 
@@ -359,7 +359,7 @@ object:
     current_node = templ;
   }
 }
-	optional_class_id data_parts_list TOKEN_CBRACE
+        optional_class_id data_parts_list TOKEN_CBRACE
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
@@ -368,7 +368,7 @@ object:
   $$ = current_node;
   current_node = $<u.node>4;
 }
-	;
+        ;
 
 data_parts_list:
         empty
@@ -381,7 +381,7 @@ data_part:
   // nested references should be added as children too.
   current_node->add_child($2);
 }
-	| object
+        | object
 {
   // nested objects are just quietly added as children.
 }
@@ -397,7 +397,7 @@ data_part:
     DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_double($1);
 }
-	| string list_separator
+        | string list_separator
 {
   XFileDataNodeTemplate *current_template = 
     DCAST(XFileDataNodeTemplate, current_node);
@@ -409,21 +409,21 @@ data_part:
         ;
         
 integer_list:
-	TOKEN_INTEGER_LIST
+        TOKEN_INTEGER_LIST
         ;
 
 realnum_list:
-	TOKEN_REALNUM_LIST
+        TOKEN_REALNUM_LIST
         ;
 
 string:
-	TOKEN_STRING
+        TOKEN_STRING
         ;
 
 list_separator:
-	TOKEN_SEMICOLON
-	| TOKEN_COMMA
-	;
+        TOKEN_SEMICOLON
+        | TOKEN_COMMA
+        ;
 
 data_reference:
         multiword_name
@@ -435,7 +435,7 @@ data_reference:
 
   $$ = new XFileDataNodeReference(data_object);
 }
-	| multiword_name class_id
+        | multiword_name class_id
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object($2);
   if (data_object == (XFileDataObject *)NULL) {

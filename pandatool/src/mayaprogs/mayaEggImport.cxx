@@ -94,7 +94,7 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
     const MString flagModel("model");
     const MString flagAnim("anim");
 
-    //	Start parsing.
+    //  Start parsing.
     //
     MStringArray optionList;
     MStringArray theOption;

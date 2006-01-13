@@ -1788,7 +1788,7 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
               // texcoords on the polygon.  A front-facing polygon
               // should not contribute to the tangent and binormal of
               // a back-facing polygon, and vice-versa.
-	      value._facing = is_right(w1 - w2, w3 - w1);
+              value._facing = is_right(w1 - w2, w3 - w1);
 
               double x1 = p2[0] - p1[0];
               double x2 = p3[0] - p1[0];

@@ -330,23 +330,23 @@ process(istream &in) {
     if (get_group()) {
       switch (_state) {
       case ST_top:
-	state_top();
-	break;
+        state_top();
+        break;
 
       case ST_section:
-	state_section();
-	break;
+        state_section();
+        break;
 
       case ST_entity:
-	state_entity();
-	break;
+        state_entity();
+        break;
 
       case ST_verts:
-	state_verts();
-	break;
+        state_verts();
+        break;
 
       default:
-	break;
+        break;
       }
     }
   }
@@ -460,8 +460,8 @@ find_color(double r, double g, double b) {
 
   for (int i = 0; i < 255; i++) {
     double diff = ((r - _colors[i].r) * (r - _colors[i].r) +
-		   (g - _colors[i].g) * (g - _colors[i].g) +
-		   (b - _colors[i].b) * (b - _colors[i].b));
+                   (g - _colors[i].g) * (g - _colors[i].g) +
+                   (b - _colors[i].b) * (b - _colors[i].b));
     if (diff < best_diff) {
       best_diff = diff;
       best_index = i;
@@ -546,9 +546,9 @@ compute_ocs() {
   // Now build a rotate matrix from these vectors.
   LMatrix4d
     ocs( x[0],  x[1],  x[2],    0,
-	 y[0],  y[1],  y[2],    0,
-	_z[0], _z[1], _z[2],    0,
-	    0,     0,     0,    1);
+         y[0],  y[1],  y[2],    0,
+        _z[0], _z[1], _z[2],    0,
+            0,     0,     0,    1);
 
   _ocs2wcs.invert_from(ocs);
 }
@@ -714,29 +714,29 @@ void DXFFile::
 state_top() {
   if (_code != 0) {
     nout << "Group code 0 not found at top level; found code " << _code
-	 << " instead.\n";
+         << " instead.\n";
     change_state(ST_error);
   } else {
     if (_string == "SECTION") {
       if (get_group()) {
-	if (_code != 2) {
-	  nout << "Group code 0 not immediately followed by code 2; found code " 
-	       << _code << " instead.\n";
-	} else {
-	  if (_string == "HEADER") {
-	    change_section(SE_header);
-	  } else if (_string == "TABLES") {
-	    change_section(SE_tables);
-	  } else if (_string == "BLOCKS") {
-	    change_section(SE_blocks);
-	  } else if (_string == "ENTITIES") {
-	    change_section(SE_entities);
-	  } else if (_string == "OBJECTS") {
-	    change_section(SE_objects);
-	  } else {
-	    change_section(SE_unknown);
-	  }
-	}
+        if (_code != 2) {
+          nout << "Group code 0 not immediately followed by code 2; found code " 
+               << _code << " instead.\n";
+        } else {
+          if (_string == "HEADER") {
+            change_section(SE_header);
+          } else if (_string == "TABLES") {
+            change_section(SE_tables);
+          } else if (_string == "BLOCKS") {
+            change_section(SE_blocks);
+          } else if (_string == "ENTITIES") {
+            change_section(SE_entities);
+          } else if (_string == "OBJECTS") {
+            change_section(SE_objects);
+          } else {
+            change_section(SE_unknown);
+          }
+        }
       }
     } else if (_string == "EOF") {
       change_state(ST_done);
@@ -765,19 +765,19 @@ state_section() {
       change_state(ST_top);
     } else {
       if (_section == SE_entities) {
-	if (_string == "3DFACE") {
-	  change_entity(EN_3dface);
-	} else if (_string == "POINT") {
-	  change_entity(EN_point);
-	} else if (_string == "INSERT") {
-	  change_entity(EN_insert);
-	} else if (_string == "VERTEX") {
-	  change_entity(EN_vertex);
-	} else if (_string == "POLYLINE") {
-	  change_entity(EN_polyline);
-	} else {
-	  change_entity(EN_unknown);
-	}
+        if (_string == "3DFACE") {
+          change_entity(EN_3dface);
+        } else if (_string == "POINT") {
+          change_entity(EN_point);
+        } else if (_string == "INSERT") {
+          change_entity(EN_insert);
+        } else if (_string == "VERTEX") {
+          change_entity(EN_vertex);
+        } else if (_string == "POLYLINE") {
+          change_entity(EN_polyline);
+        } else {
+          change_entity(EN_unknown);
+        }
       }
     }
     break;

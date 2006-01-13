@@ -42,7 +42,7 @@ Photo(RollDirectory *dir, const Filename &basename,
     if (_frame_number.substr(0, dirname.length()) == dirname) {
       _frame_number = _frame_number.substr(dirname.length());
       while (_frame_number.length() > 1 && _frame_number[0] == '0') {
-	_frame_number = _frame_number.substr(1);
+        _frame_number = _frame_number.substr(1);
       }
     }
   }

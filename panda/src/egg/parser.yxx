@@ -947,7 +947,7 @@ vertex_body:
     vertex->set_uv_obj(uv);
   }
 }
-	 vertex_uv_body '}'
+         vertex_uv_body '}'
 {
   egg_stack.pop_back();
 }
@@ -1535,7 +1535,7 @@ rotz:
         ;
 
 rotate3d:
-	ROTATE '{' real real real real '}'
+        ROTATE '{' real real real real '}'
 {
   egg_stack.back()->as_transform()->add_rotate3d($3, LVector3d($4, $5, $6));
 }
@@ -1549,14 +1549,14 @@ scale2d:
         ;
 
 scale3d:
-	SCALE '{' real real real '}'
+        SCALE '{' real real real '}'
 {
   egg_stack.back()->as_transform()->add_scale3d(LVecBase3d($3, $4, $5));
 }
-	;
+        ;
 
 uniform_scale:
-	SCALE '{' real '}'
+        SCALE '{' real '}'
 {
   egg_stack.back()->as_transform()->add_uniform_scale($3);
 }
@@ -1865,7 +1865,7 @@ primitive_body:
   // the component attributes.
   egg_stack.push_back(new EggPolygon);
 }
- 	primitive_component_body '}'
+        primitive_component_body '}'
 {
   PT(EggPrimitive) prim = DCAST(EggPrimitive, egg_stack.back());
   egg_stack.pop_back();

@@ -59,7 +59,7 @@ read_header(const Filename &filename, PNMFileType *type) {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
 make_reader(const Filename &filename, PNMFileType *type,
-	    bool report_unknown_type) const {
+            bool report_unknown_type) const {
   if (pnmimage_cat.is_debug()) {
     pnmimage_cat.debug()
       << "Reading image from " << filename << "\n";
@@ -90,7 +90,7 @@ make_reader(const Filename &filename, PNMFileType *type,
   }
 
   return make_reader(file, owns_file, filename, string(), type, 
-		     report_unknown_type);
+                     report_unknown_type);
 }
 
 
@@ -126,7 +126,7 @@ make_reader(const Filename &filename, PNMFileType *type,
 PNMReader *PNMImageHeader::
 make_reader(istream *file, bool owns_file, const Filename &filename,
             string magic_number, PNMFileType *type,
-	    bool report_unknown_type) const {
+            bool report_unknown_type) const {
   if (type == (PNMFileType *)NULL) {
     if (!read_magic_number(file, magic_number, 2)) {
       // No magic number.  No image.

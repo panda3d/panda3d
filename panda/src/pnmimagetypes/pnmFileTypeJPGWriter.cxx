@@ -60,13 +60,13 @@ extern "C" {
 typedef struct {
   struct jpeg_destination_mgr pub; /* public fields */
 
-  ostream * outfile;		/* target stream */
-  JOCTET * buffer;		/* start of buffer */
+  ostream * outfile;            /* target stream */
+  JOCTET * buffer;              /* start of buffer */
 } my_destination_mgr;
 
 typedef my_destination_mgr * my_dest_ptr;
 
-#define OUTPUT_BUF_SIZE  4096	/* choose an efficiently fwrite'able size */
+#define OUTPUT_BUF_SIZE  4096   /* choose an efficiently fwrite'able size */
 
 
 /*
@@ -82,7 +82,7 @@ init_destination (j_compress_ptr cinfo)
   /* Allocate the output buffer --- it will be released when done with image */
   dest->buffer = (JOCTET *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  OUTPUT_BUF_SIZE * sizeof(JOCTET));
+                                  OUTPUT_BUF_SIZE * sizeof(JOCTET));
 
   dest->pub.next_output_byte = dest->buffer;
   dest->pub.free_in_buffer = OUTPUT_BUF_SIZE;
@@ -171,10 +171,10 @@ jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
    * manager serially with the same JPEG object, because their private object
    * sizes may be different.  Caveat programmer.
    */
-  if (cinfo->dest == NULL) {	/* first time for this JPEG object? */
+  if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  sizeof(my_destination_mgr));
+                                  sizeof(my_destination_mgr));
   }
 
   dest = (my_dest_ptr) cinfo->dest;

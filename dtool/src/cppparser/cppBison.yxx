@@ -1346,7 +1346,7 @@ formal_parameter:
   $$ = new CPPInstance($2, $3, 0, @3.file);
   $$->set_initializer($4);
 }
-	| formal_const_expr
+        | formal_const_expr
 {
   CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_parameter));

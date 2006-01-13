@@ -140,8 +140,8 @@ private:
                 float t1, float t2,
                 const LPoint3f &p1, const LPoint3f &p2) const;
   bool find_t_linear(float target_length, float &found_t,
-		     float t1, float t2,
-		     const LPoint3f &p1, const LPoint3f &p2) const;
+                     float t1, float t2,
+                     const LPoint3f &p1, const LPoint3f &p2) const;
 
 protected:
   int _curve_type;

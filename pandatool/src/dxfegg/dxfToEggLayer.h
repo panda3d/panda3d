@@ -32,7 +32,7 @@ class DXFVertex;
 class DXFToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXFToEggLayer
+//       Class : DXFToEggLayer
 // Description : The specialization of DXFLayer used by
 //               DXFToEggConverter.  It contains a pointer to an
 //               EggGroup and a vertex pool; these are used to build

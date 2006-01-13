@@ -37,7 +37,7 @@ TextGlyph(int character) :
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
 TextGlyph(int character, const Geom *geom, 
-	  const RenderState *state, float advance) :
+          const RenderState *state, float advance) :
   _character(character),
   _geom(geom), 
   _state(state),

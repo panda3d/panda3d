@@ -165,13 +165,13 @@ dc_cleanup_parser() {
 %%
 
 grammar:
-	START_DC dc
-	| START_PARAMETER_VALUE	parameter_value
-	| START_PARAMETER_DESCRIPTION parameter_description
+        START_DC dc
+        | START_PARAMETER_VALUE parameter_value
+        | START_PARAMETER_DESCRIPTION parameter_description
 {
   parameter_description = $2;
 }
-	;
+        ;
 
 dc:
         empty
@@ -200,50 +200,50 @@ dc:
 
 slash_identifier:
         IDENTIFIER
-	| slash_identifier '/' IDENTIFIER
+        | slash_identifier '/' IDENTIFIER
 {
   $$ = $1 + string("/") + $3;
 }
-	;
+        ;
 
 import_identifier:
         slash_identifier
-	| import_identifier '.' slash_identifier
+        | import_identifier '.' slash_identifier
 {
   $$ = $1 + string(".") + $3;
 }
-	;
+        ;
 
 import:
-	KW_IMPORT import_identifier
+        KW_IMPORT import_identifier
 {
   dc_file->add_import_module($2);
 }
-	| KW_FROM import_identifier KW_IMPORT 
+        | KW_FROM import_identifier KW_IMPORT 
 {
   dc_file->add_import_module($2);
 }
-	import_symbol_list_or_star
-	;
+        import_symbol_list_or_star
+        ;
 
 import_symbol_list_or_star:
-	import_symbol_list
-	| '*'
+        import_symbol_list
+        | '*'
 {
   dc_file->add_import_symbol("*");
 }
-	;
+        ;
 
 import_symbol_list:
-	slash_identifier
+        slash_identifier
 {
   dc_file->add_import_symbol($1);
 }
-	| import_symbol_list ',' slash_identifier
+        | import_symbol_list ',' slash_identifier
 {
   dc_file->add_import_symbol($3);
 }
-	;
+        ;
 
 typedef_decl:
         KW_TYPEDEF parameter_with_default
@@ -261,7 +261,7 @@ typedef_decl:
     }
   }
 }
-	;
+        ;
 
 keyword_decl:
         KW_KEYWORD IDENTIFIER
@@ -276,12 +276,12 @@ keyword_decl:
   // historical hash code support later.
   ((DCKeyword *)$2)->clear_historical_flag();
 }
-	;
+        ;
 
 dclass_or_struct:
         dclass
-	| struct
-	;
+        | struct
+        ;
 
 dclass:
         KW_DCLASS optional_name 
@@ -317,7 +317,7 @@ dclass_name:
     $$ = dclass;
   }
 }
-	;
+        ;
 
 dclass_derivation:
         empty
@@ -360,7 +360,7 @@ dclass_fields:
         ;
 
 dclass_field:
-	atomic_field keyword_list
+        atomic_field keyword_list
 {
   if ($1 != (DCField *)NULL) {
     if ($1->get_name().empty()) {
@@ -370,8 +370,8 @@ dclass_field:
   }
   $$ = $1;
 }
-	| molecular_field no_keyword_list
-	| unnamed_parameter_with_default keyword_list
+        | molecular_field no_keyword_list
+        | unnamed_parameter_with_default keyword_list
 {
   yyerror("Unnamed parameters are not allowed on a dclass");
   if ($1 != (DCField *)NULL) {
@@ -379,14 +379,14 @@ dclass_field:
   }
   $$ = $1;
 }
-	| named_parameter_with_default keyword_list
+        | named_parameter_with_default keyword_list
 {
   if ($1 != (DCField *)NULL) {
     $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
 }
-	;
+        ;
 
 struct:
         KW_STRUCT optional_name 
@@ -422,7 +422,7 @@ struct_name:
     $$ = dstruct;
   }
 }
-	;
+        ;
 
 struct_derivation:
         empty
@@ -458,23 +458,23 @@ struct_fields:
         ;
 
 struct_field:
-	atomic_field no_keyword_list
+        atomic_field no_keyword_list
 {
   if ($1->get_name().empty()) {
     yyerror("Field name required.");
   }
   $$ = $1;
 }
-	| molecular_field no_keyword_list
-	| unnamed_parameter_with_default no_keyword_list
+        | molecular_field no_keyword_list
+        | unnamed_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
-	| named_parameter_with_default no_keyword_list
+        | named_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
-	;
+        ;
 
 atomic_field:
         optional_name '('
@@ -512,7 +512,7 @@ atomic_element:
     current_atomic->add_element($1);
   }
 }
-	;
+        ;
 
 named_parameter:
         type_definition
@@ -523,15 +523,15 @@ named_parameter:
 {
   $$ = $3;
 }
-	;
+        ;
 
 unnamed_parameter:
-	type_definition
-	;
+        type_definition
+        ;
 
 named_parameter_with_default:
         named_parameter
-	| named_parameter '=' 
+        | named_parameter '=' 
 {
   current_packer = &default_packer;
   current_packer->clear_data();
@@ -539,7 +539,7 @@ named_parameter_with_default:
     current_packer->begin_pack($1);
   }
 }
-	parameter_value
+        parameter_value
 {
   bool is_valid = false;
   if ($1 != (DCField *)NULL) {
@@ -557,11 +557,11 @@ named_parameter_with_default:
     // just ignore the default value in this case.
   }
 }
-	;
+        ;
 
 unnamed_parameter_with_default:
         unnamed_parameter
-	| unnamed_parameter '=' 
+        | unnamed_parameter '=' 
 {
   current_packer = &default_packer;
   current_packer->clear_data();
@@ -569,7 +569,7 @@ unnamed_parameter_with_default:
     current_packer->begin_pack($1);
   }
 }
-	parameter_value
+        parameter_value
 {
   bool is_valid = false;
   if ($1 != (DCField *)NULL) {
@@ -587,7 +587,7 @@ unnamed_parameter_with_default:
     // just ignore the default value in this case.
   }
 }
-	;
+        ;
 
 parameter:
         named_parameter
@@ -608,29 +608,29 @@ parameter_or_atomic:
 {
   $$ = $1;
 }
-	;
+        ;
 
 parameter_description:
-	atomic_field no_keyword_list
+        atomic_field no_keyword_list
 {
   $$ = $1;
 }
-	| unnamed_parameter_with_default no_keyword_list
+        | unnamed_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
-	| named_parameter_with_default no_keyword_list
+        | named_parameter_with_default no_keyword_list
 {
   $$ = $1;
 }
-	;
+        ;
 
 simple_type_name:
-	type_token
+        type_token
 {
   $$ = new DCSimpleParameter($1);
 }
-	| simple_type_name '(' double_range ')'
+        | simple_type_name '(' double_range ')'
 {
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
   nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
@@ -667,11 +667,11 @@ simple_type_name:
   }
   $$ = simple_param;
 }
-	;
+        ;
 
 type_name:
         simple_type_name
-	| IDENTIFIER
+        | IDENTIFIER
 {
   if (dc_file == (DCFile *)NULL) {
     yyerror("Invalid type.");
@@ -703,7 +703,7 @@ type_name:
     $$ = dtypedef->make_new_parameter();
   }
 }
-	| struct
+        | struct
 {
   // This is an inline struct definition.
   if ($1 == (DCClass *)NULL) {
@@ -719,7 +719,7 @@ type_name:
     $$ = new DCClassParameter($1);
   }
 }
-	| switch
+        | switch
 {
   // This is an inline switch definition.
   if ($1 == (DCSwitch *)NULL) {
@@ -735,28 +735,28 @@ type_name:
     $$ = new DCSwitchParameter($1);
   }
 }
-	;
+        ;
 
 double_range:
-	empty
+        empty
 {
   double_range.clear();
 }
-	| char_or_number
+        | char_or_number
 {
   double_range.clear();
   if (!double_range.add_range($1, $1)) {
     yyerror("Overlapping range");
   }
 }
-	| char_or_number '-' char_or_number
+        | char_or_number '-' char_or_number
 {
   double_range.clear();
   if (!double_range.add_range($1, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| char_or_number number
+        | char_or_number number
 {
   double_range.clear();
   if ($2 >= 0) {
@@ -765,19 +765,19 @@ double_range:
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' char_or_number
+        | double_range ',' char_or_number
 {
   if (!double_range.add_range($3, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' char_or_number '-' char_or_number
+        | double_range ',' char_or_number '-' char_or_number
 {
   if (!double_range.add_range($3, $5)) {
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' char_or_number number
+        | double_range ',' char_or_number number
 {
   if ($4 >= 0) {
     yyerror("Syntax error");
@@ -785,57 +785,57 @@ double_range:
     yyerror("Overlapping range");
   }
 }
-	;
+        ;
 
 uint_range:
-	empty
+        empty
 {
   uint_range.clear();
 }
-	| char_or_uint
+        | char_or_uint
 {
   uint_range.clear();
   if (!uint_range.add_range($1, $1)) {
     yyerror("Overlapping range");
   }
 }
-	| char_or_uint '-' char_or_uint
+        | char_or_uint '-' char_or_uint
 {
   uint_range.clear();
   if (!uint_range.add_range($1, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| char_or_uint small_negative_integer
+        | char_or_uint small_negative_integer
 {
   uint_range.clear();
   if (!uint_range.add_range($1, $2)) {
     yyerror("Overlapping range");
   }
 }
-	| uint_range ',' char_or_uint
+        | uint_range ',' char_or_uint
 {
   if (!uint_range.add_range($3, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| uint_range ',' char_or_uint '-' char_or_uint
+        | uint_range ',' char_or_uint '-' char_or_uint
 {
   if (!uint_range.add_range($3, $5)) {
     yyerror("Overlapping range");
   }
 }
-	| uint_range ',' char_or_uint small_negative_integer
+        | uint_range ',' char_or_uint small_negative_integer
 {
   if (!uint_range.add_range($3, $4)) {
     yyerror("Overlapping range");
   }
 }
-	;
+        ;
 
 type_definition:
         type_name
-	| type_definition '[' uint_range ']'
+        | type_definition '[' uint_range ']'
 {
   if ($1 == (DCParameter *)NULL) {
     $$ = NULL;
@@ -843,7 +843,7 @@ type_definition:
     $$ = $1->append_array_specification(uint_range);
   }
 }
-	;
+        ;
 
 parameter_definition:
         IDENTIFIER
@@ -881,14 +881,14 @@ parameter_definition:
     }
   }
 }
-	| parameter_definition '[' uint_range ']'
+        | parameter_definition '[' uint_range ']'
 {
   $$ = $1->append_array_specification(uint_range);
 }
-	;
+        ;
 
 char_or_uint:
-	STRING
+        STRING
 {
   if ($1.length() != 1) {
     yyerror("Single character required.");
@@ -897,11 +897,11 @@ char_or_uint:
     $$ = (unsigned char)$1[0];
   }
 }
-	| small_unsigned_integer
-	;
+        | small_unsigned_integer
+        ;
 
 small_unsigned_integer:
-	UNSIGNED_INTEGER
+        UNSIGNED_INTEGER
 {
   $$ = (unsigned int)$1;
   if ($$ != $1) {
@@ -909,10 +909,10 @@ small_unsigned_integer:
     $$ = 1;
   }
 }
-	;
+        ;
 
 small_negative_integer:
-	SIGNED_INTEGER
+        SIGNED_INTEGER
 {
   $$ = (unsigned int)-$1;
   if ($1 >= 0) {
@@ -923,30 +923,30 @@ small_negative_integer:
     $$ = 1;
   }
 }
-	;
+        ;
 
 signed_integer:
         SIGNED_INTEGER
-	;
+        ;
 
 unsigned_integer:
-	UNSIGNED_INTEGER
-	;
+        UNSIGNED_INTEGER
+        ;
 
 number:
-	unsigned_integer
+        unsigned_integer
 {
   $$ = (double)$1;
 }
-	| signed_integer
+        | signed_integer
 {
   $$ = (double)$1;
 }
-	| REAL
-	;
+        | REAL
+        ;
 
 char_or_number:
-	STRING
+        STRING
 {
   if ($1.length() != 1) {
     yyerror("Single character required.");
@@ -955,8 +955,8 @@ char_or_number:
     $$ = (double)(unsigned char)$1[0];
   }
 }
-	| number
-	;
+        | number
+        ;
 
 
 parameter_value:
@@ -964,7 +964,7 @@ parameter_value:
 {
   $$ = $1;
 }
-	| IDENTIFIER '='
+        | IDENTIFIER '='
 {
   if ($1 != current_packer->get_current_field_name()) {
     ostringstream strm;
@@ -973,18 +973,18 @@ parameter_value:
     yyerror(strm.str());
   }
 }
-	parameter_actual_value
+        parameter_actual_value
 {
   $$ = $4;
 }
-	;
+        ;
 
 parameter_actual_value:
-	signed_integer
+        signed_integer
 {
   current_packer->pack_int64($1);
 }
-	| unsigned_integer
+        | unsigned_integer
 {
   current_packer->pack_uint64($1);
 }
@@ -1157,7 +1157,7 @@ keyword_list:
 {
   current_keyword_list.add_keyword($2);
 }
-	;
+        ;
 
 no_keyword_list:
         keyword_list
@@ -1166,7 +1166,7 @@ no_keyword_list:
     yyerror("Communication keywords are not allowed here.");
   }
 }
-	;
+        ;
 
 molecular_field:
         IDENTIFIER ':'
@@ -1193,7 +1193,7 @@ atomic_name:
     }
   }
 }
-	;
+        ;
 
 molecular_atom_list:
         atomic_name
@@ -1220,21 +1220,21 @@ optional_name:
 {
   $$ = "";
 }
-	| IDENTIFIER
-	;
+        | IDENTIFIER
+        ;
 
 switch:
-	KW_SWITCH optional_name '(' parameter_or_atomic ')' '{'
+        KW_SWITCH optional_name '(' parameter_or_atomic ')' '{'
 {
   $$ = current_switch;
   current_switch = new DCSwitch($2, $4);
 }
-	switch_fields '}'
+        switch_fields '}'
 {
   $$ = current_switch;
   current_switch = (DCSwitch *)$<u.parameter>7;
 }
-	;
+        ;
 
 
 switch_fields:
@@ -1256,13 +1256,13 @@ switch_fields:
         ;
 
 switch_case:
-	KW_CASE
+        KW_CASE
 {
   current_packer = &default_packer;
   current_packer->clear_data();
   current_packer->begin_pack(current_switch->get_key_parameter());
 }
-	parameter_value ':'
+        parameter_value ':'
 {
   if (!current_packer->end_pack()) {
     yyerror("Invalid value for switch parameter");
@@ -1274,34 +1274,34 @@ switch_case:
     }
   }
 }
-	;
+        ;
 
 switch_default:
-	KW_DEFAULT ':'
+        KW_DEFAULT ':'
 {
   if (!current_switch->add_default()) {
     yyerror("Default case already defined");
   }
 }
-	;
+        ;
 
 switch_break:
-	KW_BREAK
+        KW_BREAK
 {
   current_switch->add_break();
 }
-	;
+        ;
 
 switch_field:
-	unnamed_parameter_with_default
+        unnamed_parameter_with_default
 {
   $$ = $1;
 }
-	| named_parameter_with_default
+        | named_parameter_with_default
 {
   $$ = $1;
 }
-	;
+        ;
 
 empty:
         ;

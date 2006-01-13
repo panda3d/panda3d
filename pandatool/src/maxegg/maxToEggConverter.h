@@ -125,7 +125,7 @@ class MaxToEggConverter : public SomethingToEggConverter {
   LMatrix4d get_object_transform(INode *max_node);
   void get_joint_transform(INode *max_node, EggGroup *egg_group);
   void get_joint_transform(INode *max_node, INode *parent_node, 
-			   EggGroup *egg_group);
+                           EggGroup *egg_group);
 
   // *** Leaving out these functions til there use/support in Max is determined
   /*

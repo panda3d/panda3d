@@ -116,7 +116,7 @@ get_polys() {
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_colors(const VrmlNode *color_node, double transparency,
-		pvector<Colorf> &color_list) {
+                pvector<Colorf> &color_list) {
   const MFArray *color = color_node->get_value("color")._mf;
   MFArray::const_iterator ci;
   for (ci = color->begin(); ci != color->end(); ++ci) {
@@ -134,7 +134,7 @@ get_vrml_colors(const VrmlNode *color_node, double transparency,
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_normals(const VrmlNode *normal_node, 
-		 pvector<Normald> &normal_list) {
+                 pvector<Normald> &normal_list) {
   const MFArray *point = normal_node->get_value("vector")._mf;
   MFArray::const_iterator ci;
   for (ci = point->begin(); ci != point->end(); ++ci) {
@@ -152,7 +152,7 @@ get_vrml_normals(const VrmlNode *normal_node,
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_uvs(const VrmlNode *texCoord_node, 
-	     pvector<TexCoordd> &uv_list) {
+             pvector<TexCoordd> &uv_list) {
   const MFArray *point = texCoord_node->get_value("point")._mf;
   MFArray::const_iterator ci;
   for (ci = point->begin(); ci != point->end(); ++ci) {
@@ -183,51 +183,51 @@ get_colors() {
       size_t pi = 0;
       size_t pv = 0;
       for (ci = colorIndex->begin(); ci != colorIndex->end(); ++ci) {
-	if ((*ci)._sfint32 < 0) {
-	  // End of poly.
-	  if (pv != _polys[pi]._verts.size()) {
-	    cerr << "Color indices don't match up!\n";
-	    return false;
-	  }
-	  pi++;
-	  pv = 0;
-	} else {
-	  if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
-	    cerr << "Color indices don't match up!\n";
-	    return false;
-	  }
-	  _polys[pi]._verts[pv]._attrib.set_color(color_list[(*ci)._sfint32]);
-	  pv++;
-	}
+        if ((*ci)._sfint32 < 0) {
+          // End of poly.
+          if (pv != _polys[pi]._verts.size()) {
+            cerr << "Color indices don't match up!\n";
+            return false;
+          }
+          pi++;
+          pv = 0;
+        } else {
+          if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
+            cerr << "Color indices don't match up!\n";
+            return false;
+          }
+          _polys[pi]._verts[pv]._attrib.set_color(color_list[(*ci)._sfint32]);
+          pv++;
+        }
       }
       if (pi != _polys.size()) {
-	cerr << "Not enough color indices!\n";
-	return false;
+        cerr << "Not enough color indices!\n";
+        return false;
       }
     } else {
       if (!colorIndex->empty()) {
-	MFArray::const_iterator ci;
-	size_t pi = 0;
-	if (colorIndex->size() != _polys.size()) {
-	  cerr << "Wrong number of color indices!\n";
-	  return false;
-	}
-	for (ci = colorIndex->begin(); ci != colorIndex->end(); ++ci) {
-	  if ((*ci)._sfint32 < 0 || (*ci)._sfint32 >= (int)color_list.size()) {
-	    cerr << "Invalid color index!\n";
-	    return false;
-	  }
-	  _polys[pi]._attrib.set_color(color_list[(*ci)._sfint32]);
-	  pi++;
-	}
+        MFArray::const_iterator ci;
+        size_t pi = 0;
+        if (colorIndex->size() != _polys.size()) {
+          cerr << "Wrong number of color indices!\n";
+          return false;
+        }
+        for (ci = colorIndex->begin(); ci != colorIndex->end(); ++ci) {
+          if ((*ci)._sfint32 < 0 || (*ci)._sfint32 >= (int)color_list.size()) {
+            cerr << "Invalid color index!\n";
+            return false;
+          }
+          _polys[pi]._attrib.set_color(color_list[(*ci)._sfint32]);
+          pi++;
+        }
       } else {
-	if (color_list.size() != _polys.size()) {
-	  cerr << "Wrong number of colors!\n";
-	  return false;
-	}
-	for (size_t pi = 0; pi < color_list.size(); pi++) {
-	  _polys[pi]._attrib.set_color(color_list[pi]);
-	}
+        if (color_list.size() != _polys.size()) {
+          cerr << "Wrong number of colors!\n";
+          return false;
+        }
+        for (size_t pi = 0; pi < color_list.size(); pi++) {
+          _polys[pi]._attrib.set_color(color_list[pi]);
+        }
       }
     }
     return true;
@@ -253,8 +253,8 @@ get_normals() {
     MFArray::const_iterator ci;
 
     if (normalPerVertex &&
-	normal_list.size() == _polys.size() &&
-	normalIndex->empty()) {
+        normal_list.size() == _polys.size() &&
+        normalIndex->empty()) {
       // Here's an interesting formZ bug.  We end up with a VRML file
       // that claims to have normals per vertex, yet there is no
       // normal index list, and there are exactly enough normals in
@@ -265,15 +265,15 @@ get_normals() {
     if (normalPerVertex) {
 
       if (normalIndex->empty()) {
-	// If we have *no* normal index array, but we do have
-	// per-vertex normals, assume the VRML writer meant to imply a
-	// one-to-one mapping.  This works around a broken formZ VRML
-	// file writer.
-	for (size_t i = 0; i < normal_list.size(); i++) {
-	  VrmlFieldValue fv;
-	  fv._sfint32 = i;
-	  (*normalIndex).push_back(fv);
-	}
+        // If we have *no* normal index array, but we do have
+        // per-vertex normals, assume the VRML writer meant to imply a
+        // one-to-one mapping.  This works around a broken formZ VRML
+        // file writer.
+        for (size_t i = 0; i < normal_list.size(); i++) {
+          VrmlFieldValue fv;
+          fv._sfint32 = i;
+          (*normalIndex).push_back(fv);
+        }
       }
 
       // It's possible that this .wrl file indexes normals directly
@@ -283,86 +283,86 @@ get_normals() {
       // vertices, and none of the indices is -1.
       bool linear_list = (normalIndex->size() == _coord_values.size());
       for (ci = normalIndex->begin(); 
-	   ci != normalIndex->end() && linear_list; 
-	   ++ci) {
-	linear_list = ((*ci)._sfint32 >= 0);
+           ci != normalIndex->end() && linear_list; 
+           ++ci) {
+        linear_list = ((*ci)._sfint32 >= 0);
       }
       
       if (linear_list) {
-	// Ok, we do have such a list.  This .wrl file seems to store
-	// its texture coordinates one per vertex, instead of one per
-	// polygon vertex.
-	_per_vertex_normals.reserve(_coord_values.size());
+        // Ok, we do have such a list.  This .wrl file seems to store
+        // its texture coordinates one per vertex, instead of one per
+        // polygon vertex.
+        _per_vertex_normals.reserve(_coord_values.size());
 
-	for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
-	  size_t vi = (*ci)._sfint32;
-	  nassertr(vi >= 0, false);
-	  if (vi >= normal_list.size()) {
-	    cerr << "Invalid normal index: " << vi << "\n";
-	    return false;
-	  }
-	  _per_vertex_normals.push_back(normal_list[vi]);
-	}
-	nassertr(_per_vertex_normals.size() == _coord_values.size(), false);
-	
+        for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
+          size_t vi = (*ci)._sfint32;
+          nassertr(vi >= 0, false);
+          if (vi >= normal_list.size()) {
+            cerr << "Invalid normal index: " << vi << "\n";
+            return false;
+          }
+          _per_vertex_normals.push_back(normal_list[vi]);
+        }
+        nassertr(_per_vertex_normals.size() == _coord_values.size(), false);
+
       } else {
-	// This is a "correct" .wrl file that stores its texture
-	// coordinates one per polygon vertex.  This allows a shared
-	// vertex to contain two different normal values in differing
-	// polygons (meaning it's not actually shared).
-	
-	MFArray::const_iterator ci;
-	size_t pi = 0;
-	size_t pv = 0;
-	for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
-	  if ((*ci)._sfint32 < 0) {
-	    // End of poly.
-	    if (pv != _polys[pi]._verts.size()) {
-	      cerr << "Normal indices don't match up!\n";
-	      return false;
-	    }
-	    pi++;
-	    pv = 0;
-	  } else {
-	    if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
-	      cerr << "Normal indices don't match up!\n";
-	      return false;
-	    }
-	    const Normald &d = normal_list[(*ci)._sfint32];
-	    _polys[pi]._verts[pv]._attrib.set_normal(d);
-	    pv++;
-	  }
-	}
-	if (pi != _polys.size()) {
-	  cerr << "Not enough normal indices!\n";
-	  return false;
-	}
+        // This is a "correct" .wrl file that stores its texture
+        // coordinates one per polygon vertex.  This allows a shared
+        // vertex to contain two different normal values in differing
+        // polygons (meaning it's not actually shared).
+
+        MFArray::const_iterator ci;
+        size_t pi = 0;
+        size_t pv = 0;
+        for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
+          if ((*ci)._sfint32 < 0) {
+            // End of poly.
+            if (pv != _polys[pi]._verts.size()) {
+              cerr << "Normal indices don't match up!\n";
+              return false;
+            }
+            pi++;
+            pv = 0;
+          } else {
+            if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
+              cerr << "Normal indices don't match up!\n";
+              return false;
+            }
+            const Normald &d = normal_list[(*ci)._sfint32];
+            _polys[pi]._verts[pv]._attrib.set_normal(d);
+            pv++;
+          }
+        }
+        if (pi != _polys.size()) {
+          cerr << "Not enough normal indices!\n";
+          return false;
+        }
       }
     } else {
       if (!normalIndex->empty()) {
-	size_t pi = 0;
-	if (normalIndex->size() != _polys.size()) {
-	  cerr << "Wrong number of normal indices!\n";
-	  return false;
-	}
-	for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
-	  if ((*ci)._sfint32 < 0 || (*ci)._sfint32 >= (int)normal_list.size()) {
-	    cerr << "Invalid normal index!\n";
-	    return false;
-	  }
-	  const Normald &d = normal_list[(*ci)._sfint32];
-	  _polys[pi]._attrib.set_normal(d);
-	  pi++;
-	}
+        size_t pi = 0;
+        if (normalIndex->size() != _polys.size()) {
+          cerr << "Wrong number of normal indices!\n";
+          return false;
+        }
+        for (ci = normalIndex->begin(); ci != normalIndex->end(); ++ci) {
+          if ((*ci)._sfint32 < 0 || (*ci)._sfint32 >= (int)normal_list.size()) {
+            cerr << "Invalid normal index!\n";
+            return false;
+          }
+          const Normald &d = normal_list[(*ci)._sfint32];
+          _polys[pi]._attrib.set_normal(d);
+          pi++;
+        }
       } else {
-	if (normal_list.size() != _polys.size()) {
-	  cerr << "Wrong number of normals!\n";
-	  return false;
-	}
-	for (size_t pi = 0; pi < normal_list.size(); pi++) {
-	  const Normald &d = normal_list[pi];
-	  _polys[pi]._attrib.set_normal(d);
-	}
+        if (normal_list.size() != _polys.size()) {
+          cerr << "Wrong number of normals!\n";
+          return false;
+        }
+        for (size_t pi = 0; pi < normal_list.size(); pi++) {
+          const Normald &d = normal_list[pi];
+          _polys[pi]._attrib.set_normal(d);
+        }
       }
     }
     return true;
@@ -385,8 +385,8 @@ assign_per_vertex_normals() {
     for (size_t pv = 0; pv < _polys[pi]._verts.size(); pv++) {
       VrmlVertex &vv = _polys[pi]._verts[pv];
       if (vv._index >= 0 && vv._index < (int)_per_vertex_normals.size()) {
-	const Normald &d = _per_vertex_normals[vv._index];
-	vv._attrib.set_normal(d);
+        const Normald &d = _per_vertex_normals[vv._index];
+        vv._attrib.set_normal(d);
       }
     }
   }
@@ -415,9 +415,9 @@ get_uvs() {
       // imply a one-to-one mapping.  This works around a broken formZ
       // VRML file writer.
       for (size_t i = 0; i < uv_list.size(); i++) {
-	VrmlFieldValue fv;
-	fv._sfint32 = i;
-	(*texCoordIndex).push_back(fv);
+        VrmlFieldValue fv;
+        fv._sfint32 = i;
+        (*texCoordIndex).push_back(fv);
       }
     }
 
@@ -428,8 +428,8 @@ get_uvs() {
     // of vertices, and none of the indices is -1.
     bool linear_list = (texCoordIndex->size() == _coord_values.size());
     for (ci = texCoordIndex->begin(); 
-	 ci != texCoordIndex->end() && linear_list; 
-	 ++ci) {
+         ci != texCoordIndex->end() && linear_list; 
+         ++ci) {
       linear_list = ((*ci)._sfint32 >= 0);
     }
 
@@ -440,13 +440,13 @@ get_uvs() {
       _per_vertex_uvs.reserve(_coord_values.size());
 
       for (ci = texCoordIndex->begin(); ci != texCoordIndex->end(); ++ci) {
-	size_t vi = (*ci)._sfint32;
-	nassertr(vi >= 0, false);
-	if (vi >= uv_list.size()) {
-	  cerr << "Invalid texCoord index: " << vi << "\n";
-	  return false;
-	}
-	_per_vertex_uvs.push_back(uv_list[vi]);
+        size_t vi = (*ci)._sfint32;
+        nassertr(vi >= 0, false);
+        if (vi >= uv_list.size()) {
+          cerr << "Invalid texCoord index: " << vi << "\n";
+          return false;
+        }
+        _per_vertex_uvs.push_back(uv_list[vi]);
       }
       nassertr(_per_vertex_uvs.size() == _coord_values.size(), false);
 
@@ -459,26 +459,26 @@ get_uvs() {
       size_t pi = 0;
       size_t pv = 0;
       for (ci = texCoordIndex->begin(); ci != texCoordIndex->end(); ++ci) {
-	if ((*ci)._sfint32 < 0) {
-	  // End of poly.
-	  if (pv != _polys[pi]._verts.size()) {
-	    cerr << "texCoord indices don't match up!\n";
-	    return false;
-	  }
-	  pi++;
-	  pv = 0;
-	} else {
-	  if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
-	    cerr << "texCoord indices don't match up!\n";
-	    return false;
-	  }
-	  _polys[pi]._verts[pv]._attrib.set_uv(uv_list[(*ci)._sfint32]);
-	  pv++;
-	}
+        if ((*ci)._sfint32 < 0) {
+          // End of poly.
+          if (pv != _polys[pi]._verts.size()) {
+            cerr << "texCoord indices don't match up!\n";
+            return false;
+          }
+          pi++;
+          pv = 0;
+        } else {
+          if (pi >= _polys.size() || pv >= _polys[pi]._verts.size()) {
+            cerr << "texCoord indices don't match up!\n";
+            return false;
+          }
+          _polys[pi]._verts[pv]._attrib.set_uv(uv_list[(*ci)._sfint32]);
+          pv++;
+        }
       }
       if (pi != _polys.size()) {
-	cerr << "Not enough texCoord indices!\n";
-	return false;
+        cerr << "Not enough texCoord indices!\n";
+        return false;
       }
     }
     return true;
@@ -501,8 +501,8 @@ assign_per_vertex_uvs() {
     for (size_t pv = 0; pv < _polys[pi]._verts.size(); pv++) {
       VrmlVertex &vv = _polys[pi]._verts[pv];
       if (vv._index >= 0 && vv._index < (int)_per_vertex_uvs.size()) {
-	const TexCoordd &d = _per_vertex_uvs[vv._index];
-	vv._attrib.set_uv(d);
+        const TexCoordd &d = _per_vertex_uvs[vv._index];
+        vv._attrib.set_uv(d);
       }
     }
   }
@@ -516,7 +516,7 @@ assign_per_vertex_uvs() {
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 make_polys(EggVertexPool *vpool, EggGroup *group, 
-	   const LMatrix4d &net_transform) {
+           const LMatrix4d &net_transform) {
   bool ccw = _geometry->get_value("ccw")._sfbool;
   bool solid = _geometry->get_value("solid")._sfbool;
 
@@ -540,22 +540,22 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
     if (ccw) {
       // The vertices are counterclockwise, same as Egg.
       for (int pv = 0; pv < (int)_polys[pi]._verts.size(); pv++) {
-	EggVertex vert(_polys[pi]._verts[pv]._attrib);
-	Vertexd pos = 
-	  _polys[pi]._verts[pv]._pos * net_transform;
-	vert.set_pos(pos);
-	
-	poly->add_vertex(vpool->create_unique_vertex(vert));
+        EggVertex vert(_polys[pi]._verts[pv]._attrib);
+        Vertexd pos = 
+          _polys[pi]._verts[pv]._pos * net_transform;
+        vert.set_pos(pos);
+
+        poly->add_vertex(vpool->create_unique_vertex(vert));
       }
     } else {
       // The vertices are clockwise, so add 'em in reverse order.
       for (int pv = (int)_polys[pi]._verts.size() - 1; pv >= 0; pv--) {
-	EggVertex vert(_polys[pi]._verts[pv]._attrib);
-	Vertexd pos = 
-	  _polys[pi]._verts[pv]._pos * net_transform;
-	vert.set_pos(pos);
-	
-	poly->add_vertex(vpool->create_unique_vertex(vert));
+        EggVertex vert(_polys[pi]._verts[pv]._attrib);
+        Vertexd pos = 
+          _polys[pi]._verts[pv]._pos * net_transform;
+        vert.set_pos(pos);
+
+        poly->add_vertex(vpool->create_unique_vertex(vert));
       }
     }
   }

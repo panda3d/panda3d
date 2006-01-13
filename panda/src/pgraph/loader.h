@@ -73,7 +73,7 @@ PUBLISHED:
                      Results &results) const;
 
   INLINE PT(PandaNode) load_sync(const Filename &filename, 
-				 const LoaderOptions &options = LoaderOptions()) const;
+                                 const LoaderOptions &options = LoaderOptions()) const;
 
   uint request_load(const string &event_name, const Filename &filename, bool search = true);
   bool check_load(uint id);

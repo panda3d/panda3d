@@ -160,7 +160,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 NodePath PGFrameStyle::
 generate_into(const NodePath &parent, const LVecBase4f &frame,
-	      int sort) {
+              int sort) {
   PT(PandaNode) new_node;
 
   LPoint2f center((frame[0] + frame[1]) / 2.0f,

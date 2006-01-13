@@ -164,8 +164,8 @@ post_command_line() {
     if (!_name_font_filename.empty()) {
       _name_text_maker = new PNMTextMaker(_name_font_filename, 0);
       if (!_name_text_maker->is_valid()) {
-	delete _name_text_maker;
-	_name_text_maker = (PNMTextMaker *)NULL;
+        delete _name_text_maker;
+        _name_text_maker = (PNMTextMaker *)NULL;
       }
     }
     
@@ -173,9 +173,9 @@ post_command_line() {
       _name_text_maker = new PNMTextMaker((const char *)default_font, 
                                           default_font_size, 0);
       if (!_name_text_maker->is_valid()) {
-	nout << "Unable to open default font.\n";
-	delete _name_text_maker;
-	_name_text_maker = (PNMTextMaker *)NULL;
+        nout << "Unable to open default font.\n";
+        delete _name_text_maker;
+        _name_text_maker = (PNMTextMaker *)NULL;
       }
     }
   }
@@ -215,11 +215,11 @@ run() {
     if (y > _image_height - vert_per_font) {
       // Write out the current image.
       snprintf(output_filename, output_filename_size,
-	       _output_filename.c_str(), output_index);
+               _output_filename.c_str(), output_index);
       nout << "Writing " << output_filename << "\n";
       if (!output_image.write(output_filename)) {
-	nout << "Unable to write to " << output_filename << "\n";
-	exit(1);
+        nout << "Unable to write to " << output_filename << "\n";
+        exit(1);
       }
       output_index++;
       output_image.fill(1, 1, 1);
@@ -233,11 +233,11 @@ run() {
       text_maker->set_scale_factor(_font_aa_factor);
       text_maker->set_pixel_size(_sample_height);
       text_maker->generate_into(_sample_text, output_image, 
-				16, y + _sample_height);
+                                16, y + _sample_height);
       if (_name_text_maker != (PNMTextMaker *)NULL) {
-	string desc = filename.get_basename() + ": " + text_maker->get_name();
-	_name_text_maker->generate_into(desc, output_image,
-					16, y + _sample_height + _name_height);
+        string desc = filename.get_basename() + ": " + text_maker->get_name();
+        _name_text_maker->generate_into(desc, output_image,
+                                        16, y + _sample_height + _name_height);
       }
     }
 
@@ -246,7 +246,7 @@ run() {
   }
 
   snprintf(output_filename, output_filename_size,
-	   _output_filename.c_str(), output_index);
+           _output_filename.c_str(), output_index);
   nout << "Writing " << output_filename << "\n";
   if (!output_image.write(output_filename)) {
     nout << "Unable to write to " << output_filename << "\n";

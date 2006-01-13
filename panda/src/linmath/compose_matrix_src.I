@@ -101,7 +101,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
                  FLOATNAME(LVecBase3) &scale,
-		 FLOATNAME(LVecBase3) &shear,
+                 FLOATNAME(LVecBase3) &shear,
                  FLOATNAME(LVecBase3) &hpr,
                  FLOATNAME(LVecBase3) &translate,
                  CoordinateSystem cs) {

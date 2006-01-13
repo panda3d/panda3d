@@ -90,24 +90,24 @@ run() {
 
   if (_has_color_scale) {
     if (_color_scale[0] != 1.0f ||
-	_color_scale[1] != 1.0f ||
-	_color_scale[2] != 1.0f) {
+        _color_scale[1] != 1.0f ||
+        _color_scale[2] != 1.0f) {
       for (int yi = 0; yi < _image.get_y_size(); ++yi) {
-	for (int xi = 0; xi < _image.get_x_size(); ++xi) {
-	  RGBColord rgb = _image.get_xel(xi, yi);
-	  _image.set_xel(xi, yi, 
-			 rgb[0] * _color_scale[0],
-			 rgb[1] * _color_scale[1],
-			 rgb[2] * _color_scale[2]);
-	}
+        for (int xi = 0; xi < _image.get_x_size(); ++xi) {
+          RGBColord rgb = _image.get_xel(xi, yi);
+          _image.set_xel(xi, yi, 
+                         rgb[0] * _color_scale[0],
+                         rgb[1] * _color_scale[1],
+                         rgb[2] * _color_scale[2]);
+        }
       }
     }
     if (_image.has_alpha() && _color_scale[3] != 1.0f) {
       for (int yi = 0; yi < _image.get_y_size(); ++yi) {
-	for (int xi = 0; xi < _image.get_x_size(); ++xi) {
-	  float a = _image.get_alpha(xi, yi);
-	  _image.set_alpha(xi, yi, a * _color_scale[3]);
-	}
+        for (int xi = 0; xi < _image.get_x_size(); ++xi) {
+          float a = _image.get_alpha(xi, yi);
+          _image.set_alpha(xi, yi, a * _color_scale[3]);
+        }
       }
     }
   }

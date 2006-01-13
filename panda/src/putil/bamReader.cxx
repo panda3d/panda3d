@@ -1032,19 +1032,19 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
       // See if we have the pointer available now.
       CreatedObjs::const_iterator oi = _created_objs.find(child_id);
       if (oi == _created_objs.end()) {
-	// No, too bad.
-	is_complete = false;
-	
+        // No, too bad.
+        is_complete = false;
+
       } else {
-	const CreatedObj &child_obj = (*oi).second;
-	if (child_obj._change_this != NULL) {
-	  // It's been created, but the pointer might still change.
-	  is_complete = false;
-	  
-	} else {
-	  // Yes, it's ready.
-	  references.push_back(child_obj._ptr);
-	}
+        const CreatedObj &child_obj = (*oi).second;
+        if (child_obj._change_this != NULL) {
+          // It's been created, but the pointer might still change.
+          is_complete = false;
+
+        } else {
+          // Yes, it's ready.
+          references.push_back(child_obj._ptr);
+        }
       }
     }
   }
@@ -1054,8 +1054,8 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
     int num_completed = object->complete_pointers(&references[0], this);
     if (num_completed != (int)references.size()) {
       bam_cat.warning()
-	<< object->get_type() << " completed " << num_completed
-	<< " of " << references.size() << " pointers.\n";
+        << object->get_type() << " completed " << num_completed
+        << " of " << references.size() << " pointers.\n";
     }
     return true;
   }
@@ -1073,7 +1073,7 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
 ////////////////////////////////////////////////////////////////////
 bool BamReader::
 resolve_cycler_pointers(PipelineCyclerBase *cycler,
-			const vector_int &pointer_ids) {
+                        const vector_int &pointer_ids) {
   // Now make sure we have all of the pointers this cycler is
   // waiting for.  If any of the pointers has not yet been read
   // in, we can't resolve this cycler--we can't do anything for a
@@ -1095,19 +1095,19 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
       // See if we have the pointer available now.
       CreatedObjs::const_iterator oi = _created_objs.find(child_id);
       if (oi == _created_objs.end()) {
-	// No, too bad.
-	is_complete = false;
-	
+        // No, too bad.
+        is_complete = false;
+
       } else {
-	const CreatedObj &child_obj = (*oi).second;
-	if (child_obj._change_this != NULL) {
-	  // It's been created, but the pointer might still change.
-	  is_complete = false;
-	  
-	} else {
-	  // Yes, it's ready.
-	  references.push_back(child_obj._ptr);
-	}
+        const CreatedObj &child_obj = (*oi).second;
+        if (child_obj._change_this != NULL) {
+          // It's been created, but the pointer might still change.
+          is_complete = false;
+
+        } else {
+          // Yes, it's ready.
+          references.push_back(child_obj._ptr);
+        }
       }
     }
   }
@@ -1119,8 +1119,8 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
     cycler->release_write(cdata);
     if (num_completed != (int)references.size()) {
       bam_cat.warning()
-	<< "CycleData object completed " << num_completed
-	<< " of " << references.size() << " pointers.\n";
+        << "CycleData object completed " << num_completed
+        << " of " << references.size() << " pointers.\n";
     }
     return true;
   }

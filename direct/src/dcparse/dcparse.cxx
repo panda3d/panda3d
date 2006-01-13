@@ -68,7 +68,7 @@ help() {
 
 void
 write_class_hierarchy(int indent_level, const DCFile &file, 
-		      const DCClass *this_dclass) {
+                      const DCClass *this_dclass) {
   indent(cout, indent_level)
     << this_dclass->get_name() << "\n";
 
@@ -110,13 +110,13 @@ write_complete_field_list(const DCFile &file) {
       const DCField *field = dclass->get_inherited_field(j);
       cout << "  ";
       if (field->get_class() != dclass) {
-	cout << field->get_class()->get_name() << "::";
+        cout << field->get_class()->get_name() << "::";
       }
       cout << field->get_name();
       if (field->as_atomic_field() != (DCAtomicField *)NULL ||
-	  field->as_molecular_field() != (DCMolecularField *)NULL) {
-	// It's a "method".
-	cout << "()";
+          field->as_molecular_field() != (DCMolecularField *)NULL) {
+        // It's a "method".
+        cout << "()";
       }
       field->output_keywords(cout);
       cout << "\n";

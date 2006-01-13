@@ -205,7 +205,7 @@ register_with_read_factory() {
 TypedWritable* GeomTextGlyph::
 make_GeomTextGlyph(const FactoryParams &params) {
   GeomTextGlyph *me = new GeomTextGlyph((DynamicTextGlyph *)NULL, 
-					(GeomVertexData *)NULL);
+                                        (GeomVertexData *)NULL);
   DatagramIterator scan;
   BamReader *manager;
 

@@ -26,7 +26,7 @@
  */
 #include "maxLogger.h"
 #define ME Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM6
-#define MaxEggPlugin_CLASS_ID	Class_ID(0x7ac0d6b7, 0x55731ef6)
+#define MaxEggPlugin_CLASS_ID   Class_ID(0x7ac0d6b7, 0x55731ef6)
 
 /* Externed Globals
  */
@@ -119,7 +119,7 @@ class MaxEggPlugin : public HelperObject
 
 
 const double meshVerts[252][3] = {
-	  {0.729464, 0.714986, -0.919852},
+          {0.729464, 0.714986, -0.919852},
       {0.466137, 0.160201, -0.594656},
       {-0.265897, 0.714986, -1.14704},
       {0.466137, 0.160201, -0.594656},

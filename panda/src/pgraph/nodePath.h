@@ -643,7 +643,7 @@ PUBLISHED:
   INLINE void clear_project_texture(TextureStage *stage);
 
   void set_normal_map(Texture *normal_map, const string &texcoord_name = string(),
-		      bool preserve_color = false);
+                      bool preserve_color = false);
   void clear_normal_map();
 
   INLINE bool has_texcoord(const string &texcoord_name) const;

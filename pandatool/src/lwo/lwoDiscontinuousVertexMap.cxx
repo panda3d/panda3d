@@ -109,14 +109,14 @@ read_iff(IffInputFile *in, size_t stop_at) {
              << " specified by discontinuous vertex map.\n"
              << "Original value = ";
 
-	PTA_float::const_iterator vi;
-	for (vi = orig_value.begin(); vi != orig_value.end(); ++vi) {
-	  nout << (*vi) << " ";
-	}
+        PTA_float::const_iterator vi;
+        for (vi = orig_value.begin(); vi != orig_value.end(); ++vi) {
+          nout << (*vi) << " ";
+        }
         nout << " new value = ";
-	for (vi = value.begin(); vi != value.end(); ++vi) {
-	  nout << (*vi) << " ";
-	}
+        for (vi = value.begin(); vi != value.end(); ++vi) {
+          nout << (*vi) << " ";
+        }
         nout << "\n";
       }
     }

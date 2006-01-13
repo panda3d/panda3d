@@ -135,7 +135,7 @@ write_texture_types(ostream &out, int indent_level) const {
       string name = tex->get_type().get_name();
       indent(out, indent_level) << name;
       indent(out, max(30 - (int)name.length(), 0))
-	<< "  ." << extension << "\n";
+        << "  ." << extension << "\n";
     }
   }
 }
@@ -166,10 +166,10 @@ TexturePool() {
   ConfigVariableString fake_texture_image
     ("fake-texture-image", "",
      PRC_DESC("Set this to enable a speedy-load mode in which you don't care "
-	      "what the world looks like, you just want it to load in minimal "
-	      "time.  This causes all texture loads via the TexturePool to use "
-	      "the same texture file, which will presumably only be loaded "
-	      "once."));
+              "what the world looks like, you just want it to load in minimal "
+              "time.  This causes all texture loads via the TexturePool to use "
+              "the same texture file, which will presumably only be loaded "
+              "once."));
   _fake_texture_image = fake_texture_image;
 }
 
@@ -456,7 +456,7 @@ ns_garbage_collect() {
       _normalization_cube_map->get_ref_count() == 1) {
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-	<< "Releasing normalization cube map\n";
+        << "Releasing normalization cube map\n";
     }
     ++num_released;
     _normalization_cube_map = NULL;
@@ -497,14 +497,14 @@ report_texture_unreadable(const Filename &filename) const {
       // fully-qualified--therefore, it wasn't found along either
       // search path.
       gobj_cat.error()
-	<< "Unable to find texture \"" << filename << "\""
-	<< " on texture_path " << texture_path
-	<< " or model_path " << model_path <<"\n";
+        << "Unable to find texture \"" << filename << "\""
+        << " on texture_path " << texture_path
+        << " or model_path " << model_path <<"\n";
     } else {
       // A fully-specified filename is not searched along the path, so
       // don't mislead the user with the error message.
       gobj_cat.error()
-	<< "Texture \"" << filename << "\" does not exist.\n";
+        << "Texture \"" << filename << "\" does not exist.\n";
     }
 
   } else {
@@ -516,8 +516,8 @@ report_texture_unreadable(const Filename &filename) const {
     MakeTextureFunc *func = get_texture_type(filename.get_extension());
     if (func == (MakeTextureFunc *)NULL) {
       gobj_cat.error()
-	<< "Texture extension \"" << filename.get_extension() 
-	<< "\" is unknown.  Supported texture types:\n";
+        << "Texture extension \"" << filename.get_extension() 
+        << "\" is unknown.  Supported texture types:\n";
       write_texture_types(gobj_cat.error(false), 2);
     }
   }

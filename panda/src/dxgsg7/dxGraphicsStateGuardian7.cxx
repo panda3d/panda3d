@@ -134,7 +134,7 @@ TextureContext *DXGraphicsStateGuardian7::
 prepare_texture(Texture *tex) {
   DXTextureContext7 *dtc = new DXTextureContext7(tex);
   if (dtc->create_texture(_d3d_device, _num_tex_formats, _tex_formats,
-			  &_screen->D3DDevDesc) == NULL) {
+                          &_screen->D3DDevDesc) == NULL) {
     delete dtc;
     return NULL;
   }
@@ -175,14 +175,14 @@ apply_texture(int i, TextureContext *tc) {
     // error or oversight.
     if ((dirty & Texture::DF_image) == 0) {
       dxgsg7_cat.warning()
-	<< "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+        << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
     }
     
     if (!dtc->create_texture(_d3d_device, _num_tex_formats, _tex_formats,
-			     &_screen->D3DDevDesc)) {
+                             &_screen->D3DDevDesc)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg7_cat.error()
-	<< "Unable to re-create texture " << *dtc->_texture << endl;
+        << "Unable to re-create texture " << *dtc->_texture << endl;
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
@@ -198,7 +198,7 @@ apply_texture(int i, TextureContext *tc) {
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
 
   _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR, 
-				    Colorf_to_D3DCOLOR(tex->get_border_color()));
+                                    Colorf_to_D3DCOLOR(tex->get_border_color()));
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
@@ -295,7 +295,7 @@ do_clear(const RenderBuffer &buffer) {
   }
   
   HRESULT  hr = _d3d_device->Clear(0, NULL, flags, _d3dcolor_clear_value,
-				   (D3DVALUE) _depth_clear_value, 0);
+                                   (D3DVALUE) _depth_clear_value, 0);
   if (hr != DD_OK) {
     dxgsg7_cat.error()
       << "clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr)
@@ -938,7 +938,7 @@ reset() {
       
       // range-based fog only works with vertex fog in dx7/8
       if(dx_use_rangebased_fog && (_screen->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGRANGE))
-	_screen->pD3DDevice->SetRenderState(D3DRENDERSTATE_RANGEFOGENABLE, true);
+        _screen->pD3DDevice->SetRenderState(D3DRENDERSTATE_RANGEFOGENABLE, true);
     }
   }
 
@@ -969,7 +969,7 @@ reset() {
   _max_texture_stages = 1;
   _max_texture_dimension = 
     min(_screen->D3DDevDesc.dwMaxTextureWidth,
-	_screen->D3DDevDesc.dwMaxTextureHeight);
+        _screen->D3DDevDesc.dwMaxTextureHeight);
 
   _supports_texture_combine = false;
   _supports_texture_saved_result = false;
@@ -1774,12 +1774,12 @@ do_issue_texture() {
       } else {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-	DWORD transform_flags = texcoord_dimensions;
-	if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
-	  // If we have a projected texture matrix, we also need to
-	  // set D3DTTFF_COUNT4.
-	  transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
-	}
+        DWORD transform_flags = texcoord_dimensions;
+        if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
+          // If we have a projected texture matrix, we also need to
+          // set D3DTTFF_COUNT4.
+          transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
+        }
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
@@ -2512,7 +2512,7 @@ enum_tex_formats_callback(LPDDPIXELFORMAT pddpf, void *param) {
   DXGraphicsStateGuardian7 *gsg = (DXGraphicsStateGuardian7 *)param;
   nassertr(gsg->_num_tex_formats < MAX_DX_TEXPIXFMTS, E_FAIL);
   memcpy(&(gsg->_tex_formats[gsg->_num_tex_formats]), pddpf, 
-	 sizeof(DDPIXELFORMAT));
+         sizeof(DDPIXELFORMAT));
   gsg->_num_tex_formats++;
   
   return DDENUMRET_OK;

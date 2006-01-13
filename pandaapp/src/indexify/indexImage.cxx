@@ -298,7 +298,7 @@ make_reduced_image(Photo *photo, PNMImage &reduced_image,
       // anyway when force_reduced is true.
       photo_filename.set_binary();
       if (!copy_file(photo_filename, reduced_dir)) {
-	return false;
+        return false;
       }
       
     } else {
@@ -328,8 +328,8 @@ make_reduced_image(Photo *photo, PNMImage &reduced_image,
       // We still read the image header to determine its size.
       PNMImageHeader photo_image;
       if (!photo_image.read_header(photo_filename)) {
-	nout << "Unable to read " << photo_filename << "\n";
-	return false;
+        nout << "Unable to read " << photo_filename << "\n";
+        return false;
       }
       
       photo->_full_x_size = photo_image.get_x_size();
@@ -337,35 +337,35 @@ make_reduced_image(Photo *photo, PNMImage &reduced_image,
       photo->_has_reduced = true;
       
       if (dummy_mode) {
-	// In dummy mode, we may or may not actually have a reduced
-	// image.  In either case, ignore the file and compute its
-	// appropriate size from the source image.
-	compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
-	
+        // In dummy mode, we may or may not actually have a reduced
+        // image.  In either case, ignore the file and compute its
+        // appropriate size from the source image.
+        compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
+
       } else if (generate_index_image) {
-	// Now read the reduced image from disk, so we can put it on
-	// the index image.
-	nout << "Reading " << reduced_filename << "\n";
-	
-	if (!reduced_image.read(reduced_filename)) {
-	  nout << "Unable to read.\n";
-	  return false;
-	}
-	
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
+        // Now read the reduced image from disk, so we can put it on
+        // the index image.
+        nout << "Reading " << reduced_filename << "\n";
+
+        if (!reduced_image.read(reduced_filename)) {
+          nout << "Unable to read.\n";
+          return false;
+        }
+
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
       
       } else {
-	// If we're not generating an index image, we don't even need
-	// the reduced image--just scan its header to get its size.
-	if (!reduced_image.read_header(reduced_filename)) {
-	  nout << "Unable to read " << reduced_filename << "\n";
-	  return false;
-	}
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
+        // If we're not generating an index image, we don't even need
+        // the reduced image--just scan its header to get its size.
+        if (!reduced_image.read_header(reduced_filename)) {
+          nout << "Unable to read " << reduced_filename << "\n";
+          return false;
+        }
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
       }
     }
   }

@@ -36,7 +36,7 @@ class EXPCL_PANDA TextGlyph : public ReferenceCount {
 public:
   INLINE TextGlyph(int character);
   INLINE TextGlyph(int character, const Geom *geom, 
-		   const RenderState *state, float advance);
+                   const RenderState *state, float advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();

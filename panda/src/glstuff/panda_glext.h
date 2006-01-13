@@ -3043,7 +3043,7 @@ extern "C" {
 #include <stddef.h>
 #ifndef GL_VERSION_2_0
 /* GL type for program/shader text */
-typedef char GLchar;			/* native character */
+typedef char GLchar;                    /* native character */
 #endif
 
 #ifndef GL_VERSION_1_5
@@ -3060,8 +3060,8 @@ typedef ptrdiff_t GLsizeiptrARB;
 
 #ifndef GL_ARB_shader_objects
 /* GL types for handling shader object handles and program/shader text */
-typedef char GLcharARB;		/* native character */
-typedef unsigned int GLhandleARB;	/* shader object handle */
+typedef char GLcharARB;         /* native character */
+typedef unsigned int GLhandleARB;       /* shader object handle */
 #endif
 
 /* GL types for "half" precision (s10e5) float data in host memory */

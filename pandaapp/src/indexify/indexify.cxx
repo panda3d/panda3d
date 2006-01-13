@@ -323,12 +323,12 @@ handle_args(ProgramBase::Args &args) {
     if (filename.is_directory()) {
       string basename = filename.get_basename();
       if (basename == "icons" || basename == "html" || 
-	  basename == "reduced" || basename == "thumbs") {
-	nout << "Ignoring " << filename << "; indexify-generated directory.\n";
+          basename == "reduced" || basename == "thumbs") {
+        nout << "Ignoring " << filename << "; indexify-generated directory.\n";
 
       } else {
-	RollDirectory *roll_dir = new RollDirectory(filename);
-	_roll_dirs.push_back(roll_dir);
+        RollDirectory *roll_dir = new RollDirectory(filename);
+        _roll_dirs.push_back(roll_dir);
       }
 
     } else if (filename.exists()) {
@@ -417,8 +417,8 @@ post_command_line() {
     if (!_font_filename.empty()) {
       _text_maker = new PNMTextMaker(_font_filename, 0);
       if (!_text_maker->is_valid()) {
-	delete _text_maker;
-	_text_maker = (PNMTextMaker *)NULL;
+        delete _text_maker;
+        _text_maker = (PNMTextMaker *)NULL;
       }
     }
     
@@ -426,9 +426,9 @@ post_command_line() {
       _text_maker = new PNMTextMaker((const char *)default_font, 
                                      default_font_size, 0);
       if (!_text_maker->is_valid()) {
-	nout << "Unable to open default font.\n";
-	delete _text_maker;
-	_text_maker = (PNMTextMaker *)NULL;
+        nout << "Unable to open default font.\n";
+        delete _text_maker;
+        _text_maker = (PNMTextMaker *)NULL;
       }
     }
     
@@ -445,80 +445,80 @@ post_command_line() {
       Filename icon_filename(archive_dir, prev_icon);
 
       if (force_regenerate || !icon_filename.exists()) {
-	nout << "Generating " << icon_filename << "\n";
-	icon_filename.make_dir();
-	icon_filename.set_binary();
+        nout << "Generating " << icon_filename << "\n";
+        icon_filename.make_dir();
+        icon_filename.set_binary();
 
-	ofstream output;
-	if (!icon_filename.open_write(output)) {
-	  nout << "Unable to write to " << icon_filename << "\n";
-	  exit(1);
-	}
-	output.write((const char *)default_left_icon, default_left_icon_len);
+        ofstream output;
+        if (!icon_filename.open_write(output)) {
+          nout << "Unable to write to " << icon_filename << "\n";
+          exit(1);
+        }
+        output.write((const char *)default_left_icon, default_left_icon_len);
       }
     }
     if (next_icon.empty()) {
       next_icon = Filename("icons", default_right_icon_filename);
       Filename icon_filename(archive_dir, next_icon);
       if (force_regenerate || !icon_filename.exists()) {
-	nout << "Generating " << icon_filename << "\n";
-	icon_filename.make_dir();
-	icon_filename.set_binary();
-	
-	ofstream output;
-	if (!icon_filename.open_write(output)) {
-	  nout << "Unable to write to " << icon_filename << "\n";
-	  exit(1);
-	}
-	output.write((const char *)default_right_icon, default_right_icon_len);
+        nout << "Generating " << icon_filename << "\n";
+        icon_filename.make_dir();
+        icon_filename.set_binary();
+
+        ofstream output;
+        if (!icon_filename.open_write(output)) {
+          nout << "Unable to write to " << icon_filename << "\n";
+          exit(1);
+        }
+        output.write((const char *)default_right_icon, default_right_icon_len);
       }
     }
     if (up_icon.empty()) {
       up_icon = Filename("icons", default_up_icon_filename);
       Filename icon_filename(archive_dir, up_icon);
       if (force_regenerate || !icon_filename.exists()) {
-	nout << "Generating " << icon_filename << "\n";
-	icon_filename.make_dir();
-	icon_filename.set_binary();
+        nout << "Generating " << icon_filename << "\n";
+        icon_filename.make_dir();
+        icon_filename.set_binary();
       
-	ofstream output;
-	if (!icon_filename.open_write(output)) {
-	  nout << "Unable to write to " << icon_filename << "\n";
-	  exit(1);
-	}
-	output.write((const char *)default_up_icon, default_up_icon_len);
+        ofstream output;
+        if (!icon_filename.open_write(output)) {
+          nout << "Unable to write to " << icon_filename << "\n";
+          exit(1);
+        }
+        output.write((const char *)default_up_icon, default_up_icon_len);
       }
     }
     if (movie_icon.empty()) {
       movie_icon = Filename("icons", default_movie_icon_filename);
       Filename icon_filename(archive_dir, movie_icon);
       if (force_regenerate || !icon_filename.exists()) {
-	nout << "Generating " << icon_filename << "\n";
-	icon_filename.make_dir();
-	icon_filename.set_binary();
+        nout << "Generating " << icon_filename << "\n";
+        icon_filename.make_dir();
+        icon_filename.set_binary();
       
-	ofstream output;
-	if (!icon_filename.open_write(output)) {
-	  nout << "Unable to write to " << icon_filename << "\n";
-	  exit(1);
-	}
-	output.write((const char *)default_movie_icon, default_movie_icon_len);
+        ofstream output;
+        if (!icon_filename.open_write(output)) {
+          nout << "Unable to write to " << icon_filename << "\n";
+          exit(1);
+        }
+        output.write((const char *)default_movie_icon, default_movie_icon_len);
       }
     }
     if (sound_icon.empty()) {
       sound_icon = Filename("icons", default_sound_icon_filename);
       Filename icon_filename(archive_dir, sound_icon);
       if (force_regenerate || !icon_filename.exists()) {
-	nout << "Generating " << icon_filename << "\n";
-	icon_filename.make_dir();
-	icon_filename.set_binary();
+        nout << "Generating " << icon_filename << "\n";
+        icon_filename.make_dir();
+        icon_filename.set_binary();
       
-	ofstream output;
-	if (!icon_filename.open_write(output)) {
-	  nout << "Unable to write to " << icon_filename << "\n";
-	  exit(1);
-	}
-	output.write((const char *)default_sound_icon, default_sound_icon_len);
+        ofstream output;
+        if (!icon_filename.open_write(output)) {
+          nout << "Unable to write to " << icon_filename << "\n";
+          exit(1);
+        }
+        output.write((const char *)default_sound_icon, default_sound_icon_len);
       }
     }
   }
@@ -694,10 +694,10 @@ do_generate_images() {
     RollDirectory *roll_dir = (*di);
     if (!roll_dir->is_empty()) {
       index_html
-	<< "<a name=\"" << roll_dir->get_basename() << "\">\n"
-	<< "<li><a href=\"html/" << roll_dir->get_basename() << ".htm\">"
-	<< roll_dir->get_name() << " " << escape_html(roll_dir->get_desc())
-	<< "</a></li>\n";
+        << "<a name=\"" << roll_dir->get_basename() << "\">\n"
+        << "<li><a href=\"html/" << roll_dir->get_basename() << ".htm\">"
+        << roll_dir->get_name() << " " << escape_html(roll_dir->get_desc())
+        << "</a></li>\n";
     }
   }
 

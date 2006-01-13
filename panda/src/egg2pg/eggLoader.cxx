@@ -878,12 +878,12 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   case EggTexture::TT_2d_texture:
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
       tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-				      egg_tex->get_alpha_fullpath(),
-				      wanted_channels,
-				      egg_tex->get_alpha_file_channel());
+                                      egg_tex->get_alpha_fullpath(),
+                                      wanted_channels,
+                                      egg_tex->get_alpha_file_channel());
     } else {
       tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-				      wanted_channels);
+                                      wanted_channels);
     }
     break;
 
@@ -2035,10 +2035,10 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_normal(), morph.get_name());
           gvw.set_column(delta_name);
-	  Normald morphed_normal = orig_normal + morph.get_offset();
-	  Normald transformed_morphed_normal = normalize(morphed_normal * transform);
-	  LVector3d delta = transformed_morphed_normal - transformed_normal;
-	  gvw.add_data3f(LCAST(float, delta));
+          Normald morphed_normal = orig_normal + morph.get_offset();
+          Normald transformed_morphed_normal = normalize(morphed_normal * transform);
+          LVector3d delta = transformed_morphed_normal - transformed_normal;
+          gvw.add_data3f(LCAST(float, delta));
         }
       }
     }
@@ -2336,7 +2336,7 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
         LPoint3d p3 = vtx->get_pos3();
-		LVector3d v = p3 * mat - d_center;
+                LVector3d v = p3 * mat - d_center;
         radius2 = max(radius2, v.length_squared());
       }
 

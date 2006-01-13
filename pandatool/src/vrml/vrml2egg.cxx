@@ -82,7 +82,7 @@ ShowOpts() {
 ////////////////////////////////////////////////////////////////////
 boolean MainProgram::
 HandleGetopts(char flag, char *optarg, int &optind,
-	      int argc, char **argv) {
+              int argc, char **argv) {
   bool okflag = true;
 
   switch (flag) {
@@ -119,7 +119,7 @@ HandleArgs(int &argc, char **&argv) {
 ////////////////////////////////////////////////////////////////////
 void MainProgram::
 vrml_group(const VrmlNode *node, EggGroup *group,
-	   const pfMatrix &net_transform) {
+           const pfMatrix &net_transform) {
   const MFArray *children = node->get_value("children")._mf;
   MFArray::const_iterator ci;
   for (ci = children->begin(); ci != children->end(); ++ci) {
@@ -135,7 +135,7 @@ vrml_group(const VrmlNode *node, EggGroup *group,
 ////////////////////////////////////////////////////////////////////
 void MainProgram::
 vrml_transform(const VrmlNode *node, EggGroup *group,
-	       const pfMatrix &net_transform) {
+               const pfMatrix &net_transform) {
   const double *scale = node->get_value("scale")._sfvec;
   const double *rotation = node->get_value("rotation")._sfvec;
   const double *translation = node->get_value("translation")._sfvec;
@@ -152,31 +152,31 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
     any_transform = true;
     if (center[0] != 0.0 || center[1] != 0.0 || center[2] != 0.0) {
       local_transform.postTrans(local_transform, 
-				-center[0], -center[1], -center[2]);
+                                -center[0], -center[1], -center[2]);
       if (o[3] != 0.0) {
-	local_transform.postRot(local_transform,
-				-o[3] * 180.0 / pi, o[0], o[1], o[2]);
-	local_transform.postScale(local_transform,
-				  scale[0], scale[1], scale[2]);
-	local_transform.postRot(local_transform,
-				o[3] * 180.0 / pi, o[0], o[1], o[2]);
+        local_transform.postRot(local_transform,
+                                -o[3] * 180.0 / pi, o[0], o[1], o[2]);
+        local_transform.postScale(local_transform,
+                                  scale[0], scale[1], scale[2]);
+        local_transform.postRot(local_transform,
+                                o[3] * 180.0 / pi, o[0], o[1], o[2]);
       } else {
-	local_transform.postScale(local_transform, 
-				  scale[0], scale[1], scale[2]);
+        local_transform.postScale(local_transform, 
+                                  scale[0], scale[1], scale[2]);
       }
       local_transform.postTrans(local_transform, 
-				center[0], center[1], center[2]);
+                                center[0], center[1], center[2]);
     } else {
       if (o[3] != 0.0) {
-	local_transform.postRot(local_transform,
-				-o[3] * 180.0 / pi, o[0], o[1], o[2]);
-	local_transform.postScale(local_transform,
-				  scale[0], scale[1], scale[2]);
-	local_transform.postRot(local_transform,
-				o[3] * 180.0 / pi, o[0], o[1], o[2]);
+        local_transform.postRot(local_transform,
+                                -o[3] * 180.0 / pi, o[0], o[1], o[2]);
+        local_transform.postScale(local_transform,
+                                  scale[0], scale[1], scale[2]);
+        local_transform.postRot(local_transform,
+                                o[3] * 180.0 / pi, o[0], o[1], o[2]);
       } else {
-	local_transform.postScale(local_transform, 
-				  scale[0], scale[1], scale[2]);
+        local_transform.postScale(local_transform, 
+                                  scale[0], scale[1], scale[2]);
       }
     }      
   }
@@ -185,17 +185,17 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
     any_transform = true;
     if (center[0] != 0.0 || center[1] != 0.0 || center[2] != 0.0) {
       local_transform.postTrans(local_transform, 
-				-center[0], -center[1], -center[2]);
+                                -center[0], -center[1], -center[2]);
       local_transform.postRot(local_transform,
-			      rotation[3] * 180.0 / pi,
-			      rotation[0], rotation[1], rotation[2]);
+                              rotation[3] * 180.0 / pi,
+                              rotation[0], rotation[1], rotation[2]);
       local_transform.postTrans(local_transform, 
-				center[0], center[1], center[2]);
+                                center[0], center[1], center[2]);
 
     } else {
       local_transform.postRot(local_transform,
-			      rotation[3] * 180.0 / pi,
-			      rotation[0], rotation[1], rotation[2]);
+                              rotation[3] * 180.0 / pi,
+                              rotation[0], rotation[1], rotation[2]);
     }
   }
 
@@ -204,9 +204,9 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
       translation[2] != 0.0) {
     any_transform = true;
     local_transform.postTrans(local_transform, 
-			      translation[0],
-			      translation[1],
-			      translation[2]);
+                              translation[0],
+                              translation[1],
+                              translation[2]);
   }
 
   if (any_transform) {
@@ -232,7 +232,7 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
 ////////////////////////////////////////////////////////////////////
 void MainProgram::
 vrml_shape(const VrmlNode *node, EggGroup *group,
-	   const pfMatrix &net_transform) {
+           const pfMatrix &net_transform) {
   const VrmlNode *geometry = node->get_value("geometry")._sfnode._p;
 
   double transparency = 0.0;
@@ -263,10 +263,10 @@ vrml_shape(const VrmlNode *node, EggGroup *group,
 ////////////////////////////////////////////////////////////////////
 void MainProgram::
 vrml_grouping_node(const SFNodeRef &vrml, EggGroup *egg,
-		   const pfMatrix &net_transform,
-		   void (MainProgram::*process_func)
-		   (const VrmlNode *node, EggGroup *group,
-		    const pfMatrix &net_transform)) {
+                   const pfMatrix &net_transform,
+                   void (MainProgram::*process_func)
+                   (const VrmlNode *node, EggGroup *group,
+                    const pfMatrix &net_transform)) {
   const VrmlNode *node = vrml._p;
   assert(node != NULL);
   const char *name = vrml._name;
@@ -310,7 +310,7 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroup *egg,
 ////////////////////////////////////////////////////////////////////
 void MainProgram::
 vrml_node(const SFNodeRef &vrml, EggGroup *egg, 
-	  const pfMatrix &net_transform) {
+          const pfMatrix &net_transform) {
   const VrmlNode *node = vrml._p;
   if (node != NULL) {
     // Now add it to the egg file at this point.
@@ -349,7 +349,7 @@ get_all_defs(SFNodeRef &vrml, MainProgram::Nodes &nodes) {
     ni = nodes.find(vrml._name);
     if (ni != nodes.end()) {
       cerr << "Warning: node name " << vrml._name 
-	   << " appears multiple times.\n";
+           << " appears multiple times.\n";
     }
     */
     nodes[vrml._name] = vrml._p;
@@ -377,13 +377,13 @@ get_all_defs(SFNodeRef &vrml, MainProgram::Nodes &nodes) {
     VrmlNode::Fields::iterator fi;
     for (fi = node->_fields.begin(); fi != node->_fields.end(); ++fi) {
       if ((*fi)._type->type == SFNODE) {
-	get_all_defs((*fi)._value._sfnode, nodes);
+        get_all_defs((*fi)._value._sfnode, nodes);
       } else if ((*fi)._type->type == MFNODE) {
-	MFArray *children = (*fi)._value._mf;
-	MFArray::iterator ci;
-	for (ci = children->begin(); ci != children->end(); ++ci) {
-	  get_all_defs((*ci)._sfnode, nodes);
-	}
+        MFArray *children = (*fi)._value._mf;
+        MFArray::iterator ci;
+        for (ci = children->begin(); ci != children->end(); ++ci) {
+          get_all_defs((*ci)._sfnode, nodes);
+        }
       }
     }
   }

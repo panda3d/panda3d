@@ -393,8 +393,8 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
         // construct created by Maya for Maya's internal purposes
         // only.  We don't want to fiddle with the parallel blenders.
         MPlug plug = blends.findPlug("pb");
-	bool is_parallel_blender;
-	status = plug.getValue(is_parallel_blender);
+        bool is_parallel_blender;
+        status = plug.getValue(is_parallel_blender);
         if (!status) {
           status.perror("Could not get value of pb plug.");
           is_parallel_blender = false;

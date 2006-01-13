@@ -151,7 +151,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
     ni = nodes.find(vrml._name);
     if (ni != nodes.end()) {
       cerr << "Warning: node name " << vrml._name 
-	   << " appears multiple times.\n";
+           << " appears multiple times.\n";
     }
     */
     nodes[vrml._name] = vrml._p;
@@ -182,13 +182,13 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
     VrmlNode::Fields::iterator fi;
     for (fi = node->_fields.begin(); fi != node->_fields.end(); ++fi) {
       if ((*fi)._type->type == SFNODE) {
-	get_all_defs((*fi)._value._sfnode, nodes);
+        get_all_defs((*fi)._value._sfnode, nodes);
       } else if ((*fi)._type->type == MFNODE) {
-	MFArray *children = (*fi)._value._mf;
-	MFArray::iterator ci;
-	for (ci = children->begin(); ci != children->end(); ++ci) {
-	  get_all_defs((*ci)._sfnode, nodes);
-	}
+        MFArray *children = (*fi)._value._mf;
+        MFArray::iterator ci;
+        for (ci = children->begin(); ci != children->end(); ++ci) {
+          get_all_defs((*ci)._sfnode, nodes);
+        }
       }
     }
   }
@@ -203,7 +203,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
 ////////////////////////////////////////////////////////////////////
 void VRMLToEggConverter::
 vrml_node(const SFNodeRef &vrml, EggGroupNode *egg, 
-	  const LMatrix4d &net_transform) {
+          const LMatrix4d &net_transform) {
   const VrmlNode *node = vrml._p;
   if (node != NULL) {
     // Now add it to the egg file at this point.
@@ -232,10 +232,10 @@ vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,
 ////////////////////////////////////////////////////////////////////
 void VRMLToEggConverter::
 vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
-		   const LMatrix4d &net_transform,
-		   void (VRMLToEggConverter::*process_func)
-		   (const VrmlNode *node, EggGroup *group,
-		    const LMatrix4d &net_transform)) {
+                   const LMatrix4d &net_transform,
+                   void (VRMLToEggConverter::*process_func)
+                   (const VrmlNode *node, EggGroup *group,
+                    const LMatrix4d &net_transform)) {
   const VrmlNode *node = vrml._p;
   nassertv(node != NULL);
   string name;
@@ -285,7 +285,7 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
 ////////////////////////////////////////////////////////////////////
 void VRMLToEggConverter::
 vrml_group(const VrmlNode *node, EggGroup *group,
-	   const LMatrix4d &net_transform) {
+           const LMatrix4d &net_transform) {
   const MFArray *children = node->get_value("children")._mf;
   MFArray::const_iterator ci;
   for (ci = children->begin(); ci != children->end(); ++ci) {
@@ -301,7 +301,7 @@ vrml_group(const VrmlNode *node, EggGroup *group,
 ////////////////////////////////////////////////////////////////////
 void VRMLToEggConverter::
 vrml_transform(const VrmlNode *node, EggGroup *group,
-	       const LMatrix4d &net_transform) {
+               const LMatrix4d &net_transform) {
   const double *scale = node->get_value("scale")._sfvec;
   const double *rotation = node->get_value("rotation")._sfvec;
   const double *translation = node->get_value("translation")._sfvec;
@@ -320,15 +320,15 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
         LMatrix4d::translate_mat(-center[0], -center[1], -center[2]);
 
       if (o[3] != 0.0) {
-	local_transform *= 
+        local_transform *= 
           LMatrix4d::rotate_mat(rad_2_deg(-o[3]), LVector3d(o[0], o[1], o[2]));
-	local_transform *=
+        local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
-	local_transform *= 
+        local_transform *= 
           LMatrix4d::rotate_mat(rad_2_deg(o[3]), LVector3d(o[0], o[1], o[2]));
 
       } else {
-	local_transform *=
+        local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
       }
       local_transform *= 
@@ -336,15 +336,15 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
 
     } else {
       if (o[3] != 0.0) {
-	local_transform *= 
+        local_transform *= 
           LMatrix4d::rotate_mat(rad_2_deg(-o[3]), LVector3d(o[0], o[1], o[2]));
-	local_transform *=
+        local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
-	local_transform *= 
+        local_transform *= 
           LMatrix4d::rotate_mat(rad_2_deg(o[3]), LVector3d(o[0], o[1], o[2]));
 
       } else {
-	local_transform *=
+        local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
       }
     }      
@@ -357,14 +357,14 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
         LMatrix4d::translate_mat(-center[0], -center[1], -center[2]);
       local_transform *= 
         LMatrix4d::rotate_mat(rad_2_deg(rotation[3]),
-			      LVector3d(rotation[0], rotation[1], rotation[2]));
+                              LVector3d(rotation[0], rotation[1], rotation[2]));
       local_transform *=
         LMatrix4d::translate_mat(center[0], center[1], center[2]);
 
     } else {
       local_transform *=
         LMatrix4d::rotate_mat(rad_2_deg(rotation[3]),
-			      LVector3d(rotation[0], rotation[1], rotation[2]));
+                              LVector3d(rotation[0], rotation[1], rotation[2]));
     }
   }
 
@@ -398,7 +398,7 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
 ////////////////////////////////////////////////////////////////////
 void VRMLToEggConverter::
 vrml_shape(const VrmlNode *node, EggGroup *group,
-	   const LMatrix4d &net_transform) {
+           const LMatrix4d &net_transform) {
   const VrmlNode *geometry = node->get_value("geometry")._sfnode._p;
 
   if (geometry != NULL) {

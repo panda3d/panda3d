@@ -147,9 +147,9 @@ write_polyline(EggPolygon *poly, ostream &out) {
     EggVertex *vtx = (*vi);
     LVecBase3d pos = vtx->get_pos3() * _group->get_vertex_frame();
     out << "0\nVERTEX\n"
-	<< "10\n" << pos[0] << "\n"
-	<< "20\n" << pos[1] << "\n"
-	<< "30\n" << pos[2] << "\n";
+        << "10\n" << pos[0] << "\n"
+        << "20\n" << pos[1] << "\n"
+        << "30\n" << pos[2] << "\n";
   }
   out << "0\nSEQEND\n";
 }
@@ -171,14 +171,14 @@ write_3d_face(EggPolygon *poly, ostream &out) {
     for (ci = group->begin(); ci != group->end(); ++ci) {
       EggNode *child = (*ci);
       if (child->is_of_type(EggPolygon::get_class_type())) {
-	write_3d_face(DCAST(EggPolygon, child), out);
+        write_3d_face(DCAST(EggPolygon, child), out);
       }
     }
 
   } else if (poly->size() > 2) {
     // Otherwise, if we have a tri or a quad, just write it out.
     out << "0\n3DFACE\n"
-	<< "8\n" << _group->get_name() << "\n";
+        << "8\n" << _group->get_name() << "\n";
 
     // Since DXF uses a clockwise ordering convention, we must
     // reverse the order in which we write out the vertices.
@@ -188,13 +188,13 @@ write_3d_face(EggPolygon *poly, ostream &out) {
       EggVertex *vtx = (*vi);
       LVecBase3d pos = vtx->get_pos3() * _group->get_vertex_frame();
       out << 10 + i << "\n" << pos[0] << "\n"
-	  << 20 + i << "\n" << pos[1] << "\n"
-	  << 30 + i << "\n" << pos[2] << "\n";
+          << 20 + i << "\n" << pos[1] << "\n"
+          << 30 + i << "\n" << pos[2] << "\n";
       if (i == 2 && poly->size() == 3) {
-	// A special case for triangles: repeat the last vertex.
-	out << 11 + i << "\n" << pos[0] << "\n"
-	    << 21 + i << "\n" << pos[1] << "\n"
-	    << 31 + i << "\n" << pos[2] << "\n";
+        // A special case for triangles: repeat the last vertex.
+        out << 11 + i << "\n" << pos[0] << "\n"
+            << 21 + i << "\n" << pos[1] << "\n"
+            << 31 + i << "\n" << pos[2] << "\n";
       }
     }
   }
@@ -215,9 +215,9 @@ write_entities(ostream &out) {
     if (child->is_of_type(EggPolygon::get_class_type())) {
       EggPolygon *poly = DCAST(EggPolygon, child);
       if (_egg2dxf->_use_polyline) {
-	write_polyline(poly, out);
+        write_polyline(poly, out);
       } else {
-	write_3d_face(poly, out);
+        write_3d_face(poly, out);
       }
     }
   }

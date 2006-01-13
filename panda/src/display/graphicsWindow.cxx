@@ -599,8 +599,8 @@ set_properties_now(WindowProperties &properties) {
     
     if (reshape_props.get_x_size() != _properties.get_x_size() ||
         reshape_props.get_y_size() != _properties.get_y_size() ||
-	(has_origin && (x_origin != _properties.get_x_origin() ||
-			y_origin != _properties.get_y_origin()))) {
+        (has_origin && (x_origin != _properties.get_x_origin() ||
+                        y_origin != _properties.get_y_origin()))) {
       if (do_reshape_request(x_origin, y_origin, has_origin,
                              reshape_props.get_x_size(),
                              reshape_props.get_y_size())) {
@@ -668,7 +668,7 @@ reset_window(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindow::
 do_reshape_request(int x_origin, int y_origin, bool has_origin,
-		   int x_size, int y_size) {
+                   int x_size, int y_size) {
   return false;
 }
 

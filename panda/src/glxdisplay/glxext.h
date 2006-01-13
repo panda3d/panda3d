@@ -322,16 +322,16 @@ typedef struct __GLXFBConfigRec *GLXFBConfigSGIX;
 typedef XID GLXPbufferSGIX;
 typedef struct {
     int type;
-    unsigned long serial;	  /* # of last request processed by server */
-    Bool send_event;		  /* true if this came for SendEvent request */
-    Display *display;		  /* display the event was read from */
-    GLXDrawable drawable;	  /* i.d. of Drawable */
-    int event_type;		  /* GLX_DAMAGED_SGIX or GLX_SAVED_SGIX */
-    int draw_type;		  /* GLX_WINDOW_SGIX or GLX_PBUFFER_SGIX */
-    unsigned int mask;	  /* mask indicating which buffers are affected*/
+    unsigned long serial;         /* # of last request processed by server */
+    Bool send_event;              /* true if this came for SendEvent request */
+    Display *display;             /* display the event was read from */
+    GLXDrawable drawable;         /* i.d. of Drawable */
+    int event_type;               /* GLX_DAMAGED_SGIX or GLX_SAVED_SGIX */
+    int draw_type;                /* GLX_WINDOW_SGIX or GLX_PBUFFER_SGIX */
+    unsigned int mask;    /* mask indicating which buffers are affected*/
     int x, y;
     int width, height;
-    int count;		  /* if nonzero, at least this many more */
+    int count;            /* if nonzero, at least this many more */
 } GLXBufferClobberEventSGIX;
 #endif
 
