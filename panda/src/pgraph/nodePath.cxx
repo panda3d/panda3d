@@ -5776,7 +5776,7 @@ bool NodePath::
 r_has_vertex_column(PandaNode *node, const InternalName *name) const {
   if (node->is_geom_node()) {
     GeomNode *gnode;
-    DCAST_INTO_R(gnode, node, NULL);
+    DCAST_INTO_R(gnode, node, false);
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
