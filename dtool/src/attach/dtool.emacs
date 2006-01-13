@@ -253,7 +253,7 @@
   (if (string= proj-name "DTOOL") nil
     (let ((pre-name (getenv proj-name)))
       (if pre-name
-          (let ((filename (concat pre-name "/etc/" 
+          (let ((filename (concat pre-name "/built/etc/" 
                                   (downcase proj-name) ".emacs")))
             (if (file-readable-p filename)
                 (load filename))
