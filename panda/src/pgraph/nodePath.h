@@ -646,6 +646,9 @@ PUBLISHED:
 		      bool preserve_color = false);
   void clear_normal_map();
 
+  INLINE bool has_texcoord(const string &texcoord_name) const;
+  bool has_vertex_column(const InternalName *name) const;
+
   Texture *find_texture(const string &name) const;
   Texture *find_texture(TextureStage *stage) const;
   TextureCollection find_all_textures() const;
@@ -819,6 +822,8 @@ private:
   void r_set_collide_mask(PandaNode *node, 
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
+
+  bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
 
   typedef phash_set<Texture *, pointer_hash> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,

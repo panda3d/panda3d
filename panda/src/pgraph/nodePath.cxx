@@ -3850,6 +3850,23 @@ clear_normal_map() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_vertex_column
+//       Access: Published
+//  Description: Returns true if there are at least some vertices at
+//               this node and below that contain a reference to the
+//               indicated vertex data column name, false otherwise.
+//
+//               This is particularly useful for testing whether a
+//               particular model has a given texture coordinate set
+//               (but see has_texcoord()).
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_vertex_column(const InternalName *name) const {
+  nassertr_always(!is_empty(), false);
+  return r_has_vertex_column(node(), name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_texture
 //       Access: Published
 //  Description: Returns the first texture found applied to geometry
@@ -3859,6 +3876,7 @@ clear_normal_map() {
 ////////////////////////////////////////////////////////////////////
 Texture *NodePath::
 find_texture(const string &name) const {
+  nassertr_always(!is_empty(), NULL);
   GlobPattern glob(name);
   return r_find_texture(node(), get_net_state(), glob);
 }
@@ -3873,6 +3891,7 @@ find_texture(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 Texture *NodePath::
 find_texture(TextureStage *stage) const {
+  nassertr_always(!is_empty(), NULL);
   return r_find_texture(node(), stage);
 }
 
@@ -3884,6 +3903,7 @@ find_texture(TextureStage *stage) const {
 ////////////////////////////////////////////////////////////////////
 TextureCollection NodePath::
 find_all_textures() const {
+  nassertr_always(!is_empty(), TextureCollection());
   Textures textures;
   r_find_all_textures(node(), get_net_state(), textures);
 
@@ -3904,6 +3924,7 @@ find_all_textures() const {
 ////////////////////////////////////////////////////////////////////
 TextureCollection NodePath::
 find_all_textures(const string &name) const {
+  nassertr_always(!is_empty(), TextureCollection());
   Textures textures;
   r_find_all_textures(node(), get_net_state(), textures);
 
@@ -3929,6 +3950,7 @@ find_all_textures(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 TextureCollection NodePath::
 find_all_textures(TextureStage *stage) const {
+  nassertr_always(!is_empty(), TextureCollection());
   Textures textures;
   r_find_all_textures(node(), stage, textures);
 
@@ -3952,6 +3974,7 @@ find_all_textures(TextureStage *stage) const {
 ////////////////////////////////////////////////////////////////////
 TextureStage *NodePath::
 find_texture_stage(const string &name) const {
+  nassertr_always(!is_empty(), NULL);
   GlobPattern glob(name);
   return r_find_texture_stage(node(), get_net_state(), glob);
 }
@@ -3964,6 +3987,7 @@ find_texture_stage(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 TextureStageCollection NodePath::
 find_all_texture_stages() const {
+  nassertr_always(!is_empty(), TextureStageCollection());
   TextureStages texture_stages;
   r_find_all_texture_stages(node(), get_net_state(), texture_stages);
 
@@ -3987,6 +4011,7 @@ find_all_texture_stages() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 unify_texture_stages(TextureStage *stage) {
+  nassertv_always(!is_empty());
   r_unify_texture_stages(node(), stage);
 }
 
@@ -3999,6 +4024,7 @@ unify_texture_stages(TextureStage *stage) {
 ////////////////////////////////////////////////////////////////////
 TextureStageCollection NodePath::
 find_all_texture_stages(const string &name) const {
+  nassertr_always(!is_empty(), TextureStageCollection());
   TextureStages texture_stages;
   r_find_all_texture_stages(node(), get_net_state(), texture_stages);
 
@@ -5742,11 +5768,45 @@ r_set_collide_mask(PandaNode *node,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_has_vertex_column
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+r_has_vertex_column(PandaNode *node, const InternalName *name) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_R(gnode, node, NULL);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      const Geom *geom = gnode->get_geom(i);
+      CPT(GeomVertexData) vdata = geom->get_vertex_data();
+      if (vdata->has_column(name)) {
+	return true;
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    if (r_has_vertex_column(child, name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-Texture * NodePath::
+Texture *NodePath::
 r_find_texture(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
   if (node->is_geom_node()) {

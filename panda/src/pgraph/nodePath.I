@@ -1838,6 +1838,19 @@ clear_project_texture(TextureStage *stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_texcoord
+//       Access: Published
+//  Description: Returns true if there are at least some vertices at
+//               this node and below that use the named texture
+//               coordinate set, false otherwise.  Pass the empty
+//               string for the default texture coordinate set.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_texcoord(const string &texcoord_name) const {
+  return has_vertex_column(InternalName::get_texcoord_name(texcoord_name));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_billboard_axis
 //       Access: Published
 //  Description: Puts a billboard transition on the node such that it
