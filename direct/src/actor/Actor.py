@@ -11,8 +11,15 @@ class Actor(DirectObject, NodePath):
     """
     notify = directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
+
+    modelLoaderOptions = LoaderOptions(LoaderOptions.LFSearch |
+                                       LoaderOptions.LFReportErrors |
+                                       LoaderOptions.LFConvertSkeleton)
+    animLoaderOptions =  LoaderOptions(LoaderOptions.LFSearch |
+                                       LoaderOptions.LFReportErrors |
+                                       LoaderOptions.LFConvertAnim)
     
-    def __init__(self, models=None, anims=None, other=None):
+    def __init__(self, models=None, anims=None, other=None, copy=1):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -78,6 +85,8 @@ class Actor(DirectObject, NodePath):
         # initialize our NodePath essence
         NodePath.__init__(self)
 
+        self.__autoCopy = copy
+
         # create data structures
         self.__partBundleDict = {}
         self.__sortedLODNames = []
@@ -125,13 +134,13 @@ class Actor(DirectObject, NodePath):
                             # iterate over both dicts
                             for modelName in models[lodName].keys():
                                 self.loadModel(models[lodName][modelName],
-                                               modelName, lodName)
+                                               modelName, lodName, copy = copy)
                     # then if there is a dictionary of dictionaries of anims
                     elif (type(anims[anims.keys()[0]])==type({})):
                         # then this is a multipart actor w/o LOD
                         for partName in models.keys():
                             # pass in each part
-                            self.loadModel(models[partName], partName)
+                            self.loadModel(models[partName], partName, copy = copy)
                     else:
                         # it is a single part actor w/LOD
                         self.setLODNode()
@@ -141,10 +150,10 @@ class Actor(DirectObject, NodePath):
                         for lodName in sortedKeys:
                             self.addLOD(str(lodName))
                             # pass in dictionary of parts
-                            self.loadModel(models[lodName], lodName=lodName)
+                            self.loadModel(models[lodName], lodName=lodName, copy = copy)
                 else:
                     # else it is a single part actor
-                    self.loadModel(models)
+                    self.loadModel(models, copy = copy)
 
             # load anims
             # make sure the actor has animations
@@ -1200,9 +1209,16 @@ class Actor(DirectObject, NodePath):
         else:
             # otherwise, we got the name of the model to load.
             if (copy):
+                # We can't pass loaderOptions to loadModelCopy.
                 model = loader.loadModelCopy(modelPath)
             else:
-                model = loader.loadModelOnce(modelPath)
+                # But if we're loading our own copy of the model, we
+                # can pass loaderOptions to specify that we want to
+                # get the skeleton model.  This only matters to model
+                # files (like .mb) for which we can choose to extract
+                # either the skeleton or animation, or neither.
+                model = loader.loadModel(modelPath,
+                                         loaderOptions = self.modelLoaderOptions)
 
         if (model == None):
             raise StandardError, "Could not load Actor model %s" % (modelPath)
@@ -1378,7 +1394,11 @@ class Actor(DirectObject, NodePath):
         # fetch a copy from the modelPool, or if we weren't careful
         # enough to preload, fetch from disk :(
         animPath = self.__animControlDict[lodName][partName][animName][0]
-        anim = loader.loadModelOnce(animPath)
+        if self.__autoCopy:
+            anim = loader.loadModelOnce(animPath)
+        else:
+            anim = loader.loadModel(animPath,
+                                    loaderOptions = self.animLoaderOptions)
         if anim == None:
             return None
         animBundle = (anim.find("**/+AnimBundleNode").node()).getBundle()

@@ -25,7 +25,8 @@ class Loader:
         del self.loader
         
     # model loading funcs
-    def loadModel(self, modelPath, fMakeNodeNamesUnique = 0):
+    def loadModel(self, modelPath, fMakeNodeNamesUnique = 0,
+                  loaderOptions = None):
         """
         modelPath is a string.
 
@@ -35,7 +36,9 @@ class Loader:
         assert Loader.notify.debug("Loading model: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
-        node = self.loader.loadSync(Filename(modelPath))
+        if loaderOptions == None:
+            loaderOptions = LoaderOptions()
+        node = self.loader.loadSync(Filename(modelPath), loaderOptions)
         if (node != None):
             nodePath = NodePath(node)
             if fMakeNodeNamesUnique:
