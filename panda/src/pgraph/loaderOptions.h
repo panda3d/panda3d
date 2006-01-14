@@ -31,9 +31,11 @@ PUBLISHED:
   // At the moment, we only have this one set of flags.  Maybe one day
   // there will be more options.
   enum LoaderFlags {
-    LF_search        = 0x0001,
-    LF_report_errors = 0x0002,
-    LF_convert_anim  = 0x0004,
+    LF_search            = 0x0001,
+    LF_report_errors     = 0x0002,
+    LF_convert_skeleton  = 0x0004,
+    LF_convert_channels  = 0x0008,
+    LF_convert_anim      = 0x000c,  // skeleton + channels
   };
 
   INLINE LoaderOptions(int flags = LF_search | LF_report_errors);
