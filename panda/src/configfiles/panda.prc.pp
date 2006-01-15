@@ -27,7 +27,6 @@ aux-display pandagl
 #endif
 #if $[HAVE_DX]
 aux-display pandadx8
-aux-display pandadx7
 #endif
 
 # The egg loader is handy to have available by default.  This allows
