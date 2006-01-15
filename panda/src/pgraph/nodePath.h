@@ -37,11 +37,13 @@ class FindApproxPath;
 class FindApproxLevelEntry;
 class Light;
 class PolylightNode;
+class InternalNameCollection;
 class Texture;
 class TextureStage;
 class TextureCollection;
 class TextureStageCollection;
 class Material;
+class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
@@ -648,6 +650,10 @@ PUBLISHED:
 
   INLINE bool has_texcoord(const string &texcoord_name) const;
   bool has_vertex_column(const InternalName *name) const;
+  InternalNameCollection find_all_vertex_columns() const;
+  InternalNameCollection find_all_vertex_columns(const string &name) const;
+  InternalNameCollection find_all_texcoords() const;
+  InternalNameCollection find_all_texcoords(const string &name) const;
 
   Texture *find_texture(const string &name) const;
   Texture *find_texture(TextureStage *stage) const;
@@ -660,6 +666,10 @@ PUBLISHED:
   TextureStageCollection find_all_texture_stages(const string &name) const;
 
   void unify_texture_stages(TextureStage *stage);
+
+  Material *find_material(const string &name) const;
+  MaterialCollection find_all_materials() const;
+  MaterialCollection find_all_materials(const string &name) const;
 
   void set_material(Material *tex, int priority = 0);
   void set_material_off(int priority = 0);
@@ -823,7 +833,10 @@ private:
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
+  typedef phash_set<InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
+  void r_find_all_vertex_columns(PandaNode *node, 
+				 InternalNames &vertex_columns) const;
 
   typedef phash_set<Texture *, pointer_hash> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,
@@ -841,6 +854,12 @@ private:
                                  TextureStages &texture_stages) const;
 
   void r_unify_texture_stages(PandaNode *node, TextureStage *stage);
+
+  typedef phash_set<Material *, pointer_hash> Materials;
+  Material *r_find_material(PandaNode *node, const RenderState *state,
+                          const GlobPattern &glob) const;
+  void r_find_all_materials(PandaNode *node, const RenderState *state,
+                           Materials &materials) const;
 
   void r_prepare_scene(PandaNode *node, const RenderState *state,
                        PreparedGraphicsObjects *prepared_objects);

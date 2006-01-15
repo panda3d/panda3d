@@ -963,7 +963,7 @@ bytewise_copy(unsigned char *to, int to_stride,
 //               anything else.
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) GeomVertexData::
-replace_column(const InternalName *name, int num_components,
+replace_column(InternalName *name, int num_components,
                GeomVertexData::NumericType numeric_type,
                GeomVertexData::Contents contents) const {
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*_format);

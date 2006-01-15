@@ -46,14 +46,14 @@ PUBLISHED:
 private:
   INLINE GeomVertexColumn();
 PUBLISHED:
-  INLINE GeomVertexColumn(const InternalName *name, int num_components,
-                            NumericType numeric_type, Contents contents,
-                            int start);
+  INLINE GeomVertexColumn(InternalName *name, int num_components,
+                          NumericType numeric_type, Contents contents,
+                          int start);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();
 
-  INLINE const InternalName *get_name() const;
+  INLINE InternalName *get_name() const;
   INLINE int get_num_components() const;
   INLINE int get_num_values() const;
   INLINE NumericType get_numeric_type() const;
@@ -89,7 +89,7 @@ public:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  CPT(InternalName) _name;
+  PT(InternalName) _name;
   int _num_components;
   int _num_values;
   NumericType _numeric_type;

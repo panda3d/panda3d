@@ -20,6 +20,7 @@
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
 #include "findApproxLevelEntry.h"
+#include "internalNameCollection.h"
 #include "config_pgraph.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -28,6 +29,7 @@
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
 #include "materialAttrib.h"
+#include "materialCollection.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "polylightEffect.h"
@@ -3867,6 +3869,113 @@ has_vertex_column(const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_vertex_columns
+//       Access: Published
+//  Description: Returns a list of all vertex array columns stored on
+//               some geometry found at this node level and below.
+////////////////////////////////////////////////////////////////////
+InternalNameCollection NodePath::
+find_all_vertex_columns() const {
+  nassertr_always(!is_empty(), InternalNameCollection());
+  InternalNames vertex_columns;
+  r_find_all_vertex_columns(node(), vertex_columns);
+
+  InternalNameCollection tc;
+  InternalNames::iterator ti;
+  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
+    tc.add_name(*ti);
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_vertex_columns
+//       Access: Published
+//  Description: Returns a list of all vertex array columns stored on
+//               some geometry found at this node level and below that
+//               match the indicated name (which may contain wildcard
+//               characters).
+////////////////////////////////////////////////////////////////////
+InternalNameCollection NodePath::
+find_all_vertex_columns(const string &name) const {
+  nassertr_always(!is_empty(), InternalNameCollection());
+  InternalNames vertex_columns;
+  r_find_all_vertex_columns(node(), vertex_columns);
+
+  GlobPattern glob(name);
+
+  InternalNameCollection tc;
+  InternalNames::iterator ti;
+  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
+    InternalName *name = (*ti);
+    if (glob.matches(name->get_name())) {
+      tc.add_name(name);
+    }
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_texcoords
+//       Access: Published
+//  Description: Returns a list of all texture coordinate sets used by
+//               any geometry at this node level and below.
+////////////////////////////////////////////////////////////////////
+InternalNameCollection NodePath::
+find_all_texcoords() const {
+  nassertr_always(!is_empty(), InternalNameCollection());
+  InternalNames vertex_columns;
+  r_find_all_vertex_columns(node(), vertex_columns);
+
+  CPT(InternalName) texcoord_name = InternalName::get_texcoord();
+  
+  InternalNameCollection tc;
+  InternalNames::iterator ti;
+  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
+    if ((*ti)->get_top() == texcoord_name) {
+      tc.add_name(*ti);
+    }
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_texcoords
+//       Access: Published
+//  Description: Returns a list of all texture coordinate sets used by
+//               any geometry at this node level and below that match
+//               the indicated name (which may contain wildcard
+//               characters).
+////////////////////////////////////////////////////////////////////
+InternalNameCollection NodePath::
+find_all_texcoords(const string &name) const {
+  nassertr_always(!is_empty(), InternalNameCollection());
+  InternalNames vertex_columns;
+  r_find_all_vertex_columns(node(), vertex_columns);
+
+  GlobPattern glob(name);
+  CPT(InternalName) texcoord_name = InternalName::get_texcoord();
+
+  InternalNameCollection tc;
+  InternalNames::iterator ti;
+  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
+    InternalName *name = (*ti);
+    if (name->get_top() == texcoord_name) {
+      // This is a texture coordinate name.  Figure out the basename
+      // of the texture coordinates.
+      int index = name->find_ancestor("texcoord");
+      nassertr(index != -1, InternalNameCollection());
+      string net_basename = name->get_net_basename(index - 1);
+
+      if (glob.matches(net_basename)) {
+        tc.add_name(name);
+      }
+    }
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_texture
 //       Access: Published
 //  Description: Returns the first texture found applied to geometry
@@ -4042,6 +4151,67 @@ find_all_texture_stages(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_material
+//       Access: Published
+//  Description: Returns the first material found applied to geometry
+//               at this node or below that matches the indicated name
+//               (which may contain wildcards).  Returns the material
+//               if it is found, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+Material *NodePath::
+find_material(const string &name) const {
+  nassertr_always(!is_empty(), NULL);
+  GlobPattern glob(name);
+  return r_find_material(node(), get_net_state(), glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_materials
+//       Access: Published
+//  Description: Returns a list of a materials applied to geometry at
+//               this node and below.
+////////////////////////////////////////////////////////////////////
+MaterialCollection NodePath::
+find_all_materials() const {
+  nassertr_always(!is_empty(), MaterialCollection());
+  Materials materials;
+  r_find_all_materials(node(), get_net_state(), materials);
+
+  MaterialCollection tc;
+  Materials::iterator ti;
+  for (ti = materials.begin(); ti != materials.end(); ++ti) {
+    tc.add_material(*ti);
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_materials
+//       Access: Published
+//  Description: Returns a list of a materials applied to geometry at
+//               this node and below that match the indicated name
+//               (which may contain wildcard characters).
+////////////////////////////////////////////////////////////////////
+MaterialCollection NodePath::
+find_all_materials(const string &name) const {
+  nassertr_always(!is_empty(), MaterialCollection());
+  Materials materials;
+  r_find_all_materials(node(), get_net_state(), materials);
+
+  GlobPattern glob(name);
+
+  MaterialCollection tc;
+  Materials::iterator ti;
+  for (ti = materials.begin(); ti != materials.end(); ++ti) {
+    Material *material = (*ti);
+    if (glob.matches(material->get_name())) {
+      tc.add_material(material);
+    }
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_material
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
@@ -4115,10 +4285,8 @@ has_material() const {
 //               applied to the geometry at or below this level, as
 //               another material at a higher or lower level may
 //               override.
-//
-//               This function returns a copy of the given material,
-//               to allow changes, if desired.  Once changes are made,
-//               they should be reapplied via set_material().
+
+//               See also find_material().
 ////////////////////////////////////////////////////////////////////
 PT(Material) NodePath::
 get_material() const {
@@ -4127,7 +4295,7 @@ get_material() const {
     node()->get_attrib(MaterialAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const MaterialAttrib *ma = DCAST(MaterialAttrib, attrib);
-    return new Material(*ma->get_material());
+    return ma->get_material();
   }
 
   return NULL;
@@ -5802,6 +5970,43 @@ r_has_vertex_column(PandaNode *node, const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_all_vertex_columns
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_find_all_vertex_columns(PandaNode *node,
+                          NodePath::InternalNames &vertex_columns) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; ++i) {
+      const Geom *geom = gnode->get_geom(i);
+      const GeomVertexFormat *format = geom->get_vertex_data()->get_format();
+      int num_arrays = format->get_num_arrays();
+      for (int j = 0; j < num_arrays; ++j) {
+        const GeomVertexArrayFormat *array = format->get_array(j);
+        int num_columns = array->get_num_columns();
+        for (int k = 0; k < num_columns; ++k) {
+          const GeomVertexColumn *column = array->get_column(k);
+          vertex_columns.insert(column->get_name());
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    r_find_all_vertex_columns(child, vertex_columns);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture
 //       Access: Private
 //  Description: 
@@ -6130,6 +6335,96 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = cr.get_child(i);
     r_unify_texture_stages(child, stage);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_material
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Material *NodePath::
+r_find_material(PandaNode *node, const RenderState *state,
+               const GlobPattern &glob) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_R(gnode, node, NULL);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        state->compose(gnode->get_geom_state(i));
+
+      // Look for a MaterialAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(MaterialAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
+        if (!ta->is_off()) {
+          Material *material = ta->get_material();
+          if (material != (Material *)NULL) {
+            return material;
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+
+    Material *result = r_find_material(child, next_state, glob);
+    if (result != (Material *)NULL) {
+      return result;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_all_materials
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_find_all_materials(PandaNode *node, const RenderState *state,
+                    NodePath::Materials &materials) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        state->compose(gnode->get_geom_state(i));
+
+      // Look for a MaterialAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(MaterialAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
+        if (!ta->is_off()) {
+          Material *material = ta->get_material();
+          if (material != (Material *)NULL) {
+            materials.insert(material);
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+    r_find_all_materials(child, next_state, materials);
   }
 }
 

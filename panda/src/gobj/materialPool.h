@@ -40,15 +40,14 @@
 //               The idea is to create a temporary Material
 //               representing the lighting state you want to apply,
 //               then call get_material(), passing in your temporary
-//               Material.  The return value will be a constant
-//               Material object that should be modified (because it
-//               is now shared among many different geometries), that
-//               is the same as the temporary Material pointer you
-//               supplied but may be a different pointer.
+//               Material.  The return value will either be a new
+//               Material object, or it may be the the same object you
+//               supplied; in either case, it will have the same
+//               value.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MaterialPool {
 PUBLISHED:
-  INLINE static const Material *get_material(const CPT(Material) &temp);
+  INLINE static Material *get_material(Material *temp);
   INLINE static int garbage_collect();
   INLINE static void list_contents(ostream &out);
   static void write(ostream &out);
@@ -56,14 +55,19 @@ PUBLISHED:
 private:
   INLINE MaterialPool();
 
-  const Material *ns_get_material(const CPT(Material) &temp);
+  Material *ns_get_material(Material *temp);
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
 
   static MaterialPool *get_ptr();
 
   static MaterialPool *_global_ptr;
-  typedef pset< CPT(Material), indirect_compare_to<const Material *> > Materials;
+
+  // We store a map of CPT(Material) to PT(Material).  These are two
+  // equivalent structures, but different pointers.  The first pointer
+  // never leaves this class.  If the second pointer changes value,
+  // we'll notice it and return a new one.
+  typedef pmap< CPT(Material), PT(Material), indirect_compare_to<const Material *> > Materials;
   Materials _materials;
 };
 

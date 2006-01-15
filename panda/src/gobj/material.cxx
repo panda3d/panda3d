@@ -33,6 +33,7 @@ TypeHandle Material::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void Material::
 operator = (const Material &copy) {
+  Namable::operator = (copy);
   _ambient = copy._ambient;
   _diffuse = copy._diffuse;
   _specular = copy._specular;
@@ -148,7 +149,7 @@ compare_to(const Material &other) const {
     return get_shininess() < other.get_shininess() ? -1 : 1;
   }
 
-  return 0;
+  return strcmp(get_name().c_str(), other.get_name().c_str());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +159,7 @@ compare_to(const Material &other) const {
 ////////////////////////////////////////////////////////////////////
 void Material::
 output(ostream &out) const {
-  out << "material";
+  out << "Material " << get_name();
   if (has_ambient()) {
     out << " a(" << get_ambient() << ")";
   }
@@ -183,21 +184,22 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void Material::
 write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << "Material " << get_name() << "\n";
   if (has_ambient()) {
-    indent(out, indent_level) << "ambient = " << get_ambient() << "\n";
+    indent(out, indent_level + 2) << "ambient = " << get_ambient() << "\n";
   }
   if (has_diffuse()) {
-    indent(out, indent_level) << "diffuse = " << get_diffuse() << "\n";
+    indent(out, indent_level + 2) << "diffuse = " << get_diffuse() << "\n";
   }
   if (has_specular()) {
-    indent(out, indent_level) << "specular = " << get_specular() << "\n";
+    indent(out, indent_level + 2) << "specular = " << get_specular() << "\n";
   }
   if (has_emission()) {
-    indent(out, indent_level) << "emission = " << get_emission() << "\n";
+    indent(out, indent_level + 2) << "emission = " << get_emission() << "\n";
   }
-  indent(out, indent_level) << "shininess = " << get_shininess() << "\n";
-  indent(out, indent_level) << "local = " << get_local() << "\n";
-  indent(out, indent_level) << "twoside = " << get_twoside() << "\n";
+  indent(out, indent_level + 2) << "shininess = " << get_shininess() << "\n";
+  indent(out, indent_level + 2) << "local = " << get_local() << "\n";
+  indent(out, indent_level + 2) << "twoside = " << get_twoside() << "\n";
 }
 
 
@@ -220,6 +222,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void Material::
 write_datagram(BamWriter *manager, Datagram &me) {
+  me.add_string(get_name());
   _ambient.write_datagram(me);
   _diffuse.write_datagram(me);
   _specular.write_datagram(me);
@@ -253,7 +256,10 @@ make_Material(const FactoryParams &params) {
 //               place
 ////////////////////////////////////////////////////////////////////
 void Material::
-fillin(DatagramIterator& scan, BamReader* manager) {
+fillin(DatagramIterator &scan, BamReader *manager) {
+  if (manager->get_file_minor_ver() >= 6) {
+    set_name(scan.get_string());
+  }
   _ambient.read_datagram(scan);
   _diffuse.read_datagram(scan);
   _specular.read_datagram(scan);

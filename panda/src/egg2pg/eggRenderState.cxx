@@ -450,7 +450,7 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
 
   // Ok, this is the first time we've seen this particular
   // EggMaterial.  Create a new Material that matches it.
-  PT(Material) mat = new Material;
+  PT(Material) mat = new Material(egg_mat->get_name());
   if (egg_mat->has_diff()) {
     mat->set_diffuse(egg_mat->get_diff());
     // By default, ambient is the same as diffuse, if diffuse is
@@ -476,7 +476,7 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   mat->set_twoside(bface);
 
   // Now get a global Material pointer, shared with other models.
-  const Material *shared_mat = MaterialPool::get_material(mat);
+  Material *shared_mat = MaterialPool::get_material(mat);
 
   // And create a MaterialAttrib for this Material.
   CPT(RenderAttrib) mt = MaterialAttrib::make(shared_mat);

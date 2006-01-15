@@ -1,3 +1,4 @@
+#include "internalNameCollection.cxx"
 #include "lensNode.cxx"
 #include "light.cxx"
 #include "lightAttrib.cxx"
@@ -10,6 +11,7 @@
 #include "loaderOptions.cxx"
 #include "lodNode.cxx"
 #include "materialAttrib.cxx"
+#include "materialCollection.cxx"
 #include "modelNode.cxx"
 #include "modelPool.cxx"
 #include "modelRoot.cxx"

@@ -20,18 +20,15 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: MaterialPool::get_material
 //       Access: Public, Static
-//  Description: Returns a const Material pointer that represents the
+//  Description: Returns a Material pointer that represents the
 //               same material described by temp, except that it is a
 //               shared pointer.
 //
 //               Each call to get_material() passing an equivalent
 //               Material pointer will return the same shared pointer.
 //
-//               This shared pointer must not be further modified.
-//               Doing so will (a) cause global changes to other
-//               objects that may share this material, and (b) damage
-//               the sorted container that stores these things, so
-//               that future pointers may not be properly shared.
+//               If you modify the shared pointer, it will
+//               automatically disassociate it from the pool.
 //
 //               Also, the return value may be a different pointer
 //               than that passed in, or it may be the same pointer.
@@ -40,8 +37,8 @@
 //               again (like any other PointerTo, it will be freed
 //               when the last reference count is removed).
 ////////////////////////////////////////////////////////////////////
-INLINE const Material *MaterialPool::
-get_material(const CPT(Material) &temp) {
+INLINE Material *MaterialPool::
+get_material(Material *temp) {
   return get_ptr()->ns_get_material(temp);
 }
 

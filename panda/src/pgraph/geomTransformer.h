@@ -58,11 +58,9 @@ public:
   bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
 
   bool transform_texcoords(Geom *geom, const InternalName *from_name,
-                           const InternalName *to_name,
-                           const LMatrix4f &mat);
+                           InternalName *to_name, const LMatrix4f &mat);
   bool transform_texcoords(GeomNode *node, const InternalName *from_name,
-                           const InternalName *to_name,
-                           const LMatrix4f &mat);
+                           InternalName *to_name, const LMatrix4f &mat);
 
   bool set_color(Geom *geom, const Colorf &color);
   bool set_color(GeomNode *node, const Colorf &color);

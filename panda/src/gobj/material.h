@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "typedWritableReferenceCount.h"
+#include "namable.h"
 #include "luse.h"
 
 class FactoryParams;
@@ -32,9 +33,9 @@ class FactoryParams;
 //               lighting.  A material is only necessary if lighting
 //               is to be enabled; otherwise, the material isn't used.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Material : public TypedWritableReferenceCount {
+class EXPCL_PANDA Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE Material();
+  INLINE Material(const string &name = "");
   INLINE Material(const Material &copy);
   void operator = (const Material &copy);
   INLINE ~Material();

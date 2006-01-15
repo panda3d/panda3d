@@ -28,7 +28,7 @@
 //       Class : MaterialAttrib
 // Description : Indicates which, if any, material should be applied
 //               to geometry.  The material is used primarily to
-//               control lighting effects, and isn't necessarily (or
+//               control lighting effects, and isn't necessary (or
 //               useful) in the absence of lighting.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MaterialAttrib : public RenderAttrib {
@@ -36,11 +36,11 @@ private:
   INLINE MaterialAttrib();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const Material *material);
+  static CPT(RenderAttrib) make(Material *material);
   static CPT(RenderAttrib) make_off();
 
   INLINE bool is_off() const;
-  INLINE const Material *get_material() const;
+  INLINE Material *get_material() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -51,7 +51,7 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  CPT(Material) _material;
+  PT(Material) _material;
 
 public:
   static void register_with_read_factory();

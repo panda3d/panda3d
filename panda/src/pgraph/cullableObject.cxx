@@ -526,10 +526,10 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
       
       // Determine the names of the tangent and binormal columns
       // associated with the stage's texcoord name.
-      CPT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
-      CPT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
+      PT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
+      PT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
       
-      CPT(InternalName) texcoord_name = stage->get_texcoord_name();
+      PT(InternalName) texcoord_name = stage->get_texcoord_name();
       
       if (_munged_data->has_column(tangent_name) &&
           _munged_data->has_column(binormal_name)) {

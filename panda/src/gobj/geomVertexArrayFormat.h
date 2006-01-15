@@ -57,25 +57,25 @@ class EXPCL_PANDA GeomVertexArrayFormat : public TypedWritableReferenceCount, pu
 PUBLISHED:
   GeomVertexArrayFormat();
   GeomVertexArrayFormat(const GeomVertexArrayFormat &copy);
-  GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+  GeomVertexArrayFormat(InternalName *name0, int num_components0,
                         NumericType numeric_type0, Contents contents0);
-  GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+  GeomVertexArrayFormat(InternalName *name0, int num_components0,
                         NumericType numeric_type0, Contents contents0,
-                        const InternalName *name1, int num_components1,
+                        InternalName *name1, int num_components1,
                         NumericType numeric_type1, Contents contents1);
-  GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+  GeomVertexArrayFormat(InternalName *name0, int num_components0,
                         NumericType numeric_type0, Contents contents0,
-                        const InternalName *name1, int num_components1,
+                        InternalName *name1, int num_components1,
                         NumericType numeric_type1, Contents contents1,
-                        const InternalName *name2, int num_components2,
+                        InternalName *name2, int num_components2,
                         NumericType numeric_type2, Contents contents2);
-  GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+  GeomVertexArrayFormat(InternalName *name0, int num_components0,
                         NumericType numeric_type0, Contents contents0,
-                        const InternalName *name1, int num_components1,
+                        InternalName *name1, int num_components1,
                         NumericType numeric_type1, Contents contents1,
-                        const InternalName *name2, int num_components2,
+                        InternalName *name2, int num_components2,
                         NumericType numeric_type2, Contents contents2,
-                        const InternalName *name3, int num_components3,
+                        InternalName *name3, int num_components3,
                         NumericType numeric_type3, Contents contents3);
   void operator = (const GeomVertexArrayFormat &copy);
   ~GeomVertexArrayFormat();
@@ -89,7 +89,7 @@ PUBLISHED:
   INLINE int get_total_bytes() const;
   INLINE int get_pad_to() const;
 
-  int add_column(const InternalName *name, int num_components,
+  int add_column(InternalName *name, int num_components,
                  NumericType numeric_type, Contents contents,
                  int start = -1);
   int add_column(const GeomVertexColumn &column);

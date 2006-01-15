@@ -39,10 +39,20 @@ write(ostream &out) {
 //       Access: Public
 //  Description: The nonstatic implementation of get_material().
 ////////////////////////////////////////////////////////////////////
-const Material *MaterialPool::
-ns_get_material(const CPT(Material) &temp) {
-  Materials::iterator mi = _materials.insert(temp).first;
-  return (*mi);
+Material *MaterialPool::
+ns_get_material(Material *temp) {
+  CPT(Material) cpttemp = temp;
+  Materials::iterator mi = _materials.find(cpttemp);
+  if (mi == _materials.end()) {
+    mi = _materials.insert(Materials::value_type(new Material(*temp), temp)).first;
+  } else {
+    if (*(*mi).first != *(*mi).second) {
+      // The pointer no longer matches its original value.  Save a new
+      // one.
+      (*mi).second = temp;
+    }
+  }
+  return (*mi).second;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,11 +67,12 @@ ns_garbage_collect() {
 
   Materials::iterator mi;
   for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
-    const Material *mat = (*mi);
-    if (mat->get_ref_count() == 1) {
+    const Material *mat1 = (*mi).first;
+    Material *mat2 = (*mi).second;
+    if ((*mat1) != (*mat2) || mat2->get_ref_count() == 1) {
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
-          << "Releasing " << *mat << "\n";
+          << "Releasing " << *mat1 << "\n";
       }
       ++num_released;
     } else {
@@ -83,9 +94,10 @@ ns_list_contents(ostream &out) const {
   out << _materials.size() << " materials:\n";
   Materials::const_iterator mi;
   for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
-    const Material *mat = (*mi);
-    out << "  " << *mat
-        << " (count = " << mat->get_ref_count() << ")\n";
+    const Material *mat1 = (*mi).first;
+    Material *mat2 = (*mi).second;
+    out << "  " << *mat1
+        << " (count = " << mat2->get_ref_count() << ")\n";
   }
 }
 

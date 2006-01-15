@@ -175,6 +175,24 @@ get_ancestor(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_top
+//       Access: Published
+//  Description: Returns the oldest ancestor in the InternalName's
+//               chain, not counting the root.  This will be the first
+//               name in the string, e.g. "texcoord.foo.bar" will
+//               return the InternalName "texcoord".
+////////////////////////////////////////////////////////////////////
+const InternalName *InternalName::
+get_top() const {
+  test_ref_count_integrity();
+
+  if (_parent != (InternalName *)NULL && _parent != get_root()) {
+    return _parent->get_top();
+  }
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_net_basename
 //       Access: Published
 //  Description: Returns the basename of this name prefixed by the
@@ -184,7 +202,10 @@ get_ancestor(int n) const {
 ////////////////////////////////////////////////////////////////////
 string InternalName::
 get_net_basename(int n) const {
-  if (n == 0) {
+  if (n < 0) {
+    return "";
+
+  } else if (n == 0) {
     return _basename;
 
   } else if (_parent != (InternalName *)NULL && _parent != get_root()) {

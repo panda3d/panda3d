@@ -49,7 +49,7 @@ GeomVertexArrayFormat() :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0) :
   _is_registered(false),
@@ -67,10 +67,10 @@ GeomVertexArrayFormat(const InternalName *name0, int num_components0,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      const InternalName *name1, int num_components1,
+                      InternalName *name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1) :
   _is_registered(false),
@@ -89,13 +89,13 @@ GeomVertexArrayFormat(const InternalName *name0, int num_components0,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      const InternalName *name1, int num_components1,
+                      InternalName *name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      const InternalName *name2, int num_components2,
+                      InternalName *name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2) :
   _is_registered(false),
@@ -115,16 +115,16 @@ GeomVertexArrayFormat(const InternalName *name0, int num_components0,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(const InternalName *name0, int num_components0,
+GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      const InternalName *name1, int num_components1,
+                      InternalName *name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      const InternalName *name2, int num_components2,
+                      InternalName *name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2,
-                      const InternalName *name3, int num_components3,
+                      InternalName *name3, int num_components3,
                       GeomVertexArrayFormat::NumericType numeric_type3,
                       GeomVertexArrayFormat::Contents contents3) :
   _is_registered(false),
@@ -208,7 +208,7 @@ GeomVertexArrayFormat::
 //               type.
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayFormat::
-add_column(const InternalName *name, int num_components, 
+add_column(InternalName *name, int num_components, 
            GeomVertexArrayFormat::NumericType numeric_type, 
            GeomVertexArrayFormat::Contents contents, int start) {
   if (start < 0) {

@@ -124,7 +124,7 @@ private:
 
   NodePath _projector;
   PT(LensNode) _projector_node;
-  CPT(InternalName) _texcoord_name;
+  PT(InternalName) _texcoord_name;
   bool _invert_uvs;
   bool _vignette_on;
   Colorf _vignette_color;

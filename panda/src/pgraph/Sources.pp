@@ -55,6 +55,7 @@
     fogAttrib.I fogAttrib.h \
     geomNode.I geomNode.h \
     geomTransformer.I geomTransformer.h \
+    internalNameCollection.I internalNameCollection.h \
     lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
@@ -67,6 +68,7 @@
     loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
+    materialCollection.I materialCollection.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
@@ -161,6 +163,7 @@
     fogAttrib.cxx \
     geomNode.cxx \
     geomTransformer.cxx \
+    internalNameCollection.cxx \
     lensNode.cxx \
     light.cxx \
     lightAttrib.cxx \
@@ -173,6 +176,7 @@
     loaderOptions.cxx \
     lodNode.cxx \
     materialAttrib.cxx \
+    materialCollection.cxx \
     modelNode.cxx \
     modelPool.cxx \
     modelRoot.cxx \
@@ -261,6 +265,7 @@
     fogAttrib.I fogAttrib.h \
     geomNode.I geomNode.h \
     geomTransformer.I geomTransformer.h \
+    internalNameCollection.I internalNameCollection.h \
     lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
@@ -273,6 +278,7 @@
     loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
+    materialCollection.I materialCollection.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \

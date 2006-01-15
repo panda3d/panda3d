@@ -2156,8 +2156,7 @@ record_morph(GeomVertexArrayFormat *array_format,
              CharacterMaker *character_maker,
              const string &morph_name, InternalName *column_name,
              int num_components) {
-  CPT(InternalName) slider_name = InternalName::make(morph_name);
-  CPT(InternalName) delta_name = 
+  PT(InternalName) delta_name = 
     InternalName::get_morph(column_name, morph_name);
   if (!array_format->has_column(delta_name)) {
     array_format->add_column

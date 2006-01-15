@@ -33,7 +33,7 @@ TypeHandle MaterialAttrib::_type_handle;
 //               rendering the indicated material onto geometry.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) MaterialAttrib::
-make(const Material *material) {
+make(Material *material) {
   MaterialAttrib *attrib = new MaterialAttrib;
   attrib->_material = material;
   return return_new(attrib);

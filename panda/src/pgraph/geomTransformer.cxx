@@ -152,7 +152,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_texcoords(Geom *geom, const InternalName *from_name, 
-                    const InternalName *to_name, const LMatrix4f &mat) {
+                    InternalName *to_name, const LMatrix4f &mat) {
   PStatTimer timer(apply_texcoord_collector);
 
   nassertr(geom != (Geom *)NULL, false);
@@ -212,7 +212,7 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_texcoords(GeomNode *node, const InternalName *from_name,
-                    const InternalName *to_name, const LMatrix4f &mat) {
+                    InternalName *to_name, const LMatrix4f &mat) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);

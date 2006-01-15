@@ -136,7 +136,7 @@ PUBLISHED:
   CPT(GeomVertexData) animate_vertices() const;
 
   PT(GeomVertexData) 
-    replace_column(const InternalName *name, int num_components,
+    replace_column(InternalName *name, int num_components,
                    NumericType numeric_type, Contents contents) const;
 
   void output(ostream &out) const;

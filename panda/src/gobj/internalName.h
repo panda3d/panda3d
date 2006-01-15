@@ -57,6 +57,7 @@ PUBLISHED:
 
   int find_ancestor(const string &basename) const;
   const InternalName *get_ancestor(int n) const;
+  const InternalName *get_top() const;
   string get_net_basename(int n) const;
 
   void output(ostream &out) const;

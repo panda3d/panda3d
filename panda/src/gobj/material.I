@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
-Material() {
+Material(const string &name) : Namable(name) {
   _ambient.set(1.0f, 1.0f, 1.0f, 1.0f);
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
   _specular.set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -38,7 +38,7 @@ Material() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
-Material(const Material &copy) {
+Material(const Material &copy) : Namable(copy) {
   operator = (copy);
 }
 

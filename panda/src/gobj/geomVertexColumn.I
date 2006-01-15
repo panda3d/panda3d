@@ -35,9 +35,9 @@ GeomVertexColumn() :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexColumn::
-GeomVertexColumn(const InternalName *name, int num_components,
-                   NumericType numeric_type, Contents contents,
-                   int start) :
+GeomVertexColumn(InternalName *name, int num_components,
+                 NumericType numeric_type, Contents contents,
+                 int start) :
   _name(name),
   _num_components(num_components),
   _numeric_type(numeric_type),
@@ -84,7 +84,7 @@ INLINE GeomVertexColumn::
 //               system-defined field types.  Only the system-defined
 //               field types are used for the actual rendering.
 ////////////////////////////////////////////////////////////////////
-INLINE const InternalName *GeomVertexColumn::
+INLINE InternalName *GeomVertexColumn::
 get_name() const {
   return _name;
 }

@@ -249,7 +249,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         int num_stages = tma->get_num_stages();
         for (int i = 0; i < num_stages; i++) {
           TextureStage *stage = tma->get_stage(i);
-          const InternalName *name = stage->get_texcoord_name();
+          InternalName *name = stage->get_texcoord_name();
           if (get_name_count(name_count, name) > 1) {
             // We can't transform these texcoords, since the name is
             // used by more than one active stage.

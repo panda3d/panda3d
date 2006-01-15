@@ -46,7 +46,7 @@ is_off() const {
 //               returns the material that is associated.  Otherwise,
 //               return NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE const Material *MaterialAttrib::
+INLINE Material *MaterialAttrib::
 get_material() const {
   return _material;
 }
