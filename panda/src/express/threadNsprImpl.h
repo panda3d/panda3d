@@ -40,7 +40,7 @@ class Thread;
 class EXPCL_PANDAEXPRESS ThreadNsprImpl {
 public:
   INLINE ThreadNsprImpl(Thread *parent_obj);
-  INLINE ~ThreadNsprImpl();
+  ~ThreadNsprImpl();
 
   bool start(ThreadPriority priority, bool global, bool joinable);
   void interrupt();

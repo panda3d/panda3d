@@ -106,6 +106,15 @@ operator = (const EventParameter &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE EventParameter::
+~EventParameter() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_empty
 //       Access: Public
 //  Description: Returns true if the EventParameter is the empty

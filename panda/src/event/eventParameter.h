@@ -50,6 +50,7 @@ PUBLISHED:
 
   INLINE EventParameter(const EventParameter &copy);
   INLINE EventParameter &operator = (const EventParameter &copy);
+  INLINE ~EventParameter();
 
   // These functions are conveniences to easily determine if the
   // EventParameter is one of the predefined parameter types, and
