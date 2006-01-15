@@ -1,5 +1,5 @@
-// Filename: pmutex.I
-// Created by:  drose (08Aug02)
+// Filename: reMutex.I
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,45 +18,48 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Constructor
+//     Function: ReMutex::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Mutex::
-Mutex() {
+INLINE ReMutex::
+ReMutex() : _cvar(_mutex) {
+  _locking_thread = NULL;
+  _lock_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Destructor
+//     Function: ReMutex::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Mutex::
-~Mutex() {
+INLINE ReMutex::
+~ReMutex() {
+  nassertv(_locking_thread == NULL && _lock_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Copy Constructor
+//     Function: ReMutex::Copy Constructor
 //       Access: Private
 //  Description: Do not attempt to copy mutexes.
 ////////////////////////////////////////////////////////////////////
-INLINE Mutex::
-Mutex(const Mutex &copy) {
+INLINE ReMutex::
+ReMutex(const ReMutex &copy) : _cvar(_mutex) {
   nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Copy Assignment Operator
+//     Function: ReMutex::Copy Assignment Operator
 //       Access: Private
 //  Description: Do not attempt to copy mutexes.
 ////////////////////////////////////////////////////////////////////
-INLINE void Mutex::
-operator = (const Mutex &copy) {
+INLINE void ReMutex::
+operator = (const ReMutex &copy) {
   nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::lock
+//     Function: ReMutex::lock
 //       Access: Public
 //  Description: Grabs the mutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -68,25 +71,15 @@ operator = (const Mutex &copy) {
 //               and unlock const mutexes, mainly to allow thread-safe
 //               access to otherwise const data.
 //
-//               Also see MutexHolder.
+//               Also see ReMutexHolder.
 ////////////////////////////////////////////////////////////////////
-INLINE void Mutex::
+INLINE void ReMutex::
 lock() const {
-#ifdef NDEBUG
-  // In the NDEBUG case, just lock the thing immediately.  Don't
-  // bother with the out-of-line do_lock() method, since we won't be
-  // performing any checks anyway.
-  ((MutexImpl &)_impl).lock();
-
-#else 
-  // In development mode, call the out-of-line do_lock() method, which
-  // might perform an additional check or two.
-  ((Mutex *)this)->do_lock();
-#endif
+  ((ReMutex *)this)->do_lock();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::release
+//     Function: ReMutex::release
 //       Access: Public
 //  Description: Releases the mutex.  It is an error to call this if
 //               the mutex was not already locked.
@@ -95,17 +88,36 @@ lock() const {
 //               and unlock const mutexes, mainly to allow thread-safe
 //               access to otherwise const data.
 ////////////////////////////////////////////////////////////////////
-INLINE void Mutex::
+INLINE void ReMutex::
 release() const {
-#ifdef NDEBUG
-  // In the NDEBUG case, just release the thing immediately.  Don't
-  // bother with the out-of-line do_release() method, since we won't
-  // be performing any checks anyway.
-  ((MutexImpl &)_impl).release();
+  ((ReMutex *)this)->do_release();
+}
 
-#else 
-  // In development mode, call the out-of-line do_release() method,
-  // which might perform an additional check or two.
-  ((Mutex *)this)->do_release();
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::is_locked
+//       Access: Public
+//  Description: Returns true if *this thread* already holds the lock,
+//               false if no one holds the lock or the lock is held by
+//               some other thread.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutex::
+is_locked() const {
+  MutexHolder holder(_mutex);
+  return (_locking_thread == Thread::get_current_thread());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::get_lock_count
+//       Access: Public
+//  Description: Returns the number of times that *this thread* has
+//               grabbed the lock.  Returns 0 if some other thread is
+//               currently holding the lock.
+////////////////////////////////////////////////////////////////////
+INLINE int ReMutex::
+get_lock_count() const {
+  MutexHolder holder(_mutex);
+  if (_locking_thread == Thread::get_current_thread()) {
+    return _lock_count;
+  }
+  return 0;
 }

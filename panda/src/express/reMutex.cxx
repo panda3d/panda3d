@@ -1,5 +1,5 @@
-// Filename: pmutex.cxx
-// Created by:  drose (08Aug02)
+// Filename: reMutex.cxx
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,50 +16,56 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pmutex.h"
-#include "thread.h"
-
-#ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::debug_is_locked
-//       Access: Public
-//  Description: Returns true if the current thread has locked the
-//               Mutex, false otherwise.  This method only exists in
-//               !NDEBUG mode, so it's only appropriate to call it
-//               from within an assert().
-////////////////////////////////////////////////////////////////////
-bool Mutex::
-debug_is_locked() const {
-  return (_locking_thread == Thread::get_current_thread());
-}
-#endif
+#include "reMutex.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::do_lock
+//     Function: ReMutex::do_lock
 //       Access: Private
 //  Description: The private implementation of lock().
 ////////////////////////////////////////////////////////////////////
-void Mutex::
+void ReMutex::
 do_lock() {
-  nassertv(_locking_thread != Thread::get_current_thread());
-  _impl.lock();
+  MutexHolder holder(_mutex);
 
-#ifndef NDEBUG
-  _locking_thread = Thread::get_current_thread();
-#endif
+  if (_locking_thread == (Thread *)NULL) {
+    // The mutex is not already locked by anyone.  Lock it.
+    _locking_thread = Thread::get_current_thread();
+    ++_lock_count;
+    nassertv(_lock_count == 1);
+
+  } else if (_locking_thread == Thread::get_current_thread()) {
+    // The mutex is already locked by this thread.  Increment the lock
+    // count.
+    ++_lock_count;
+
+  } else {
+    // The mutex is locked by some other thread.  Go to sleep on the
+    // condition variable until it's unlocked.
+    while (_locking_thread != (Thread *)NULL) {
+      _cvar.wait();
+    }
+    _locking_thread = Thread::get_current_thread();
+    ++_lock_count;
+    nassertv(_lock_count == 1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Mutex::do_release
+//     Function: ReMutex::do_release
 //       Access: Private
 //  Description: The private implementation of release().
 ////////////////////////////////////////////////////////////////////
-void Mutex::
+void ReMutex::
 do_release() {
-  nassertv(_locking_thread == Thread::get_current_thread());
-#ifndef NDEBUG
-  _locking_thread = (Thread *)NULL;
-#endif
+  MutexHolder holder(_mutex);
 
-  _impl.release();
+  nassertv(_locking_thread == Thread::get_current_thread());
+  nassertv(_lock_count > 0);
+
+  --_lock_count;
+  if (_lock_count == 0) {
+    // That was the last lock held by this thread.  Release the lock.
+    _locking_thread = (Thread *)NULL;
+    _cvar.signal();
+  }
 }

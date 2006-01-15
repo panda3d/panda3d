@@ -58,6 +58,7 @@ public:
 
   INLINE static void prepare_for_exit();
 
+  INLINE static Thread *get_main_thread();
   INLINE static Thread *get_current_thread();
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
@@ -65,12 +66,13 @@ public:
   virtual void output(ostream &out) const;
 
 private:
+  static void init_main_thread();
+
   bool _started;
   string _name;
   ThreadImpl _impl;
-  friend class ThreadDummyImpl;
-  friend class ThreadNsprImpl;
 
+  static Thread *_main_thread;
 
 public:
   static TypeHandle get_class_type() {
@@ -84,6 +86,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class ThreadDummyImpl;
+  friend class ThreadNsprImpl;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

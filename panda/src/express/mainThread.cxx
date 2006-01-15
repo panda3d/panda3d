@@ -1,5 +1,5 @@
-// Filename: threadDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: mainThread.cxx
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
+#include "mainThread.h"
 
-#ifdef THREAD_DUMMY_IMPL
-
-#include "threadDummyImpl.h"
-#include "thread.h"
+TypeHandle MainThread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::get_current_thread
-//       Access: Public
+//     Function: MainThread::Constructor
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-Thread *ThreadDummyImpl::
-get_current_thread() {
-  return Thread::get_main_thread();
+MainThread::
+MainThread() : Thread("main") {
 }
-
-#endif  // THREAD_DUMMY_IMPL
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: MainThread::thread_main
+//       Access: Private, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MainThread::
+thread_main() {
+}

@@ -26,7 +26,6 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "pmutex.h"
 
 class Thread;
 
@@ -53,7 +52,7 @@ public:
 
   INLINE static void prepare_for_exit();
 
-  INLINE static Thread *get_current_thread();
+  static Thread *get_current_thread();
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
 

@@ -578,6 +578,7 @@ open_windows() {
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
     if (thread->_thread_state == TS_wait) {
       thread->_thread_state = TS_do_windows;
       thread->_cv.signal();
@@ -589,6 +590,7 @@ open_windows() {
   // window.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
     if (thread->_thread_state == TS_wait) {
       thread->_thread_state = TS_do_windows;
       thread->_cv.signal();
@@ -679,6 +681,7 @@ bool GraphicsEngine::
 add_callback(const string &thread_name, 
              GraphicsEngine::CallbackTime callback_time,
              GraphicsEngine::CallbackFunction *func, void *data) {
+  MutexHolder holder(_lock);
   WindowRenderer *wr = get_window_renderer(thread_name);
   return wr->add_callback(callback_time, Callback(func, data));
 }
@@ -699,6 +702,7 @@ bool GraphicsEngine::
 remove_callback(const string &thread_name, 
                 GraphicsEngine::CallbackTime callback_time,
                 GraphicsEngine::CallbackFunction *func, void *data) {
+  MutexHolder holder(_lock);
   WindowRenderer *wr = get_window_renderer(thread_name);
   return wr->remove_callback(callback_time, Callback(func, data));
 }
@@ -941,6 +945,8 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_sync_frame() {
+  nassertv(_lock.debug_is_locked());
+
   // Statistics
   PStatTimer timer(_sync_pcollector);
 
@@ -966,6 +972,8 @@ do_sync_frame() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_flip_frame() {
+  nassertv(_lock.debug_is_locked());
+
   // Statistics
   PStatTimer timer(_flip_pcollector);
 
@@ -1312,7 +1320,6 @@ terminate_threads() {
   // Now tell them to close their windows and terminate.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-    MutexHolder cv_holder(thread->_cv_mutex);
     thread->_thread_state = TS_terminate;
     thread->_cv.signal();
     thread->_cv_mutex.release();
@@ -1352,15 +1359,17 @@ get_invert_polygon_state() {
 //       Access: Private
 //  Description: Returns the WindowRenderer with the given name.
 //               Creates a new RenderThread if there is no such thread
-//               already.
+//               already.  You must already be holding the lock before
+//               calling this method.
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::WindowRenderer *GraphicsEngine::
 get_window_renderer(const string &name) {
+  nassertr(_lock.debug_is_locked(), NULL);
+
   if (name.empty()) {
     return &_app;
   }
 
-  MutexHolder holder(_lock);
   Threads::iterator ti = _threads.find(name);
   if (ti != _threads.end()) {
     return (*ti).second.p();

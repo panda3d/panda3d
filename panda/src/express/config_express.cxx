@@ -19,6 +19,7 @@
 
 #include "config_express.h"
 #include "datagram.h"
+#include "mainThread.h"
 #include "referenceCount.h"
 #include "textEncoder.h"
 #include "thread.h"
@@ -158,6 +159,7 @@ init_libexpress() {
   initialized = true;
 
   Datagram::init_type();
+  MainThread::init_type();
   ReferenceCount::init_type();
   TextEncoder::init_type();
   Thread::init_type();

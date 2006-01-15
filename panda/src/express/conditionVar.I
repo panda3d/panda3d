@@ -104,7 +104,12 @@ get_mutex() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVar::
 wait() {
+  nassertv(_mutex._locking_thread == Thread::get_current_thread());
   _impl.wait();
+
+#ifndef NDEBUG
+  _mutex._locking_thread = Thread::get_current_thread();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,6 +130,7 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVar::
 signal() {
+  nassertv(_mutex._locking_thread == Thread::get_current_thread());
   _impl.signal();
 }
 
@@ -140,5 +146,6 @@ signal() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVar::
 signal_all() {
+  nassertv(_mutex._locking_thread == Thread::get_current_thread());
   _impl.signal_all();
 }

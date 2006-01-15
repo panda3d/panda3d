@@ -29,6 +29,7 @@
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
     littleEndian.h \
+    mainThread.h \
     memoryInfo.I memoryInfo.h \
     memoryUsage.I memoryUsage.h \
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
@@ -50,6 +51,8 @@
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
+    reMutex.I reMutex.h \
+    reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
@@ -86,6 +89,7 @@
     encryptStreamBuf.cxx encryptStream.cxx \
     error_utils.cxx \
     hashGeneratorBase.cxx hashVal.cxx \
+    mainThread.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
     pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
@@ -102,6 +106,8 @@
     pta_uchar.cxx \
     ramfile.cxx \
     referenceCount.cxx \
+    reMutex.cxx \
+    reMutexHolder.cxx \
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
     stringDecoder.cxx \
@@ -142,7 +148,9 @@
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
-    littleEndian.h memoryInfo.I memoryInfo.h memoryUsage.I \
+    littleEndian.h \
+    mainThread.h \
+    memoryInfo.I memoryInfo.h memoryUsage.I \
     memoryUsage.h memoryUsagePointerCounts.I \
     memoryUsagePointerCounts.h memoryUsagePointers.I \
     memoryUsagePointers.h multifile.I multifile.h \
@@ -161,6 +169,8 @@
     profileTimer.h pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
+    reMutex.I reMutex.h \
+    reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \

@@ -1,5 +1,5 @@
-// Filename: threadDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: reMutexHolder.cxx
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
-
-#ifdef THREAD_DUMMY_IMPL
-
-#include "threadDummyImpl.h"
-#include "thread.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::get_current_thread
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-Thread *ThreadDummyImpl::
-get_current_thread() {
-  return Thread::get_main_thread();
-}
-
-#endif  // THREAD_DUMMY_IMPL
+#include "reMutexHolder.h"

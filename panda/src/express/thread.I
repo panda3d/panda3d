@@ -134,12 +134,27 @@ prepare_for_exit() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_main_thread
+//       Access: Public, Static
+//  Description: Returns a pointer to the "main" Thread object--this
+//               is the Thread that started the whole process.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *Thread::
+get_main_thread() {
+  if (_main_thread == (Thread *)NULL) {
+    init_main_thread();
+  }
+  return _main_thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_current_thread
 //       Access: Public, Static
 //  Description: Returns a pointer to the currently-executing Thread
-//               object, or NULL if the main thread (or some system
-//               thread other than one started from the Panda
-//               interface) is currently executing.
+//               object.  If this is called from the main thread, this
+//               will return the same value as get_main_thread().  If
+//               the current thread was spawned outside of Panda's
+//               threading system, this might return NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE Thread *Thread::
 get_current_thread() {

@@ -97,16 +97,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
   _joinable = joinable;
 
   if (!_got_pt_ptr_index) {
-    // Allocate a new index to store the Thread parent pointer as a
-    // piece of per-thread private data.
-    PRStatus result = PR_NewThreadPrivateIndex(&_pt_ptr_index, NULL);
-    if (result == PR_SUCCESS) {
-      _got_pt_ptr_index = true;
-    } else {
-      thread_cat.error()
-        << "Unable to associate Thread pointers with threads.\n";
-      return false;
-    }
+    init_pt_ptr_index();
   }
 
   PRThreadPriority nspr_pri;
@@ -203,6 +194,32 @@ root_func(void *data) {
   // This might delete the parent object, and in turn, delete the
   // ThreadNsprImpl object.
   unref_delete(parent_obj);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadNsprImpl::init_pt_ptr_index
+//       Access: Private, Static
+//  Description: Allocate a new index to store the Thread parent
+//               pointer as a piece of per-thread private data.
+////////////////////////////////////////////////////////////////////
+void ThreadNsprImpl::
+init_pt_ptr_index() {
+  nassertv(!_got_pt_ptr_index);
+
+  PRStatus result = PR_NewThreadPrivateIndex(&_pt_ptr_index, NULL);
+  if (result != PR_SUCCESS) {
+    thread_cat.error()
+      << "Unable to associate Thread pointers with threads.\n";
+    return;
+  }
+
+  _got_pt_ptr_index = true;
+
+  // Assume that we must be in the main thread, since this method must
+  // be called before the first thread is spawned.
+  Thread *main_thread_obj = Thread::get_main_thread();
+  result = PR_SetThreadPrivate(_pt_ptr_index, main_thread_obj);
+  nassertv(result == PR_SUCCESS);
 }
 
 #endif  // THREAD_NSPR_IMPL

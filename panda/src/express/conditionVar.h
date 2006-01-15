@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "pmutex.h"
 #include "conditionVarImpl.h"
+#include "thread.h"
 #include "notify.h"
 
 ////////////////////////////////////////////////////////////////////

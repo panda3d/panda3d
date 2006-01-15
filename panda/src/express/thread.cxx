@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "thread.h"
+#include "mainThread.h"
 
+Thread *Thread::_main_thread;
 TypeHandle Thread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -30,11 +32,25 @@ Thread::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Thread::Destructor
+//     Function: Thread::output
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Thread::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::init_main_thread
+//       Access: Private, Static
+//  Description: Creates the Thread object that represents the main
+//               thread.
+////////////////////////////////////////////////////////////////////
+void Thread::
+init_main_thread() {
+  if (_main_thread == (Thread *)NULL) {
+    _main_thread = new MainThread;
+    ((Thread *)_main_thread)->_started = true;
+  }
 }

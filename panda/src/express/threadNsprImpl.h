@@ -54,7 +54,7 @@ public:
 
 private:
   static void root_func(void *data);
-  static void pt_ptr_destructor(void *data);
+  static void init_pt_ptr_index();
 
   Mutex _mutex;
   Thread *_parent_obj;

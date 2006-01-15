@@ -1,5 +1,5 @@
-// Filename: threadDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: reMutexHolder.h
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
+#ifndef REMUTEXHOLDER_H
+#define REMUTEXHOLDER_H
 
-#ifdef THREAD_DUMMY_IMPL
-
-#include "threadDummyImpl.h"
-#include "thread.h"
+#include "pandabase.h"
+#include "reMutex.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::get_current_thread
-//       Access: Public
-//  Description: 
+//       Class : ReMutexHolder
+// Description : Similar to MutexHolder, but for a reentrant mutex.
 ////////////////////////////////////////////////////////////////////
-Thread *ThreadDummyImpl::
-get_current_thread() {
-  return Thread::get_main_thread();
-}
+class EXPCL_PANDAEXPRESS ReMutexHolder {
+public:
+  INLINE ReMutexHolder(const ReMutex &mutex);
+  INLINE ReMutexHolder(ReMutex *&mutex);
+  INLINE ~ReMutexHolder();
+private:
+  INLINE ReMutexHolder(const ReMutexHolder &copy);
+  INLINE void operator = (const ReMutexHolder &copy);
 
-#endif  // THREAD_DUMMY_IMPL
+private:
+#if defined(HAVE_THREADS) || !defined(NDEBUG)
+  const ReMutex *_mutex;
+#endif
+};
+
+#include "reMutexHolder.I"
+
+#endif

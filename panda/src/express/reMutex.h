@@ -1,5 +1,5 @@
-// Filename: pmutex.h
-// Created by:  cary (16Sep98)
+// Filename: reMutex.h
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,53 +16,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PMUTEX_H
-#define PMUTEX_H
+#ifndef REMUTEX_H
+#define REMUTEX_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
+#include "pmutex.h"
+#include "conditionVar.h"
+#include "mutexHolder.h"
+#include "thread.h"
 
-class Thread;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Mutex
-// Description : A standard mutex, or mutual exclusion lock.  Only one
-//               thread can hold ("lock") a mutex at any given time;
-//               other threads trying to grab the mutex will block
-//               until the holding thread releases it.
+//       Class : ReMutex
+// Description : A reentrant mutex.  This kind of mutex can be locked
+//               again by the thread that already holds it, without
+//               deadlock.  The thread must eventually release the
+//               mutex the same number of times it locked it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Mutex {
+class EXPCL_PANDAEXPRESS ReMutex {
 public:
-  INLINE Mutex();
-  INLINE ~Mutex();
+  INLINE ReMutex();
+  INLINE ~ReMutex();
 private:
-  INLINE Mutex(const Mutex &copy);
-  INLINE void operator = (const Mutex &copy);
+  INLINE ReMutex(const ReMutex &copy);
+  INLINE void operator = (const ReMutex &copy);
 
 public:
   INLINE void lock() const;
   INLINE void release() const;
 
-#ifndef NDEBUG
-  bool debug_is_locked() const;
-#endif
+  INLINE bool is_locked() const;
+  INLINE int get_lock_count() const;
 
 private:
   void do_lock();
   void do_release();
 
-private:
-  MutexImpl _impl;
-
-#ifndef NDEBUG
-  // Make sure that ordinary mutexes are not locked reentrantly
-  // (that's what a ReMutex is for).
+  Mutex _mutex;
+  ConditionVar _cvar;
   Thread *_locking_thread;
-#endif
-
-  friend class ConditionVar;
+  int _lock_count;
 };
 
-#include "pmutex.I"
+#include "reMutex.I"
 
 #endif

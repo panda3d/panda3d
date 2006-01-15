@@ -9,6 +9,8 @@
 #include "pta_uchar.cxx"
 #include "ramfile.cxx"
 #include "referenceCount.cxx"
+#include "reMutex.cxx"
+#include "reMutexHolder.cxx"
 #include "reversedNumericData.cxx"
 #include "streamReader.cxx"
 #include "streamWriter.cxx"

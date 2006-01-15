@@ -1,5 +1,5 @@
-// Filename: threadDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: mainThread.h
+// Created by:  drose (15Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
+#ifndef MAINTHREAD_H
+#define MAINTHREAD_H
 
-#ifdef THREAD_DUMMY_IMPL
-
-#include "threadDummyImpl.h"
+#include "pandabase.h"
 #include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::get_current_thread
-//       Access: Public
-//  Description: 
+//       Class : MainThread
+// Description : The special "main thread" class.  There is one
+//               instance of these in the world, and it is returned by
+//               Thread::get_main_thread().
 ////////////////////////////////////////////////////////////////////
-Thread *ThreadDummyImpl::
-get_current_thread() {
-  return Thread::get_main_thread();
-}
+class EXPCL_PANDAEXPRESS MainThread : public Thread {
+private:
+  MainThread();
+  virtual void thread_main();
 
-#endif  // THREAD_DUMMY_IMPL
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    Thread::init_type();
+    register_type(_type_handle, "MainThread",
+                  Thread::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class Thread;
+};
+
+#endif

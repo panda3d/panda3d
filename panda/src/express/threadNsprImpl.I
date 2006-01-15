@@ -48,7 +48,7 @@ prepare_for_exit() {
 INLINE Thread *ThreadNsprImpl::
 get_current_thread() {
   if (!_got_pt_ptr_index) {
-    return (Thread *)NULL;
+    init_pt_ptr_index();
   }
   return (Thread *)PR_GetThreadPrivate(_pt_ptr_index);
 }
