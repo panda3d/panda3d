@@ -72,12 +72,12 @@ get_global_ptr() {
 //     Function: GeomCacheManager::evict_old_entries
 //       Access: Private
 //  Description: Trims the cache size down to get_max_size() by
-//               evicting old cache entries as needed.
+//               evicting old cache entries as needed.  It is assumed
+//               that you already hold the lock before calling this
+//               method.
 ////////////////////////////////////////////////////////////////////
 void GeomCacheManager::
 evict_old_entries() {
-  MutexHolder holder(_lock);
-
   int current_frame = ClockObject::get_global_clock()->get_frame_count();
   int min_frames = geom_cache_min_frames;
 
