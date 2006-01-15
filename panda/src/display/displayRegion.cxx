@@ -601,9 +601,8 @@ do_compute_pixels(int x_size, int y_size) {
   _pl = int((_l * x_size) + 0.5);
   _pr = int((_r * x_size) + 0.5);
 
-  const GraphicsOutput *win = get_window();
-  nassertv(win != (GraphicsOutput *)NULL);
-  if (win->get_inverted()) {
+  nassertv(_window != (GraphicsOutput *)NULL);
+  if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
     _pb = int(((1.0f - _t) * y_size) + 0.5);
     _pt = int(((1.0f - _b) * y_size) + 0.5);
