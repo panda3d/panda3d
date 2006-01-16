@@ -1219,9 +1219,10 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   // now, we assume this is the app thread.
   _app.add_window(_app._window, window);
   
-  // This was info(), but that is spammy now with the ParisiteBuffer.
-  display_cat.debug()
-    << "Created " << window->get_type() << " " << (void *)window << "\n";
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Created " << window->get_type() << " " << (void *)window << "\n";
+  }
   
   // By default, try to open each window as it is added.
   window->request_open();
@@ -1755,7 +1756,6 @@ void GraphicsEngine::RenderThread::
 thread_main() {
   MutexHolder holder(_cv_mutex);
   while (true) {
-    _cv.wait();
     switch (_thread_state) {
     case TS_wait:
       break;
@@ -1780,7 +1780,6 @@ thread_main() {
     case TS_do_windows:
       do_windows(_engine);
       do_pending(_engine);
-      do_release(_engine);
       _thread_state = TS_wait;
       break;
 
@@ -1789,5 +1788,6 @@ thread_main() {
       do_close(_engine);
       return;
     }
+    _cv.wait();
   }
 }

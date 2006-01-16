@@ -1259,6 +1259,7 @@ make_current() {
 void GraphicsOutput::
 release_gsg() {
   _gsg.clear();
+  _active = false;
 }
 
 ////////////////////////////////////////////////////////////////////

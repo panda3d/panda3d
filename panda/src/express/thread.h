@@ -83,6 +83,10 @@ public:
     register_type(_type_handle, "Thread",
                   TypedReferenceCount::get_class_type());
   }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;
