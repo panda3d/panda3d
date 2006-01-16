@@ -48,6 +48,10 @@ public:
   INLINE bool is_locked() const;
   INLINE int get_lock_count() const;
 
+#ifndef NDEBUG
+  INLINE bool debug_is_locked() const;
+#endif
+
 private:
   void do_lock();
   void do_release();

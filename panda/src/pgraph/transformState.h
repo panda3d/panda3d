@@ -29,6 +29,7 @@
 #include "updateSeq.h"
 #include "pStatCollector.h"
 #include "geomEnums.h"
+#include "reMutex.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -182,6 +183,9 @@ PUBLISHED:
   static void list_states(ostream &out);
   static bool validate_states();
 
+public:
+  static void init_states();
+
 private:
   class CompositionCycleDescEntry {
   public:
@@ -206,6 +210,10 @@ private:
   void remove_cache_pointers();
 
 private:
+  // This mutex protects _states.  It also protects any modification
+  // to the cache, which is encoded in _composition_cache and
+  // _invert_composition_cache.
+  static ReMutex *_states_lock;
   typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;

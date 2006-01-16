@@ -22,6 +22,7 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "mutexHolder.h"
+#include "reMutexHolder.h"
 #include "throw_event.h"
 
 TypeHandle GraphicsWindow::_type_handle;
@@ -77,7 +78,7 @@ WindowProperties GraphicsWindow::
 get_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_properties_lock);
+    ReMutexHolder holder(_properties_lock);
     result = _properties;
   }
   return result;
@@ -95,7 +96,7 @@ WindowProperties GraphicsWindow::
 get_requested_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_properties_lock);
+    ReMutexHolder holder(_properties_lock);
     result = _requested_properties;
   }
   return result;
@@ -109,7 +110,7 @@ get_requested_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 clear_rejected_properties() {
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   _rejected_properties.clear();
 }
 
@@ -126,7 +127,7 @@ WindowProperties GraphicsWindow::
 get_rejected_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_properties_lock);
+    ReMutexHolder holder(_properties_lock);
     result = _rejected_properties;
   }
   return result;
@@ -145,7 +146,7 @@ get_rejected_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 request_properties(const WindowProperties &requested_properties) {
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   _requested_properties.add_properties(requested_properties);
 
   if (!_has_size && _requested_properties.has_size()) {
@@ -186,7 +187,7 @@ is_active() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 set_window_event(const string &window_event) {
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   _window_event = window_event;
 }
 
@@ -200,7 +201,7 @@ set_window_event(const string &window_event) {
 string GraphicsWindow::
 get_window_event() const {
   string result;
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   result = _window_event;
   return result;
 }
@@ -231,7 +232,7 @@ get_window_event() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 set_close_request_event(const string &close_request_event) {
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   _close_request_event = close_request_event;
 }
 
@@ -247,7 +248,7 @@ set_close_request_event(const string &close_request_event) {
 string GraphicsWindow::
 get_close_request_event() const {
   string result;
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
   result = _close_request_event;
   return result;
 }
@@ -495,7 +496,7 @@ process_events() {
     // bitmask after all.
     WindowProperties properties;
     {
-      MutexHolder holder(_properties_lock);
+      ReMutexHolder holder(_properties_lock);
       properties = _requested_properties;
       _requested_properties.clear();
 
@@ -534,6 +535,7 @@ set_properties_now(WindowProperties &properties) {
       properties.get_open() != _properties.get_open()) {
     // Open or close a new window.  In this case we can get all of the
     // properties at once.
+
     _properties.add_properties(properties);
     properties.clear();
 
@@ -687,7 +689,7 @@ system_changed_properties(const WindowProperties &properties) {
       << "system_changed_properties(" << properties << ")\n";
   }
 
-  MutexHolder holder(_properties_lock);
+  ReMutexHolder holder(_properties_lock);
 
   if (properties.has_size()) {
     system_changed_size(properties.get_x_size(), properties.get_y_size());

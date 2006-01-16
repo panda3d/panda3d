@@ -24,6 +24,8 @@
 #include "pStatFrameData.h"
 #include "pStatClientImpl.h"
 #include "pStatCollectorDef.h"
+#include "reMutex.h"
+#include "reMutexHolder.h"
 #include "luse.h"
 #include "pmap.h"
 
@@ -112,6 +114,10 @@ private:
   void set_level(int collector_index, int thread_index, float level);
   void add_level(int collector_index, int thread_index, float increment);
   float get_level(int collector_index, int thread_index) const;
+
+private:
+  // This mutex protects everything in this class.
+  ReMutex _lock;
 
   // Not a phash_map, so the threads remain sorted by name.
   typedef pmap<string, int> ThingsByName;

@@ -29,6 +29,7 @@
 #include "buttonEvent.h"
 #include "notify.h"
 #include "pmutex.h"
+#include "remutex.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +111,7 @@ protected:
   WindowProperties _properties;
 
 private:
-  Mutex _properties_lock; 
+  ReMutex _properties_lock; 
   // protects _requested_properties, _rejected_properties, and
   // _window_event.
 

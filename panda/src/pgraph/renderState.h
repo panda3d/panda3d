@@ -32,6 +32,7 @@
 #include "geomMunger.h"
 #include "weakPointerTo.h"
 #include "shaderExpansion.h"
+#include "reMutex.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -195,7 +196,14 @@ private:
   INLINE void consider_update_pstats(int old_referenced_bits) const;
   static void update_pstats(int old_referenced_bits, int new_referenced_bits);
 
+public:
+  static void init_states();
+
 private:
+  // This mutex protects _states.  It also protects any modification
+  // to the cache, which is encoded in _composition_cache and
+  // _invert_composition_cache.
+  static ReMutex *_states_lock;
   typedef pset<const RenderState *, indirect_less<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;

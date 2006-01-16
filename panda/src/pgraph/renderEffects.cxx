@@ -28,7 +28,10 @@
 #include "datagramIterator.h"
 #include "indent.h"
 #include "compareTo.h"
-
+#include "reMutexHolder.h"
+#include "thread.h"
+  
+ReMutex *RenderEffects::_states_lock = NULL;
 RenderEffects::States *RenderEffects::_states = NULL;
 CPT(RenderEffects) RenderEffects::_empty_state;
 TypeHandle RenderEffects::_type_handle;
@@ -43,12 +46,7 @@ TypeHandle RenderEffects::_type_handle;
 RenderEffects::
 RenderEffects() {
   if (_states == (States *)NULL) {
-    // Make sure the global _states map is allocated.  This only has
-    // to be done once.  We could make this map static, but then we
-    // run into problems if anyone creates a RenderState object at
-    // static init time; it also seems to cause problems when the
-    // Panda shared library is unloaded at application exit time.
-    _states = new States;
+    init_states();
   }
   _saved_entry = _states->end();
   _flags = 0;
@@ -83,6 +81,7 @@ operator = (const RenderEffects &) {
 RenderEffects::
 ~RenderEffects() {
   // Remove the deleted RenderEffects object from the global pool.
+  ReMutexHolder holder(*_states_lock);
   if (_saved_entry != _states->end()) {
     _states->erase(_saved_entry);
     _saved_entry = _states->end();
@@ -424,6 +423,72 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::get_num_states
+//       Access: Published, Static
+//  Description: Returns the total number of unique RenderEffects
+//               objects allocated in the world.  This will go up and
+//               down during normal operations.
+////////////////////////////////////////////////////////////////////
+int RenderEffects::
+get_num_states() {
+  if (_states == (States *)NULL) {
+    return 0;
+  }
+  ReMutexHolder holder(*_states_lock);
+  return _states->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::list_states
+//       Access: Published, Static
+//  Description: Lists all of the RenderEffectss in the cache to the
+//               output stream, one per line.  This can be quite a lot
+//               of output if the cache is large, so be prepared.
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+list_states(ostream &out) {
+  out << _states->size() << " states:\n";
+  States::const_iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const RenderEffects *state = (*si);
+    state->write(out, 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::validate_states
+//       Access: Published, Static
+//  Description: Ensures that the cache is still stored in sorted
+//               order.  Returns true if so, false if there is a
+//               problem (which implies someone has modified one of
+//               the supposedly-const RenderEffects objects).
+////////////////////////////////////////////////////////////////////
+bool RenderEffects::
+validate_states() {
+  if (_states->empty()) {
+    return true;
+  }
+  ReMutexHolder holder(*_states_lock);
+
+  States::const_iterator si = _states->begin();
+  States::const_iterator snext = si;
+  ++snext;
+  while (snext != _states->end()) {
+    if (!(*(*si) < *(*snext))) {
+      pgraph_cat.error()
+        << "RenderEffectss out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    si = snext;
+    ++snext;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::cull_callback
 //       Access: Public
 //  Description: Calls cull_callback() on all effects.  You may check
@@ -460,70 +525,30 @@ adjust_transform(CPT(TransformState) &net_transform,
     (*ei)._effect->adjust_transform(net_transform, node_transform);
   }
 }
-
+  
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::get_num_states
-//       Access: Published, Static
-//  Description: Returns the total number of unique RenderEffects
-//               objects allocated in the world.  This will go up and
-//               down during normal operations.
-////////////////////////////////////////////////////////////////////
-int RenderEffects::
-get_num_states() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
-  return _states->size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::list_states
-//       Access: Published, Static
-//  Description: Lists all of the RenderEffectss in the cache to the
-//               output stream, one per line.  This can be quite a lot
-//               of output if the cache is large, so be prepared.
+//     Function: RenderEffects::init_states
+//       Access: Public, Static
+//  Description: Make sure the global _states map is allocated.  This
+//               only has to be done once.  We could make this map
+//               static, but then we run into problems if anyone
+//               creates a RenderEffects object at static init time;
+//               it also seems to cause problems when the Panda shared
+//               library is unloaded at application exit time.
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
-list_states(ostream &out) {
-  out << _states->size() << " states:\n";
-  States::const_iterator si;
-  for (si = _states->begin(); si != _states->end(); ++si) {
-    const RenderEffects *state = (*si);
-    state->write(out, 2);
-  }
+init_states() {
+  _states = new States;
+
+  // TODO: we should have a global Panda mutex to allow us to safely
+  // create _states_lock without a startup race condition.  For the
+  // meantime, this is OK because we guarantee that this method is
+  // called at static init time, presumably when there is still only
+  // one thread in the world.
+  _states_lock = new ReMutex;
+  nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::validate_states
-//       Access: Published, Static
-//  Description: Ensures that the cache is still stored in sorted
-//               order.  Returns true if so, false if there is a
-//               problem (which implies someone has modified one of
-//               the supposedly-const RenderEffects objects).
-////////////////////////////////////////////////////////////////////
-bool RenderEffects::
-validate_states() {
-  if (_states->empty()) {
-    return true;
-  }
-
-  States::const_iterator si = _states->begin();
-  States::const_iterator snext = si;
-  ++snext;
-  while (snext != _states->end()) {
-    if (!(*(*si) < *(*snext))) {
-      pgraph_cat.error()
-        << "RenderEffectss out of order!\n";
-      (*si)->write(pgraph_cat.error(false), 2);
-      (*snext)->write(pgraph_cat.error(false), 2);
-      return false;
-    }
-    si = snext;
-    ++snext;
-  }
-
-  return true;
-}
+  
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::return_new
@@ -541,15 +566,17 @@ CPT(RenderEffects) RenderEffects::
 return_new(RenderEffects *state) {
   nassertr(state != (RenderEffects *)NULL, state);
 
-  // This should be a newly allocated pointer, not one that was used
-  // for anything else.
-  nassertr(state->_saved_entry == _states->end(), state);
-
 #ifndef NDEBUG
   if (paranoid_const) {
     nassertr(validate_states(), state);
   }
 #endif
+
+  ReMutexHolder holder(*_states_lock);
+
+  // This should be a newly allocated pointer, not one that was used
+  // for anything else.
+  nassertr(state->_saved_entry == _states->end(), state);
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
@@ -689,6 +716,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     nassertr(effect._effect != (RenderEffect *)NULL, pi);
     effect._type = effect._effect->get_type();
   }
+  ReMutexHolder holder(*_states_lock);
 
   // Now make sure the array is properly sorted.  (It won't
   // necessarily preserve its correct sort after being read from bam,

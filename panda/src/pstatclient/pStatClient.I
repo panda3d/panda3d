@@ -79,6 +79,7 @@ get_max_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatClient::
 get_num_collectors() const {
+  ReMutexHolder holder(_lock);
   return _collectors.size();
 }
 
@@ -89,6 +90,7 @@ get_num_collectors() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollectorDef *PStatClient::
 get_collector_def(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_collectors.size(), NULL);
 
   return _collectors[index].get_def(this, index);
@@ -102,6 +104,7 @@ get_collector_def(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatClient::
 get_num_threads() const {
+  ReMutexHolder holder(_lock);
   return _threads.size();
 }
 
@@ -112,6 +115,7 @@ get_num_threads() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PStatClient::
 get_thread_name(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_threads.size(), string());
   return _threads[index]._name;
 }
@@ -183,6 +187,7 @@ resume_after_pause() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
 client_connect(string hostname, int port) {
+  ReMutexHolder holder(_lock);
   client_disconnect();
   return get_impl()->client_connect(hostname, port);
 }
@@ -194,6 +199,7 @@ client_connect(string hostname, int port) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
 client_is_connected() const {
+  ReMutexHolder holder(_lock);
   return has_impl() && _impl->client_is_connected();
 }
 
@@ -232,6 +238,7 @@ has_impl() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PStatClientImpl *PStatClient::
 get_impl() {
+  ReMutexHolder holder(_lock);
   if (_impl == (PStatClientImpl *)NULL) {
     _impl = new PStatClientImpl(this);
   }

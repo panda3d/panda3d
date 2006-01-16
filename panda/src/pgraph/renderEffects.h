@@ -28,6 +28,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "ordered_vector.h"
+#include "reMutex.h"
 
 class CullTraverser;
 class CullTraverserData;
@@ -108,6 +109,8 @@ public:
   virtual void adjust_transform(CPT(TransformState) &net_transform,
                                 CPT(TransformState) &node_transform) const;
 
+  static void init_states();
+
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
   void determine_decal();
@@ -116,6 +119,10 @@ private:
   void determine_adjust_transform();
 
 private:
+  // This mutex protects _states.  It also protects any modification
+  // to the cache, which is encoded in _composition_cache and
+  // _invert_composition_cache.
+  static ReMutex *_states_lock;
   typedef pset<const RenderEffects *, indirect_less<const RenderEffects *> > States;
   static States *_states;
   static CPT(RenderEffects) _empty_state;

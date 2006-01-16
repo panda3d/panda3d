@@ -397,6 +397,13 @@ init_libpgraph() {
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
 
+  // By initializing the _states map up front, we also guarantee that
+  // the _states_lock mutex gets created before we spawn any threads
+  // (assuming no one is creating threads at static init time).
+  TransformState::init_states();
+  RenderState::init_states();
+  RenderEffects::init_states();
+
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   reg->register_type(new LoaderFileTypeBam);
 }

@@ -93,6 +93,7 @@ PStatClient::
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 get_collector(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_collectors.size(), PStatCollector());
   return PStatCollector((PStatClient *)this, index);
 }
@@ -104,6 +105,7 @@ get_collector(int index) const {
 ////////////////////////////////////////////////////////////////////
 string PStatClient::
 get_collector_name(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_collectors.size(), string());
 
   return _collectors[index].get_name();
@@ -119,6 +121,7 @@ get_collector_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 string PStatClient::
 get_collector_fullname(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_collectors.size(), string());
 
   int parent_index = _collectors[index].get_parent_index();
@@ -137,6 +140,7 @@ get_collector_fullname(int index) const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 get_thread(int index) const {
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < (int)_threads.size(), PStatThread());
   return PStatThread((PStatClient *)this, index);
 }
@@ -189,6 +193,7 @@ main_tick() {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_main_tick() {
+  ReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_main_tick();
   }
@@ -202,6 +207,7 @@ client_main_tick() {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_disconnect() {
+  ReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_disconnect();
   }
@@ -254,6 +260,8 @@ get_global_pstats() {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_relname(int parent_index, string relname) {
+  ReMutexHolder holder(_lock);
+
   if (relname.empty()) {
     relname = "Unnamed";
   }
@@ -292,6 +300,8 @@ make_collector_with_relname(int parent_index, string relname) {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_name(int parent_index, const string &name) {
+  ReMutexHolder holder(_lock);
+
   nassertr(parent_index >= 0 && parent_index < (int)_collectors.size(),
            PStatCollector());
 
@@ -343,6 +353,8 @@ make_collector_with_name(int parent_index, const string &name) {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 make_thread(const string &name) {
+  ReMutexHolder holder(_lock);
+
   ThingsByName::const_iterator ni =
     _threads_by_name.find(name);
 
@@ -388,6 +400,8 @@ make_thread(const string &name) {
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
 is_active(int collector_index, int thread_index) const {
+  ReMutexHolder holder(_lock);
+
   nassertr(collector_index >= 0 && collector_index < (int)_collectors.size(), false);
   nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
 
@@ -407,6 +421,8 @@ is_active(int collector_index, int thread_index) const {
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
 is_started(int collector_index, int thread_index) const {
+  ReMutexHolder holder(_lock);
+
   nassertr(collector_index >= 0 && collector_index < (int)_collectors.size(), false);
   nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
 
@@ -424,6 +440,8 @@ is_started(int collector_index, int thread_index) const {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index) {
+  ReMutexHolder holder(_lock);
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
@@ -451,6 +469,8 @@ start(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index, float as_of) {
+  ReMutexHolder holder(_lock);
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
@@ -477,6 +497,8 @@ start(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index) {
+  ReMutexHolder holder(_lock);
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
@@ -513,6 +535,8 @@ stop(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index, float as_of) {
+  ReMutexHolder holder(_lock);
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
@@ -551,6 +575,8 @@ stop(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 clear_level(int collector_index, int thread_index) {
+  ReMutexHolder holder(_lock);
+
   _collectors[collector_index]._per_thread[thread_index]._has_level = false;
   _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
 }
@@ -566,6 +592,8 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, float level) {
+  ReMutexHolder holder(_lock);
+
   // We don't want to condition this on whether the client is already
   // connected or the collector is already active, since we might
   // connect the client later, and we will want to have an accurate
@@ -588,6 +616,8 @@ set_level(int collector_index, int thread_index, float level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, float increment) {
+  ReMutexHolder holder(_lock);
+
   increment *= get_collector_def(collector_index)->_factor;
   _collectors[collector_index]._per_thread[thread_index]._has_level = true;
   _collectors[collector_index]._per_thread[thread_index]._level += increment;
@@ -603,6 +633,8 @@ add_level(int collector_index, int thread_index, float increment) {
 ////////////////////////////////////////////////////////////////////
 float PStatClient::
 get_level(int collector_index, int thread_index) const {
+  ReMutexHolder holder(_lock);
+
   return _collectors[collector_index]._per_thread[thread_index]._level /
     get_collector_def(collector_index)->_factor;
 }

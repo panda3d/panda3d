@@ -32,7 +32,7 @@
 //               Thus, for example, "cull/draw" indicates that the
 //               window will be culled in a thread called "cull", and
 //               drawn in a separate thread called "draw".
-//               "draw/draw" or simply "draw/" indicates the window
+//               "draw/draw" or simply "draw" indicates the window
 //               will be culled and drawn in the same thread, "draw".
 //               On the other hand, "/draw" indicates the thread will
 //               be culled in the main, or app thread, and drawn in a

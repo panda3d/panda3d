@@ -32,7 +32,7 @@ bool Mutex::
 debug_is_locked() const {
   return (_locking_thread == Thread::get_current_thread());
 }
-#endif
+#endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Mutex::do_lock

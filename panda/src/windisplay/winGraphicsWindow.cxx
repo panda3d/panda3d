@@ -997,22 +997,24 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         set_cursor_out_of_window();
         break;
     
-      case WM_CREATE: {
-        track_mouse_leaving(hwnd);
-        ClearToBlack(hwnd,_properties);
-    
-        POINT cpos;
-        GetCursorPos(&cpos);
-        ScreenToClient(hwnd,&cpos);
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        if(PtInRect(&clientRect,cpos))
-           set_cursor_in_window();  // should window focus be true as well?
-        else set_cursor_out_of_window();
-    
+      case WM_CREATE: 
+        {
+          track_mouse_leaving(hwnd);
+          ClearToBlack(hwnd, _properties);
+          
+          POINT cpos;
+          GetCursorPos(&cpos);
+          ScreenToClient(hwnd, &cpos);
+          RECT clientRect;
+          GetClientRect(hwnd, &clientRect);
+          if (PtInRect(&clientRect,cpos)) {
+            set_cursor_in_window();  // should window focus be true as well?
+          } else {
+            set_cursor_out_of_window();
+          }
+        }
         break;
-      }
-    
+        
       case WM_CLOSE:
         // This is a message from the system indicating that the user
         // has requested to close the window (e.g. alt-f4).

@@ -121,3 +121,17 @@ get_lock_count() const {
   }
   return 0;
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::debug_is_locked
+//       Access: Public
+//  Description: The same as is_locked().  This method name is
+//               provided just to maintain symmetry with Mutex (which
+//               doesn't provide an is_locked() method).
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutex::
+debug_is_locked() const {
+  return is_locked();
+}
+#endif  // NDEBUG

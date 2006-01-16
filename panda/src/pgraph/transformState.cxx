@@ -25,7 +25,10 @@
 #include "compareTo.h"
 #include "pStatTimer.h"
 #include "config_pgraph.h"
+#include "reMutexHolder.h"
+#include "thread.h"
 
+ReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 UpdateSeq TransformState::_last_cycle_detect;
@@ -47,12 +50,7 @@ TypeHandle TransformState::_type_handle;
 TransformState::
 TransformState() {
   if (_states == (States *)NULL) {
-    // Make sure the global _states map is allocated.  This only has
-    // to be done once.  We could make this map static, but then we
-    // run into problems if anyone creates a TransformState object at
-    // static init time; it also seems to cause problems when the
-    // Panda shared library is unloaded at application exit time.
-    _states = new States;
+    init_states();
   }
   _saved_entry = _states->end();
   _flags = F_is_identity | F_singular_known | F_is_2d;
@@ -97,12 +95,13 @@ TransformState::
     _inv_mat = (LMatrix4f *)NULL;
   }
 
+  ReMutexHolder holder(*_states_lock);
   if (_saved_entry != _states->end()) {
     nassertv(_states->find(this) == _saved_entry);
     _states->erase(_saved_entry);
     _saved_entry = _states->end();
   }
-
+   
   remove_cache_pointers();
 
   // If this was true at the beginning of the destructor, but is no
@@ -631,6 +630,8 @@ compose(const TransformState *other) const {
     return other;
   }
 
+  ReMutexHolder holder(*_states_lock);
+
   // Is this composition already cached?
   CompositionCache::const_iterator ci = _composition_cache.find(other);
   if (ci != _composition_cache.end()) {
@@ -717,6 +718,8 @@ invert_compose(const TransformState *other) const {
     return make_identity();
   }
 
+  ReMutexHolder holder(*_states_lock);
+
   // Is this composition already cached?
   CompositionCache::const_iterator ci = _invert_composition_cache.find(other);
   if (ci != _invert_composition_cache.end()) {
@@ -784,6 +787,8 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 int TransformState::
 unref() const {
+  ReMutexHolder holder(*_states_lock);
+
   if (get_cache_ref_count() > 0 &&
       get_ref_count() == get_cache_ref_count() + 1) {
     // If we are about to remove the one reference that is not in the
@@ -792,11 +797,6 @@ unref() const {
     // it exists.
 
     if (auto_break_cycles) {
-      // There might be a tiny race condition if multiple different
-      // threads perform cycle detects on related nodes at the same
-      // time.  But the cost of failing the race condition is low--we
-      // end up with a tiny leak that may eventually be discovered, big
-      // deal.
       ++_last_cycle_detect;
       if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
         // Ok, we have a cycle.  This will be a leak unless we break the
@@ -805,6 +805,7 @@ unref() const {
           pgraph_cat.debug()
             << "Breaking cycle involving " << (*this) << "\n";
         }
+
         ((TransformState *)this)->remove_cache_pointers();
       }
     }
@@ -928,6 +929,7 @@ get_num_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
+  ReMutexHolder holder(*_states_lock);
   return _states->size();
 }
 
@@ -954,6 +956,7 @@ get_num_unused_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
+  ReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each TransformState
   // object is recorded in the cache.  We could just trust
@@ -1047,6 +1050,7 @@ clear_cache() {
   if (_states == (States *)NULL) {
     return 0;
   }
+  ReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
   int orig_size = _states->size();
@@ -1123,6 +1127,11 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 list_cycles(ostream &out) {
+  if (_states == (States *)NULL) {
+    return;
+  }
+  ReMutexHolder holder(*_states_lock);
+
   typedef pset<const TransformState *> VisitedStates;
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
@@ -1173,6 +1182,12 @@ list_cycles(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 list_states(ostream &out) {
+  if (_states == (States *)NULL) {
+    out << "0 states:\n";
+    return;
+  }
+  ReMutexHolder holder(*_states_lock);
+
   out << _states->size() << " states:\n";
   States::const_iterator si;
   for (si = _states->begin(); si != _states->end(); ++si) {
@@ -1193,6 +1208,11 @@ list_states(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 validate_states() {
+  if (_states == (States *)NULL) {
+    return true;
+  }
+
+  ReMutexHolder holder(*_states_lock);
   if (_states->empty()) {
     return true;
   }
@@ -1218,6 +1238,29 @@ validate_states() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::init_states
+//       Access: Public, Static
+//  Description: Make sure the global _states map is allocated.  This
+//               only has to be done once.  We could make this map
+//               static, but then we run into problems if anyone
+//               creates a TransformState object at static init time;
+//               it also seems to cause problems when the Panda shared
+//               library is unloaded at application exit time.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+init_states() {
+  _states = new States;
+
+  // TODO: we should have a global Panda mutex to allow us to safely
+  // create _states_lock without a startup race condition.  For the
+  // meantime, this is OK because we guarantee that this method is
+  // called at static init time, presumably when there is still only
+  // one thread in the world.
+  _states_lock = new ReMutex;
+  nassertv(Thread::get_current_thread() == Thread::get_main_thread());
+}
+  
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::return_new
 //       Access: Private, Static
 //  Description: This function is used to share a common TransformState
@@ -1233,15 +1276,17 @@ CPT(TransformState) TransformState::
 return_new(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
 
-  // This should be a newly allocated pointer, not one that was used
-  // for anything else.
-  nassertr(state->_saved_entry == _states->end(), state);
-
 #ifndef NDEBUG
   if (paranoid_const) {
     nassertr(validate_states(), state);
   }
 #endif
+
+  ReMutexHolder holder(*_states_lock);
+
+  // This should be a newly allocated pointer, not one that was used
+  // for anything else.
+  nassertr(state->_saved_entry == _states->end(), state);
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
@@ -1544,9 +1589,14 @@ r_detect_cycles(const TransformState *start_state,
 //               particular TransformState.  The pointers to this
 //               object may be scattered around in the various
 //               CompositionCaches from other TransformState objects.
+//
+//               You must already be holding _states_lock before you
+//               call this method.
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 remove_cache_pointers() {
+  nassertv(_states_lock->debug_is_locked());
+
   // Fortunately, since we added CompositionCache records in pairs, we
   // know exactly the set of TransformState objects that have us in their
   // cache: it's the same set of TransformState objects that we have in
