@@ -87,26 +87,28 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
 
   // Get the window size.
   WindowProperties properties = _window->get_properties();
-  int w = properties.get_x_size();
-  int h = properties.get_y_size();
+  if (properties.has_size()) {
+    int w = properties.get_x_size();
+    int h = properties.get_y_size();
 
-  _pixel_size->set_value(LPoint2f(w, h));
-  output.set_data(_pixel_size_output, EventParameter(_pixel_size));
+    _pixel_size->set_value(LPoint2f(w, h));
+    output.set_data(_pixel_size_output, EventParameter(_pixel_size));
 
-  if (_window->has_pointer(_device)) {
-    const MouseData &mdata = _window->get_pointer(_device);
+    if (_window->has_pointer(_device)) {
+      const MouseData &mdata = _window->get_pointer(_device);
 
-    if (mdata._in_window) {
-      // Get mouse motion in pixels.
-      _pixel_xy->set_value(LPoint2f(mdata._xpos, mdata._ypos));
-      output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
-
-      // Normalize pixel motion to range [-1,1].
-      float xf = (float)(2 * mdata._xpos) / (float)w - 1.0f;
-      float yf = 1.0f - (float)(2 * mdata._ypos) / (float)h;
-
-      _xy->set_value(LPoint2f(xf, yf));
-      output.set_data(_xy_output, EventParameter(_xy));
+      if (mdata._in_window) {
+        // Get mouse motion in pixels.
+        _pixel_xy->set_value(LPoint2f(mdata._xpos, mdata._ypos));
+        output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
+        
+        // Normalize pixel motion to range [-1,1].
+        float xf = (float)(2 * mdata._xpos) / (float)w - 1.0f;
+        float yf = 1.0f - (float)(2 * mdata._ypos) / (float)h;
+        
+        _xy->set_value(LPoint2f(xf, yf));
+        output.set_data(_xy_output, EventParameter(_xy));
+      }
     }
   }
 }
