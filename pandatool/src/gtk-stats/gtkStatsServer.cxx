@@ -1,5 +1,5 @@
 // Filename: gtkStatsServer.cxx
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,7 +18,6 @@
 
 #include "gtkStatsServer.h"
 #include "gtkStatsMonitor.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsServer::make_monitor

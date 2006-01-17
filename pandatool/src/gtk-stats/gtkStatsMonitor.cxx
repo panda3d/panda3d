@@ -1,5 +1,5 @@
 // Filename: gtkStatsMonitor.cxx
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,15 +17,36 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsMonitor.h"
-#include "gtkStatsWindow.h"
-#include "gtkStatsStripWindow.h"
-#include "gtkStatsBadVersionWindow.h"
+#include "gtkStats.h"
 #include "gtkStatsServer.h"
-
-#include "luse.h"
+#include "gtkStatsStripChart.h"
+/*
+#include "gtkStatsPianoRoll.h"
+#include "gtkStatsChartMenu.h"
+*/
+#include "gtkStatsMenuId.h"
+#include "pStatGraph.h"
 #include "pStatCollectorDef.h"
+#include "indent.h"
 
-#include <gdk--.h>
+typedef void vc();
+
+GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {
+  { "/Options", NULL, NULL, 0, "<Branch>" },
+  { "/Options/Units", NULL, NULL, 0, "<Branch>" },
+  { "/Options/Units/ms", NULL, (vc *)&handle_menu_command, MI_time_ms, "<RadioItem>" },
+  { "/Options/Units/Hz", NULL, (vc *)&handle_menu_command, MI_time_hz, "/Options/Units/ms" },
+  { "/Speed", NULL, NULL, 0, "<Branch>" },
+  { "/Speed/1", NULL, (vc *)&handle_menu_command, MI_speed_1, "<RadioItem>" },
+  { "/Speed/2", NULL, (vc *)&handle_menu_command, MI_speed_2, "/Speed/1" },
+  { "/Speed/3", NULL, (vc *)&handle_menu_command, MI_speed_3, "/Speed/1" },
+  { "/Speed/6", NULL, (vc *)&handle_menu_command, MI_speed_6, "/Speed/1" },
+  { "/Speed/12", NULL, (vc *)&handle_menu_command, MI_speed_12, "/Speed/1" },
+  { "/Speed/sep", NULL, NULL, 0, "<Separator>" },
+  { "/Speed/pause", NULL, (vc *)&handle_menu_command, MI_pause, "<CheckItem>" },
+};
+int GtkStatsMonitor::num_menu_entries = sizeof(menu_entries) / sizeof(GtkItemFactoryEntry);
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMonitor::Constructor
@@ -34,44 +55,45 @@
 ////////////////////////////////////////////////////////////////////
 GtkStatsMonitor::
 GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
-  _destructing = false;
-  _new_collector = false;
+  _window = NULL;
+  _item_factory = NULL;
+
+  // These will be filled in later when the menu is created.
+  _time_units = 0;
+  _scroll_speed = 0.0;
+  _pause = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMonitor::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsMonitor::
 ~GtkStatsMonitor() {
-  _destructing = true;
-
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GtkStatsWindow *window = (*wi);
-    window->destruct();
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    delete (*gi);
   }
-}
+  _graphs.clear();
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::close_all_windows
-//       Access: Public
-//  Description: Closes all the windows associated with this client.
-//               This returns a PointerTo itself, just to guarantee
-//               that the monitor won't destruct until the function
-//               returns (as it might, if there were no other pointers
-//               to it).
-////////////////////////////////////////////////////////////////////
-PT(PStatMonitor) GtkStatsMonitor::
-close_all_windows() {
-  PT(PStatMonitor) temp = this;
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GtkStatsWindow *window = (*wi);
-    window->destruct();
+  /*
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    delete (*mi);
   }
-  return temp;
+  _chart_menus.clear();
+  */
+
+  if (_window != NULL) {
+    gtk_widget_destroy(_window);
+    _window = NULL;
+  }
+
+#ifdef DEVELOP_GTKSTATS
+  // For Gtkstats developers, exit when the first monitor closes.
+  gtk_main_quit(0);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +104,7 @@ close_all_windows() {
 ////////////////////////////////////////////////////////////////////
 string GtkStatsMonitor::
 get_monitor_name() {
-  return "Gtk Stats";
+  return "GtkStats";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,8 +120,6 @@ get_monitor_name() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 initialized() {
-  // Create a default window: a strip chart for the main thread.
-  new GtkStatsStripWindow(this, 0, 0, false, 400, 100);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,10 +131,8 @@ initialized() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 got_hello() {
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->update_title();
-  }
+  create_window();
+  open_strip_chart(0, 0, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,9 +149,29 @@ got_hello() {
 void GtkStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
-  new GtkStatsBadVersionWindow(this, client_major, client_minor,
-                               server_major, server_minor);
-  close_all_windows();
+  ostringstream str;
+  str << "Unable to honor connection attempt from " 
+      << get_client_progname() << " on " << get_client_hostname() 
+      << ": unsupported PStats version " 
+      << client_major << "." << client_minor;
+
+  if (server_minor == 0) {
+    str << " (server understands version " << server_major
+        << "." << server_minor << " only).";
+  } else {
+    str << " (server understands versions " << server_major
+        << ".0 through " << server_major << "." << server_minor << ").";
+  }
+    
+  string message = str.str();
+  GtkWidget *dialog = 
+    gtk_message_dialog_new(GTK_WINDOW(main_window),
+			   GTK_DIALOG_DESTROY_WITH_PARENT,
+			   GTK_MESSAGE_ERROR,
+			   GTK_BUTTONS_CLOSE,
+			   message.c_str());
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,8 +186,41 @@ got_bad_version(int client_major, int client_minor,
 //               definitions midstream.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
-new_collector(int) {
-  _new_collector = true;
+new_collector(int collector_index) {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->new_collector(collector_index);
+  }
+
+  /*
+  // We might need to update our menus.
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->do_update();
+  }
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::new_thread
+//       Access: Public, Virtual
+//  Description: Called whenever a new Thread definition is
+//               received from the client.  Generally, the client will
+//               send all of its threads over shortly after
+//               connecting, but there's no guarantee that they will
+//               all be received before the first frames are received.
+//               The monitor should be prepared to accept new Thread
+//               definitions midstream.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+new_thread(int thread_index) {
+  /*
+  GtkStatsChartMenu *chart_menu = new GtkStatsChartMenu(this, thread_index);
+  chart_menu->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
+  _chart_menus.push_back(chart_menu);
+  DrawMenuBar(_window);
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,6 +234,11 @@ new_collector(int) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 new_data(int thread_index, int frame_number) {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->new_data(thread_index, frame_number);
+  }
 }
 
 
@@ -176,9 +252,11 @@ new_data(int thread_index, int frame_number) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 lost_connection() {
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->mark_dead();
+  nout << "Lost connection to " << get_client_hostname() << "\n";
+
+  if (_window != NULL) {
+    gtk_widget_destroy(_window);
+    _window = NULL;
   }
 }
 
@@ -191,11 +269,29 @@ lost_connection() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 idle() {
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->idle();
+  /*
+  // Check if any of our chart menus need updating.
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->check_update();
   }
-  _new_collector = false;
+
+  // Update the frame rate label from the main thread (thread 0).
+  const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
+  float frame_rate = thread_data->get_frame_rate();
+  if (frame_rate != 0.0f) {
+    char buffer[128];
+    sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
+  
+    MENUITEMINFO mii;
+    memset(&mii, 0, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_STRING;
+    mii.dwTypeData = buffer;
+    SetMenuItemInfo(_menu_bar, MI_frame_rate_label, FALSE, &mii);
+    DrawMenuBar(_window);
+  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,52 +306,339 @@ has_idle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::is_thread_safe
+//     Function: GtkStatsMonitor::user_guide_bars_changed
 //       Access: Public, Virtual
-//  Description: Should be redefined to return true if this monitor
-//               class can handle running in a sub-thread.
-//
-//               This is not related to the question of whether it can
-//               handle multiple different PStatThreadDatas; this is
-//               strictly a question of whether or not the monitor
-//               itself wants to run in a sub-thread.
+//  Description: Called when the user guide bars have been changed.
 ////////////////////////////////////////////////////////////////////
-bool GtkStatsMonitor::
-is_thread_safe() {
-  return true;
+void GtkStatsMonitor::
+user_guide_bars_changed() {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->user_guide_bars_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::add_window
+//     Function: GtkStatsMonitor::get_window
 //       Access: Public
-//  Description: Called only from the GtkStatsWindow constructor, this
-//               indicates a new window that we should track.
+//  Description: Returns the window handle to the monitor's window.
 ////////////////////////////////////////////////////////////////////
-void GtkStatsMonitor::
-add_window(GtkStatsWindow *window) {
-  nassertv(!_destructing);
-  bool inserted = _windows.insert(window).second;
-  nassertv(inserted);
+GtkWidget *GtkStatsMonitor::
+get_window() const {
+  return _window;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::remove_window
+//     Function: GtkStatsMonitor::open_strip_chart
 //       Access: Public
-//  Description: Called only from the GtkStatsWindow destructor, this
-//               indicates the end of a window that we should now no
-//               longer track.
-//
-//               When the last window is deleted, this automatically
-//               closes the connection.
+//  Description: Opens a new strip chart showing the indicated data.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
-remove_window(GtkStatsWindow *window) {
-  if (!_destructing) {
-    bool removed = (_windows.erase(window) != 0);
-    nassertv(removed);
+open_strip_chart(int thread_index, int collector_index, bool show_level) {
+  GtkStatsStripChart *graph = 
+    new GtkStatsStripChart(this, thread_index, collector_index, show_level);
+  add_graph(graph);
 
-    if (_windows.empty()) {
-      close();
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::open_piano_roll
+//       Access: Public
+//  Description: Opens a new piano roll showing the indicated data.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+open_piano_roll(int thread_index) {
+  /*
+  GtkStatsPianoRoll *graph = new GtkStatsPianoRoll(this, thread_index);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::lookup_menu
+//       Access: Public
+//  Description: Returns the MenuDef properties associated with the
+//               indicated menu ID.  This specifies what we expect to
+//               do when the given menu has been selected.
+////////////////////////////////////////////////////////////////////
+const GtkStatsMonitor::MenuDef &GtkStatsMonitor::
+lookup_menu(int menu_id) const {
+  static MenuDef invalid(0, 0, false);
+  int menu_index = menu_id - MI_new_chart;
+  nassertr(menu_index >= 0 && menu_index < (int)_menu_by_id.size(), invalid);
+  return _menu_by_id[menu_index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::get_menu_id
+//       Access: Public
+//  Description: Returns the menu ID that is reserved for the
+//               indicated MenuDef properties.  If this is the first
+//               time these particular properties have been requested,
+//               a new menu ID is returned; otherwise, the existing
+//               menu ID is returned.
+////////////////////////////////////////////////////////////////////
+int GtkStatsMonitor::
+get_menu_id(const MenuDef &menu_def) {
+  MenuByDef::iterator mi;
+  mi = _menu_by_def.find(menu_def);
+  if (mi != _menu_by_def.end()) {
+    return (*mi).second;
+  }
+
+  // Slot a new id.
+  int menu_id = (int)_menu_by_id.size() + MI_new_chart;
+  _menu_by_id.push_back(menu_def);
+  _menu_by_def[menu_def] = menu_id;
+
+  return menu_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::set_time_units
+//       Access: Public
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for all graphs to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+set_time_units(int unit_mask) {
+  _time_units = unit_mask;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->set_time_units(_time_units);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::set_scroll_speed
+//       Access: Public
+//  Description: Called when the user selects a new scroll speed from
+//               the monitor pulldown menu, this should adjust the
+//               speeds for all graphs to the indicated value.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+set_scroll_speed(float scroll_speed) {
+  _scroll_speed = scroll_speed;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->set_scroll_speed(_scroll_speed);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::set_pause
+//       Access: Public
+//  Description: Called when the user selects a pause on or pause off
+//               option from the menu.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+set_pause(bool pause) {
+  _pause = pause;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    GtkStatsGraph *graph = (*gi);
+    graph->set_pause(_pause);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::add_graph
+//       Access: Private
+//  Description: Adds the newly-created graph to the list of managed
+//               graphs.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+add_graph(GtkStatsGraph *graph) {
+  _graphs.insert(graph);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::remove_graph
+//       Access: Private
+//  Description: Deletes the indicated graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+remove_graph(GtkStatsGraph *graph) {
+  Graphs::iterator gi = _graphs.find(graph);
+  if (gi != _graphs.end()) {
+    _graphs.erase(gi);
+    delete graph;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::create_window
+//       Access: Private
+//  Description: Creates the window for this monitor.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+create_window() {
+  if (_window != NULL) {
+    return;
+  }
+
+  _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  g_signal_connect(G_OBJECT(_window), "delete_event",
+		   G_CALLBACK(window_delete_event), this);
+  g_signal_connect(G_OBJECT(_window), "destroy",
+		   G_CALLBACK(window_destroy), this);
+
+  _window_title = get_client_progname() + " on " + get_client_hostname();
+  gtk_window_set_title(GTK_WINDOW(_window), _window_title.c_str());
+
+  gtk_window_set_default_size(GTK_WINDOW(_window), 500, 360);
+
+  // Set up the menu.
+  GtkAccelGroup *accel_group = gtk_accel_group_new();
+  _item_factory = 
+    gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<PStats>", accel_group);
+  gtk_item_factory_create_items(_item_factory, num_menu_entries, menu_entries,
+				this);
+  gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
+  GtkWidget *menubar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
+
+    /*
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
+  }
+  */
+
+  // Pack the menu into the window.
+  GtkWidget *main_vbox = gtk_vbox_new(FALSE, 1);
+  //  gtk_container_set_border_width(GTK_CONTAINER(main_vbox), 1);
+  gtk_container_add(GTK_CONTAINER(_window), main_vbox);
+  gtk_box_pack_start(GTK_BOX(main_vbox), menubar, FALSE, TRUE, 0);
+
+  gtk_widget_show_all(_window);  
+  gtk_widget_show(_window);
+
+  set_time_units(PStatGraph::GBU_ms);
+  set_scroll_speed(3);
+  set_pause(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::window_delete_event
+//       Access: Private, Static
+//  Description: Callback when the window is closed by the user.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsMonitor::
+window_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+  // Returning FALSE to indicate we should destroy the window
+  // when the user selects "close".
+  return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::window_delete_event
+//       Access: Private, Static
+//  Description: Callback when the window is destroyed by the system
+//               (or by delete_event).
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+window_destroy(GtkWidget *widget, gpointer data) {
+  GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+  self->close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::setup_frame_rate_label
+//       Access: Private
+//  Description: Creates the frame rate label on the right end of the
+//               menu bar.  This is used as a text label to display
+//               the main thread's frame rate to the user, although it
+//               is implemented as a right-justified toplevel menu
+//               item that doesn't open to anything.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+setup_frame_rate_label() {
+  /*
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+  mii.fType = MFT_STRING | MFT_RIGHTJUSTIFY; 
+  mii.wID = MI_frame_rate_label;
+  mii.dwTypeData = ""; 
+  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::handle_menu_command
+//       Access: Private, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget) {
+  GtkStatsMonitor *self = (GtkStatsMonitor *)callback_data;
+  switch (menu_id) {
+  case MI_none:
+    break;
+
+  case MI_time_ms:
+    self->set_time_units(PStatGraph::GBU_ms);
+    break;
+
+  case MI_time_hz:
+    self->set_time_units(PStatGraph::GBU_hz);
+    break;
+
+  case MI_speed_1:
+    self->set_scroll_speed(1);
+    break;
+
+  case MI_speed_2:
+    self->set_scroll_speed(2);
+    break;
+
+  case MI_speed_3:
+    self->set_scroll_speed(3);
+    break;
+
+  case MI_speed_6:
+    self->set_scroll_speed(6);
+    break;
+
+  case MI_speed_12:
+    self->set_scroll_speed(12);
+    break;
+
+  case MI_pause:
+    self->set_pause(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
+    break;
+
+  default:
+    if (menu_id >= MI_new_chart) {
+      const MenuDef &menu_def = self->lookup_menu(menu_id);
+      if (menu_def._collector_index < 0) {
+        self->open_piano_roll(menu_def._thread_index);
+      } else {
+        self->open_strip_chart(menu_def._thread_index, 
+			       menu_def._collector_index,
+			       menu_def._show_level);
+      }
     }
   }
 }

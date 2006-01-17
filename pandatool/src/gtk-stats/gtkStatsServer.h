@@ -1,5 +1,5 @@
 // Filename: gtkStatsServer.h
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -20,13 +20,12 @@
 #define GTKSTATSSERVER_H
 
 #include "pandatoolbase.h"
-
 #include "pStatServer.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GtkStatsServer
-// Description :
+// Description : The class that owns the main loop, waiting for client
+//               connections.
 ////////////////////////////////////////////////////////////////////
 class GtkStatsServer : public PStatServer {
 public:
@@ -34,3 +33,4 @@ public:
 };
 
 #endif
+

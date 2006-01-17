@@ -1,5 +1,5 @@
 // Filename: gtkStats.cxx
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,67 +16,85 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandatoolbase.h"
 #include "gtkStats.h"
-#include "gtkStatsMainWindow.h"
-
-#include "pStatServer.h"
+#include "gtkStatsServer.h"
 #include "config_pstats.h"
 
-#include <signal.h>
+GtkWidget *main_window;
+static GtkStatsServer *server = NULL;
 
-GtkStatsMainWindow *GtkStats::_main_window = NULL;
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStats::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-GtkStats::
-GtkStats() {
-  set_program_description
-    ("This is a fancy GUI PStats server that listens on a TCP port for a "
-     "connection from a PStatClient in a Panda player.  It will then "
-     "draw strip charts illustrating the performance stats as reported "
-     "by the player.");
-
-  add_option
-    ("p", "port", 0,
-     "Specify the TCP port to listen for connections on.  By default, this "
-     "is taken from the pstats-host Config variable.",
-     &GtkStats::dispatch_int, NULL, &_port);
-
-  _port = pstats_port;
+static gboolean
+delete_event(GtkWidget *widget,
+	     GdkEvent *event, gpointer data) {
+  // Returning FALSE to indicate we should destroy the main window
+  // when the user selects "close".
+  return FALSE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStats::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GtkStats::
-run() {
-  new GtkStatsMainWindow(_port);
-
-  main_loop();
+static void
+destroy(GtkWidget *widget, gpointer data) {
+  gtk_main_quit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStats::quit
-//       Access: Public, Static
-//  Description: Call this to cleanly shut down the program.
-////////////////////////////////////////////////////////////////////
-void GtkStats::
-quit() {
-  if (_main_window != (GtkStatsMainWindow *)NULL) {
-    _main_window->destruct();
+static gboolean
+timer(gpointer data) {
+  server->poll();
+
+  return TRUE;
+}
+
+int
+main(int argc, char *argv[]) {
+  gtk_init(&argc, &argv);
+
+  main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_title(GTK_WINDOW(main_window), "PStats");
+
+  // Connect the delete and destroy events, so the user can exit the
+  // application by closing the main window.
+  g_signal_connect(G_OBJECT(main_window), "delete_event",
+		   G_CALLBACK(delete_event), NULL);
+  
+  g_signal_connect(G_OBJECT(main_window), "destroy",
+		   G_CALLBACK(destroy), NULL);
+
+  ostringstream stream;
+  stream << "Listening on port " << pstats_port;
+  string str = stream.str();
+  GtkWidget *label = gtk_label_new(str.c_str());
+  gtk_container_add(GTK_CONTAINER(main_window), label);
+  gtk_widget_show(label);
+
+  // Create the server object.
+  server = new GtkStatsServer;
+  if (!server->listen()) {
+    ostringstream stream;
+    stream 
+      << "Unable to open port " << pstats_port
+      << ".  Try specifying a different\n"
+      << "port number using pstats-port in your Config file.";
+    string str = stream.str();
+
+    GtkWidget *dialog = 
+      gtk_message_dialog_new(GTK_WINDOW(main_window),
+			     GTK_DIALOG_DESTROY_WITH_PARENT,
+			     GTK_MESSAGE_ERROR,
+			     GTK_BUTTONS_CLOSE,
+			     str.c_str());
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    exit(1);
   }
-  Gtk::Main::quit();
-}
 
+  gtk_widget_show(main_window);
 
-int main(int argc, char *argv[]) {
-  GtkStats prog;
-  prog.parse_command_line(argc, argv);
-  prog.run();
-  return 0;
+  // Set up a timer to poll the pstats every so often.
+  g_timeout_add(200, timer, NULL);
+
+  // Now get lost in the message loop.
+  gtk_main();
+
+  return (0);
 }

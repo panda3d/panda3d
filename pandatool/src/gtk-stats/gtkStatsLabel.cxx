@@ -1,5 +1,5 @@
 // Filename: gtkStatsLabel.cxx
-// Created by:  drose (15Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,27 +18,40 @@
 
 #include "gtkStatsLabel.h"
 #include "gtkStatsMonitor.h"
+#include "gtkStatsGraph.h"
 
-#include "pStatClientData.h"
-#include "pStatMonitor.h"
+int GtkStatsLabel::_left_margin = 2;
+int GtkStatsLabel::_right_margin = 2;
+int GtkStatsLabel::_top_margin = 2;
+int GtkStatsLabel::_bottom_margin = 2;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsLabel::Constructor
 //       Access: Public
-//  Description: This constructor automatically figures out the
-//               appropriate name and color for the label.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsLabel::
-GtkStatsLabel(PStatMonitor *monitor, int collector_index,
-              Gdk_Font font) :
-  _collector_index(collector_index),
-  _font(font)
+GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
+              int thread_index, int collector_index, bool use_fullname) :
+  _monitor(monitor),
+  _graph(graph),
+  _thread_index(thread_index),
+  _collector_index(collector_index)
 {
-  set_events(GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK);
+  _widget = NULL;
+  if (use_fullname) {
+    _text = _monitor->get_client_data()->get_collector_fullname(_collector_index);
+  } else {
+    _text = _monitor->get_client_data()->get_collector_name(_collector_index);
+  }
 
-  _text = monitor->get_client_data()->get_collector_name(_collector_index);
-  RGBColorf rgb = monitor->get_collector_color(_collector_index);
-  _bg_color.set_rgb_p(rgb[0], rgb[1], rgb[2]);
+  /*
+  RGBColorf rgb = _monitor->get_collector_color(_collector_index);
+  int r = (int)(rgb[0] * 255.0f);
+  int g = (int)(rgb[1] * 255.0f);
+  int b = (int)(rgb[2] * 255.0f);
+  _bg_color = RGB(r, g, b);
+  _bg_brush = CreateSolidBrush(RGB(r, g, b));
 
   // Should our foreground be black or white?
   float bright =
@@ -47,96 +60,103 @@ GtkStatsLabel(PStatMonitor *monitor, int collector_index,
     rgb[2] * 0.114;
 
   if (bright >= 0.5) {
-    _fg_color.set_rgb_p(0, 0, 0);
+    _fg_color = RGB(0, 0, 0);
+    _highlight_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
   } else {
-    _fg_color.set_rgb_p(1, 1, 1);
+    _fg_color = RGB(255, 255, 255);
+    _highlight_brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
   }
+  */
 
-  Gdk_Colormap::get_system().alloc(_fg_color);
-  Gdk_Colormap::get_system().alloc(_bg_color);
-
-  int text_width = _font.string_width(_text);
-  int text_height = _font.height();
-
-  _height = text_height + 4;
-  _width = text_width + 4;
-
-  set_usize(_width, _height);
+  _highlight = false;
+  _mouse_within = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_width
+//     Function: GtkStatsLabel::Destructor
 //       Access: Public
-//  Description: Returns the width of the widget as we requested it.
-////////////////////////////////////////////////////////////////////
-int GtkStatsLabel::
-get_width() const {
-  return _width;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_height
-//       Access: Public
-//  Description: Returns the height of the widget as we requested it.
-////////////////////////////////////////////////////////////////////
-int GtkStatsLabel::
-get_height() const {
-  return _height;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::configure_event_impl
-//       Access: Private, Virtual
-//  Description: Creates a new backing pixmap of the appropriate size.
-////////////////////////////////////////////////////////////////////
-gint GtkStatsLabel::
-configure_event_impl(GdkEventConfigure *) {
-  Gdk_Window window = get_window();
-
-  _gc = Gdk_GC(window);
-  _gc.set_foreground(_fg_color);
-  _gc.set_background(_bg_color);
-  _gc.set_font(_font);
-
-  _reverse_gc = Gdk_GC(window);
-  _reverse_gc.set_foreground(_bg_color);
-  _reverse_gc.set_background(_fg_color);
-  _reverse_gc.set_font(_font);
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::expose_event_impl
-//       Access: Private, Virtual
-//  Description: Redraw the text.  We don't bother with clipping
-//               regions here, but just draw the whole text every
-//               time.
-////////////////////////////////////////////////////////////////////
-gint GtkStatsLabel::
-expose_event_impl(GdkEventExpose *event) {
-  int text_width = _font.string_width(_text);
-  int text_height = _font.height();
-
-  Gdk_Window window = get_window();
-
-  window.draw_rectangle(_reverse_gc, true, 0, 0, width(), height());
-  window.draw_string(_font, _gc, width() - text_width - 2,
-                      height() - (height() - text_height) / 2 - _font.descent(),
-                      _text);
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::button_press_event_impl
-//       Access: Private, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-gint GtkStatsLabel::
-button_press_event_impl(GdkEventButton *button) {
-  if (button->type == GDK_2BUTTON_PRESS && button->button == 1) {
-    collector_picked(_collector_index);
-    return true;
+GtkStatsLabel::
+~GtkStatsLabel() {
+  //  DeleteObject(_bg_brush);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::setup
+//       Access: Public
+//  Description: Creates the actual widget.
+////////////////////////////////////////////////////////////////////
+GtkWidget *GtkStatsLabel::
+setup() {
+  _widget = gtk_event_box_new();
+  GtkWidget *label = gtk_label_new(_text.c_str());
+  gtk_container_add(GTK_CONTAINER(_widget), label);
+  gtk_widget_show(label);
+  gtk_widget_show(_widget);
+
+  return _widget;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::get_widget
+//       Access: Public
+//  Description: Returns the widget for this label.
+////////////////////////////////////////////////////////////////////
+GtkWidget *GtkStatsLabel::
+get_widget() const {
+  return _widget;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::get_collector_index
+//       Access: Public
+//  Description: Returns the collector this label represents.
+////////////////////////////////////////////////////////////////////
+int GtkStatsLabel::
+get_collector_index() const {
+  return _collector_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::set_highlight
+//       Access: Public
+//  Description: Enables or disables the visual highlight for this
+//               label.
+////////////////////////////////////////////////////////////////////
+void GtkStatsLabel::
+set_highlight(bool highlight) {
+  if (_highlight != highlight) {
+    _highlight = highlight;
+    /*
+    InvalidateRect(_widget, NULL, TRUE);
+    */
   }
-  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::get_highlight
+//       Access: Public
+//  Description: Returns true if the visual highlight for this
+//               label is enabled.
+////////////////////////////////////////////////////////////////////
+bool GtkStatsLabel::
+get_highlight() const {
+  return _highlight;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::set_mouse_within
+//       Access: Private
+//  Description: Used internally to indicate whether the mouse is
+//               within the label's widget.
+////////////////////////////////////////////////////////////////////
+void GtkStatsLabel::
+set_mouse_within(bool mouse_within) {
+  if (_mouse_within != mouse_within) {
+    _mouse_within = mouse_within;
+    /*
+    InvalidateRect(_widget, NULL, TRUE);
+    */
+  }
 }

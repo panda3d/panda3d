@@ -1,5 +1,5 @@
 // Filename: gtkStatsPianoRoll.h
-// Created by:  drose (18Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,72 +21,61 @@
 
 #include "pandatoolbase.h"
 
-#include "gtkStatsMonitor.h"
-
+#include "gtkStatsGraph.h"
 #include "pStatPianoRoll.h"
 #include "pointerTo.h"
 
-#include <gtk--.h>
-#include "pmap.h"
+#include <windows.h>
 
-class PStatView;
-class GtkStatsGuide;
+class GtkStatsMonitor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GtkStatsPianoRoll
-// Description : A special widget that draws a piano-roll style chart,
+// Description : A window that draws a piano-roll style chart,
 //               which shows the collectors explicitly stopping and
 //               starting, one frame at a time.
 ////////////////////////////////////////////////////////////////////
-class GtkStatsPianoRoll : public Gtk::DrawingArea, public PStatPianoRoll {
+class GtkStatsPianoRoll : public PStatPianoRoll, public GtkStatsGraph {
 public:
-  GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
-                    int xsize, int ysize);
+  GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index);
+  virtual ~GtkStatsPianoRoll();
 
-  void mark_dead();
+  virtual void new_data(int thread_index, int frame_number);
+  virtual void force_redraw();
+  virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
-  Gtk::Alignment *get_labels();
+  virtual void set_time_units(int unit_mask);
+  virtual void clicked_label(int collector_index);
+  void set_horizontal_scale(float time_width);
 
-  Gdk_GC get_collector_gc(int collector_index);
-
-private:
+protected:
+  void clear_region();
   virtual void begin_draw();
   virtual void draw_bar(int row, int from_x, int to_x);
   virtual void end_draw();
   virtual void idle();
 
-  virtual gint configure_event_impl(GdkEventConfigure *event);
-  virtual gint expose_event_impl(GdkEventExpose *event);
-
-  void pack_labels();
-  void setup_white_gc();
+  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual void additional_window_paint(HDC hdc);
+  virtual void additional_graph_window_paint(HDC hdc);
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+                                       int width, int height);
 
 private:
-  // Backing pixmap for drawing area.
-  Gdk_Pixmap _pixmap;
+  int get_collector_under_pixel(int xpoint, int ypoint);
+  void update_labels();
+  void draw_guide_bar(HDC hdc, const GuideBar &bar);
+  void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);
 
-  // Graphics contexts for fg/bg.  We don't use the contexts defined
-  // in the style, because that would probably interfere with the
-  // visibility of the chart.
-  Gdk_GC _white_gc;
-  Gdk_GC _black_gc;
-  Gdk_GC _dark_gc;
-  Gdk_GC _light_gc;
+  void create_window();
+  static void register_window_class(HINSTANCE application);
 
-  // Table of graphics contexts for our various collectors.
-  typedef pmap<int, Gdk_GC> GCs;
-  GCs _gcs;
+  static LONG GTKAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-  // Table of Y-positions for each of our rows, measured from the
-  // bottom.
-  vector_int _y_positions;
-
-  Gtk::Alignment *_label_align;
-  Gtk::VBox *_label_box;
-  bool _is_dead;
+  static bool _window_class_registered;
+  static const char * const _window_class_name;
 };
-
-#include "gtkStatsPianoRoll.I"
 
 #endif
 

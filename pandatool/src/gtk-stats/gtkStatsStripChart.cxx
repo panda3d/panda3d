@@ -1,5 +1,5 @@
 // Filename: gtkStatsStripChart.cxx
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,16 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsStripChart.h"
-#include "gtkStatsLabel.h"
-#include "gtkStatsGuide.h"
+#include "gtkStatsMonitor.h"
+#include "pStatCollectorDef.h"
+#include "numeric_types.h"
 
-#include "request_initial_size.h"
-#include "pStatThreadData.h"
-#include "pStatFrameData.h"
-#include "pStatView.h"
-
-#include <algorithm>
-
+static const int default_strip_chart_width = 400;
+static const int default_strip_chart_height = 100;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::Constructor
@@ -34,99 +30,234 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripChart::
-GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view,
-                   int collector_index, int xsize, int ysize) :
-  PStatStripChart(monitor, view, collector_index, xsize, ysize)
+GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
+                   int collector_index, bool show_level) :
+  PStatStripChart(monitor, 
+                  show_level ? monitor->get_level_view(collector_index, thread_index) : monitor->get_view(thread_index), 
+                  collector_index, 
+                  default_strip_chart_width,
+                  default_strip_chart_height),
+  GtkStatsGraph(monitor, thread_index)
 {
-  _is_dead = false;
-  set_events(GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK);
+  _brush_origin = 0;
 
-  _label_align = manage(new Gtk::Alignment(1.0, 1.0));
-  _label_align->show();
+  _left_margin = 96;
+  _right_margin = 32;
+  _top_margin = 16;
+  _bottom_margin = 8;
 
-  _label_box = NULL;
-  pack_labels();
+  if (show_level) {
+    // If it's a level-type graph, show the appropriate units.
+    if (_unit_name.empty()) {
+      set_guide_bar_units(GBU_named);
+    } else {
+      set_guide_bar_units(GBU_named | GBU_show_units);
+    }
 
-  _guide = manage(new GtkStatsGuide(this));
-  _guide->show();
+  } else {
+    // If it's a time-type graph, show the ms/Hz units.
+    set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
+  }
 
-  request_initial_size(*this, get_xsize(), get_ysize());
+  _smooth_check_box = 0;
+
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), _label_stack.setup(),
+		     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), _graph_window,
+		     FALSE, FALSE, 0);
+
+  gtk_container_add(GTK_CONTAINER(_window), hbox);
+
+  gtk_widget_show_all(_window);  
+  gtk_widget_show(_window);
+
+  clear_region();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::mark_dead
-//       Access: Public
-//  Description: Called when the client's connection has been lost,
-//               this should update the window in some obvious way to
-//               indicate that the window is no longer live.
+//     Function: GtkStatsStripChart::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+GtkStatsStripChart::
+~GtkStatsStripChart() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::new_collector
+//       Access: Public, Virtual
+//  Description: Called whenever a new Collector definition is
+//               received from the client.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-mark_dead() {
-  _is_dead = true;
+new_collector(int collector_index) {
+  GtkStatsGraph::new_collector(collector_index);
+}
 
-  setup_white_gc();
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::new_data
+//       Access: Public, Virtual
+//  Description: Called as each frame's data is made available.  There
+//               is no gurantee the frames will arrive in order, or
+//               that all of them will arrive at all.  The monitor
+//               should be prepared to accept frames received
+//               out-of-order or missing.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+new_data(int thread_index, int frame_number) {
+  if (is_title_unknown()) {
+    string window_title = get_title_text();
+    if (!is_title_unknown()) {
+      gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
+    }
+  }
 
-  if (!first_data()) {
-    force_redraw();
+  if (!_pause) {
+    update();
+
+    /*
+    string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+    if (_net_value_text != text) {
+      _net_value_text = text;
+      RECT rect;
+      GetClientRect(_window, &rect);
+      rect.bottom = _top_margin;
+      InvalidateRect(_window, &rect, TRUE);
+    }
+    */
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::force_redraw
+//       Access: Public, Virtual
+//  Description: Called when it is necessary to redraw the entire graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+force_redraw() {
+  PStatStripChart::force_redraw();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::changed_graph_size
+//       Access: Public, Virtual
+//  Description: Called when the user has resized the window, forcing
+//               a resize of the graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+changed_graph_size(int graph_xsize, int graph_ysize) {
+  PStatStripChart::changed_size(graph_xsize, graph_ysize);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::set_time_units
+//       Access: Public, Virtual
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for the graph to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+set_time_units(int unit_mask) {
+  int old_unit_mask = get_guide_bar_units();
+  if ((old_unit_mask & (GBU_hz | GBU_ms)) != 0) {
+    unit_mask = unit_mask & (GBU_hz | GBU_ms);
+    unit_mask |= (old_unit_mask & GBU_show_units);
+    set_guide_bar_units(unit_mask);
+
+    /*
+    RECT rect;
+    GetClientRect(_window, &rect);
+    rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+
+    GetClientRect(_window, &rect);
+    rect.bottom = _top_margin;
+    InvalidateRect(_window, &rect, TRUE);
+    */
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::set_scroll_speed
+//       Access: Public
+//  Description: Called when the user selects a new scroll speed from
+//               the monitor pulldown menu, this should adjust the
+//               speed for the graph to the indicated value.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+set_scroll_speed(float scroll_speed) {
+  // The speed factor indicates chart widths per minute.
+  if (scroll_speed != 0.0f) {
+    set_horizontal_scale(60.0f / scroll_speed);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::clicked_label
+//       Access: Public, Virtual
+//  Description: Called when the user single-clicks on a label.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+clicked_label(int collector_index) {
+  if (collector_index < 0) {
+    // Clicking on whitespace in the graph is the same as clicking on
+    // the top label.
+    collector_index = get_collector_index();
+  }
+
+  if (collector_index == get_collector_index() && collector_index != 0) {
+    // Clicking on the top label means to go up to the parent level.
+    const PStatClientData *client_data = 
+      GtkStatsGraph::_monitor->get_client_data();
+    if (client_data->has_collector(collector_index)) {
+      const PStatCollectorDef &def =
+        client_data->get_collector_def(collector_index);
+      if (def._parent_index == 0 && get_view().get_show_level()) {
+        // Unless the parent is "Frame", and we're not a time collector.
+      } else {
+        set_collector_index(def._parent_index);
+      }
+    }
+
   } else {
-    clear_region();
+    // Clicking on any other label means to focus on that.
+    set_collector_index(collector_index);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::get_labels
+//     Function: GtkStatsStripChart::set_vertical_scale
 //       Access: Public
-//  Description: Returns an alignment widget that contains all of the
-//               labels appropriate to this chart, already formatted
-//               and stacked up bottom-to-top.  The window should pack
-//               this widget suitably near the strip chart.
+//  Description: Changes the value the height of the vertical axis
+//               represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
-Gtk::Alignment *GtkStatsStripChart::
-get_labels() {
-  return _label_align;
+void GtkStatsStripChart::
+set_vertical_scale(float value_height) {
+  PStatStripChart::set_vertical_scale(value_height);
+
+  GdkRectangle rect = {
+    0, 0, get_xsize(), get_ysize() 
+  };
+  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::get_guide
-//       Access: Public
-//  Description: Returns a widget that contains the numeric labels for
-//               the guide bars.  The window should pack this widget
-//               suitably near the strip chart.
+//     Function: GtkStatsStripChart::update_labels
+//       Access: Protected, Virtual
+//  Description: Resets the list of labels.
 ////////////////////////////////////////////////////////////////////
-GtkStatsGuide *GtkStatsStripChart::
-get_guide() {
-  return _guide;
-}
+void GtkStatsStripChart::
+update_labels() {
+  PStatStripChart::update_labels();
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::get_collector_gc
-//       Access: Public
-//  Description: Returns a graphics context suitable for drawing in
-//               the indicated collector's color.
-////////////////////////////////////////////////////////////////////
-Gdk_GC GtkStatsStripChart::
-get_collector_gc(int collector_index) {
-  GCs::iterator gi;
-  gi = _gcs.find(collector_index);
-  if (gi != _gcs.end()) {
-    return (*gi).second;
+  _label_stack.clear_labels();
+  for (int i = 0; i < get_num_labels(); i++) {
+    _label_stack.add_label(GtkStatsGraph::_monitor, this, _thread_index,
+                           get_label_collector(i), false);
   }
-
-  // Ask the monitor what color this guy should be.
-  RGBColorf rgb = get_monitor()->get_collector_color(collector_index);
-  Gdk_Color color;
-  color.set_rgb_p(rgb[0], rgb[1], rgb[2]);
-
-  // Now allocate the color from the system colormap.
-  Gdk_Colormap::get_system().alloc(color);
-
-  // Allocate a new graphics context.
-  Gdk_GC gc(_pixmap);
-  gc.set_foreground(color);
-
-  _gcs[collector_index] = gc;
-  return gc;
+  _labels_changed = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,8 +267,9 @@ get_collector_gc(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 clear_region() {
-  _pixmap.draw_rectangle(_white_gc, true, 0, 0, get_xsize(), get_ysize());
-  end_draw(0, get_xsize());
+  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
+  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0, 
+		     get_xsize(), get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,28 +281,19 @@ clear_region() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 copy_region(int start_x, int end_x, int dest_x) {
-  _pixmap.copy_area(_white_gc, 0, 0,
-                    _pixmap, start_x, 0,
-                    end_x - start_x + 1, get_ysize());
+  gdk_draw_drawable(_pixmap, _pixmap_gc, _pixmap,
+		    start_x, 0, dest_x, 0,
+		    end_x - start_x, get_ysize());
+  
+  // Also shift the brush origin over, so we still get proper
+  // dithering.
+  _brush_origin += (dest_x - start_x);
+  //  SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, NULL);
 
-  // We could make a window-to-window copy to implement scrolling in
-  // the window.  But this leads to trouble if the scrolling window
-  // isn't on top.  Instead, we'll just do the scroll in the pixmap,
-  // and then blt the pixmap back out--in principle, this ought to be
-  // just as fast.
-  /*
-  Gdk_Window window = get_window();
-  window.copy_area(_white_gc, 0, 0,
-                   window, start_x, 0,
-                   end_x - start_x + 1, get_ysize());
-  */
-
-  GdkRectangle update_rect;
-  update_rect.x = dest_x;
-  update_rect.y = 0;
-  update_rect.width = end_x - start_x + 1;
-  update_rect.height = get_ysize();
-  draw(&update_rect);
+  GdkRectangle rect = {
+    dest_x, 0, end_x - start_x, get_ysize() 
+  };
+  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,32 +305,32 @@ copy_region(int start_x, int end_x, int dest_x) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
-  while (w > 0) {
-    // Start by clearing the band first.
-    _pixmap.draw_line(_white_gc, x, 0, x, get_ysize());
+  // Start by clearing the band first.
+  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
+  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, x, 0, 
+		     w + 1, get_ysize());
 
-    float overall_time = 0.0;
-    int y = get_ysize();
+  float overall_time = 0.0;
+  int y = get_ysize();
 
-    FrameData::const_iterator fi;
-    for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
-      const ColorData &cd = (*fi);
-      overall_time += cd._net_value;
+  FrameData::const_iterator fi;
+  for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+    const ColorData &cd = (*fi);
+    overall_time += cd._net_value;
+    GdkGC *gc = get_collector_gc(cd._collector_index);
 
-      if (overall_time > get_vertical_scale()) {
-        // Off the top.  Go ahead and clamp it by hand, in case it's so
-        // far off the top we'd overflow the 16-bit pixel value.
-        _pixmap.draw_line(get_collector_gc(cd._collector_index), x, y, x, 0);
-        // And we can consider ourselves done now.
-        break;
-      }
+    if (overall_time > get_vertical_scale()) {
+      // Off the top.  Go ahead and clamp it by hand, in case it's so
+      // far off the top we'd overflow the 16-bit pixel value.
+      gdk_draw_rectangle(_pixmap, gc, TRUE, x, 0, w + 1, y);
 
-      int top_y = height_to_pixel(overall_time);
-      _pixmap.draw_line(get_collector_gc(cd._collector_index), x, y, x, top_y);
-      y = top_y;
+      // And we can consider ourselves done now.
+      return;
     }
-    x++;
-    w--;
+
+    int top_y = height_to_pixel(overall_time);
+    gdk_draw_rectangle(_pixmap, gc, TRUE, x, top_y, w + 1, y);
+    y = top_y;
   }
 }
 
@@ -218,11 +341,9 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 draw_empty(int x, int w) {
-  while (w > 0) {
-    _pixmap.draw_line(_white_gc, x, 0, x, get_ysize());
-    x++;
-    w--;
-  }
+  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
+  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, x, 0, 
+		     w + 1, get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +353,8 @@ draw_empty(int x, int w) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 draw_cursor(int x) {
-  _pixmap.draw_line(_black_gc, x, 0, x, get_ysize());
+  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_black);
+  gdk_draw_line(_pixmap, _pixmap_gc, x, 0, x, get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,181 +370,103 @@ end_draw(int from_x, int to_x) {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    const GuideBar &bar = get_guide_bar(i);
-    int y = height_to_pixel(bar._height);
-
-    if (y >= 5) {
-      // Only draw it if it's not too close to the top.
-      switch (bar._style) {
-      case GBS_target:
-        _pixmap.draw_line(_light_gc, from_x, y, to_x, y);
-        break;
-
-      case GBS_normal:
-      default:
-        _pixmap.draw_line(_dark_gc, from_x, y, to_x, y);
-        break;
-      }
-    }
+    draw_guide_bar(from_x, to_x, get_guide_bar(i));
   }
 
-  GdkRectangle update_rect;
-  update_rect.x = from_x;
-  update_rect.y = 0;
-  update_rect.width = to_x - from_x + 1;
-  update_rect.height = get_ysize();
-  draw(&update_rect);
+  GdkRectangle rect = {
+    from_x, 0, to_x - from_x + 1, get_ysize() 
+  };
+  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::idle
+//     Function: GtkStatsStripChart::consider_drag_start
 //       Access: Protected, Virtual
-//  Description: Called at the end of the draw cycle.
+//  Description: Based on the mouse position within the window's
+//               client area, look for draggable things the mouse
+//               might be hovering over and return the apprioprate
+//               DragMode enum or DM_none if nothing is indicated.
 ////////////////////////////////////////////////////////////////////
-void GtkStatsStripChart::
-idle() {
-  if (_labels_changed) {
-    pack_labels();
-  }
-  if (_guide_bars_changed) {
-    GdkRectangle update_rect;
-    update_rect.x = 0;
-    update_rect.y = 0;
-    update_rect.width = _guide->width();
-    update_rect.height = _guide->height();
-    _guide->draw(&update_rect);
-    _guide_bars_changed = false;
-  }
-}
+GtkStatsGraph::DragMode GtkStatsStripChart::
+consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
+  if (mouse_x >= _graph_left && mouse_x < _graph_left + get_xsize()) {
+    if (mouse_y >= _graph_top && mouse_y < _graph_top + get_ysize()) {
+      // See if the mouse is over a user-defined guide bar.
+      int y = mouse_y - _graph_top;
+      float from_height = pixel_to_height(y + 2);
+      float to_height = pixel_to_height(y - 2);
+      _drag_guide_bar = find_user_guide_bar(from_height, to_height);
+      if (_drag_guide_bar >= 0) {
+        return DM_guide_bar;
+      }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::configure_event_impl
-//       Access: Private, Virtual
-//  Description: Creates a new backing pixmap of the appropriate size.
-////////////////////////////////////////////////////////////////////
-gint GtkStatsStripChart::
-configure_event_impl(GdkEventConfigure *) {
-  if (width() != get_xsize() || height() != get_ysize() ||
-      _pixmap.gdkobj() == (GdkDrawable *)NULL) {
-    bool is_initial = true;
-    if (_pixmap) {
-      is_initial = false;
-      _pixmap.release();
+    } else {
+      // The mouse is above or below the graph; maybe create a new
+      // guide bar.
+      return DM_new_guide_bar;
     }
-
-    _pixmap.create(get_window(), width(), height());
-
-    Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
-
-    _white_gc = Gdk_GC(_pixmap);
-    setup_white_gc();
-
-    _black_gc = Gdk_GC(_pixmap);
-    _black_gc.set_foreground(system_colormap.black());
-
-    _dark_gc = Gdk_GC(_pixmap);
-    Gdk_Color dark;
-    dark.set_grey_p(0.2);
-    system_colormap.alloc(dark);
-    _dark_gc.set_foreground(dark);
-
-    _light_gc = Gdk_GC(_pixmap);
-    Gdk_Color light;
-    light.set_grey_p(0.6);
-    system_colormap.alloc(light);
-    _light_gc.set_foreground(light);
-
-    _pixmap.draw_rectangle(_white_gc, true, 0, 0, width(), height());
-
-    changed_size(width(), height());
   }
-  return true;
+
+  return GtkStatsGraph::consider_drag_start(mouse_x, mouse_y, width, height);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::expose_event_impl
-//       Access: Private, Virtual
-//  Description: Redraw the screen from the backing pixmap.
-////////////////////////////////////////////////////////////////////
-gint GtkStatsStripChart::
-expose_event_impl(GdkEventExpose *event) {
-  get_window().draw_pixmap(_white_gc, _pixmap,
-                           event->area.x, event->area.y,
-                           event->area.x, event->area.y,
-                           event->area.width, event->area.height);
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::button_press_event_impl
-//       Access: Private, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-gint GtkStatsStripChart::
-button_press_event_impl(GdkEventButton *button) {
-  if (button->type == GDK_2BUTTON_PRESS && button->button == 1) {
-    int collector_index = get_collector_under_pixel((int)button->x, (int)button->y);
-    collector_picked(collector_index);
-    return true;
-  }
-  return false;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::pack_labels
-//       Access: Private
-//  Description:
+//     Function: GtkStatsStripChart::set_drag_mode
+//       Access: Protected, Virtual
+//  Description: This should be called whenever the drag mode needs to
+//               change state.  It provides hooks for a derived class
+//               to do something special.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-pack_labels() {
-  // First, remove the old labels.
-  _label_align->remove();
+set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
+  GtkStatsGraph::set_drag_mode(drag_mode);
 
-  // Now add the new labels back in.
-  _label_box = manage(new Gtk::VBox);
-  _label_box->show();
-  _label_align->add(*_label_box);
+  switch (_drag_mode) {
+  case DM_scale:
+  case DM_left_margin:
+  case DM_right_margin:
+  case DM_sizing:
+    // Disable smoothing for these expensive operations.
+    set_average_mode(false);
+    break;
 
-  Gdk_Font font = get_style()->gtkobj()->font;
-
-  int num_labels = get_num_labels();
-  for (int i = 0; i < num_labels; i++) {
-    int collector_index = get_label_collector(i);
-    GtkStatsLabel *label =
-      new GtkStatsLabel(get_monitor(), collector_index, font);
-    label->show();
-    
-    label->collector_picked.connect(collector_picked.slot());
-    
-    _label_box->pack_end(*manage(label), false, false);
+  default:
+    // Restore smoothing according to the current setting of the check
+    // box.
+    /*
+    int result = SendMessage(_smooth_check_box, BM_GETCHECK, 0, 0);
+    set_average_mode(result == BST_CHECKED);
+    */
+    break;
   }
-  
-  _labels_changed = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsStripChart::setup_white_gc
+//     Function: GtkStatsStripChart::draw_guide_bar
 //       Access: Private
-//  Description: Sets the color on _white_gc to be either actually
-//               white (if the chart is still alive) or a light gray
-//               (if the chart is dead).
+//  Description: Draws the line for the indicated guide bar on the
+//               graph.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-setup_white_gc() {
-  Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
+draw_guide_bar(int from_x, int to_x, 
+               const PStatGraph::GuideBar &bar) {
+  int y = height_to_pixel(bar._height);
 
-  if (_is_dead) {
-    Gdk_Color death;
-    death.set_grey_p(0.8);
-    system_colormap.alloc(death);
+  if (y > 0) {
+    // Only draw it if it's not too close to the top.
+    switch (bar._style) {
+    case GBS_target:
+      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_light_gray);
+      break;
 
-    _white_gc.set_foreground(death);
-
-  } else {
-    _white_gc.set_foreground(system_colormap.white());
+    case GBS_user:
+      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_user_guide_bar);
+      break;
+      
+    case GBS_normal:
+      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
+      break;
+    }
+    gdk_draw_line(_pixmap, _pixmap_gc, from_x, y, to_x, y);
   }
-
 }
-

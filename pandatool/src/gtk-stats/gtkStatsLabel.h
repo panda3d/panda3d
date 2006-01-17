@@ -1,5 +1,5 @@
 // Filename: gtkStatsLabel.h
-// Created by:  drose (15Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,47 +21,54 @@
 
 #include "pandatoolbase.h"
 
-#include <gtk--.h>
+#include <gtk/gtk.h>
 
-class PStatMonitor;
+class GtkStatsMonitor;
+class GtkStatsGraph;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GtkStatsLabel
 // Description : A text label that will draw in color appropriate for
-//               a particular collector, instead of referring to some
-//               dumb Gtk::Style.  It also throws a signal when the
-//               user double-clicks on it, passing in the collector
-//               index.  This is handy for putting colored labels on
-//               strip charts.
+//               a particular collector.  It also responds when the
+//               user double-clicks on it.  This is handy for putting
+//               colored labels on strip charts.
 ////////////////////////////////////////////////////////////////////
-class GtkStatsLabel : public Gtk::DrawingArea {
+class GtkStatsLabel {
 public:
-  GtkStatsLabel(PStatMonitor *monitor, int collector_index,
-                Gdk_Font font);
+  GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
+                int thread_index, int collector_index, bool use_fullname);
+  ~GtkStatsLabel();
 
-  int get_width() const;
-  int get_height() const;
+  GtkWidget *setup();
+  GtkWidget *get_widget() const;
 
-  SigC::Signal1<void, int> collector_picked;
+  int get_collector_index() const;
+
+  void set_highlight(bool highlight);
+  bool get_highlight() const;
 
 private:
-  virtual gint configure_event_impl (GdkEventConfigure *event);
-  virtual gint expose_event_impl (GdkEventExpose *event);
-  virtual gint button_press_event_impl(GdkEventButton *button);
+  void set_mouse_within(bool mouse_within);
 
-private:
+  GtkStatsMonitor *_monitor;
+  GtkStatsGraph *_graph;
+  int _thread_index;
   int _collector_index;
-
   string _text;
-  Gdk_Font _font;
-  Gdk_Color _fg_color;
-  Gdk_Color _bg_color;
+  GtkWidget *_widget;
 
-  int _width;
-  int _height;
+  /*
+  COLORREF _bg_color;
+  COLORREF _fg_color;
+  HBRUSH _bg_brush;
+  HBRUSH _highlight_brush;
+  */
 
-  Gdk_GC _gc;
-  Gdk_GC _reverse_gc;
+  bool _highlight;
+  bool _mouse_within;
+
+  static int _left_margin, _right_margin;
+  static int _top_margin, _bottom_margin;
 };
 
 #endif

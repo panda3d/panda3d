@@ -1,5 +1,5 @@
 // Filename: gtkStatsPianoRoll.cxx
-// Created by:  drose (18Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,16 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsPianoRoll.h"
-#include "gtkStatsLabel.h"
-#include "gtkStatsGuide.h"
+#include "gtkStatsMonitor.h"
+#include "numeric_types.h"
 
-#include "request_initial_size.h"
-#include "pStatThreadData.h"
-#include "pStatFrameData.h"
-#include "pStatView.h"
+static const int default_piano_roll_width = 400;
+static const int default_piano_roll_height = 200;
 
-#include <algorithm>
-
+bool GtkStatsPianoRoll::_window_class_registered = false;
+const char * const GtkStatsPianoRoll::_window_class_name = "piano";
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoRoll::Constructor
@@ -34,115 +32,147 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsPianoRoll::
-GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
-                  int xsize, int ysize) :
-  PStatPianoRoll(monitor, thread_index, xsize, ysize)
+GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
+  PStatPianoRoll(monitor, thread_index, 
+                 default_piano_roll_width,
+                 default_piano_roll_height),
+  GtkStatsGraph(monitor, thread_index)
 {
-  _is_dead = false;
-  set_events(GDK_EXPOSURE_MASK);
+  _left_margin = 128;
+  _right_margin = 8;
+  _top_margin = 16;
+  _bottom_margin = 8;
 
-  _label_align = manage(new Gtk::Alignment(1.0, 1.0));
-  _label_align->show();
+  // Let's show the units on the guide bar labels.  There's room.
+  set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
 
-  _label_box = NULL;
-  pack_labels();
-
-  request_initial_size(*this, get_xsize(), get_ysize());
+  create_window();
+  clear_region();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::mark_dead
-//       Access: Public
-//  Description: Called when the client's connection has been lost,
-//               this should update the window in some obvious way to
-//               indicate that the window is no longer live.
+//     Function: GtkStatsPianoRoll::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+GtkStatsPianoRoll::
+~GtkStatsPianoRoll() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::idle
+//       Access: Public, Virtual
+//  Description: Called as each frame's data is made available.  There
+//               is no gurantee the frames will arrive in order, or
+//               that all of them will arrive at all.  The monitor
+//               should be prepared to accept frames received
+//               out-of-order or missing.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
-mark_dead() {
-  _is_dead = true;
-
-  setup_white_gc();
-  force_redraw();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::get_labels
-//       Access: Public
-//  Description: Returns an alignment widget that contains all of the
-//               labels appropriate to this chart, already formatted
-//               and stacked up bottom-to-top.  The window should pack
-//               this widget suitably near the strip chart.
-////////////////////////////////////////////////////////////////////
-Gtk::Alignment *GtkStatsPianoRoll::
-get_labels() {
-  return _label_align;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::get_collector_gc
-//       Access: Public
-//  Description: Returns a graphics context suitable for drawing in
-//               the indicated collector's color.
-////////////////////////////////////////////////////////////////////
-Gdk_GC GtkStatsPianoRoll::
-get_collector_gc(int collector_index) {
-  GCs::iterator gi;
-  gi = _gcs.find(collector_index);
-  if (gi != _gcs.end()) {
-    return (*gi).second;
+new_data(int thread_index, int frame_number) {
+  if (!_pause) {
+    update();
   }
+}
 
-  // Ask the monitor what color this guy should be.
-  RGBColorf rgb = get_monitor()->get_collector_color(collector_index);
-  Gdk_Color color;
-  color.set_rgb_p(rgb[0], rgb[1], rgb[2]);
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::force_redraw
+//       Access: Public, Virtual
+//  Description: Called when it is necessary to redraw the entire graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+force_redraw() {
+  PStatPianoRoll::force_redraw();
+}
 
-  // Now allocate the color from the system colormap.
-  Gdk_Colormap::get_system().alloc(color);
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::changed_graph_size
+//       Access: Public, Virtual
+//  Description: Called when the user has resized the window, forcing
+//               a resize of the graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+changed_graph_size(int graph_xsize, int graph_ysize) {
+  PStatPianoRoll::changed_size(graph_xsize, graph_ysize);
+}
 
-  // Allocate a new graphics context.
-  Gdk_GC gc(_pixmap);
-  gc.set_foreground(color);
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::set_time_units
+//       Access: Public, Virtual
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for the graph to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+set_time_units(int unit_mask) {
+  int old_unit_mask = get_guide_bar_units();
+  if ((old_unit_mask & (GBU_hz | GBU_ms)) != 0) {
+    unit_mask = unit_mask & (GBU_hz | GBU_ms);
+    unit_mask |= (old_unit_mask & GBU_show_units);
+    set_guide_bar_units(unit_mask);
 
-  _gcs[collector_index] = gc;
-  return gc;
+    RECT rect;
+    GetClientRect(_window, &rect);
+    rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::clicked_label
+//       Access: Public, Virtual
+//  Description: Called when the user single-clicks on a label.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+clicked_label(int collector_index) {
+  if (collector_index >= 0) {
+    GtkStatsGraph::_monitor->open_strip_chart(GtkStatsGraph::_thread_index, collector_index, false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::set_horizontal_scale
+//       Access: Public
+//  Description: Changes the amount of time the width of the
+//               horizontal axis represents.  This may force a redraw.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+set_horizontal_scale(float time_width) {
+  PStatPianoRoll::set_horizontal_scale(time_width);
+
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::clear_region
+//       Access: Protected
+//  Description: Erases the chart area.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+clear_region() {
+  RECT rect = { 0, 0, get_xsize(), get_ysize() };
+  FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoRoll::begin_draw
 //       Access: Protected, Virtual
-//  Description: Erases the chart area in preparation for drawing it
-//               full of bars.
+//  Description: Erases the chart area in preparation for drawing a
+//               bunch of bars.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
 begin_draw() {
-  _pixmap.draw_rectangle(_white_gc, true, 0, 0, get_xsize(), get_ysize());
-
-  Gdk_Font font = get_style()->gtkobj()->font;
-  int text_height = font.height();
+  clear_region();
 
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    const GuideBar &bar = get_guide_bar(i);
-    int x = (int)((float)get_xsize() * bar._height / get_horizontal_scale());
-
-    if (x >= 5 && x <= get_xsize() - 5) {
-      // Only draw it if it's not too close to either edge.
-      switch (bar._style) {
-      case GBS_target:
-        _pixmap.draw_line(_light_gc, x, text_height + 4, x, get_ysize());
-        break;
-
-      case GBS_normal:
-      default:
-        _pixmap.draw_line(_dark_gc, x, text_height + 4, x, get_ysize());
-        break;
-      }
-    }
+    draw_guide_bar(_bitmap_dc, get_guide_bar(i));
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,10 +182,17 @@ begin_draw() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
 draw_bar(int row, int from_x, int to_x) {
-  if (row >= 0 && row < (int)_y_positions.size()) {
-    int y = height() - _y_positions[row];
-    _pixmap.draw_rectangle(get_collector_gc(get_label_collector(row)),
-                           true, from_x, y - 6, to_x - from_x, 12);
+  if (row >= 0 && row < _label_stack.get_num_labels()) {
+    int y = _label_stack.get_label_y(row) - _graph_top;
+    int height = _label_stack.get_label_height(row);
+
+    RECT rect = { 
+      from_x, y - height + 2,
+      to_x, y - 2,
+    };
+    int collector_index = get_label_collector(row);
+    HBRUSH brush = get_collector_brush(collector_index);
+    FillRect(_bitmap_dc, &rect, brush);
   }
 }
 
@@ -167,31 +204,7 @@ draw_bar(int row, int from_x, int to_x) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
 end_draw() {
-  // Draw in the labels for the guide bars.  We do this in end_draw()
-  // instead of in begin_draw() so the labels will appear on top of
-  // any of the color bars.
-  Gdk_Font font = get_style()->gtkobj()->font;
-  int text_ascent = font.ascent();
-
-  int num_guide_bars = get_num_guide_bars();
-  for (int i = 0; i < num_guide_bars; i++) {
-    const GuideBar &bar = get_guide_bar(i);
-    int x = (int)((float)get_xsize() * bar._height / get_horizontal_scale());
-
-    if (x >= 5 && x <= get_xsize() - 5) {
-      // Only draw it if it's not too close to either edge.
-      int width = font.string_measure(bar._label);
-      _pixmap.draw_string(font, _black_gc, x - width / 2, text_ascent + 2,
-                          bar._label);
-    }
-  }
-
-  GdkRectangle update_rect;
-  update_rect.x = 0;
-  update_rect.y = 0;
-  update_rect.width = get_xsize();
-  update_rect.height = get_ysize();
-  draw(&update_rect);
+  InvalidateRect(_graph_window, NULL, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,126 +215,430 @@ end_draw() {
 void GtkStatsPianoRoll::
 idle() {
   if (_labels_changed) {
-    pack_labels();
+    update_labels();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::configure_event_impl
-//       Access: Private, Virtual
-//  Description: Creates a new backing pixmap of the appropriate size.
+//     Function: GtkStatsPianoRoll::window_proc
+//       Access: Protected
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-gint GtkStatsPianoRoll::
-configure_event_impl(GdkEventConfigure *) {
-  if (width() != get_xsize() || height() != get_ysize() ||
-      _pixmap.gdkobj() == (GdkDrawable *)NULL) {
-    if (_pixmap) {
-      _pixmap.release();
+LONG GtkStatsPianoRoll::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_LBUTTONDOWN:
+    if (_potential_drag_mode == DM_new_guide_bar) {
+      set_drag_mode(DM_new_guide_bar);
+      SetCapture(_graph_window);
+      return 0;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return GtkStatsGraph::window_proc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::graph_window_proc
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG GtkStatsPianoRoll::
+graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_LBUTTONDOWN:
+    if (_potential_drag_mode == DM_none) {
+      set_drag_mode(DM_scale);
+      PN_int16 x = LOWORD(lparam);
+      _drag_scale_start = pixel_to_height(x);
+      SetCapture(_graph_window);
+      return 0;
+
+    } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
+      set_drag_mode(DM_guide_bar);
+      PN_int16 x = LOWORD(lparam);
+      _drag_start_x = x;
+      SetCapture(_graph_window);
+      return 0;
+    }
+    break;
+
+  case WM_MOUSEMOVE: 
+    if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+      // When the mouse is over a color bar, highlight it.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      _label_stack.highlight_label(get_collector_under_pixel(x, y));
+
+      // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
+      // graph window.
+      TRACKMOUSEEVENT tme = {
+        sizeof(TRACKMOUSEEVENT),
+        TME_LEAVE,
+        _graph_window,
+        0
+      };
+      TrackMouseEvent(&tme);
+
+    } else {
+      // If the mouse is in some drag mode, stop highlighting.
+      _label_stack.highlight_label(-1);
     }
 
-    _pixmap.create(get_window(), width(), height());
+    if (_drag_mode == DM_scale) {
+      PN_int16 x = LOWORD(lparam);
+      float ratio = (float)x / (float)get_xsize();
+      if (ratio > 0.0f) {
+        set_horizontal_scale(_drag_scale_start / ratio);
+      }
+      return 0;
 
-    Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
+    } else if (_drag_mode == DM_new_guide_bar) {
+      // We haven't created the new guide bar yet; we won't until the
+      // mouse comes within the graph's region.
+      PN_int16 x = LOWORD(lparam);
+      if (x >= 0 && x < get_xsize()) {
+        set_drag_mode(DM_guide_bar);
+        _drag_guide_bar = add_user_guide_bar(pixel_to_height(x));
+        return 0;
+      }
 
-    _white_gc = Gdk_GC(_pixmap);
-    setup_white_gc();
+    } else if (_drag_mode == DM_guide_bar) {
+      PN_int16 x = LOWORD(lparam);
+      move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
+      return 0;
+    }
+    break;
 
-    _black_gc = Gdk_GC(_pixmap);
-    _black_gc.set_foreground(system_colormap.black());
+  case WM_MOUSELEAVE:
+    // When the mouse leaves the graph, stop highlighting.
+    _label_stack.highlight_label(-1);
+    break;
 
-    _dark_gc = Gdk_GC(_pixmap);
-    Gdk_Color dark;
-    dark.set_grey_p(0.2);
-    system_colormap.alloc(dark);
-    _dark_gc.set_foreground(dark);
+  case WM_LBUTTONUP:
+    if (_drag_mode == DM_scale) {
+      set_drag_mode(DM_none);
+      ReleaseCapture();
+      return 0;
 
-    _light_gc = Gdk_GC(_pixmap);
-    Gdk_Color light;
-    light.set_grey_p(0.6);
-    system_colormap.alloc(light);
-    _light_gc.set_foreground(light);
+    } else if (_drag_mode == DM_guide_bar) {
+      PN_int16 x = LOWORD(lparam);
+      if (x < 0 || x >= get_xsize()) {
+        remove_user_guide_bar(_drag_guide_bar);
+      } else {
+        move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
+      }
+      set_drag_mode(DM_none);
+      ReleaseCapture();
+      return 0;
+    }
+    break;
 
-    _pixmap.draw_rectangle(_white_gc, true, 0, 0, width(), height());
+  case WM_LBUTTONDBLCLK:
+    {
+      // Double-clicking on a color bar in the graph is the same as
+      // double-clicking on the corresponding label.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      clicked_label(get_collector_under_pixel(x, y));
+      return 0;
+    }
+    break;
 
-    changed_size(width(), height());
+  default:
+    break;
   }
-  return true;
+
+  return GtkStatsGraph::graph_window_proc(hwnd, msg, wparam, lparam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::expose_event_impl
-//       Access: Private, Virtual
-//  Description: Redraw the screen from the backing pixmap.
-////////////////////////////////////////////////////////////////////
-gint GtkStatsPianoRoll::
-expose_event_impl(GdkEventExpose *event) {
-  get_window().draw_pixmap(_white_gc, _pixmap,
-                           event->area.x, event->area.y,
-                           event->area.x, event->area.y,
-                           event->area.width, event->area.height);
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::pack_labels
-//       Access: Private
-//  Description:
+//     Function: GtkStatsPianoRoll::additional_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the window (the outer window, not the
+//               graph window).
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
-pack_labels() {
-  // First, remove the old labels.
-  _label_align->remove();
+additional_window_paint(HDC hdc) {
+  // Draw in the labels for the guide bars.
+  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
+  SelectObject(hdc, hfnt);
+  SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
+  SetBkMode(hdc, TRANSPARENT);
 
-  // Now add the new labels back in.
-  _label_box = manage(new Gtk::VBox);
-  _label_box->show();
-  _label_align->add(*_label_box);
+  int y = _top_margin;
 
-  Gdk_Font font = get_style()->gtkobj()->font;
-  int num_labels = get_num_labels();
-
-  while ((int)_y_positions.size() < num_labels) {
-    _y_positions.push_back(0);
+  int i;
+  int num_guide_bars = get_num_guide_bars();
+  for (i = 0; i < num_guide_bars; i++) {
+    draw_guide_label(hdc, y, get_guide_bar(i));
   }
 
-  int y = 0;
-  for (int i = 0; i < num_labels; i++) {
-    int collector_index = get_label_collector(i);
-    GtkStatsLabel *label =
-      new GtkStatsLabel(get_monitor(), collector_index, font);
-    label->show();
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (i = 0; i < num_user_guide_bars; i++) {
+    draw_guide_label(hdc, y, get_user_guide_bar(i));
+  }
+}
 
-    _label_box->pack_end(*manage(label), false, false);
-    _y_positions[i] = y + label->get_height() / 2;
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::additional_graph_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the window (the outer window, not the
+//               graph window).
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+additional_graph_window_paint(HDC hdc) {
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (int i = 0; i < num_user_guide_bars; i++) {
+    draw_guide_bar(hdc, get_user_guide_bar(i));
+  }
+}
 
-    y += label->get_height();
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::consider_drag_start
+//       Access: Protected, Virtual
+//  Description: Based on the mouse position within the window's
+//               client area, look for draggable things the mouse
+//               might be hovering over and return the apprioprate
+//               DragMode enum or DM_none if nothing is indicated.
+////////////////////////////////////////////////////////////////////
+GtkStatsGraph::DragMode GtkStatsPianoRoll::
+consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
+  if (mouse_y >= _graph_top && mouse_y < _graph_top + get_ysize()) {
+    if (mouse_x >= _graph_left && mouse_x < _graph_left + get_xsize()) {
+      // See if the mouse is over a user-defined guide bar.
+      int x = mouse_x - _graph_left;
+      float from_height = pixel_to_height(x - 2);
+      float to_height = pixel_to_height(x + 2);
+      _drag_guide_bar = find_user_guide_bar(from_height, to_height);
+      if (_drag_guide_bar >= 0) {
+        return DM_guide_bar;
+      }
+
+    } else if (mouse_x < _left_margin - 2 ||
+               mouse_x > width - _right_margin + 2) {
+      // The mouse is left or right of the graph; maybe create a new
+      // guide bar.
+      return DM_new_guide_bar;
+    }
   }
 
+  return GtkStatsGraph::consider_drag_start(mouse_x, mouse_y, width, height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::get_collector_under_pixel
+//       Access: Private
+//  Description: Returns the collector index associated with the
+//               indicated vertical row, or -1.
+////////////////////////////////////////////////////////////////////
+int GtkStatsPianoRoll::
+get_collector_under_pixel(int xpoint, int ypoint) {
+  if (_label_stack.get_num_labels() == 0) {
+    return -1;
+  }
+
+  // Assume all of the labels are the same height.
+  int height = _label_stack.get_label_height(0);
+  int row = (get_ysize() - ypoint) / height;
+  if (row >= 0 && row < _label_stack.get_num_labels()) {
+    return _label_stack.get_label_collector_index(row);
+  } else {
+    return -1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::update_labels
+//       Access: Private
+//  Description: Resets the list of labels.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+update_labels() {
+  _label_stack.clear_labels();
+  for (int i = 0; i < get_num_labels(); i++) {
+    int label_index = 
+      _label_stack.add_label(GtkStatsGraph::_monitor, this,
+                             GtkStatsGraph::_thread_index,
+                             get_label_collector(i), true);
+  }
   _labels_changed = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::setup_white_gc
+//     Function: GtkStatsPianoRoll::draw_guide_bar
 //       Access: Private
-//  Description: Sets the color on _white_gc to be either actually
-//               white (if the chart is still alive) or a light gray
-//               (if the chart is dead).
+//  Description: Draws the line for the indicated guide bar on the
+//               graph.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
-setup_white_gc() {
-  Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
+draw_guide_bar(HDC hdc, const PStatGraph::GuideBar &bar) {
+  int x = height_to_pixel(bar._height);
 
-  if (_is_dead) {
-    Gdk_Color death;
-    death.set_grey_p(0.8);
-    system_colormap.alloc(death);
+  if (x > 0 && x < get_xsize() - 1) {
+    // Only draw it if it's not too close to either edge.
+    switch (bar._style) {
+    case GBS_target:
+      SelectObject(hdc, _light_pen);
+      break;
 
-    _white_gc.set_foreground(death);
-
-  } else {
-    _white_gc.set_foreground(system_colormap.white());
+    case GBS_user:
+      SelectObject(hdc, _user_guide_bar_pen);
+      break;
+      
+    case GBS_normal:
+      SelectObject(hdc, _dark_pen);
+      break;
+    }
+    MoveToEx(hdc, x, 0, NULL);
+    LineTo(hdc, x, get_ysize());
   }
-
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::draw_guide_label
+//       Access: Private
+//  Description: Draws the text for the indicated guide bar label at
+//               the top of the graph.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
+  switch (bar._style) {
+  case GBS_target:
+    SetTextColor(hdc, _light_color);
+    break;
+    
+  case GBS_user:
+    SetTextColor(hdc, _user_guide_bar_color);
+    break;
+    
+  case GBS_normal:
+    SetTextColor(hdc, _dark_color);
+    break;
+  }
+
+  int x = height_to_pixel(bar._height);
+  const string &label = bar._label;
+  SIZE size;
+  GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
+
+  if (bar._style != GBS_user) {
+    float from_height = pixel_to_height(x - size.cx);
+    float to_height = pixel_to_height(x + size.cx);
+    if (find_user_guide_bar(from_height, to_height) >= 0) {
+      // Omit the label: there's a user-defined guide bar in the same space.
+      return;
+    }
+  }
+
+  int this_x = _graph_left + x - size.cx / 2;
+  if (x >= 0 && x < get_xsize()) {
+    TextOut(hdc, this_x, y,
+            label.data(), label.length()); 
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::create_window
+//       Access: Private
+//  Description: Creates the window for this strip chart.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+create_window() {
+  if (_window) {
+    return;
+  }
+
+  HINSTANCE application = GetModuleHandle(NULL);
+  register_window_class(application);
+
+  const PStatClientData *client_data = 
+    GtkStatsGraph::_monitor->get_client_data();
+  string thread_name = client_data->get_thread_name(GtkStatsGraph::_thread_index);
+  string window_title = thread_name + " thread piano roll";
+
+
+  RECT win_rect = { 
+    0, 0,
+    _left_margin + get_xsize() + _right_margin, 
+    _top_margin + get_ysize() + _bottom_margin
+  };  
+  
+  // compute window size based on desired client area size
+  AdjustWindowRect(&win_rect, graph_window_style, FALSE);
+
+  _window = 
+    CreateWindow(_window_class_name, window_title.c_str(), graph_window_style,
+                 CW_USEDEFAULT, CW_USEDEFAULT,
+                 win_rect.right - win_rect.left,
+                 win_rect.bottom - win_rect.top,
+                 GtkStatsGraph::_monitor->get_window(), NULL, application, 0);
+  if (!_window) {
+    nout << "Could not create PianoRoll window!\n";
+    exit(1);
+  }
+
+  SetWindowLongPtr(_window, 0, (LONG_PTR)this);
+  setup_label_stack();
+
+  // Ensure that the window is on top of the stack.
+  SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0, 
+               SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::register_window_class
+//       Access: Private, Static
+//  Description: Registers the window class for the pianoRoll window, if
+//               it has not already been registered.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoRoll::
+register_window_class(HINSTANCE application) {
+  if (_window_class_registered) {
+    return;
+  }
+
+  WNDCLASS wc;
+
+  ZeroMemory(&wc, sizeof(WNDCLASS));
+  wc.style = 0;
+  wc.lpfnWndProc = (WNDPROC)static_window_proc;
+  wc.hInstance = application;
+  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+  wc.lpszMenuName = NULL;
+  wc.lpszClassName = _window_class_name;
+
+  // Reserve space to associate the this pointer with the window.
+  wc.cbWndExtra = sizeof(GtkStatsPianoRoll *);
+  
+  if (!RegisterClass(&wc)) {
+    nout << "Could not register PianoRoll window class!\n";
+    exit(1);
+  }
+
+  _window_class_registered = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoRoll::static_window_proc
+//       Access: Private, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WINAPI GtkStatsPianoRoll::
+static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  GtkStatsPianoRoll *self = (GtkStatsPianoRoll *)GetWindowLongPtr(hwnd, 0);
+  if (self != (GtkStatsPianoRoll *)NULL && self->_window == hwnd) {
+    return self->window_proc(hwnd, msg, wparam, lparam);
+  } else {
+    return DefWindowProc(hwnd, msg, wparam, lparam);
+  }
+}

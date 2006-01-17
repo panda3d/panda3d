@@ -1,5 +1,5 @@
 // Filename: gtkStatsStripChart.h
-// Created by:  drose (14Jul00)
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,40 +21,37 @@
 
 #include "pandatoolbase.h"
 
-#include "gtkStatsMonitor.h"
-
+#include "gtkStatsGraph.h"
 #include "pStatStripChart.h"
 #include "pointerTo.h"
 
-#include <gtk--.h>
-#include "pmap.h"
+#include <gtk/gtk.h>
 
-class PStatView;
-class GtkStatsGuide;
+class GtkStatsMonitor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GtkStatsStripChart
-// Description : A special widget that draws a strip chart, given a
-//               view.
+// Description : A window that draws a strip chart, given a view.
 ////////////////////////////////////////////////////////////////////
-class GtkStatsStripChart : public Gtk::DrawingArea, public PStatStripChart {
+class GtkStatsStripChart : public PStatStripChart, public GtkStatsGraph {
 public:
   GtkStatsStripChart(GtkStatsMonitor *monitor,
-                     PStatView &view, int collector_index,
-                     int xsize, int ysize);
+                     int thread_index, int collector_index, bool show_level);
+  virtual ~GtkStatsStripChart();
 
-  void mark_dead();
+  virtual void new_collector(int collector_index);
+  virtual void new_data(int thread_index, int frame_number);
+  virtual void force_redraw();
+  virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
-  Gtk::Alignment *get_labels();
-  GtkStatsGuide *get_guide();
+  virtual void set_time_units(int unit_mask);
+  virtual void set_scroll_speed(float scroll_speed);
+  virtual void clicked_label(int collector_index);
+  void set_vertical_scale(float value_height);
 
-  Gdk_GC get_collector_gc(int collector_index);
+protected:
+  virtual void update_labels();
 
-  // This signal is thrown when the user float-clicks on a label or
-  // on a band of color.
-  SigC::Signal1<void, int> collector_picked;
-
-private:
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
   virtual void draw_slice(int x, int w, 
@@ -62,38 +59,25 @@ private:
   virtual void draw_empty(int x, int w);
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
-  virtual void idle();
 
-  virtual gint configure_event_impl(GdkEventConfigure *event);
-  virtual gint expose_event_impl(GdkEventExpose *event);
-  virtual gint button_press_event_impl(GdkEventButton *button);
-
-  void pack_labels();
-  void setup_white_gc();
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+                                       int width, int height);
+  virtual void set_drag_mode(DragMode drag_mode);
 
 private:
-  // Backing pixmap for drawing area.
-  Gdk_Pixmap _pixmap;
+  void draw_guide_bar(int from_x, int to_x, 
+		      const PStatGraph::GuideBar &bar);
 
-  // Graphics contexts for fg/bg.  We don't use the contexts defined
-  // in the style, because that would probably interfere with the
-  // visibility of the strip chart.
-  Gdk_GC _white_gc;
-  Gdk_GC _black_gc;
-  Gdk_GC _dark_gc;
-  Gdk_GC _light_gc;
+private:
 
-  // Table of graphics contexts for our various collectors.
-  typedef pmap<int, Gdk_GC> GCs;
-  GCs _gcs;
+  int _brush_origin;
+  string _net_value_text;
 
-  Gtk::Alignment *_label_align;
-  Gtk::VBox *_label_box;
-  GtkStatsGuide *_guide;
-  bool _is_dead;
+  GtkWidget *_smooth_check_box;
+
+  static bool _window_class_registered;
+  static const char * const _window_class_name;
 };
-
-#include "gtkStatsStripChart.I"
 
 #endif
 

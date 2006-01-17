@@ -1,5 +1,5 @@
-// Filename: gtkStatsBadVersionWindow.h
-// Created by:  drose (18May01)
+// Filename: gtkStatsMenuId.h
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GTKSTATSBADVERSIONWINDOW_H
-#define GTKSTATSBADVERSIONWINDOW_H
+#ifndef GTKSTATSMENUID_H
+#define GTKSTATSMENUID_H
 
 #include "pandatoolbase.h"
 
-#include "basicGtkWindow.h"
-
-class GtkStatsMonitor;
-
 ////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsBadVersionWindow
-// Description : This window is popped up to indicated an attempted
-//               connection from an invalid client.
+//        Enum : GtkStatsMenuId
+// Description : The enumerated values here are used for menu ID's for
+//               the various pulldown menus in the application.
 ////////////////////////////////////////////////////////////////////
-class GtkStatsBadVersionWindow : public BasicGtkWindow {
-public:
-  GtkStatsBadVersionWindow(GtkStatsMonitor *monitor,
-                           int client_major, int client_minor,
-                           int server_major, int server_minor);
+enum GtkStatsMenuId {
+  MI_none,
+  MI_time_ms,
+  MI_time_hz,
+  MI_frame_rate_label,
+  MI_speed_1,
+  MI_speed_2,
+  MI_speed_3,
+  MI_speed_6,
+  MI_speed_12,
+  MI_pause,
 
-private:
-  void close_clicked();
+  // This one is last and represents the beginning of the range for
+  // the various "new chart" menu options.
+  MI_new_chart
 };
-
 
 #endif
 

@@ -1,27 +1,33 @@
-#define BUILD_DIRECTORY $[and $[HAVE_GTKMM],$[HAVE_NET]]
-#define USE_PACKAGES net gtkmm
+#define BUILD_DIRECTORY $[and $[HAVE_GTK],$[HAVE_NET]]
+#define USE_PACKAGES net gtk
 
 #begin bin_target
-  #define TARGET gtk-stats
+  // We rename TARGET to gtk-pstats on Windows, so it won't compete
+  // with Windows-native pstats.
+  #define TARGET $[if $[WINDOWS_PLATFORM],gtk-pstats,pstats]
   #define LOCAL_LIBS \
-    gtkbase progbase pstatserver
+    progbase pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c net:c express:c panda:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
-  #define UNIX_SYS_LIBS \
-    m
+    pstatclient:c linmath:c putil:c net:c express:c pandaexpress:m panda:m \
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
+    pystub
 
   #define SOURCES \
-    gtkStats.cxx gtkStats.h \
-    gtkStatsBadVersionWindow.cxx gtkStatsBadVersionWindow.h \
-    gtkStatsGuide.cxx gtkStatsGuide.h \
-    gtkStatsLabel.cxx gtkStatsLabel.h gtkStatsMainWindow.cxx \
-    gtkStatsMainWindow.h gtkStatsMonitor.cxx gtkStatsMonitor.h \
-    gtkStatsPianoRoll.I gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \
-    gtkStatsPianoWindow.cxx gtkStatsPianoWindow.h gtkStatsServer.cxx \
-    gtkStatsServer.h gtkStatsStripChart.I gtkStatsStripChart.cxx \
-    gtkStatsStripChart.h gtkStatsStripWindow.cxx gtkStatsStripWindow.h \
-    gtkStatsWindow.cxx gtkStatsWindow.h
+    gtkStats.cxx \
+    gtkStatsGraph.cxx gtkStatsGraph.h \
+    gtkStatsLabel.cxx gtkStatsLabel.h \
+    gtkStatsLabelStack.cxx gtkStatsLabelStack.h \
+    gtkStatsMenuId.h \
+    gtkStatsMonitor.cxx gtkStatsMonitor.h gtkStatsMonitor.I \
+    gtkStatsServer.cxx gtkStatsServer.h \
+    gtkStatsStripChart.cxx gtkStatsStripChart.h
+
+//     gtkStatsChartMenu.cxx gtkStatsChartMenu.h \
+//     gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \
+
+  #if $[DEVELOP_GTKSTATS]
+    #define EXTRA_CDEFS $[EXTRA_CDEFS] DEVELOP_GTKSTATS
+  #endif
 
 #end bin_target
 

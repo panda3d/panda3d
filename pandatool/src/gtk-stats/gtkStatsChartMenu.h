@@ -1,5 +1,5 @@
-// Filename: gtkStatsPianoWindow.h
-// Created by:  drose (18Jul00)
+// Filename: gtkStatsChartMenu.h
+// Created by:  drose (16Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,42 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GTKSTATSPIANOWINDOW_H
-#define GTKSTATSPIANOWINDOW_H
+#ifndef GTKSTATSCHARTMENU_H
+#define GTKSTATSCHARTMENU_H
 
 #include "pandatoolbase.h"
 
-#include "gtkStatsMonitor.h"
-#include "gtkStatsWindow.h"
+#include <windows.h>
 
-class GtkStatsPianoRoll;
+class GtkStatsMonitor;
+class PStatView;
+class PStatViewLevel;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsPianoWindow
-// Description : A window that contains a GtkStatsPianoRoll.
+//       Class : GtkStatsChartMenu
+// Description : A pulldown menu of charts available for a particular
+//               thread.
 ////////////////////////////////////////////////////////////////////
-class GtkStatsPianoWindow : public GtkStatsWindow {
+class GtkStatsChartMenu {
 public:
-  GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index,
-                      int chart_xsize, int chart_ysize);
+  GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
+  ~GtkStatsChartMenu();
 
-  virtual void mark_dead();
-  virtual void idle();
+  HMENU get_menu_handle();
+  void add_to_menu_bar(HMENU menu_bar, int before_menu_id);
 
-protected:
-  virtual void setup_menu();
-  virtual void menu_new_window();
-  void menu_hscale(float hz);
+  void check_update();
+  void do_update();
 
 private:
-  void layout_window(int chart_xsize, int chart_ysize);
+  void add_view(HMENU parent_menu, const PStatViewLevel *view_level,
+                bool show_level);
 
-private:
+  GtkStatsMonitor *_monitor;
   int _thread_index;
 
-  GtkStatsPianoRoll *_chart;
+  int _last_level_index;
+  HMENU _menu;
 };
-
 
 #endif
 
