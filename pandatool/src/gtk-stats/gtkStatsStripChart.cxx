@@ -62,10 +62,10 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
   _smooth_check_box = 0;
 
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), _label_stack.setup(),
+  gtk_box_pack_start(GTK_BOX(hbox), _label_stack.get_widget(),
 		     FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), _graph_window,
-		     FALSE, FALSE, 0);
+		     TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(_window), hbox);
 
@@ -237,10 +237,7 @@ void GtkStatsStripChart::
 set_vertical_scale(float value_height) {
   PStatStripChart::set_vertical_scale(value_height);
 
-  GdkRectangle rect = {
-    0, 0, get_xsize(), get_ysize() 
-  };
-  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
+  gtk_widget_queue_draw(_graph_window);
 }
 
 ////////////////////////////////////////////////////////////////////

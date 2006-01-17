@@ -39,7 +39,6 @@ public:
                 int thread_index, int collector_index, bool use_fullname);
   ~GtkStatsLabel();
 
-  GtkWidget *setup();
   GtkWidget *get_widget() const;
 
   int get_collector_index() const;
@@ -49,6 +48,17 @@ public:
 
 private:
   void set_mouse_within(bool mouse_within);
+  static gboolean expose_event_callback(GtkWidget *widget, 
+					GdkEventExpose *event, gpointer data);
+  static gboolean enter_notify_event_callback(GtkWidget *widget, 
+					      GdkEventCrossing *event, 
+					      gpointer data);
+  static gboolean leave_notify_event_callback(GtkWidget *widget, 
+					      GdkEventCrossing *event, 
+					      gpointer data);
+  static gboolean button_press_event_callback(GtkWidget *widget, 
+					      GdkEventButton *event, 
+					      gpointer data);
 
   GtkStatsMonitor *_monitor;
   GtkStatsGraph *_graph;
@@ -56,6 +66,9 @@ private:
   int _collector_index;
   string _text;
   GtkWidget *_widget;
+  GdkColor _fg_color;
+  GdkColor _bg_color;
+  PangoLayout *_layout;
 
   /*
   COLORREF _bg_color;

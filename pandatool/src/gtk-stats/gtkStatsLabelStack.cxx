@@ -27,8 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 GtkStatsLabelStack::
 GtkStatsLabelStack() {
-  _widget = NULL;
-
+  _widget = gtk_vbox_new(FALSE, 0);
   _highlight_label = -1;
 }
 
@@ -43,28 +42,13 @@ GtkStatsLabelStack::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabelStack::setup
+//     Function: GtkStatsLabelStack::get_widget
 //       Access: Public
-//  Description: Creates the actual widget object.
+//  Description: Returns the widget for this stack.
 ////////////////////////////////////////////////////////////////////
 GtkWidget *GtkStatsLabelStack::
-setup() {
-  if (_widget == NULL) {
-    _widget = gtk_vbox_new(FALSE, 0);
-  }
- 
+get_widget() const {
   return _widget;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabelStack::is_setup
-//       Access: Public
-//  Description: Returns true if the label stack has been set up,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool GtkStatsLabelStack::
-is_setup() const {
-  return (_widget != NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,8 +91,8 @@ add_label(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   GtkStatsLabel *label = 
     new GtkStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
 
-  gtk_box_pack_start(GTK_BOX(_widget), label->setup(),
-		     FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(_widget), label->get_widget(),
+		   FALSE, FALSE, 0);
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);

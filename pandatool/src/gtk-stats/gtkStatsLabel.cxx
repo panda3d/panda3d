@@ -45,13 +45,29 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
     _text = _monitor->get_client_data()->get_collector_name(_collector_index);
   }
 
-  /*
+  _widget = gtk_drawing_area_new();
+  gtk_widget_add_events(_widget, 
+			GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | 
+			GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(_widget), "expose_event",  
+		   G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "enter_notify_event",  
+		   G_CALLBACK(enter_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "leave_notify_event",  
+		   G_CALLBACK(leave_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "button_press_event",  
+		   G_CALLBACK(button_press_event_callback), this);
+
+  gtk_widget_show(_widget);
+
+  // Make up a PangoLayout to represent the text.
+  _layout = gtk_widget_create_pango_layout(_widget, _text.c_str());
+
+  // Set the fg and bg colors on the label.
   RGBColorf rgb = _monitor->get_collector_color(_collector_index);
-  int r = (int)(rgb[0] * 255.0f);
-  int g = (int)(rgb[1] * 255.0f);
-  int b = (int)(rgb[2] * 255.0f);
-  _bg_color = RGB(r, g, b);
-  _bg_brush = CreateSolidBrush(RGB(r, g, b));
+  _bg_color.red = (int)(rgb[0] * 65535.0f);
+  _bg_color.green = (int)(rgb[1] * 65535.0f);
+  _bg_color.blue = (int)(rgb[2] * 65535.0f);
 
   // Should our foreground be black or white?
   float bright =
@@ -60,13 +76,16 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
     rgb[2] * 0.114;
 
   if (bright >= 0.5) {
-    _fg_color = RGB(0, 0, 0);
-    _highlight_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    _fg_color.red = _fg_color.green = _fg_color.blue = 0;
   } else {
-    _fg_color = RGB(255, 255, 255);
-    _highlight_brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    _fg_color.red = _fg_color.green = _fg_color.blue = 0xffff;
   }
-  */
+
+  // What are the extents of the text?  This determines the minimum
+  // size of our widget.
+  int width, height;
+  pango_layout_get_pixel_size(_layout, &width, &height);
+  gtk_widget_set_size_request(_widget, width + 8, height);
 
   _highlight = false;
   _mouse_within = false;
@@ -80,22 +99,6 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
 GtkStatsLabel::
 ~GtkStatsLabel() {
   //  DeleteObject(_bg_brush);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::setup
-//       Access: Public
-//  Description: Creates the actual widget.
-////////////////////////////////////////////////////////////////////
-GtkWidget *GtkStatsLabel::
-setup() {
-  _widget = gtk_event_box_new();
-  GtkWidget *label = gtk_label_new(_text.c_str());
-  gtk_container_add(GTK_CONTAINER(_widget), label);
-  gtk_widget_show(label);
-  gtk_widget_show(_widget);
-
-  return _widget;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,9 +131,7 @@ void GtkStatsLabel::
 set_highlight(bool highlight) {
   if (_highlight != highlight) {
     _highlight = highlight;
-    /*
-    InvalidateRect(_widget, NULL, TRUE);
-    */
+    gtk_widget_queue_draw(_widget);
   }
 }
 
@@ -155,8 +156,77 @@ void GtkStatsLabel::
 set_mouse_within(bool mouse_within) {
   if (_mouse_within != mouse_within) {
     _mouse_within = mouse_within;
-    /*
-    InvalidateRect(_widget, NULL, TRUE);
-    */
+    gtk_widget_queue_draw(_widget);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::expose_event_callback
+//       Access: Private, Static
+//  Description: Draws the background color of the label.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsLabel::
+expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+  GtkStatsLabel *self = (GtkStatsLabel *)data;
+
+  GdkGC *gc = gdk_gc_new(widget->window);
+  gdk_gc_set_rgb_fg_color(gc, &self->_bg_color);
+
+  gdk_draw_rectangle(widget->window, gc, TRUE, 0, 0, 
+		     widget->allocation.width, widget->allocation.height);
+
+  // Center the text within the rectangle.
+  int width, height;
+  pango_layout_get_pixel_size(self->_layout, &width, &height);
+
+  gdk_gc_set_rgb_fg_color(gc, &self->_fg_color);
+  gdk_draw_layout(widget->window, gc, 
+		  (widget->allocation.width - width) / 2, 0,
+		  self->_layout);
+
+  // Now draw the highlight rectangle, if any.
+  if (self->_highlight || self->_mouse_within) {
+    gdk_draw_rectangle(widget->window, gc, FALSE, 0, 0, 
+		       widget->allocation.width - 1, widget->allocation.height - 1);
+  }
+
+  g_object_unref(gc);
+  return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::enter_notify_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse enters the label region
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsLabel::
+enter_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event, 
+			    gpointer data) {
+  GtkStatsLabel *self = (GtkStatsLabel *)data;
+  self->set_mouse_within(true);
+  return TRUE;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::leave_notify_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse leaves the label region
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsLabel::
+leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event, 
+			    gpointer data) {
+  GtkStatsLabel *self = (GtkStatsLabel *)data;
+  self->set_mouse_within(false);
+  return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::button_press_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse leaves the label region
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsLabel::
+button_press_event_callback(GtkWidget *widget, GdkEventButton *event, 
+			    gpointer data) {
+  return TRUE;
 }

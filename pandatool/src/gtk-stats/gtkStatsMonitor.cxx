@@ -91,8 +91,8 @@ GtkStatsMonitor::
   }
 
 #ifdef DEVELOP_GTKSTATS
-  // For Gtkstats developers, exit when the first monitor closes.
-  gtk_main_quit(0);
+  // For GtkStats developers, exit when the first monitor closes.
+  gtk_main_quit();
 #endif
 }
 

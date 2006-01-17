@@ -38,8 +38,7 @@ public:
   GtkStatsLabelStack();
   ~GtkStatsLabelStack();
 
-  GtkWidget *setup();
-  bool is_setup() const;
+  GtkWidget *get_widget() const;
 
   int get_label_collector_index(int label_index) const;
 

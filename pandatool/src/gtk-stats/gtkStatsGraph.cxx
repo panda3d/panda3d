@@ -260,7 +260,7 @@ get_collector_gc(int collector_index) {
   c.green = (int)(rgb[1] * 65535.0f);
   c.blue = (int)(rgb[2] * 65535.0f);
   GdkGC *gc = gdk_gc_new(_pixmap);
-  g_object_ref(gc);
+  //  g_object_ref(gc);  // Should this be ref_sink?
   gdk_gc_set_rgb_fg_color(gc, &c);
 
   _brushes[collector_index] = gc;
@@ -311,9 +311,9 @@ setup_pixmap(int xsize, int ysize) {
   _pixmap_ysize = max(ysize, 0);
 
   _pixmap = gdk_pixmap_new(_graph_window->window, _pixmap_xsize, _pixmap_ysize, -1);
-  g_object_ref(_pixmap);
+  //  g_object_ref(_pixmap);  // Should this be ref_sink?
   _pixmap_gc = gdk_gc_new(_pixmap);
-  g_object_ref(_pixmap_gc);
+  //  g_object_ref(_pixmap_gc);   // Should this be ref_sink?
 
   gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
   gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0, 
