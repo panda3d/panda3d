@@ -23,6 +23,7 @@
 #include "datagramUDPHeader.h"
 #include "pprerror.h"
 #include "config_net.h"
+#include "clockObject.h"
 
 #include "notify.h"
 #include <prerror.h>
@@ -299,9 +300,28 @@ poll() {
   }
 
   SocketInfo *sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
-  while (sinfo != (SocketInfo *)NULL) {
-    process_incoming_data(sinfo);
-    sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
+  if (sinfo != (SocketInfo *)NULL) {
+    double max_poll_cycle = get_max_poll_cycle();
+    if (max_poll_cycle < 0.0) {
+      // Continue to read all data.
+      while (sinfo != (SocketInfo *)NULL) {
+	process_incoming_data(sinfo);
+	sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
+      }
+
+    } else {
+      // Read only until a certain amount of time has elapsed.
+      ClockObject *global_clock = ClockObject::get_global_clock();
+      double stop = global_clock->get_real_time() + max_poll_cycle;
+
+      process_incoming_data(sinfo);
+      sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
+      while (sinfo != (SocketInfo *)NULL && 
+	     global_clock->get_real_time() < stop) {
+	process_incoming_data(sinfo);
+	sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
+      }
+    }
   }
 }
 

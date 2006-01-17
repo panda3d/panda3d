@@ -31,6 +31,7 @@ NotifyCategoryDecl(net, EXPCL_PANDA, EXPTP_PANDA);
 extern int get_net_max_write_queue();
 extern int get_net_max_response_queue();
 extern bool get_net_error_abort();
+extern double get_max_poll_cycle();
 
 extern EXPCL_PANDA void init_libnet();
 
