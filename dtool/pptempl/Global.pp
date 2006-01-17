@@ -258,11 +258,11 @@
   #define mikmod_libs $[MIKMOD_LIBS]
 #endif
 
-#if $[HAVE_GTKMM]
-  #define gtkmm_ipath $[wildcard $[GTKMM_IPATH]]
-  #define gtkmm_lpath $[wildcard $[GTKMM_LPATH]]
-  #define gtkmm_cflags $[GTKMM_CFLAGS]
-  #define gtkmm_libs $[GTKMM_LIBS]
+#if $[HAVE_GTK]
+  #define gtk_ipath $[wildcard $[GTK_IPATH]]
+  #define gtk_lpath $[wildcard $[GTK_LPATH]]
+  #define gtk_cflags $[GTK_CFLAGS]
+  #define gtk_libs $[GTK_LIBS]
 #endif
 
 #if $[HAVE_FREETYPE]

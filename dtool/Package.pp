@@ -236,8 +236,8 @@
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]
 #set HAVE_CHROMIUM $[HAVE_CHROMIUM]
 
-#set GTKMM_CONFIG $[GTKMM_CONFIG]
-#set HAVE_GTKMM $[HAVE_GTKMM]
+#set PKG_CONFIG $[PKG_CONFIG]
+#set HAVE_GTK $[HAVE_GTK]
 
 #set FREETYPE_CONFIG $[FREETYPE_CONFIG]
 #set HAVE_FREETYPE $[HAVE_FREETYPE]
@@ -255,14 +255,14 @@
 
 
 // Now infer a few more variables based on what was defined.
-#if $[and $[HAVE_GTKMM],$[GTKMM_CONFIG]]
-  #define cflags $[shell $[GTKMM_CONFIG] --cflags]
-  #define libs $[shell $[GTKMM_CONFIG] --libs]
+#if $[and $[HAVE_GTK],$[PKG_CONFIG]]
+  #define cflags $[shell $[PKG_CONFIG] gtk+-2.0 --cflags]
+  #define libs $[shell $[PKG_CONFIG] gtk+-2.0 --libs]
 
-  #define GTKMM_CFLAGS $[filter-out -I%,$[cflags]]
-  #define GTKMM_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
-  #define GTKMM_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
-  #define GTKMM_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
+  #define GTK_CFLAGS $[filter-out -I%,$[cflags]]
+  #define GTK_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
+  #define GTK_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
+  #define GTK_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
 #if $[and $[HAVE_FREETYPE],$[FREETYPE_CONFIG]]

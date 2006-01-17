@@ -622,10 +622,10 @@
 #define CHROMIUM_LIBS spuload
 #defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
 
-// Is Gtk-- installed?  How should we run the gtkmm-config program?
-// This matters only to programs in PANDATOOL.
-#define GTKMM_CONFIG gtkmm-config
-#defer HAVE_GTKMM $[bintest $[GTKMM_CONFIG]]
+// Is gtk+-2 installed?  This is only needed to build the pstats
+// program on Unix (or non-Windows) platforms.
+#define PKG_CONFIG pkg-config
+#define HAVE_GTK
 
 // Do we have Freetype 2.0 (or better)?  If available, this package is
 // used to generate dynamic in-the-world text from font files.
