@@ -484,7 +484,7 @@ additional_graph_window_paint(HDC hdc) {
 //       Access: Protected, Virtual
 //  Description: Based on the mouse position within the window's
 //               client area, look for draggable things the mouse
-//               might be hovering over and return the apprioprate
+//               might be hovering over and return the appropriate
 //               DragMode enum or DM_none if nothing is indicated.
 ////////////////////////////////////////////////////////////////////
 WinStatsGraph::DragMode WinStatsGraph::
