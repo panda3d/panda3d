@@ -232,6 +232,9 @@ $[cdefine HAVE_CHROMIUM]
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]
 
+/* Define to check that ordinary (non-reentrant) Mutexes are not reentrantly locked. */
+$[cdefine CHECK_REENTRANT_MUTEX]
+
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
 

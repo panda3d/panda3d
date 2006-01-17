@@ -43,8 +43,10 @@ public:
   INLINE void lock() const;
   INLINE void release() const;
 
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   bool debug_is_locked() const;
+#else
+  INLINE bool debug_is_locked() const;
 #endif
 
 private:
@@ -54,7 +56,7 @@ private:
 private:
   MutexImpl _impl;
 
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   // Make sure that ordinary mutexes are not locked reentrantly
   // (that's what a ReMutex is for).
   Thread *_locking_thread;

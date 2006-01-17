@@ -72,8 +72,8 @@ operator = (const Mutex &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Mutex::
 lock() const {
-#ifdef NDEBUG
-  // In the NDEBUG case, just lock the thing immediately.  Don't
+#ifndef CHECK_REENTRANT_MUTEX
+  // In the production case, just lock the thing immediately.  Don't
   // bother with the out-of-line do_lock() method, since we won't be
   // performing any checks anyway.
   ((MutexImpl &)_impl).lock();
@@ -97,10 +97,10 @@ lock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Mutex::
 release() const {
-#ifdef NDEBUG
-  // In the NDEBUG case, just release the thing immediately.  Don't
-  // bother with the out-of-line do_release() method, since we won't
-  // be performing any checks anyway.
+#ifndef CHECK_REENTRANT_MUTEX
+  // In the production case, just release the thing immediately.
+  // Don't bother with the out-of-line do_release() method, since we
+  // won't be performing any checks anyway.
   ((MutexImpl &)_impl).release();
 
 #else 
@@ -109,3 +109,18 @@ release() const {
   ((Mutex *)this)->do_release();
 #endif
 }
+
+#ifndef CHECK_REENTRANT_MUTEX
+////////////////////////////////////////////////////////////////////
+//     Function: Mutex::debug_is_locked
+//       Access: Public
+//  Description: Returns true if the current thread has locked the
+//               Mutex, false otherwise.  This method is only
+//               meaningful if CHECK_REENTRANT_MUTEX is defined;
+//               otherwise, it always returns true.
+////////////////////////////////////////////////////////////////////
+INLINE bool Mutex::
+debug_is_locked() const {
+  return true;
+}
+#endif  // CHECK_REENTRANT_MUTEX

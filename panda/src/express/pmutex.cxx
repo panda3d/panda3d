@@ -19,20 +19,20 @@
 #include "pmutex.h"
 #include "thread.h"
 
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
 ////////////////////////////////////////////////////////////////////
 //     Function: Mutex::debug_is_locked
 //       Access: Public
 //  Description: Returns true if the current thread has locked the
-//               Mutex, false otherwise.  This method only exists in
-//               !NDEBUG mode, so it's only appropriate to call it
-//               from within an assert().
+//               Mutex, false otherwise.  This method is only
+//               meaningful if CHECK_REENTRANT_MUTEX is defined;
+//               otherwise, it always returns true.
 ////////////////////////////////////////////////////////////////////
 bool Mutex::
 debug_is_locked() const {
   return (_locking_thread == Thread::get_current_thread());
 }
-#endif  // NDEBUG
+#endif  // CHECK_REENTRANT_MUTEX
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Mutex::do_lock
@@ -41,10 +41,12 @@ debug_is_locked() const {
 ////////////////////////////////////////////////////////////////////
 void Mutex::
 do_lock() {
+#ifdef CHECK_REENTRANT_MUTEX
   nassertv(_locking_thread != Thread::get_current_thread());
+#endif
   _impl.lock();
 
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   _locking_thread = Thread::get_current_thread();
 #endif
 }
@@ -56,8 +58,8 @@ do_lock() {
 ////////////////////////////////////////////////////////////////////
 void Mutex::
 do_release() {
+#ifdef CHECK_REENTRANT_MUTEX
   nassertv(_locking_thread == Thread::get_current_thread());
-#ifndef NDEBUG
   _locking_thread = (Thread *)NULL;
 #endif
 

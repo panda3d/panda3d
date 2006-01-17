@@ -566,6 +566,10 @@
 // define this true unless you have NSPR installed.
 #define HAVE_THREADS
 
+// Even if threading is not defined, you might want to double-check
+// that ordinary mutexes are not locked reentrantly:
+#define CHECK_REENTRANT_MUTEX
+
 // Do you want to build the network interface?  What additional libraries
 // are required?  Currently, this requires NSPR.
 #define NET_IPATH
