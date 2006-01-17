@@ -64,7 +64,8 @@ protected:
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
-  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
+				       bool double_click);
   virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 

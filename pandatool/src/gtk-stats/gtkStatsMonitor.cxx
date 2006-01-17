@@ -525,15 +525,20 @@ create_window() {
 
   // Pack the menu into the window.
   GtkWidget *main_vbox = gtk_vbox_new(FALSE, 1);
-  //  gtk_container_set_border_width(GTK_CONTAINER(main_vbox), 1);
   gtk_container_add(GTK_CONTAINER(_window), main_vbox);
   gtk_box_pack_start(GTK_BOX(main_vbox), menubar, FALSE, TRUE, 0);
+
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Speed/3")),
+				 TRUE);
+  set_scroll_speed(3);
+
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Options/Units/ms")),
+				 TRUE);
+  set_time_units(PStatGraph::GBU_ms);
 
   gtk_widget_show_all(_window);  
   gtk_widget_show(_window);
 
-  set_time_units(PStatGraph::GBU_ms);
-  set_scroll_speed(3);
   set_pause(false);
 }
 

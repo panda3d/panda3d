@@ -229,5 +229,10 @@ leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
 gboolean GtkStatsLabel::
 button_press_event_callback(GtkWidget *widget, GdkEventButton *event, 
 			    gpointer data) {
+  GtkStatsLabel *self = (GtkStatsLabel *)data;
+  bool double_click = (event->type == GDK_2BUTTON_PRESS);
+  if (double_click) {
+    self->_graph->clicked_label(self->_collector_index);
+  }
   return TRUE;
 }

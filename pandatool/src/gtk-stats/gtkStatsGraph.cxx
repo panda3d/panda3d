@@ -339,7 +339,8 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
 //               window, or any nested window.
 ////////////////////////////////////////////////////////////////////
 gboolean GtkStatsGraph::
-handle_button_press(GtkWidget *widget, int graph_x, int graph_y) {
+handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
+		    bool double_click) {
   if (_potential_drag_mode != DM_none) {
     set_drag_mode(_potential_drag_mode);
     _drag_start_x = graph_x;
@@ -497,7 +498,9 @@ button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
 				   (int)event->x, (int)event->y,
 				   &graph_x, &graph_y);
 
-  return self->handle_button_press(widget, graph_x, graph_y);
+  bool double_click = (event->type == GDK_2BUTTON_PRESS);
+
+  return self->handle_button_press(widget, graph_x, graph_y, double_click);
 }
 
 ////////////////////////////////////////////////////////////////////

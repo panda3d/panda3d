@@ -169,16 +169,7 @@ set_time_units(int unit_mask) {
     unit_mask |= (old_unit_mask & GBU_show_units);
     set_guide_bar_units(unit_mask);
 
-    /*
-    RECT rect;
-    GetClientRect(_window, &rect);
-    rect.left = _right_margin;
-    InvalidateRect(_window, &rect, TRUE);
-
-    GetClientRect(_window, &rect);
-    rect.bottom = _top_margin;
-    InvalidateRect(_window, &rect, TRUE);
-    */
+    gtk_widget_queue_draw(_scale_area);
   }
 }
 
@@ -461,7 +452,15 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
 //               graph window.
 ////////////////////////////////////////////////////////////////////
 gboolean GtkStatsStripChart::
-handle_button_press(GtkWidget *widget, int graph_x, int graph_y) {
+handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
+		    bool double_click) {
+  if (double_click) {
+    // Double-clicking on a color bar in the graph is the same as
+    // double-clicking on the corresponding label.
+    clicked_label(get_collector_under_pixel(graph_x, graph_y));
+    return TRUE;
+  }
+
   if (_potential_drag_mode == DM_none) {
     set_drag_mode(DM_scale);
     _drag_scale_start = pixel_to_height(graph_y);
@@ -475,7 +474,8 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y) {
     return TRUE;
   }
 
-  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y);
+  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y, 
+					    double_click);
 }
 
 ////////////////////////////////////////////////////////////////////
