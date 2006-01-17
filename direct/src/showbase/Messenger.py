@@ -266,6 +266,10 @@ class Messenger:
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
+            
+            This is intended for debugging use only.
+            This function is not defined if python is ran with -O (optimize).
+            
             See Also: unwatch
             """
             if not self.watching.get(needle):
@@ -276,6 +280,10 @@ class Messenger:
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
+            
+            This is intended for debugging use only.
+            This function is not defined if python is ran with -O (optimize).
+            
             See Also: watch
             """
             if self.watching.get(needle):
@@ -287,6 +295,10 @@ class Messenger:
             When verbose mode is on, don't spam the output with messages
             marked as quiet.
             This is primarily a debugging tool.
+            
+            This is intended for debugging use only.
+            This function is not defined if python is ran with -O (optimize).
+            
             See Also: unquiet
             """
             if not self.quieting.get(message):
@@ -297,6 +309,10 @@ class Messenger:
             Remove a message from the list of messages that are not reported
             in verbose mode.
             This is primarily a debugging tool.
+            
+            This is intended for debugging use only.
+            This function is not defined if python is ran with -O (optimize).
+            
             See Also: quiet
             """
             if self.quieting.get(message):
