@@ -41,11 +41,6 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
 {
   _brush_origin = 0;
 
-  _left_margin = 96;
-  _right_margin = 32;
-  _top_margin = 16;
-  _bottom_margin = 8;
-
   if (show_level) {
     // If it's a level-type graph, show the appropriate units.
     if (_unit_name.empty()) {
@@ -61,16 +56,24 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
 
   _smooth_check_box = 0;
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), _label_stack.get_widget(),
+  // Add a DrawingArea widget to display all of the scale units.
+  _scale_area = gtk_drawing_area_new();
+  g_signal_connect(G_OBJECT(_scale_area), "expose_event",  
+		   G_CALLBACK(expose_event_callback), this);
+  gtk_box_pack_start(GTK_BOX(_graph_hbox), _scale_area,
 		     FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), _graph_window,
-		     TRUE, TRUE, 0);
+  gtk_widget_set_size_request(_scale_area, 40, 0);
 
-  gtk_container_add(GTK_CONTAINER(_window), hbox);
+
+  gtk_widget_set_size_request(_graph_window, 400, 100);
 
   gtk_widget_show_all(_window);  
   gtk_widget_show(_window);
+
+  // Allow the window to be resized as small as the user likes.  We
+  // have to do this after the window has been shown; otherwise, it
+  // will affect the window's initial size.
+  gtk_widget_set_size_request(_window, 0, 0);
 
   clear_region();
 }
@@ -238,6 +241,7 @@ set_vertical_scale(float value_height) {
   PStatStripChart::set_vertical_scale(value_height);
 
   gtk_widget_queue_draw(_graph_window);
+  gtk_widget_queue_draw(_scale_area);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,14 +323,13 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
     if (overall_time > get_vertical_scale()) {
       // Off the top.  Go ahead and clamp it by hand, in case it's so
       // far off the top we'd overflow the 16-bit pixel value.
-      gdk_draw_rectangle(_pixmap, gc, TRUE, x, 0, w + 1, y);
-
+      gdk_draw_rectangle(_pixmap, gc, TRUE, x, 0, w, y);
       // And we can consider ourselves done now.
       return;
     }
 
     int top_y = height_to_pixel(overall_time);
-    gdk_draw_rectangle(_pixmap, gc, TRUE, x, top_y, w + 1, y);
+    gdk_draw_rectangle(_pixmap, gc, TRUE, x, top_y, w, y - top_y);
     y = top_y;
   }
 }
@@ -367,7 +370,7 @@ end_draw(int from_x, int to_x) {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    draw_guide_bar(from_x, to_x, get_guide_bar(i));
+    draw_guide_bar(_pixmap, from_x, to_x, get_guide_bar(i));
   }
 
   GdkRectangle rect = {
@@ -377,19 +380,34 @@ end_draw(int from_x, int to_x) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::additional_graph_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of expose_event;
+//               it gives a derived class opportunity to do some
+//               further painting into the graph window.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+additional_graph_window_paint() {
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (int i = 0; i < num_user_guide_bars; i++) {
+    draw_guide_bar(_graph_window->window, 0, get_xsize(), get_user_guide_bar(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::consider_drag_start
 //       Access: Protected, Virtual
-//  Description: Based on the mouse position within the window's
-//               client area, look for draggable things the mouse
-//               might be hovering over and return the apprioprate
-//               DragMode enum or DM_none if nothing is indicated.
+//  Description: Based on the mouse position within the graph window,
+//               look for draggable things the mouse might be hovering
+//               over and return the appropriate DragMode enum or
+//               DM_none if nothing is indicated.
 ////////////////////////////////////////////////////////////////////
 GtkStatsGraph::DragMode GtkStatsStripChart::
-consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
-  if (mouse_x >= _graph_left && mouse_x < _graph_left + get_xsize()) {
-    if (mouse_y >= _graph_top && mouse_y < _graph_top + get_ysize()) {
+consider_drag_start(int graph_x, int graph_y) {
+  if (graph_x >= 0 && graph_x < get_xsize()) {
+    if (graph_y >= 0 && graph_y < get_ysize()) {
       // See if the mouse is over a user-defined guide bar.
-      int y = mouse_y - _graph_top;
+      int y = graph_y;
       float from_height = pixel_to_height(y + 2);
       float to_height = pixel_to_height(y - 2);
       _drag_guide_bar = find_user_guide_bar(from_height, to_height);
@@ -404,7 +422,7 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
     }
   }
 
-  return GtkStatsGraph::consider_drag_start(mouse_x, mouse_y, width, height);
+  return GtkStatsGraph::consider_drag_start(graph_x, graph_y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -420,8 +438,6 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
 
   switch (_drag_mode) {
   case DM_scale:
-  case DM_left_margin:
-  case DM_right_margin:
   case DM_sizing:
     // Disable smoothing for these expensive operations.
     set_average_mode(false);
@@ -439,13 +455,117 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::handle_button_press
+//       Access: Protected, Virtual
+//  Description: Called when the mouse button is depressed within the
+//               graph window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsStripChart::
+handle_button_press(GtkWidget *widget, int graph_x, int graph_y) {
+  if (_potential_drag_mode == DM_none) {
+    set_drag_mode(DM_scale);
+    _drag_scale_start = pixel_to_height(graph_y);
+    //SetCapture(_graph_window);
+    return TRUE;
+
+  } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
+    set_drag_mode(DM_guide_bar);
+    _drag_start_y = graph_y;
+    //SetCapture(_graph_window);
+    return TRUE;
+  }
+
+  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::handle_button_release
+//       Access: Protected, Virtual
+//  Description: Called when the mouse button is released within the
+//               graph window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsStripChart::
+handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
+  if (_drag_mode == DM_scale) {
+    set_drag_mode(DM_none);
+    //ReleaseCapture();
+    return handle_motion(widget, graph_x, graph_y);
+    
+  } else if (_drag_mode == DM_guide_bar) {
+    if (graph_y < 0 || graph_y >= get_ysize()) {
+      remove_user_guide_bar(_drag_guide_bar);
+    } else {
+      move_user_guide_bar(_drag_guide_bar, pixel_to_height(graph_y));
+    }
+    set_drag_mode(DM_none);
+    //ReleaseCapture();
+    return handle_motion(widget, graph_x, graph_y);
+  }
+
+  return GtkStatsGraph::handle_button_release(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::ns_motion_notify_event_callback
+//       Access: Protected, Virtual
+//  Description: Called when the mouse is moved within the
+//               graph window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsStripChart::
+handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
+  if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+    // When the mouse is over a color bar, highlight it.
+    _label_stack.highlight_label(get_collector_under_pixel(graph_x, graph_y));
+
+    /*
+    // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
+    // graph window.
+    TRACKMOUSEEVENT tme = {
+      sizeof(TRACKMOUSEEVENT),
+      TME_LEAVE,
+      _graph_window,
+      0
+    };
+    TrackMouseEvent(&tme);
+    */
+
+  } else {
+    // If the mouse is in some drag mode, stop highlighting.
+    _label_stack.highlight_label(-1);
+  }
+
+  if (_drag_mode == DM_scale) {
+    float ratio = 1.0f - ((float)graph_y / (float)get_ysize());
+    if (ratio > 0.0f) {
+      set_vertical_scale(_drag_scale_start / ratio);
+    }
+    return TRUE;
+
+  } else if (_drag_mode == DM_new_guide_bar) {
+    // We haven't created the new guide bar yet; we won't until the
+    // mouse comes within the graph's region.
+    if (graph_y >= 0 && graph_y < get_ysize()) {
+      set_drag_mode(DM_guide_bar);
+      _drag_guide_bar = add_user_guide_bar(pixel_to_height(graph_y));
+      return TRUE;
+    }
+
+  } else if (_drag_mode == DM_guide_bar) {
+    move_user_guide_bar(_drag_guide_bar, pixel_to_height(graph_y));
+    return TRUE;
+  }
+
+  return GtkStatsGraph::handle_motion(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::draw_guide_bar
 //       Access: Private
 //  Description: Draws the line for the indicated guide bar on the
 //               graph.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-draw_guide_bar(int from_x, int to_x, 
+draw_guide_bar(GdkDrawable *surface, int from_x, int to_x, 
                const PStatGraph::GuideBar &bar) {
   int y = height_to_pixel(bar._height);
 
@@ -464,6 +584,109 @@ draw_guide_bar(int from_x, int to_x,
       gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
       break;
     }
-    gdk_draw_line(_pixmap, _pixmap_gc, from_x, y, to_x, y);
+    gdk_draw_line(surface, _pixmap_gc, from_x, y, to_x, y);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::draw_guide_labels
+//       Access: Private
+//  Description: This is called during the servicing of expose_event.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+draw_guide_labels() {
+  // Draw in the labels for the guide bars.
+  int last_y = -100;
+
+  int i;
+  int num_guide_bars = get_num_guide_bars();
+  for (i = 0; i < num_guide_bars; i++) {
+    last_y = draw_guide_label(get_guide_bar(i), last_y);
+  }
+
+  GuideBar top_value = make_guide_bar(get_vertical_scale());
+  draw_guide_label(top_value, last_y);
+
+  last_y = -100;
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (i = 0; i < num_user_guide_bars; i++) {
+    last_y = draw_guide_label(get_user_guide_bar(i), last_y);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::draw_guide_label
+//       Access: Private
+//  Description: Draws the text for the indicated guide bar label to
+//               the right of the graph, unless it would overlap with
+//               the indicated last label, whose top pixel value is
+//               given.  Returns the top pixel value of the new label.
+////////////////////////////////////////////////////////////////////
+int GtkStatsStripChart::
+draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
+  GdkGC *gc = gdk_gc_new(_scale_area->window);
+
+  switch (bar._style) {
+  case GBS_target:
+    gdk_gc_set_rgb_fg_color(gc, &rgb_light_gray);
+    break;
+    
+  case GBS_user:
+    gdk_gc_set_rgb_fg_color(gc, &rgb_user_guide_bar);
+    break;
+    
+  case GBS_normal:
+    gdk_gc_set_rgb_fg_color(gc, &rgb_dark_gray);
+    break;
+  }
+
+  int y = height_to_pixel(bar._height);
+  const string &label = bar._label;
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(_window, label.c_str());
+  int width, height;
+  pango_layout_get_pixel_size(layout, &width, &height);
+
+  if (bar._style != GBS_user) {
+    float from_height = pixel_to_height(y + height);
+    float to_height = pixel_to_height(y - height);
+    if (find_user_guide_bar(from_height, to_height) >= 0) {
+      // Omit the label: there's a user-defined guide bar in the same space.
+      g_object_unref(layout);
+      g_object_unref(gc);
+      return last_y;
+    }
+  }
+
+  // Now convert our y to a coordinate within our drawing area.
+  int junk_x;
+
+  // The y coordinate comes from the graph_window.
+  gtk_widget_translate_coordinates(_graph_window, _scale_area,
+				   0, y,
+				   &junk_x, &y);
+
+  int this_y = y - height / 2;
+  if (y >= 0 && y <= _scale_area->allocation.height &&
+      (last_y < this_y || last_y > this_y + height)) {
+    gdk_draw_layout(_scale_area->window, gc, 0, this_y, layout);
+    last_y = this_y;
+  }
+
+  g_object_unref(layout);
+  g_object_unref(gc);
+  return last_y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::expose_event_callback
+//       Access: Private, Static
+//  Description: Draws in the scale labels.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsStripChart::
+expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+  GtkStatsStripChart *self = (GtkStatsStripChart *)data;
+  self->draw_guide_labels();
+
+  return TRUE;
 }

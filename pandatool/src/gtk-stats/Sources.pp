@@ -2,9 +2,9 @@
 #define USE_PACKAGES net gtk
 
 #begin bin_target
-  // We rename TARGET to gtk-pstats on Windows, so it won't compete
+  // We rename TARGET to pstats-gtk on Windows, so it won't compete
   // with Windows-native pstats.
-  #define TARGET $[if $[WINDOWS_PLATFORM],gtk-pstats,pstats]
+  #define TARGET $[if $[WINDOWS_PLATFORM],pstats-gtk,pstats]
   #define LOCAL_LIBS \
     progbase pstatserver
   #define OTHER_LIBS \

@@ -60,13 +60,22 @@ protected:
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
 
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
-                                       int width, int height);
+  virtual void additional_graph_window_paint();
+  virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
+  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
+
 private:
-  void draw_guide_bar(int from_x, int to_x, 
+  void draw_guide_bar(GdkDrawable *surface, int from_x, int to_x, 
 		      const PStatGraph::GuideBar &bar);
+  void draw_guide_labels();
+  int draw_guide_label(const PStatGraph::GuideBar &bar, int last_y);
+  
+  static gboolean expose_event_callback(GtkWidget *widget, 
+					GdkEventExpose *event, gpointer data);
 
 private:
 

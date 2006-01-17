@@ -49,33 +49,70 @@ GtkStatsGraph(GtkStatsMonitor *monitor, int thread_index) :
   _parent_window = NULL;
   _window = NULL;
   _graph_window = NULL;
-  //  _sizewe_cursor = LoadCursor(NULL, IDC_SIZEWE);
-  //  _hand_cursor = LoadCursor(NULL, IDC_HAND);
+  _scale_area = NULL;
+
+  GtkWidget *parent_window = monitor->get_window();
+
+  GdkDisplay *display = gdk_drawable_get_display(parent_window->window);
+  _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
+
   _pixmap = 0;
   _pixmap_gc = 0;
 
-  _graph_left = 0;
-  _graph_top = 0;
   _pixmap_xsize = 0;
   _pixmap_ysize = 0;
 
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  GtkWidget *parent_window = monitor->get_window();
 
   gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
   gtk_window_set_destroy_with_parent(GTK_WINDOW(_window), TRUE);
+  gtk_widget_add_events(_window, 
+			GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+			GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(_window), "delete_event",
 		   G_CALLBACK(window_delete_event), this);
   g_signal_connect(G_OBJECT(_window), "destroy",
 		   G_CALLBACK(window_destroy), this);
+  g_signal_connect(G_OBJECT(_window), "button_press_event",  
+		   G_CALLBACK(button_press_event_callback), this);
+  g_signal_connect(G_OBJECT(_window), "button_release_event",  
+		   G_CALLBACK(button_release_event_callback), this);
+  g_signal_connect(G_OBJECT(_window), "motion_notify_event",  
+		   G_CALLBACK(motion_notify_event_callback), this);
 
   _graph_window = gtk_drawing_area_new();
+  gtk_widget_add_events(_graph_window, 
+			GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+			GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(_graph_window), "expose_event",  
-		   G_CALLBACK(expose_event_callback), this);
+		   G_CALLBACK(graph_expose_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "configure_event",  
-		   G_CALLBACK(configure_event_callback), this);
+		   G_CALLBACK(configure_graph_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "button_press_event",  
+		   G_CALLBACK(button_press_event_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "button_release_event",  
+		   G_CALLBACK(button_release_event_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "motion_notify_event",  
+		   G_CALLBACK(motion_notify_event_callback), this);
 
-  gtk_widget_set_size_request(_graph_window, 400, 100);
+  // A Frame to hold the graph.
+  GtkWidget *graph_frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(graph_frame), GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(graph_frame), _graph_window);
+
+  // An HBox to hold the graph's frame, and the scale legend to the
+  // right of it.
+  _graph_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(_graph_hbox), graph_frame,
+		     TRUE, TRUE, 0);
+
+  // An HPaned to hold the label stack and the graph hbox.
+  _hpaned = gtk_hpaned_new();
+  gtk_container_add(GTK_CONTAINER(_window), _hpaned);
+  gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
+
+  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), TRUE, TRUE);
+  gtk_paned_pack2(GTK_PANED(_hpaned), _graph_hbox, TRUE, TRUE);
 
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
@@ -106,15 +143,7 @@ GtkStatsGraph::
     g_object_unref(gc);
   }
 
-  if (_graph_window != NULL) {
-    gtk_widget_destroy(_graph_window);
-    _graph_window = NULL;
-  }
-
-  if (_window != NULL) {
-    gtk_widget_destroy(_window);
-    _window = NULL;
-  }
+  gtk_widget_destroy(_window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,10 +237,10 @@ set_pause(bool pause) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsGraph::
 user_guide_bars_changed() {
-  /*
-  InvalidateRect(_window, NULL, TRUE);
-  InvalidateRect(_graph_window, NULL, TRUE);
-  */
+  if (_scale_area != NULL) {
+    gtk_widget_queue_draw(_scale_area);
+  }
+  gtk_widget_queue_draw(_graph_window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,21 +297,26 @@ get_collector_gc(int collector_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::additional_graph_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of expose_event;
+//               it gives a derived class opportunity to do some
+//               further painting into the graph window.
+////////////////////////////////////////////////////////////////////
+void GtkStatsGraph::
+additional_graph_window_paint() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsGraph::consider_drag_start
 //       Access: Protected, Virtual
-//  Description: Based on the mouse position within the window's
-//               client area, look for draggable things the mouse
-//               might be hovering over and return the apprioprate
-//               DragMode enum or DM_none if nothing is indicated.
+//  Description: Based on the mouse position within the graph window,
+//               look for draggable things the mouse might be hovering
+//               over and return the appropriate DragMode enum or
+//               DM_none if nothing is indicated.
 ////////////////////////////////////////////////////////////////////
 GtkStatsGraph::DragMode GtkStatsGraph::
-consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
-  if (mouse_x >= _left_margin - 2 && mouse_x <= _left_margin + 2) {
-    return DM_left_margin;
-  } else if (mouse_x >= width - _right_margin - 2 && mouse_x <= width - _right_margin + 2) {
-    return DM_right_margin;
-  }
-
+consider_drag_start(int graph_x, int graph_y) {
   return DM_none;
 }
 
@@ -296,6 +330,58 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
 void GtkStatsGraph::
 set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
   _drag_mode = drag_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::handle_button_press
+//       Access: Protected, Virtual
+//  Description: Called when the mouse button is depressed within the
+//               window, or any nested window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+handle_button_press(GtkWidget *widget, int graph_x, int graph_y) {
+  if (_potential_drag_mode != DM_none) {
+    set_drag_mode(_potential_drag_mode);
+    _drag_start_x = graph_x;
+    _drag_start_y = graph_y;
+    //    SetCapture(_window);
+  }
+  return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::handle_button_release
+//       Access: Protected, Virtual
+//  Description: Called when the mouse button is released within the
+//               window, or any nested window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
+  set_drag_mode(DM_none);
+  //  ReleaseCapture();
+
+  return handle_motion(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::handle_motion
+//       Access: Protected, Virtual, Static
+//  Description: Called when the mouse is moved within the
+//               window, or any nested window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
+  _potential_drag_mode = consider_drag_start(graph_x, graph_y);
+
+  if (_potential_drag_mode == DM_guide_bar ||
+      _drag_mode == DM_guide_bar) {
+    gdk_window_set_cursor(_window->window, _hand_cursor);
+
+  } else {
+    gdk_window_set_cursor(_window->window, NULL);
+  }
+
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,7 +433,7 @@ window_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsGraph::window_delete_event
+//     Function: GtkStatsGraph::window_destroy
 //       Access: Private, Static
 //  Description: Callback when the window is destroyed by the system
 //               (or by delete_event).
@@ -359,12 +445,12 @@ window_destroy(GtkWidget *widget, gpointer data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsGraph::expose_event_callback
+//     Function: GtkStatsGraph::graph_expose_callback
 //       Access: Private, Static
 //  Description: Fills in the graph window.
 ////////////////////////////////////////////////////////////////////
 gboolean GtkStatsGraph::
-expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
   if (self->_pixmap != NULL) {
@@ -373,17 +459,19 @@ expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
 		      self->_pixmap, 0, 0, 0, 0,
 		      self->_pixmap_xsize, self->_pixmap_ysize);
   }
+
+  self->additional_graph_window_paint();
     
   return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsGraph::configure_event_callback
+//     Function: GtkStatsGraph::configure_graph_callback
 //       Access: Private, Static
 //  Description: Changes the size of the graph window
 ////////////////////////////////////////////////////////////////////
 gboolean GtkStatsGraph::
-configure_event_callback(GtkWidget *widget, GdkEventConfigure *event, 
+configure_graph_callback(GtkWidget *widget, GdkEventConfigure *event, 
 			 gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
@@ -392,4 +480,58 @@ configure_event_callback(GtkWidget *widget, GdkEventConfigure *event,
   self->force_redraw();
     
   return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::button_press_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse button is depressed within the
+//               graph window or main window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+button_press_event_callback(GtkWidget *widget, GdkEventButton *event, 
+			    gpointer data) {
+  GtkStatsGraph *self = (GtkStatsGraph *)data;
+  int graph_x, graph_y;
+  gtk_widget_translate_coordinates(widget, self->_graph_window,
+				   (int)event->x, (int)event->y,
+				   &graph_x, &graph_y);
+
+  return self->handle_button_press(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::button_release_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse button is released within the
+//               graph window or main window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+button_release_event_callback(GtkWidget *widget, GdkEventButton *event, 
+			      gpointer data) {
+  GtkStatsGraph *self = (GtkStatsGraph *)data;
+  int graph_x, graph_y;
+  gtk_widget_translate_coordinates(widget, self->_graph_window,
+				   (int)event->x, (int)event->y,
+				   &graph_x, &graph_y);
+
+  return self->handle_button_release(widget, graph_x, graph_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsGraph::motion_notify_event_callback
+//       Access: Private, Static
+//  Description: Called when the mouse is moved within the
+//               graph window or main window.
+////////////////////////////////////////////////////////////////////
+gboolean GtkStatsGraph::
+motion_notify_event_callback(GtkWidget *widget, GdkEventMotion *event, 
+			     gpointer data) {
+  GtkStatsGraph *self = (GtkStatsGraph *)data;
+  int graph_x, graph_y;
+  gtk_widget_translate_coordinates(widget, self->_graph_window,
+				   (int)event->x, (int)event->y,
+				   &graph_x, &graph_y);
+
+  return self->handle_motion(widget, graph_x, graph_y);
 }

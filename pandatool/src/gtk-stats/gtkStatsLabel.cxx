@@ -223,7 +223,8 @@ leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsLabel::button_press_event_callback
 //       Access: Private, Static
-//  Description: Called when the mouse leaves the label region
+//  Description: Called when the mouse button is depressed within the
+//               label.
 ////////////////////////////////////////////////////////////////////
 gboolean GtkStatsLabel::
 button_press_event_callback(GtkWidget *widget, GdkEventButton *event, 

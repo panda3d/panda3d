@@ -550,7 +550,7 @@ window_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::window_delete_event
+//     Function: GtkStatsMonitor::window_destroy
 //       Access: Private, Static
 //  Description: Callback when the window is destroyed by the system
 //               (or by delete_event).

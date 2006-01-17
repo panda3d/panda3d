@@ -39,8 +39,6 @@ public:
   enum DragMode {
     DM_none,
     DM_scale,
-    DM_left_margin,
-    DM_right_margin,
     DM_guide_bar,
     DM_new_guide_bar,
     DM_sizing,
@@ -68,13 +66,13 @@ protected:
   void close();
   GdkGC *get_collector_gc(int collector_index);
 
-  /*
-  virtual void additional_window_paint(HDC hdc);
-  virtual void additional_graph_window_paint(HDC hdc);
-  */
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
-                                       int width, int height);
+  virtual void additional_graph_window_paint();
+  virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
+
+  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 protected:
   // Table of GC's for our various collectors.
@@ -86,20 +84,16 @@ protected:
   GtkWidget *_parent_window;
   GtkWidget *_window;
   GtkWidget *_graph_window;
+  GtkWidget *_graph_hbox;
+  GtkWidget *_hpaned;
+  GtkWidget *_scale_area;
   GtkStatsLabelStack _label_stack;
 
-  /*
-  HCURSOR _sizewe_cursor;
-  HCURSOR _hand_cursor;
-  */
+  GdkCursor *_hand_cursor;
 
   GdkPixmap *_pixmap;
   GdkGC *_pixmap_gc;
-
-  int _graph_left, _graph_top;
   int _pixmap_xsize, _pixmap_ysize;
-  int _left_margin, _right_margin;
-  int _top_margin, _bottom_margin;
 
   /*
   COLORREF _dark_color;
@@ -127,15 +121,25 @@ protected:
 private:
   void setup_pixmap(int xsize, int ysize);
   void release_pixmap();
-  void create_graph_window();
 
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event, 
 				      gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
-  static gboolean expose_event_callback(GtkWidget *widget, 
+  static gboolean graph_expose_callback(GtkWidget *widget, 
 					GdkEventExpose *event, gpointer data);
-  static gboolean configure_event_callback(GtkWidget *widget, 
+  static gboolean configure_graph_callback(GtkWidget *widget, 
 					   GdkEventConfigure *event, gpointer data);
+
+protected:
+  static gboolean button_press_event_callback(GtkWidget *widget, 
+					      GdkEventButton *event, 
+					      gpointer data);
+  static gboolean button_release_event_callback(GtkWidget *widget, 
+						GdkEventButton *event, 
+						gpointer data);
+  static gboolean motion_notify_event_callback(GtkWidget *widget, 
+					       GdkEventMotion *event, 
+					       gpointer data);
 };
 
 #endif
