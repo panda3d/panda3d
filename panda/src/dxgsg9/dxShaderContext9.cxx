@@ -33,26 +33,26 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 
 #ifdef HAVE_CGDX9
 
-  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n";
+  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n"; DBG_E
 
-  _cg_context = (CGcontext)0;
+//  _cg_context = (CGcontext)0;
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
   _cg_program[SHADER_type_vert] = (CGprogram)0;
   _cg_program[SHADER_type_frag] = (CGprogram)0;
 
   if (header == "//Cg") {
-    // Create the Cg context.
-    _cg_context = cgCreateContext();
-    if (_cg_context == 0) {
+
+    // CGcontext is created once during Reset ( )
+
+    if (gsg -> _cg_context == 0) {
       release_resources();
       cerr << "Cg not supported by this video card.\n";
       return;
     }
 
-cgD3D9SetDevice(gsg -> _d3d_device);
 
-// IGNORE THIS FOR NOW, SEEMS TO BE LOADING IN API SPECIFIC PROFILES
+// IGNORE THIS FOR NOW, SEEMS TO BE LOADING IN GL SPECIFIC PROFILES
 if (false)
 {
     // Parse any directives in the source.
@@ -83,13 +83,14 @@ if (false)
       return;
     }
 
+this -> _name = s->get_name ( );
+
     // Compile the program.
     try_cg_compile(s, gsg);
     cerr << _cg_errors;
     return;
   }
 #endif
-
   cerr << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
 
@@ -176,15 +177,15 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
 
   cgGetError();
   _cg_program[0] =
-    cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
+    cgCreateProgram(gsg -> _cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[0], "vshader", (const char**)NULL);
-  print_cg_compile_errors(s->get_name(), _cg_context);
+  print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
 
   cgGetError();
   _cg_program[1] =
-    cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
+    cgCreateProgram(gsg -> _cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[1], "fshader", (const char**)NULL);
-  print_cg_compile_errors(s->get_name(), _cg_context);
+  print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
 
   if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
     release_resources();
@@ -198,6 +199,9 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   // omission on nvidia's part.  The following code fetches the output listing,
   // detects the error, repairs the code, and resumbits the repaired code to Cg.
   if ((_cg_profile[1] == CG_PROFILE_ARBFP1) && (gsg->get_supports_shadow_filter ( ))) {
+
+    DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER COMPILE HACK\n"; DBG_E
+
     bool shadowunit[32];
     bool anyshadow = false;
     memset(shadowunit, 0, sizeof(shadowunit));
@@ -253,9 +257,9 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
       }
       cgDestroyProgram(_cg_program[1]);
       _cg_program[1] =
-        cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
+        cgCreateProgram(gsg -> _cg_context, CG_OBJECT, result.c_str(),
                         _cg_profile[1], "fshader", (const char**)NULL);
-      print_cg_compile_errors(s->get_name(), _cg_context);
+      print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
       if (_cg_program[SHADER_type_frag]==0) {
         release_resources();
         return false;
@@ -281,7 +285,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   DWORD assembly_flags;
 
 // ?????
-  paramater_shadowing = !TRUE;
+  paramater_shadowing = FALSE;
   assembly_flags = 0;
 
   cgD3D9LoadProgram(_cg_program[SHADER_type_vert], paramater_shadowing, assembly_flags);
@@ -291,7 +295,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     + cgGetProfileString(_cg_profile[SHADER_type_vert]) + " "
     + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
 
-  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n";
+  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n"; DBG_E
 
   return true;
 }
@@ -316,9 +320,7 @@ CLP(ShaderContext)::
 void CLP(ShaderContext)::
 release_resources() {
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
-    cgDestroyContext(_cg_context);
-    _cg_context = (CGcontext)0;
+  {
     _cg_profile[SHADER_type_vert] = (CGprofile)0;
     _cg_profile[SHADER_type_frag] = (CGprofile)0;
     _cg_program[SHADER_type_vert] = (CGprogram)0;
@@ -337,9 +339,9 @@ release_resources() {
 void CLP(ShaderContext)::
 bind(GSG *gsg) {
 #ifdef HAVE_CGDX9
-  if (_cg_context != 0) {
+  if (gsg -> _cg_context != 0) {
 
-dxgsg9_cat.debug ( ) << "SHADER: bind \n";
+    DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: bind \n";  DBG_E
 
     // clear the last cached FVF to make sure the next SetFVF call goes through
     gsg -> _last_fvf = 0;
@@ -380,17 +382,18 @@ dxgsg9_cat.debug ( ) << "SHADER: bind \n";
         << D3DERRORSTRING(hr);
     }
 
-dxgsg9_cat.debug ( )
-  << "SHADER: V "
-  << vertex_shader
-  << " P "
-  << pixel_shader
-  << " CG VS"
-  << _cg_program[SHADER_type_vert]
-  << " CG PS"
-  << _cg_program[SHADER_type_frag]
-  << "\n";
-
+    DBG_SH5  dxgsg9_cat.debug ( )
+      << this -> _name
+      << "\nSHADER: V "
+      << vertex_shader
+      << " P "
+      << pixel_shader
+      << " CG VS"
+      << _cg_program[SHADER_type_vert]
+      << " CG PS"
+      << _cg_program[SHADER_type_frag]
+      << "\n";
+    DBG_E
   }
 #endif
 }
@@ -404,7 +407,7 @@ void CLP(ShaderContext)::
 unbind(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (_cg_context != 0) {
+  if (gsg -> _cg_context != 0) {
 // ?????    cgD3D9DisableProfile(_cg_profile[SHADER_type_vert]);
 // ?????    cgD3D9DisableProfile(_cg_profile[SHADER_type_frag]);
     HRESULT hr;
@@ -422,7 +425,7 @@ unbind(GSG *gsg)
         << D3DERRORSTRING(hr);
     }
 
-dxgsg9_cat.debug ( ) << "SHADER: unbind \n";
+    DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: unbind \n"; DBG_E
 
   }
 #endif
@@ -442,6 +445,11 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
   LMatrix4f temp_matrix;
 
   CGparameter p = bind.parameter;
+
+  HRESULT hr;
+
+  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: issue_cg_auto_bind " << bind.value << "\n"; DBG_E
+
   switch(bind.value) {
   case SIC_mat_modelview:
   case SIC_inv_modelview:
@@ -471,13 +479,23 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
     {
       case CG_GL_MODELVIEW_MATRIX:
 
-// which one ?????
-p_matrix = &(gsg -> _external_transform -> get_mat ( ));
+// SHADER ISSUE: which matrix ?????
+//p_matrix = &(gsg -> _external_transform -> get_mat ( ));
 p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
+
+// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
+        temp_matrix.transpose_from (*p_matrix);
+        p_matrix = &temp_matrix;
 
         break;
       case CG_GL_PROJECTION_MATRIX:
+
         p_matrix = &gsg->_projection_mat;
+
+// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
+        temp_matrix.transpose_from (*p_matrix);
+        p_matrix = &temp_matrix;
+
         break;
       case CG_GL_TEXTURE_MATRIX:
 
@@ -485,8 +503,12 @@ p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
 
         tex_matrix_attrib = gsg->_state._tex_matrix;
 
-// using default ?????
+// SHADER ISSUE: using default ????? GL texture matrix = which DX texture matrix ?????
 p_matrix = &(tex_matrix_attrib -> get_mat ( ));
+
+// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
+        temp_matrix.transpose_from (*p_matrix);
+        p_matrix = &temp_matrix;
 
         break;
       case CG_GL_MODELVIEW_PROJECTION_MATRIX:
@@ -494,16 +516,86 @@ p_matrix = &(tex_matrix_attrib -> get_mat ( ));
         const LMatrix4f *model_matrix;
         const LMatrix4f *projection_matrix;
 
-// which one ?????
-model_matrix = &(gsg -> _external_transform -> get_mat ( ));
-model_matrix = &(gsg -> _internal_transform -> get_mat ( ));
+DBG_SH4  dxgsg9_cat.debug ( ) << "SHADER: issue_cg_auto_bind CG_GL_MODELVIEW_PROJECTION_MATRIX " << bind.value << "\n"; DBG_E
 
         projection_matrix = &gsg->_projection_mat;
 
-// which one ?????
-// temp_matrix.multiply (*projection_matrix, *model_matrix);
-temp_matrix.multiply (*model_matrix, *projection_matrix);
+// which matrix ?????
+// which multiply order ?????
+        static int state = 3;
+        switch (state & 0x03)
+        {
+          case 0:
+            model_matrix = &(gsg -> _external_transform -> get_mat ( ));
+            temp_matrix.multiply (*projection_matrix, *model_matrix);
+            break;
+          case 1:
+            model_matrix = &(gsg -> _internal_transform -> get_mat ( ));
+            temp_matrix.multiply (*projection_matrix, *model_matrix);
+            break;
+          case 2:
+            model_matrix = &(gsg -> _external_transform -> get_mat ( ));
+            temp_matrix.multiply (*model_matrix, *projection_matrix);
+            break;
+          case 3:
+            model_matrix = &(gsg -> _internal_transform -> get_mat ( ));
+            temp_matrix.multiply (*model_matrix, *projection_matrix);
+            break;
+        }
 
+DBG_SH4
+    const float *data;
+    data = model_matrix -> get_data ( );
+    dxgsg9_cat.debug ( ) << "MODELVIEW MATRIX \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+
+    model_matrix = &(gsg -> _external_transform -> get_mat ( ));
+    data = model_matrix -> get_data ( );
+    dxgsg9_cat.debug ( ) << "EXTERNAL MODELVIEW MATRIX \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+
+    data = projection_matrix -> get_data ( );
+    dxgsg9_cat.debug ( ) << "PROJECTION MATRIX \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+
+    D3DMATRIX d3d_matrix;
+
+    data = &d3d_matrix._11;
+
+    gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(0), &d3d_matrix);
+    dxgsg9_cat.debug ( ) << "D3DTS_WORLDMATRIX(0) \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+DBG_E
+
+/*
+gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(1), &d3d_matrix);
+    dxgsg9_cat.debug ( ) << "D3DTS_WORLDMATRIX(1) \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
+    dxgsg9_cat.debug ( ) << "D3DTS_WORLDMATRIX(2) \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+*/
+
+// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
+        temp_matrix.transpose_in_place ( );
         p_matrix = &temp_matrix;
         break;
     }
@@ -527,21 +619,61 @@ temp_matrix.multiply (*model_matrix, *projection_matrix);
         p_matrix = &matrix;
         break;
     }
-    cgD3D9SetUniformArray (p, 0, 16, p_matrix -> get_data ( ));
+
+    hr = cgD3D9SetUniform (p, p_matrix -> get_data ( ));
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9SetUniform "
+        << bind.value << " failed "
+        << " size " << cgD3D9TypeToSize(cgGetParameterType(p))
+        << D3DERRORSTRING(hr);
+
+        switch (hr)
+        {
+          case CGD3D9ERR_INVALIDPARAM:
+            dxgsg9_cat.error() << "CGD3D9ERR_INVALIDPARAM\n";
+            break;
+          case CGD3D9ERR_NODEVICE:
+            dxgsg9_cat.error() << "CGD3D9ERR_NODEVICE\n";
+            break;
+          case CGD3D9ERR_NOTLOADED:
+            dxgsg9_cat.error() << "CGD3D9ERR_NOTLOADED\n";
+            break;
+          case CGD3D9ERR_NOTUNIFORM:
+            dxgsg9_cat.error() << "CGD3D9ERR_NOTUNIFORM\n";
+            break;
+          case CGD3D9ERR_NULLVALUE:
+            dxgsg9_cat.error() << "CGD3D9ERR_NULLVALUE\n";
+            break;
+          case CGD3D9ERR_OUTOFRANGE:
+            dxgsg9_cat.error() << "CGD3D9ERR_OUTOFRANGE\n";
+            break;
+        }
+    }
     return;
   case SIC_sys_windowsize:
     t[0] = gsg->get_current_display_region ( )->get_pixel_width();
     t[1] = gsg->get_current_display_region ( )->get_pixel_height();
     t[2] = 1;
     t[3] = 1;
-    cgD3D9SetUniformArray (p, 0, 4, t.get_data());
+    hr = cgD3D9SetUniform (p, t.get_data());
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9SetUniform " << bind.value << " failed "
+        << D3DERRORSTRING(hr);
+    }
     return;
   case SIC_sys_pixelsize:
     t[0] = 1.0 / gsg->get_current_display_region ( )->get_pixel_width();
     t[1] = 1.0 / gsg->get_current_display_region ( )->get_pixel_height();
     t[2] = 1;
     t[3] = 1;
-    cgD3D9SetUniformArray (p, 0, 4, t.get_data());
+    hr = cgD3D9SetUniform (p, t.get_data());
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9SetUniform " << bind.value << " failed "
+        << D3DERRORSTRING(hr);
+    }
     return;
   case SIC_sys_cardcenter:
     px = gsg->get_current_display_region ( )->get_pixel_width();
@@ -552,7 +684,12 @@ temp_matrix.multiply (*model_matrix, *projection_matrix);
     t[1] = yhi*0.5;
     t[2] = 1;
     t[3] = 1;
-    cgD3D9SetUniformArray (p, 0, 4, t.get_data());
+    hr = cgD3D9SetUniform (p, t.get_data());
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "cgD3D9SetUniform " << bind.value << " failed "
+        << D3DERRORSTRING(hr);
+    }
     return;
   }
 }
@@ -570,13 +707,18 @@ void CLP(ShaderContext)::
 issue_parameters(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (_cg_context != 0) {
+
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters\n"; DBG_E
+
+  if (gsg -> _cg_context != 0) {
     // Pass in k-float parameters.
     for (int i=0; i<(int)_cg_fbind.size(); i++) {
       InternalName *id = _cg_fbind[i].name;
       const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
-//      cgD3D9SetParameter4fv(_cg_fbind[i].parameter, input->get_vector().get_data());
-      cgD3D9SetUniformArray (_cg_fbind[i].parameter, 0, 4, input->get_vector().get_data());
+
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_fbind \n"; DBG_E
+
+      cgD3D9SetUniform (_cg_fbind[i].parameter, input->get_vector().get_data());
     }
 
     // Pass in k-float4x4 parameters.
@@ -587,7 +729,9 @@ issue_parameters(GSG *gsg)
       if (input->get_nodepath().is_empty()) {
         dat = LMatrix4f::ident_mat().get_data();
 
-        cgD3D9SetUniformArray (_cg_npbind[i].parameter, 0, 16, dat);
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind \n"; DBG_E
+
+        cgD3D9SetUniform (_cg_npbind[i].parameter, dat);
 
       } else {
         dat = input->get_nodepath().node()->get_transform()->get_mat().get_data();
@@ -611,10 +755,10 @@ issue_parameters(GSG *gsg)
         matrix [14] = dat[11];
         matrix [15] = dat[15];
 
-        cgD3D9SetUniformArray (_cg_npbind[i].parameter, 0, 16, matrix);
-      }
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind 2 \n"; DBG_E
 
-//      cgD3D9SetMatrixParameterfc(_cg_npbind[i].parameter, dat);
+        cgD3D9SetUniform (_cg_npbind[i].parameter, matrix);
+      }
     }
 
     // Pass in system parameters
@@ -624,6 +768,9 @@ issue_parameters(GSG *gsg)
 
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
     for (int i=0; i<(int)_cg_parameter_bind.size(); i++) {
+
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_parameter_bind \n"; DBG_E
+
       bind_cg_transform(_cg_parameter_bind[i], gsg);
     }
   }
@@ -643,7 +790,7 @@ void CLP(ShaderContext)::
 issue_transform(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (_cg_context != 0) {
+  if (gsg -> _cg_context != 0) {
     // Pass in modelview, projection, etc.
     for (int i=0; i<(int)_cg_auto_trans.size(); i++) {
       issue_cg_auto_bind(_cg_auto_trans[i], gsg);
@@ -665,9 +812,12 @@ void CLP(ShaderContext)::
 disable_shader_vertex_arrays(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
+  if (gsg -> _cg_context) {
     for (int i=0; i<(int)_cg_varying.size(); i++) {
-// ?????      cgD3D9DisableClientState(_cg_varying[i].parameter);
+
+// ORIGINAL GL CODE: NO EQUIVALENT IN DX
+//    cgGLDisableClientState(_cg_varying[i].parameter);
+
     }
   }
 #endif
@@ -689,7 +839,10 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
+  if (gsg -> _cg_context) {
+
+// RETURN
+//return;
 
 /* ?????
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -704,6 +857,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
       Geom::NumericType numeric_type;
       int start, stride, num_values;
       int nvarying = _cg_varying.size();
+
+DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying " << nvarying <<  "\n"; DBG_E
+
       for (int i=0; i<nvarying; i++) {
         InternalName *name = _cg_varying[i].name;
         int texslot = _cg_varying[i].append_uv;
@@ -722,6 +878,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         }
         if (gsg->_vertex_data->get_array_info(name, array_data, num_values,
               numeric_type, start, stride)) {
+
+
 // ?????
 /*
           const unsigned char *client_pointer = gsg->setup_array_data(array_data);
@@ -731,16 +889,25 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 */
 
 // Set DirectX Vertex Declaration
-
+/*
   HRESULT hr;
   IDirect3DVertexDeclaration9 *vertex_declaration;
 
 
 vertex_declaration = 0;
+*/
 
-dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays \n";
+    DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
 
+    DBG_SH1  dxgsg9_cat.debug ( )
+      << "\n  name " << name -> get_name ( )
+      << "  num_values " << num_values
+      << "  numeric_type " << numeric_type
+      << "  start " << start
+      << "  stride " << stride
+      << "\n"; DBG_E
 
+/*
   hr = gsg -> _d3d_device -> SetVertexDeclaration (vertex_declaration);
   if (FAILED (hr)) {
     dxgsg9_cat.error()
@@ -765,6 +932,7 @@ stride = 0;
       << "SetStreamSource failed "
       << D3DERRORSTRING(hr);
   }
+*/
 
 // ?????          cgD3D9EnableClientState(_cg_varying[i].parameter);
         } else {
@@ -785,7 +953,7 @@ void CLP(ShaderContext)::
 disable_shader_texture_bindings(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
+  if (gsg -> _cg_context) {
     for (int i=0; i<(int)_cg_texbind.size(); i++) {
       int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
 
@@ -802,6 +970,8 @@ disable_shader_texture_bindings(GSG *gsg)
       // This is probably faster - but maybe not as safe?
       // cgD3D9DisableTextureParameter(_cg_texbind[i].parameter);
 */
+
+// NOT SURE IF THIS IS CORRECT FROM GL TO DX
       HRESULT hr;
 
       hr = gsg -> _d3d_device -> SetTexture (texunit, NULL);
@@ -833,7 +1003,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 {
   if (prev) prev->disable_shader_texture_bindings(gsg);
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
+  if (gsg -> _cg_context) {
     for (int i=0; i<(int)_cg_texbind.size(); i++) {
       Texture *tex = 0;
       InternalName *id = _cg_texbind[i].name;
@@ -862,6 +1032,8 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         continue;
       }
       int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+
+// ?????
 /*
       gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
 
@@ -872,6 +1044,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       }
       GLP(Enable)(target);
 */
+// NOT SURE IF THIS IS CORRECT FROM GL TO DX
       gsg->apply_texture(texunit, tc);
     }
   }
@@ -960,6 +1133,9 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
   //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 
+
+  DBG_SH4  dxgsg9_cat.debug ( ) << "bind_cg_transform " << stb.trans_piece << "\n"; DBG_E
+
   data = total->get_mat().get_data();
   switch (stb.trans_piece) {
 /*
@@ -979,7 +1155,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
     float matrix [16];
 
     case SHADER_data_matrix:
-      cgD3D9SetUniformArray (stb.parameter, 0, 16, data);
+      cgD3D9SetUniform (stb.parameter, data);
       break;
     case SHADER_data_transpose:
       matrix [0] = data[0];
@@ -998,47 +1174,47 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
       matrix [13] = data[7];
       matrix [14] = data[11];
       matrix [15] = data[15];
-      cgD3D9SetUniformArray (stb.parameter, 0, 16, matrix);
+      cgD3D9SetUniform (stb.parameter, matrix);
       break;
     case SHADER_data_row0:
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, data);
+      cgD3D9SetUniform (stb.parameter, data);
       break;
     case SHADER_data_row1:
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, data + 4);
+      cgD3D9SetUniform (stb.parameter, data + 4);
       break;
     case SHADER_data_row2:
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, data + 8);
+      cgD3D9SetUniform (stb.parameter, data + 8);
       break;
     case SHADER_data_row3:
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, data + 12);
+      cgD3D9SetUniform (stb.parameter, data + 12);
       break;
     case SHADER_data_col0:
       vector [0] = data[0];
       vector [1] = data[4];
       vector [2] = data[8];
       vector [3] = data[12];
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, vector);
+      cgD3D9SetUniform (stb.parameter, vector);
       break;
     case SHADER_data_col1:
       vector [0] = data[1];
       vector [1] = data[5];
       vector [2] = data[9];
       vector [3] = data[13];
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, vector);
+      cgD3D9SetUniform (stb.parameter, vector);
       break;
     case SHADER_data_col2:
       vector [0] = data[2];
       vector [1] = data[6];
       vector [2] = data[10];
       vector [3] = data[14];
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, vector);
+      cgD3D9SetUniform (stb.parameter, vector);
       break;
     case SHADER_data_col3:
       vector [0] = data[3];
       vector [1] = data[7];
       vector [2] = data[11];
       vector [3] = data[15];
-      cgD3D9SetUniformArray (stb.parameter, 0, 4, vector);
+      cgD3D9SetUniform (stb.parameter, vector);
       break;
   }
 }
@@ -1552,5 +1728,3 @@ compile_cg_parameter(CGparameter p)
   return false;
 }
 #endif
-
-

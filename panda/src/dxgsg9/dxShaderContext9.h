@@ -46,14 +46,15 @@ class CLP(GraphicsStateGuardian);
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
 
+typedef CLP(GraphicsStateGuardian) GSG;
+
 class EXPCL_PANDADX CLP(ShaderContext): public ShaderContext {
 public:
-  typedef CLP(GraphicsStateGuardian) GSG;
 
   CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
   ~CLP(ShaderContext)();
 
-  INLINE bool valid(void);
+  INLINE bool valid(GSG *gsg);
   void bind(GSG *gsg);
   void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg);
@@ -62,6 +63,9 @@ public:
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
+
+  // FOR DEBUGGING
+  string _name;
 
 private:
 
@@ -116,7 +120,8 @@ private:
     PT(InternalName) name;
     int append_uv;
   };
-  CGcontext _cg_context;
+
+//  CGcontext _cg_context;
   CGprofile _cg_profile[2];
   CGprogram _cg_program[2];
   string    _cg_errors;
