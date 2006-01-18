@@ -314,11 +314,11 @@ poll() {
       ClockObject *global_clock = ClockObject::get_global_clock();
       double stop = global_clock->get_real_time() + max_poll_cycle;
 
-      process_incoming_data(sinfo);
-      sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
-      while (sinfo != (SocketInfo *)NULL && 
-	     global_clock->get_real_time() < stop) {
+      while (sinfo != (SocketInfo *)NULL) {
 	process_incoming_data(sinfo);
+	if (global_clock->get_real_time() >= stop) {
+	  return;
+	}
 	sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
       }
     }
