@@ -54,9 +54,23 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
     set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
   }
 
-  _smooth_check_box = 0;
+  // Put some stuff on top of the graph.
+  _top_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(_graph_vbox), _top_hbox,
+		     FALSE, FALSE, 0);
 
-  // Add a DrawingArea widget to display all of the scale units.
+  _smooth_check_box = gtk_check_button_new_with_label("Smooth");
+  g_signal_connect(G_OBJECT(_smooth_check_box), "toggled",  
+		   G_CALLBACK(toggled_callback), this);
+
+  _total_label = gtk_label_new("");
+  gtk_box_pack_start(GTK_BOX(_top_hbox), _smooth_check_box,
+		     FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(_top_hbox), _total_label,
+		   FALSE, FALSE, 0);
+
+  // Add a DrawingArea widget to the right of the graph, to display
+  // all of the scale units.
   _scale_area = gtk_drawing_area_new();
   g_signal_connect(G_OBJECT(_scale_area), "expose_event",  
 		   G_CALLBACK(expose_event_callback), this);
@@ -119,16 +133,11 @@ new_data(int thread_index, int frame_number) {
   if (!_pause) {
     update();
 
-    /*
     string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
     if (_net_value_text != text) {
       _net_value_text = text;
-      RECT rect;
-      GetClientRect(_window, &rect);
-      rect.bottom = _top_margin;
-      InvalidateRect(_window, &rect, TRUE);
+      gtk_label_set_text(GTK_LABEL(_total_label), _net_value_text.c_str());
     }
-    */
   }
 }
 
@@ -437,10 +446,9 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
   default:
     // Restore smoothing according to the current setting of the check
     // box.
-    /*
-    int result = SendMessage(_smooth_check_box, BM_GETCHECK, 0, 0);
-    set_average_mode(result == BST_CHECKED);
-    */
+    bool active = 
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_smooth_check_box));
+    set_average_mode(active);
     break;
   }
 }
@@ -658,24 +666,38 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
     }
   }
 
-  // Now convert our y to a coordinate within our drawing area.
-  int junk_x;
-
-  // The y coordinate comes from the graph_window.
-  gtk_widget_translate_coordinates(_graph_window, _scale_area,
-				   0, y,
-				   &junk_x, &y);
-
-  int this_y = y - height / 2;
-  if (y >= 0 && y <= _scale_area->allocation.height &&
-      (last_y < this_y || last_y > this_y + height)) {
-    gdk_draw_layout(_scale_area->window, gc, 0, this_y, layout);
-    last_y = this_y;
+  if (y >= 0 && y < get_ysize()) {
+    // Now convert our y to a coordinate within our drawing area.
+    int junk_x;
+    
+    // The y coordinate comes from the graph_window.
+    gtk_widget_translate_coordinates(_graph_window, _scale_area,
+				     0, y,
+				     &junk_x, &y);
+    
+    int this_y = y - height / 2;
+    if (last_y < this_y || last_y > this_y + height) {
+      gdk_draw_layout(_scale_area->window, gc, 0, this_y, layout);
+      last_y = this_y;
+    }
   }
-
+    
   g_object_unref(layout);
   g_object_unref(gc);
   return last_y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::toggled_callback
+//       Access: Private, Static
+//  Description: Called when the smooth check box is toggled.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+toggled_callback(GtkToggleButton *button, gpointer data) {
+  GtkStatsStripChart *self = (GtkStatsStripChart *)data;
+
+  bool active = gtk_toggle_button_get_active(button);
+  self->set_average_mode(active);
 }
 
 ////////////////////////////////////////////////////////////////////

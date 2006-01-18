@@ -86,6 +86,7 @@ protected:
   GtkWidget *_window;
   GtkWidget *_graph_window;
   GtkWidget *_graph_hbox;
+  GtkWidget *_graph_vbox;
   GtkWidget *_hpaned;
   GtkWidget *_scale_area;
   GtkStatsLabelStack _label_stack;

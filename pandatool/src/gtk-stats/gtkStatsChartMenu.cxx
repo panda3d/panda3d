@@ -124,11 +124,9 @@ do_update() {
       // We put a separator between the above frame collector and the
       // first level collector.
       if (needs_separator) {
-	/*
-        mii.fMask = MIIM_FTYPE; 
-        mii.fType = MFT_SEPARATOR; 
-        InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
-	*/
+	GtkWidget *sep = gtk_separator_menu_item_new();
+	gtk_widget_show(sep);
+	gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
 
         needs_separator = false;
       }
@@ -140,18 +138,19 @@ do_update() {
 
   /*
   // Also a menu item for a piano roll (following a separator).
-  mii.fMask = MIIM_FTYPE; 
-  mii.fType = MFT_SEPARATOR; 
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  GtkWidget *sep = gtk_separator_menu_item_new();
+  gtk_widget_show(sep);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
+  
+  GtkStatsMonitor::MenuDef smd(_thread_index, -1, false);
+  const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
-  GtkStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
-  int menu_id = _monitor->get_menu_id(menu_def);
+  GtkWidget *menu_item = gtk_menu_item_new_with_label("Piano Roll");
+  gtk_widget_show(menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
-  mii.fType = MFT_STRING; 
-  mii.wID = menu_id;
-  mii.dwTypeData = "Piano Roll";
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  g_signal_connect_swapped(G_OBJECT(menu_item), "activate", 
+			   G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
   */
 }
 

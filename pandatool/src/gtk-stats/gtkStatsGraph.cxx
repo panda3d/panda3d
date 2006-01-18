@@ -100,10 +100,16 @@ GtkStatsGraph(GtkStatsMonitor *monitor, int thread_index) :
   gtk_frame_set_shadow_type(GTK_FRAME(graph_frame), GTK_SHADOW_IN);
   gtk_container_add(GTK_CONTAINER(graph_frame), _graph_window);
 
+  // A VBox to hold the graph's frame, and any numbers (scale legend?
+  // total?) above it.
+  _graph_vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(_graph_vbox), graph_frame,
+		   TRUE, TRUE, 0);
+
   // An HBox to hold the graph's frame, and the scale legend to the
   // right of it.
   _graph_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(_graph_hbox), graph_frame,
+  gtk_box_pack_start(GTK_BOX(_graph_hbox), _graph_vbox,
 		     TRUE, TRUE, 0);
 
   // An HPaned to hold the label stack and the graph hbox.

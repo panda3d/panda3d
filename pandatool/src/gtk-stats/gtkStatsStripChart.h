@@ -74,7 +74,8 @@ private:
 		      const PStatGraph::GuideBar &bar);
   void draw_guide_labels();
   int draw_guide_label(const PStatGraph::GuideBar &bar, int last_y);
-  
+
+  static void toggled_callback(GtkToggleButton *button, gpointer data);  
   static gboolean expose_event_callback(GtkWidget *widget, 
 					GdkEventExpose *event, gpointer data);
 
@@ -83,7 +84,9 @@ private:
   int _brush_origin;
   string _net_value_text;
 
+  GtkWidget *_top_hbox;
   GtkWidget *_smooth_check_box;
+  GtkWidget *_total_label;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;
