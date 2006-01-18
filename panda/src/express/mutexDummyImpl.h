@@ -42,7 +42,7 @@ public:
   INLINE void release();
 
 private:
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   int _lock_count;
 #endif
 };

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MutexDummyImpl::
 MutexDummyImpl() {
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   _lock_count = 0;
 #endif
 }
@@ -46,7 +46,7 @@ INLINE MutexDummyImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDummyImpl::
 lock() {
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   _lock_count++;
   nassertv(_lock_count == 1);
 #endif
@@ -59,7 +59,7 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDummyImpl::
 release() {
-#ifndef NDEBUG
+#ifdef CHECK_REENTRANT_MUTEX
   _lock_count--;
   nassertv(_lock_count == 0);
 #endif
