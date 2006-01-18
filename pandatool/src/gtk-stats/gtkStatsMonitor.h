@@ -48,6 +48,7 @@ public:
     int _thread_index;
     int _collector_index;
     bool _show_level;
+    GtkStatsMonitor *_monitor;
   };
 
   GtkStatsMonitor(GtkStatsServer *server);
@@ -72,8 +73,7 @@ public:
   void open_strip_chart(int thread_index, int collector_index, bool show_level);
   void open_piano_roll(int thread_index);
 
-  const MenuDef &lookup_menu(int menu_id) const;
-  int get_menu_id(const MenuDef &menu_def);
+  const MenuDef *add_menu(const MenuDef &menu_def);
 
   void set_time_units(int unit_mask);
   void set_scroll_speed(float scroll_speed);
@@ -97,10 +97,8 @@ private:
   typedef pvector<GtkStatsChartMenu *> ChartMenus;
   ChartMenus _chart_menus;
 
-  typedef pvector<MenuDef> MenuById;
-  typedef pmap<MenuDef, int> MenuByDef;
-  MenuById _menu_by_id;
-  MenuByDef _menu_by_def;
+  typedef pset<MenuDef> Menus;
+  Menus _menus;
 
   GtkWidget *_window;
   GtkItemFactory *_item_factory;

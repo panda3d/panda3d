@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 
-#include <windows.h>
+#include <gtk/gtk.h>
 
 class GtkStatsMonitor;
 class PStatView;
@@ -37,21 +37,24 @@ public:
   GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
   ~GtkStatsChartMenu();
 
-  HMENU get_menu_handle();
-  void add_to_menu_bar(HMENU menu_bar, int before_menu_id);
+  GtkWidget *get_menu_widget();
+  void add_to_menu_bar(GtkWidget *menu_bar, int before_menu_id);
 
   void check_update();
   void do_update();
 
 private:
-  void add_view(HMENU parent_menu, const PStatViewLevel *view_level,
+  void add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
                 bool show_level);
+
+  static void handle_menu(gpointer data);
+  static void remove_menu_child(GtkWidget *widget, gpointer data);
 
   GtkStatsMonitor *_monitor;
   int _thread_index;
 
   int _last_level_index;
-  HMENU _menu;
+  GtkWidget *_menu;
 };
 
 #endif

@@ -39,7 +39,18 @@ destroy(GtkWidget *widget, gpointer data) {
 
 static gboolean
 timer(gpointer data) {
+  static int count = 0;
   server->poll();
+
+  if (++count == 5) {
+    count = 0;
+    // Every once in a while, say once a second, we call this
+    // function, which should force gdk to make all changes visible.
+    // We do this in case we are getting starved and falling behind,
+    // so that the user still gets a chance to see *something* happen
+    // onscreen, even if it's just increasingly old data.
+    gdk_window_process_all_updates();
+  }
 
   return TRUE;
 }

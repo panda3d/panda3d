@@ -20,10 +20,8 @@
 #include "gtkStats.h"
 #include "gtkStatsServer.h"
 #include "gtkStatsStripChart.h"
-/*
-#include "gtkStatsPianoRoll.h"
 #include "gtkStatsChartMenu.h"
-*/
+//#include "gtkStatsPianoRoll.h"
 #include "gtkStatsMenuId.h"
 #include "pStatGraph.h"
 #include "pStatCollectorDef.h"
@@ -77,13 +75,11 @@ GtkStatsMonitor::
   }
   _graphs.clear();
 
-  /*
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
     delete (*mi);
   }
   _chart_menus.clear();
-  */
 
   if (_window != NULL) {
     gtk_widget_destroy(_window);
@@ -193,13 +189,11 @@ new_collector(int collector_index) {
     graph->new_collector(collector_index);
   }
 
-  /*
   // We might need to update our menus.
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
     (*mi)->do_update();
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,12 +209,10 @@ new_collector(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 new_thread(int thread_index) {
-  /*
   GtkStatsChartMenu *chart_menu = new GtkStatsChartMenu(this, thread_index);
-  chart_menu->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
+  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
+  chart_menu->add_to_menu_bar(menu_bar, MI_frame_rate_label);
   _chart_menus.push_back(chart_menu);
-  DrawMenuBar(_window);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,13 +261,13 @@ lost_connection() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 idle() {
-  /*
   // Check if any of our chart menus need updating.
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
     (*mi)->check_update();
   }
 
+  /*
   // Update the frame rate label from the main thread (thread 0).
   const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
   float frame_rate = thread_data->get_frame_rate();
@@ -363,43 +355,21 @@ open_piano_roll(int thread_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::lookup_menu
+//     Function: GtkStatsMonitor::add_menu
 //       Access: Public
-//  Description: Returns the MenuDef properties associated with the
-//               indicated menu ID.  This specifies what we expect to
-//               do when the given menu has been selected.
+//  Description: Adds a new MenuDef to the monitor, or returns an
+//               existing one if there is already one just like it.
 ////////////////////////////////////////////////////////////////////
-const GtkStatsMonitor::MenuDef &GtkStatsMonitor::
-lookup_menu(int menu_id) const {
-  static MenuDef invalid(0, 0, false);
-  int menu_index = menu_id - MI_new_chart;
-  nassertr(menu_index >= 0 && menu_index < (int)_menu_by_id.size(), invalid);
-  return _menu_by_id[menu_index];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::get_menu_id
-//       Access: Public
-//  Description: Returns the menu ID that is reserved for the
-//               indicated MenuDef properties.  If this is the first
-//               time these particular properties have been requested,
-//               a new menu ID is returned; otherwise, the existing
-//               menu ID is returned.
-////////////////////////////////////////////////////////////////////
-int GtkStatsMonitor::
-get_menu_id(const MenuDef &menu_def) {
-  MenuByDef::iterator mi;
-  mi = _menu_by_def.find(menu_def);
-  if (mi != _menu_by_def.end()) {
-    return (*mi).second;
+const GtkStatsMonitor::MenuDef *GtkStatsMonitor::
+add_menu(const MenuDef &menu_def) {
+  pair<Menus::iterator, bool> result = _menus.insert(menu_def);
+  Menus::iterator mi = result.first;
+  const GtkStatsMonitor::MenuDef &new_menu_def = (*mi);
+  if (result.second) {
+    // A new MenuDef was inserted.
+    ((GtkStatsMonitor::MenuDef &)new_menu_def)._monitor = this;
   }
-
-  // Slot a new id.
-  int menu_id = (int)_menu_by_id.size() + MI_new_chart;
-  _menu_by_id.push_back(menu_def);
-  _menu_by_def[menu_def] = menu_id;
-
-  return menu_id;
+  return &new_menu_def;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,19 +484,17 @@ create_window() {
   gtk_item_factory_create_items(_item_factory, num_menu_entries, menu_entries,
 				this);
   gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
-  GtkWidget *menubar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
+  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
 
-    /*
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
-    (*mi)->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
+    (*mi)->add_to_menu_bar(menu_bar, MI_frame_rate_label);
   }
-  */
 
   // Pack the menu into the window.
   GtkWidget *main_vbox = gtk_vbox_new(FALSE, 1);
   gtk_container_add(GTK_CONTAINER(_window), main_vbox);
-  gtk_box_pack_start(GTK_BOX(main_vbox), menubar, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(main_vbox), menu_bar, FALSE, TRUE, 0);
 
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Speed/3")),
 				 TRUE);
@@ -633,17 +601,5 @@ handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget) {
   case MI_pause:
     self->set_pause(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
     break;
-
-  default:
-    if (menu_id >= MI_new_chart) {
-      const MenuDef &menu_def = self->lookup_menu(menu_id);
-      if (menu_def._collector_index < 0) {
-        self->open_piano_roll(menu_def._thread_index);
-      } else {
-        self->open_strip_chart(menu_def._thread_index, 
-			       menu_def._collector_index,
-			       menu_def._show_level);
-      }
-    }
   }
 }

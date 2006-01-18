@@ -29,7 +29,8 @@ GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index) :
   _monitor(monitor),
   _thread_index(thread_index)
 {
-  _menu = CreatePopupMenu();
+  _menu = gtk_menu_new();
+  gtk_widget_show(_menu);
   do_update();
 }
 
@@ -43,13 +44,13 @@ GtkStatsChartMenu::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::get_menu_handle
+//     Function: GtkStatsChartMenu::get_menu_widget
 //       Access: Public
-//  Description: Returns the Windows menu handle for this particular
+//  Description: Returns the gtk widget for this particular
 //               menu.
 ////////////////////////////////////////////////////////////////////
-HMENU GtkStatsChartMenu::
-get_menu_handle() {
+GtkWidget *GtkStatsChartMenu::
+get_menu_widget() {
   return _menu;
 }
 
@@ -59,7 +60,7 @@ get_menu_handle() {
 //  Description: Adds the menu to the end of the indicated menu bar.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsChartMenu::
-add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
+add_to_menu_bar(GtkWidget *menu_bar, int before_menu_id) {
   const PStatClientData *client_data = _monitor->get_client_data();
   string thread_name;
   if (_thread_index == 0) {
@@ -69,15 +70,11 @@ add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
     thread_name = client_data->get_thread_name(_thread_index);
   }
 
-  MENUITEMINFO mii;
-  memset(&mii, 0, sizeof(mii));
-  mii.cbSize = sizeof(mii);
+  GtkWidget *menu_item = gtk_menu_item_new_with_label(thread_name.c_str());
+  gtk_widget_show(menu_item);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), _menu);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU; 
-  mii.fType = MFT_STRING; 
-  mii.hSubMenu = _menu; 
-  mii.dwTypeData = (char *)thread_name.c_str(); 
-  InsertMenuItem(menu_bar, before_menu_id, FALSE, &mii);
+  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,10 +104,7 @@ do_update() {
   _last_level_index = view.get_level_index();
 
   // First, remove all of the old entries from the menu.
-  int num_items = GetMenuItemCount(_menu);
-  for (int i = num_items - 1; i >= 0; i--) {
-    DeleteMenu(_menu, i, MF_BYPOSITION);
-  }
+  gtk_container_foreach(GTK_CONTAINER(_menu), remove_menu_child, _menu);
 
   // Now rebuild the menu with the new set of entries.
 
@@ -118,9 +112,6 @@ do_update() {
   add_view(_menu, view.get_top_level(), false);
 
   bool needs_separator = true;
-  MENUITEMINFO mii;
-  memset(&mii, 0, sizeof(mii));
-  mii.cbSize = sizeof(mii);
 
   // And then the menu item(s) for each of the level values.
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -133,9 +124,11 @@ do_update() {
       // We put a separator between the above frame collector and the
       // first level collector.
       if (needs_separator) {
+	/*
         mii.fMask = MIIM_FTYPE; 
         mii.fType = MFT_SEPARATOR; 
         InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+	*/
 
         needs_separator = false;
       }
@@ -145,6 +138,7 @@ do_update() {
     }
   }
 
+  /*
   // Also a menu item for a piano roll (following a separator).
   mii.fMask = MIIM_FTYPE; 
   mii.fType = MFT_SEPARATOR; 
@@ -158,6 +152,7 @@ do_update() {
   mii.wID = menu_id;
   mii.dwTypeData = "Piano Roll";
   InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,37 +162,36 @@ do_update() {
 //               indicated view and its children.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsChartMenu::
-add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
+add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level, 
+	 bool show_level) {
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();
   string collector_name = client_data->get_collector_name(collector);
 
-  GtkStatsMonitor::MenuDef menu_def(_thread_index, collector, show_level);
-  int menu_id = _monitor->get_menu_id(menu_def);
+  GtkStatsMonitor::MenuDef smd(_thread_index, collector, show_level);
+  const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
-  MENUITEMINFO mii;
-  memset(&mii, 0, sizeof(mii));
-  mii.cbSize = sizeof(mii);
+  GtkWidget *menu_item = gtk_menu_item_new_with_label(collector_name.c_str());
+  gtk_widget_show(menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(parent_menu), menu_item);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
-  mii.fType = MFT_STRING; 
-  mii.wID = menu_id;
-  mii.dwTypeData = (char *)collector_name.c_str(); 
-  InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
+  g_signal_connect_swapped(G_OBJECT(menu_item), "activate", 
+			   G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
 
   int num_children = view_level->get_num_children();
   if (num_children > 1) {
     // If the collector has more than one child, add a menu entry to go
     // directly to each of its children.
-    HMENU submenu = CreatePopupMenu();
     string submenu_name = collector_name + " components";
 
-    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
-    mii.fType = MFT_STRING; 
-    mii.hSubMenu = submenu;
-    mii.dwTypeData = (char *)submenu_name.c_str(); 
-    InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
+    GtkWidget *submenu_item = gtk_menu_item_new_with_label(submenu_name.c_str());
+    gtk_widget_show(submenu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(parent_menu), submenu_item);
+
+    GtkWidget *submenu = gtk_menu_new();
+    gtk_widget_show(submenu);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenu_item), submenu);
 
     // Reverse the order since the menus are listed from the top down;
     // we want to be visually consistent with the graphs, which list
@@ -206,4 +200,38 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
       add_view(submenu, view_level->get_child(c), show_level);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsChartMenu::handle_menu
+//       Access: Private, Static
+//  Description: Callback when a menu item is selected.
+////////////////////////////////////////////////////////////////////
+void GtkStatsChartMenu::
+handle_menu(gpointer data) {
+  const GtkStatsMonitor::MenuDef *menu_def = (GtkStatsMonitor::MenuDef *)data;
+  GtkStatsMonitor *monitor = menu_def->_monitor;
+
+  if (monitor == NULL) {
+    return;
+  }
+
+  if (menu_def->_collector_index < 0) {
+    monitor->open_piano_roll(menu_def->_thread_index);
+  } else {
+    monitor->open_strip_chart(menu_def->_thread_index, 
+			      menu_def->_collector_index,
+			      menu_def->_show_level);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsChartMenu::remove_menu_child
+//       Access: Private, Static
+//  Description: Removes a previous menu child from the menu.
+////////////////////////////////////////////////////////////////////
+void GtkStatsChartMenu::
+remove_menu_child(GtkWidget *widget, gpointer data) {
+  GtkWidget *menu = (GtkWidget *)data;
+  gtk_container_remove(GTK_CONTAINER(menu), widget);
 }

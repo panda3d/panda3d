@@ -14,6 +14,7 @@
 
   #define SOURCES \
     gtkStats.cxx \
+    gtkStatsChartMenu.cxx gtkStatsChartMenu.h \
     gtkStatsGraph.cxx gtkStatsGraph.h \
     gtkStatsLabel.cxx gtkStatsLabel.h \
     gtkStatsLabelStack.cxx gtkStatsLabelStack.h \
@@ -22,7 +23,6 @@
     gtkStatsServer.cxx gtkStatsServer.h \
     gtkStatsStripChart.cxx gtkStatsStripChart.h
 
-//     gtkStatsChartMenu.cxx gtkStatsChartMenu.h \
 //     gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \
 
   #if $[DEVELOP_GTKSTATS]
