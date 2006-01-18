@@ -29,7 +29,7 @@
 #include "buttonEvent.h"
 #include "notify.h"
 #include "pmutex.h"
-#include "remutex.h"
+#include "reMutex.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
