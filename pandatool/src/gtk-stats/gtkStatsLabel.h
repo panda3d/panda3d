@@ -40,6 +40,7 @@ public:
   ~GtkStatsLabel();
 
   GtkWidget *get_widget() const;
+  int get_height() const;
 
   int get_collector_index() const;
 
@@ -79,6 +80,7 @@ private:
 
   bool _highlight;
   bool _mouse_within;
+  int _height;
 
   static int _left_margin, _right_margin;
   static int _top_margin, _bottom_margin;

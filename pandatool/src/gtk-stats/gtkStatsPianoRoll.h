@@ -25,7 +25,7 @@
 #include "pStatPianoRoll.h"
 #include "pointerTo.h"
 
-#include <windows.h>
+#include <gtk/gtk.h>
 
 class GtkStatsMonitor;
 
@@ -55,26 +55,23 @@ protected:
   virtual void end_draw();
   virtual void idle();
 
-  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  virtual void additional_window_paint(HDC hdc);
-  virtual void additional_graph_window_paint(HDC hdc);
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
-                                       int width, int height);
+  virtual void additional_graph_window_paint();
+  virtual DragMode consider_drag_start(int graph_x, int graph_y);
+
+  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
+				       bool double_click);
+  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 private:
   int get_collector_under_pixel(int xpoint, int ypoint);
   void update_labels();
-  void draw_guide_bar(HDC hdc, const GuideBar &bar);
-  void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);
+  void draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar);
+  void draw_guide_labels();
+  void draw_guide_label(const PStatGraph::GuideBar &bar);
 
-  void create_window();
-  static void register_window_class(HINSTANCE application);
-
-  static LONG GTKAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-  static bool _window_class_registered;
-  static const char * const _window_class_name;
+  static gboolean expose_event_callback(GtkWidget *widget, 
+					GdkEventExpose *event, gpointer data);
 };
 
 #endif

@@ -89,6 +89,7 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
 
   _highlight = false;
   _mouse_within = false;
+  _height = height;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +110,16 @@ GtkStatsLabel::
 GtkWidget *GtkStatsLabel::
 get_widget() const {
   return _widget;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabel::get_height
+//       Access: Public
+//  Description: Returns the height of the label as we requested it.
+////////////////////////////////////////////////////////////////////
+int GtkStatsLabel::
+get_height() const {
+  return _height;
 }
 
 ////////////////////////////////////////////////////////////////////

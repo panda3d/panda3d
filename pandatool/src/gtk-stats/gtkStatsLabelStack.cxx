@@ -52,6 +52,37 @@ get_widget() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabelStack::get_label_y
+//       Access: Public
+//  Description: Returns the y position of the indicated label's bottom
+//               edge, relative to the indicated target widget.
+////////////////////////////////////////////////////////////////////
+int GtkStatsLabelStack::
+get_label_y(int label_index, GtkWidget *target_widget) const {
+  nassertr(label_index >= 0 && label_index < (int)_labels.size(), 0);
+
+  // Assume all labels have the same height.
+  int height = _labels[0]->get_height();
+  int start_y = _widget->allocation.height - height * label_index;
+
+  int x, y;
+  gtk_widget_translate_coordinates(_widget, target_widget,
+				   0, start_y, &x, &y);
+  return y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsLabelStack::get_label_height
+//       Access: Public
+//  Description: Returns the height of the indicated label.
+////////////////////////////////////////////////////////////////////
+int GtkStatsLabelStack::
+get_label_height(int label_index) const {
+  nassertr(label_index >= 0 && label_index < (int)_labels.size(), 0);
+  return _labels[label_index]->get_height();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsLabelStack::get_label_collector_index
 //       Access: Public
 //  Description: Returns the collector index associated with the

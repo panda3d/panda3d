@@ -20,10 +20,9 @@
     gtkStatsLabelStack.cxx gtkStatsLabelStack.h \
     gtkStatsMenuId.h \
     gtkStatsMonitor.cxx gtkStatsMonitor.h gtkStatsMonitor.I \
+    gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \
     gtkStatsServer.cxx gtkStatsServer.h \
     gtkStatsStripChart.cxx gtkStatsStripChart.h
-
-//     gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \
 
   #if $[DEVELOP_GTKSTATS]
     #define EXTRA_CDEFS $[EXTRA_CDEFS] DEVELOP_GTKSTATS

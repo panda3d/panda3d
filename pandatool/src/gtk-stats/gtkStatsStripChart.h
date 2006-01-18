@@ -80,16 +80,12 @@ private:
 					GdkEventExpose *event, gpointer data);
 
 private:
-
   int _brush_origin;
   string _net_value_text;
 
   GtkWidget *_top_hbox;
   GtkWidget *_smooth_check_box;
   GtkWidget *_total_label;
-
-  static bool _window_class_registered;
-  static const char * const _window_class_name;
 };
 
 #endif

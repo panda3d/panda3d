@@ -21,7 +21,7 @@
 #include "gtkStatsServer.h"
 #include "gtkStatsStripChart.h"
 #include "gtkStatsChartMenu.h"
-//#include "gtkStatsPianoRoll.h"
+#include "gtkStatsPianoRoll.h"
 #include "gtkStatsMenuId.h"
 #include "pStatGraph.h"
 #include "pStatCollectorDef.h"
@@ -344,14 +344,12 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 open_piano_roll(int thread_index) {
-  /*
   GtkStatsPianoRoll *graph = new GtkStatsPianoRoll(this, thread_index);
   add_graph(graph);
 
   graph->set_time_units(_time_units);
   graph->set_scroll_speed(_scroll_speed);
   graph->set_pause(_pause);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,8 @@ public:
 
   GtkWidget *get_widget() const;
 
+  int get_label_y(int label_index, GtkWidget *target_widget) const;
+  int get_label_height(int label_index) const;
   int get_label_collector_index(int label_index) const;
 
   void clear_labels();

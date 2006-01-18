@@ -136,7 +136,6 @@ do_update() {
     }
   }
 
-  /*
   // Also a menu item for a piano roll (following a separator).
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_widget_show(sep);
@@ -151,7 +150,6 @@ do_update() {
 
   g_signal_connect_swapped(G_OBJECT(menu_item), "activate", 
 			   G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////

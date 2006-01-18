@@ -79,7 +79,8 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
   gtk_widget_set_size_request(_scale_area, 40, 0);
 
 
-  gtk_widget_set_size_request(_graph_window, 400, 100);
+  gtk_widget_set_size_request(_graph_window, default_strip_chart_width,
+			      default_strip_chart_height);
 
   gtk_widget_show_all(_window);  
   gtk_widget_show(_window);
