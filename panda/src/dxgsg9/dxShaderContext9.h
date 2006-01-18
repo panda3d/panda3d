@@ -23,9 +23,9 @@
 #include "dxGraphicsStateGuardian9.h"
 #include "pandabase.h"
 #ifdef HAVE_CGDX9
+#include "Cg/cg.h"
 #include "Cg/cgGL.h"
-#include "Cg/CgGL.h"
-#include "Cg/CgD3D9.h"
+#include "Cg/cgD3D9.h"
 #endif
 #include "string_utils.h"
 #include "internalName.h"
@@ -35,8 +35,6 @@
 
 #define CLP(name) DX##name##9
 #define CLASSPREFIX_QUOTED "DX"
-#define CONFIGOBJ config_dxgsg9
-#define GLCAT dxgsg9_cat
 
 
 class CLP(GraphicsStateGuardian);
@@ -63,6 +61,9 @@ public:
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
+
+  int _vertex_size;
+  DIRECT_3D_VERTEX_DECLARATION _direct_3d_vertex_declaration;
 
   // FOR DEBUGGING
   string _name;

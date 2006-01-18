@@ -20,6 +20,240 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
+class VertexElementArray
+{
+
+public:
+
+  VertexElementArray (int maximum_vertex_elements);
+  ~VertexElementArray ( );
+
+  void add_position_xyz_vertex_element (int stream_index);
+  void add_position_xyzw_vertex_element (int stream_index);
+  void add_normal_vertex_element (int stream_index);
+  void add_diffuse_color_vertex_element (int stream_index);
+  void add_specular_color_vertex_element (int stream_index);
+  void add_u_vertex_element (int stream_index);
+  void add_uv_vertex_element (int stream_index);
+  void add_uvw_vertex_element (int stream_index);
+  int add_end_vertex_element (void);
+
+  int offset;
+  int total_elements;
+  int maximum_vertex_elements;
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element_array;
+};
+
+
+VertexElementArray::VertexElementArray (int maximum_vertex_elements)
+{
+  this -> offset = 0;
+  this -> total_elements = 0;
+  this -> maximum_vertex_elements = maximum_vertex_elements;
+  this -> vertex_element_array = new DIRECT_3D_VERTEX_ELEMENT [maximum_vertex_elements];
+}
+
+VertexElementArray::~VertexElementArray ( )
+{
+  delete this -> vertex_element_array;
+}
+
+void VertexElementArray::add_position_xyz_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT3;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_POSITION;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 12;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_position_xyzw_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT4;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_POSITION;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 16;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_normal_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT3;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_NORMAL;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 12;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_diffuse_color_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_D3DCOLOR;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_COLOR;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 4;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_specular_color_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_D3DCOLOR;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_COLOR;
+    vertex_element -> UsageIndex = 1;
+
+    this -> offset += 4;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_u_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT1;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 4;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_uv_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT2;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 8;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_uvw_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT3;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 12;
+    this -> total_elements++;
+  }
+}
+
+int VertexElementArray::add_end_vertex_element (void)
+{
+  int add;
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  add = FALSE;
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = 0xFF;
+    vertex_element -> Type = D3DDECLTYPE_UNUSED;
+
+    add = TRUE;
+  }
+
+  return add;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXShaderContext9::Constructor
 //       Access: Public
@@ -40,6 +274,9 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
   _cg_program[SHADER_type_vert] = (CGprogram)0;
   _cg_program[SHADER_type_frag] = (CGprogram)0;
+
+  _vertex_size = 0;
+  _direct_3d_vertex_declaration = 0;
 
   if (header == "//Cg") {
 
@@ -83,7 +320,7 @@ if (false)
       return;
     }
 
-this -> _name = s->get_name ( );
+    this -> _name = s->get_name ( );
 
     // Compile the program.
     try_cg_compile(s, gsg);
@@ -309,6 +546,11 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   release_resources();
+
+  if (_direct_3d_vertex_declaration) {
+    _direct_3d_vertex_declaration -> Release ( );
+    _direct_3d_vertex_declaration = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -841,8 +1083,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #ifdef HAVE_CGDX9
   if (gsg -> _cg_context) {
 
-// RETURN
-//return;
+    HRESULT hr;
 
 /* ?????
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -852,13 +1093,18 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #endif // SUPPORT_IMMEDIATE_MODE
 */
 
-    {
+    if (_direct_3d_vertex_declaration == 0) {
+
+      VertexElementArray *vertex_element_array;
+
       const GeomVertexArrayData *array_data;
       Geom::NumericType numeric_type;
       int start, stride, num_values;
       int nvarying = _cg_varying.size();
 
 DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying " << nvarying <<  "\n"; DBG_E
+
+      vertex_element_array = 0;
 
       for (int i=0; i<nvarying; i++) {
         InternalName *name = _cg_varying[i].name;
@@ -879,7 +1125,6 @@ DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying 
         if (gsg->_vertex_data->get_array_info(name, array_data, num_values,
               numeric_type, start, stride)) {
 
-
 // ?????
 /*
           const unsigned char *client_pointer = gsg->setup_array_data(array_data);
@@ -888,57 +1133,62 @@ DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying 
                                   stride, client_pointer + start);
 */
 
-// Set DirectX Vertex Declaration
-/*
-  HRESULT hr;
-  IDirect3DVertexDeclaration9 *vertex_declaration;
+          DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
+          DBG_SH1  dxgsg9_cat.debug ( )
+            << "\n  name " << name -> get_name ( )
+            << "  num_values " << num_values
+            << "  numeric_type " << numeric_type
+            << "  start " << start
+            << "  stride " << stride
+            << "\n"; DBG_E
 
-
-vertex_declaration = 0;
-*/
-
-    DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
-
-    DBG_SH1  dxgsg9_cat.debug ( )
-      << "\n  name " << name -> get_name ( )
-      << "  num_values " << num_values
-      << "  numeric_type " << numeric_type
-      << "  start " << start
-      << "  stride " << stride
-      << "\n"; DBG_E
-
-/*
-  hr = gsg -> _d3d_device -> SetVertexDeclaration (vertex_declaration);
-  if (FAILED (hr)) {
-    dxgsg9_cat.error()
-      << "SetVertexDeclaration failed "
-      << D3DERRORSTRING(hr);
-  }
-
-
-  UINT stream_number;
-  IDirect3DVertexBuffer9 *vertex_buffer;
-  UINT offset;
-  UINT stride;
-
-stream_number = 0;
-vertex_buffer = 0;
-offset = 0;
-stride = 0;
-
-  hr = gsg -> _d3d_device -> SetStreamSource (stream_number, vertex_buffer, offset, stride);
-  if (FAILED (hr)) {
-    dxgsg9_cat.error()
-      << "SetStreamSource failed "
-      << D3DERRORSTRING(hr);
-  }
-*/
-
-// ?????          cgD3D9EnableClientState(_cg_varying[i].parameter);
         } else {
-// ?????          cgD3D9DisableClientState(_cg_varying[i].parameter);
+
         }
       }
+
+      if (vertex_element_array) {
+        HRESULT hr;
+
+        hr = gsg -> _d3d_device ->CreateVertexDeclaration (vertex_element_array -> vertex_element_array, &_direct_3d_vertex_declaration);
+        if (FAILED (hr))
+        {
+          dxgsg9_cat.error()
+            << "CreateVertexDeclaration failed"
+            << D3DERRORSTRING(hr);
+        }
+
+        _vertex_size = vertex_element_array -> offset;
+
+        delete vertex_element_array;
+      }
+    }
+    else {
+      hr = gsg -> _d3d_device -> SetVertexDeclaration (_direct_3d_vertex_declaration);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
+      }
+
+/*
+      UINT stream_number;
+      IDirect3DVertexBuffer9 *vertex_buffer;
+      UINT offset;
+      UINT stride;
+
+      stream_number = 0;
+      vertex_buffer = 0;
+      offset = 0;
+      stride = 0;
+
+      hr = gsg -> _d3d_device -> SetStreamSource (stream_number, vertex_buffer, offset, stride);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "SetStreamSource failed "
+          << D3DERRORSTRING(hr);
+      }
+*/
+
     }
   }
 #endif // HAVE_CGDX9
