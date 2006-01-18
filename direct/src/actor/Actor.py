@@ -1363,7 +1363,7 @@ class Actor(DirectObject, NodePath):
         Bind the named animation to the named part and lod
         """
         if lodName == None:
-            lodNames = self.__animControl.keys()
+            lodNames = self.__animControlDict.keys()
         else:
             lodNames = [lodName]
         
