@@ -18,6 +18,13 @@
 
 #include "reMutex.h"
 
+// Most of the methods in this class are stubbed out in the
+// THREAD_DUMMY_IMPL case, especially when CHECK_REENTRANT_MUTEX is
+// not defined.  In this case, we're not performing any actual locking
+// or verification, so there's no need to do anything at all here.
+
+#if !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutex::do_lock
 //       Access: Private
@@ -69,3 +76,5 @@ do_release() {
     _cvar.signal();
   }
 }
+
+#endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX

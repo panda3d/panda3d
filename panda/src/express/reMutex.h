@@ -29,9 +29,9 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : ReMutex
 // Description : A reentrant mutex.  This kind of mutex can be locked
-//               again by the thread that already holds it, without
-//               deadlock.  The thread must eventually release the
-//               mutex the same number of times it locked it.
+//               more than once by the thread that already holds it,
+//               without deadlock.  The thread must eventually release
+//               the mutex the same number of times it locked it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ReMutex {
 public:
@@ -48,11 +48,10 @@ public:
   INLINE bool is_locked() const;
   INLINE int get_lock_count() const;
 
-#ifndef NDEBUG
   INLINE bool debug_is_locked() const;
-#endif
 
 private:
+#if !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
   void do_lock();
   void do_release();
 
@@ -60,6 +59,7 @@ private:
   ConditionVar _cvar;
   Thread *_locking_thread;
   int _lock_count;
+#endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
 };
 
 #include "reMutex.I"

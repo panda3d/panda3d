@@ -121,6 +121,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
 
   default:
     nassertr(false, false);
+    nspr_pri = PR_PRIORITY_NORMAL;
   }
 
   PRThreadScope nspr_scope = (global) ? PR_GLOBAL_THREAD : PR_LOCAL_THREAD;

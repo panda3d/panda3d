@@ -17,6 +17,15 @@
 ////////////////////////////////////////////////////////////////////
 
 
+// Most of the methods in this class are stubbed out in the
+// THREAD_DUMMY_IMPL case, especially when CHECK_REENTRANT_MUTEX is
+// not defined.  In this case, we're not performing any actual locking
+// or verification, so there's no need to do anything at all here.
+
+#if !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
+
+// In this branch, the mutex is actually implemented.
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutex::Constructor
 //       Access: Public
@@ -122,7 +131,6 @@ get_lock_count() const {
   return 0;
 }
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutex::debug_is_locked
 //       Access: Public
@@ -134,4 +142,117 @@ INLINE bool ReMutex::
 debug_is_locked() const {
   return is_locked();
 }
-#endif  // NDEBUG
+
+#else  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
+
+// In this branch, the mutex is stubbed out to do nothing.
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ReMutex::
+ReMutex() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ReMutex::
+~ReMutex() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Copy Constructor
+//       Access: Private
+//  Description: Do not attempt to copy mutexes.
+////////////////////////////////////////////////////////////////////
+INLINE ReMutex::
+ReMutex(const ReMutex &copy) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Copy Assignment Operator
+//       Access: Private
+//  Description: Do not attempt to copy mutexes.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutex::
+operator = (const ReMutex &copy) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::lock
+//       Access: Public
+//  Description: Grabs the mutex if it is available.  If it is not
+//               available, blocks until it becomes available, then
+//               grabs it.  In either case, the function does not
+//               return until the mutex is held; you should then call
+//               unlock().
+//
+//               This method is considered const so that you can lock
+//               and unlock const mutexes, mainly to allow thread-safe
+//               access to otherwise const data.
+//
+//               Also see ReMutexHolder.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutex::
+lock() const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::release
+//       Access: Public
+//  Description: Releases the mutex.  It is an error to call this if
+//               the mutex was not already locked.
+//
+//               This method is considered const so that you can lock
+//               and unlock const mutexes, mainly to allow thread-safe
+//               access to otherwise const data.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutex::
+release() const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::is_locked
+//       Access: Public
+//  Description: Returns true if *this thread* already holds the lock,
+//               false if no one holds the lock or the lock is held by
+//               some other thread.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutex::
+is_locked() const {
+  // In the stub version, this method always returns true.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::get_lock_count
+//       Access: Public
+//  Description: Returns the number of times that *this thread* has
+//               grabbed the lock.  Returns 0 if some other thread is
+//               currently holding the lock.
+////////////////////////////////////////////////////////////////////
+INLINE int ReMutex::
+get_lock_count() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::debug_is_locked
+//       Access: Public
+//  Description: The same as is_locked().  This method name is
+//               provided just to maintain symmetry with Mutex (which
+//               doesn't provide an is_locked() method).
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutex::
+debug_is_locked() const {
+  return is_locked();
+}
+
+#endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
