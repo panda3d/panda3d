@@ -29,7 +29,7 @@
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
-#include "pmutex.h"
+#include "reMutex.h"
 
 class TextureContext;
 class GeomContext;
@@ -117,7 +117,7 @@ private:
   typedef phash_set<IndexBufferContext *, pointer_hash> IndexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
 
-  Mutex _lock;
+  ReMutex _lock;
   Textures _prepared_textures, _released_textures;  
   EnqueuedTextures _enqueued_textures;
   Geoms _prepared_geoms, _released_geoms;  

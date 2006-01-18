@@ -25,7 +25,7 @@
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
 #include "shaderExpansion.h"
-#include "mutexHolder.h"
+#include "reMutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
 PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffer size");
@@ -51,7 +51,7 @@ PreparedGraphicsObjects::
   // destructed, so we can assume their resources were internally
   // cleaned up.  Quietly erase these remaining objects.
 
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   Textures::iterator tci;
   for (tci = _prepared_textures.begin();
@@ -127,7 +127,7 @@ PreparedGraphicsObjects::
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 enqueue_texture(Texture *tex) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   _enqueued_textures.insert(tex);
 }
@@ -148,7 +148,7 @@ enqueue_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
 dequeue_texture(Texture *tex) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   EnqueuedTextures::iterator qi = _enqueued_textures.find(tex);
   if (qi != _enqueued_textures.end()) {
@@ -173,7 +173,7 @@ dequeue_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   tc->_texture->clear_prepared(this);
   _total_texusage_pcollector.sub_level(tc->estimate_texture_memory());
@@ -199,7 +199,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 int PreparedGraphicsObjects::
 release_all_textures() {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   int num_textures = (int)_prepared_textures.size();
 
@@ -244,7 +244,7 @@ release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 TextureContext *PreparedGraphicsObjects::
 prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new TextureContext.  There might
   // be several GSG's sharing the same set of textures; if so, it
@@ -271,7 +271,7 @@ prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 enqueue_geom(Geom *geom) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   _enqueued_geoms.insert(geom);
 }
@@ -292,7 +292,7 @@ enqueue_geom(Geom *geom) {
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
 dequeue_geom(Geom *geom) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   EnqueuedGeoms::iterator qi = _enqueued_geoms.find(geom);
   if (qi != _enqueued_geoms.end()) {
@@ -317,7 +317,7 @@ dequeue_geom(Geom *geom) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 release_geom(GeomContext *gc) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   gc->_geom->clear_prepared(this);
 
@@ -342,7 +342,7 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 int PreparedGraphicsObjects::
 release_all_geoms() {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   int num_geoms = (int)_prepared_geoms.size();
 
@@ -386,7 +386,7 @@ release_all_geoms() {
 ////////////////////////////////////////////////////////////////////
 GeomContext *PreparedGraphicsObjects::
 prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new GeomContext.  There might
   // be several GSG's sharing the same set of geoms; if so, it
@@ -411,7 +411,7 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 enqueue_shader(ShaderExpansion *se) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   _enqueued_shaders.insert(se);
 }
@@ -432,7 +432,7 @@ enqueue_shader(ShaderExpansion *se) {
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
 dequeue_shader(ShaderExpansion *se) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   EnqueuedShaders::iterator qi = _enqueued_shaders.find(se);
   if (qi != _enqueued_shaders.end()) {
@@ -457,7 +457,7 @@ dequeue_shader(ShaderExpansion *se) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 release_shader(ShaderContext *sc) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   sc->_shader_expansion->clear_prepared(this);
 
@@ -482,7 +482,7 @@ release_shader(ShaderContext *sc) {
 ////////////////////////////////////////////////////////////////////
 int PreparedGraphicsObjects::
 release_all_shaders() {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   int num_shaders = (int)_prepared_shaders.size();
 
@@ -526,7 +526,7 @@ release_all_shaders() {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *PreparedGraphicsObjects::
 prepare_shader_now(ShaderExpansion *se, GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new ShaderContext.  There might
   // be several GSG's sharing the same set of shaders; if so, it
@@ -551,7 +551,7 @@ prepare_shader_now(ShaderExpansion *se, GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 enqueue_vertex_buffer(GeomVertexArrayData *data) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   _enqueued_vertex_buffers.insert(data);
 }
@@ -572,7 +572,7 @@ enqueue_vertex_buffer(GeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
 dequeue_vertex_buffer(GeomVertexArrayData *data) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   EnqueuedVertexBuffers::iterator qi = _enqueued_vertex_buffers.find(data);
   if (qi != _enqueued_vertex_buffers.end()) {
@@ -597,7 +597,7 @@ dequeue_vertex_buffer(GeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 release_vertex_buffer(VertexBufferContext *vbc) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   vbc->_data->clear_prepared(this);
   _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
@@ -623,7 +623,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 ////////////////////////////////////////////////////////////////////
 int PreparedGraphicsObjects::
 release_all_vertex_buffers() {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   int num_vertex_buffers = (int)_prepared_vertex_buffers.size();
 
@@ -668,7 +668,7 @@ release_all_vertex_buffers() {
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *PreparedGraphicsObjects::
 prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new VertexBufferContext.  There might
   // be several GSG's sharing the same set of datas; if so, it
@@ -698,7 +698,7 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 enqueue_index_buffer(GeomPrimitive *data) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   _enqueued_index_buffers.insert(data);
 }
@@ -719,7 +719,7 @@ enqueue_index_buffer(GeomPrimitive *data) {
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
 dequeue_index_buffer(GeomPrimitive *data) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   EnqueuedIndexBuffers::iterator qi = _enqueued_index_buffers.find(data);
   if (qi != _enqueued_index_buffers.end()) {
@@ -744,7 +744,7 @@ dequeue_index_buffer(GeomPrimitive *data) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 release_index_buffer(IndexBufferContext *ibc) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   ibc->_data->clear_prepared(this);
   _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
@@ -770,7 +770,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 ////////////////////////////////////////////////////////////////////
 int PreparedGraphicsObjects::
 release_all_index_buffers() {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   int num_index_buffers = (int)_prepared_index_buffers.size();
 
@@ -815,7 +815,7 @@ release_all_index_buffers() {
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *PreparedGraphicsObjects::
 prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new IndexBufferContext.  There might
   // be several GSG's sharing the same set of datas; if so, it
@@ -850,7 +850,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
 update(GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   // First, release all the textures, geoms, and buffers awaiting
   // release.
