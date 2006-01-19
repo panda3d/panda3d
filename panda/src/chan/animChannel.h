@@ -47,12 +47,13 @@ public:
 PUBLISHED:
   virtual void get_value(int frame, ValueType &value)=0;
 
-  // These two functions only have meaning for matrix types.
-  virtual void get_value_no_scale(int frame, ValueType &value);
-  virtual void get_scale(int frame, float scale[3]);
-  // The second parameter above should really by LVector3f instead of
-  // float[3], but there seems to be a compiler bug in EGCS that
-  // doesn't like that.  So we have this kludge for now.
+  // These transform-component methods only have meaning for matrix types.
+  virtual void get_value_no_scale_shear(int frame, ValueType &value);
+  virtual void get_scale(int frame, LVecBase3f &scale);
+  virtual void get_hpr(int frame, LVecBase3f &hpr);
+  virtual void get_quat(int frame, LQuaternionf &quat);
+  virtual void get_pos(int frame, LVecBase3f &pos);
+  virtual void get_shear(int frame, LVecBase3f &shear);
 
   virtual TypeHandle get_value_type() const;
 

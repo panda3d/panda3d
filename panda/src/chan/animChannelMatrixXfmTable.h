@@ -47,8 +47,13 @@ public:
 
   virtual bool has_changed(int last_frame, int this_frame);
   virtual void get_value(int frame, LMatrix4f &mat);
-  virtual void get_value_no_scale(int frame, LMatrix4f &value);
-  virtual void get_scale(int frame, float scale[3]);
+
+  virtual void get_value_no_scale_shear(int frame, LMatrix4f &value);
+  virtual void get_scale(int frame, LVecBase3f &scale);
+  virtual void get_hpr(int frame, LVecBase3f &hpr);
+  virtual void get_quat(int frame, LQuaternionf &quat);
+  virtual void get_pos(int frame, LVecBase3f &pos);
+  virtual void get_shear(int frame, LVecBase3f &shear);
 
   static INLINE bool is_valid_id(char table_id);
 

@@ -24,6 +24,7 @@
 #include "movingPart.h"
 #include "animChannel.h"
 #include "animChannelFixed.h"
+#include "cmath.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MovingPart<ACMatrixSwitchType>);
 

@@ -106,19 +106,22 @@ get_value(int frame, LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_value_no_scale
+//     Function: AnimChannelMatrixXfmTable::get_value_no_scale_shear
 //       Access: Public, Virtual
 //  Description: Gets the value of the channel at the indicated frame,
-//               without any scale information.
+//               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_value_no_scale(int frame, LMatrix4f &mat) {
+get_value_no_scale_shear(int frame, LMatrix4f &mat) {
   float components[num_matrix_components];
   components[0] = 1.0f;
   components[1] = 1.0f;
   components[2] = 1.0f;
+  components[3] = 0.0f;
+  components[4] = 0.0f;
+  components[5] = 0.0f;
 
-  for (int i = 3; i < num_matrix_components; i++) {
+  for (int i = 6; i < num_matrix_components; i++) {
     if (_tables[i].empty()) {
       components[i] = get_default_value(i);
     } else {
@@ -135,12 +138,87 @@ get_value_no_scale(int frame, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_scale(int frame, float scale[3]) {
+get_scale(int frame, LVecBase3f &scale) {
   for (int i = 0; i < 3; i++) {
     if (_tables[i].empty()) {
-      scale[i] = get_default_value(i);
+      scale[i] = 1.0f;
     } else {
       scale[i] = _tables[i][frame % _tables[i].size()];
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::get_hpr
+//       Access: Public, Virtual
+//  Description: Returns the h, p, and r components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixXfmTable::
+get_hpr(int frame, LVecBase3f &hpr) {
+  for (int i = 0; i < 3; i++) {
+    if (_tables[i + 6].empty()) {
+      hpr[i] = 0.0f;
+    } else {
+      hpr[i] = _tables[i + 6][frame % _tables[i + 6].size()];
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::get_quat
+//       Access: Public, Virtual
+//  Description: Returns the rotation component associated with the
+//               current frame, expressed as a quaternion.  As above,
+//               this only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixXfmTable::
+get_quat(int frame, LQuaternionf &quat) {
+  LVecBase3f hpr;
+  for (int i = 0; i < 3; i++) {
+    if (_tables[i + 6].empty()) {
+      hpr[i] = 0.0f;
+    } else {
+      hpr[i] = _tables[i + 6][frame % _tables[i + 6].size()];
+    }
+  }
+
+  quat.set_hpr(hpr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::get_pos
+//       Access: Public, Virtual
+//  Description: Returns the x, y, and z translation components
+//               associated with the current frame.  As above, this
+//               only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixXfmTable::
+get_pos(int frame, LVecBase3f &pos) {
+  for (int i = 0; i < 3; i++) {
+    if (_tables[i + 9].empty()) {
+      pos[i] = 0.0f;
+    } else {
+      pos[i] = _tables[i + 9][frame % _tables[i + 9].size()];
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::get_shear
+//       Access: Public, Virtual
+//  Description: Returns the a, b, and c shear components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixXfmTable::
+get_shear(int frame, LVecBase3f &shear) {
+  for (int i = 0; i < 3; i++) {
+    if (_tables[i + 3].empty()) {
+      shear[i] = 0.0f;
+    } else {
+      shear[i] = _tables[i + 3][frame % _tables[i + 3].size()];
     }
   }
 }
@@ -149,9 +227,10 @@ get_scale(int frame, float scale[3]) {
 //     Function: AnimChannelMatrixXfmTable::set_table
 //       Access: Public
 //  Description: Assigns the indicated table.  table_id is one of 'i',
-//               'j', 'k', for scale, 'h', 'p', 'r', for rotation, and
-//               'x', 'y', 'z', for translation.  The new table must
-//               have either zero, one, or get_num_frames() frames.
+//               'j', 'k', for scale, 'a', 'b', 'c' for shear, 'h',
+//               'p', 'r', for rotation, and 'x', 'y', 'z', for
+//               translation.  The new table must have either zero,
+//               one, or get_num_frames() frames.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
 set_table(char table_id, const CPTA_float &table) {

@@ -82,13 +82,22 @@ PUBLISHED:
     BT_linear,
 
     // BT_normalized_linear is a compromise on BT_linear.  The matrix
-    // is blended linearly without the scale component, and the
-    // blended scale component is applied separately.  This keeps all
-    // of the character's body parts in the correct size and shape.
-    // However, if the hierarchy is disconnected, body parts can fly
-    // off.  It's essential the skeleton hierarchy be completely
-    // connected to use this blend mode successully.
+    // is blended linearly without the scale and shear components, and
+    // the blended scale and shear components are applied separately.
+    // This keeps all of the character's body parts in the correct
+    // size and shape.  However, if the hierarchy is disconnected,
+    // body parts can fly off.  It's essential the skeleton hierarchy
+    // be completely connected to use this blend mode successully.
     BT_normalized_linear,
+
+    // BT_componentwise linearly blends all components separately,
+    // including H, P, and R, and recomposes the matrix.
+    BT_componentwise,
+
+    // BT_componentwise_quat linearly blends all components
+    // separately, except for rotation which is blended as a
+    // quaternion.
+    BT_componentwise_quat,
   };
 
   void set_blend_type(BlendType bt);

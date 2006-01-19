@@ -82,16 +82,17 @@ get_value(int, TYPENAME AnimChannel<SwitchType>::ValueType &) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannel::get_value_no_scale
+//     Function: AnimChannel::get_value_no_scale_share
 //       Access: Public, Virtual
 //  Description: Returns the value associated with the current frame,
-//               with no scale components.  This only makes sense for
-//               a matrix-type channel, although for fiddly technical
-//               reasons the function exists for all channels.
+//               with no scale or share components.  This only makes
+//               sense for a matrix-type channel, although for fiddly
+//               technical reasons the function exists for all
+//               channels.
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_value_no_scale(int frame, ValueType &value) {
+get_value_no_scale_shear(int frame, ValueType &value) {
   get_value(frame, value);
 }
 
@@ -104,10 +105,60 @@ get_value_no_scale(int frame, ValueType &value) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_scale(int, float scale[3]) {
-  scale[0] = 1.0f;
-  scale[1] = 1.0f;
-  scale[2] = 1.0f;
+get_scale(int, LVecBase3f &scale) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::get_hpr
+//       Access: Public, Virtual
+//  Description: Returns the h, p, and r components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+void AnimChannel<SwitchType>::
+get_hpr(int, LVecBase3f &hpr) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::get_quat
+//       Access: Public, Virtual
+//  Description: Returns the rotation component associated with the
+//               current frame, expressed as a quaternion.  As above,
+//               this only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+void AnimChannel<SwitchType>::
+get_quat(int, LQuaternionf &quat) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::get_pos
+//       Access: Public, Virtual
+//  Description: Returns the x, y, and z translation components
+//               associated with the current frame.  As above, this
+//               only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+void AnimChannel<SwitchType>::
+get_pos(int, LVecBase3f &pos) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::get_shear
+//       Access: Public, Virtual
+//  Description: Returns the a, b, and c shear components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+void AnimChannel<SwitchType>::
+get_shear(int, LVecBase3f &shear) {
+  nassertv(false);
 }
 
 

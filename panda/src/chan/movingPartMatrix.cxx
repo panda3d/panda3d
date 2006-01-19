@@ -70,74 +70,181 @@ get_blend_value(const PartBundle *root) {
   } else {
     // A blend of two or more values.
 
-    if (root->get_blend_type() == PartBundle::BT_linear) {
-      // An ordinary, linear blend.
-      _value = 0.0f;
-      float net = 0.0f;
-
-      PartBundle::ChannelBlend::const_iterator cbi;
-      for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
-        AnimControl *control = (*cbi).first;
-        float effect = (*cbi).second;
-        nassertv(effect != 0.0f);
-
-        int channel_index = control->get_channel_index();
-        nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-        ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-        nassertv(channel != NULL);
-
-        ValueType v;
-        channel->get_value(control->get_frame(), v);
-
-        _value += v * effect;
-        net += effect;
+    switch (root->get_blend_type()) {
+    case PartBundle::BT_single:
+      // This one shouldn't be possible.
+      nassertv(false);
+      
+    case PartBundle::BT_linear:
+      {
+        // An ordinary, linear blend.
+        _value = 0.0f;
+        float net = 0.0f;
+        
+        PartBundle::ChannelBlend::const_iterator cbi;
+        for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
+          AnimControl *control = (*cbi).first;
+          float effect = (*cbi).second;
+          nassertv(effect != 0.0f);
+          
+          int channel_index = control->get_channel_index();
+          nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+          ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+          nassertv(channel != NULL);
+          
+          ValueType v;
+          channel->get_value(control->get_frame(), v);
+          
+          _value += v * effect;
+          net += effect;
+        }
+        
+        nassertv(net != 0.0f);
+        _value /= net;
       }
+      break;
 
-      nassertv(net != 0.0f);
-      _value /= net;
-
-    } else if (root->get_blend_type() == PartBundle::BT_normalized_linear) {
-      // A normalized linear blend.  This means we do a linear blend
-      // without scales, normalize the scale components of the
-      // resulting matrix to eliminate artificially-introduced scales,
-      // and then reapply the scales.
-
-      // Perhaps we should treat shear the same as a scale here?
-
-      _value = 0.0f;
-      LVector3f scale(0.0f, 0.0f, 0.0f);
-      float net = 0.0f;
-
-      PartBundle::ChannelBlend::const_iterator cbi;
-      for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
-        AnimControl *control = (*cbi).first;
-        float effect = (*cbi).second;
-        nassertv(effect != 0.0f);
-
-        int channel_index = control->get_channel_index();
-        nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-        ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-        nassertv(channel != NULL);
-
-        ValueType v;
-        channel->get_value_no_scale(control->get_frame(), v);
-        LVector3f s;
-        channel->get_scale(control->get_frame(), &s[0]);
-
-        _value += v * effect;
-        scale += s * effect;
-        net += effect;
+    case PartBundle::BT_normalized_linear:
+      {
+        // A normalized linear blend.  This means we do a linear blend
+        // without scales or shears, normalize the scale and shear
+        // components of the resulting matrix to eliminate
+        // artificially-introduced scales, and then reapply the
+        // scales and shears.
+        
+        _value = 0.0f;
+        LVecBase3f scale(0.0f, 0.0f, 0.0f);
+        LVecBase3f shear(0.0f, 0.0f, 0.0f);
+        float net = 0.0f;
+        
+        PartBundle::ChannelBlend::const_iterator cbi;
+        for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
+          AnimControl *control = (*cbi).first;
+          float effect = (*cbi).second;
+          nassertv(effect != 0.0f);
+          
+          int channel_index = control->get_channel_index();
+          nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+          ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+          nassertv(channel != NULL);
+          
+          ValueType v;
+          channel->get_value_no_scale_shear(control->get_frame(), v);
+          LVecBase3f iscale, ishear;
+          channel->get_scale(control->get_frame(), iscale);
+          channel->get_shear(control->get_frame(), ishear);
+          
+          _value += v * effect;
+          scale += iscale * effect;
+          shear += ishear * effect;
+          net += effect;
+        }
+        
+        nassertv(net != 0.0f);
+        _value /= net;
+        scale /= net;
+        shear /= net;
+        
+        // Now rebuild the matrix with the correct scale values.
+        
+        LVector3f false_scale, false_shear, hpr, translate;
+        decompose_matrix(_value, false_scale, false_shear, hpr, translate);
+        compose_matrix(_value, scale, shear, hpr, translate);
       }
+      break;
 
-      nassertv(net != 0.0f);
-      _value /= net;
-      scale /= net;
+    case PartBundle::BT_componentwise:
+      {
+        // Componentwise linear, including componentwise H, P, and R.
+        LVecBase3f scale(0.0f, 0.0f, 0.0f);
+        LVecBase3f hpr(0.0f, 0.0f, 0.0f);
+        LVecBase3f pos(0.0f, 0.0f, 0.0f);
+        LVecBase3f shear(0.0f, 0.0f, 0.0f);
+        float net = 0.0f;
+        
+        PartBundle::ChannelBlend::const_iterator cbi;
+        for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
+          AnimControl *control = (*cbi).first;
+          float effect = (*cbi).second;
+          nassertv(effect != 0.0f);
+          
+          int channel_index = control->get_channel_index();
+          nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+          ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+          nassertv(channel != NULL);
+          
+          LVecBase3f iscale, ihpr, ipos, ishear;
+          channel->get_scale(control->get_frame(), iscale);
+          channel->get_hpr(control->get_frame(), ihpr);
+          channel->get_pos(control->get_frame(), ipos);
+          channel->get_shear(control->get_frame(), ishear);
+          
+          scale += iscale * effect;
+          hpr += ihpr * effect;
+          pos += ipos * effect;
+          shear += ishear * effect;
+          net += effect;
+        }
+        
+        nassertv(net != 0.0f);
+        scale /= net;
+        hpr /= net;
+        pos /= net;
+        shear /= net;
+        
+        compose_matrix(_value, scale, shear, hpr, pos);
+      }
+      break;
 
-      // Now rebuild the matrix with the correct scale values.
+    case PartBundle::BT_componentwise_quat:
+      {
+        // Componentwise linear, except for rotation, which is a
+        // quaternion.
+        LVecBase3f scale(0.0f, 0.0f, 0.0f);
+        LQuaternionf quat(0.0f, 0.0f, 0.0f, 0.0f);
+        LVecBase3f pos(0.0f, 0.0f, 0.0f);
+        LVecBase3f shear(0.0f, 0.0f, 0.0f);
+        float net = 0.0f;
+        
+        PartBundle::ChannelBlend::const_iterator cbi;
+        for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
+          AnimControl *control = (*cbi).first;
+          float effect = (*cbi).second;
+          nassertv(effect != 0.0f);
+          
+          int channel_index = control->get_channel_index();
+          nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+          ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+          nassertv(channel != NULL);
+          
+          LVecBase3f iscale, ipos, ishear;
+          LQuaternionf iquat;
+          channel->get_scale(control->get_frame(), iscale);
+          channel->get_quat(control->get_frame(), iquat);
+          channel->get_pos(control->get_frame(), ipos);
+          channel->get_shear(control->get_frame(), ishear);
+          
+          scale += iscale * effect;
+          quat += iquat * effect;
+          pos += ipos * effect;
+          shear += ishear * effect;
+          net += effect;
+        }
+        
+        nassertv(net != 0.0f);
+        scale /= net;
+        quat /= net;
+        pos /= net;
+        shear /= net;
 
-      LVector3f false_scale, shear, hpr, translate;
-      decompose_matrix(_value, false_scale, shear, hpr, translate);
-      compose_matrix(_value, scale, shear, hpr, translate);
+        // There should be no need to normalize the quaternion,
+        // assuming all of the input quaternions were already
+        // normalized.
+
+        _value = LMatrix4f::scale_shear_mat(scale, shear) * quat;
+        _value.set_row(3, pos);
+      }
+      break;
     }
   }
 }

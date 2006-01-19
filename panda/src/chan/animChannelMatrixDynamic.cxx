@@ -80,14 +80,14 @@ get_value(int, LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixDynamic::get_value_no_scale
+//     Function: AnimChannelMatrixDynamic::get_value_no_scale_shear
 //       Access: Public, Virtual
 //  Description: Gets the value of the channel at the indicated frame,
-//               without any scale information.
+//               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_value_no_scale(int frame, LMatrix4f &mat) {
-  if (_value->has_scale()) {
+get_value_no_scale_shear(int frame, LMatrix4f &mat) {
+  if (_value->has_scale() || _value->has_shear()) {
     compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f),
                    _value->get_hpr(), _value->get_pos());
   } else {
@@ -101,11 +101,56 @@ get_value_no_scale(int frame, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_scale(int frame, float scale[3]) {
-  const LVecBase3f &sc = _value->get_scale();
-  scale[0] = sc[0];
-  scale[1] = sc[1];
-  scale[2] = sc[2]; 
+get_scale(int frame, LVecBase3f &scale) {
+  scale = _value->get_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::get_hpr
+//       Access: Public, Virtual
+//  Description: Returns the h, p, and r components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixDynamic::
+get_hpr(int, LVecBase3f &hpr) {
+  hpr = _value->get_hpr();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::get_quat
+//       Access: Public, Virtual
+//  Description: Returns the rotation component associated with the
+//               current frame, expressed as a quaternion.  As above,
+//               this only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixDynamic::
+get_quat(int, LQuaternionf &quat) {
+  quat = _value->get_quat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::get_pos
+//       Access: Public, Virtual
+//  Description: Returns the x, y, and z translation components
+//               associated with the current frame.  As above, this
+//               only makes sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixDynamic::
+get_pos(int, LVecBase3f &pos) {
+  pos = _value->get_pos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::get_shear
+//       Access: Public, Virtual
+//  Description: Returns the a, b, and c shear components associated
+//               with the current frame.  As above, this only makes
+//               sense for a matrix-type channel.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixDynamic::
+get_shear(int, LVecBase3f &shear) {
+  shear = _value->get_shear();
 }
 
 ////////////////////////////////////////////////////////////////////
