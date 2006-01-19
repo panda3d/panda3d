@@ -23,7 +23,7 @@
 
 #include "animChannelBase.h"
 
-#include "lmatrix.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannel
