@@ -31,6 +31,8 @@ public:
   void add_position_xyz_vertex_element (int stream_index);
   void add_position_xyzw_vertex_element (int stream_index);
   void add_normal_vertex_element (int stream_index);
+  void add_binormal_vertex_element (int stream_index);
+  void add_tangent_vertex_element (int stream_index);
   void add_diffuse_color_vertex_element (int stream_index);
   void add_specular_color_vertex_element (int stream_index);
   void add_u_vertex_element (int stream_index);
@@ -117,6 +119,50 @@ void VertexElementArray::add_normal_vertex_element (int stream_index)
     vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
 
     vertex_element -> Usage = D3DDECLUSAGE_NORMAL;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 12;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_binormal_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT3;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_BINORMAL;
+    vertex_element -> UsageIndex = 0;
+
+    this -> offset += 12;
+    this -> total_elements++;
+  }
+}
+
+void VertexElementArray::add_tangent_vertex_element (int stream_index)
+{
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+
+  if (this -> total_elements < this -> maximum_vertex_elements)
+  {
+    vertex_element = &this -> vertex_element_array [this -> total_elements];
+    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
+
+    vertex_element -> Stream = stream_index;
+    vertex_element -> Offset = this -> offset;
+    vertex_element -> Type = D3DDECLTYPE_FLOAT3;
+    vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
+
+    vertex_element -> Usage = D3DDECLUSAGE_TANGENT;
     vertex_element -> UsageIndex = 0;
 
     this -> offset += 12;
@@ -268,6 +314,8 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 #ifdef HAVE_CGDX9
 
   DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n"; DBG_E
+
+  _state = false;
 
 //  _cg_context = (CGcontext)0;
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
@@ -533,6 +581,8 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
 
   DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n"; DBG_E
+
+  _state = true;
 
   return true;
 }
@@ -958,7 +1008,7 @@ DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters\n"; DBG_E
       InternalName *id = _cg_fbind[i].name;
       const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
 
-DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_fbind \n"; DBG_E
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_fbind " << id -> get_name ( ) << "\n"; DBG_E
 
       cgD3D9SetUniform (_cg_fbind[i].parameter, input->get_vector().get_data());
     }
@@ -971,7 +1021,7 @@ DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_fbind \n"; DBG_E
       if (input->get_nodepath().is_empty()) {
         dat = LMatrix4f::ident_mat().get_data();
 
-DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind \n"; DBG_E
+DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind " << id -> get_name ( ) << "\n"; DBG_E
 
         cgD3D9SetUniform (_cg_npbind[i].parameter, dat);
 
@@ -1093,9 +1143,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #endif // SUPPORT_IMMEDIATE_MODE
 */
 
-    if (_direct_3d_vertex_declaration == 0) {
+// map the vertex shader inputs into a DirectX vertex declaration
+// create and cache the vertex declaration
+// this can be done here since a vertex shader has a fixed input
 
-      VertexElementArray *vertex_element_array;
+    if (_direct_3d_vertex_declaration == 0) {
 
       const GeomVertexArrayData *array_data;
       Geom::NumericType numeric_type;
@@ -1104,7 +1156,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
 DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying " << nvarying <<  "\n"; DBG_E
 
-      vertex_element_array = 0;
+      int stream_index;
+      VertexElementArray *vertex_element_array;
+
+// SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
+      stream_index = 0;
+      vertex_element_array = new VertexElementArray (nvarying + 16);
 
       for (int i=0; i<nvarying; i++) {
         InternalName *name = _cg_varying[i].name;
@@ -1125,8 +1182,119 @@ DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying 
         if (gsg->_vertex_data->get_array_info(name, array_data, num_values,
               numeric_type, start, stride)) {
 
+if (false) {
+
+} else if (name == InternalName::get_vertex ( )) {
+
+  if (numeric_type == Geom::NT_float32) {
+    switch (num_values) {
+      case 3:
+        vertex_element_array -> add_position_xyz_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of vertex coordinate elements " << num_values << "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid vertex type " << numeric_type << "\n";
+  }
+
+} else if (name == InternalName::get_texcoord ( )) {
+
+  if (numeric_type == Geom::NT_float32) {
+    switch (num_values)
+    {
+      case 1:
+        vertex_element_array -> add_u_vertex_element (stream_index);
+        break;
+      case 2:
+        vertex_element_array -> add_uv_vertex_element (stream_index);
+        break;
+      case 3:
+        vertex_element_array -> add_uvw_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid texture coordinate type " << numeric_type << "\n";
+  }
+
+} else if (name == InternalName::get_normal ( )) {
+
+  if (numeric_type == Geom::NT_float32) {
+    switch (num_values)
+    {
+      case 3:
+        vertex_element_array -> add_normal_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of normal coordinate elements " << num_values <<  "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid normal type " << numeric_type << "\n";
+  }
+
+} else if (name == InternalName::get_binormal ( )) {
+
+  if (numeric_type == Geom::NT_float32) {
+    switch (num_values)
+    {
+      case 3:
+        vertex_element_array -> add_binormal_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of binormal coordinate elements " << num_values <<  "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid binormal type " << numeric_type << "\n";
+  }
+
+} else if (name == InternalName::get_tangent ( )) {
+
+  if (numeric_type == Geom::NT_float32) {
+    switch (num_values)
+    {
+      case 3:
+        vertex_element_array -> add_tangent_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of tangent coordinate elements " << num_values <<  "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid tangent type " << numeric_type << "\n";
+  }
+
+} else if (name == InternalName::get_color ( )) {
+
+  if (numeric_type == Geom::NT_packed_dcba || numeric_type == Geom::NT_packed_dabc) {
+    switch (num_values)
+    {
+      case 4:
+        vertex_element_array -> add_diffuse_color_vertex_element (stream_index);
+        break;
+      default:
+        dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid color coordinates " << num_values <<  "\n";
+        break;
+    }
+  } else {
+    dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid color type " << numeric_type << "\n";
+  }
+
+} else {
+  dxgsg9_cat.error ( ) << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( ) <<  "\n";
+}
+
+
 // ?????
 /*
+
+gsg->_vertex_data;
+
           const unsigned char *client_pointer = gsg->setup_array_data(array_data);
           cgD3D9SetParameterPointer(_cg_varying[i].parameter,
                                   num_values, gsg->get_numeric_type(numeric_type),
@@ -1147,27 +1315,49 @@ DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying 
         }
       }
 
+      int state;
+
+      state = vertex_element_array -> add_end_vertex_element ( );
+
       if (vertex_element_array) {
         HRESULT hr;
 
-        hr = gsg -> _d3d_device ->CreateVertexDeclaration (vertex_element_array -> vertex_element_array, &_direct_3d_vertex_declaration);
-        if (FAILED (hr))
-        {
-          dxgsg9_cat.error()
-            << "CreateVertexDeclaration failed"
-            << D3DERRORSTRING(hr);
-        }
+        if (state) {
 
-        _vertex_size = vertex_element_array -> offset;
+          if (cgD3D9ValidateVertexDeclaration (_cg_program [SHADER_type_vert], vertex_element_array -> vertex_element_array) == CG_TRUE)
+          {
+            dxgsg9_cat.debug() << "||||| cgD3D9ValidateVertexDeclaration succeeded\n";
+          }
+          else
+          {
+            dxgsg9_cat.error() << "********************************************\n";
+            dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
+            dxgsg9_cat.error() << "********************************************\n";
+          }
+
+          hr = gsg -> _d3d_device ->CreateVertexDeclaration (vertex_element_array -> vertex_element_array, &_direct_3d_vertex_declaration);
+          if (FAILED (hr)) {
+            dxgsg9_cat.error()
+              << "CreateVertexDeclaration failed"
+              << D3DERRORSTRING(hr);
+          }
+
+          _vertex_size = vertex_element_array -> offset;
+
+          DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
+        }
 
         delete vertex_element_array;
       }
     }
-    else {
+    if (_direct_3d_vertex_declaration)
+    {
       hr = gsg -> _d3d_device -> SetVertexDeclaration (_direct_3d_vertex_declaration);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
           << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
+      } else {
+        DBG_SH5 dxgsg9_cat.debug() << "Shader SetVertexDeclaration ( ) \n"; DBG_E
       }
 
 /*
@@ -1177,7 +1367,7 @@ DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying 
       UINT stride;
 
       stream_number = 0;
-      vertex_buffer = 0;
+vertex_buffer = 0;
       offset = 0;
       stride = 0;
 

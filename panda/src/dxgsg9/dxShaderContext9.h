@@ -68,6 +68,8 @@ public:
   // FOR DEBUGGING
   string _name;
 
+  bool _state;
+
 private:
 
 #ifdef HAVE_CGDX9

@@ -26,10 +26,7 @@
 //               or if no shader languages are compiled into panda.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
-valid() {
-#ifdef HAVE_CGDX9
-  if (_cg_context) return true;
-#endif
-  return false;
+valid (GSG *gsg) {
+  return _state;
 }
 
