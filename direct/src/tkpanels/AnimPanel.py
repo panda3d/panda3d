@@ -23,7 +23,7 @@ class AnimPanel(AppShell):
     usestatusarea  = 0
     index = 0
 
-    def __init__(self, aList =  [], parent = None, **kw):
+    def __init__(self, aList =  [], parent = None, session = None, **kw):
         INITOPT = Pmw.INITOPT
         if ((type(aList) == types.ListType) or
             (type(aList) == types.TupleType)):
@@ -37,12 +37,20 @@ class AnimPanel(AppShell):
             )
         self.defineoptions(kw, optiondefs)
 
+        # direct session that spawned me, if any, used
+        # for certain interactions with the session such
+        # as being able to see selected objects/actors
+        self.session = session
+
         self.frameHeight = 60 + (50 * len(self['actorList']))
         self.playList =  []
         self.id = 'AnimPanel_%d' % AnimPanel.index
         AnimPanel.index += 1
+        # current index used for creating new actor controls
+        self.actorControlIndex = 0
         # Initialize the superclass
         AppShell.__init__(self)
+
 
         # Execute option callbacks
         self.initialiseoptions(AnimPanel)
@@ -106,42 +114,8 @@ class AnimPanel(AppShell):
             command = self.displayFrameCounts)
         b.pack(side = RIGHT, expand = 0)
 
-        # Create a frame to hold all the actor controls
-        actorFrame = Frame(interior)
-
-        # Create a control for each actor
-        index = 0
-        self.actorControlList = []
-        for actor in self['actorList']:
-            anims = actor.getAnimNames()
-            topAnims = []
-            if 'neutral' in anims:
-                i = anims.index('neutral')
-                del(anims[i])
-                topAnims.append('neutral')
-            if 'walk' in anims:
-                i = anims.index('walk')
-                del(anims[i])
-                topAnims.append('walk')
-            if 'run' in anims:
-                i = anims.index('run')
-                del(anims[i])
-                topAnims.append('run')
-            anims.sort()
-            anims = topAnims + anims
-            ac = self.createcomponent(
-                'actorControl%d' % index, (), 'Actor',
-                ActorControl, (actorFrame,),
-                animPanel = self,
-                text = actor.getName(),
-                animList = anims,
-                actor = actor)
-            ac.pack(expand = 1, fill = X)
-            self.actorControlList.append(ac)
-            index = index + 1
-
-        # Now pack the actor frame
-        actorFrame.pack(expand = 1, fill = BOTH)
+        self.actorFrame = None
+        self.createActorControls()
 
         # Create a frame to hold the playback controls
         controlFrame = Frame(interior)
@@ -184,7 +158,117 @@ class AnimPanel(AppShell):
             variable = self.loopVar)
         self.loopButton.pack(side = LEFT, expand = 1, fill = X)
 
+        # add actors and animations, only allowed if a direct
+        # session has been specified since these currently require
+        # interaction with selected objects
+        if (self.session):
+            menuBar.addmenuitem('File', 'command',
+                                'Set currently selected group of objects as actors to animate.',
+                                label = 'Set Actors',
+                                command = self.setActors)
+            menuBar.addmenuitem('File', 'command',
+                                'Load animation file',
+                                label = 'Load Anim',
+                                command = self.loadAnim)
+
         controlFrame.pack(fill = X)
+
+    def createActorControls(self):
+        # Create a frame to hold all the actor controls
+        self.actorFrame = Frame(self.interior())
+        # Create a control for each actor
+        self.actorControlList = []
+        for actor in self['actorList']:
+            anims = actor.getAnimNames()
+            print "actor animnames: %s"%anims
+            topAnims = []
+            if 'neutral' in anims:
+                i = anims.index('neutral')
+                del(anims[i])
+                topAnims.append('neutral')
+            if 'walk' in anims:
+                i = anims.index('walk')
+                del(anims[i])
+                topAnims.append('walk')
+            if 'run' in anims:
+                i = anims.index('run')
+                del(anims[i])
+                topAnims.append('run')
+            anims.sort()
+            anims = topAnims + anims
+            if (len(anims)== 0):
+                # no animations set for this actor, don't
+                # display the control panel
+                continue
+#            currComponents = self.components()
+#            if ('actorControl%d' % index in currComponents):
+#                self.destroycomponent('actorControl%d' % index)
+#            ac = self.component('actorControl%d' % index)
+#            if (ac == None):
+            ac = self.createcomponent(
+                'actorControl%d' % self.actorControlIndex, (), 'Actor',
+                ActorControl, (self.actorFrame,),
+                animPanel = self,
+                text = actor.getName(),
+                animList = anims,
+                actor = actor)
+            ac.pack(expand = 1, fill = X)
+            self.actorControlList.append(ac)
+            self.actorControlIndex = self.actorControlIndex + 1
+
+        # Now pack the actor frame
+        self.actorFrame.pack(expand = 1, fill = BOTH)
+
+    def clearActorControls(self):
+        if (self.actorFrame):
+            self.actorFrame.forget()
+            self.actorFrame.destroy()
+            self.actorFrame = None
+
+    def setActors(self):
+        self.stopActorControls()
+        actors = self.session.getSelectedActors()
+        # make sure selected objects are actors, if not don't
+        # use?
+        aList = []
+        for currActor in actors:
+            aList.append(currActor)
+        self['actorList'] = aList
+
+        self.clearActorControls()
+        self.createActorControls()
+
+    def loadAnim(self):
+        # bring up file open box to allow selection of an
+        # animation file
+        animFilename = askopenfilename(
+            defaultextension = '.mb',
+            filetypes = (('Maya Models', '*.mb'),
+                         ('All files', '*')),
+            initialdir = '/i/beta',
+            title = 'Load Animation',
+            parent = self.component('hull')
+            )
+        if (animFilename == ''):
+            # no file selected, canceled
+            return
+
+        # add directory where animation was loaded from to the
+        # current model path so any further searches for the file
+        # can find it
+        fileDirName = os.path.dirname(animFilename)
+        fileBaseName = os.path.basename(animFilename)
+        fileBaseNameBase = os.path.splitext(fileBaseName)[0]
+        fileDirNameFN = Filename(fileDirName)
+        fileDirNameFN.makeCanonical()
+        getModelPath().prependDirectory(fileDirNameFN)
+        for currActor in self['actorList']:
+            # replace all currently loaded anims with specified one
+#            currActor.unloadAnims(None,None,None)
+            currActor.loadAnims({fileBaseNameBase:fileBaseNameBase})
+        self.clearActorControls()
+        self.createActorControls()
+
 
     def playActorControls(self):
         self.stopActorControls()
@@ -200,7 +284,8 @@ class AnimPanel(AppShell):
         deltaT = currT - self.lastT
         self.lastT = currT
         for actorControl in self.playList:
-            actorControl.play(deltaT, fLoop)
+            # scale time by play rate value
+            actorControl.play(deltaT * actorControl.playRate, fLoop)
         return Task.cont
 
     def stopActorControls(self):
@@ -380,6 +465,7 @@ class ActorControl(Pmw.MegaWidget):
 
         # Execute option callbacks
         self.initialiseoptions(ActorControl)
+        self.playRate = 1.0
         self.updateDisplay()
 
     def _updateLabelText(self):
@@ -389,9 +475,18 @@ class ActorControl(Pmw.MegaWidget):
         actor = self['actor']
         active = self['active']
         self.fps = actor.getFrameRate(active)
-        self.duration = actor.getDuration(active)
-        self.maxFrame = actor.getNumFrames(active) - 1
-        self.maxSeconds = self.offset + self.duration
+        if (self.fps == None):
+            # there was probably a problem loading the
+            # active animation, set default anim properties
+            print "unable to get animation fps, zeroing out animation info"
+            self.fps = 24
+            self.duration = 0
+            self.maxFrame = 0
+            self.maxSeconds = 0
+        else:
+            self.duration = actor.getDuration(active)
+            self.maxFrame = actor.getNumFrames(active) - 1
+            self.maxSeconds = self.offset + self.duration
         # switch between showing frame counts and seconds
         if self.unitsVar.get() == FRAMES:
             # these are approximate due to discrete frame size
@@ -427,7 +522,12 @@ class ActorControl(Pmw.MegaWidget):
         self.resetToZero()
 
     def setPlayRate(self, rate):
+        # set play rate on the actor, although for the AnimPanel
+        # purpose we dont use the actor's play rate, but rather
+        # the self.playRate value since we drive the animation
+        # playback ourselves
         self['actor'].setPlayRate(eval(rate), self['active'])
+        self.playRate = eval(rate)
         self.updateDisplay()
 
     def setOffset(self):
@@ -456,7 +556,7 @@ class ActorControl(Pmw.MegaWidget):
         if self.frameActiveVar.get():
             # Compute new time
             self.currT = self.currT + deltaT
-            if fLoop:
+            if fLoop and self.duration:
                 # If its looping compute modulo
                 loopT = self.currT % self.duration
                 self.goToT(loopT)
