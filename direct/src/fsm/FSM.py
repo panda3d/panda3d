@@ -266,6 +266,16 @@ class FSM(DirectObject.DirectObject):
 
         return result
 
+    def defaultEnter(self, *args):
+        """ This is the default function that is called if there is no
+        enterState() method for a particular state name. """
+        pass
+
+    def defaultExit(self):
+        """ This is the default function that is called if there is no
+        exitState() method for a particular state name. """
+        pass
+
     def defaultFilter(self, request, args):
         """This is the function that is called if there is no
         filterState() method for a particular state name.
@@ -362,15 +372,15 @@ class FSM(DirectObject.DirectObject):
         self.state = None
 
         try:
-            self.__callTransitionFunc("exit" + self.oldState)
-            self.__callTransitionFunc("enter" + self.newState, *args)
+            self.__callExitFunc(self.oldState)
+            self.__callEnterFunc(self.newState, *args)
         except:
             # If we got an exception during the enter or exit methods,
-            # return to the previous state and raise up the exception.
-            # This might leave things a little unclean since we've
-            # partially transitioned, but what can you do?
+            # go directly to state "InternalError" and raise up the
+            # exception.  This might leave things a little unclean
+            # since we've partially transitioned, but what can you do?
             
-            self.state = self.oldState
+            self.state = 'InternalError'
             del self.oldState
             del self.newState
             raise
@@ -387,14 +397,29 @@ class FSM(DirectObject.DirectObject):
             assert self.notify.debug("%s continued queued request." % (self.name))
             request()
 
-    def __callTransitionFunc(self, name, *args):
-        # Calls the appropriate enter or exit function when
-        # transitioning between states, if it exists.
-        assert self.state == None
+    def __callEnterFunc(self, name, *args):
+        # Calls the appropriate enter function when transitioning into
+        # a new state, if it exists.
+        assert self.state == None and self.newState == name
 
-        func = getattr(self, name, None)
-        if func:
-            func(*args)
+        func = getattr(self, "enter" + name, None)
+        if not func:
+            # If there's no matching enterFoo() function, call
+            # defaultEnter() instead.
+            func = self.defaultEnter
+        func(*args)
+
+    def __callExitFunc(self, name):
+        # Calls the appropriate exit function when leaving a
+        # state, if it exists.
+        assert self.state == None and self.oldState == name
+
+        func = getattr(self, "exit" + name, None)
+        if not func:
+            # If there's no matching exitFoo() function, call
+            # defaultExit() instead.
+            func = self.defaultExit
+        func()
             
     def __repr__(self):
         return self.__str__()
