@@ -24,6 +24,9 @@
 #include <assert.h>
 #include <time.h>
 
+#define DEBUG_SURFACES false
+#define DEBUG_TEXTURES false
+
 TypeHandle DXTextureContext9::_type_handle;
 
 static const DWORD g_LowByteMask = 0x000000FF;
@@ -795,7 +798,7 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  if (dxgsg9_cat.is_debug()) {
+  if (DEBUG_TEXTURES && dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "create_texture: " << _texture->get_name()
       << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
@@ -951,7 +954,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
   // writes out last line in DDSurf first in PixelBuf, so Y line order
   // precedes inversely
 
-  if (dxgsg9_cat.is_debug()) {
+  if (DEBUG_SURFACES && dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "d3d_surface_to_texture converting "
       << D3DFormatStr(surface_desc.Format)
@@ -1282,6 +1285,7 @@ fill_d3d_texture_pixels() {
     if (using_temp_buffer) {
       SAFE_DELETE_ARRAY(pixels);
     }
+
     RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
   }
   return hr;
@@ -1290,7 +1294,9 @@ fill_d3d_texture_pixels() {
   if (using_temp_buffer) {
     SAFE_DELETE_ARRAY(pixels);
   }
+
   RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
+
   return hr;
 }
 
