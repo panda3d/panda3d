@@ -125,6 +125,18 @@ class FSM(DirectObject.DirectObject):
 
     SerialNum = 0
 
+    # This member lists the default transitions that are accepted
+    # without question by the defaultFilter.  It's a map of state
+    # names to a list of legal target state names from that state.
+    # Define it only if you want to use the classic FSM model of
+    # defining all (or most) of your transitions up front.  If
+    # this is set to None (the default), all named-state
+    # transitions (that is, those requests whose name begins with
+    # a capital letter) are allowed.  If it is set to an empty
+    # map, no transitions are implicitly allowed--all transitions
+    # must be approved by some filter function.
+    defaultTransitions = None
+
     def __init__(self, name):
         self.name = name
         self._serialNum = FSM.SerialNum
@@ -132,18 +144,6 @@ class FSM(DirectObject.DirectObject):
         self._broadcastStateChanges = False
         # Initially, we are in the Off state by convention.
         self.state = 'Off'
-
-        # This member lists the default transitions that are accepted
-        # without question by the defaultFilter.  It's a map of state
-        # names to a list of legal target state names from that state.
-        # Define it only if you want to use the classic FSM model of
-        # defining all (or most) of your transitions up front.  If
-        # this is set to None (the default), all named-state
-        # transitions (that is, those requests whose name begins with
-        # a capital letter) are allowed.  If it is set to an empty
-        # map, no transitions are implicitly allowed--all transitions
-        # must be approved by some filter function.
-        self.defaultTransitions = None
 
         # This member records transition requests made by demand() or
         # forceTransition() while the FSM is in transition between
@@ -259,7 +259,7 @@ class FSM(DirectObject.DirectObject):
             if isinstance(result, types.StringTypes):
                 # If the return value is a string, it's just the name
                 # of the state.  Wrap it in a tuple for consistency.
-                result = (result,)
+                result = (result,) + args
 
             # Otherwise, assume it's a (name, *args) tuple
             self.__setState(*result)
