@@ -19,6 +19,8 @@
 #include "textureStageCollection.h"
 
 #include "indent.h"
+#include "indirectLess.h"
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureStageCollection::Constructor
@@ -251,6 +253,18 @@ operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
 
   return _texture_stages[index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStageCollection::sort
+//       Access: Published
+//  Description: Sorts the TextureStages in this collection into order
+//               by TextureStage::sort(), from lowest to highest.
+////////////////////////////////////////////////////////////////////
+void TextureStageCollection::
+sort() {
+  ::sort(_texture_stages.begin(), _texture_stages.end(),
+         IndirectLess<TextureStage>());
 }
 
 ////////////////////////////////////////////////////////////////////

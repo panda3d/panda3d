@@ -48,6 +48,8 @@ PUBLISHED:
   TextureStage *get_texture_stage(int index) const;
   TextureStage *operator [] (int index) const;
 
+  void sort();
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
