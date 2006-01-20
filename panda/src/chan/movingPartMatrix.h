@@ -43,6 +43,7 @@ public:
                           LMatrix4f::ident_mat());
   virtual ~MovingPartMatrix();
 
+  virtual AnimChannelBase *make_initial_channel() const;
   virtual void get_blend_value(const PartBundle *root);
 
 protected:

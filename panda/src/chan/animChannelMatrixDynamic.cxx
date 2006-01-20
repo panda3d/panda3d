@@ -26,7 +26,6 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "fftCompressor.h"
 
 TypeHandle AnimChannelMatrixDynamic::_type_handle;
 
@@ -101,7 +100,7 @@ get_value_no_scale_shear(int frame, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_scale(int frame, LVecBase3f &scale) {
+get_scale(int, LVecBase3f &scale) {
   scale = _value->get_scale();
 }
 

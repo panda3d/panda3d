@@ -23,8 +23,7 @@
 
 #include "partGroup.h"
 #include "animControl.h"
-#include "animControlCollection.h"
-
+#include "partSubset.h"
 #include "pointerTo.h"
 #include "iterator_types.h"
 
@@ -38,7 +37,7 @@ class PartBundleNode;
 //               defines the hierarchy of moving parts that make up an
 //               animatable object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartBundle : public PartGroup, public AnimControlCollection {
+class EXPCL_PANDA PartBundle : public PartGroup {
 public:
 
   // This is passed down through the MovingParts during the
@@ -113,10 +112,8 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
-                            int hierarchy_match_flags = 0);
-
-  bool bind_anim(AnimBundle *anim, const string &name,
-                 int hierarchy_match_flags = 0);
+                            int hierarchy_match_flags = 0, 
+                            const PartSubset &subset = PartSubset());
 
 public:
   // The following functions may be used to traverse the set of

@@ -31,6 +31,7 @@
 class AnimControl;
 class AnimGroup;
 class PartBundle;
+class PartSubset;
 class BamReader;
 class FactoryParams;
 
@@ -91,7 +92,8 @@ protected:
   void write_descendants_with_value(ostream &out, int indent_level) const;
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
-  virtual void bind_hierarchy(AnimGroup *anim, int channel_index);
+  virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
+                              bool is_included, const PartSubset &subset);
 
   typedef pvector< PT(PartGroup) > Children;
   Children _children;

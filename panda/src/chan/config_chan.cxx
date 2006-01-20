@@ -23,6 +23,7 @@
 #include "animChannelBase.h"
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelMatrixDynamic.h"
+#include "animChannelMatrixFixed.h"
 #include "animChannelScalarTable.h"
 #include "animChannelScalarDynamic.h"
 #include "animControl.h"
@@ -89,6 +90,7 @@ ConfigureFn(config_chan) {
   AnimChannelBase::init_type();
   AnimChannelMatrixXfmTable::init_type();
   AnimChannelMatrixDynamic::init_type();
+  AnimChannelMatrixFixed::init_type();
   AnimChannelScalarTable::init_type();
   AnimChannelScalarDynamic::init_type();
   AnimControl::init_type();

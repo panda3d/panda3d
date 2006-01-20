@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "partGroup.h"
 #include "animGroup.h"
 #include "config_chan.h"
+#include "partSubset.h"
 
 #include "indent.h"
 #include "datagram.h"
@@ -432,7 +432,14 @@ pick_channel_index(plist<int> &holes, int &next) const {
 //               hierarchy, at the given channel index number.
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-bind_hierarchy(AnimGroup *anim, int channel_index) {
+bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
+               const PartSubset &subset) {
+  if (subset.matches_include(get_name())) {
+    is_included = true;
+  } else if (subset.matches_exclude(get_name())) {
+    is_included = false;
+  }
+
   int i = 0, j = 0;
   int part_num_children = get_num_children();
   int anim_num_children = (anim == NULL) ? 0 : anim->get_num_children();
@@ -444,12 +451,12 @@ bind_hierarchy(AnimGroup *anim, int channel_index) {
     if (pc->get_name() < ac->get_name()) {
       // Here's a part, not in the anim.  Bind it to the special NULL
       // anim.
-      pc->bind_hierarchy(NULL, channel_index);
+      pc->bind_hierarchy(NULL, channel_index, is_included, subset);
       i++;
     } else if (ac->get_name() < pc->get_name()) {
       j++;
     } else {
-      pc->bind_hierarchy(ac, channel_index);
+      pc->bind_hierarchy(ac, channel_index, is_included, subset);
       i++;
       j++;
     }
@@ -458,7 +465,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index) {
   // Now pick up any more parts, not in the anim.
   while (i < part_num_children) {
     PartGroup *pc = get_child(i);
-    pc->bind_hierarchy(NULL, channel_index);
+    pc->bind_hierarchy(NULL, channel_index, is_included, subset);
     i++;
   }
 }

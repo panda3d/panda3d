@@ -14,6 +14,7 @@
     animChannel.I animChannel.h animChannelBase.I  \
     animChannelBase.h \
     animChannelMatrixDynamic.I animChannelMatrixDynamic.h \
+    animChannelMatrixFixed.I animChannelMatrixFixed.h \
     animChannelMatrixXfmTable.I animChannelMatrixXfmTable.h \
     animChannelScalarDynamic.I animChannelScalarDynamic.h \
     animChannelScalarTable.I animChannelScalarTable.h \
@@ -25,6 +26,7 @@
     movingPartScalar.h partBundle.I partBundle.N partBundle.h  \
     partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h  \
+    partSubset.I partSubset.h \
     vector_PartGroupStar.h 
 
   #define INCLUDED_SOURCES  \
@@ -33,6 +35,7 @@
     animChannel.cxx  \
     animChannelBase.cxx \
     animChannelMatrixDynamic.cxx  \
+    animChannelMatrixFixed.cxx  \
     animChannelMatrixXfmTable.cxx  \
     animChannelScalarDynamic.cxx \
     animChannelScalarTable.cxx \
@@ -41,7 +44,9 @@
     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
     movingPartScalar.cxx partBundle.cxx \
     partBundleNode.cxx \
-    partGroup.cxx vector_PartGroupStar.cxx 
+    partGroup.cxx \
+    partSubset.cxx \
+    vector_PartGroupStar.cxx 
 
   #define INSTALL_HEADERS \
     animBundle.I animBundle.h \
@@ -49,6 +54,7 @@
     animChannel.I animChannel.h animChannelBase.I animChannelBase.h \
     animChannelFixed.I animChannelFixed.h \
     animChannelMatrixDynamic.I animChannelMatrixDynamic.h \
+    animChannelMatrixFixed.I animChannelMatrixFixed.h \
     animChannelMatrixXfmTable.I animChannelMatrixXfmTable.h \
     animChannelScalarDynamic.I animChannelScalarDynamic.h \
     animChannelScalarTable.I animChannelScalarTable.h \
@@ -60,6 +66,7 @@
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \
     partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h \
+    partSubset.I partSubset.h \
     vector_PartGroupStar.h
     
   #define IGATESCAN all

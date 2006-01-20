@@ -61,9 +61,13 @@ get_blend_value(const PartBundle *root) {
     int channel_index = control->get_channel_index();
     nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
     ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-    nassertv(channel != NULL);
+    if (channel == NULL) {
+      // Nothing is actually bound here.
+      _value = _initial_value;
 
-    channel->get_value(control->get_frame(), _value);
+    } else {
+      channel->get_value(control->get_frame(), _value);
+    }
 
   } else {
     // A blend of two or more values.
@@ -79,17 +83,21 @@ get_blend_value(const PartBundle *root) {
       int channel_index = control->get_channel_index();
       nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
       ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-      nassertv(channel != NULL);
-
-      ValueType v;
-      channel->get_value(control->get_frame(), v);
-
-      _value += v * effect;
-      net += effect;
+      if (channel != NULL) {
+        ValueType v;
+        channel->get_value(control->get_frame(), v);
+        
+        _value += v * effect;
+        net += effect;
+      }
     }
 
-    nassertv(net != 0.0f);
-    _value /= net;
+    if (net == 0.0f) {
+      _value = _initial_value;
+
+    } else {
+      _value /= net;
+    }
   }
 }
 

@@ -47,7 +47,7 @@ MovingPartBase(){
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes a brief description of the channel and all of
 //               its descendants.
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::write_with_value
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes a brief description of the channel and all of
 //               its descendants, along with their values.
 ////////////////////////////////////////////////////////////////////
@@ -112,9 +112,9 @@ do_update(PartBundle *root, PartGroup *parent,
     int channel_index = control->get_channel_index();
     nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
     AnimChannelBase *channel = _channels[channel_index];
-    nassertr(channel != (AnimChannelBase*)0L, false);
-
-    needs_update = control->channel_has_changed(channel);
+    if (channel != (AnimChannelBase*)NULL) {
+      needs_update = control->channel_has_changed(channel);
+    }
   }
 
   if (needs_update) {
@@ -187,7 +187,7 @@ pick_channel_index(plist<int> &holes, int &next) const {
   if (next < (int)_channels.size()) {
     int i;
     for (i = next; i < (int)_channels.size(); i++) {
-      if (_channels[i] == (AnimChannelBase*)0L) {
+      if (_channels[i] == (AnimChannelBase*)NULL) {
         // Here's a hole we do have.
         holes.push_back(i);
       }
@@ -207,25 +207,29 @@ pick_channel_index(plist<int> &holes, int &next) const {
 //               hierarchy, at the given channel index number.
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
-bind_hierarchy(AnimGroup *anim, int channel_index) {
+bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
+               const PartSubset &subset) {
   if (chan_cat.is_debug()) {
     chan_cat.debug()
-      << "binding " << *this << " to " << *anim << "\n";
+      << "binding " << *this << " to " << *anim << ", is_included = "
+      << is_included << "\n";
   }
   while ((int)_channels.size() <= channel_index) {
-    _channels.push_back((AnimChannelBase*)0L);
+    _channels.push_back((AnimChannelBase*)NULL);
   }
 
-  nassertv(_channels[channel_index] == (AnimChannelBase*)0L);
+  nassertv(_channels[channel_index] == (AnimChannelBase*)NULL);
 
-  if (anim == (AnimGroup*)0L) {
-    // If we're binding to the NULL anim, it means actually to create
-    // a default AnimChannel that just returns the part's initial
-    // value.
-    _channels[channel_index] = make_initial_channel();
-  } else {
-    _channels[channel_index] = DCAST(AnimChannelBase, anim);
+  if (is_included) {
+    if (anim == (AnimGroup*)NULL) {
+      // If we're binding to the NULL anim, it means actually to create
+      // a default AnimChannel that just returns the part's initial
+      // value.
+      _channels[channel_index] = make_initial_channel();
+    } else {
+      _channels[channel_index] = DCAST(AnimChannelBase, anim);
+    }
   }
 
-  PartGroup::bind_hierarchy(anim, channel_index);
+  PartGroup::bind_hierarchy(anim, channel_index, is_included, subset);
 }

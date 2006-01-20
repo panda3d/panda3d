@@ -43,8 +43,6 @@ PartBundle(const PartBundle &copy) :
   PartGroup(copy),
   _blend_type(copy._blend_type)
 {
-  // We don't invoke the AnimControlCollection's copy, or any of the
-  // bound animations.
   _last_control_set = NULL;
   _net_blend = 0.0f;
   _anim_changed = false;
@@ -250,16 +248,18 @@ write(ostream &out, int indent_level) const {
 //               conditions that will be tolerated (but warnings will
 //               still be issued).
 //
-//               This flavor of bind_anim() does not associate a name
-//               with the channel, and the AnimControl is not stored
-//               within the PartBundle; it is the user's
-//               responsibility to maintain the pointer.  The
-//               animation will automatically unbind itself when the
-//               AnimControl destructs (i.e. its reference count goes
-//               to zero).
+//               If subset is specified, it restricts the binding only
+//               to the named subtree of joints.
+//
+//               The AnimControl is not stored within the PartBundle;
+//               it is the user's responsibility to maintain the
+//               pointer.  The animation will automatically unbind
+//               itself when the AnimControl destructs (i.e. its
+//               reference count goes to zero).
 ////////////////////////////////////////////////////////////////////
 PT(AnimControl) PartBundle::
-bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
+bind_anim(AnimBundle *anim, int hierarchy_match_flags,
+          const PartSubset &subset) {
   if ((hierarchy_match_flags & HMF_ok_wrong_root_name) == 0) {
     // Make sure the root names match.
     if (get_name() != anim->get_name()) {
@@ -285,45 +285,8 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
     channel_index = holes.front();
   }
 
-  bind_hierarchy(anim, channel_index);
+  bind_hierarchy(anim, channel_index, subset.is_empty(), subset);
   return new AnimControl(this, anim, channel_index);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::bind_anim
-//       Access: Published
-//  Description: Binds the animation to the bundle, if possible, and
-//               returns a new AnimControl that can be used to start
-//               and stop the animation.  If the anim hierarchy does
-//               not match the part hierarchy, returns NULL.
-//
-//               If hierarchy_match_flags is 0, only an exact match is
-//               accepted; otherwise, it may contain a union of
-//               PartGroup::HierarchyMatchFlags values indicating
-//               conditions that will be tolerated (but warnings will
-//               still be issued).
-//
-//               This flavor of bind_anim() automatically stores the
-//               bound AnimControl in the PartBundle with the
-//               indicated name, so that it may later be referenced by
-//               name.  This means that the animation will not be
-//               unbound until another animation with the same name is
-//               bound, or it is explicitly unbound with
-//               unbind_anim().
-//
-//               The return value is true if the animation was
-//               successfully bound, false if there was some error.
-////////////////////////////////////////////////////////////////////
-bool PartBundle::
-bind_anim(AnimBundle *anim, const string &name,
-          int hierarchy_match_flags) {
-  PT(AnimControl) control = bind_anim(anim, hierarchy_match_flags);
-  if (control == (AnimControl *)NULL) {
-    return false;
-  }
-
-  store_anim(control, name);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

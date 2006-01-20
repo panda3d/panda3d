@@ -49,10 +49,13 @@ PUBLISHED:
 public:
   virtual TypeHandle get_value_type() const=0;
   virtual AnimChannelBase *make_initial_channel() const=0;
+
+PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
   virtual void write_with_value(ostream &out, int indent_level) const;
   virtual void output_value(ostream &out) const=0;
 
+public:
   virtual bool do_update(PartBundle *root, PartGroup *parent,
                          bool parent_changed, bool anim_changed);
 
@@ -64,7 +67,8 @@ protected:
   MovingPartBase();
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
-  virtual void bind_hierarchy(AnimGroup *anim, int channel_index);
+  virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
+                              bool is_included, const PartSubset &subset);
 
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;

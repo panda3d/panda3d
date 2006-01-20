@@ -41,6 +41,19 @@ MovingPartMatrix::
 ~MovingPartMatrix() {
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartMatrix::make_initial_channel
+//       Access: Public, Virtual
+//  Description: Creates and returns a new AnimChannel that is not
+//               part of any hierarchy, but that returns the default
+//               value associated with this part.
+////////////////////////////////////////////////////////////////////
+AnimChannelBase *MovingPartMatrix::
+make_initial_channel() const {
+  return new AnimChannelMatrixFixed(get_name(), _initial_value);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartMatrix::get_blend_value
 //       Access: Public
@@ -63,9 +76,13 @@ get_blend_value(const PartBundle *root) {
     int channel_index = control->get_channel_index();
     nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
     ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-    nassertv(channel != NULL);
+    if (channel == (ChannelType *)NULL) {
+      // Nothing is actually bound here.
+      _value = _initial_value;
 
-    channel->get_value(control->get_frame(), _value);
+    } else {
+      channel->get_value(control->get_frame(), _value);
+    }
 
   } else {
     // A blend of two or more values.
@@ -90,17 +107,20 @@ get_blend_value(const PartBundle *root) {
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-          nassertv(channel != NULL);
-          
-          ValueType v;
-          channel->get_value(control->get_frame(), v);
-          
-          _value += v * effect;
-          net += effect;
+          if (channel != (ChannelType *)NULL) {
+            ValueType v;
+            channel->get_value(control->get_frame(), v);
+            
+            _value += v * effect;
+            net += effect;
+          }
         }
         
-        nassertv(net != 0.0f);
-        _value /= net;
+        if (net == 0.0f) {
+          _value = _initial_value;
+        } else {
+          _value /= net;
+        }
       }
       break;
 
@@ -126,30 +146,34 @@ get_blend_value(const PartBundle *root) {
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-          nassertv(channel != NULL);
-          
-          ValueType v;
-          channel->get_value_no_scale_shear(control->get_frame(), v);
-          LVecBase3f iscale, ishear;
-          channel->get_scale(control->get_frame(), iscale);
-          channel->get_shear(control->get_frame(), ishear);
-          
-          _value += v * effect;
-          scale += iscale * effect;
-          shear += ishear * effect;
-          net += effect;
+          if (channel != (ChannelType *)NULL) {
+            ValueType v;
+            channel->get_value_no_scale_shear(control->get_frame(), v);
+            LVecBase3f iscale, ishear;
+            channel->get_scale(control->get_frame(), iscale);
+            channel->get_shear(control->get_frame(), ishear);
+            
+            _value += v * effect;
+            scale += iscale * effect;
+            shear += ishear * effect;
+            net += effect;
+          }
         }
         
-        nassertv(net != 0.0f);
-        _value /= net;
-        scale /= net;
-        shear /= net;
-        
-        // Now rebuild the matrix with the correct scale values.
-        
-        LVector3f false_scale, false_shear, hpr, translate;
-        decompose_matrix(_value, false_scale, false_shear, hpr, translate);
-        compose_matrix(_value, scale, shear, hpr, translate);
+        if (net == 0.0f) {
+          _value = _initial_value;
+
+        } else {
+          _value /= net;
+          scale /= net;
+          shear /= net;
+          
+          // Now rebuild the matrix with the correct scale values.
+          
+          LVector3f false_scale, false_shear, hpr, translate;
+          decompose_matrix(_value, false_scale, false_shear, hpr, translate);
+          compose_matrix(_value, scale, shear, hpr, translate);
+        }
       }
       break;
 
@@ -171,28 +195,32 @@ get_blend_value(const PartBundle *root) {
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-          nassertv(channel != NULL);
-          
-          LVecBase3f iscale, ihpr, ipos, ishear;
-          channel->get_scale(control->get_frame(), iscale);
-          channel->get_hpr(control->get_frame(), ihpr);
-          channel->get_pos(control->get_frame(), ipos);
-          channel->get_shear(control->get_frame(), ishear);
-          
-          scale += iscale * effect;
-          hpr += ihpr * effect;
-          pos += ipos * effect;
-          shear += ishear * effect;
-          net += effect;
+          if (channel != (ChannelType *)NULL) {
+            LVecBase3f iscale, ihpr, ipos, ishear;
+            channel->get_scale(control->get_frame(), iscale);
+            channel->get_hpr(control->get_frame(), ihpr);
+            channel->get_pos(control->get_frame(), ipos);
+            channel->get_shear(control->get_frame(), ishear);
+            
+            scale += iscale * effect;
+            hpr += ihpr * effect;
+            pos += ipos * effect;
+            shear += ishear * effect;
+            net += effect;
+          }
         }
         
-        nassertv(net != 0.0f);
-        scale /= net;
-        hpr /= net;
-        pos /= net;
-        shear /= net;
-        
-        compose_matrix(_value, scale, shear, hpr, pos);
+        if (net == 0.0f) {
+          _value = _initial_value;
+
+        } else {
+          scale /= net;
+          hpr /= net;
+          pos /= net;
+          shear /= net;
+          
+          compose_matrix(_value, scale, shear, hpr, pos);
+        }
       }
       break;
 
@@ -215,34 +243,38 @@ get_blend_value(const PartBundle *root) {
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-          nassertv(channel != NULL);
-          
-          LVecBase3f iscale, ipos, ishear;
-          LQuaternionf iquat;
-          channel->get_scale(control->get_frame(), iscale);
-          channel->get_quat(control->get_frame(), iquat);
-          channel->get_pos(control->get_frame(), ipos);
-          channel->get_shear(control->get_frame(), ishear);
-          
-          scale += iscale * effect;
-          quat += iquat * effect;
-          pos += ipos * effect;
-          shear += ishear * effect;
-          net += effect;
+          if (channel != (ChannelType *)NULL) {
+            LVecBase3f iscale, ipos, ishear;
+            LQuaternionf iquat;
+            channel->get_scale(control->get_frame(), iscale);
+            channel->get_quat(control->get_frame(), iquat);
+            channel->get_pos(control->get_frame(), ipos);
+            channel->get_shear(control->get_frame(), ishear);
+            
+            scale += iscale * effect;
+            quat += iquat * effect;
+            pos += ipos * effect;
+            shear += ishear * effect;
+            net += effect;
+          }
         }
         
-        nassertv(net != 0.0f);
-        scale /= net;
-        quat /= net;
-        pos /= net;
-        shear /= net;
+        if (net == 0.0f) {
+          _value = _initial_value;
 
-        // There should be no need to normalize the quaternion,
-        // assuming all of the input quaternions were already
-        // normalized.
-
-        _value = LMatrix4f::scale_shear_mat(scale, shear) * quat;
-        _value.set_row(3, pos);
+        } else {
+          scale /= net;
+          quat /= net;
+          pos /= net;
+          shear /= net;
+          
+          // There should be no need to normalize the quaternion,
+          // assuming all of the input quaternions were already
+          // normalized.
+          
+          _value = LMatrix4f::scale_shear_mat(scale, shear) * quat;
+          _value.set_row(3, pos);
+        }
       }
       break;
     }
