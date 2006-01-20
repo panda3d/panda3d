@@ -85,7 +85,7 @@ class EXPCL_PANDA ACMatrixSwitchType {
 public:
   typedef LMatrix4f ValueType;
   static const char *get_channel_type_name() { return "AnimChannelMatrix"; }
-  static const char *get_fixed_channel_type_name() { return "AnimChannelMatrixFixed"; }
+  static const char *get_fixed_channel_type_name() { return "AnimChannelFixed<LMatrix4f>"; }
   static const char *get_part_type_name() { return "MovingPart<LMatrix4f>"; }
   static void output_value(ostream &out, const ValueType &value);
 
