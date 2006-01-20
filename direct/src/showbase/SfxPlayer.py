@@ -53,7 +53,9 @@ class SfxPlayer:
                 #print d, volume
         return volume
 
-    def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0, node=None):
+    def playSfx(
+            self, sfx, looping = 0, interrupt = 1, volume = None,
+            time = 0.0, node=None):
         if sfx:
             # If we have either a node or a volume, we need to adjust the sfx
             # The volume passed in multiplies the distance base volume
@@ -66,7 +68,8 @@ class SfxPlayer:
                     finalVolume *= volume
                 sfx.setVolume(finalVolume)
 
-            # dont start over if it's already playing, unless "interrupt" was specified
+            # dont start over if it's already playing, unless
+            # "interrupt" was specified
             if interrupt or (sfx.status() != AudioSound.PLAYING):
                 sfx.setTime(time)
                 sfx.setLoop(looping)

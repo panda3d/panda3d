@@ -329,7 +329,8 @@ class ShowBase(DirectObject.DirectObject):
                 "Your Config.prc file must name at least one valid panda display\n"
                 "library via load-display or aux-display.")
 
-        self.notify.info("Default graphics pipe is %s (%s)." % (self.pipe.getInterfaceName(), self.pipe.getType().getName()))
+        self.notify.info("Default graphics pipe is %s (%s)." % (
+            self.pipe.getInterfaceName(), self.pipe.getType().getName()))
         self.pipeList.append(self.pipe)
 
     def makeAllPipes(self):
@@ -362,10 +363,12 @@ class ShowBase(DirectObject.DirectObject):
             if not already:
                 pipe = selection.makePipe(pipeType)
                 if pipe:
-                    self.notify.info("Got aux graphics pipe %s (%s)." % (pipe.getInterfaceName(), pipe.getType().getName()))
+                    self.notify.info("Got aux graphics pipe %s (%s)." % (
+                        pipe.getInterfaceName(), pipe.getType().getName()))
                     self.pipeList.append(pipe)
                 else:
-                    self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
+                    self.notify.info("Could not make graphics pipe %s." % (
+                        pipeType.getName()))
 
     def openWindow(self, props = None, pipe = None, gsg = None,
                    type = None, name = None, scene = None,
@@ -506,7 +509,8 @@ class ShowBase(DirectObject.DirectObject):
                     self.closeWindow(self.win)
 
         if self.win == None:
-            self.notify.warning("Unable to open '%s' window." % (self.windowType))
+            self.notify.warning("Unable to open '%s' window." % (
+                self.windowType))
             if self.requireWindow:
                 # Unless require-window is set to false, it is an
                 # error not to open a window.
@@ -568,7 +572,8 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearDepthActive(oldClearDepthActive)
                 self.win.setClearDepth(oldClearDepth)
 
-            self.setFrameRateMeter(self.config.GetBool('show-frame-rate-meter', 0))
+            self.setFrameRateMeter(self.config.GetBool(
+                'show-frame-rate-meter', 0))
 
         return success
 
@@ -607,9 +612,10 @@ class ShowBase(DirectObject.DirectObject):
 
     def setupWindowControls(self):
         if not self.winControls:
-            winCtrl = WindowControls(self.win, mouseWatcher=self.mouseWatcher,
-                                     cam=self.camera, cam2d=self.camera2d,
-                                     mouseKeyboard = self.dataRoot.find("**/*"))
+            winCtrl = WindowControls(
+                self.win, mouseWatcher=self.mouseWatcher,
+                cam=self.camera, cam2d=self.camera2d,
+                mouseKeyboard = self.dataRoot.find("**/*"))
             self.winControls.append(winCtrl)
 
 
@@ -937,7 +943,8 @@ class ShowBase(DirectObject.DirectObject):
             # mouse activity.
             mw = self.buttonThrowers[0].getParent()
             mouseRecorder = MouseRecorder('mouse')
-            self.recorder.addRecorder('mouse', mouseRecorder.upcastToRecorderBase())
+            self.recorder.addRecorder(
+                'mouse', mouseRecorder.upcastToRecorderBase())
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
 
@@ -1045,8 +1052,8 @@ class ShowBase(DirectObject.DirectObject):
             PStatClient.connect()
 
     def addSfxManager(self, extraSfxManager):
-        # keep a list of sfx manager objects to apply settings to, since there may be others
-        # in addition to the one we create here
+        # keep a list of sfx manager objects to apply settings to,
+        # since there may be others in addition to the one we create here
         self.sfxManagerList.append(extraSfxManager)
         newSfxManagerIsValid = (extraSfxManager!=None) and extraSfxManager.isValid()
         self.sfxManagerIsValidList.append(newSfxManagerIsValid)
@@ -1066,8 +1073,9 @@ class ShowBase(DirectObject.DirectObject):
             self.musicManager.setConcurrentSoundLimit(1)
             self.musicManager.setActive(self.musicActive)
 
-    # enableMusic/enableSoundEffects are meant to be called in response to a user request
-    # so sfxActive/musicActive represent how things *should* be, regardless of App/OS/HW state
+    # enableMusic/enableSoundEffects are meant to be called in response
+    # to a user request so sfxActive/musicActive represent how things
+    # *should* be, regardless of App/OS/HW state
     def enableMusic(self, bEnableMusic):
         # dont setActive(1) if no audiofocus
         if self.AppHasAudioFocus and self.musicManagerIsValid:
@@ -1093,9 +1101,10 @@ class ShowBase(DirectObject.DirectObject):
         else:
             self.notify.debug("Disabling sound effects")
 
-    # enable/disableAllAudio allow a programmable global override-off for current audio settings.
-    # they're meant to be called when app loses audio focus (switched out), so we can turn off sound
-    # without affecting internal sfxActive/musicActive sound settings, so things
+    # enable/disableAllAudio allow a programmable global override-off
+    # for current audio settings.  they're meant to be called when app
+    # loses audio focus (switched out), so we can turn off sound without
+    # affecting internal sfxActive/musicActive sound settings, so things
     # come back ok when the app is switched back to
 
     def disableAllAudio(self):
@@ -1124,7 +1133,9 @@ class ShowBase(DirectObject.DirectObject):
     def loadMusic(self, name):
         return self.loader.loadMusic(name)
 
-    def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0, node = None):
+    def playSfx(
+            self, sfx, looping = 0, interrupt = 1, volume = None,
+            time = 0.0, node = None):
         # This goes through a special player for potential localization
         return self.sfxPlayer.playSfx(sfx, looping, interrupt, volume, time, node)
 
@@ -1133,7 +1144,8 @@ class ShowBase(DirectObject.DirectObject):
             if volume != None:
                 music.setVolume(volume)
 
-            # if interrupt was set to 0, start over even if it's already playing
+            # if interrupt was set to 0, start over even if it's
+            # already playing
             if interrupt or (music.status() != AudioSound.PLAYING):
                 music.setTime(time)
                 music.setLoop(looping)
@@ -1218,7 +1230,8 @@ class ShowBase(DirectObject.DirectObject):
     def restart(self):
         self.shutdown()
         # resetPrevTransform goes at the very beginning of the frame.
-        self.taskMgr.add(self.resetPrevTransform, 'resetPrevTransform', priority = -51)
+        self.taskMgr.add(
+            self.resetPrevTransform, 'resetPrevTransform', priority = -51)
         # give the dataLoop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataLoop, 'dataLoop', priority = -50)
@@ -1231,7 +1244,8 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.add(self.collisionLoop, 'collisionLoop', priority = 30)
         # do the shadowCollisionLoop after the collisionLoop and
         # befor the igLoop:
-        self.taskMgr.add(self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
+        self.taskMgr.add(
+            self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.igLoop, 'igLoop', priority = 50)
@@ -1632,8 +1646,8 @@ class ShowBase(DirectObject.DirectObject):
                       camera = None, size = 256,
                       cameraMask = BitMask32.allOn(),
                       numVertices = 1000):
-
-        """ This works much like saveCubeMap(), and uses the graphics
+        """
+        This works much like saveCubeMap(), and uses the graphics
         API's hardware cube-mapping ability to get a 360-degree view
         of the world.  But then it converts the six cube map faces
         into a single fisheye texture, suitable for applying as a
@@ -1642,8 +1656,8 @@ class ShowBase(DirectObject.DirectObject):
         For eye-relative static environment maps, sphere maps are
         often preferable to cube maps because they require only a
         single texture and because they are supported on a broader
-        range of hardware.  """
-
+        range of hardware.
+        """
         if source == None:
             source = base.win
 
@@ -1796,7 +1810,9 @@ class ShowBase(DirectObject.DirectObject):
 
 # A class to encapsulate information necessary for multiwindow support.
 class WindowControls:
-    def __init__(self, win, cam=None, cam2d=None, mouseWatcher=None, mouseKeyboard=None, closeCmd=lambda : 0):
+    def __init__(
+            self, win, cam=None, cam2d=None, mouseWatcher=None,
+            mouseKeyboard=None, closeCmd=lambda: 0):
         self.win = win
         self.camera = cam
         self.camera2d = cam2d

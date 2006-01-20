@@ -73,7 +73,8 @@ class SoundInterval(Interval.Interval):
         if (t1 < 0.1):
             t1 = 0.0
         if t1 < self.soundDuration:
-            base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
+            base.sfxPlayer.playSfx(
+                self.sound, self.fLoop, 1, self.volume, t1, self.node)
         self.state = CInterval.SStarted
         self.currT = t
 
@@ -82,7 +83,8 @@ class SoundInterval(Interval.Interval):
             # Restarting from a pause.
             t1 = t + self.startTime
             if t1 < self.soundDuration:
-                base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
+                base.sfxPlayer.playSfx(
+                    self.sound, self.fLoop, 1, self.volume, t1, self.node)
         self.state = CInterval.SStarted
         self.currT = t
 

@@ -157,7 +157,11 @@ get_hpr(CoordinateSystem cs) const {
   FLOATNAME(LVecBase3) hpr;
 
   if (cs == CS_zup_right) {
-    FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
+    FLOATTYPE N =
+        (_v.data[0] * _v.data[0]) +
+        (_v.data[1] * _v.data[1]) +
+        (_v.data[2] * _v.data[2]) +
+        (_v.data[3] * _v.data[3]);
     FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
     FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
     FLOATTYPE cr, sr, cp, sp, ch, sh;

@@ -6,7 +6,6 @@ from direct.directnotify import DirectNotifyGlobal
 
 class RelatedObjectMgr(DirectObject.DirectObject):
     """
-
     This class manages a relationship between DistributedObjects that
     know about each other, and are expected to be generated together.
     Ideally, we should be able to guarantee the ordering of the
@@ -25,7 +24,6 @@ class RelatedObjectMgr(DirectObject.DirectObject):
     already exists), the associated callback will be called.  There is
     also a timeout callback in case the object never appears.
     """
-
     notify = DirectNotifyGlobal.directNotify.newCategory('RelatedObjectMgr')
 
     doLaterSequence = 1

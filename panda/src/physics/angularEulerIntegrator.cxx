@@ -143,11 +143,9 @@ child_integrate(Physical *physical,
 
     // here's the trick.  we've been accumulating these forces as vectors
     // and treating them as vectors, but now we're going to treat them as pure
-    // imaginary quaternions where r = 0.  This vector NOW represents the
+    // imaginary quaternions where r = 0.  This vector now represents the
     // imaginary vector formed by (i, j, k).
-
     float len = rot_vec.length();
-
     if (len) {
       LVector3f normalized_rot_vec = rot_vec;
       normalized_rot_vec *= 1.0f / len;
