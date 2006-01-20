@@ -66,6 +66,12 @@ set_range(int low_bit, int size) {
     return;
   }
 
+  ensure_has_word(w);
+  int num_high_bits = num_bits_per_word - b;
+  _array[w].set_range(b, num_high_bits);
+  size -= num_high_bits;
+  ++w;
+
   while (size > 0) {
     if (size <= num_bits_per_word) {
       // The remainder fits within one word of the array.
@@ -112,6 +118,12 @@ clear_range(int low_bit, int size) {
     return;
   }
 
+  ensure_has_word(w);
+  int num_high_bits = num_bits_per_word - b;
+  _array[w].clear_range(b, num_high_bits);
+  size -= num_high_bits;
+  ++w;
+
   while (size > 0) {
     if (size <= num_bits_per_word) {
       // The remainder fits within one word of the array.
@@ -123,7 +135,7 @@ clear_range(int low_bit, int size) {
 
     // Keep going.
     ensure_has_word(w);
-    _array[w] = MaskType::all_on();
+    _array[w] = MaskType::all_off();
     size -= num_bits_per_word;
     ++w;
 
