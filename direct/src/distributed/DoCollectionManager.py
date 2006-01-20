@@ -18,9 +18,25 @@ class DoCollectionManager:
 
     def getDo(self, doId):
         return self.doId2do.get(doId)
+
+    def callbackWithDo(self, doId, callback):
+        do = self.doId2do.get(doId)
+        if do is not None:
+            callback(do)
+        else:
+            relatedObjectMgr(doId, allCallback=callback)
+    
     def getOwnerView(self, doId):
         assert self.hasOwnerView()
         return self.doId2ownerView.get(doId)
+
+    def callbackWithOwnerView(self, doId, callback):
+        assert self.hasOwnerView()
+        do = self.doId2ownerView.get(doId)
+        if do is not None:
+            callback(do)
+        else:
+            pass #relatedObjectMgr(doId, allCallback=callback)
 
     def getDoTable(self, ownerView):
         if ownerView:
