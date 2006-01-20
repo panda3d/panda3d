@@ -34,21 +34,28 @@
 //               bits of some length that must fit within a given word
 //               of the indicated type.  See also BitArray.
 ////////////////////////////////////////////////////////////////////
-template<class WordType, int num_bits>
+template<class WType, int nbits>
 class BitMask {
+public:
+  typedef WType WordType;
+  enum { num_bits = nbits };
+
 PUBLISHED:
   INLINE BitMask();
   INLINE BitMask(WordType init_value);
-  INLINE BitMask(const BitMask<WordType, num_bits> &copy);
-  INLINE void operator = (const BitMask<WordType, num_bits> &copy);
+  INLINE BitMask(const BitMask<WType, nbits> &copy);
+  INLINE void operator = (const BitMask<WType, nbits> &copy);
 
-  INLINE static BitMask<WordType, num_bits> all_on();
-  INLINE static BitMask<WordType, num_bits> all_off();
-  INLINE static BitMask<WordType, num_bits> lower_on(int on_bits);
-  INLINE static BitMask<WordType, num_bits> bit(int index);
-  INLINE static BitMask<WordType, num_bits> range(int low_bit, int size);
+  INLINE static BitMask<WType, nbits> all_on();
+  INLINE static BitMask<WType, nbits> all_off();
+  INLINE static BitMask<WType, nbits> lower_on(int on_bits);
+  INLINE static BitMask<WType, nbits> bit(int index);
+  INLINE static BitMask<WType, nbits> range(int low_bit, int size);
 
   INLINE ~BitMask();
+
+  INLINE static bool has_max_num_bits();
+  INLINE static int get_max_num_bits();
 
   INLINE static int get_num_bits();
   INLINE bool get_bit(int index) const;
@@ -59,10 +66,14 @@ PUBLISHED:
 
   INLINE WordType extract(int low_bit, int size) const;
   INLINE void store(WordType value, int low_bit, int size);
+  INLINE void set_range(int low_bit, int size);
+  INLINE void clear_range(int low_bit, int size);
+  INLINE void set_range_to(bool value, int low_bit, int size);
   INLINE WordType get_word() const;
   INLINE void set_word(WordType value);
 
   INLINE void invert_in_place();
+  INLINE bool has_bits_in_common(const BitMask<WType, nbits> &other) const;
   INLINE void clear();
 
   void output(ostream &out) const;
@@ -70,32 +81,32 @@ PUBLISHED:
   void output_hex(ostream &out, int spaces_every = 4) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  INLINE bool operator == (const BitMask<WordType, num_bits> &other) const;
-  INLINE bool operator != (const BitMask<WordType, num_bits> &other) const;
-  INLINE bool operator < (const BitMask<WordType, num_bits> &other) const;
-  INLINE int compare_to(const BitMask<WordType, num_bits> &other) const;
+  INLINE bool operator == (const BitMask<WType, nbits> &other) const;
+  INLINE bool operator != (const BitMask<WType, nbits> &other) const;
+  INLINE bool operator < (const BitMask<WType, nbits> &other) const;
+  INLINE int compare_to(const BitMask<WType, nbits> &other) const;
 
-  INLINE BitMask<WordType, num_bits>
-  operator & (const BitMask<WordType, num_bits> &other) const;
+  INLINE BitMask<WType, nbits>
+  operator & (const BitMask<WType, nbits> &other) const;
 
-  INLINE BitMask<WordType, num_bits>
-  operator | (const BitMask<WordType, num_bits> &other) const;
+  INLINE BitMask<WType, nbits>
+  operator | (const BitMask<WType, nbits> &other) const;
 
-  INLINE BitMask<WordType, num_bits>
-  operator ^ (const BitMask<WordType, num_bits> &other) const;
+  INLINE BitMask<WType, nbits>
+  operator ^ (const BitMask<WType, nbits> &other) const;
 
-  INLINE BitMask<WordType, num_bits>
+  INLINE BitMask<WType, nbits>
   operator ~ () const;
 
-  INLINE BitMask<WordType, num_bits>
+  INLINE BitMask<WType, nbits>
   operator << (int shift) const;
 
-  INLINE BitMask<WordType, num_bits>
+  INLINE BitMask<WType, nbits>
   operator >> (int shift) const;
 
-  INLINE void operator &= (const BitMask<WordType, num_bits> &other);
-  INLINE void operator |= (const BitMask<WordType, num_bits> &other);
-  INLINE void operator ^= (const BitMask<WordType, num_bits> &other);
+  INLINE void operator &= (const BitMask<WType, nbits> &other);
+  INLINE void operator |= (const BitMask<WType, nbits> &other);
+  INLINE void operator ^= (const BitMask<WType, nbits> &other);
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
@@ -117,8 +128,8 @@ private:
 
 #include "bitMask.I"
 
-template<class WordType, int num_bits>
-INLINE ostream &operator << (ostream &out, const BitMask<WordType, num_bits> &bitmask) {
+template<class WType, int nbits>
+INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask) {
   bitmask.output(out);
   return out;
 }

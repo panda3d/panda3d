@@ -3,6 +3,7 @@
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"
 #include "bamWriter.cxx"
+#include "bitArray.cxx"
 #include "bitMask.cxx"
 #include "buttonHandle.cxx"
 #include "buttonRegistry.cxx"

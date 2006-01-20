@@ -19,6 +19,8 @@
 #include "config_util.h"
 #include "animInterface.h"
 #include "bamReaderParam.h"
+#include "bitArray.h"
+#include "bitMask.h"
 #include "cachedTypedWritableReferenceCount.h"
 #include "clockObject.h"
 #include "configurable.h"
@@ -70,6 +72,8 @@ ConfigVariableSearchPath sound_path
 ConfigureFn(config_util) {
   AnimInterface::init_type();
   BamReaderParam::init_type();
+  BitArray::init_type();
+  BitMask32::init_type();
   CachedTypedWritableReferenceCount::init_type();
   Configurable::init_type();
   Datagram::init_type();

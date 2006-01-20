@@ -11,8 +11,9 @@
     animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
-    bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
-    bitMask.h \
+    bamReaderParam.h bamWriter.I bamWriter.h \
+    bitArray.I bitArray.h \
+    bitMask.I bitMask.h \
     buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
@@ -62,7 +63,9 @@
  #define INCLUDED_SOURCES \
     animInterface.cxx \
     bamEndian.cxx \
-    bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
+    bamReader.cxx bamReaderParam.cxx bamWriter.cxx \
+    bitArray.cxx \
+    bitMask.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
     cachedTypedWritableReferenceCount.cxx \
     config_util.cxx configurable.cxx \
@@ -99,7 +102,9 @@
     animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
-    bamWriter.I bamWriter.h bitMask.I bitMask.h \
+    bamWriter.I bamWriter.h \
+    bitArray.I bitArray.h \
+    bitMask.I bitMask.h \
     buttonHandle.I buttonHandle.h buttonRegistry.I \
     buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
