@@ -211,16 +211,14 @@ has_bits_in_common(const BitArray &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitArray::output
 //       Access: Published
-//  Description: Writes the BitArray out as a binary or a hex number,
-//               according to the number of bits.
+//  Description: Writes the BitArray out as a hex number.  For a
+//               BitArray, this is always the same as output_hex();
+//               it's too confusing for the output format to change
+//               back and forth at runtime.
 ////////////////////////////////////////////////////////////////////
 void BitArray::
 output(ostream &out) const {
-  if (get_num_bits() >= 40) {
-    output_hex(out);
-  } else {
-    output_binary(out);
-  }
+  output_hex(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,7 +493,7 @@ operator <<= (int shift) {
 
     // Finally, the top n bits.
     if (_highest_bits) {
-      next_bits |= upper_mask;
+      next_bits |= ~MaskType::lower_on(b);
     }
     new_array.push_back(next_bits);
     _array.swap(new_array);
@@ -563,7 +561,7 @@ operator >>= (int shift) {
 
     // Finally, the top n bits.
     if (_highest_bits) {
-      next_bits |= upper_mask;
+      next_bits |= ~MaskType::lower_on(upshift_count);
     }
     new_array.push_back(next_bits);
     _array.swap(new_array);
