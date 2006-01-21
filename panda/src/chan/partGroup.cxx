@@ -432,7 +432,8 @@ pick_channel_index(plist<int> &holes, int &next) const {
 //               hierarchy, at the given channel index number.
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
+bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index, 
+               bool is_included, BitArray &bound_joints,
                const PartSubset &subset) {
   if (subset.matches_include(get_name())) {
     is_included = true;
@@ -451,12 +452,18 @@ bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
     if (pc->get_name() < ac->get_name()) {
       // Here's a part, not in the anim.  Bind it to the special NULL
       // anim.
-      pc->bind_hierarchy(NULL, channel_index, is_included, subset);
+      pc->bind_hierarchy(NULL, channel_index, joint_index, is_included, 
+                         bound_joints, subset);
       i++;
+
     } else if (ac->get_name() < pc->get_name()) {
+      // Here's an anim, not in the part.  Ignore it.
       j++;
+
     } else {
-      pc->bind_hierarchy(ac, channel_index, is_included, subset);
+      // Here's a matched part and anim pair.
+      pc->bind_hierarchy(ac, channel_index, joint_index, is_included, 
+                         bound_joints, subset);
       i++;
       j++;
     }
@@ -465,7 +472,8 @@ bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
   // Now pick up any more parts, not in the anim.
   while (i < part_num_children) {
     PartGroup *pc = get_child(i);
-    pc->bind_hierarchy(NULL, channel_index, is_included, subset);
+    pc->bind_hierarchy(NULL, channel_index, joint_index, is_included, 
+                       bound_joints, subset);
     i++;
   }
 }

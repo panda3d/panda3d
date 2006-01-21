@@ -24,6 +24,7 @@
 #include "animInterface.h"
 #include "animBundle.h"
 #include "partGroup.h"
+#include "bitArray.h"
 
 #include "referenceCount.h"
 
@@ -40,7 +41,8 @@ class AnimChannelBase;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimControl : public ReferenceCount, public AnimInterface {
 public:
-  AnimControl(PartBundle *part, AnimBundle *anim, int channel_index);
+  AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
+              const BitArray &bound_joints);
 
 PUBLISHED:
   virtual ~AnimControl();
@@ -48,6 +50,7 @@ PUBLISHED:
   PartBundle *get_part() const;
   INLINE AnimBundle *get_anim() const;
   INLINE int get_channel_index() const;
+  INLINE const BitArray &get_bound_joints() const;
 
   virtual void output(ostream &out) const;
 
@@ -72,6 +75,11 @@ private:
 
   // This is the frame number as of the last call to mark_channels().
   int _marked_frame;
+
+  // This is the bitmask of joints and/or sliders from the animation
+  // that we have actually bound into this AnimControl.  See
+  // get_bound_joints().
+  BitArray _bound_joints;
 
 public:
   static TypeHandle get_class_type() {

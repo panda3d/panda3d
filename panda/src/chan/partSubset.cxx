@@ -129,15 +129,15 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartSubset::is_empty
+//     Function: PartSubset::is_include_empty
 //       Access: Published
-//  Description: Returns true if the PartSubset is completely empty,
+//  Description: Returns true if the include list is completely empty,
 //               false otherwise.  If it is empty, it is the same
 //               thing as including all joints.
 ////////////////////////////////////////////////////////////////////
 bool PartSubset::
-is_empty() const {
-  return _include_joints.empty() && _exclude_joints.empty();
+is_include_empty() const {
+  return _include_joints.empty();
 }
 
 ////////////////////////////////////////////////////////////////////

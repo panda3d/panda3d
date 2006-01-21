@@ -42,7 +42,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
-  bool is_empty() const;
+  bool is_include_empty() const;
   bool matches_include(const string &joint_name) const;
   bool matches_exclude(const string &joint_name) const;
 

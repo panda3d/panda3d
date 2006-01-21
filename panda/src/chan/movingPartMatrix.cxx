@@ -89,9 +89,6 @@ get_blend_value(const PartBundle *root) {
 
     switch (root->get_blend_type()) {
     case PartBundle::BT_single:
-      // This one shouldn't be possible.
-      nassertv(false);
-      
     case PartBundle::BT_linear:
       {
         // An ordinary, linear blend.

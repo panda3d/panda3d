@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "movingPartBase.h"
 #include "animControl.h"
 #include "animChannelBase.h"
+#include "bitArray.h"
 
 #include "indent.h"
 
@@ -207,7 +207,8 @@ pick_channel_index(plist<int> &holes, int &next) const {
 //               hierarchy, at the given channel index number.
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
-bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
+bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index, 
+               bool is_included, BitArray &bound_joints,
                const PartSubset &subset) {
   if (chan_cat.is_debug()) {
     chan_cat.debug()
@@ -229,7 +230,16 @@ bind_hierarchy(AnimGroup *anim, int channel_index, bool is_included,
     } else {
       _channels[channel_index] = DCAST(AnimChannelBase, anim);
     }
-  }
 
-  PartGroup::bind_hierarchy(anim, channel_index, is_included, subset);
+    // Record that we have bound this joint in the bound_joints
+    // BitArray.
+    bound_joints.set_bit(joint_index);
+  } else {
+    // Record that we have *not* bound this particular joint.
+    bound_joints.clear_bit(joint_index);
+  }
+  ++joint_index;
+
+  PartGroup::bind_hierarchy(anim, channel_index, joint_index, 
+                            is_included, bound_joints, subset);
 }

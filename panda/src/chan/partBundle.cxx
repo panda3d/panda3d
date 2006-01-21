@@ -21,6 +21,7 @@
 #include "animBundle.h"
 #include "animControl.h"
 #include "config_chan.h"
+#include "bitArray.h"
 
 #include "indent.h"
 #include "datagram.h"
@@ -107,7 +108,7 @@ set_blend_type(BlendType bt) {
       // most-recently-added one.
 
       nassertv(_last_control_set != NULL);
-      clear_and_stop_except(_last_control_set);
+      clear_and_stop_intersecting(_last_control_set);
     }
 
     _anim_changed = true;
@@ -173,7 +174,7 @@ set_control_effect(AnimControl *control, float effect) {
     // If we currently have BT_single, we only allow one AnimControl
     // at a time.  Stop all of the other AnimControls.
     if (get_blend_type() == BT_single) {
-      clear_and_stop_except(control);
+      clear_and_stop_intersecting(control);
     }
 
     if (get_control_effect(control) != effect) {
@@ -285,8 +286,14 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
     channel_index = holes.front();
   }
 
-  bind_hierarchy(anim, channel_index, subset.is_empty(), subset);
-  return new AnimControl(this, anim, channel_index);
+  int joint_index = 0;
+  BitArray bound_joints;
+  if (subset.is_include_empty()) {
+    bound_joints = BitArray::all_on();
+  }
+  bind_hierarchy(anim, channel_index, joint_index, subset.is_include_empty(), 
+                 bound_joints, subset);
+  return new AnimControl(this, anim, channel_index, bound_joints);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -416,16 +423,17 @@ register_with_read_factory()
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::clear_and_stop_except
+//     Function: PartBundle::clear_and_stop_intersecting
 //       Access: Protected
 //  Description: Removes and stops all the currently activated
-//               AnimControls, except for the indicated one.  This is
-//               a special internal function that's only called when
-//               _blend_type is BT_single, to automatically stop all
-//               the other currently-executing animations.
+//               AnimControls that animate some joints also animated
+//               by the indicated AnimControl.  This is a special
+//               internal function that's only called when _blend_type
+//               is BT_single, to automatically stop all the other
+//               currently-executing animations.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-clear_and_stop_except(AnimControl *control) {
+clear_and_stop_intersecting(AnimControl *control) {
   double new_net_blend = 0.0f;
   ChannelBlend new_blend;
   bool any_changed = false;
@@ -433,8 +441,10 @@ clear_and_stop_except(AnimControl *control) {
   ChannelBlend::iterator cbi;
   for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
     AnimControl *ac = (*cbi).first;
-    if (ac == control) {
-      // Save this control, but only this one.
+    if (ac == control ||
+        !ac->get_bound_joints().has_bits_in_common(control->get_bound_joints())) {
+      // Save this control--it's either the target control, or it has
+      // no joints in common with the target control.
       new_blend.insert(new_blend.end(), (*cbi));
       new_net_blend += (*cbi).second;
     } else {

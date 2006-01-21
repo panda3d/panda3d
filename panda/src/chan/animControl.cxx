@@ -29,7 +29,8 @@ TypeHandle AnimControl::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimControl::
-AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
+AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
+            const BitArray &bound_joints) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif
@@ -37,6 +38,7 @@ AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
   _part = part;
   _anim = anim;
   _channel_index = channel_index;
+  _bound_joints = bound_joints;
   set_frame_rate(_anim->get_base_frame_rate());
   set_num_frames(_anim->get_num_frames());
 

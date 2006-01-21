@@ -44,3 +44,19 @@ INLINE int AnimControl::
 get_channel_index() const {
   return _channel_index;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::get_bound_joints
+//       Access: Published
+//  Description: Returns the subset of joints controlled by this
+//               AnimControl.  Most of the time, this will be
+//               BitArray::all_on(), for a normal full-body animation.
+//               For a subset animation, however, this will be just a
+//               subset of those bits, corresponding to the set of
+//               joints and sliders actually bound (as enumerated by
+//               bind_hierarchy() in depth-first LIFO order).
+////////////////////////////////////////////////////////////////////
+INLINE const BitArray &AnimControl::
+get_bound_joints() const {
+  return _bound_joints;
+}

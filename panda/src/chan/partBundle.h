@@ -135,7 +135,7 @@ public:
 
 protected:
   void recompute_net_blend();
-  void clear_and_stop_except(AnimControl *control);
+  void clear_and_stop_intersecting(AnimControl *control);
 
   BlendType _blend_type;
   PartBundleNode *_node;

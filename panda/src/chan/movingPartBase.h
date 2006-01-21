@@ -68,7 +68,9 @@ protected:
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
-                              bool is_included, const PartSubset &subset);
+                              int &joint_index, bool is_included, 
+                              BitArray &bound_joints,
+                              const PartSubset &subset);
 
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
