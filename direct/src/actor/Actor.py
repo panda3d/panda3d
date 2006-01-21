@@ -1204,9 +1204,14 @@ class Actor(DirectObject, NodePath):
             # Now, build the list of partNames and the corresponding
             # animDicts.
             if partName == None:
-                # Get all parts
-                animDictItems = partDict.items()
+                # Get all main parts, but not sub-parts.
+                animDictItems = []
+                for thisPart, animDict in partDict.items():
+                    if not self.__subpartDict.has_key(thisPart):
+                        animDictItems.append((thisPart, animDict))
+
             else:
+                # Get exactly the named part or parts.
                 if isinstance(partName, types.StringTypes):
                     partNameList = [partName]
                 else:
@@ -1219,12 +1224,8 @@ class Actor(DirectObject, NodePath):
                         # Maybe it's a subpart that hasn't been bound yet.
                         subpartDef = self.__subpartDict.get(partName)
                         if subpartDef:
-                            truePartName = subpartDef[0]
-                            dupAnimDict = partDict.get(truePartName)
                             animDict = {}
-                            for name, anim in dupAnimDict.items():
-                                animDict[name] = [anim[0], None]
-
+                            partDict[partName] = animDict
 
                     if animDict == None:
                         # part was not present
@@ -1242,6 +1243,16 @@ class Actor(DirectObject, NodePath):
                 # get the named animation only. 
                 for thisPart, animDict in animDictItems:
                     anim = animDict.get(animName)
+                    if anim == None:
+                        # Maybe it's a subpart that hasn't been bound yet.
+                        subpartDef = self.__subpartDict.get(partName)
+                        if subpartDef:
+                            truePartName = subpartDef[0]
+                            anim = partDict[truePartName].get(animName)
+                            if anim:
+                                anim = [anim[0], None]
+                                animDict[animName] = anim
+
                     if anim == None:
                         # anim was not present
                         Actor.notify.debug("couldn't find anim: %s" % (animName))
