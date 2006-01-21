@@ -26,7 +26,8 @@ from PhysicsWalker import PhysicsWalker
 class ShipPilot2(PhysicsWalker):
 
     notify = directNotify.newCategory("PhysicsWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    wantDebugIndicator = base.config.GetBool(
+        'want-avatar-physics-indicator', 0)
     
     useBowSternSpheres = 0
     useLifter = 0
@@ -627,10 +628,10 @@ class ShipPilot2(PhysicsWalker):
             onScreenDebug.add("w momentumForce len",
                 "% 10.4f"%momentumForce.length())
 
-        if 1:
-            keel = self.keel.getLocalVector()
-            onScreenDebug.add("w keel vec",
-                keel.pPrintValues())
+        ## if 1:
+            ## keel = self.keel.getLocalVector()
+            ## onScreenDebug.add("w keel vec",
+            ##    keel.pPrintValues())
         if 0:
             onScreenDebug.add("posDelta4", 
                 self.priorParentNp.getRelativeVector(

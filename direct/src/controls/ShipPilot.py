@@ -578,8 +578,8 @@ class ShipPilot(PhysicsWalker):
             onScreenDebug.add("w momentumForce len",
                 "% 10.4f"%momentumForce.length())
 
-        if 1:
-            keel = self.keel.getLocalVector()
+        if 0:
+            keel = self.keel.getHpr()
             onScreenDebug.add("w keel vec",
                 keel.pPrintValues())
         if 0:
