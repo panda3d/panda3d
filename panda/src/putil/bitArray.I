@@ -60,6 +60,7 @@ BitArray(const BitArray &copy) :
 INLINE void BitArray::
 operator = (const BitArray &copy) {
   _array = copy._array;
+  _highest_bits = copy._highest_bits;
 }
 
 ////////////////////////////////////////////////////////////////////
