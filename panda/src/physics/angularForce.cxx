@@ -50,13 +50,13 @@ AngularForce::
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_vector
+//    Function : get_quat
 //      Access : public
 // Description : access query
 ////////////////////////////////////////////////////////////////////
-LVector3f AngularForce::
-get_vector(const PhysicsObject *po) {
-  LVector3f v = get_child_vector(po);
+LRotationf AngularForce::
+get_quat(const PhysicsObject *po) {
+  LRotationf v = get_child_quat(po);
   return v;
 }
 

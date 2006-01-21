@@ -73,7 +73,7 @@ INLINE void PhysicsObject::
 reset_orientation(const LOrientationf &orientation) {
   nassertv(!orientation.is_nan());
   _orientation = orientation;
-  _rotation.set(0.0f, 0.0f, 0.0f);
+  _rotation = LRotationf::ident_quat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,10 +226,10 @@ set_orientation(const LOrientationf &orientation) {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_rotation
 //      Access : Public
-// Description : set rotation on each axis per second.
+// Description : set rotation as a quaternion delta per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_rotation(const LVector3f &rotation) {
+set_rotation(const LRotationf &rotation) {
   nassertv(!rotation.is_nan());
   _rotation = rotation;
 }
@@ -249,7 +249,7 @@ get_orientation() const {
 //      Access : Public
 // Description : get rotation per second.
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f PhysicsObject::
+INLINE LRotationf PhysicsObject::
 get_rotation() const {
   return _rotation;
 }

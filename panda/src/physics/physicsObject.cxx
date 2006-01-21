@@ -39,7 +39,7 @@ PhysicsObject() :
   _last_position = _position;
   _velocity.set(0.0f, 0.0f, 0.0f);
   _orientation.set(1.0 ,0.0f, 0.0f, 0.0f);
-  _rotation.set(0.0f, 0.0f, 0.0f);
+  _rotation = LRotationf::ident_quat();
 }
 
 ////////////////////////////////////////////////////////////////////

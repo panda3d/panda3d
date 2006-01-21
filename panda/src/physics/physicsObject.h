@@ -75,8 +75,8 @@ PUBLISHED:
 
   INLINE void reset_orientation(const LOrientationf &orientation);
 
-  INLINE void set_rotation(const LVector3f &rotation);
-  INLINE LVector3f get_rotation() const;
+  INLINE void set_rotation(const LRotationf &rotation);
+  INLINE LRotationf get_rotation() const;
 
   virtual LMatrix4f get_inertial_tensor() const;
   virtual LMatrix4f get_lcs() const;
@@ -102,7 +102,7 @@ private:
 
   // angular
   LOrientationf _orientation;
-  LVector3f _rotation;
+  LRotationf _rotation;
 
   float _terminal_velocity;
   float _mass;

@@ -82,13 +82,13 @@ child_integrate(Physical *physical,
       continue;
     }
 
-    LVector3f accum_vec(0, 0, 0);
+    LRotationf accum_quat(0, 0, 0, 0);
 
     // set up the traversal stuff.
     ForceNode *force_node;
     AngularForceVector::const_iterator f_cur;
 
-    LVector3f f;
+    LRotationf f;
 
     // global forces
     f_cur = forces.begin();
@@ -105,10 +105,10 @@ child_integrate(Physical *physical,
 
       // now we go from force space to our object's space.
       assert(index >= 0 && index < matrices.size());
-      f = cur_force->get_vector(current_object) * matrices[index++];
+      f = matrices[index++] * cur_force->get_quat(current_object);
 
       // tally it into the accum vector, applying the inertial tensor.
-      accum_vec += f;
+      accum_quat += f;
     }
 
     // local forces
@@ -125,39 +125,30 @@ child_integrate(Physical *physical,
 
       // go from force space to object space
       assert(index >= 0 && index < matrices.size());
-      f = cur_force->get_vector(current_object) * matrices[index++];
+      f = matrices[index++] * cur_force->get_quat(current_object);
 
       // tally it into the accum vectors
-      accum_vec += f;
+      accum_quat += f;
     }
     assert(index == matrices.size());
 
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
     // in any direction, among other things.
-    accum_vec =  accum_vec * current_object->get_inertial_tensor();
+    accum_quat = current_object->get_inertial_tensor() * accum_quat;
 
     // derive this into the angular velocity vector.
-    LVector3f rot_vec = current_object->get_rotation();
-    rot_vec += accum_vec * dt;
+    LRotationf rot_quat = current_object->get_rotation();
+    rot_quat += (LVecBase4f(accum_quat) * dt);
 
-    // here's the trick.  we've been accumulating these forces as vectors
-    // and treating them as vectors, but now we're going to treat them as pure
-    // imaginary quaternions where r = 0.  This vector now represents the
-    // imaginary vector formed by (i, j, k).
-    float len = rot_vec.length();
-    if (len) {
-      LVector3f normalized_rot_vec = rot_vec;
-      normalized_rot_vec *= 1.0f / len;
-      LRotationf rot_quat = LRotationf(normalized_rot_vec, len);
-
+    if (rot_quat.normalize()) {
       LOrientationf old_orientation = current_object->get_orientation();
       LOrientationf new_orientation = old_orientation * rot_quat;
       new_orientation.normalize();
 
       // and write the results back.
       current_object->set_orientation(new_orientation);
-      current_object->set_rotation(rot_vec);
+      current_object->set_rotation(rot_quat);
     }
   }
 }

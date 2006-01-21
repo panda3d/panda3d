@@ -38,7 +38,7 @@ PUBLISHED:
 
   INLINE void set_vector_masks(bool x, bool y, bool z);
 
-  virtual LVector3f get_vector(const PhysicsObject *po);
+  LVector3f get_vector(const PhysicsObject *po);
 
   virtual LinearForce *make_copy() = 0;
 

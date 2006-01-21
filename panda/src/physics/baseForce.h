@@ -42,8 +42,6 @@ PUBLISHED:
 
   INLINE ForceNode *get_force_node() const;
 
-  virtual LVector3f get_vector(const PhysicsObject *po) = 0;
-  
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
@@ -54,8 +52,6 @@ protected:
 private:
   ForceNode *_force_node;
   bool _active;
-
-  virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
 
 public:
   static TypeHandle get_class_type() {
