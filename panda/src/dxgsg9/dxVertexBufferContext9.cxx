@@ -23,7 +23,6 @@
 #include "pStatTimer.h"
 #include "internalName.h"
 #include "config_dxgsg9.h"
-#include <d3dx9.h>
 
 #define DEBUG_VERTEX_BUFFER false
 

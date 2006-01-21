@@ -21,7 +21,6 @@
 #include "config_dxgsg9.h"
 #include "graphicsStateGuardian.h"
 #include "pStatTimer.h"
-#include <d3dx9.h>
 
 #define DEBUG_INDEX_BUFFER false
 

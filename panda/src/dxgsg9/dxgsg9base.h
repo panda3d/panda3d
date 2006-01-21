@@ -32,6 +32,7 @@
 #include <windows.h>
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
+//#define D3D_DEBUG_INFO
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <dxerr9.h>
