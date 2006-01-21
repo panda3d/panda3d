@@ -93,7 +93,7 @@ typedef DWORD DXShaderHandle;
 
 
 // uncomment to add refcnt debug output
-#define DEBUG_RELEASES
+// #define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             {  \

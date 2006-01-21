@@ -37,7 +37,9 @@
 #define CLASSPREFIX_QUOTED "DX"
 
 
+class VertexElementArray;
 class CLP(GraphicsStateGuardian);
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXShaderContext9
@@ -63,7 +65,7 @@ public:
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 
   int _vertex_size;
-  DIRECT_3D_VERTEX_DECLARATION _direct_3d_vertex_declaration;
+  class VertexElementArray *_vertex_element_array;
 
   // FOR DEBUGGING
   string _name;

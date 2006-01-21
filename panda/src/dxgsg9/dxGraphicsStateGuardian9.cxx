@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -66,10 +66,6 @@
 
 
 #define DEBUG_LRU false
-
-
-#define DBG_S if (false) {
-#define DBG_E }
 
 
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
@@ -134,6 +130,19 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
 
   _lru = 0;
   _last_fvf = 0;
+
+  _vertex_shader_version_major = 0;
+  _vertex_shader_version_minor = 0;
+  _pixel_shader_version_major = 0;
+  _pixel_shader_version_minor = 0;
+
+  _vertex_shader_maximum_constants = 0;
+  _supports_stream_offset = false;
+
+#ifdef HAVE_CGDX9
+  _cg_context = 0;
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,11 +157,19 @@ DXGraphicsStateGuardian9::
   }
   free_nondx_resources();
 
-  if (_lru)
-  {
+  if (_lru) {
     delete _lru;
     _lru = 0;
   }
+
+#ifdef HAVE_CGDX9
+  if (_cg_context) {
+    cgD3D9SetDevice (NULL);
+    cgDestroyContext (_cg_context);
+    _cg_context = 0;
+  }
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,13 +234,13 @@ apply_texture(int i, TextureContext *tc) {
     // error or oversight.
     if ((dirty & Texture::DF_image) == 0) {
       dxgsg9_cat.warning()
-  << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+        << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
     }
 
     if (!dtc->create_texture(*_screen)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg9_cat.error()
-  << "Unable to re-create texture " << *dtc->_texture << endl;
+        << "Unable to re-create texture " << *dtc->_texture << endl;
       set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
@@ -314,6 +331,30 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::prepare_shader
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+ShaderContext *CLP(GraphicsStateGuardian)::
+prepare_shader(ShaderExpansion *se) {
+  CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
+  if (this -> _cg_context) return result;
+  delete result;
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::release_shader
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+release_shader(ShaderContext *sc) {
+  CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
+  delete gsc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::prepare_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
@@ -328,7 +369,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *DXGraphicsStateGuardian9::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
-  DXVertexBufferContext9 *dvbc = new DXVertexBufferContext9(data);
+  DXVertexBufferContext9 *dvbc = new DXVertexBufferContext9(data, *(this -> _screen));
   return dvbc;
 }
 
@@ -339,8 +380,19 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-apply_vertex_buffer(VertexBufferContext *vbc) {
+apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
+
+  DBG_SH2 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
+
+  bool set_stream_source;
+  HRESULT hr;
+  UINT stream;
+  UINT offset;
+
+  set_stream_source = false;
+  stream = 0;
+  offset = 0;
 
   if (_lru)
   {
@@ -360,11 +412,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
       add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
 
-      _d3d_device->SetStreamSource
-        (0, dvbc->_vbuffer, 0, dvbc->get_data()->get_array_format()->get_stride());
-      _active_vbuffer = dvbc;
-      _active_ibuffer = NULL;
-      add_to_vertex_buffer_record(dvbc);
+      set_stream_source = true;
 
     } else {
       _active_vbuffer = NULL;
@@ -386,24 +434,134 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
 
     if (_active_vbuffer != dvbc) {
-      _d3d_device->SetStreamSource
-        (0, dvbc->_vbuffer, 0, dvbc->get_data()->get_array_format()->get_stride());
+      set_stream_source = true;
+    }
+  }
+
+  if (shader_context == 0)
+  {
+    // FVF MODE
+    if (set_stream_source)
+    {
+      hr = _d3d_device->SetStreamSource
+        (stream, dvbc->_vbuffer, offset, dvbc->get_data()->get_array_format()->get_stride());
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
       _active_vbuffer = dvbc;
       _active_ibuffer = NULL;
       add_to_vertex_buffer_record(dvbc);
     }
-  }
 
-  if (dvbc->_fvf != _last_fvf) {
-    HRESULT hr = _d3d_device->SetFVF(dvbc->_fvf);
-  #ifndef NDEBUG
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "SetVertexShader(0x" << (void*)dvbc->_fvf
-        << ") failed" << D3DERRORSTRING(hr);
+    if ((dvbc->_fvf != _last_fvf)) {
+      hr = _d3d_device->SetFVF(dvbc->_fvf);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetFVF failed" << D3DERRORSTRING(hr);
+      }
+
+      _last_fvf = dvbc->_fvf;
     }
-  #endif
-    _last_fvf = dvbc->_fvf;
+  }
+  else
+  {
+    // SHADER MODE
+    if (set_stream_source)
+    {
+      if (dvbc -> _direct_3d_vertex_declaration)
+      {
+        if (dvbc -> _shader_context == shader_context)
+        {
+          // same shader as before, no need to remap a new vertex declaration
+        }
+        else
+        {
+          // need to make a new vertex declaration since the new shader may
+          // have a different mapping
+          dvbc -> _direct_3d_vertex_declaration -> Release ( );
+          dvbc -> _direct_3d_vertex_declaration = 0;
+          dvbc -> _shader_context = 0;
+        }
+      }
+
+      if (dvbc -> _direct_3d_vertex_declaration == 0 && dvbc -> _vertex_element_type_array)
+      {
+        VertexElementArray *vertex_element_array;
+
+        vertex_element_array = shader_context -> _vertex_element_array;
+        if (vertex_element_array)
+        {
+          int index;
+
+          for (index = 0; index < vertex_element_array -> total_elements; index++)
+          {
+            VERTEX_ELEMENT_TYPE *vertex_element_type;
+            VERTEX_ELEMENT_TYPE *source_vertex_element_type;
+
+            vertex_element_type = &vertex_element_array -> vertex_element_type_array [index];
+
+            // MAP VERTEX ELEMENTS to VERTEX SHADER INPUTS
+            // get offsets from vertex data for certain types of vertex elements
+
+            offset = 0;
+            source_vertex_element_type = dvbc -> _vertex_element_type_array;
+            while (source_vertex_element_type -> id != VS_END)
+            {
+              if (source_vertex_element_type -> id == vertex_element_type -> id)
+              {
+                  offset = source_vertex_element_type -> offset;
+                  break;
+              }
+              source_vertex_element_type++;
+            }
+            if (source_vertex_element_type -> id == VS_END)
+            {
+              dxgsg9_cat.error()
+                << "unable to find a mapping for vertex shader input type="
+                << vertex_element_type -> id
+                << " from vertex elements\n";
+            }
+
+            vertex_element_array -> set_vertex_element_offset (index, offset);
+          }
+
+          hr = _d3d_device -> CreateVertexDeclaration (vertex_element_array -> vertex_element_array, &dvbc -> _direct_3d_vertex_declaration);
+          if (FAILED (hr)) {
+            dxgsg9_cat.error()
+              << "CreateVertexDeclaration failed"
+              << D3DERRORSTRING(hr);
+          }
+
+          dvbc -> _shader_context = shader_context;
+        }
+        else
+        {
+          dxgsg9_cat.error() << "apply_vertex_buffer ( ): shader_context vertex_element_array == 0\n";
+        }
+      }
+
+      offset = 0;
+      hr = _d3d_device->SetStreamSource
+        (stream, dvbc->_vbuffer, offset, dvbc->get_data()->get_array_format()->get_stride());
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+      _active_vbuffer = dvbc;
+      _active_ibuffer = NULL;
+      add_to_vertex_buffer_record(dvbc);
+    }
+
+    if (dvbc -> _direct_3d_vertex_declaration) {
+
+      DBG_SH5  dxgsg9_cat.debug() << "SetVertexDeclaration ( ) \n"; DBG_E
+
+      hr = _d3d_device -> SetVertexDeclaration (dvbc -> _direct_3d_vertex_declaration);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
+      }
+    }
   }
 }
 
@@ -547,7 +705,7 @@ do_clear(const RenderBuffer &buffer) {
   DWORD main_flags = 0;
   DWORD aux_flags = 0;
 
-DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
 
   //set appropriate flags
   if (buffer_type & RenderBuffer::T_back) {
@@ -566,7 +724,7 @@ DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
 
   if ((main_flags | aux_flags) != 0) {
 
-DBG_S dxgsg9_cat.error ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
 
     HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, _d3dcolor_clear_value,
                                     _depth_clear_value, (DWORD)_stencil_clear_value);
@@ -617,7 +775,7 @@ DBG_S dxgsg9_cat.error ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n
 void DXGraphicsStateGuardian9::
 prepare_display_region() {
 
-// DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
+// DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
 
   if (_current_display_region == (DisplayRegion*)0L) {
     dxgsg9_cat.error()
@@ -626,12 +784,12 @@ prepare_display_region() {
   } else if (_current_display_region != _actual_display_region) {
     _actual_display_region = _current_display_region;
 
-// DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
+// DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
 
     int l, u, w, h;
     _actual_display_region->get_region_pixels_i(l, u, w, h);
 
-DBG_S dxgsg9_cat.error ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 
     // Create the viewport
     D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
@@ -731,7 +889,7 @@ prepare_lens() {
 bool DXGraphicsStateGuardian9::
 begin_frame() {
 
-DBG_S dxgsg9_cat.error ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
 
   GraphicsStateGuardian::begin_frame();
 
@@ -784,7 +942,7 @@ begin_scene() {
     return false;
   }
 
-DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
 
 /*
   HRESULT hr = _d3d_device->BeginScene();
@@ -823,7 +981,7 @@ DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
 void DXGraphicsStateGuardian9::
 end_scene() {
 
-DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 
 /*
   HRESULT hr = _d3d_device->EndScene();
@@ -857,7 +1015,7 @@ DBG_S dxgsg9_cat.error ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 void DXGraphicsStateGuardian9::
 end_frame() {
 
-DBG_S dxgsg9_cat.error ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 
   HRESULT hr = _d3d_device->EndScene();
 
@@ -987,14 +1145,48 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   }
   nassertr(_vertex_data != (GeomVertexData *)NULL, false);
 
-  const GeomVertexFormat *format = _vertex_data->get_format();
+  DBG_SH5 dxgsg9_cat.debug ( ) << "begin_draw_primitives\n"; DBG_E
 
-  // The munger should have put the FVF data in the first array.
-  const GeomVertexArrayData *data = _vertex_data->get_array(0);
+
+
+// SHADER
+  if (_vertex_array_shader_context==0) {
+    if (_current_shader_context==0) {
+//      ?????       update_standard_vertex_arrays();
+    } else {
+//      ?????       disable_standard_vertex_arrays();
+      _current_shader_context->update_shader_vertex_arrays(NULL,this);
+    }
+  } else {
+    if (_current_shader_context==0) {
+      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+//      ?????       update_standard_vertex_arrays();
+    } else {
+      _current_shader_context->
+        update_shader_vertex_arrays(_vertex_array_shader_context,this);
+    }
+  }
+  _vertex_array_shader_expansion = _current_shader_expansion;
+  _vertex_array_shader_context = _current_shader_context;
+
+
+// const GeomVertexFormat *format = _vertex_data->get_format();
+
+  const GeomVertexArrayData *data;
+
+  if (_current_shader_context && _vertex_data->get_num_arrays ( ) > 1)
+  {
+    data = _vertex_data->get_array(1);
+  }
+  else
+  {
+    // The munger should have put the FVF data in the first array.
+    data = _vertex_data->get_array(0);
+  }
 
   VertexBufferContext *vbc = ((GeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
-  apply_vertex_buffer(vbc);
+  apply_vertex_buffer(vbc, _current_shader_context);
 
   const GeomVertexAnimationSpec &animation =
     vertex_data->get_format()->get_animation();
@@ -1088,6 +1280,9 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_triangles(const GeomTriangles *primitive) {
+
+//  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_triangles 1\n"; DBG_E
+
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
   if (primitive->is_indexed()) {
@@ -1100,14 +1295,18 @@ draw_triangles(const GeomTriangles *primitive) {
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
+//DBG_SH2 dxgsg9_cat.debug ( ) << "DrawIndexedPrimitive \n"; DBG_E
+
       _d3d_device->DrawIndexedPrimitive
-        (D3DPT_TRIANGLELIST,
-     0,
+        (D3DPT_TRIANGLELIST, 0,
          min_vertex, max_vertex - min_vertex + 1,
          0, primitive->get_num_primitives());
 
     } else {
       // Indexed, client arrays.
+
+//DBG_SH2 dxgsg9_cat.debug ( ) << "draw_indexed_primitive_up \n"; DBG_E
+
       D3DFORMAT index_type = get_index_type(primitive->get_index_type());
       draw_indexed_primitive_up
         (D3DPT_TRIANGLELIST,
@@ -1121,6 +1320,9 @@ draw_triangles(const GeomTriangles *primitive) {
   } else {
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
+
+//DBG_SH2 dxgsg9_cat.debug ( ) << "DrawPrimitive D3DPT_TRIANGLELIST \n"; DBG_E
+
       _d3d_device->DrawPrimitive
         (D3DPT_TRIANGLELIST,
          primitive->get_first_vertex(),
@@ -1129,6 +1331,8 @@ draw_triangles(const GeomTriangles *primitive) {
     } else {
       // Nonindexed, client arrays.
 
+//DBG_SH2 dxgsg9_cat.debug ( ) << "draw_primitive_up \n"; DBG_E
+
       draw_primitive_up(D3DPT_TRIANGLELIST, primitive->get_num_primitives(),
       primitive->get_first_vertex(),
       primitive->get_num_vertices(),
@@ -1136,6 +1340,8 @@ draw_triangles(const GeomTriangles *primitive) {
       _vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
+
+//  DBG_SH5 dxgsg9_cat.debug ( ) << "end draw_triangles 1\n"; DBG_E
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1145,6 +1351,9 @@ draw_triangles(const GeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_tristrips(const GeomTristrips *primitive) {
+
+  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_tristrips\n"; DBG_E
+
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
@@ -1160,13 +1369,17 @@ draw_tristrips(const GeomTristrips *primitive) {
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
 
+//dxgsg9_cat.error ( ) << "DrawIndexedPrimitive D3DPT_TRIANGLESTRIP VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+
         _d3d_device->DrawIndexedPrimitive
-          (D3DPT_TRIANGLESTRIP,
-       0,
+          (D3DPT_TRIANGLESTRIP, 0,
            min_vertex, max_vertex - min_vertex + 1,
            0, primitive->get_num_vertices() - 2);
 
       } else {
+
+//dxgsg9_cat.error ( ) << "draw_indexed_primitive_up D3DPT_TRIANGLESTRIP VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+
         // Indexed, client arrays, one long triangle strip.
         D3DFORMAT index_type = get_index_type(primitive->get_index_type());
         draw_indexed_primitive_up
@@ -1180,6 +1393,9 @@ draw_tristrips(const GeomTristrips *primitive) {
     } else {
       if (_active_vbuffer != NULL) {
         // Nonindexed, vbuffers, one long triangle strip.
+
+//dxgsg9_cat.error ( ) << "DrawPrimitive D3DPT_TRIANGLESTRIP " << primitive->get_first_vertex ( ) << " VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+
         _d3d_device->DrawPrimitive
           (D3DPT_TRIANGLESTRIP,
            primitive->get_first_vertex(),
@@ -1296,6 +1512,9 @@ draw_tristrips(const GeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_trifans(const GeomTrifans *primitive) {
+
+  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_trifans\n"; DBG_E
+
   CPTA_int ends = primitive->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
 
@@ -1324,8 +1543,7 @@ draw_trifans(const GeomTrifans *primitive) {
         unsigned int min = mins.get_data1i();
         unsigned int max = maxs.get_data1i();
         _d3d_device->DrawIndexedPrimitive
-          (D3DPT_TRIANGLEFAN,
-       0,
+          (D3DPT_TRIANGLEFAN, 0,
            min, max - min + 1,
            start, ends[i] - start - 2);
 
@@ -2027,6 +2245,13 @@ reset() {
   D3DCAPS9 d3d_caps;
   _d3d_device->GetDeviceCaps(&d3d_caps);
 
+  _vertex_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.VertexShaderVersion);
+  _vertex_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.VertexShaderVersion);
+  _pixel_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion);
+  _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
+  _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
+  _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
+
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
@@ -2049,10 +2274,32 @@ reset() {
       << "\nD3DTEXOPCAPS_MULTIPLYADD = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0)
       << "\nD3DTEXOPCAPS_LERP = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0)
       << "\nD3DPMISCCAPS_TSSARGTEMP = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0)
+      << "\nVertexShaderVersion = " << _vertex_shader_version_major << "." << _vertex_shader_version_minor
+      << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
+      << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
+      << "\nsupport stream offset = " << _supports_stream_offset
       << "\n";
   }
 
   this -> reset_render_states ( );
+
+  // minimum shader requirements
+  if (_vertex_shader_version_major >= 1 &&
+      _pixel_shader_version_major >= 1) {
+    _supports_basic_shaders = true;
+  }
+
+#ifdef HAVE_CGDX9
+  if (_cg_context) {
+    cgD3D9SetDevice (NULL);
+    cgDestroyContext (_cg_context);
+    _cg_context = 0;
+  }
+  if (_cg_context == 0) {
+    _cg_context = cgCreateContext ( );
+    cgD3D9SetDevice (_d3d_device);
+  }
+#endif
 
   _max_vertices_per_array = d3d_caps.MaxVertexIndex;
   _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
@@ -2312,6 +2559,13 @@ reset() {
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
   set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
+  _current_shader_expansion = (ShaderExpansion *)NULL;
+  _current_shader_context = (CLP(ShaderContext) *)NULL;
+  _vertex_array_shader_expansion = (ShaderExpansion *)NULL;
+  _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  _texture_binding_shader_expansion = (ShaderExpansion *)NULL;
+  _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+
   PRINT_REFCNT(dxgsg9, _d3d_device);
 }
 
@@ -2375,8 +2629,31 @@ do_issue_transform() {
   const TransformState *transform = _internal_transform;
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 
-  const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
-  _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
+  if (_current_shader_context) {
+    _current_shader_context->issue_transform(this);
+
+// ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM IS ONLY USED IN THE SHADER
+    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
+    _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
+
+  }
+  else {
+    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
+    _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
+
+// DEBUG PRINT
+/*
+    const float *data;
+    data = &d3d_mat -> _11;
+        dxgsg9_cat.debug ( ) << "do_issue_transform\n" <<
+          data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+          data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+          data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+          data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+*/
+
+  }
+
   _transform_stale = false;
 
   if (_auto_rescale_normal) {
@@ -2401,6 +2678,60 @@ do_issue_alpha_test() {
     set_render_state(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
     set_render_state(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
     set_render_state(D3DRS_ALPHATESTENABLE, TRUE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::do_issue_shader
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_shader() {
+
+  DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: do_issue_shader\n"; DBG_E
+
+  CLP(ShaderContext) *context = 0;
+  ShaderExpansion *expansion = _target_rs->get_shader_expansion();
+  if (expansion == 0) {
+    if (_target._shader->get_shader() != 0) {
+      expansion = _target._shader->get_shader()->macroexpand(_target_rs);
+      // I am casting away the const-ness of this pointer, because
+      // the 'shader-expansion' field is just a cache.
+      ((RenderState *)((const RenderState*)_target_rs))->
+        set_shader_expansion(expansion);
+    }
+  }
+
+  if (expansion) {
+    context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
+  }
+
+  if (context == 0) {
+    if (_current_shader_context != 0) {
+      _current_shader_context->unbind(this);
+      _current_shader_expansion = 0;
+      _current_shader_context = 0;
+    }
+    return;
+  }
+
+  if (context != _current_shader_context) {
+    // Use a completely different shader than before.
+    // Unbind old shader, bind the new one.
+    if (_current_shader_context != 0) {
+      _current_shader_context->unbind(this);
+      _current_shader_context = 0;
+      _current_shader_expansion = 0;
+    }
+    if (context != 0) {
+      context->bind(this);
+      _current_shader_expansion = expansion;
+      _current_shader_context = context;
+    }
+  } else {
+    // Use the same shader as before, but with new input arguments.
+    context->issue_parameters(this);
   }
 }
 
@@ -2711,11 +3042,6 @@ set_state_and_transform(const RenderState *target,
     _state._shade_model = _target._shade_model;
   }
 
-  // Shaders not implemented under DX8
-  if (_target._shader != _state._shader) {
-    _state._shader = _target._shader;
-  }
-
   if (_target._tex_gen != _state._tex_gen) {
     _state._texture = 0;
     _state._tex_gen = _target._tex_gen;
@@ -2732,6 +3058,12 @@ set_state_and_transform(const RenderState *target,
     _state._transparency = _target._transparency;
     _state._color_write = _target._color_write;
     _state._color_blend = _target._color_blend;
+  }
+
+  if (_target._shader != _state._shader) {
+    do_issue_shader();
+    _state._shader = _target._shader;
+    _state._texture = 0;
   }
 
   if (_target._texture != _state._texture) {
@@ -2985,11 +3317,67 @@ do_issue_material() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::do_issue_texture
-//       Access: Public, Virtual
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_texture() {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+
+  if (_texture_binding_shader_context==0) {
+    if (_current_shader_context==0) {
+      update_standard_texture_bindings();
+    } else {
+      disable_standard_texture_bindings();
+      _current_shader_context->update_shader_texture_bindings(NULL,this);
+    }
+  } else {
+    if (_current_shader_context==0) {
+      _texture_binding_shader_context->disable_shader_texture_bindings(this);
+      update_standard_texture_bindings();
+    } else {
+      _current_shader_context->
+        update_shader_texture_bindings(_texture_binding_shader_context,this);
+    }
+  }
+  _texture_binding_shader_expansion = _current_shader_expansion;
+  _texture_binding_shader_context = _current_shader_context;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::disable_standard_texture_bindings
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+disable_standard_texture_bindings() {
+  int num_old_stages = _max_texture_stages;
+  if (_state._texture != (TextureAttrib *)NULL) {
+    num_old_stages = _state._texture->get_num_on_stages();
+  }
+
+  // Disable the texture stages that are no longer used.
+  for (int i = 0; i < num_old_stages; i++) {
+    HRESULT hr;
+
+    hr = _d3d_device -> SetTexture (i, NULL);
+    if (FAILED (hr)) {
+      dxgsg9_cat.error()
+        << "SetTexture ("
+        << i
+        << ", NULL) failed "
+        << D3DERRORSTRING(hr);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::update_standard_texture_bindings
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-do_issue_texture() {
+update_standard_texture_bindings() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
   int num_stages = _target._texture->get_num_on_stages();
@@ -4042,8 +4430,7 @@ show_frame() {
     return;
   }
 
-DBG_S dxgsg9_cat.error ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"; DBG_E
-
+DBG_S dxgsg9_cat.debug ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"; DBG_E
 
   HRESULT hr;
 

@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXVertexBufferContext9 : public VertexBufferContext {
 public:
-  DXVertexBufferContext9(GeomVertexArrayData *data);
+  DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn);
   virtual ~DXVertexBufferContext9();
 
   void free_vbuffer(void);
@@ -40,8 +40,13 @@ public:
 
   IDirect3DVertexBuffer9 *_vbuffer;
   int _fvf;
+
   int _managed;
   LruPage *_lru_page;
+
+  VERTEX_ELEMENT_TYPE *_vertex_element_type_array;
+  DIRECT_3D_VERTEX_DECLARATION _direct_3d_vertex_declaration;
+  CLP(ShaderContext) *_shader_context;
 
 public:
   static TypeHandle get_class_type() {

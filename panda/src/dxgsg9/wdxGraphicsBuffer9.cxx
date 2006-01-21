@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2005, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -27,8 +27,6 @@
   // support copy from texture to ram?
     // check D3DCAPS2_DYNAMICTEXTURES
 
-#define DBG_S if (false) {
-#define DBG_E }
 #define FL << "\n" << __FILE__ << " " << __LINE__ << "\n"
 
 TypeHandle wdxGraphicsBuffer9::_type_handle;
@@ -84,7 +82,7 @@ begin_frame() {
     return false;
   }
 
-DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::begin_frame\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::begin_frame\n"; DBG_E
 
   DXGraphicsStateGuardian9 *dxgsg;
   DCAST_INTO_R(dxgsg, _gsg, false);
@@ -116,7 +114,7 @@ begin_render_texture() {
     state = false;
     render_target_index = 0;
 
-DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::begin_render_texture\n"; DBG_E
+    DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::begin_render_texture\n"; DBG_E
 
     if (dxgsg -> _d3d_device) {
       Texture *tex = get_texture(0);
@@ -207,7 +205,7 @@ DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::begin_render_texture\n"; DBG_
 void wdxGraphicsBuffer9::
 end_render_texture() {
 
-DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::end_render_texture\n"; DBG_E
+DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::end_render_texture\n"; DBG_E
 
   if (_gsg != (GraphicsStateGuardian *)NULL) {
 
@@ -315,7 +313,7 @@ select_cube_map(int cube_map_index) {
                 }
               }
 
-DBG_S dxgsg9_cat.error ( ) << "select_cube_map " << _cube_map_index << "\n";  DBG_E
+              DBG_S dxgsg9_cat.debug ( ) << "select_cube_map " << _cube_map_index << "\n";  DBG_E
 
             } else {
               dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
@@ -346,7 +344,7 @@ make_current() {
   DCAST_INTO_V(dxgsg, _gsg);
 
   // do nothing here
-DBG_S dxgsg9_cat.error ( ) << "wdxGraphicsBuffer9::make_current\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::make_current\n"; DBG_E
 
 }
 
@@ -480,7 +478,7 @@ open_buffer() {
         width = tex -> get_x_size ( );
         height = tex -> get_y_size ( );
 
-DBG_S dxgsg9_cat.error ( ) << "-------------RTT SIZE " << "t width " << width << " t height " << height FL; DBG_E
+        DBG_S dxgsg9_cat.debug ( ) << "-------------RTT SIZE " << "t width " << width << " t height " << height FL; DBG_E
 
         if (surface_description.Width < width || surface_description.Height < height) {
           format = surface_description.Format;
@@ -493,7 +491,7 @@ DBG_S dxgsg9_cat.error ( ) << "-------------RTT SIZE " << "t width " << width <<
             discard, &this -> _new_z_stencil_surface, NULL);
           if (SUCCEEDED  (hr)) {
 
-DBG_S dxgsg9_cat.error ( ) << "-------------OK CreatedDepthStencilSurface " << D3DERRORSTRING(hr) FL; DBG_E
+            DBG_S dxgsg9_cat.debug ( ) << "-------------OK CreatedDepthStencilSurface " << D3DERRORSTRING(hr) FL; DBG_E
 
             state = true;
 

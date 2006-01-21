@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -35,6 +35,24 @@
 
 #include "lru.h"
 
+typedef D3DVERTEXELEMENT9 DIRECT_3D_VERTEX_ELEMENT;
+typedef LPDIRECT3DDEVICE9 DIRECT_3D_DEVICE;
+typedef LPDIRECT3DVERTEXDECLARATION9 DIRECT_3D_VERTEX_DECLARATION;
+
+#include "dxShaderContext9.h"
+
+
+#define DEBUG_ENABLE !false
+#define DBG_SH1 if (false && DEBUG_ENABLE) {
+#define DBG_SH2 if (false && DEBUG_ENABLE) {
+#define DBG_SH3 if (false && DEBUG_ENABLE) {
+#define DBG_SH4 if (false && DEBUG_ENABLE) {
+#define DBG_SH5 if (false && DEBUG_ENABLE) {
+#define DBG_VEA if (false && DEBUG_ENABLE) {
+#define DBG_S if (false && DEBUG_ENABLE) {
+#define DBG_E }
+
+
 enum GsgPageType
 {
   GPT_Texture,
@@ -63,8 +81,11 @@ public:
   void apply_texture(int i, TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
+  ShaderContext *prepare_shader(ShaderExpansion *se);
+  void release_shader(ShaderContext *sc);
+
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  void apply_vertex_buffer(VertexBufferContext *vbc);
+  void apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
@@ -128,6 +149,7 @@ public:
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
+  void do_issue_shader();
   void do_issue_render_mode();
   void do_issue_rescale_normal();
   void do_issue_color_write();
@@ -158,6 +180,11 @@ protected:
   void set_read_buffer(const RenderBuffer &rb);
 
   void do_auto_rescale_normal();
+
+//  void disable_standard_vertex_arrays();
+//  void update_standard_vertex_arrays();
+  void disable_standard_texture_bindings();
+  void update_standard_texture_bindings();
 
 protected:
   INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
@@ -208,6 +235,11 @@ protected:
 
 public:
   DXScreenData *_screen;
+
+#ifdef HAVE_CGDX9
+  CGcontext _cg_context;
+#endif
+
 protected:
   LPDIRECT3DDEVICE9 _d3d_device;  // same as _screen->_d3d_device, cached for spd
   IDirect3DSwapChain9 *_swap_chain;
@@ -242,6 +274,13 @@ protected:
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
 
   LMatrix4f _projection_mat;
+
+  PT(ShaderExpansion)  _current_shader_expansion;
+  CLP(ShaderContext)  *_current_shader_context;
+  PT(ShaderExpansion)  _vertex_array_shader_expansion;
+  CLP(ShaderContext)  *_vertex_array_shader_context;
+  PT(ShaderExpansion)  _texture_binding_shader_expansion;
+  CLP(ShaderContext)  *_texture_binding_shader_context;
 
   CPT(DisplayRegion) _actual_display_region;
   const DXVertexBufferContext9 *_active_vbuffer;
@@ -292,6 +331,14 @@ protected:
   TextureStageStates _texture_stage_states_array [D3D_MAXTEXTURESTAGES];
   TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
 
+  int _vertex_shader_version_major;
+  int _vertex_shader_version_minor;
+  int _pixel_shader_version_major;
+  int _pixel_shader_version_minor;
+  int _vertex_shader_maximum_constants;
+
+  bool _supports_stream_offset;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -319,8 +366,68 @@ private:
   friend class wdxGraphicsBuffer9;
   friend class DXVertexBufferContext9;
   friend class DXIndexBufferContext9;
+  friend class CLP(ShaderContext);
 };
 
 #include "dxGraphicsStateGuardian9.I"
+
+
+enum
+{
+  VS_END = 0,
+
+  VS_POSITION_XYZ,
+  VS_POSITION_XYZW,
+  VS_NORMAL,
+  VS_DIFFUSE,
+  VS_SPECULAR,
+  VS_TEXTURE_U,
+  VS_TEXTURE_UV,
+  VS_TEXTURE_UVW,
+  VS_TANGENT,
+  VS_BINORMAL,
+
+  VS_ERROR,
+
+  VS_TOTAL_TYPES
+};
+
+typedef struct
+{
+  int id; // this is VS_XXXXX
+  int index;
+  int stream;
+  int offset;
+}
+VERTEX_ELEMENT_TYPE;
+
+class VertexElementArray
+{
+public:
+
+  VertexElementArray (int maximum_vertex_elements);
+  ~VertexElementArray ( );
+
+  int set_vertex_element_offset (int vertex_element_index, int offset);
+
+  void add_position_xyz_vertex_element (int stream_index);
+  void add_position_xyzw_vertex_element (int stream_index);
+  void add_normal_vertex_element (int stream_index);
+  void add_binormal_vertex_element (int stream_index);
+  void add_tangent_vertex_element (int stream_index);
+  void add_diffuse_color_vertex_element (int stream_index);
+  void add_specular_color_vertex_element (int stream_index);
+  void add_u_vertex_element (int stream_index);
+  void add_uv_vertex_element (int stream_index);
+  void add_uvw_vertex_element (int stream_index);
+  int add_end_vertex_element (void);
+
+  int offset;
+  int total_elements;
+  int maximum_vertex_elements;
+  int vertex_element_type_counter_array [VS_TOTAL_TYPES];
+  DIRECT_3D_VERTEX_ELEMENT *vertex_element_array;
+  VERTEX_ELEMENT_TYPE *vertex_element_type_array;
+};
 
 #endif

@@ -7,7 +7,7 @@
 #define WIN_SYS_LIBS \
    d3d9.lib d3dx9.lib dxerr9.lib
    
-#define USE_PACKAGES dx
+#define USE_PACKAGES dx cg cgdx9
 
 #begin lib_target
   #define TARGET dxgsg9
@@ -30,7 +30,7 @@
     dxTextureContext9.h dxTextureContext9.I \
     dxGeomMunger9.h dxGeomMunger9.I \
     dxGraphicsDevice9.h \
-    ../display/lru.h
+    ../display/lru.h \
     
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
@@ -42,6 +42,6 @@
     wdxGraphicsPipe9.cxx \
     wdxGraphicsWindow9.cxx \
     wdxGraphicsBuffer9.cxx \
-
+    dxShaderContext9.cxx 
 
 #end lib_target

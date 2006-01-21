@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -35,7 +35,7 @@ TypeHandle DXVertexBufferContext9::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXVertexBufferContext9::
-DXVertexBufferContext9(GeomVertexArrayData *data) :
+DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
   VertexBufferContext(data),
   _vbuffer(NULL)
 {
@@ -44,12 +44,102 @@ DXVertexBufferContext9(GeomVertexArrayData *data) :
 
   // We have to start with the vertex data, and work up from there in
   // order, since that's the way the FVF is defined.
+  int index;
   int n = 0;
   int num_columns = array_format->get_num_columns();
+  int total_elements;
+
+  total_elements = num_columns + 2;
+  _vertex_element_type_array = new VERTEX_ELEMENT_TYPE [total_elements];
+  memset (_vertex_element_type_array, 0, total_elements * sizeof (VERTEX_ELEMENT_TYPE));
+
+  // create a simple vertex type mapping from the vertex elements
+  for (index = 0; index < num_columns; index++)
+  {
+    int num_values;
+    const InternalName *name;
+
+    name = array_format -> get_column (index) -> get_name ( );
+    num_values = array_format -> get_column(index) -> get_num_values ( );
+
+    if (false) {
+
+    } else if (name == InternalName::get_vertex ( )) {
+
+      switch (num_values)
+      {
+        case 3:
+          _vertex_element_type_array [index].id = VS_POSITION_XYZ;
+          break;
+        case 4:
+          _vertex_element_type_array [index].id = VS_POSITION_XYZW;
+          break;
+        default:
+          dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
+          break;
+      }
+
+    } else if (name == InternalName::get_texcoord ( )) {
+
+      switch (num_values)
+      {
+        case 1:
+          _vertex_element_type_array [index].id = VS_TEXTURE_U;
+          break;
+        case 2:
+          _vertex_element_type_array [index].id = VS_TEXTURE_UV;
+          break;
+        case 3:
+          _vertex_element_type_array [index].id = VS_TEXTURE_UVW;
+          break;
+        default:
+          dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
+          break;
+      }
+
+    } else if (name == InternalName::get_normal ( )) {
+
+      _vertex_element_type_array [index].id = VS_NORMAL;
+
+    } else if (name == InternalName::get_binormal ( )) {
+
+      _vertex_element_type_array [index].id = VS_BINORMAL;
+
+    } else if (name == InternalName::get_tangent ( )) {
+
+      _vertex_element_type_array [index].id = VS_TANGENT;
+
+    } else if (name == InternalName::get_color ( )) {
+
+      _vertex_element_type_array [index].id = VS_DIFFUSE;
+
+    } else {
+
+      dxgsg9_cat.error ( ) << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
+      _vertex_element_type_array [index].id = VS_ERROR;
+    }
+
+// SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
+    _vertex_element_type_array [index].stream = 0;
+    _vertex_element_type_array [index].offset = array_format -> get_column(index) -> get_start ( );
+
+    DBG_VEA  dxgsg9_cat.debug() << "INFO VertexElementArray " << index
+      << " " << name -> get_name ( )
+      << " VS ID " << _vertex_element_type_array [index].id
+      << " offset " << _vertex_element_type_array [index].offset
+      << "\n";
+    DBG_E
+  }
+
+  DBG_VEA  dxgsg9_cat.debug() << "INFO stride " << array_format -> get_stride ( ) << " total bytes " << array_format-> get_total_bytes ( ) << "\n"; DBG_E
+
 
   _fvf = 0;
   _managed = -1;
   _lru_page = 0;
+
+  _direct_3d_vertex_declaration = 0;
+  _shader_context = 0;
 
   if (n < num_columns &&
       array_format->get_column(n)->get_name() == InternalName::get_vertex()) {
@@ -175,10 +265,18 @@ DXVertexBufferContext9(GeomVertexArrayData *data) :
 DXVertexBufferContext9::
 ~DXVertexBufferContext9() {
 
+  if (_vertex_element_type_array) {
+    delete _vertex_element_type_array;
+    _vertex_element_type_array = 0;
+  }
+  if (_direct_3d_vertex_declaration) {
+    _direct_3d_vertex_declaration -> Release ( );
+    _direct_3d_vertex_declaration = 0;
+  }
+
   free_vbuffer ( );
 
-  if (_lru_page)
-  {
+  if (_lru_page) {
     _lru_page -> _m.lru -> remove_page (_lru_page);
     _lru_page -> _m.lru -> free_page (_lru_page);
     _lru_page = 0;
