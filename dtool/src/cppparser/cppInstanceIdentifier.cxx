@@ -133,6 +133,19 @@ add_modifier(CPPInstanceIdentifierType type) {
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_func_modifier(CPPParameterList *params, int flags) {
+  // As a special hack, if we added a parameter list to an operator
+  // function, check if the parameter list is empty.  If it is, this
+  // is really a unary operator, so set the unary_op flag.  Operators
+  // () and [] are never considered unary operators.
+  if (_ident != NULL && 
+      _ident->get_simple_name().substr(0, 9) == "operator " &&
+      _ident->get_simple_name() != string("operator ()") &&
+      _ident->get_simple_name() != string("operator []")) {
+    if (params->_parameters.empty()) {
+      flags |= CPPFunctionType::F_unary_op;
+    }
+  }
+
   _modifiers.push_back(Modifier::func_type(params, flags));
 }
 

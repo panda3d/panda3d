@@ -1587,6 +1587,13 @@ get_function(CPPInstance *function, string description,
   string function_name = TypeManager::get_function_name(function);
   string function_signature = TypeManager::get_function_signature(function);
 
+  if (ftype->_flags & CPPFunctionType::F_unary_op) {
+    // This is a unary operator function.  Name it differently so we
+    // don't consider it an overloaded version of a similarly-named
+    // binary operator.
+    function_name += "unary";
+  }
+
   // First, check to see if it's already there.
   FunctionsByName::const_iterator tni =
     _functions_by_name.find(function_name);
@@ -1636,6 +1643,11 @@ get_function(CPPInstance *function, string description,
     // The function is a method.
     ifunction->_flags |= InterrogateFunction::F_method;
     ifunction->_class = get_type(struct_type, false);
+  }
+
+  if (ftype->_flags & CPPFunctionType::F_unary_op) {
+    // This is a special unary function.
+    ifunction->_flags |= InterrogateFunction::F_unary_op;
   }
 
   ifunction->_flags |= flags;

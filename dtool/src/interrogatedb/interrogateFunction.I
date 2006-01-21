@@ -75,6 +75,17 @@ is_method() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunction::is_unary_op
+//       Access: Public
+//  Description: Returns true if the function is flagged as a special
+//               unary operator, like operator -() with no parameters.
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateFunction::
+is_unary_op() const {
+  return (_flags & F_unary_op) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_class
 //       Access: Public
 //  Description: Return the class that owns the method, if is_method()

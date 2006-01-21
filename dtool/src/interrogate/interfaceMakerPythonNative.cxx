@@ -73,18 +73,21 @@ RenameSet methodRenameDictionary[] = {
     { "operator="   , "assign",               0 },
     { "operator()"  , "__call__",             0 },
     { "operator[]"  , "__getitem__",          0 },
+    { "operator++unary"  , "increment",            0 },
     { "operator++"  , "increment",            0 },
+    { "operator--unary"  , "decrement",            0 },
     { "operator--"  , "decrement",            0 },
     { "operator^"   , "__xor__",              0 },
     { "operator%"   , "__mod__",              0 },
     { "operator!"   , "logicalNot",           0 },
-    { "operator~"   , "bitwiseNot",           0 },
+    { "operator~unary"   , "__invert__",           0 },
     { "operator&"   , "__and__",              0 },
     { "operator&&"  , "logicalAnd",           0 },
     { "operator|"   , "__or__",               0 },
     { "operator||"  , "logicalOr",            0 },
     { "operator+"   , "__add__",              0 },
     { "operator-"   , "__sub__",              0 },
+    { "operator-unary", "__neg__",            0 },
     { "operator*"   , "__mul__",              0 },
     { "operator/"   , "__div__",              0 },
     { "operator+="  , "__iadd__",             1 },
@@ -270,8 +273,13 @@ std::string nonClassNameFromCppName(const std::string &cppName_in)
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-std::string  methodNameFromCppName(std::string cppName, const std::string &className)
+std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::string &className)
 {
+    std::string cppName = func->_ifunc.get_name();
+    if (func->_ifunc.is_unary_op()) {
+      cppName += "unary";
+    }
+
     std::string methodName;
     std::string badChars(" ");
     int nextCap = 0;
@@ -344,9 +352,9 @@ std::string make_safe_name(const std::string & name)
         */
 }
 
-bool isInplaceFunction(const std::string &cppName)
+bool isInplaceFunction(InterfaceMaker::Function *func)
 {
-    std::string wname = methodNameFromCppName(cppName,"");
+    std::string wname = methodNameFromCppName(func,"");
 
     for(int x = 0; InPlaceSet[x] != NULL; x++)
         if(InPlaceSet[x] == wname)
@@ -876,7 +884,7 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
         if(!func->_itype.is_global() && isFunctionLegal(func))
         {
             {
-                out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),"") << "\", (PyCFunction) &" 
+                out << "  { \"" << methodNameFromCppName(func,"") << "\", (PyCFunction) &" 
                     << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
             }
         }
@@ -945,6 +953,13 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
             return true;        
         }
 
+        if(thimputstring == "__neg__")
+        {
+            answer_location = "tp_as_number->nb_negative";
+            wraper_type = 2;
+            return true;        
+        }
+
         if(thimputstring == "__mul__")
         {
             answer_location = "tp_as_number->nb_multiply";
@@ -985,6 +1000,13 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
         {
             answer_location = "tp_as_number->nb_xor";
             wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__invert__")
+        {
+            answer_location = "tp_as_number->nb_invert";
+            wraper_type = 2;
             return true;
         }
 
@@ -1148,10 +1170,10 @@ write_module_class(ostream &out,  Object *obj) {
       Function *func = (*fi);
       std::string temp0;
       int temp1;
-      if(!GetSlotedFunctinDef( methodNameFromCppName( func->_ifunc.get_name(),export_calss_name),temp0,temp1))
+      if(!GetSlotedFunctinDef( methodNameFromCppName(func,export_calss_name),temp0,temp1))
         {
 
-          out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+          out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
               << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
           if(!isFunctionWithThis(func))
             static_functions[x] = func;
@@ -1162,7 +1184,7 @@ write_module_class(ostream &out,  Object *obj) {
             {
               wraped_Operator_functions[func] = std::pair< std::string, int>(temp0,temp1);
 
-              out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+              out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
                   << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
               if(!isFunctionWithThis(func))
                 static_functions[x] = func;
@@ -1172,7 +1194,7 @@ write_module_class(ostream &out,  Object *obj) {
             {
               normal_Operator_functions[func] = temp0;
 
-              out << "  { \"" << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "\",(PyCFunction ) &" 
+              out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
                   << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
               if(!isFunctionWithThis(func))
                 static_functions[x] = func;
@@ -1233,9 +1255,9 @@ write_module_class(ostream &out,  Object *obj) {
             Function *func = rfi->first;
             out << "//////////////////\n";
             out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
             out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
             out << "{\n";
             out << "    return "<< func->_name <<"(self,args);\n";
             out << "}\n\n";
@@ -1245,9 +1267,9 @@ write_module_class(ostream &out,  Object *obj) {
             Function *func = rfi->first;
             out << "//////////////////\n";
             out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
             out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self)\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self)\n";
             out << "{\n";
             out << "    return "<< func->_name <<"(self,Py_None,Py_None);\n";
             out << "}\n\n";
@@ -1258,9 +1280,9 @@ write_module_class(ostream &out,  Object *obj) {
             Function *func = rfi->first;
             out << "//////////////////\n";
             out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
             out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) << "( PyObject * self, PyObject * args)\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * args)\n";
             out << "{\n";
             out << "    return "<< func->_name <<"(self,args,Py_None);\n";
             out << "}\n\n";
@@ -1416,7 +1438,7 @@ write_module_class(ostream &out,  Object *obj) {
   for(ofi = normal_Operator_functions.begin(); ofi != normal_Operator_functions.end(); ofi++)
     {
       Function *func = ofi->first;
-      out << "        // " << ofi->second <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
+      out << "        // " << ofi->second <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
       out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << ofi->second <<" = &" << func->_name <<";\n";
     }
 
@@ -1427,8 +1449,8 @@ write_module_class(ostream &out,  Object *obj) {
     for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
       {
         Function *func = rfi->first;
-        out << "        // " << rfi->second.first <<" = "<< methodNameFromCppName( func->_ifunc.get_name(),export_calss_name) <<"\n";
-        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second.first <<" = &" << func->_name << methodNameFromCppName( func->_ifunc.get_name(),export_calss_name)<<";\n";
+        out << "        // " << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second.first <<" = &" << func->_name << methodNameFromCppName(func,export_calss_name)<<";\n";
       }
   }
 
@@ -1504,9 +1526,9 @@ write_module_class(ostream &out,  Object *obj) {
   std::map<int , Function * >::iterator sfi;
   for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
     {
-      out << "        //  Static Method " << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) << "\n";
+      out << "        //  Static Method " << methodNameFromCppName(sfi->second,export_calss_name) << "\n";
       out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
-      out << methodNameFromCppName( sfi->second->_ifunc.get_name(),export_calss_name) ;
+      out << methodNameFromCppName(sfi->second,export_calss_name) ;
       out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
     }
 
@@ -1663,7 +1685,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     out << PreProcess;
   }
 
-  bool is_inplace = isInplaceFunction(func->_ifunc.get_name());
+  bool is_inplace = isInplaceFunction(func);
 
   if (MapSets.empty()) {
     return;
@@ -2148,8 +2170,9 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   }
   expected_params += ")\n";
     
-
-  /*if (!format_specifiers.empty()) */ {
+  // If we got what claimed to be a unary operator, don't check for
+  // parameters, since we won't be getting any anyway.
+  if (!func1->_ifunc.is_unary_op()) {
     std::string format_specifiers1 = format_specifiers + ":" + remap->_cppfunc->get_local_name(&parser);
     indent(out,indent_level)
       << "static char * key_word_list[] = {" << keyword_list << "NULL};\n";
