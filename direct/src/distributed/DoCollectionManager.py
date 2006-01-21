@@ -1,6 +1,6 @@
 #hack:
-BAD_DO_ID = BAD_ZONE_ID = 0xFFFFFFFF
-BAD_CHANNEL_ID = 0xFFFFFFFFFFFFFFFF
+BAD_DO_ID = BAD_ZONE_ID = 0 # 0xFFFFFFFF
+BAD_CHANNEL_ID = 0 # 0xFFFFFFFFFFFFFFFF
 
 class DoCollectionManager:
     def __init__(self):
@@ -9,7 +9,8 @@ class DoCollectionManager:
         # (parentId, zoneId) to dict of doId->DistributedObjectAI
         ## self.zoneId2doIds={}
         if self.hasOwnerView():
-            # Dict of {DistributedObject ids : DistributedObjects} for 'owner' views of objects
+            # Dict of {DistributedObject ids : DistributedObjects}
+            # for 'owner' views of objects
             self.doId2ownerView = {}
         # Dict of {
         #   parent DistributedObject id: 
