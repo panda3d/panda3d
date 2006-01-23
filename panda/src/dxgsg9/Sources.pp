@@ -30,6 +30,7 @@
     dxTextureContext9.h dxTextureContext9.I \
     dxGeomMunger9.h dxGeomMunger9.I \
     dxGraphicsDevice9.h \
+    dxShaderContext9.h \
     ../display/lru.h \
     
   #define INCLUDED_SOURCES \
