@@ -9,4 +9,4 @@
 #include "wdxGraphicsWindow9.cxx"
 #include "dxGraphicsDevice9.cxx"
 #include "wdxGraphicsBuffer9.cxx"
-
+#include "vertexElementArray.cxx"

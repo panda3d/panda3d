@@ -20,7 +20,6 @@
 #define DXSHADERCONTEXT9_H
 
 #include "dtool_config.h"
-#include "dxGraphicsStateGuardian9.h"
 #include "pandabase.h"
 #ifdef HAVE_CGDX9
 #include "Cg/cg.h"

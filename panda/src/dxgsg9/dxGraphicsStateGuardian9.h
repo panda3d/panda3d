@@ -39,6 +39,7 @@ typedef D3DVERTEXELEMENT9 DIRECT_3D_VERTEX_ELEMENT;
 typedef LPDIRECT3DDEVICE9 DIRECT_3D_DEVICE;
 typedef LPDIRECT3DVERTEXDECLARATION9 DIRECT_3D_VERTEX_DECLARATION;
 
+#include "vertexElementArray.h"
 #include "dxShaderContext9.h"
 
 
@@ -370,64 +371,5 @@ private:
 };
 
 #include "dxGraphicsStateGuardian9.I"
-
-
-enum
-{
-  VS_END = 0,
-
-  VS_POSITION_XYZ,
-  VS_POSITION_XYZW,
-  VS_NORMAL,
-  VS_DIFFUSE,
-  VS_SPECULAR,
-  VS_TEXTURE_U,
-  VS_TEXTURE_UV,
-  VS_TEXTURE_UVW,
-  VS_TANGENT,
-  VS_BINORMAL,
-
-  VS_ERROR,
-
-  VS_TOTAL_TYPES
-};
-
-typedef struct
-{
-  int id; // this is VS_XXXXX
-  int index;
-  int stream;
-  int offset;
-}
-VERTEX_ELEMENT_TYPE;
-
-class VertexElementArray
-{
-public:
-
-  VertexElementArray (int maximum_vertex_elements);
-  ~VertexElementArray ( );
-
-  int set_vertex_element_offset (int vertex_element_index, int offset);
-
-  void add_position_xyz_vertex_element (int stream_index);
-  void add_position_xyzw_vertex_element (int stream_index);
-  void add_normal_vertex_element (int stream_index);
-  void add_binormal_vertex_element (int stream_index);
-  void add_tangent_vertex_element (int stream_index);
-  void add_diffuse_color_vertex_element (int stream_index);
-  void add_specular_color_vertex_element (int stream_index);
-  void add_u_vertex_element (int stream_index);
-  void add_uv_vertex_element (int stream_index);
-  void add_uvw_vertex_element (int stream_index);
-  int add_end_vertex_element (void);
-
-  int offset;
-  int total_elements;
-  int maximum_vertex_elements;
-  int vertex_element_type_counter_array [VS_TOTAL_TYPES];
-  DIRECT_3D_VERTEX_ELEMENT *vertex_element_array;
-  VERTEX_ELEMENT_TYPE *vertex_element_type_array;
-};
 
 #endif

@@ -32,6 +32,7 @@
     dxGraphicsDevice9.h \
     dxShaderContext9.h \
     ../display/lru.h \
+    vertexElementArray.h
     
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
@@ -43,6 +44,7 @@
     wdxGraphicsPipe9.cxx \
     wdxGraphicsWindow9.cxx \
     wdxGraphicsBuffer9.cxx \
-    dxShaderContext9.cxx 
+    dxShaderContext9.cxx \
+    vertexElementArray.cxx
 
 #end lib_target
