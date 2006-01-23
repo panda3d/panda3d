@@ -393,8 +393,7 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
   stream = 0;
   offset = 0;
 
-  if (_lru)
-  {
+  if (_lru) {
     _lru -> access_page (dvbc -> _lru_page);
   }
 
@@ -440,8 +439,7 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
   if (shader_context == 0)
   {
     // FVF MODE
-    if (set_stream_source)
-    {
+    if (set_stream_source) {
       hr = _d3d_device->SetStreamSource
         (stream, dvbc->_vbuffer, offset, dvbc->get_data()->get_array_format()->get_stride());
       if (FAILED(hr)) {
@@ -465,16 +463,12 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
   else
   {
     // SHADER MODE
-    if (set_stream_source)
-    {
-      if (dvbc -> _direct_3d_vertex_declaration)
-      {
-        if (dvbc -> _shader_context == shader_context)
-        {
+    if (set_stream_source) {
+      if (dvbc -> _direct_3d_vertex_declaration) {
+        if (dvbc -> _shader_context == shader_context) {
           // same shader as before, no need to remap a new vertex declaration
         }
-        else
-        {
+        else {
           // need to make a new vertex declaration since the new shader may
           // have a different mapping
           dvbc -> _direct_3d_vertex_declaration -> Release ( );
@@ -483,8 +477,8 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
         }
       }
 
-      if (dvbc -> _direct_3d_vertex_declaration == 0 && dvbc -> _vertex_element_type_array)
-      {
+      if (dvbc -> _direct_3d_vertex_declaration == 0 &&
+          dvbc -> _vertex_element_type_array) {
         VertexElementArray *vertex_element_array;
 
         vertex_element_array = shader_context -> _vertex_element_array;
@@ -492,29 +486,28 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
         {
           int index;
 
-          for (index = 0; index < vertex_element_array -> total_elements; index++)
+          for (index = 0; index < vertex_element_array->total_elements; index++)
           {
             VERTEX_ELEMENT_TYPE *vertex_element_type;
             VERTEX_ELEMENT_TYPE *source_vertex_element_type;
 
-            vertex_element_type = &vertex_element_array -> vertex_element_type_array [index];
+            vertex_element_type =
+              &vertex_element_array -> vertex_element_type_array [index];
 
             // MAP VERTEX ELEMENTS to VERTEX SHADER INPUTS
             // get offsets from vertex data for certain types of vertex elements
 
             offset = 0;
             source_vertex_element_type = dvbc -> _vertex_element_type_array;
-            while (source_vertex_element_type -> id != VS_END)
-            {
-              if (source_vertex_element_type -> id == vertex_element_type -> id)
-              {
+            while (source_vertex_element_type -> id != VS_END) {
+              if (source_vertex_element_type -> id ==
+                  vertex_element_type -> id) {
                   offset = source_vertex_element_type -> offset;
                   break;
               }
               source_vertex_element_type++;
             }
-            if (source_vertex_element_type -> id == VS_END)
-            {
+            if (source_vertex_element_type -> id == VS_END) {
               dxgsg9_cat.error()
                 << "unable to find a mapping for vertex shader input type="
                 << vertex_element_type -> id
@@ -524,7 +517,9 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
             vertex_element_array -> set_vertex_element_offset (index, offset);
           }
 
-          hr = _d3d_device -> CreateVertexDeclaration (vertex_element_array -> vertex_element_array, &dvbc -> _direct_3d_vertex_declaration);
+          hr = _d3d_device -> CreateVertexDeclaration (
+            vertex_element_array -> vertex_element_array,
+            &dvbc -> _direct_3d_vertex_declaration);
           if (FAILED (hr)) {
             dxgsg9_cat.error()
               << "CreateVertexDeclaration failed"
@@ -533,8 +528,7 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
 
           dvbc -> _shader_context = shader_context;
         }
-        else
-        {
+        else {
           dxgsg9_cat.error() << "apply_vertex_buffer ( ): shader_context vertex_element_array == 0\n";
         }
       }
@@ -607,8 +601,7 @@ void DXGraphicsStateGuardian9::
 apply_index_buffer(IndexBufferContext *ibc) {
   DXIndexBufferContext9 *dibc = DCAST(DXIndexBufferContext9, ibc);
 
-  if (_lru)
-  {
+  if (_lru) {
     _lru -> access_page (dibc -> _lru_page);
   }
 
@@ -718,7 +711,8 @@ do_clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_stencil) {
     aux_flags |=  D3DCLEAR_STENCIL;
-    nassertv(_screen->_presentation_params.EnableAutoDepthStencil && IS_STENCIL_FORMAT(_screen->_presentation_params.AutoDepthStencilFormat));
+    nassertv(_screen->_presentation_params.EnableAutoDepthStencil &&
+      IS_STENCIL_FORMAT(_screen->_presentation_params.AutoDepthStencilFormat));
   }
 
   if ((main_flags | aux_flags) != 0) {
@@ -788,7 +782,7 @@ prepare_display_region() {
     int l, u, w, h;
     _actual_display_region->get_region_pixels_i(l, u, w, h);
 
-DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
+    DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 
     // Create the viewport
     D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
