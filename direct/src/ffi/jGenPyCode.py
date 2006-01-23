@@ -73,12 +73,14 @@ if (EXTENSIONS is None):
 
 from direct.ffi import DoGenPyCode
 from direct.ffi import FFIConstants
-DoGenPyCode.outputDir = PANDAC
+DoGenPyCode.outputCodeDir = PANDAC
+DoGenPyCode.outputHTMLDir = os.path.join(PANDAC,"..","doc")
 DoGenPyCode.directDir = DIRECT
 DoGenPyCode.extensionsDir = EXTENSIONS
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = ['libpandaexpress','libpanda','libpandaphysics','libpandafx','libdirect','libpandaegg']
 DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
+DoGenPyCode.pythonSourcePath = [DIRECT]
 DoGenPyCode.native = 1
 
 #print "outputDir = ",DoGenPyCode.outputDir
