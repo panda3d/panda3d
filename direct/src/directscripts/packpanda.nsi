@@ -58,7 +58,7 @@ SetCompressor ${COMPRESSOR}
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
-LicenseData ${LICENSE}
+LicenseData "${LICENSE}"
 
 InstType "Typical"
 
@@ -83,20 +83,19 @@ Section "${SMDIRECTORY}" SecCore
         SetOverwrite try
 
         SetOutPath $INSTDIR
-        File ${PANDA}\LICENSE
+        File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
-        File /r ${PANDA}\bin\*.dll
+        File /r "${PANDA}\bin\*.dll"
         SetOutPath $INSTDIR\etc
-        File /r ${PANDA}\etc\*
+        File /r "${PANDA}\etc\*"
         SetOutPath $INSTDIR\direct
-        File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\*.py
-        File ${PANDA}\direct\__init__.py
-        SetOutPath $INSTDIR\direct\src\directscripts
-        File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\src\directscripts\*
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\*.py"
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
+        File "${PANDA}\direct\__init__.py"
         SetOutPath $INSTDIR\pandac
-        File /r ${PANDA}\pandac\*.py
+        File /r "${PANDA}\pandac\*.py"
         SetOutPath $INSTDIR\python
-        File /r /x CVS /x *.pyc ${PANDA}\python\*
+        File /r /x CVS /x *.pyc "${PANDA}\python\*"
 
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
@@ -104,48 +103,48 @@ Section "${SMDIRECTORY}" SecCore
         !ifdef PPGAME
 
             SetOutPath $INSTDIR\models\audio
-            File /r /x CVS ${PANDA}\models\audio\*
+            File /r /x CVS "${PANDA}\models\audio\*"
             SetOutPath $INSTDIR\bin
-            File /r ${PANDA}\bin\ppython.exe
+            File /r "${PANDA}\bin\ppython.exe"
             SetOutpath $INSTDIR\game
-            File /r ${PPGAME}\*
+            File /r "${PPGAME}\*"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPMAIN}" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
 
         !else
 
             SetOutPath $INSTDIR\plugins
-            File /nonfatal /r ${PANDA}\plugins\*.dle
-            File /nonfatal /r ${PANDA}\plugins\*.dlo
-            File /nonfatal /r ${PANDA}\plugins\*.mll
-            File /nonfatal /r ${PANDA}\plugins\*.mel
+            File /nonfatal /r "${PANDA}\plugins\*.dle"
+            File /nonfatal /r "${PANDA}\plugins\*.dlo"
+            File /nonfatal /r "${PANDA}\plugins\*.mll"
+            File /nonfatal /r "${PANDA}\plugins\*.mel"
             SetOutPath $INSTDIR\pandac\input
-            File /r ${PANDA}\pandac\input\*
+            File /r "${PANDA}\pandac\input\*"
             SetOutPath $INSTDIR\bin
-            File /r ${PANDA}\bin\*.exe
+            File /r "${PANDA}\bin\*.exe"
             SetOutPath $INSTDIR\lib
-            File /r /x *.exp ${PANDA}\lib\*
+            File /r /x *.exp "${PANDA}\lib\*"
             SetOutPath $INSTDIR\include
-            File /r /x *.exp ${PANDA}\include\*
+            File /r /x *.exp "${PANDA}\include\*"
             SetOutPath $INSTDIR\SceneEditor
-            File /r /x CVS ${PSOURCE}\SceneEditor\*.*
+            File /r /x CVS "${PSOURCE}\SceneEditor\*.*"
             SetOutPath $INSTDIR\Pmw
-            File /r /x CVS ${PANDA}\Pmw\*
+            File /r /x CVS "${PANDA}\Pmw\*"
             SetOutPath $INSTDIR\NSIS
-            File /r /x CVS ${NSISDIR}\*
+            File /r /x CVS "${NSISDIR}\*"
             SetOutPath $INSTDIR\epydoc
-            File /r /x CVS ${PANDA}\epydoc\*
+            File /r /x CVS "${PANDA}\epydoc\*"
             SetOutPath $INSTDIR
-            File /r /x CVS ${PANDA}\ReleaseNotes
+            File /r /x CVS "${PANDA}\ReleaseNotes"
             !ifdef PYEXTRAS
             SetOutPath $INSTDIR\python\lib
-            File /nonfatal /r ${PYEXTRAS}\*
+            File /nonfatal /r "${PYEXTRAS}\*"
             !endif
             SetOutPath $INSTDIR\models
-            File /r /x CVS ${PANDA}\models\*
+            File /r /x CVS "${PANDA}\models\*"
             SetOutPath $INSTDIR\samples
-            File /r /x CVS /x GreetingCard ${PSOURCE}\samples\*
+            File /r /x CVS /x GreetingCard "${PSOURCE}\samples\*"
             SetOutPath $INSTDIR\samples\GreetingCard
-            File /r /x CVS ${PANDA}\tmp\GreetingCard\*
+            File /r /x CVS "${PANDA}\tmp\GreetingCard\*"
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
@@ -205,6 +204,12 @@ Section -post
         Push "$INSTDIR\bin"
         Call AddToPath
         !endif
+
+        DetailPrint "Registering Helix Preferences..."
+        WriteRegStr HKLM "Software\Helix\HelixSDK\10.0\Preferences\UseOverlay" "" "0"
+        WriteRegStr HKLM "Software\Helix\HelixSDK\10.0\Preferences\UseWinDraw" "" "0"
+        WriteRegStr HKCU "Software\Helix\HelixSDK\10.0\Preferences\UseOverlay" "" "0"
+        WriteRegStr HKCU "Software\Helix\HelixSDK\10.0\Preferences\UseWinDraw" "" "0"
 
         DetailPrint "Adding the uninstaller ..."
         Delete "$INSTDIR\uninst.exe"
