@@ -485,7 +485,6 @@ class CodeDatabase:
         self.globalfn = []
         print "Reading C++ source files"
         for cxx in cxxlist:
-            #print "Reading source file "+cxx
             tokzr = InterrogateTokenizer(cxx)
             idb = InterrogateDatabase(tokzr)
             for type in idb.types.values():
@@ -503,7 +502,6 @@ class CodeDatabase:
                     self.funcs[type.scopedname+"."+func.pyname] = func
         print "Reading Python sources files"
         for py in pylist:
-            #print "Reading source file "+py
             pyinf = ParseTreeInfo(readFile(py), py)
             for type in pyinf.class_info.keys():
                 typinf = pyinf.class_info[type]
@@ -656,27 +654,32 @@ def generateFunctionDocs(code, method):
     chunk = chunk + "</td></tr></table><br>\n"
     return chunk
 
-def generateLinkTable(table, cols, urlprefix, urlsuffix):
-    table = table[:]
-    column = (len(table)+cols-1)/cols
+def generateLinkTable(link, text, cols, urlprefix, urlsuffix):
+    column = (len(link)+cols-1)/cols
     percent = 100 / cols
-    for i in range(cols): table.append("")
     result = '<table width="100%">\n'
     for i in range(column):
         line = ""
         for j in range(cols):
-            slot = table[i + column*j]
-            line = line + '<td width="' + str(percent) + '%">' + linkTo(urlprefix+slot+urlsuffix,slot) + "</td>"
+            slot = i + column*j
+            linkval = ""
+            textval = ""
+            if (slot < len(link)): linkval = link[slot]
+            if (slot < len(text)): textval = text[slot]
+            if (i==0):
+                line = line + '<td width="' + str(percent) + '%">' + linkTo(urlprefix+linkval+urlsuffix,textval) + "</td>"
+            else:
+                line = line + '<td>' + linkTo(urlprefix+linkval+urlsuffix,textval) + "</td>"
         result = result + "<tr>" + line + "</tr>\n"
     result = result + "</table>\n"
     return result
 
-def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlprefix, urlsuffix):
-    ignore = {}
-    ignore["__init__.py"] = 1
 
+def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlprefix, urlsuffix):
     if isinstance(directdirlist, types.StringTypes):
         directdirlist = [directdirlist]
+    ignore = {}
+    ignore["__init__.py"] = 1
     for directdir in directdirlist:
         ignore[directdir + "/src/directscripts"] = 1
         ignore[directdir + "/src/extensions"] = 1
@@ -693,7 +696,6 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     xclasses = classes[:]
     print "Generating HTML pages"
     for type in classes:
-        #print "Generating page for class "+type
         body = "<h1>" + type + "</h1>\n"
         comment = code.getClassComment(type)
         body = body + "<ul>\n" + comment + "</ul>\n\n"
@@ -727,18 +729,63 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
             writeFile(docdir + "/" + modtype + ".html", body)
             xclasses.append(modtype)
     xclasses.sort()
+
     index = "<h1>List of Classes - Panda " + pversion + "</h1>\n"
-    index = index + generateLinkTable(xclasses,3,urlprefix,urlsuffix)
+    index = index + generateLinkTable(xclasses,xclasses,3,urlprefix,urlsuffix)
     fnlist = code.getGlobalFunctionList()[:]
     fnlist.sort()
     fnnames = []
     for i in range(len(fnlist)):
         fnnames.append(code.getFunctionName(fnlist[i]))
-    index = index + "<h1>List of Global Functions - Panda " + pversion + "</h1>\n"
-    index = index + generateLinkTable(fnnames,3,"#","")
+    index = header + index + footer
+    writeFile(docdir + "/classes.html", index)
+
+    index = "<h1>List of Global Functions - Panda " + pversion + "</h1>\n"
+    index = index + generateLinkTable(fnnames,fnnames,3,"#","")
     for func in fnlist:
         index = index + generateFunctionDocs(code, func)
     index = header + index + footer
+    writeFile(docdir + "/functions.html", index)
+
+    table = {}
+    for type in classes:
+        for method in code.getClassMethods(type)[:]:
+            name = code.getFunctionName(method)
+            prefix = name[0].upper()
+            if (table.has_key(prefix)==0): table[prefix] = {}
+            if (table[prefix].has_key(name)==0): table[prefix][name] = []
+            table[prefix][name].append(type)
+
+    index = "<h1>List of Methods - Panda " + pversion + "</h1>\n"
+
+    prefixes = table.keys()
+    prefixes.sort()
+    for prefix in prefixes:
+        index = index + linkTo("#"+prefix, prefix) + " "
+    index = index + "<br><br>"
+    for prefix in prefixes:
+        index = index + '<a name="' + prefix + '">' + "\n"
+        names = table[prefix].keys()
+        names.sort()
+        for name in names:
+            line = '<b>' + name + ":</b><ul>\n"
+            ctypes = table[prefix][name]
+            ctypes.sort()
+            for type in ctypes:
+                line = line + "<li>" + linkTo(urlprefix+type+urlsuffix+"#"+name, type) + "\n"
+            line = line + "</ul>\n"
+            index = index + line + "\n"
+    index = header + index + footer
+    writeFile(docdir + "/methods.html", index)
+
+    index = "<h1>Panda " + pversion + "</h1>\n"
+    index = index + "<ul>\n"
+    index = index + "<li>" + linkTo(urlprefix+"classes"+urlsuffix, "List of all Classes") + "\n"
+    index = index + "</ul>\n"
+    index = index + "<ul>\n"
+    index = index + "<li>" + linkTo(urlprefix+"functions"+urlsuffix, "List of all Global Functions") + "\n"
+    index = index + "</ul>\n"
+    index = index + "<ul>\n"
+    index = index + "<li>" + linkTo(urlprefix+"methods"+urlsuffix, "List of all Methods (very long)") + "\n"
+    index = index + "</ul>\n"
     writeFile(docdir + "/index.html", index)
-
-
