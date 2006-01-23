@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "dxGraphicsStateGuardian9.h"
 #include "dxShaderContext9.h"
 
 TypeHandle CLP(ShaderContext)::_type_handle;
