@@ -16,35 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "dxGraphicsStateGuardian9.h"
 #include "vertexElementArray.h"
 
 
-VertexElementArray::VertexElementArray (int maximum_vertex_elements)
-{
+VertexElementArray::VertexElementArray (int maximum_vertex_elements) {
   this -> offset = 0;
   this -> total_elements = 0;
   this -> maximum_vertex_elements = maximum_vertex_elements;
   this -> vertex_element_array = new DIRECT_3D_VERTEX_ELEMENT [maximum_vertex_elements];
+  memset (this -> vertex_element_array, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT) * maximum_vertex_elements);
   this -> vertex_element_type_array = new VERTEX_ELEMENT_TYPE [maximum_vertex_elements];
+  memset (this -> vertex_element_type_array, 0, sizeof (VERTEX_ELEMENT_TYPE) * maximum_vertex_elements);
 
   memset (this -> vertex_element_type_counter_array, 0, VS_TOTAL_TYPES * sizeof (int));
 }
 
-VertexElementArray::~VertexElementArray ( )
-{
+VertexElementArray::~VertexElementArray ( ) {
   delete this -> vertex_element_array;
   delete this -> vertex_element_type_array;
 }
 
-int VertexElementArray::set_vertex_element_offset (int vertex_element_index, int offset)
-{
+int VertexElementArray::set_vertex_element_offset (int vertex_element_index, int offset) {
   int state;
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
 
-  if (vertex_element_index >= 0 && vertex_element_index < this -> total_elements)
-  {
+  if (vertex_element_index >= 0 && vertex_element_index < this -> total_elements) {
     vertex_element = &this -> vertex_element_array [vertex_element_index];
     vertex_element -> Offset = offset;
     state = true;
@@ -53,18 +50,13 @@ int VertexElementArray::set_vertex_element_offset (int vertex_element_index, int
   return state;
 }
 
-void VertexElementArray::add_position_xyz_vertex_element (int stream_index)
-{
+void VertexElementArray::add_position_xyz_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_POSITION_XYZ;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -83,18 +75,13 @@ void VertexElementArray::add_position_xyz_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_position_xyzw_vertex_element (int stream_index)
-{
+void VertexElementArray::add_position_xyzw_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_POSITION_XYZW;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -113,18 +100,13 @@ void VertexElementArray::add_position_xyzw_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_normal_vertex_element (int stream_index)
-{
+void VertexElementArray::add_normal_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_NORMAL;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -143,18 +125,13 @@ void VertexElementArray::add_normal_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_binormal_vertex_element (int stream_index)
-{
+void VertexElementArray::add_binormal_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_BINORMAL;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -173,18 +150,13 @@ void VertexElementArray::add_binormal_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_tangent_vertex_element (int stream_index)
-{
+void VertexElementArray::add_tangent_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_TANGENT;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -203,18 +175,13 @@ void VertexElementArray::add_tangent_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_diffuse_color_vertex_element (int stream_index)
-{
+void VertexElementArray::add_diffuse_color_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_DIFFUSE;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -233,18 +200,13 @@ void VertexElementArray::add_diffuse_color_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_specular_color_vertex_element (int stream_index)
-{
+void VertexElementArray::add_specular_color_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_SPECULAR;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -263,18 +225,13 @@ void VertexElementArray::add_specular_color_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_u_vertex_element (int stream_index)
-{
+void VertexElementArray::add_u_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_TEXTURE_U;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -293,18 +250,13 @@ void VertexElementArray::add_u_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_uv_vertex_element (int stream_index)
-{
+void VertexElementArray::add_uv_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_TEXTURE_UV;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -323,18 +275,13 @@ void VertexElementArray::add_uv_vertex_element (int stream_index)
   }
 }
 
-void VertexElementArray::add_uvw_vertex_element (int stream_index)
-{
+void VertexElementArray::add_uvw_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_TEXTURE_UVW;
     vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
@@ -353,20 +300,15 @@ void VertexElementArray::add_uvw_vertex_element (int stream_index)
   }
 }
 
-int VertexElementArray::add_end_vertex_element (void)
-{
+int VertexElementArray::add_end_vertex_element (void) {
   int add;
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
 
   add = FALSE;
-  if (this -> total_elements < this -> maximum_vertex_elements)
-  {
+  if (this -> total_elements < this -> maximum_vertex_elements) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
-    memset (vertex_element, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT));
-
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
-    memset (vertex_element_type, 0, sizeof (VERTEX_ELEMENT_TYPE));
 
     vertex_element_type -> id = VS_END;
 
