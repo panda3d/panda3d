@@ -411,23 +411,31 @@ class TaskManager:
             # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
         return cont
 
-    def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None, appendTask=False):
-        task = Task(func)
+    def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None, priority=0, uponDeath=None, appendTask=False):
+        if isinstance(funcOrTask, Task):
+            task = funcOrTask
+        elif callable(funcOrTask):
+            task = Task(funcOrTask, priority)
+        else:
+            self.notify.error('add: Tried to add a task that was not a Task or a func')
+        task.setPriority(priority)
+        task.name = name
+        task.extraArgs = extraArgs
+        if uponDeath:
+            task.uponDeath = uponDeath
+
         # if told to, append the task object to the extra args list so the method
         # called will be able to access any properties on the task
         if (appendTask == True and extraArgs != None):
             extraArgs.append(task)
-        task.name = taskName
-        task.extraArgs = extraArgs
-        if uponDeath:
-            task.uponDeath = uponDeath
+
         # TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
-        nameList = self.nameDict.get(taskName)
+        nameList = self.nameDict.get(name)
         if nameList:
             nameList.append(task)
         else:
-            self.nameDict[taskName] = [task]
+            self.nameDict[name] = [task]
         # be sure to ask the globalClock for the current frame time
         # rather than use a cached value; globalClock's frame time may
         # have been synced since the start of this frame
