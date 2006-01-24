@@ -74,7 +74,7 @@ DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
           _vertex_element_type_array [index].id = VS_POSITION_XYZW;
           break;
         default:
-          dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
+          dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
           break;
       }
 
@@ -92,7 +92,7 @@ DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
           _vertex_element_type_array [index].id = VS_TEXTURE_UVW;
           break;
         default:
-          dxgsg9_cat.error ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
+          dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
           break;
       }
 
@@ -114,7 +114,7 @@ DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
 
     } else {
 
-      dxgsg9_cat.error ( ) << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
+      dxgsg9_cat.warning ( ) << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
       _vertex_element_type_array [index].id = VS_ERROR;
     }
 
@@ -296,12 +296,10 @@ free_vbuffer(void) {
         << "deleting vertex buffer " << _vbuffer << "\n";
     }
 
-    if (DEBUG_VERTEX_BUFFER)
-    {
+    if (DEBUG_VERTEX_BUFFER) {
       RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
     }
-    else
-    {
+    else {
       _vbuffer -> Release ( );
     }
 
@@ -325,13 +323,11 @@ allocate_vbuffer(DXScreenData &scrn) {
   data_size = get_data()->get_data_size_bytes();
 
   _managed = scrn._managed_vertex_buffers;
-  if (_managed)
-  {
+  if (_managed) {
     pool = D3DPOOL_MANAGED;
     usage = D3DUSAGE_WRITEONLY;
   }
-  else
-  {
+  else {
     pool = D3DPOOL_DEFAULT;
     usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
   }
@@ -372,8 +368,7 @@ create_vbuffer(DXScreenData &scrn) {
 
   free_vbuffer ( );
 
-  if (_lru_page)
-  {
+  if (_lru_page) {
     _lru_page -> _m.lru -> remove_page (_lru_page);
     _lru_page -> _m.lru -> free_page (_lru_page);
     _lru_page = 0;
@@ -387,20 +382,16 @@ create_vbuffer(DXScreenData &scrn) {
 
   this -> allocate_vbuffer(scrn);
 
-  if (_vbuffer)
-  {
-    if (_managed == false)
-    {
+  if (_vbuffer) {
+    if (_managed == false) {
       Lru *lru;
 
       lru = scrn._dxgsg9 -> _lru;
-      if (lru)
-      {
+      if (lru) {
         LruPage *lru_page;
 
         lru_page = lru -> allocate_page (data_size);
-        if (lru_page)
-        {
+        if (lru_page) {
           lru_page -> _m.type = GPT_VertexBuffer;
           lru_page -> _m.lru_page_type.pointer = this;
 
@@ -434,12 +425,10 @@ upload_data() {
   HRESULT hr;
   BYTE *local_pointer;
 
-  if (_managed)
-  {
+  if (_managed) {
     hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, 0);
   }
-  else
-  {
+  else {
     hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
   }
   if (FAILED(hr)) {
