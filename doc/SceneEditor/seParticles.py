@@ -1,28 +1,28 @@
 from pandac.PandaModules import *
 from direct.particles.ParticleManagerGlobal import *
 from direct.showbase.PhysicsManagerGlobal import *
-
-from pandac import ParticleSystem
-from pandac import BaseParticleFactory
-from pandac import PointParticleFactory
-from pandac import ZSpinParticleFactory
+#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
+from pandac.PandaModules import ParticleSystem
+from pandac.PandaModules import BaseParticleFactory
+from pandac.PandaModules import PointParticleFactory
+from pandac.PandaModules import ZSpinParticleFactory
 #import OrientedParticleFactory
-from pandac import BaseParticleRenderer
-from pandac import PointParticleRenderer
-from pandac import LineParticleRenderer
-from pandac import GeomParticleRenderer
-from pandac import SparkleParticleRenderer
-from pandac import SpriteParticleRenderer
-from pandac import BaseParticleEmitter
-from pandac import BoxEmitter
-from pandac import DiscEmitter
-from pandac import LineEmitter
-from pandac import PointEmitter
-from pandac import RectangleEmitter
-from pandac import RingEmitter
-from pandac import SphereSurfaceEmitter
-from pandac import SphereVolumeEmitter
-from pandac import TangentRingEmitter
+from pandac.PandaModules import BaseParticleRenderer
+from pandac.PandaModules import PointParticleRenderer
+from pandac.PandaModules import LineParticleRenderer
+from pandac.PandaModules import GeomParticleRenderer
+from pandac.PandaModules import SparkleParticleRenderer
+from pandac.PandaModules import SpriteParticleRenderer
+from pandac.PandaModules import BaseParticleEmitter
+from pandac.PandaModules import BoxEmitter
+from pandac.PandaModules import DiscEmitter
+from pandac.PandaModules import LineEmitter
+from pandac.PandaModules import PointEmitter
+from pandac.PandaModules import RectangleEmitter
+from pandac.PandaModules import RingEmitter
+from pandac.PandaModules import SphereSurfaceEmitter
+from pandac.PandaModules import SphereVolumeEmitter
+from pandac.PandaModules import TangentRingEmitter
 import string
 import os
 from direct.directnotify import DirectNotifyGlobal

@@ -360,17 +360,19 @@ class FileSaver:
                 if(ActorAnimations!={}):  #Check if a dictionary of animations exists for this actor
                     for animation in ActorAnimations:
                         #out_file.write(i2+ "self."+ actorS + ".loadAnims(" + str(ActorAnimations) +")\n") # Old way with absolute paths
-                        print "ACTOR ANIMATIONS" + ActorAnimations[animation]   
-                        oldAnimPath=Filename(ActorAnimations[animation])
-                        oldAnim=oldAnimPath.toOsSpecific()
-                        dirOS=Filename(dirname)
-                        newAnim=dirOS.toOsSpecific() + "\\" + oldAnimPath.getBasename()
-                        print "ACTOR ANIM SAVER:: Comparing" + oldAnim +"and" + newAnim
-                        if(oldAnim!=newAnim):
-                            shutil.copyfile(oldAnim,newAnim)
-                        newAnimF=Filename.fromOsSpecific(newAnim)
-                        ActorAnimationsInvoke[animation]="self.executionpath +" + "/" +newAnimF.getBasename()
-                        ActorAnimations[animation]= self.savepath + "/" + newAnimF.getBasename()
+                        #Manakel 2/12/2004: solve the not empty but not defined animation case
+                        if not animation is None:
+                            print "ACTOR ANIMATIONS:" + ActorAnimations[animation]   
+                            oldAnimPath=Filename(ActorAnimations[animation])
+                            oldAnim=oldAnimPath.toOsSpecific()
+                            dirOS=Filename(dirname)
+                            newAnim=dirOS.toOsSpecific() + "\\" + oldAnimPath.getBasename()
+                            print "ACTOR ANIM SAVER:: Comparing" + oldAnim +"and" + newAnim
+                            if(oldAnim!=newAnim):
+                                shutil.copyfile(oldAnim,newAnim)
+                            newAnimF=Filename.fromOsSpecific(newAnim)
+                            ActorAnimationsInvoke[animation]="self.executionpath +" + "/" +newAnimF.getBasename()
+                            ActorAnimations[animation]= self.savepath + "/" + newAnimF.getBasename()
 
 
                 out_file.write(i2+"if(self.loadmode==1):\n")
@@ -695,7 +697,8 @@ class FileSaver:
             if(parentname=="render" or parentname =="camera"):
                 out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]="+ parentname + ".attachNewNode(self." + collnodeS + "_Node)\n")
             else:
-                if(AllScene.particleDict.has_key(parent)):
+                #Manakel 2/12/2005: parent replaced by parent Name but why Parent name in partice and parent for other objects?
+                if(AllScene.particleDict.has_key(parentname)):
                     out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]=self."+ parentname + "getEffect().attachNewNode(self." + collnodeS + "_Node)\n")
                 else:
                     out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]=self."+ parentname + ".attachNewNode(self." + collnodeS + "_Node)\n")

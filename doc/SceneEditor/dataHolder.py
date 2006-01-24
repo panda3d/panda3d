@@ -750,8 +750,8 @@ class dataHolder:
 
         if self.collisionVisable:
             self.collisionDict[name].show()
-
-        base.cTrav.addCollider(node, self.CollisionHandler)
+        #Manakel 2/12/2005: replace node by its nodepath
+        base.cTrav.addCollider( self.collisionDict[name], self.CollisionHandler)
 
         messenger.send('SGE_Update Explorer',[render])
         

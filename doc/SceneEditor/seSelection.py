@@ -403,7 +403,8 @@ class SelectionQueue(CollisionHandlerQueue):
         # And a traverser to do the actual collision tests
         self.ct = CollisionTraverser()
         # Let the traverser know about the collision node and the queue
-        self.ct.addCollider(self.collisionNode, self)
+        #Manakel 2/12/2005: replace CollisionNode by its nodepath
+        self.ct.addCollider(self.collisionNodePath, self)
         # List of objects that can't be selected
         self.unpickable = UNPICKABLE
         # Derived class must add Collider to complete initialization

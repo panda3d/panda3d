@@ -10,7 +10,8 @@ from direct.showbase.ShowBaseGlobal import *
 from direct.interval.IntervalGlobal import *
 from direct.showbase import DirectObject
 import math
-from pandac.MouseWatcher import *
+#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
+from pandac.PandaModules import MouseWatcher 
 
 
 class ViewPort:
