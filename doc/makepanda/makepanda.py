@@ -480,16 +480,18 @@ MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\Instal
 ]
 
 for (ver,key) in MAYAVERSIONINFO:
-    if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
+    print "Checking for "+ver
+    if (OMIT.count(ver)==0):
         if (sys.platform == "win32"):
-            MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
-            if (MAYASDK[ver] == 0):
-                WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
-                OMIT.append(ver)
-            else:
-                MAYASDK[ver] = MAYASDK[ver].replace("\\", "/").rstrip("/")
-        else:
+	    if (MAYASDK.has_key(ver)==0):
+                MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
+                if (MAYASDK[ver] == 0):
+                    WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
+                    WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+                    OMIT.append(ver)
+                else:
+                    MAYASDK[ver] = MAYASDK[ver].replace("\\", "/").rstrip("/")
+	else:
             WARNINGS.append(ver+" not yet supported under linux")
             WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
             OMIT.append(ver)
@@ -506,21 +508,22 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "instal
 ]
 
 for version,key1,key2,subdir in MAXVERSIONINFO:
-    if (OMIT.count(version)==0) and (MAXSDK.has_key(version)==0):
+    if (OMIT.count(version)==0):
         if (sys.platform == "win32"):
-            top = GetRegistryKey(key1,key2)
-            if (top == 0):
-                WARNINGS.append("The registry does not appear to contain a pointer to "+version)
-                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-                OMIT.append(version)
-            else:
-                if (os.path.isdir(top + "\\" + subdir)==0):
-                    WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
+	    if (MAXSDK.has_key(version)==0):
+                top = GetRegistryKey(key1,key2)
+                if (top == 0):
+                    WARNINGS.append("The registry does not appear to contain a pointer to "+version)
                     WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
                     OMIT.append(version)
                 else:
-                    MAXSDK[version] = top + "maxsdk"
-                    MAXSDKCS[version] = top + subdir
+                    if (os.path.isdir(top + "\\" + subdir)==0):
+                        WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
+                        WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                        OMIT.append(version)
+                    else:
+                        MAXSDK[version] = top + "maxsdk"
+                        MAXSDKCS[version] = top + subdir
         else:
             WARNINGS.append(version+" not yet supported under linux")
             WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
