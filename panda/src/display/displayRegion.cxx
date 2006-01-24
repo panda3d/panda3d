@@ -197,9 +197,8 @@ set_dimensions(float l, float r, float b, float t) {
   _b = b;
   _t = t;
 
-  const GraphicsOutput *win = get_window();
-  if (win != (GraphicsOutput *)NULL && win->has_size()) {
-    do_compute_pixels(win->get_x_size(), win->get_y_size());
+  if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
+    do_compute_pixels(_window->get_x_size(), _window->get_y_size());
   }
 }
 
@@ -319,11 +318,9 @@ set_sort(int sort) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels() {
-  const GraphicsOutput *win = get_window();
-  if (win != (GraphicsOutput *)NULL) {
-    MutexHolder holder(_lock);
-
-    do_compute_pixels(win->get_x_size(), win->get_y_size());
+  MutexHolder holder(_lock);
+  if (_window != (GraphicsOutput *)NULL) {
+    do_compute_pixels(_window->get_x_size(), _window->get_y_size());
   }
 }
 
