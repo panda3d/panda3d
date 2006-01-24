@@ -131,8 +131,6 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS "${PANDA}\Pmw\*"
             SetOutPath $INSTDIR\NSIS
             File /r /x CVS "${NSISDIR}\*"
-            SetOutPath $INSTDIR\epydoc
-            File /r /x CVS "${PANDA}\epydoc\*"
             SetOutPath $INSTDIR
             File /r /x CVS "${PANDA}\ReleaseNotes"
             !ifdef PYEXTRAS
