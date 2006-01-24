@@ -1043,9 +1043,11 @@ compile_cg_parameter(CGparameter p)
   if ((pieces[0]=="mstrans")||
       (pieces[0]=="cstrans")||
       (pieces[0]=="wstrans")||
+      (pieces[0]=="vstrans")||
       (pieces[0]=="mspos")||
       (pieces[0]=="cspos")||
-      (pieces[0]=="wspos")) {
+      (pieces[0]=="wspos")||
+      (pieces[0]=="vspos")) {
     if ((!errchk_cg_parameter_words(p,2)) ||
         (!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_UNIFORM)))
