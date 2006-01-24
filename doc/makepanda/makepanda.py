@@ -36,7 +36,7 @@ VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAYA65","MAX5","MAX6","MAX7",
+          "OPENSSL","FREETYPE","FFTW","MILES","MAYA6","MAYA65","MAYA7","MAX6","MAX7","MAX8",
           "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
@@ -50,9 +50,10 @@ SLAVEFILE=0
 DEPENDENCYQUEUE=[]
 FILEDATECACHE = {}
 CXXINCLUDECACHE = {}
-ALLIN=[]
 SLAVEBUILD=0
 THREADCOUNT=0
+MAYAVERSIONS=["6","65","7"]
+MAXVERSIONS=["6","7","8"]
 
 ##########################################################################################
 #
@@ -238,12 +239,13 @@ def packageInfo():
   See panda3d/doc/INSTALL-PP for more detailed information.
 
   3D modeling an painting packages:
-    MAX5      3D Studio Max version 5
     MAX6      3D Studio Max version 6
     MAX7      3D Studio Max version 7
+    MAX8      3D Studio Max version 8
 
-    MAYA5     Maya version 5
     MAYA6     Maya version 6
+    MAYA65    Maya version 6.5
+    MAYA7     Maya version 7
 
   Audio playback:
     FMOD      f mod
@@ -433,15 +435,15 @@ os.chdir(PANDASOURCE)
 
 if (os.path.isdir("sdks")):
     DIRECTXSDK="sdks/directx"
-    MAXSDKCS["MAX5"] = "sdks/maxsdk5"
     MAXSDKCS["MAX6"] = "sdks/maxsdk6"
     MAXSDKCS["MAX7"] = "sdks/maxsdk7"
-    MAXSDK["MAX5"]   = "sdks/maxsdk5"
+    MAXSDKCS["MAX8"] = "sdks/maxsdk8"
     MAXSDK["MAX6"]   = "sdks/maxsdk6"
     MAXSDK["MAX7"]   = "sdks/maxsdk7"
-    MAYASDK["MAYA5"] = "sdks/maya5"
-    MAYASDK["MAYA6"] = "sdks/maya6"
+    MAXSDK["MAX8"]   = "sdks/maxsdk8"
+    MAYASDK["MAYA6"]  = "sdks/maya6"
     MAYASDK["MAYA65"] = "sdks/maya65"
+    MAYASDK["MAYA7"]  = "sdks/maya7"
 
 ########################################################################
 ##
@@ -468,16 +470,16 @@ if sys.platform == "win32" and DIRECTXSDK is None:
 
 ########################################################################
 ##
-## Locate the Maya 5.0 and Maya 6.0 SDK
+## Locate the Maya SDK
 ##
 ########################################################################
 
-MAYAVERSIONS=[("MAYA5",  "SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath"),
-              ("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
-              ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath")
+MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
+                 ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
+                 ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath")
 ]
 
-for (ver,key) in MAYAVERSIONS:
+for (ver,key) in MAYAVERSIONINFO:
     if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
         if (sys.platform == "win32"):
             MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
@@ -498,11 +500,12 @@ for (ver,key) in MAYAVERSIONS:
 ##
 ########################################################################
 
-MAXVERSIONS = [("MAX5", "SOFTWARE\\Autodesk\\3DSMAX\\5.0\\MAX-1:409", "uninstallpath", "Cstudio\\Sdk"),
-               ("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
-               ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS")]
+MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
+                  ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS"),
+                  ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0",            "Installdir",    "maxsdk\\include\\CS"),
+]
 
-for version,key1,key2,subdir in MAXVERSIONS:
+for version,key1,key2,subdir in MAXVERSIONINFO:
     if (OMIT.count(version)==0) and (MAXSDK.has_key(version)==0):
         if (sys.platform == "win32"):
             top = GetRegistryKey(key1,key2)
@@ -625,11 +628,6 @@ if (OMIT.count("MILES")==0):
     WARNINGS.append("makepanda currently does not support miles sound system")
     WARNINGS.append("I have automatically added this command-line option: --no-miles")
     OMIT.append("MILES")
-
-if (OMIT.count("MAYA5")==0):
-    WARNINGS.append("MAYA5 support is currently broken.")
-    WARNINGS.append("I have automatically added this command-line option: --no-maya5")
-    OMIT.append("MAYA5")
 
 ##########################################################################################
 #
@@ -967,13 +965,14 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     cmd = "cl /Fo" + wobj + " /nologo /c"
     if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ibuilt/python/include"
     if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
-    for ver in ["MAYA5","MAYA6","MAYA65"]:
-      if (opts.count(ver)): cmd = cmd + ' /I"' + MAYASDK[ver] + '/include"'
-    for max in ["MAX5","MAX6","MAX7"]:
-        if (PkgSelected(opts,max)):
-            cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
+    for ver in MAYAVERSIONS:
+        if (PkgSelected(opts,"MAYA"+ver)):
+            cmd = cmd + ' /I"' + MAYASDK["MAYA"+ver] + '/include"'
+    for ver in MAXVERSIONS:
+        if (PkgSelected(opts,"MAX"+ver)):
+            cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
     for pkg in PACKAGES:
-        if (pkg[:4] != "MAYA") and PkgSelected(opts,pkg):
+        if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and PkgSelected(opts,pkg):
             cmd = cmd + " /Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
     for x in ipath: cmd = cmd + " /I" + x
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
@@ -1059,17 +1058,16 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
     ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
+    if (fullsrc == 0): exit("Cannot find source file "+src)
     if (OMIT.count("BISON")):
         dir = os.path.dirname(fullsrc)
-        CopyFile("built/tmp/"+dstc, dir+"/"+dstc+".prebuilt")
-        CopyFile("built/tmp/"+dsth, dir+"/"+dsth+".prebuilt")
-        EnqueueCxx(ipath=ipath,opts=opts,obj=obj,src=dstc)
-        return()
-    dstc=obj[:-4]+".cxx"
-    if (fullsrc == 0): exit("Cannot find source file "+src)
-    dstc="built/tmp/"+dstc
-    dsth="built/include/"+dsth
-    DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc], [])
+        CopyFile("built/tmp/"+obj[:-4]+".cxx", dir+"/"+src[:-4]+".cxx.prebuilt")
+        CopyFile("built/include/"+src[:-4]+".h", dir+"/"+src[:-4]+".h.prebuilt")
+        EnqueueCxx(ipath=ipath,opts=opts,obj=obj,src=obj[:-4]+".cxx")
+    else:
+        dstc = "built/tmp/"+obj[:-4]+".cxx"
+        dsth = "built/include/"+src[:-4]+".h"
+        DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc], [])
 
 ########################################################################
 ##
@@ -1092,22 +1090,21 @@ def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
         exit("syntax error in EnqueueFlex directive")
     if (COMPILER=="MSVC7"):
         wobj="built/tmp/"+obj[:-4]+".obj"
-        dst="built/tmp/"+obj[:-4]+".cxx"
         fn=CompileFlexMSVC7
     if (COMPILER=="LINUXA"):
         wobj="built/tmp/"+obj[:-4]+".o"
-        dst="built/tmp/"+obj[:-4]+".cxx"
         fn=CompileFlexLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
     ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
+    if (fullsrc == 0): exit("Cannot find source file "+src)
     if (OMIT.count("FLEX")):
         dir = os.path.dirname(fullsrc)
-        CopyFile("built/tmp/"+dst, dir+"/"+dst+".prebuilt")
-        EnqueueCxx(ipath=IPATH, opts=OPTS, obj=obj, src=dst)
-        return()
-    if (fullsrc == 0): exit("Cannot find source file "+src)
-    DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc], [])
+        CopyFile("built/tmp/"+obj[:-4]+".cxx", dir+"/"+src[:-4]+".cxx.prebuilt")
+        EnqueueCxx(ipath=IPATH, opts=OPTS, obj=obj, src=obj[:-4]+".cxx")
+    else:
+        dst = "built/tmp/"+obj[:-4]+".cxx"
+        DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc], [])
 
 ########################################################################
 ##
@@ -1140,8 +1137,9 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
-        for ver in ["MAYA5","MAYA6","MAYA65"]:
-            if ((COMPILER=="MSVC7") and opts.count(ver)): cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
+        for ver in MAYAVERSIONS:
+            if ((COMPILER=="MSVC7") and PkgSelected(opts,"MAYA"+ver)):
+                cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
     CompileCxxMSVC7(wobj,outc,ipath,opts)
@@ -1170,8 +1168,9 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if (opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
-        for ver in ["MAYA5","MAYA6","MAYA65"]:
-            if (opts.count(ver)): cmd = cmd + ' -I"' + MAYASDK[ver] + '/include"'
+        for ver in MAYAVERSIONS:
+            if (PkgSelected(opts, "MAYA"+ver)):
+                cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
     CompileCxxLINUXA(wobj,outc,ipath,opts)
@@ -1180,7 +1179,7 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
     if (COMPILER=="MSVC7"):
-               altdep = "built/bin/interrogate.exe"
+        altdep = "built/bin/interrogate.exe"
         wobj = "built/tmp/"+obj
         fn = CompileIgateMSVC7
     if (COMPILER=="LINUXA"):
@@ -1188,7 +1187,6 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
         wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileIgateLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
-    ALLIN.append(outd)
     outd = 'built/pandac/input/'+outd
     dirlisting = os.listdir(src)
     files = fnmatch.filter(dirlisting,"*.h")
@@ -1234,11 +1232,11 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
     if (COMPILER=="MSVC7"):
-               altdep = "built/bin/interrogate_module.exe"
+        altdep = "built/bin/interrogate_module.exe"
         wobj = "built/tmp/"+obj[:-4]+".obj"
         fn = CompileImodMSVC7
     if (COMPILER=="LINUXA"):
-               altdep = "built/bin/interrogate_module"
+        altdep = "built/bin/interrogate_module"
         wobj = "built/tmp/"+obj[:-4]+".o"
         fn = CompileImodLINUXA
     if (SLAVEBUILD!=0) and (SLAVEBUILD!=wobj): return
@@ -1357,21 +1355,21 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"FFTW")):
         cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/rfftw.lib'
         cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/fftw.lib'
-    for maya in ["MAYA5","MAYA6","MAYA65"]:
-        if (PkgSelected(opts,maya)):
-            cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
-            cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMaya.lib"'
-            cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaAnim.lib"'
-            cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaUI.lib"'
-    for max in ["MAX5","MAX6","MAX7"]:
-        if PkgSelected(opts,max):
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/core.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/edmodel.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/gfx.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/geom.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/mesh.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/maxutil.lib"'
-            cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
+    for ver in MAYAVERSIONS:
+        if (PkgSelected(opts,"MAYA"+ver)):
+            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
+            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMaya.lib"'
+            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaAnim.lib"'
+            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaUI.lib"'
+    for ver in MAXVERSIONS:
+        if (PkgSelected(opts,"MAX"+ver)):
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/core.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/edmodel.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/gfx.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/geom.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/mesh.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
+            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
     if (PkgSelected(opts,"OPENCV")):
         cmd = cmd + " /LIBPATH:thirdparty/win-libs-vc7/opencv/lib"
         cmd = cmd + " cv.lib cxcore.lib cvaux.lib trs.lib highgui.lib"
@@ -3834,7 +3832,7 @@ if (OMIT.count("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/maya/
 #
 
-for VER in ["5","6","65"]:
+for VER in MAYAVERSIONS:
   if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -3846,7 +3844,7 @@ for VER in ["5","6","65"]:
 # DIRECTORY: pandatool/src/mayaegg/
 #
 
-for VER in ["5","6","65"]:
+for VER in MAYAVERSIONS:
   if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
@@ -3859,7 +3857,7 @@ for VER in ["5","6","65"]:
 # DIRECTORY: pandatool/src/maxegg/
 #
 
-for VER in ["6", "7"]:
+for VER in MAXVERSIONS:
   if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
@@ -3886,7 +3884,7 @@ for VER in ["6", "7"]:
 # DIRECTORY: pandatool/src/maxprogs/
 #
 
-for VER in ["6", "7"]:
+for VER in MAXVERSIONS:
   if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxprogs']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
@@ -4013,7 +4011,7 @@ if (OMIT.count("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-for VER in ["5","6","65"]:
+for VER in MAYAVERSIONS:
   if (OMIT.count('MAYA'+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/mayaprogs', 'pandatool/src/maya', 'pandatool/src/mayaegg',
            'pandatool/src/cvscopy']
@@ -4385,7 +4383,7 @@ if (OMIT.count("PANDAAPP")==0):
     OPTS=['NSPR']
     CopyAllHeaders('pandaapp/src/stitchbase')
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='stitchyy', src='stitchParser.yxx', dsth='stitchParser.h', obj='stitchbase_stitchParser.obj')
-    EnqueueFlex(ipath=IPATH, opts=OPTS, pre='stitchyy', src='stitchLexer.lxx', obj='stitchbase_stitchLexer.cxx', dashi=1)
+    EnqueueFlex(ipath=IPATH, opts=OPTS, pre='stitchyy', src='stitchLexer.lxx', obj='stitchbase_stitchLexer.obj', dashi=1)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchbase_composite1.cxx', obj='stitchbase_composite1.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchbase_composite2.cxx', obj='stitchbase_composite2.obj')
     EnqueueLib(lib='libstitchbase.lib', obj=[
@@ -4607,8 +4605,9 @@ RunDependencyQueue(DEPENDENCYQUEUE)
 ##########################################################################################
 
 if (OMIT.count("PYTHON")==0):
-    if (older(['built/pandac/PandaModules.py'],xpaths("built/pandac/input/",ALLIN,""))):
-        if (GENMAN): oscmd("built/bin/genpycode -m")
+    allin = os.listdir("built/pandac/input")
+    if (older(['built/pandac/PandaModules.py'],xpaths("built/pandac/input/",allin,""))):
+        if (GENMAN): oscmd("built/bin/genpycode -d")
         else       : oscmd("built/bin/genpycode")
         updatefiledate('built/pandac/PandaModules.py')
 
