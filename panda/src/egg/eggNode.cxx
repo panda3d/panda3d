@@ -32,6 +32,26 @@ TypeHandle EggNode::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::rename_node
+//       Access: Published
+//  Description: Rename by stripping out the prefix
+////////////////////////////////////////////////////////////////////
+int EggNode::
+rename_node(vector_string strip_prefix) {
+  int num_renamed = 0;
+  for (unsigned int ni = 0; ni < strip_prefix.size(); ++ni) {
+    string axe_name = strip_prefix[ni];
+    if (this->get_name().substr(0, axe_name.size()) == axe_name) {
+      string new_name = this->get_name().substr(axe_name.size());
+      //cout << "renaming " << this->get_name() << "->" << new_name << endl;
+      this->set_name(new_name);
+      num_renamed += 1;
+    }
+  }
+  return num_renamed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::apply_texmats
 //       Access: Public
 //  Description: Applies the texture matrices to the UV's of the

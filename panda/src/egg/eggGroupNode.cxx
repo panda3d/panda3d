@@ -829,6 +829,10 @@ rename_nodes(vector_string strip_prefix, bool recurse) {
         EggGroupNode *group_child = DCAST(EggGroupNode, *ci);
         num_renamed += group_child->rename_nodes(strip_prefix, recurse);
       }
+      else if ((*ci)->is_of_type(EggNode::get_class_type())) {
+        EggNode *node_child = DCAST(EggNode, *ci);
+        num_renamed += node_child->rename_node(strip_prefix);
+      }
     }
   }
   return num_renamed;

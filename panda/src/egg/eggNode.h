@@ -70,6 +70,8 @@ PUBLISHED:
   INLINE void flatten_transforms();
   void apply_texmats();
 
+  int rename_node(vector_string strip_prefix);
+
   virtual bool is_joint() const;
   virtual bool is_anim_matrix() const;
 
