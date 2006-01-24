@@ -1,4 +1,5 @@
 from DirectFrame import *
+import types
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
@@ -96,6 +97,7 @@ class DirectEntry(DirectFrame):
             self.guiItem.setTextDef(i, self.onscreenText.textNode)
 
         # Update initial text
+        self.unicodeText = 0
         if self['initialText']:
             self.set(self['initialText'])
 
@@ -147,10 +149,29 @@ class DirectEntry(DirectFrame):
             apply(self['focusOutCommand'], self['focusOutExtraArgs'])
             
     def set(self, text):
-        self.guiItem.setText(text)
+        self.unicodeText = isinstance(text, types.UnicodeType)
+        if self.unicodeText:
+            self.guiItem.setWtext(text)
+        else:
+            self.guiItem.setText(text)
 
     def get(self):
-        return self.guiItem.getText()
+        if self.unicodeText:
+            return self.guiItem.getWtext()
+        else:
+            # Although we weren't expecting a wide character, the user
+            # might give us one.  If this happens, we have to return a
+            # wide string.
+            wtext = self.guiItem.getWtext()
+            text = self.guiItem.getText()
+            try:
+                matches = (wtext == unicode(text))
+            except:
+                return wtext
+            if matches:
+                return text
+            else:
+                return wtext
 
     def setCursorPosition(self, pos):
         if (pos < 0):

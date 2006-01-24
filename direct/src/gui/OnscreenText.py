@@ -191,8 +191,7 @@ class OnscreenText(DirectObject, NodePath):
             textNode.setBin('fixed')
             textNode.setDrawOrder(drawOrder)
 
-        textNode.setText(text)
-
+        self.setText(text)
         if not text:
             # If we don't have any text, assume we'll be changing it later.
             self.mayChange = 1
@@ -243,13 +242,25 @@ class OnscreenText(DirectObject, NodePath):
         self.textNode.clearText()
 
     def setText(self, text):
-        self.textNode.setText(text)
+        self.unicodeText = isinstance(text, types.UnicodeType)
+        if self.unicodeText:
+            self.textNode.setWtext(text)
+        else:
+            self.textNode.setText(text)
 
     def appendText(self, text):
-        self.textNode.appendText(text)
+        if isinstance(text, types.UnicodeType):
+            self.unicodeText = 1
+        if self.unicodeText:
+            self.textNode.appendWtext(text)
+        else:
+            self.textNode.appendText(text)
 
     def getText(self):
-        return self.textNode.getText()
+        if self.unicodeText:
+            return self.textNode.getWtext()
+        else:
+            return self.textNode.getText()
 
     def setX(self, x):
         self.setPos(x, self.pos[1])
