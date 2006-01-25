@@ -436,8 +436,7 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
     }
   }
 
-  if (shader_context == 0)
-  {
+  if (shader_context == 0) {
     // FVF MODE
     if (set_stream_source) {
       hr = _d3d_device->SetStreamSource
@@ -460,8 +459,7 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
       _last_fvf = dvbc->_fvf;
     }
   }
-  else
-  {
+  else {
     // SHADER MODE
     if (set_stream_source) {
       if (dvbc -> _direct_3d_vertex_declaration) {
@@ -482,12 +480,10 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
         VertexElementArray *vertex_element_array;
 
         vertex_element_array = shader_context -> _vertex_element_array;
-        if (vertex_element_array)
-        {
+        if (vertex_element_array) {
           int index;
 
-          for (index = 0; index < vertex_element_array->total_elements; index++)
-          {
+          for (index = 0; index < vertex_element_array->total_elements; index++) {
             VERTEX_ELEMENT_TYPE *vertex_element_type;
             VERTEX_ELEMENT_TYPE *source_vertex_element_type;
 
@@ -1162,17 +1158,15 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   _vertex_array_shader_expansion = _current_shader_expansion;
   _vertex_array_shader_context = _current_shader_context;
 
-
 // const GeomVertexFormat *format = _vertex_data->get_format();
 
   const GeomVertexArrayData *data;
 
-  if (_current_shader_context && _vertex_data->get_num_arrays ( ) > 1)
-  {
+  // use the original data if possible
+  if (_current_shader_context && _vertex_data->get_num_arrays ( ) > 1) {
     data = _vertex_data->get_array(1);
   }
-  else
-  {
+  else {
     // The munger should have put the FVF data in the first array.
     data = _vertex_data->get_array(0);
   }
