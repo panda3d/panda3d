@@ -51,13 +51,17 @@ do_compress(istream &read_stream, ostream &write_stream) {
 void
 usage() {
   cerr
-    << "\nUsage: pzip file [file2 file3 ...]\n\n"
+    << "\nUsage:\n"
+    << "   pzip file [file2 file3 ...]\n"
+    << "   pzip -o dest_file file\n\n"
     
     << "This program compresses the named file(s) using the Panda native\n"
     << "compression algorithm (gzip in practice, but with a different file\n"
     << "header).  The compressed versions are written to a file with the\n"
     << "same name as the original, but the extension .pz added to the\n"
-    << "filename, and the original file is removed.\n\n"
+    << "filename, and the original file is removed (unless the version with\n"
+    << "-o is used, in which case you can compress only one file, you specify\n"
+    << "the destination file name, and the original file is not removed).\n\n"
     
     << "In many cases, Panda can read the resulting .pz file directly,\n"
     << "exactly as if it were still in its uncompressed original form.\n"
@@ -77,12 +81,20 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "h";
+  const char *optstr = "o:h";
+
+  Filename dest_filename;
+  bool got_dest_filename = false;
 
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {
     switch (flag) {
+    case 'o':
+      dest_filename = Filename::from_os_specific(optarg);
+      got_dest_filename = true;
+      break;
+
     case 'h':
     case '?':
     default:
@@ -100,13 +112,21 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
+  if (got_dest_filename && argc > 2) {
+    cerr << "Only one input file allowed in conjunction with -o.\n";
+    return 1;
+  }
+
   bool all_ok = true;
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
     if (source_file.get_extension() == "pz") {
       cerr << source_file << " already ends .pz; skipping.\n";
     } else {
-      Filename dest_file = source_file.get_fullpath() + ".pz";
+      Filename dest_file = dest_filename;
+      if (!got_dest_filename) {
+        dest_file = source_file.get_fullpath() + ".pz";
+      }
 
       // Open source file
       ifstream read_stream;
@@ -136,7 +156,9 @@ main(int argc, char *argv[]) {
             dest_file.unlink();
             
           } else {
-            source_file.unlink();
+            if (!got_dest_filename) {
+              source_file.unlink();
+            }
           }
         }
       }

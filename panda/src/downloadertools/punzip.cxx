@@ -50,7 +50,9 @@ do_decompress(istream &read_stream, ostream &write_stream) {
 void
 usage() {
   cerr
-    << "\nUsage: punzip file.pz [file2.pz file3.pz ...]\n\n"
+    << "\nUsage:\n"
+    << "   punzip file.pz [file2.pz file3.pz ...]\n"
+    << "   punzip -o dest_file file.pz\n\n"
     
     << "This program reverses the operation of a previous pzip command.  It\n"
     << "uncompresses the contents of the named source file(s) and removes the .pz\n"
@@ -61,12 +63,20 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "h";
+  const char *optstr = "o:h";
+
+  Filename dest_filename;
+  bool got_dest_filename = false;
 
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {
     switch (flag) {
+    case 'o':
+      dest_filename = Filename::from_os_specific(optarg);
+      got_dest_filename = true;
+      break;
+
     case 'h':
     case '?':
     default:
@@ -84,16 +94,24 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
+  if (got_dest_filename && argc > 2) {
+    cerr << "Only one input file allowed in conjunction with -o.\n";
+    return 1;
+  }
+
   bool all_ok = true;
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
-    if (source_file.get_extension() != "pz") {
+    if (!got_dest_filename && source_file.get_extension() != "pz") {
       cerr << source_file 
            << " doesn't end in .pz; can't derive filename of output file.\n";
       all_ok = false;
 
     } else {
-      Filename dest_file = source_file.get_fullpath_wo_extension();
+      Filename dest_file = dest_filename;
+      if (!got_dest_filename) {
+        dest_file = source_file.get_fullpath_wo_extension();
+      }
 
       // Open source file
       ifstream read_stream;
@@ -123,7 +141,9 @@ main(int argc, char *argv[]) {
             dest_file.unlink();
             
           } else {
-            source_file.unlink();
+            if (!got_dest_filename) {
+              source_file.unlink();
+            }
           }
         }
       }
