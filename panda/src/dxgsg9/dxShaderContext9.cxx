@@ -47,6 +47,8 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   _vertex_size = 0;
   _vertex_element_array = 0;
 
+  _name = s->get_name ( );
+
   if (header == "//Cg") {
 
     // CGcontext is created once during Reset ( )
@@ -87,13 +89,17 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
       return;
     }
 
-    this -> _name = s->get_name ( );
-
     // Compile the program.
     try_cg_compile(s, gsg);
     cerr << _cg_errors;
     return;
   }
+  if (header == "//hlsl") {
+
+      s -> _text.c_str ( );
+
+  }
+
 #endif
   cerr << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
@@ -107,8 +113,7 @@ CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   release_resources();
 
-  if (_vertex_element_array)
-  {
+  if (_vertex_element_array) {
     delete _vertex_element_array;
     _vertex_element_array = 0;
   }
@@ -212,6 +217,14 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     return false;
   }
 
+  // DEBUG: output the generated program
+  DBG_SH3
+    const char *program;
+    program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
+
+    dxgsg9_cat.debug ( ) << program << "\n";
+  DBG_E
+
   // The following code is present to work around a bug in the Cg compiler.
   // It does not generate correct code for shadow map lookups when using arbfp1.
   // This is a particularly onerous limitation, given that arbfp1 is the only
@@ -304,7 +317,6 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   BOOL paramater_shadowing;
   DWORD assembly_flags;
 
-// ?????
   paramater_shadowing = FALSE;
   assembly_flags = 0;
 
@@ -365,13 +377,11 @@ bind(GSG *gsg) {
 
     // Bind the shaders.
     hr = cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
-    if (FAILED (hr))
-    {
+    if (FAILED (hr)) {
       dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed\n";
     }
     hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
-    if (FAILED (hr))
-    {
+    if (FAILED (hr)) {
       dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed\n";
     }
 
@@ -382,15 +392,13 @@ bind(GSG *gsg) {
       IDirect3DPixelShader9 *pixel_shader;
 
       hr = gsg -> _d3d_device -> GetVertexShader (&vertex_shader);
-      if (FAILED (hr))
-      {
+      if (FAILED (hr)) {
         dxgsg9_cat.error()
           << "GetVertexShader ( ) failed "
           << D3DERRORSTRING(hr);
       }
       hr = gsg -> _d3d_device -> GetPixelShader (&pixel_shader);
-      if (FAILED (hr))
-      {
+      if (FAILED (hr)) {
         dxgsg9_cat.error()
           << "GetPixelShader ( ) failed "
           << D3DERRORSTRING(hr);
@@ -557,39 +565,39 @@ p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
         }
 
 DBG_SH4
-    const float *data;
-    data = model_matrix -> get_data ( );
-    dxgsg9_cat.debug ( ) << "MODELVIEW MATRIX \n" <<
-      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
-      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
-      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
-      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  const float *data;
+  data = model_matrix -> get_data ( );
+  dxgsg9_cat.debug ( ) << "MODELVIEW MATRIX \n" <<
+    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 
-    model_matrix = &(gsg -> _external_transform -> get_mat ( ));
-    data = model_matrix -> get_data ( );
-    dxgsg9_cat.debug ( ) << "EXTERNAL MODELVIEW MATRIX \n" <<
-      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
-      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
-      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
-      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  model_matrix = &(gsg -> _external_transform -> get_mat ( ));
+  data = model_matrix -> get_data ( );
+  dxgsg9_cat.debug ( ) << "EXTERNAL MODELVIEW MATRIX \n" <<
+    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 
-    data = projection_matrix -> get_data ( );
-    dxgsg9_cat.debug ( ) << "PROJECTION MATRIX \n" <<
-      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
-      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
-      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
-      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  data = projection_matrix -> get_data ( );
+  dxgsg9_cat.debug ( ) << "PROJECTION MATRIX \n" <<
+    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 
-    D3DMATRIX d3d_matrix;
+  D3DMATRIX d3d_matrix;
 
-    data = &d3d_matrix._11;
+  data = &d3d_matrix._11;
 
-    gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(0), &d3d_matrix);
-    dxgsg9_cat.debug ( ) << "D3DTS_WORLDMATRIX(0) \n" <<
-      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
-      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
-      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
-      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+  gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(0), &d3d_matrix);
+  dxgsg9_cat.debug ( ) << "D3DTS_WORLDMATRIX(0) \n" <<
+    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 DBG_E
 
 /*
@@ -641,8 +649,7 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
         << " size " << cgD3D9TypeToSize(cgGetParameterType(p))
         << D3DERRORSTRING(hr);
 
-        switch (hr)
-        {
+        switch (hr) {
           case CGD3D9ERR_INVALIDPARAM:
             dxgsg9_cat.error() << "CGD3D9ERR_INVALIDPARAM\n";
             break;
@@ -734,20 +741,50 @@ issue_parameters(GSG *gsg)
 
       data = input->get_vector().get_data();
 
+      #define TOTAL_VECTORS 32
+      int start_register;
+      int total_vectors;
+      float constant_buffer [TOTAL_VECTORS * 4];
+      float constant_buffer_result [TOTAL_VECTORS * 4];
+
+      start_register = 0;
+      total_vectors = TOTAL_VECTORS;
+
       DBG_SH3
         char string [256];
 
         sprintf (string, "%f  %f  %f  %f \n", data [0], data [1], data [2], data [3]);
         dxgsg9_cat.debug ( ) << string;
+
+        gsg -> _d3d_device -> GetPixelShaderConstantF (start_register, constant_buffer, total_vectors);
+
       DBG_E
+
 
       HRESULT hr;
 
       hr = cgD3D9SetUniform (_cg_fbind[i].parameter, data);
-      if (FAILED (hr))
-      {
+      if (FAILED (hr)) {
         dxgsg9_cat.error() << "cgD3D9SetUniform failed " << D3DERRORSTRING(hr);
       }
+
+      DBG_SH3
+
+        gsg -> _d3d_device -> GetPixelShaderConstantF (start_register, constant_buffer_result, total_vectors);
+
+        int index;
+        for (index = 0; index < (total_vectors * 4); index++)
+        {
+          if (constant_buffer [index] != constant_buffer_result [index])
+          {
+            char string [256];
+
+            sprintf (string, "reg %d [%d] %f  %f\n", index / 4, index & 0x03, constant_buffer [index], constant_buffer_result [index]);
+            dxgsg9_cat.debug ( ) << string;
+          }
+        }
+
+      DBG_E
     }
 
     // Pass in k-float4x4 parameters.
@@ -870,21 +907,22 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 #ifdef HAVE_CGDX9
   if (gsg -> _cg_context) {
 
-/* ?????
 #ifdef SUPPORT_IMMEDIATE_MODE
+/*
     if (gsg->_use_sender) {
       cerr << "immediate mode shaders not implemented yet\n";
-    } else
-#endif // SUPPORT_IMMEDIATE_MODE
+      return;
+    }
 */
+#endif // SUPPORT_IMMEDIATE_MODE
 
     // Create and cache a VertexElementArray that does most of the
     // mapping from the vertex shader inputs to a VertexElementArray.
     // This can be done since a vertex shader has a well defined input.
     // Later when the vertex buffer is applied the offsets will
     // be properly mapped.
-    if (_vertex_element_array == 0)
-    {
+    if (_vertex_element_array == 0) {
+
       const GeomVertexArrayData *array_data;
       Geom::NumericType numeric_type;
       int start, stride, num_values;
@@ -915,8 +953,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             }
           }
         }
-        if (gsg->_vertex_data->get_array_info(name, array_data, num_values, numeric_type, start, stride))
-        {
+        if (gsg->_vertex_data->get_array_info(name, array_data, num_values, numeric_type, start, stride)) {
 /*
           // ORIGINAL OpenGL CODE
           const unsigned char *client_pointer = gsg->setup_array_data(array_data);
@@ -1044,7 +1081,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             << "  numeric_type " << numeric_type
             << "  start " << start
             << "  stride " << stride
-            << "\n"; DBG_E
+            << "\n";
+          DBG_E
 
         } else {
           dxgsg9_cat.error ( ) << "get_array_info ( ) failed\n";
@@ -1054,14 +1092,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
       int state;
 
       state = vertex_element_array -> add_end_vertex_element ( );
-      if (state)
-      {
-        if (cgD3D9ValidateVertexDeclaration (_cg_program [SHADER_type_vert], vertex_element_array -> vertex_element_array) == CG_TRUE)
-        {
+      if (state) {
+        if (cgD3D9ValidateVertexDeclaration (_cg_program [SHADER_type_vert],
+              vertex_element_array -> vertex_element_array) == CG_TRUE) {
           dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
         }
-        else
-        {
+        else {
           dxgsg9_cat.error() << "********************************************\n";
           dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
           dxgsg9_cat.error() << "********************************************\n";
@@ -1073,8 +1109,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
         _vertex_element_array = vertex_element_array;
       }
-      else
-      {
+      else {
         dxgsg9_cat.error ( ) << "VertexElementArray creation failed\n";
         delete vertex_element_array;
       }
