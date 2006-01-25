@@ -59,21 +59,12 @@ bool BamFile::
 open_read(const Filename &bam_filename, bool report_errors) {
   close();
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    if (!vfs->exists(bam_filename)) {
-      if (report_errors) {
-        loader_cat.error() << "Could not find " << bam_filename << "\n";
-      }
-      return false;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->exists(bam_filename)) {
+    if (report_errors) {
+      loader_cat.error() << "Could not find " << bam_filename << "\n";
     }
-  } else {
-    if (!bam_filename.exists()) {
-      if (report_errors) {
-        loader_cat.error() << "Could not find " << bam_filename << "\n";
-      }
-      return false;
-    }
+    return false;
   }
 
   loader_cat.info() << "Reading " << bam_filename << "\n";

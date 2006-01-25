@@ -23,12 +23,12 @@
 #include "eggComment.h"
 #include "eggPoolUniquifier.h"
 #include "config_egg.h"
-
 #include "config_util.h"
 #include "config_express.h"
 #include "string_utils.h"
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"
+#include "zStream.h"
 
 extern int eggyyparse();
 #include "parserDefs.h"
@@ -47,30 +47,17 @@ TypeHandle EggData::_type_handle;
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-    if (egg_filename.is_fully_qualified() && vfs->exists(egg_filename)) {
-      return true;
-    }
-
-    vfs->resolve_filename(egg_filename, searchpath, "egg") ||
-      vfs->resolve_filename(egg_filename, egg_path, "egg") ||
-      vfs->resolve_filename(egg_filename, get_model_path(), "egg");
-
-    return vfs->exists(egg_filename);
-
-  } else {
-    if (egg_filename.is_fully_qualified() && egg_filename.exists()) {
-      return true;
-    }
-
-    egg_filename.resolve_filename(searchpath, "egg") ||
-      egg_filename.resolve_filename(egg_path, "egg") ||
-      egg_filename.resolve_filename(get_model_path(), "egg");
-    
-    return egg_filename.exists();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  
+  if (egg_filename.is_fully_qualified() && vfs->exists(egg_filename)) {
+    return true;
   }
+  
+  vfs->resolve_filename(egg_filename, searchpath, "egg") ||
+    vfs->resolve_filename(egg_filename, egg_path, "egg") ||
+    vfs->resolve_filename(egg_filename, get_model_path(), "egg");
+  
+  return vfs->exists(egg_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,34 +81,20 @@ read(Filename filename, string display_name) {
     display_name = filename;
   }
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     
-    istream *file = vfs->open_read_file(filename);
-    if (file == (istream *)NULL) {
-      egg_cat.error() << "Unable to open " << display_name << "\n";
-      return false;
-    }
-    
-    egg_cat.info()
-      << "Reading " << display_name << "\n";
-
-    bool read_ok = read(*file);
-    vfs->close_read_file(file);
-    return read_ok;
-
-  } else {
-    ifstream file;
-    if (!filename.open_read(file)) {
-      egg_cat.error() << "Unable to open " << display_name << "\n";
-      return false;
-    }
-    
-    egg_cat.info()
-      << "Reading " << display_name << "\n";
-    
-    return read(file);
+  istream *file = vfs->open_read_file(filename, true);
+  if (file == (istream *)NULL) {
+    egg_cat.error() << "Unable to open " << display_name << "\n";
+    return false;
   }
+  
+  egg_cat.info()
+    << "Reading " << display_name << "\n";
+  
+  bool read_ok = read(*file);
+  vfs->close_read_file(file);
+  return read_ok;
 }
 
 
@@ -243,14 +216,31 @@ collapse_equivalent_materials() {
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 write_egg(Filename filename) {
-  filename.set_text();
   filename.unlink();
+  filename.set_text();
+
+#ifdef HAVE_ZLIB
+  bool pz_file = false;
+  if (filename.get_extension() == "pz") {
+    // The filename ends in .pz, which means to automatically compress
+    // the egg file that we write.
+    pz_file = true;
+    filename.set_binary();
+  }
+#endif  // HAVE_ZLIB
 
   ofstream file;
   if (!filename.open_write(file)) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;
   }
+
+#ifdef HAVE_ZLIB
+  if (pz_file) {
+    OCompressStream compressor(&file, false);
+    return write_egg(compressor);
+  }
+#endif  // HAVE_ZLIB
 
   return write_egg(file);
 }

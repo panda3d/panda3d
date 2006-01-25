@@ -139,6 +139,20 @@ get_type_from_extension(const string &filename) const {
     extension = filename.substr(dot + 1);
   }
 
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    // If the extension is .pz, then we've got a Panda-compressed
+    // image file.  Back up some more and get the extension before
+    // that.
+    size_t prev_dot = filename.rfind('.', dot - 1);
+    if (prev_dot == string::npos) {
+      extension = filename.substr(0, dot);
+    } else {
+      extension = filename.substr(prev_dot + 1, dot - prev_dot - 1);
+    }
+  }
+#endif  // HAVE_ZLIB
+
   if (extension.find('/') != string::npos) {
     // If we picked the whole filename and it contains slashes, or if
     // the rightmost dot wasn't in the basename of the filename, then

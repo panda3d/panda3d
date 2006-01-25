@@ -84,24 +84,14 @@ load_font(const Filename &font_filename, int face_index) {
   bool exists = false;
   int error;
   Filename path(font_filename);
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_model_path());
-    exists = vfs->read_file(path, _raw_font_data);
-    if (exists) {
-      error = FT_New_Memory_Face(_ft_library, 
-                                 (const FT_Byte *)_raw_font_data.data(),
-                                 _raw_font_data.length(),
-                                 face_index, &_face);
-    }
-  } else {
-    path.resolve_filename(get_model_path());
-    exists = path.exists();
-    if (exists) {
-      string os_specific = path.to_os_specific();
-      error = FT_New_Face(_ft_library, os_specific.c_str(),
-                          face_index, &_face);
-    }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, get_model_path());
+  exists = vfs->read_file(path, _raw_font_data, true);
+  if (exists) {
+    error = FT_New_Memory_Face(_ft_library, 
+                               (const FT_Byte *)_raw_font_data.data(),
+                               _raw_font_data.length(),
+                               face_index, &_face);
   }
 
   if (!exists) {

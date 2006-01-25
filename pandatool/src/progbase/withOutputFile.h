@@ -61,6 +61,7 @@ protected:
 private:
   ofstream _output_stream;
   ostream *_output_ptr;
+  bool _owns_output_ptr;
 };
 
 #include "withOutputFile.I"

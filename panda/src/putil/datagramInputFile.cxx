@@ -39,22 +39,15 @@ open(Filename filename) {
   // DatagramInputFiles are always binary.
   filename.set_binary();
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    PT(VirtualFile) file = vfs->get_file(filename);
-    if (file == (VirtualFile *)NULL) {
-      // No such file.
-      return false;
-    }
-    _in = file->open_read_file();
-    _owns_in = (_in != (istream *)NULL);
-    return _owns_in && !_in->fail();
-    
-  } else {
-    _in = &_in_file;
-    _owns_in = false;
-    return filename.open_read(_in_file);
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) file = vfs->get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    // No such file.
+    return false;
   }
+  _in = file->open_read_file(true);
+  _owns_in = (_in != (istream *)NULL);
+  return _owns_in && !_in->fail();
 }
 
 ////////////////////////////////////////////////////////////////////

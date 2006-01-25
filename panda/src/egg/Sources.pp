@@ -2,6 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define YACC_PREFIX eggyy
 #define LFLAGS -i
+#define USE_PACKAGES zlib
 
 #begin lib_target
   #define TARGET egg

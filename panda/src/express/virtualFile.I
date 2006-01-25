@@ -44,9 +44,9 @@ get_original_filename() const {
 //  Description: Returns the entire contents of the file as a string.
 ////////////////////////////////////////////////////////////////////
 INLINE string VirtualFile::
-read_file() const {
+read_file(bool auto_unwrap) const {
   string result;
-  read_file(result);
+  read_file(result, auto_unwrap);
   return result;
 }
 

@@ -1,3 +1,5 @@
+#define USE_PACKAGES zlib
+
 #begin ss_lib_target
   #define TARGET progbase
   #define LOCAL_LIBS \

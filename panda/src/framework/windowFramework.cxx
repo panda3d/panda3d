@@ -572,6 +572,11 @@ load_model(const NodePath &parent, Filename filename) {
   // an image file, based on the filename extension.
   bool is_image = false;
   string extension = filename.get_extension();
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    extension = Filename(filename.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
   if (!extension.empty()) {
     LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
     LoaderFileType *model_type =

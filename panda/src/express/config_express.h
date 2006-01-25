@@ -79,6 +79,8 @@ extern ConfigVariableInt encryption_iteration_count;
 extern ConfigVariableInt multifile_encryption_iteration_count;
 
 extern ConfigVariableBool vfs_case_sensitive;
+extern ConfigVariableBool vfs_implicit_pz;
+extern ConfigVariableBool vfs_auto_unwrap_pz;
 
 extern EXPCL_PANDAEXPRESS ConfigVariableBool use_vfs;
 

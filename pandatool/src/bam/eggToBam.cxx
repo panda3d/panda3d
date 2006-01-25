@@ -182,7 +182,7 @@ run() {
   
   if (!bam_file.write_object(root)) {
     nout << "Error in writing.\n";
-      exit(1);
+    exit(1);
   }
 }
 

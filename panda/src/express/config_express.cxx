@@ -125,12 +125,21 @@ ConfigVariableBool vfs_case_sensitive
           "and it has no effect on mounted multifile systems, which are "
           "always case-sensitive."));
 
+ConfigVariableBool vfs_implicit_pz
+("vfs-implicit-pz", true,
+ PRC_DESC("When this is true, the VirtualFileSystem will pretend a named "
+          "file exists even if it doesn't, as long as a filename with the "
+          "same name and the additional extension .pz does exist.  In this "
+          "case, the VirtualFileSystem will implicitly open the .pz file "
+          "and decompress it on-the-fly."));
+
 ConfigVariableBool use_vfs
 ("use-vfs", true,
  PRC_DESC("Set this true to use the VirtualFileSystem mechanism for loading "
-          "models, etc.  Since the VirtualFileSystem maps to the same as the "
-          "actual file system by default, there is probably no reason to set "
-          "this false, except for testing or if you mistrust the new code."));
+          "models, etc.  Since the VirtualFileSystem is now the de facto "
+          "filesystem for Panda, you should always keep this true, since "
+          "there is now code that assumes it to be true.  This variable "
+          "is now deprecated."));
 
 ConfigVariableBool collect_tcp
 ("collect-tcp", false,

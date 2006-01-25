@@ -159,7 +159,7 @@ ls_all(ostream &out) const {
 //               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFile::
-open_read_file() const {
+open_read_file(bool auto_unwrap) const {
   return NULL;
 }
 
@@ -210,10 +210,10 @@ close_read_file(istream *stream) const {
 //               success, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
-read_file(string &result) const {
+read_file(string &result, bool auto_unwrap) const {
   result = string();
 
-  istream *in = open_read_file();
+  istream *in = open_read_file(auto_unwrap);
   if (in == (istream *)NULL) {
     express_cat.info()
       << "Unable to read " << get_filename() << "\n";

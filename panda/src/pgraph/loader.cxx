@@ -99,6 +99,21 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
     load_file_types();
   }
   string extension = filename.get_extension();
+  string extra_ext;
+  bool pz_file = false;
+
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    // The extension ".pz" is special.  This is an explicitly-named
+    // compressed file.  We'll decompress it on the fly, if possible.
+    // (This relies on the auto_unwrap parameter to vfs->read_file(),
+    // which is different from the implicitly-named compressed file
+    // action that you might get if vfs-implicit-pz is enabled.)
+    extra_ext = extension;
+    extension = Filename(filename.get_basename_wo_extension()).get_extension();
+    pz_file = true;
+  }
+#endif  // HAVE_ZLIB
 
   int num_added = 0;
 
@@ -108,7 +123,8 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
     LoaderFileType *requested_type =
       reg->get_type_from_extension(extension);
 
-    if (requested_type != (LoaderFileType *)NULL) {
+    if (requested_type != (LoaderFileType *)NULL &&
+        (!pz_file || requested_type->supports_compressed())) {
       if (!filename.is_local()) {
         // Global filename, take it as it is.
         results.add_file(filename, requested_type);
@@ -117,12 +133,8 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
       } else {
         // Local filename, search along the path.
         DSearchPath::Results files;
-        if (use_vfs) {
-          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-          num_added = vfs->find_all_files(filename, search_path, files);
-        } else {
-          num_added = search_path.find_all_files(filename, files);
-        }
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        num_added = vfs->find_all_files(filename, search_path, files);
         
         for (int i = 0; i < num_added; ++i) {
           results.add_file(files.get_file(i), requested_type);
@@ -141,18 +153,12 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
         LoaderFileType *type = reg->get_type(t);
         Filename file(filename);
         file.set_extension(type->get_extension());
+        file = file.get_fullpath() + extra_ext;
           
-        if (use_vfs) {
-          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-          if (vfs->exists(file)) {
-            results.add_file(file, type);
-            ++num_added;
-          }
-        } else {
-          if (file.exists()) {
-            results.add_file(file, type);
-            ++num_added;
-          }
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        if (vfs->exists(file)) {
+          results.add_file(file, type);
+          ++num_added;
         }
       }
     } else {
@@ -165,18 +171,12 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
           LoaderFileType *type = reg->get_type(t);
           Filename file(directory, filename);
           file.set_extension(type->get_extension());
+          file = file.get_fullpath() + extra_ext;
           
-          if (use_vfs) {
-            VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-            if (vfs->exists(file)) {
-              results.add_file(file, type);
-              ++num_added;
-            }
-          } else {
-            if (file.exists()) {
-              results.add_file(file, type);
-              ++num_added;
-            }
+          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+          if (vfs->exists(file)) {
+            results.add_file(file, type);
+            ++num_added;
           }
         }
       }
@@ -425,6 +425,11 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     // Couldn't find the file.  Either it doesn't exist, or it's an
     // unknown file type.  Report a useful message either way.
     string extension = filename.get_extension();
+#ifdef HAVE_ZLIB
+    if (extension == "pz") {
+      extension = Filename(filename.get_basename_wo_extension()).get_extension();
+    }
+#endif  // HAVE_ZLIB
     if (!extension.empty()) {
       LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
       LoaderFileType *requested_type =

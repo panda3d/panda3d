@@ -250,7 +250,7 @@ load(Filename file_name) {
   PT(SoundData) sd = new SoundData;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->read_file(file_name, sd->_raw_data)) {
+  if (!vfs->read_file(file_name, sd->_raw_data, true)) {
     milesAudio_cat.warning()
       << "Unable to read " << file_name << "\n";
     return NULL;

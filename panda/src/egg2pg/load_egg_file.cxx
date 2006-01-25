@@ -73,25 +73,15 @@ load_from_loader(EggLoader &loader) {
 PT(PandaNode)
 load_egg_file(const string &filename, CoordinateSystem cs) {
   Filename egg_filename = Filename::text_filename(filename);
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    if (!vfs->exists(egg_filename)) {
-      egg2pg_cat.error()
-        << "Could not find " << egg_filename << "\n";
-      return NULL;
-    }
-
-  } else {
-    if (!egg_filename.exists()) {
-      egg2pg_cat.error()
-        << "Could not find " << egg_filename << "\n";
-      return NULL;
-    }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->exists(egg_filename)) {
+    egg2pg_cat.error()
+      << "Could not find " << egg_filename << "\n";
+    return NULL;
   }
 
   egg2pg_cat.info()
     << "Reading " << egg_filename << "\n";
-
 
   EggLoader loader;
   loader._data->set_egg_filename(egg_filename);
@@ -99,8 +89,7 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
   loader._data->set_coordinate_system(cs);
 
   bool okflag;
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *istr = vfs->open_read_file(egg_filename);
+  istream *istr = vfs->open_read_file(egg_filename, true);
   if (istr == (istream *)NULL) {
     egg2pg_cat.error()
       << "Could not open " << egg_filename << " for reading.\n";

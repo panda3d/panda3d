@@ -1,5 +1,5 @@
-// Filename: pdecrypt.cxx
-// Created by:  drose (01Sep04)
+// Filename: punzip.cxx
+// Created by:  
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "encryptStream.h"
+#include "zStream.h"
 #include "notify.h"
 
 #ifndef HAVE_GETOPT
@@ -28,64 +28,45 @@
   #endif
 #endif
 
-string password;
-bool got_password = false;
-
 bool
-do_decrypt(istream &read_stream, ostream &write_stream) {
-  IDecryptStream decrypt(&read_stream, false, password);
+do_decompress(istream &read_stream, ostream &write_stream) {
+  IDecompressStream decompress(&read_stream, false);
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-  decrypt.read(buffer, buffer_size);
-  size_t count = decrypt.gcount();
+  decompress.read(buffer, buffer_size);
+  size_t count = decompress.gcount();
   while (count != 0) {
     write_stream.write(buffer, count);
-    decrypt.read(buffer, buffer_size);
-    count = decrypt.gcount();
+    decompress.read(buffer, buffer_size);
+    count = decompress.gcount();
   }
   
-  return !decrypt.fail() || decrypt.eof() &&
+  return !decompress.fail() || decompress.eof() &&
     (!write_stream.fail() || write_stream.eof());
 }
 
-void 
+void
 usage() {
   cerr
-    << "\n"
-    << "Usage: pdecrypt [opts] file [file2 file3 ...]\n\n"
+    << "\nUsage: punzip file.pz [file2.pz file3.pz ...]\n\n"
     
-    << "This program reverses the operation of a previous pencrypt command.  It\n"
-    << "decrypts the contents of the named source file(s) and removes the .pe\n"
-    << "extension.  The encryption algorithm need not be specified; it can be\n"
-    << "determined by examining the header of each encrypted file.  The password\n"
-    << "must match the encryption password exactly.  If it does not, an error may\n"
-    << "or may not be reported; but the file will not be decrypted correctly even\n"
-    << "if no error is reported.\n\n"
-
-    << "Options:\n\n"
-    
-    << "  -p \"password\"\n"
-    << "      Specifies the password to use for decryption.  If this is not specified,\n"
-    << "      the user is prompted from standard input.\n\n";
+    << "This program reverses the operation of a previous pzip command.  It\n"
+    << "uncompresses the contents of the named source file(s) and removes the .pz\n"
+    << "extension.\n\n";
 }
 
 int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "p:h";
+  const char *optstr = "h";
 
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {
     switch (flag) {
-    case 'p':
-      password = optarg;
-      got_password = true;
-      break;
-
     case 'h':
     case '?':
     default:
@@ -106,9 +87,9 @@ main(int argc, char *argv[]) {
   bool all_ok = true;
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
-    if (source_file.get_extension() != "pe") {
+    if (source_file.get_extension() != "pz") {
       cerr << source_file 
-           << " doesn't end in .pe; can't derive filename of output file.\n";
+           << " doesn't end in .pz; can't derive filename of output file.\n";
       all_ok = false;
 
     } else {
@@ -130,21 +111,14 @@ main(int argc, char *argv[]) {
           all_ok = false;
 
         } else {
-          // Prompt for password.
-          if (!got_password) {
-            cerr << "Enter password: ";
-            getline(cin, password);
-            got_password = true;
-          }
-
           cerr << dest_file << "\n";
-          bool success = do_decrypt(read_stream, write_stream);
+          bool success = do_decompress(read_stream, write_stream);
           
           read_stream.close();
           write_stream.close();
           
           if (!success) {
-            cerr << "Failure decrypting " << source_file << "\n";
+            cerr << "Failure decompressing " << source_file << "\n";
             all_ok = false;
             dest_file.unlink();
             

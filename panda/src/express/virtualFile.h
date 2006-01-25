@@ -54,14 +54,14 @@ PUBLISHED:
   void ls(ostream &out = cout) const;
   void ls_all(ostream &out = cout) const;
 
-  INLINE string read_file() const;
-  virtual istream *open_read_file() const;
+  INLINE string read_file(bool auto_unwrap) const;
+  virtual istream *open_read_file(bool auto_unwrap) const;
   void close_read_file(istream *stream) const;
   virtual streampos get_file_size(istream *stream) const;
 
 public:
   INLINE void set_original_filename(const Filename &filename);
-  bool read_file(string &result) const;
+  bool read_file(string &result, bool auto_unwrap) const;
   static bool read_file(istream *stream, string &result);
   static bool read_file(istream *stream, string &result, size_t max_bytes);
 

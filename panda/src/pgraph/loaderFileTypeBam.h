@@ -33,6 +33,7 @@ public:
 
   virtual string get_name() const;
   virtual string get_extension() const;
+  virtual bool supports_compressed() const;
 
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options) const;
 

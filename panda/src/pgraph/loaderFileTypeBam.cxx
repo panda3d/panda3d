@@ -55,6 +55,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeBam::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeBam::
+supports_compressed() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypeBam::load_file
 //       Access: Public, Virtual
 //  Description:

@@ -18,6 +18,7 @@
 
 #include "datagramOutputFile.h"
 #include "streamWriter.h"
+#include "zStream.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::open
@@ -34,6 +35,16 @@ open(Filename filename) {
 
   _out = &_out_file;
   _owns_out = false;
+
+#ifdef HAVE_ZLIB
+  if (filename.get_extension() == "pz") {
+    // The filename ends in .pz, which means to automatically
+    // compress the bam file that we write.
+    _out = new OCompressStream(_out, _owns_out);
+    _owns_out = true;
+  }
+#endif  // HAVE_ZLIB
+
   return filename.open_write(_out_file);
 }
 
@@ -64,10 +75,10 @@ open(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void DatagramOutputFile::
 close() {
-  _out_file.close();
   if (_owns_out) {
     delete _out;
   }
+  _out_file.close();
   _out = (ostream *)NULL;
   _owns_out = false;
 

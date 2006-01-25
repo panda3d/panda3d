@@ -290,6 +290,8 @@ get_file(const Filename &filename) const {
   }
   pathname.standardize();
   string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
+  // Also transparently look for a regular file suffixed .pz.
+  string strpath_pz = strpath + ".pz";
 
   // Now scan all the mount points, from the back (since later mounts
   // override more recent ones), until a match is found.
@@ -303,27 +305,47 @@ get_file(const Filename &filename) const {
     if (strpath == mount_point) {
       // Here's an exact match on the mount point.  This filename is
       // the root directory of this mount object.
-      if (found_match(found_file, composite_file, mount, "", pathname)) {
+      if (found_match(found_file, composite_file, mount, "", pathname,
+                      false)) {
         return found_file;
       }
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
       if (mount->has_file(strpath)) {
         // Bingo!
-        if (found_match(found_file, composite_file, mount, strpath, pathname)) {
+        if (found_match(found_file, composite_file, mount, strpath, 
+                        pathname, false)) {
           return found_file;
         }
-      }            
+#ifdef HAVE_ZLIB
+      } else if (vfs_implicit_pz && mount->has_file(strpath_pz)) {
+        if (found_match(found_file, composite_file, mount, strpath_pz, 
+                        pathname, true)) {
+          return found_file;
+        }
+#endif  // HAVE_ZLIB
+      }
+
     } else if (strpath.length() > mount_point.length() &&
                strpath.substr(0, mount_point.length()) == mount_point &&
                strpath[mount_point.length()] == '/') {
       // This pathname falls within this mount system.
       Filename local_filename = strpath.substr(mount_point.length() + 1);
+      Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
       if (mount->has_file(local_filename)) {
         // Bingo!
-        if (found_match(found_file, composite_file, mount, local_filename, pathname)) {
+        if (found_match(found_file, composite_file, mount, local_filename, 
+                        pathname, false)) {
           return found_file;
         }
+#ifdef HAVE_ZLIB
+      } else if (vfs_implicit_pz && mount->has_file(local_filename_pz)) {
+        // Bingo!
+        if (found_match(found_file, composite_file, mount, local_filename_pz,
+                        pathname, true)) {
+          return found_file;
+        }
+#endif  // HAVE_ZLIB
       }            
     }
   }
@@ -670,15 +692,21 @@ normalize_mount_point(const string &mount_point) const {
 bool VirtualFileSystem::
 found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
             VirtualFileMount *mount, const string &local_filename,
-            const Filename &original_filename) const {
+            const Filename &original_filename, bool implicit_pz_file) const {
   if (found_file == (VirtualFile *)NULL) {
     // This was our first match.  Save it.
-    found_file = new VirtualFileSimple(mount, local_filename);
+    found_file = new VirtualFileSimple(mount, local_filename, implicit_pz_file);
     found_file->set_original_filename(original_filename);
     if (!mount->is_directory(local_filename)) {
       // If it's not a directory, we're done.
       return true;
     }
+    // It is a directory, so save it for later.
+    if (implicit_pz_file) {
+      // Don't look for directories named file.pz.
+      found_file = NULL;
+    }
+
   } else {
     // This was our second match.  The previous match(es) must
     // have been directories.
@@ -686,17 +714,19 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
       // However, this one isn't a directory.  We're done.
       return true;
     }
-
-    // At least two directories matched to the same path.  We
-    // need a composite directory.
-    if (composite_file == (VirtualFileComposite *)NULL) {
-      composite_file =
-        new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_original_filename());
-      composite_file->set_original_filename(original_filename);
-      composite_file->add_component(found_file);
-      found_file = composite_file;
+    if (!implicit_pz_file) {
+      // At least two directories matched to the same path.  We
+      // need a composite directory.
+      if (composite_file == (VirtualFileComposite *)NULL) {
+        composite_file =
+          new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_original_filename());
+        composite_file->set_original_filename(original_filename);
+        composite_file->add_component(found_file);
+        found_file = composite_file;
+      }
+      composite_file->add_component
+        (new VirtualFileSimple(mount, local_filename, false));
     }
-    composite_file->add_component(new VirtualFileSimple(mount, local_filename));
   }
 
   // Keep going, looking for more directories.

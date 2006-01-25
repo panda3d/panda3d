@@ -22,6 +22,7 @@
 #include "pnmReader.h"
 #include "config_pnmimage.h"
 #include "virtualFileSystem.h"
+#include "zStream.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_header
@@ -78,7 +79,7 @@ make_reader(const Filename &filename, PNMFileType *type,
   } else {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     owns_file = true;
-    file = vfs->open_read_file(filename);
+    file = vfs->open_read_file(filename, true);
   }
 
   if (file == (istream *)NULL) {
@@ -265,6 +266,14 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     } else {
       owns_file = true;
       file = new_ostream;
+
+#ifdef HAVE_ZLIB
+      if (filename.get_extension() == "pz") {
+        // The filename ends in .pz, which means to automatically
+        // compress the image file that we write.
+        file = new OCompressStream(file, true);
+      }
+#endif  // HAVE_ZLIB
     }
   }
 

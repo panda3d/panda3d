@@ -70,22 +70,22 @@
 #end bin_target
 
 #begin bin_target
-  #define TARGET pcompress
+  #define TARGET pzip
   #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_PACKAGES $[USE_PACKAGES] zlib
 
   #define SOURCES \
-    pcompress.cxx
+    pzip.cxx
 
 #end bin_target
 
 #begin bin_target
-  #define TARGET pdecompress
+  #define TARGET punzip
   #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_PACKAGES $[USE_PACKAGES] zlib
 
   #define SOURCES \
-    pdecompress.cxx
+    punzip.cxx
 
 #end bin_target
 

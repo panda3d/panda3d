@@ -82,12 +82,12 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  INLINE string read_file(const Filename &filename) const;
-  INLINE istream *open_read_file(const Filename &filename) const;
+  INLINE string read_file(const Filename &filename, bool auto_unwrap = false) const;
+  INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap = false) const;
   void close_read_file(istream *stream) const;
 
 public:
-  INLINE bool read_file(const Filename &filename, string &result) const;
+  INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap = false) const;
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
@@ -95,7 +95,7 @@ private:
   Filename normalize_mount_point(const string &mount_point) const;
   bool found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
                    VirtualFileMount *mount, const string &local_filename,
-                   const Filename &original_filename) const;
+                   const Filename &original_filename, bool implicit_pz_file) const;
   static void parse_option(const string &option,
                            int &flags, string &password);
 

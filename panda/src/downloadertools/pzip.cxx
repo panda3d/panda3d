@@ -1,5 +1,5 @@
-// Filename: pdecrypt.cxx
-// Created by:  drose (01Sep04)
+// Filename: pzip.cxx
+// Created by:  
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "encryptStream.h"
+#include "zStream.h"
 #include "notify.h"
 
 #ifndef HAVE_GETOPT
@@ -28,64 +28,61 @@
   #endif
 #endif
 
-string password;
-bool got_password = false;
-
 bool
-do_decrypt(istream &read_stream, ostream &write_stream) {
-  IDecryptStream decrypt(&read_stream, false, password);
+do_compress(istream &read_stream, ostream &write_stream) {
+  OCompressStream compress(&write_stream, false);
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-  decrypt.read(buffer, buffer_size);
-  size_t count = decrypt.gcount();
+  read_stream.read(buffer, buffer_size);
+  size_t count = read_stream.gcount();
   while (count != 0) {
-    write_stream.write(buffer, count);
-    decrypt.read(buffer, buffer_size);
-    count = decrypt.gcount();
+    compress.write(buffer, count);
+    read_stream.read(buffer, buffer_size);
+    count = read_stream.gcount();
   }
-  
-  return !decrypt.fail() || decrypt.eof() &&
-    (!write_stream.fail() || write_stream.eof());
+  compress.close();
+
+  return !read_stream.fail() || read_stream.eof() &&
+    (!compress.fail() || compress.eof());
 }
 
-void 
+void
 usage() {
   cerr
-    << "\n"
-    << "Usage: pdecrypt [opts] file [file2 file3 ...]\n\n"
+    << "\nUsage: pzip file [file2 file3 ...]\n\n"
     
-    << "This program reverses the operation of a previous pencrypt command.  It\n"
-    << "decrypts the contents of the named source file(s) and removes the .pe\n"
-    << "extension.  The encryption algorithm need not be specified; it can be\n"
-    << "determined by examining the header of each encrypted file.  The password\n"
-    << "must match the encryption password exactly.  If it does not, an error may\n"
-    << "or may not be reported; but the file will not be decrypted correctly even\n"
-    << "if no error is reported.\n\n"
+    << "This program compresses the named file(s) using the Panda native\n"
+    << "compression algorithm (gzip in practice, but with a different file\n"
+    << "header).  The compressed versions are written to a file with the\n"
+    << "same name as the original, but the extension .pz added to the\n"
+    << "filename, and the original file is removed.\n\n"
+    
+    << "In many cases, Panda can read the resulting .pz file directly,\n"
+    << "exactly as if it were still in its uncompressed original form.\n"
+    << "In fact, unless vfs-implicit-pz is set to false in your Config.prc\n"
+    << "file, you can also load the file by referencing it with its original\n"
+    << "filename (without the .pz extension), even though it no longer exists\n"
+    << "under that filename, and Panda will find the .pz file and transparently\n"
+    << "decompress it on the fly, as if the original, uncompressed file still\n"
+    << "existed.\n\n"
 
-    << "Options:\n\n"
-    
-    << "  -p \"password\"\n"
-    << "      Specifies the password to use for decryption.  If this is not specified,\n"
-    << "      the user is prompted from standard input.\n\n";
+    << "Note that if you are adding files to a Panda multifile (.mf file) with\n"
+    << "the multify command, it is not necessary to compress them separately;\n"
+    << "multify has an inline compression option.\n\n";
 }
 
 int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "p:h";
+  const char *optstr = "h";
 
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {
     switch (flag) {
-    case 'p':
-      password = optarg;
-      got_password = true;
-      break;
-
     case 'h':
     case '?':
     default:
@@ -106,13 +103,10 @@ main(int argc, char *argv[]) {
   bool all_ok = true;
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
-    if (source_file.get_extension() != "pe") {
-      cerr << source_file 
-           << " doesn't end in .pe; can't derive filename of output file.\n";
-      all_ok = false;
-
+    if (source_file.get_extension() == "pz") {
+      cerr << source_file << " already ends .pz; skipping.\n";
     } else {
-      Filename dest_file = source_file.get_fullpath_wo_extension();
+      Filename dest_file = source_file.get_fullpath() + ".pz";
 
       // Open source file
       ifstream read_stream;
@@ -130,21 +124,14 @@ main(int argc, char *argv[]) {
           all_ok = false;
 
         } else {
-          // Prompt for password.
-          if (!got_password) {
-            cerr << "Enter password: ";
-            getline(cin, password);
-            got_password = true;
-          }
-
           cerr << dest_file << "\n";
-          bool success = do_decrypt(read_stream, write_stream);
+          bool success = do_compress(read_stream, write_stream);
           
           read_stream.close();
           write_stream.close();
           
           if (!success) {
-            cerr << "Failure decrypting " << source_file << "\n";
+            cerr << "Failure writing " << dest_file << "\n";
             all_ok = false;
             dest_file.unlink();
             

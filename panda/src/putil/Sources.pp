@@ -1,6 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                   dtoolutil:c dtoolbase:c dtool:m
 #define LOCAL_LIBS express pandabase
+#define USE_PACKAGES zlib
 
 #begin lib_target
   #define TARGET putil

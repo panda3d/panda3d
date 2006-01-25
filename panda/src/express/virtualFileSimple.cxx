@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileSimple.h"
+#include "zStream.h"
 
 TypeHandle VirtualFileSimple::_type_handle;
 
@@ -86,10 +87,25 @@ is_regular_file() const {
 //               allocated istream on success (which you should
 //               eventually delete when you are done reading).
 //               Returns NULL on failure.
+//
+//               If auto_unwrap is true, an explicitly-named .pz file
+//               is automatically decompressed and the decompressed
+//               contents are returned.  This is different than
+//               vfs-implicit-pz, which will automatically decompress
+//               a file if the extension .pz is *not* given.
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileSimple::
-open_read_file() const {
-  return _mount->open_read_file(_local_filename);
+open_read_file(bool auto_unwrap) const {
+  istream *result = _mount->open_read_file(_local_filename);
+#ifdef HAVE_ZLIB
+  if (result != (istream *)NULL && 
+      (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"))) {
+    // We have to slip in a layer to decompress the file on the fly.
+    IDecompressStream *wrapper = new IDecompressStream(result, true);
+    result = wrapper;
+  }
+#endif  // HAVE_ZLIB
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +151,7 @@ scan_local_directory(VirtualFileList *file_list,
     const string &basename = (*ni);
     if (mount_points.find(basename) == mount_points.end()) {
       Filename filename(_local_filename, basename);
-      VirtualFileSimple *file = new VirtualFileSimple(_mount, filename);
+      VirtualFileSimple *file = new VirtualFileSimple(_mount, filename, false);
       file_list->add_file(file);
     }
   }

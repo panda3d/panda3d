@@ -193,12 +193,8 @@ get_sound(const string &file_name, bool positional) {
     } else { // the suffix is of a supported type
       audio_debug("FmodAudioManager::get_sound: \""<<path<<"\" is a supported sound file format.");
       // resolve the path normally
-      if (use_vfs) {
-        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        vfs->resolve_filename(path, get_sound_path());
-      } else {
-        path.resolve_filename(get_sound_path());
-      }
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      vfs->resolve_filename(path, get_sound_path());
     }
   } else { // no suffix given. Search for supported file types of the same name.
     audio_debug("FmodAudioManager::get_sound: \""<<path<<"\" has no extension. Searching for supported files with the same name.");
@@ -854,7 +850,13 @@ dec_refcount(const string& file_name) {
 char* FmodAudioManager::
 load(const Filename& filename, size_t &size) const {
   // Check file type (based on filename suffix
-  string suffix = downcase(filename.get_extension());
+  string suffix = filename.get_extension();
+#ifdef HAVE_ZLIB
+  if (suffix == "pz") {
+    suffix = Filename(filename.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
+  suffix = downcase(suffix);
   bool bSupported = false;
   if (suffix == "wav" || suffix == "mp3" || suffix == "mid"
       || suffix == "rmi" || suffix == "midi"
@@ -880,7 +882,7 @@ load(const Filename& filename, size_t &size) const {
     return NULL;
   }
   
-  audioFile = vfs->open_read_file(binary_filename);
+  audioFile = vfs->open_read_file(binary_filename, true);
 
   if (audioFile == (istream *)NULL) {
     // Unable to open.

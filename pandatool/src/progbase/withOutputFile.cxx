@@ -18,6 +18,7 @@
 
 #include "withOutputFile.h"
 #include "executionEnvironment.h"
+#include "zStream.h"
 
 #include "notify.h"
 
@@ -34,6 +35,7 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
   _binary_output = binary_output;
   _got_output_filename = false;
   _output_ptr = (ostream *)NULL;
+  _owns_output_ptr = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,6 +45,10 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
 ////////////////////////////////////////////////////////////////////
 WithOutputFile::
 ~WithOutputFile() {
+  if (_owns_output_ptr) {
+    delete _output_ptr;
+    _owns_output_ptr = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,13 +68,23 @@ get_output() {
         exit(1);
       }
       _output_ptr = &cout;
+      _owns_output_ptr = false;
 
     } else {
       // Attempt to open the named file.
       unlink(_output_filename.c_str());
       _output_filename.make_dir();
 
-      if (_binary_output) {
+      bool pz_file = false;
+#ifdef HAVE_ZLIB
+      if (_output_filename.get_extension() == "pz") {
+        // The filename ends in .pz, which means to automatically compress
+        // the file that we write.
+        pz_file = true;
+      }
+#endif  // HAVE_ZLIB
+
+      if (_binary_output || pz_file) {
         _output_filename.set_binary();
       } else {
         _output_filename.set_text();
@@ -80,6 +96,14 @@ get_output() {
       }
       nout << "Writing " << _output_filename << "\n";
       _output_ptr = &_output_stream;
+      _owns_output_ptr = false;
+
+#ifdef HAVE_ZLIB
+      if (pz_file) {
+        _output_ptr = new OCompressStream(_output_ptr, _owns_output_ptr);
+        _owns_output_ptr = true;
+      }
+#endif  // HAVE_ZLIB
     }
   }
   return *_output_ptr;
