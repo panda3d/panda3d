@@ -122,6 +122,7 @@ PUBLISHED:
 
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
+  bool is_wtext() const;
 
 
 private:

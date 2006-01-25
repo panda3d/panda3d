@@ -93,6 +93,7 @@ PUBLISHED:
   INLINE const wstring &get_wtext() const;
   INLINE void append_wtext(const wstring &text);
   wstring get_wtext_as_ascii() const;
+  bool is_wtext() const;
 
   static string encode_wchar(wchar_t ch, Encoding encoding);
   INLINE string encode_wtext(const wstring &wtext) const;

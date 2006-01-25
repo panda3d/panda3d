@@ -104,6 +104,27 @@ get_wtext_as_ascii() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::is_wtext
+//       Access: Published
+//  Description: Returns true if any of the characters in the string
+//               returned by get_wtext() are out of the range of an
+//               ASCII character (and, therefore, get_wtext() should
+//               be called in preference to get_text()).
+////////////////////////////////////////////////////////////////////
+bool TextEncoder:: 
+is_wtext() const {
+  get_wtext();
+  wstring::const_iterator ti;
+  for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
+    if (((*ti) & ~0x7f) != 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::encode_wchar
 //       Access: Published, Static
 //  Description: Encodes a single wide char into a one-, two-, or
@@ -114,7 +135,7 @@ string TextEncoder::
 encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
   switch (encoding) {
   case E_iso8859:
-    if (ch < 0x100) {
+    if ((ch & ~0xff) == 0) {
       return string(1, (char)ch);
     } else {
       // The character won't fit in the 8-bit ISO 8859.  See if we can
@@ -137,9 +158,9 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
     }
 
   case E_utf8:
-    if (ch < 0x80) {
+    if ((ch & ~0x7f) == 0) {
       return string(1, (char)ch);
-    } else if (ch < 0x800) {
+    } else if ((ch & ~0x7ff) == 0) {
       return 
         string(1, (char)((ch >> 6) | 0xc0)) +
         string(1, (char)((ch & 0x3f) | 0x80));

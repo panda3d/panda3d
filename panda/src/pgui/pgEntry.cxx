@@ -658,6 +658,26 @@ set_focus(bool focus) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::is_wtext
+//       Access: Published
+//  Description: Returns true if any of the characters in the string
+//               returned by get_wtext() are out of the range of an
+//               ASCII character (and, therefore, get_wtext() should
+//               be called in preference to get_text()).
+////////////////////////////////////////////////////////////////////
+bool PGEntry:: 
+is_wtext() const {
+  wstring::const_iterator ti;
+  for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
+    if (((*ti) & ~0x7f) != 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_display_wtext
 //       Access: Private
 //  Description: Returns the string that should be displayed within
