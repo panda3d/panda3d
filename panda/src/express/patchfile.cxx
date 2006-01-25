@@ -761,8 +761,11 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
+emit_ADD(ofstream &write_stream, PN_uint32 length, const char* buffer,
          PN_uint32 ADD_pos) {
+
+  nassertv(length == (PN_uint16)length); //we only write a uint16
+
   if (express_cat.is_spam()) {
     express_cat.spam()
       << "ADD: " << length << " (to " << ADD_pos << ")" << endl;
@@ -770,11 +773,11 @@ emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
 
   // write ADD length
   StreamWriter patch_writer(write_stream);
-  patch_writer.add_uint16(length);
+  patch_writer.add_uint16((PN_uint16)length);
 
   // if there are bytes to add, add them
   if (length > 0) {
-    patch_writer.append_data(buffer, length);
+    patch_writer.append_data(buffer, (PN_uint16)length);
   }
 }
 
@@ -784,8 +787,11 @@ emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-emit_COPY(ofstream &write_stream, PN_uint16 length, PN_uint32 COPY_pos,
+emit_COPY(ofstream &write_stream, PN_uint32 length, PN_uint32 COPY_pos,
           PN_uint32 last_copy_pos, PN_uint32 ADD_pos) {
+
+  nassertv(length == (PN_uint16)length); //we only write a uint16
+
   PN_int32 offset = (int)COPY_pos - (int)last_copy_pos;
   if (express_cat.is_spam()) {
     express_cat.spam()
@@ -795,9 +801,9 @@ emit_COPY(ofstream &write_stream, PN_uint16 length, PN_uint32 COPY_pos,
 
   // write COPY length
   StreamWriter patch_writer(write_stream);
-  patch_writer.add_uint16(length);
+  patch_writer.add_uint16((PN_uint16)length);
 
-  if(length > 0) {
+  if((PN_uint16)length > 0) {
     // write COPY offset
     patch_writer.add_int32(offset);
   }
@@ -935,6 +941,11 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
       } else {
         // emit ADD for all skipped bytes
         int num_skipped = (int)new_pos - (int)ADD_pos;
+        if (express_cat.is_spam()) {
+          express_cat.spam()
+            << "build: num_skipped = " << num_skipped 
+            << endl;
+        }
         while (num_skipped != (PN_uint16)num_skipped) {
           // Overflow.  This chunk is too large to fit into a single
           // ADD block, so we have to write it as multiple ADDs.
@@ -960,14 +971,40 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
     }
   }
 
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "build: _result_file_length = " << _result_file_length
+      << " ADD_pos = " << ADD_pos
+      << endl;
+  }
+
   // are there still more bytes left in the new file?
   if (ADD_pos != _result_file_length) {
     // emit ADD for all remaining bytes
+    /* This code overflows the emit_ADD uint16, look for rewrite in the following block
     emit_ADD(write_stream, _result_file_length - ADD_pos, &buffer_new[ADD_pos],
              ADD_pos);
 
     // write null COPY
     emit_COPY(write_stream, 0, last_copy_pos, last_copy_pos, _result_file_length);
+    */
+
+    // Make sure to handle _result_file_length larger than PN_uint16
+    PN_uint32 remaining_bytes = _result_file_length - ADD_pos;
+    while (remaining_bytes != (PN_uint16)remaining_bytes) {
+      static const PN_uint16 max_write = 65535;
+      emit_ADD(write_stream, max_write, &buffer_new[ADD_pos], ADD_pos);
+      ADD_pos += max_write;
+      remaining_bytes -= max_write;
+      emit_COPY(write_stream, 0, last_copy_pos, last_copy_pos, ADD_pos);
+    }
+    // emit ADD the last block (if any) that fits in PN_uint16
+    emit_ADD(write_stream, remaining_bytes, &buffer_new[ADD_pos], ADD_pos);
+    ADD_pos += remaining_bytes;
+    nassertr(ADD_pos == _result_file_length, false);
+    
+    // emit COPY for matching string
+    emit_COPY(write_stream, 0, last_copy_pos, last_copy_pos, ADD_pos);
   }
 
   END_PROFILE(buildPatchfile, "building patch file");

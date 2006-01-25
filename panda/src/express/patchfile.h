@@ -91,9 +91,9 @@ private:
   PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
     PN_uint32 min_length);
 
-  void emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
+  void emit_ADD(ofstream &write_stream, PN_uint32 length, const char* buffer,
                 PN_uint32 ADD_pos);
-  void emit_COPY(ofstream &write_stream, PN_uint16 length, 
+  void emit_COPY(ofstream &write_stream, PN_uint32 length, 
                  PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
                  PN_uint32 ADD_pos);
 
