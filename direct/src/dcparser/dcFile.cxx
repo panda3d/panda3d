@@ -140,7 +140,7 @@ read(Filename filename) {
 #ifdef WITHIN_PANDA
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename);
+  istream *in = vfs->open_read_file(filename, true);
   if (in == (istream *)NULL) {
     cerr << "Cannot open " << filename << " for reading.\n";
     return false;

@@ -233,13 +233,8 @@ lookup_filename(const string &str, string &index_str,
   }
 
   // Now look up the filename on the model path.
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_model_path());
-
-  } else {
-    filename.resolve_filename(get_model_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_model_path());
 
   ostringstream strm;
   strm << filename << ":" << face_index;

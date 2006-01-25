@@ -203,15 +203,9 @@ get_sound(const string &file_name, bool positional) {
     for (type_i = _supported_types.begin(); type_i != _supported_types.end(); ++type_i) { 
       path.set_extension(*type_i); // set extension as supported type
       
-      if (use_vfs) { // check virtual file system
-        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        if (vfs->resolve_filename(path, get_sound_path())) {
-          break; // break out of loop with a valid type_i value and path with correct extension
-        }
-      } else { // check regular file system
-        if (path.resolve_filename(get_sound_path())) {
-          break; // break out of loop with a valid type_i value and path with correct extension
-        }
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      if (vfs->resolve_filename(path, get_sound_path())) {
+        break; // break out of loop with a valid type_i value and path with correct extension
       }
     } // end for loop
     // if no valid file found
@@ -344,12 +338,8 @@ uncache_sound(const string& file_name) {
   nassertv(is_valid());
   Filename path = file_name;
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_sound_path());
-  } else {
-    path.resolve_filename(get_sound_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, get_sound_path());
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator itor = _sounds.find(path);
   if (itor == _sounds.end()) {

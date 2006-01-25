@@ -77,7 +77,7 @@ load(const Filename &file, int preprocessor) {
   result->_preprocessor = preprocessor;
   result->_fixed_expansion = 0;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->read_file(file, result->_body)) {
+  if (!vfs->read_file(file, result->_body, true)) {
     cerr << "Could not read shader file: " << file << "\n";
     result->_body = "";
   }

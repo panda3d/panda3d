@@ -791,7 +791,7 @@ load_client_certificate() {
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
       if (!vfs->read_file(_client_certificate_filename, 
-                          _client_certificate_pem)) {
+                          _client_certificate_pem, true)) {
         // Could not find or read file.
         downloader_cat.warning()
           << "Could not read " << _client_certificate_filename << ".\n";
@@ -914,16 +914,7 @@ parse_http_version_string(const string &version) {
 ////////////////////////////////////////////////////////////////////
 bool HTTPClient::
 load_certificates(const Filename &filename) {
-  int result;
-  
-  if (use_vfs) {
-    result = load_verify_locations(_ssl_ctx, filename);
-
-  } else {
-    string os_specific = filename.to_os_specific();
-    result =
-      SSL_CTX_load_verify_locations(_ssl_ctx, os_specific.c_str(), NULL);
-  }
+  int result = load_verify_locations(_ssl_ctx, filename);
 
   if (result <= 0) {
     downloader_cat.info()
@@ -1398,7 +1389,7 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
 
   // First, read the complete file into memory.
   string data;
-  if (!vfs->read_file(ca_file, data)) {
+  if (!vfs->read_file(ca_file, data, true)) {
     // Could not find or read file.
     downloader_cat.info()
       << "Could not read " << ca_file << ".\n";

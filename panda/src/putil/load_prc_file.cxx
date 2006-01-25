@@ -53,7 +53,7 @@ load_prc_file(const string &filename) {
   vfs->resolve_filename(path, cp_mgr->get_search_path()) ||
     vfs->resolve_filename(path, get_model_path());
   
-  istream *file = vfs->open_read_file(path);
+  istream *file = vfs->open_read_file(path, true);
   if (file == (istream *)NULL) {
     util_cat.error()
       << "Unable to open " << path << "\n";
