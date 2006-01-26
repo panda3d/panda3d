@@ -202,11 +202,13 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
 
     PT(EggGroupNode) temp_group = new EggGroupNode;
     bool result = egg_poly->triangulate_into(temp_group, convex_also);
-    EggGroupNode::iterator ci;
-    for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
-      add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
+    if (temp_group->size() != 1) {
+      EggGroupNode::iterator ci;
+      for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
+        add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
+      }
+      return result;
     }
-    return result;
   }
 
   if (_vertex_pool == NULL) {
