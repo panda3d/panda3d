@@ -189,13 +189,13 @@ apply_texture(int i, TextureContext *tc) {
     // error or oversight.
     if ((dirty & Texture::DF_image) == 0) {
       dxgsg8_cat.warning()
-  << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+        << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
     }
 
     if (!dtc->create_texture(*_screen)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg8_cat.error()
-  << "Unable to re-create texture " << *dtc->_texture << endl;
+        << "Unable to re-create texture " << *dtc->_texture << endl;
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
@@ -212,7 +212,7 @@ apply_texture(int i, TextureContext *tc) {
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSW, get_texture_wrap_mode(wrap_w));
 
   _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR,
-            Colorf_to_D3DCOLOR(tex->get_border_color()));
+                                    Colorf_to_D3DCOLOR(tex->get_border_color()));
 
   uint aniso_degree = tex->get_anisotropic_degree();
   Texture::FilterType ft = tex->get_magfilter();
@@ -930,10 +930,10 @@ draw_triangles(const GeomTriangles *primitive) {
       // Nonindexed, client arrays.
 
       draw_primitive_up(D3DPT_TRIANGLELIST, primitive->get_num_primitives(),
-      primitive->get_first_vertex(),
-      primitive->get_num_vertices(),
-      _vertex_data->get_array(0)->get_data(),
-      _vertex_data->get_format()->get_array(0)->get_stride());
+                        primitive->get_first_vertex(),
+                        primitive->get_num_vertices(),
+                        _vertex_data->get_array(0)->get_data(),
+                        _vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -968,7 +968,7 @@ draw_tristrips(const GeomTristrips *primitive) {
       } else {
         // Indexed, client arrays, one long triangle strip.
         D3DFORMAT index_type = get_index_type(primitive->get_index_type());
-  draw_indexed_primitive_up
+        draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            primitive->get_num_vertices() - 2,
@@ -986,12 +986,12 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Indexed, client arrays, one long triangle strip.
-  draw_primitive_up(D3DPT_TRIANGLESTRIP,
-        primitive->get_num_vertices() - 2,
-        primitive->get_first_vertex(),
-        primitive->get_num_vertices(),
-        _vertex_data->get_array(0)->get_data(),
-        _vertex_data->get_format()->get_array(0)->get_stride());
+        draw_primitive_up(D3DPT_TRIANGLESTRIP,
+                          primitive->get_num_vertices() - 2,
+                          primitive->get_first_vertex(),
+                          primitive->get_num_vertices(),
+                          _vertex_data->get_array(0)->get_data(),
+                          _vertex_data->get_format()->get_array(0)->get_stride());
       }
     }
 
@@ -1042,7 +1042,7 @@ draw_tristrips(const GeomTristrips *primitive) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
           unsigned int min = mins.get_data1i();
           unsigned int max = maxs.get_data1i();
-    draw_indexed_primitive_up
+          draw_indexed_primitive_up
             (D3DPT_TRIANGLESTRIP,
              min, max,
              ends[i] - start - 2,
@@ -1075,10 +1075,10 @@ draw_tristrips(const GeomTristrips *primitive) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-    draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
-          first_vertex + start,
-          ends[i] - start,
-          array_data, stride);
+          draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
+                            first_vertex + start,
+                            ends[i] - start,
+                            array_data, stride);
 
           start = ends[i] + 2;
         }
@@ -1141,7 +1141,7 @@ draw_trifans(const GeomTrifans *primitive) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         unsigned int min = mins.get_data1i();
         unsigned int max = maxs.get_data1i();
-  draw_indexed_primitive_up
+        draw_indexed_primitive_up
           (D3DPT_TRIANGLEFAN,
            min, max,
            ends[i] - start - 2,
@@ -1174,11 +1174,11 @@ draw_trifans(const GeomTrifans *primitive) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-  draw_primitive_up(D3DPT_TRIANGLEFAN,
-        ends[i] - start - 2,
-        first_vertex,
-        ends[i] - start,
-        array_data, stride);
+        draw_primitive_up(D3DPT_TRIANGLEFAN,
+                          ends[i] - start - 2,
+                          first_vertex,
+                          ends[i] - start,
+                          array_data, stride);
         start = ends[i];
       }
     }
@@ -1234,10 +1234,10 @@ draw_lines(const GeomLines *primitive) {
     } else {
       // Nonindexed, client arrays.
       draw_primitive_up(D3DPT_LINELIST, primitive->get_num_primitives(),
-      primitive->get_first_vertex(),
-      primitive->get_num_vertices(),
-      _vertex_data->get_array(0)->get_data(),
-      _vertex_data->get_format()->get_array(0)->get_stride());
+                        primitive->get_first_vertex(),
+                        primitive->get_num_vertices(),
+                        _vertex_data->get_array(0)->get_data(),
+                        _vertex_data->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -1275,10 +1275,10 @@ draw_points(const GeomPoints *primitive) {
   } else {
     // Nonindexed, client arrays.
     draw_primitive_up(D3DPT_POINTLIST, primitive->get_num_primitives(),
-          primitive->get_first_vertex(),
-          primitive->get_num_vertices(),
-          _vertex_data->get_array(0)->get_data(),
-          _vertex_data->get_format()->get_array(0)->get_stride());
+                      primitive->get_first_vertex(),
+                      primitive->get_num_vertices(),
+                      _vertex_data->get_array(0)->get_data(),
+                      _vertex_data->get_format()->get_array(0)->get_stride());
   }
 }
 
@@ -1496,11 +1496,11 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // need to copy it to a temporary surface of the appropriate type
     // first.
     hr = _d3d_device->CreateImageSurface(w, h, _screen->_display_mode.Format,
-           &temp_surface);
+                                         &temp_surface);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-  << "CreateImageSurface failed in copy_pixel_buffer()"
-  << D3DERRORSTRING(hr);
+        << "CreateImageSurface failed in copy_pixel_buffer()"
+        << D3DERRORSTRING(hr);
       backbuffer->Release();
       return false;
     }
@@ -1542,8 +1542,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     hr = _d3d_device->CreateImageSurface(w, h, D3DFMT_A8R8G8B8, &temp_surface);
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-  << "CreateImageSurface failed in copy_pixel_buffer()"
-  << D3DERRORSTRING(hr);
+        << "CreateImageSurface failed in copy_pixel_buffer()"
+        << D3DERRORSTRING(hr);
       return false;
     }
 
@@ -1551,7 +1551,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
 
     if (hr == D3DERR_DEVICELOST) {
       dxgsg8_cat.error()
-  << "copy_pixel_buffer failed: device lost\n";
+        << "copy_pixel_buffer failed: device lost\n";
       temp_surface->Release();
       return false;
     }
@@ -1568,7 +1568,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   }
 
   DXTextureContext8::d3d_surface_to_texture(rect, temp_surface,
-              copy_inverted, tex, z);
+                                            copy_inverted, tex, z);
 
   RELEASE(temp_surface, dxgsg8, "temp_surface", RELEASE_ONCE);
 
@@ -1658,19 +1658,19 @@ reset() {
   hr = _d3d_device->GetCreationParameters (&creation_parameters);
 
   // default render to texture format
-//  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
+  //  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
 
   // match the display mode format for render to texture
   _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
 
   if (SUCCEEDED (hr)) {
     hr = _screen->_d3d8->CheckDeviceFormat (
-        creation_parameters.AdapterOrdinal,
-        creation_parameters.DeviceType,
-        _screen->_display_mode.Format,
-        D3DUSAGE_RENDERTARGET,
-        D3DRTYPE_TEXTURE,
-        _screen->_render_to_texture_d3d_format);
+                                            creation_parameters.AdapterOrdinal,
+                                            creation_parameters.DeviceType,
+                                            _screen->_display_mode.Format,
+                                            D3DUSAGE_RENDERTARGET,
+                                            D3DRTYPE_TEXTURE,
+                                            _screen->_render_to_texture_d3d_format);
     if (SUCCEEDED (hr)) {
       _supports_render_texture = true;
     }
@@ -1724,7 +1724,7 @@ reset() {
     // look for all possible DX8 texture fmts
     D3DFORMAT_FLAG fmtflag = D3DFORMAT_FLAG(1 << i);
     hr = _screen->_d3d8->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format,
-                                          0x0, D3DRTYPE_TEXTURE, g_D3DFORMATmap[fmtflag]);
+                                           0x0, D3DRTYPE_TEXTURE, g_D3DFORMATmap[fmtflag]);
     if (SUCCEEDED(hr)){
       _screen->_supported_tex_formats_mask |= fmtflag;
     }
@@ -1770,7 +1770,7 @@ reset() {
 
   // turn on dithering if the rendertarget is < 8bits/color channel
   bool dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(_screen->_presentation_params.BackBufferFormat)
-       && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
+                         && (_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
   _d3d_device->SetRenderState(D3DRS_DITHERENABLE, dither_enabled);
 
   _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
@@ -1832,9 +1832,9 @@ apply_fog(Fog *fog) {
       fog->get_linear_range(onset, opaque);
 
       _d3d_device->SetRenderState(D3DRS_FOGSTART,
-                                   *((LPDWORD) (&onset)));
+                                  *((LPDWORD) (&onset)));
       _d3d_device->SetRenderState(D3DRS_FOGEND,
-                                   *((LPDWORD) (&opaque)));
+                                  *((LPDWORD) (&opaque)));
     }
     break;
   case Fog::M_exponential:
@@ -1843,7 +1843,7 @@ apply_fog(Fog *fog) {
       // Exponential fog is always camera-relative.
       float fog_density = fog->get_exp_density();
       _d3d_device->SetRenderState(D3DRS_FOGDENSITY,
-                                   *((LPDWORD) (&fog_density)));
+                                  *((LPDWORD) (&fog_density)));
     }
     break;
   }
@@ -2518,7 +2518,7 @@ do_issue_texture() {
     apply_texture(i, tc);
     set_texture_blend_mode(i, stage);
 
-    int texcoord_dimensions = 0;
+    int texcoord_dimensions = 2;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
     if (_state._tex_matrix->has_stage(stage)) {
@@ -2623,7 +2623,7 @@ do_issue_texture() {
     _d3d_device->SetRenderState(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
-      if (tex_mat->is_2d() && texcoord_dimensions <= 2) {
+      if (/*tex_mat->is_2d() &&*/ texcoord_dimensions <= 2) {
         // For 2-d texture coordinates, we have to reorder the matrix.
         LMatrix4f m = tex_mat->get_mat();
         m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
@@ -2636,12 +2636,12 @@ do_issue_texture() {
       } else {
         LMatrix4f m = tex_mat->get_mat();
         _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-  DWORD transform_flags = texcoord_dimensions;
-  if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
-    // If we have a projected texture matrix, we also need to
-    // set D3DTTFF_COUNT4.
-    transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
-  }
+        DWORD transform_flags = texcoord_dimensions;
+        if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
+          // If we have a projected texture matrix, we also need to
+          // set D3DTTFF_COUNT4.
+          transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
+        }
         _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
@@ -2776,12 +2776,12 @@ do_issue_blending() {
   if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
       } else {
-  _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-  _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
-  _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+        _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        _d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+        _d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       }
     }
     return;
@@ -2824,9 +2824,9 @@ do_issue_blending() {
     }
 
     _d3d_device->SetRenderState(D3DRS_SRCBLEND,
-        get_blend_func(color_blend->get_operand_a()));
+                                get_blend_func(color_blend->get_operand_a()));
     _d3d_device->SetRenderState(D3DRS_DESTBLEND,
-        get_blend_func(color_blend->get_operand_b()));
+                                get_blend_func(color_blend->get_operand_b()));
     return;
   }
 
@@ -3751,10 +3751,10 @@ get_texture_argument_modifier(TextureStage::CombineOperand operand) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
-      unsigned int primitive_count,
-      unsigned int first_vertex,
-      unsigned int num_vertices,
-      const unsigned char *buffer, size_t stride) {
+                  unsigned int primitive_count,
+                  unsigned int first_vertex,
+                  unsigned int num_vertices,
+                  const unsigned char *buffer, size_t stride) {
 
   // It appears that the common ATI driver seems to fail to draw
   // anything in the DrawPrimitiveUP() call if the address range of
@@ -3769,12 +3769,12 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     // Actually, the buffer doesn't fit within the required limit
     // anyway.  Go ahead and draw it and hope for the best.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-         buffer_start, stride);
+                                 buffer_start, stride);
 
   } else if ((((long)buffer_end ^ (long)buffer_start) & ~0xffff) == 0) {
     // No problem; we can draw the buffer directly.
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-         buffer_start, stride);
+                                 buffer_start, stride);
 
   } else {
     // We have a problem--the buffer crosses over a 0x10000 boundary.
@@ -3783,7 +3783,7 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
     unsigned char *safe_buffer_start = get_safe_buffer_start();
     memcpy(safe_buffer_start, buffer_start, buffer_end - buffer_start);
     _d3d_device->DrawPrimitiveUP(primitive_type, primitive_count,
-         safe_buffer_start, stride);
+                                 safe_buffer_start, stride);
 
   }
 }
@@ -3801,18 +3801,15 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
-        unsigned int min_index, unsigned int max_index,
-        unsigned int num_primitives,
-        const unsigned char *index_data,
-        D3DFORMAT index_type,
-        const unsigned char *buffer, size_t stride) {
+                          unsigned int min_index, unsigned int max_index,
+                          unsigned int num_primitives,
+                          const unsigned char *index_data,
+                          D3DFORMAT index_type,
+                          const unsigned char *buffer, size_t stride) {
   // As above, we'll hack the case of the buffer crossing the 0x10000
   // boundary.
   const unsigned char *buffer_start = buffer + stride * min_index;
   const unsigned char *buffer_end = buffer + stride * (max_index + 1);
-
-  bool is_mickey = (_vertex_data->get_name() == "mickey");
-  is_mickey = false;
 
   if (buffer_end - buffer > 0x10000) {
     // Actually, the buffer doesn't fit within the required limit
