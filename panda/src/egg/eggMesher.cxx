@@ -193,11 +193,15 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool EggMesher::
 add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
-  if (egg_poly->size() != 3 && egg_poly->size() != 4) {
-    // If we have a higher-order polygon, triangulate it
+  if (egg_poly->size() != 3) {
+    // If we have a higher-order or concave polygon, triangulate it
     // automatically.
+
+    // We'll keep quads, unless they're concave.
+    bool convex_also = (egg_poly->size() != 4);
+
     PT(EggGroupNode) temp_group = new EggGroupNode;
-    bool result = egg_poly->triangulate_into(temp_group, true);
+    bool result = egg_poly->triangulate_into(temp_group, convex_also);
     EggGroupNode::iterator ci;
     for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
       add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
