@@ -1,0 +1,33 @@
+<Comment> {
+  "egg-texture-cards -o icon_lightbulb.egg ../../src/maps/lightbulb.tif"
+}
+<Texture> lightbulb {
+  "../../src/maps/lightbulb.tif"
+}
+<Group> {
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.5 0.5 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.5 -0.5 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.5 -0.5 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.5 0.5 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> lightbulb {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { lightbulb }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+}
