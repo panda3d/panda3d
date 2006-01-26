@@ -83,7 +83,7 @@ bool XFile::
 read(Filename filename) {
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename);
+  istream *in = vfs->open_read_file(filename, true);
   if (in == (istream *)NULL) {
     xfile_cat.error()
       << "Cannot open " << filename << " for reading.\n";
