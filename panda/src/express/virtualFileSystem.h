@@ -82,12 +82,12 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  INLINE string read_file(const Filename &filename, bool auto_unwrap = false) const;
-  INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap = false) const;
+  INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
+  INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   void close_read_file(istream *stream) const;
 
 public:
-  INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap = false) const;
+  INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
