@@ -65,7 +65,8 @@ precompute_linear_matrices(Physical *physical,
 
   // prepare the vector
   _precomputed_linear_matrices.clear();
-  _precomputed_linear_matrices.reserve(global_force_vec_size + local_force_vec_size);
+  _precomputed_linear_matrices.reserve(
+      global_force_vec_size + local_force_vec_size);
 
   NodePath physical_np(physical_node);
   NodePath parent_physical_np = physical_np.get_parent();
@@ -78,7 +79,8 @@ precompute_linear_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     NodePath force_np(force_node);
-    _precomputed_linear_matrices.push_back(force_np.get_transform(parent_physical_np)->get_mat());
+    _precomputed_linear_matrices.push_back(
+        force_np.get_transform(parent_physical_np)->get_mat());
   }
 
   // tally the local xforms
@@ -88,7 +90,8 @@ precompute_linear_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     NodePath force_np(force_node);
-    _precomputed_linear_matrices.push_back(force_np.get_transform(parent_physical_np)->get_mat());
+    _precomputed_linear_matrices.push_back(
+        force_np.get_transform(parent_physical_np)->get_mat());
   }
 }
 
@@ -118,7 +121,8 @@ precompute_angular_matrices(Physical *physical,
 
   // prepare the vector
   _precomputed_angular_matrices.clear();
-  _precomputed_angular_matrices.reserve(global_force_vec_size + local_force_vec_size);
+  _precomputed_angular_matrices.reserve(
+      global_force_vec_size + local_force_vec_size);
 
   NodePath physical_np(physical_node);
   NodePath parent_physical_np = physical_np.get_parent();
@@ -130,7 +134,8 @@ precompute_angular_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     NodePath force_np(force_node);
-    _precomputed_angular_matrices.push_back(force_np.get_transform(parent_physical_np)->get_mat());
+    _precomputed_angular_matrices.push_back(
+        force_np.get_transform(parent_physical_np)->get_mat());
   }
 
   // tally the local xforms
@@ -140,7 +145,8 @@ precompute_angular_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     NodePath force_np(force_node);
-    _precomputed_angular_matrices.push_back(force_np.get_transform(parent_physical_np)->get_mat());
+    _precomputed_angular_matrices.push_back(
+        force_np.get_transform(parent_physical_np)->get_mat());
   }
 }
 
