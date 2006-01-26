@@ -425,8 +425,10 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     // Couldn't find the file.  Either it doesn't exist, or it's an
     // unknown file type.  Report a useful message either way.
     string extension = filename.get_extension();
+    bool pz_file = false;
 #ifdef HAVE_ZLIB
     if (extension == "pz") {
+      pz_file = true;
       extension = Filename(filename.get_basename_wo_extension()).get_extension();
     }
 #endif  // HAVE_ZLIB
@@ -441,6 +443,11 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
         loader_cat.error(false)
           << "Currently known scene file types are:\n";
         reg->write(loader_cat.error(false), 2);
+        return NULL;
+      } else if (pz_file && !requested_type->supports_compressed()) {
+        loader_cat.error()
+          << requested_type->get_name() << " file type (."
+          << extension << ") does not support in-line compression.\n";
         return NULL;
       }
     }
