@@ -18,6 +18,7 @@
 
 #include "dxfFile.h"
 #include "string_utils.h"
+#include "virtualFileSystem.h"
 
 DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
   { 1, 1, 1 },        // Color 0 is not used.
@@ -286,6 +287,8 @@ DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
 ////////////////////////////////////////////////////////////////////
 DXFFile::
 DXFFile() {
+  _in = NULL;
+  _owns_in = false;
   _layer = NULL;
   reset_entity();
   _color_index = -1;
@@ -298,6 +301,10 @@ DXFFile() {
 ////////////////////////////////////////////////////////////////////
 DXFFile::
 ~DXFFile() {
+  if (_owns_in) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_in);
+  }
 }
 
 
@@ -310,19 +317,32 @@ DXFFile::
 void DXFFile::
 process(Filename filename) {
   filename.set_text();
-  filename.open_read(_in_file);
-  process(_in_file);
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename, true);
+  if (in == (istream *)NULL) {
+    return;
+  }
+  process(in, true);
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXFFile::process
 //       Access: Public
-//  Description: Reads the indicated stream as a DXF file.
+//  Description: Reads the indicated stream as a DXF file.  If owns_in
+//               is true, then the istream will be deleted via
+//               vfs->close_read_file() when the DXFFile object
+//               destructs.
 ////////////////////////////////////////////////////////////////////
 void DXFFile::
-process(istream &in) {
-  _in = &in;
+process(istream *in, bool owns_in) {
+  if (_owns_in) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_in);
+  }
+  _in = in;
+  _owns_in = owns_in;
   _state = ST_top;
 
   begin_file();

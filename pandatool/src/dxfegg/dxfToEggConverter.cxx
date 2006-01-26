@@ -83,6 +83,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXFToEggConverter::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DXFToEggConverter::
+supports_compressed() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXFToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting
@@ -144,10 +156,10 @@ done_entity() {
     // same).  We'll add the vertices to our list of vertices and then
     // define the polygon.
     _verts.clear();
-    _verts.push_back(DXFVertex(_p));
-    _verts.push_back(DXFVertex(_q));
-    _verts.push_back(DXFVertex(_r));
     _verts.push_back(DXFVertex(_s));
+    _verts.push_back(DXFVertex(_r));
+    _verts.push_back(DXFVertex(_q));
+    _verts.push_back(DXFVertex(_p));
     
     nassertv(_layer!=NULL);
     ((DXFToEggLayer *)_layer)->add_polygon(this);

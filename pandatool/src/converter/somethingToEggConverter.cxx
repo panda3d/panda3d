@@ -94,6 +94,18 @@ get_additional_extensions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEggConverter::
+supports_compressed() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::get_input_units
 //       Access: Public, Virtual
 //  Description: This may be called after convert_file() has been

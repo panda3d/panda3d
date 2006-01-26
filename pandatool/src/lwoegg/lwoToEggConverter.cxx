@@ -102,6 +102,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool LwoToEggConverter::
+supports_compressed() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting

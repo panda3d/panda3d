@@ -108,6 +108,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+supports_compressed() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting

@@ -80,6 +80,18 @@ get_additional_extensions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypePandatool::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypePandatool::
+supports_compressed() const {
+  return _converter->supports_compressed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::resolve_filename
 //       Access: Public, Virtual
 //  Description: Searches for the indicated filename on whatever paths

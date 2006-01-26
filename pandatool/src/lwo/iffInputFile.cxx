@@ -18,9 +18,9 @@
 
 #include "iffInputFile.h"
 #include "iffGenericChunk.h"
-
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "virtualFileSystem.h"
 
 TypeHandle IffInputFile::_type_handle;
 
@@ -46,7 +46,8 @@ IffInputFile() {
 IffInputFile::
 ~IffInputFile() {
   if (_owns_istream) {
-    delete _input;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_input);
   }
 }
 
@@ -59,12 +60,15 @@ IffInputFile::
 bool IffInputFile::
 open_read(Filename filename) {
   filename.set_binary();
-  ifstream *in = new ifstream;
-  if (filename.open_read(*in)) {
-    set_input(in, true);
-    set_filename(filename);
-    return true;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename, true);
+  if (in == (istream *)NULL) {
+    return false;
   }
+
+  set_input(in, true);
+  set_filename(filename);
 
   return false;
 }
@@ -74,12 +78,14 @@ open_read(Filename filename) {
 //       Access: Public
 //  Description: Sets up the input to use an arbitrary istream.  If
 //               owns_istream is true, the istream will be deleted
-//               when the IffInputFile destructs.
+//               (via vfs->close_read_file()) when the IffInputFile
+//               destructs.
 ////////////////////////////////////////////////////////////////////
 void IffInputFile::
 set_input(istream *input, bool owns_istream) {
   if (_owns_istream) {
-    delete _input;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_input);
   }
   _input = input;
   _owns_istream = owns_istream;

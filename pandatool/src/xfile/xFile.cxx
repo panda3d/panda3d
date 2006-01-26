@@ -161,6 +161,15 @@ write(Filename filename) const {
     return false;
   }
 
+#ifdef HAVE_ZLIB
+  if (filename.get_extension() == "pz") {
+    // The filename ends in .pz, which means to automatically compress
+    // the X file that we write.
+    OCompressStream compressor(&out, false);
+    return write(compressor);
+  }
+#endif  // HAVE_ZLIB
+
   return write(out);
 }
 

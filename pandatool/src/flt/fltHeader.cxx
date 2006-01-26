@@ -21,8 +21,9 @@
 #include "fltRecordWriter.h"
 #include "fltUnsupportedRecord.h"
 #include "config_flt.h"
-
+#include "zStream.h"
 #include "nearly_zero.h"
+#include "virtualFileSystem.h"
 
 #include <assert.h>
 #include <math.h>
@@ -222,13 +223,15 @@ read_flt(Filename filename) {
   filename.set_binary();
   _flt_filename = filename;
 
-  ifstream in;
-  if (!filename.open_read(in)) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename, true);
+  if (in == (istream *)NULL) {
     assert(!flt_error_abort);
     return FE_could_not_open;
   }
-
-  return read_flt(in);
+  FltError result = read_flt(*in);
+  vfs->close_read_file(in);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,6 +282,15 @@ write_flt(Filename filename) {
     assert(!flt_error_abort);
     return FE_could_not_open;
   }
+
+#ifdef HAVE_ZLIB
+  if (filename.get_extension() == "pz") {
+    // The filename ends in .pz, which means to automatically compress
+    // the flt file that we write.
+    OCompressStream compressor(&out, false);
+    return write_flt(compressor);
+  }
+#endif  // HAVE_ZLIB
 
   return write_flt(out);
 }

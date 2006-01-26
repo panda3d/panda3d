@@ -46,7 +46,7 @@ public:
   virtual ~DXFFile();
 
   void process(Filename filename);
-  void process(istream &in);
+  void process(istream *in, bool owns_in);
 
   // These functions are called as the file is processed.  These are
   // the main hooks for redefining how the class should dispense its
@@ -151,7 +151,7 @@ protected:
   LMatrix4d _ocs2wcs;
 
   istream *_in;
-  ifstream _in_file;
+  bool _owns_in;
 
   int _code;
   string _string;

@@ -1,6 +1,8 @@
 #define YACC_PREFIX xyy
 #define LFLAGS -i
 
+#define USE_PACKAGES zlib
+
 #begin ss_lib_target
   #define TARGET xfile
   #define LOCAL_LIBS pandatoolbase

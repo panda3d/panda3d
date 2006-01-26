@@ -57,9 +57,9 @@ add_polygon(const DXFToEggConverter *entity) {
   const DXFFile::Color &color = entity->get_color();
   poly->set_color(Colorf(color.r, color.g, color.b, 1.0));
 
-  // A polyline's vertices are stored in the attached vector by dxf.C.
-  // They were defined in the DXF file using a series of "VERTEX"
-  // entries.
+  // A polyline's vertices are stored in the attached vector by
+  // dxf.cxx.  They were defined in the DXF file using a series of
+  // "VERTEX" entries.
 
   // For a 3dface, the vertices are defined explicitly as part of the
   // entity; but in this case, they were added to the vector before

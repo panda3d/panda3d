@@ -39,6 +39,7 @@ public:
 
   virtual string get_name() const;
   virtual string get_extension() const;
+  virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename);
 

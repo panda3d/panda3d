@@ -55,6 +55,7 @@ public:
 
   virtual bool convert_file(const Filename &filename);
   bool convert_lwo(const LwoHeader *lwo_header);
+  virtual bool supports_compressed() const;
 
   CLwoLayer *get_layer(int number) const;
   CLwoClip *get_clip(int number) const;

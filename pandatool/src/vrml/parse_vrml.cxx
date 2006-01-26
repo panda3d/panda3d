@@ -33,6 +33,7 @@
 #include "vrmlNode.h"
 #include "standard_nodes.h"
 #include "zStream.h"
+#include "virtualFileSystem.h"
 
 extern int vrmlyyparse();
 extern void vrmlyyResetLineNumber();
@@ -87,13 +88,15 @@ get_standard_nodes() {
 VrmlScene *
 parse_vrml(Filename filename) {
   filename.set_text();
-  ifstream infile;
-  if (!filename.open_read(infile)) {
-    cerr << "Error, couldn't open " << filename << "\n";
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename, true);
+  if (in == (istream *)NULL) {
+    nout << "Cannot open " << filename << " for reading.\n";
     return NULL;
   }
-
-  return parse_vrml(infile, filename);
+  VrmlScene *result = parse_vrml(*in, filename);
+  vfs->close_read_file(in);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

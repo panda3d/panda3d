@@ -106,6 +106,7 @@ public:
   virtual string get_name() const=0;
   virtual string get_extension() const=0;
   virtual string get_additional_extensions() const;
+  virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename)=0;
   virtual DistanceUnit get_input_units();

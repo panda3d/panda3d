@@ -90,6 +90,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VRMLToEggConverter::supports_compressed
+//       Access: Published, Virtual
+//  Description: Returns true if this file type can transparently load
+//               compressed files (with a .pz extension), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool VRMLToEggConverter::
+supports_compressed() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VRMLToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting
