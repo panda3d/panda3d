@@ -106,7 +106,6 @@ child_integrate(Physical *physical,
     LVector3f f;
     //    LMatrix4f force_to_object_xform;
 
-    ForceNode *force_node;
     LinearForceVector::const_iterator f_cur;
 
     // global forces
@@ -119,7 +118,6 @@ child_integrate(Physical *physical,
       if (cur_force->get_active() == false) {
         continue;
       }
-      force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
       f = cur_force->get_vector(current_object) * matrices[index++];
@@ -142,7 +140,6 @@ child_integrate(Physical *physical,
       if (cur_force->get_active() == false) {
         continue;
       }
-      force_node = cur_force->get_force_node();
 
       // go from force space to object space
       f = cur_force->get_vector(current_object) * matrices[index++];
