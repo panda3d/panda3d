@@ -1655,8 +1655,8 @@ def normalDistrib(a, b, gauss=random.gauss):
 def weightedRand(valDict, rng=random.random):
     """
     pass in a dictionary with a selection -> weight mapping.  Eg.
-    {"Choice 1" : 10,
-     "Choice 2" : 30,
+    {"Choice 1": 10,
+     "Choice 2": 30,
      "bear"     : 100}
 
     -Weights need not add up to any particular value.

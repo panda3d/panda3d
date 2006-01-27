@@ -66,19 +66,19 @@ class Dial(Valuator):
     def addValuatorPropertiesToDialog(self):
         self.addPropertyToDialog(
             'base',
-            { 'widget' : self._valuator,
-              'type' : 'real',
-              'help' : 'Dial value = base + delta * numRevs'})
+            { 'widget': self._valuator,
+              'type': 'real',
+              'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'delta',
-            { 'widget' : self._valuator,
-              'type' : 'real',
-              'help' : 'Dial value = base + delta * numRevs'})
+            { 'widget': self._valuator,
+              'type': 'real',
+              'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'numSegments',
-            { 'widget' : self._valuator,
-              'type' : 'integer',
-              'help' : 'Number of segments to divide dial into.'})
+            { 'widget': self._valuator,
+              'type': 'integer',
+              'help': 'Number of segments to divide dial into.'})
             
     def addValuatorMenuEntries(self):
         # The popup menu

@@ -341,7 +341,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         Record all class methods in a 2 level dictionary so we can go
         through them and see which are overloaded
-        { className : {methodName : [methodSpec, methodSpec, methodSpec]}}
+        { className: {methodName: [methodSpec, methodSpec, methodSpec]}}
         """
         methodList = self.overloadedClassMethods.setdefault(methodSpec.name, [])
         methodList.append(methodSpec)
@@ -351,7 +351,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         Record all instance methods in a 2 level dictionary so we can go
         through them and see which are overloaded
-        { className : {methodName : [methodSpec, methodSpec, methodSpec]}}
+        { className: {methodName: [methodSpec, methodSpec, methodSpec]}}
         """
         methodList = self.overloadedInstanceMethods.setdefault(methodSpec.name, [])
         methodList.append(methodSpec)

@@ -41,10 +41,10 @@ methodRenameDictionary = {
     'operator^='  : '__ixor__',
     'operator~='  : 'bitwiseNotEqual',
     'operator->'  : 'dereference',
-    'operator<<=' : '__ilshift__',
-    'operator>>=' : '__irshift__',
+    'operator<<=': '__ilshift__',
+    'operator>>=': '__irshift__',
     'print'       : 'Cprint',
-    'CInterval.setT' : '_priv__cSetT',
+    'CInterval.setT': '_priv__cSetT',
     }
     
 classRenameDictionary = {

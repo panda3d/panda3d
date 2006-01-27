@@ -184,17 +184,17 @@ else:
     hoods = string.split(hoodString)
 
 # The list of neighborhoods to edit
-hoodIds = {'TT' : 'toontown_central',
-           'DD' : 'donalds_dock',
-           'MM' : 'minnies_melody_land',
-           'BR' : 'the_burrrgh',
-           'DG' : 'daisys_garden',
-           'DL' : 'donalds_dreamland',
-           'CC' : 'cog_hq_bossbot',
-           'CL' : 'cog_hq_lawbot',
-           'CM' : 'cog_hq_cashbot',
-           'CS' : 'cog_hq_sellbot',
-           'GS' : 'goofy_speedway',
+hoodIds = {'TT': 'toontown_central',
+           'DD': 'donalds_dock',
+           'MM': 'minnies_melody_land',
+           'BR': 'the_burrrgh',
+           'DG': 'daisys_garden',
+           'DL': 'donalds_dreamland',
+           'CC': 'cog_hq_bossbot',
+           'CL': 'cog_hq_lawbot',
+           'CM': 'cog_hq_cashbot',
+           'CS': 'cog_hq_sellbot',
+           'GS': 'goofy_speedway',
            }
 
 # Init neighborhood arrays
@@ -3665,7 +3665,7 @@ class LevelEditor(NodePath, DirectObject):
                         bldg, bldgIndex = self.getBldg(bldgIndex, bldgs)
                         curve.getPoint(currT, currPoint)
 
-                        if side == "inner" or side == "innersidest" :
+                        if side == "inner" or side == "innersidest":
                             heading = 90
                         else:
                             heading = -90
@@ -3835,7 +3835,7 @@ class LevelEditor(NodePath, DirectObject):
                         bldg, bldgIndex = self.getBldg(bldgIndex, bldgs, forceDuplicate = True)
                         curve.getPoint(currT, currPoint)
 
-                        if side == "inner" or side == "innersidest" :
+                        if side == "inner" or side == "innersidest":
                             heading = 90
                         else:
                             heading = -90

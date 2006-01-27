@@ -122,7 +122,7 @@ class Valuator(Pmw.MegaWidget):
                  },
                 
                 'min':
-                { 'widget' : self,
+                { 'widget': self,
                   'type': 'real',
                   'fNone': 1,
                   'help': 'Minimum allowable value. Enter None for no minimum.'},

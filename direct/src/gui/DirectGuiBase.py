@@ -31,7 +31,7 @@ Code Overview:
 
 2)  DirectGuiBase.defineoptions is called.  defineoption creates:
 
-    self._constructorKeywords = { keyword : [value, useFlag] }
+    self._constructorKeywords = { keyword: [value, useFlag] }
     a dictionary of the keyword options specified as part of the constructor
     keywords can be of the form 'component_option', where component is
     the name of a widget's component, a component group or a component alias

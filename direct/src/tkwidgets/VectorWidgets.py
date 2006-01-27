@@ -155,11 +155,11 @@ class VectorEntry(Pmw.MegaWidget):
     def _updateValidate(self):
         # Update entry field to respect new limits
         self.configure(Entry_validate = {
-            'validator' : 'real',
-            'min' : self['min'],
-            'max' : self['max'],
-            'minstrict' : 0,
-            'maxstrict' : 0})
+            'validator': 'real',
+            'min': self['min'],
+            'max': self['max'],
+            'minstrict': 0,
+            'maxstrict': 0})
         # Reflect changes in floaters
         self.configure(valuator_min = self['min'],
                        valuator_max = self['max'])            

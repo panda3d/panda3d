@@ -435,18 +435,18 @@ optdefaults = { 'type':'PYZ',
                 'destdir':'',           # COLLECT
                 'pathprefix': '',
                 'trees': '',
-                'debug' : '0',
-                'support' : '1', # include python20.dll & exceptons.pyc at a minimum
+                'debug': '0',
+                'support': '1', # include python20.dll & exceptons.pyc at a minimum
                 'icon': '',
 }   
 
 optcnvrts = {   'type':'',
-                'name' : 'getstring',       
+                'name': 'getstring',       
                 'exstdlib': 'getbool', 
                 'console': 'getbool',
-                'analyze' : 'getbool', 
-                'debug' : 'getbool',
-                'includetk' : 'getbool',
+                'analyze': 'getbool', 
+                'debug': 'getbool',
+                'includetk': 'getbool',
                 'userunw': 'getbool',
                 'destdir': 'getstring',
                 'support': 'getbool',

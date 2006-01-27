@@ -851,13 +851,13 @@ class Actor(DirectObject, NodePath):
             if joint.getType().isDerivedFrom(MovingPartMatrix.getClassType()):
                 node.setMat(joint.getInitialValue())
 
-        # Store a dictionary of jointName : node to list the controls
+        # Store a dictionary of jointName: node to list the controls
         # requested for joints.  The controls will actually be applied
         # later, when we load up the animations in bindAnim().
         if self.__controlJoints.has_key(bundle.this):
             self.__controlJoints[bundle.this][jointName] = node
         else:
-            self.__controlJoints[bundle.this] = { jointName : node }
+            self.__controlJoints[bundle.this] = { jointName: node }
 
         return node
             
@@ -1538,7 +1538,7 @@ class Actor(DirectObject, NodePath):
             return anim[1]
 
         # fetch a copy from the modelPool, or if we weren't careful
-        # enough to preload, fetch from disk :(
+        # enough to preload, fetch from disk
         animPath = anim[0]
         if self.__autoCopy:
             animNode = loader.loadModelOnce(animPath)

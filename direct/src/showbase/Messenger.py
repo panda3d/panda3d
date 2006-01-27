@@ -10,9 +10,9 @@ class Messenger:
     def __init__(self):
         """
         One is keyed off the event name. It has the following structure:
-            {event1 : {object1: [method, extraArgs, persistent],
+            {event1: {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]},
-             event2 : {object1: [method, extraArgs, persistent],
+             event2: {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]}}
 
         This dictionary allow for efficient callbacks when the messenger
@@ -23,7 +23,7 @@ class Messenger:
 
 
         Or, for an example with more real data:
-            {'mouseDown' : {avatar : [avatar.jump, [2.0], 1]}}
+            {'mouseDown': {avatar: [avatar.jump, [2.0], 1]}}
         """
         self.__callbacks = {}
         self.__objectEvents = {}
@@ -381,7 +381,7 @@ class Messenger:
         keys.sort()
         for event in keys:
             str += self.__eventRepr(event)
-        # Print out the object : event dictionary too
+        # Print out the object: event dictionary too
         str += "="*64 + "\n"
         for object, eventDict in self.__objectEvents.items():
             str += "%s:\n" % object

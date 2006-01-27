@@ -10,7 +10,7 @@ class InputState(DirectObject.DirectObject):
     The initial usage is to watch some keyboard keys so that another
     task can poll the key states.  By the way, in general polling is
     not a good idea, but it is useful in some situations.  Know when
-    to use it :)  If in doubt, don't use this class and listen for
+    to use it:)  If in doubt, don't use this class and listen for
     events instead.
     """
     
@@ -44,7 +44,7 @@ class InputState(DirectObject.DirectObject):
         self.accept(eventOff, self.set, [name, 0])
         self.state[name] = default
         # self.watching is a dict of the form:
-        #   {name : [(eventOn, eventOff), (eventOn, eventOff)...]}
+        #   {name: [(eventOn, eventOff), (eventOn, eventOff)...]}
         eventList = self.watching.get(name)
         if eventList:
             eventList.append((eventOn, eventOff))

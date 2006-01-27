@@ -191,19 +191,19 @@ class MetaInterval(CMetaInterval):
     def __getslice__(self, i, j):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
-        return self.__class__(self.ivals[i : j])
+        return self.__class__(self.ivals[i: j])
 
     def __setslice__(self, i, j, s):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
-        self.ivals[i : j] = s
+        self.ivals[i: j] = s
         self.__ivalsDirty = 1
         assert self.validateComponents(s)
 
     def __delslice__(self, i, j):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
-        del self.ivals[i : j]
+        del self.ivals[i: j]
         self.__ivalsDirty = 1
 
     def __iadd__(self, other):

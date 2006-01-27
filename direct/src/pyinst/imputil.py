@@ -420,7 +420,7 @@ class DirectoryImporter(Importer):
 
     pathname = os.path.join(dir, modname)
     if os.path.isdir(pathname):
-      values = { '__pkgdir__' : pathname }
+      values = { '__pkgdir__': pathname }
       ispkg = 1
       pathname = os.path.join(pathname, '__init__')
     else:

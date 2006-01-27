@@ -58,11 +58,11 @@ class EntryScale(Pmw.MegaWidget):
                                           None,
                                           Pmw.EntryField, self.labelFrame,
                                           entry_width = 10,
-                                          validate = { 'validator' : 'real',
-                                                       'min' : self['min'],
-                                                       'max' : self['max'],
-                                                       'minstrict' : 0,
-                                                       'maxstrict' : 0},
+                                          validate = { 'validator': 'real',
+                                                       'min': self['min'],
+                                                       'max': self['max'],
+                                                       'minstrict': 0,
+                                                       'maxstrict': 0},
                                           entry_justify = 'right',
                                           entry_textvar = self.entryValue,
                                           command = self._entryCommand)
@@ -187,11 +187,11 @@ class EntryScale(Pmw.MegaWidget):
 
     def _updateValidate(self):
         self.configure(entryField_validate = {
-            'validator' : 'real',
-            'min' : self['min'],
-            'max' : self['max'],
-            'minstrict' : 0,
-            'maxstrict' : 0})
+            'validator': 'real',
+            'min': self['min'],
+            'max': self['max'],
+            'minstrict': 0,
+            'maxstrict': 0})
         self.minLabel['text'] = self['min']
         self.scale['from_'] = self['min']
         self.scale['to'] = self['max']

@@ -160,7 +160,7 @@ class ClassicFSM(DirectObject):
         if state:
             return state
         else:
-            ClassicFSM.notify.warning("[%s] : getStateNamed: %s, no such state" %
+            ClassicFSM.notify.warning("[%s]: getStateNamed: %s, no such state" %
                                       (self.__name, stateName))
 
 

@@ -34,31 +34,31 @@ def initializeInspectorMap():
     notFinishedTypes = ['BufferType',  'EllipsisType',  'FrameType', 'TracebackType', 'XRangeType']
 
     _InspectorMap = {
-        'Builtin_function_or_methodType' : 'FunctionInspector',
-        'BuiltinFunctionType' : 'FunctionInspector',
-        'BuiltinMethodType' : 'FunctionInspector',
-        'ClassType' : 'ClassInspector',
-        'CodeType' : 'CodeInspector',
-        'ComplexType' : 'Inspector',
-        'DictionaryType' : 'DictionaryInspector',
-        'DictType' : 'DictionaryInspector',
-        'FileType' : 'Inspector',
-        'FloatType' : 'Inspector', 
-        'FunctionType' : 'FunctionInspector',
-        'Instance methodType' : 'InstanceMethodInspector',
-        'InstanceType' : 'InstanceInspector',
-        'IntType' : 'Inspector',
-        'LambdaType' : 'Inspector',
-        'ListType' : 'SequenceInspector',
-        'LongType' : 'Inspector',
-        'MethodType' : 'FunctionInspector',
-        'ModuleType' : 'ModuleInspector',
-        'NoneType' : 'Inspector',
-        'SliceType' : 'SliceInspector',
-        'StringType' : 'SequenceInspector',
-        'TupleType' : 'SequenceInspector',
-        'TypeType' : 'Inspector',
-         'UnboundMethodType' : 'FunctionInspector'}
+        'Builtin_function_or_methodType': 'FunctionInspector',
+        'BuiltinFunctionType': 'FunctionInspector',
+        'BuiltinMethodType': 'FunctionInspector',
+        'ClassType': 'ClassInspector',
+        'CodeType': 'CodeInspector',
+        'ComplexType': 'Inspector',
+        'DictionaryType': 'DictionaryInspector',
+        'DictType': 'DictionaryInspector',
+        'FileType': 'Inspector',
+        'FloatType': 'Inspector', 
+        'FunctionType': 'FunctionInspector',
+        'Instance methodType': 'InstanceMethodInspector',
+        'InstanceType': 'InstanceInspector',
+        'IntType': 'Inspector',
+        'LambdaType': 'Inspector',
+        'ListType': 'SequenceInspector',
+        'LongType': 'Inspector',
+        'MethodType': 'FunctionInspector',
+        'ModuleType': 'ModuleInspector',
+        'NoneType': 'Inspector',
+        'SliceType': 'SliceInspector',
+        'StringType': 'SequenceInspector',
+        'TupleType': 'SequenceInspector',
+        'TypeType': 'Inspector',
+         'UnboundMethodType': 'FunctionInspector'}
 
     for each in notFinishedTypes:
         _InspectorMap[each] = 'Inspector'
@@ -332,8 +332,8 @@ class InspectorWindow:
             command = self.commandWidget.get(commandStart,
                                              commandStart + ' lineend')
             if command:
-                partDict = { 'this' : self.selectedPart(),
-                             'object' : self.topInspector().object }
+                partDict = { 'this': self.selectedPart(),
+                             'object': self.topInspector().object }
                 result = eval(command, partDict)
                 self.commandWidget.insert(INSERT, `result` + '\n>>> ')
                 self.commandWidget.see(INSERT)

@@ -74,7 +74,7 @@ class FSMInspector(AppShell):
         menuBar.addcascademenu('States', 'Marker Size',
                                      'Set state marker size', tearoff = 1)
         for size in ('Small', 'Medium', 'Large'):
-            sizeDict = {'Small': '0.25i', 'Medium': '0.375i', 'Large' : '0.5i'}
+            sizeDict = {'Small': '0.25i', 'Medium': '0.375i', 'Large': '0.5i'}
             menuBar.addmenuitem('Marker Size', 'command',
                 size + ' markers', label = size + ' Markers',
                 command = lambda s = self, sz = size, d = sizeDict:

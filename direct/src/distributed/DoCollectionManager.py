@@ -4,17 +4,17 @@ BAD_CHANNEL_ID = 0 # 0xFFFFFFFFFFFFFFFF
 
 class DoCollectionManager:
     def __init__(self):
-        # Dict of {DistributedObject ids : DistributedObjects}
+        # Dict of {DistributedObject ids: DistributedObjects}
         self.doId2do = {}
         # (parentId, zoneId) to dict of doId->DistributedObjectAI
         ## self.zoneId2doIds={}
         if self.hasOwnerView():
-            # Dict of {DistributedObject ids : DistributedObjects}
+            # Dict of {DistributedObject ids: DistributedObjects}
             # for 'owner' views of objects
             self.doId2ownerView = {}
         # Dict of {
         #   parent DistributedObject id: 
-        #     { zoneIds : [child DistributedObject ids] }}
+        #     { zoneIds: [child DistributedObject ids] }}
         self.__doHierarchy = {}
 
     def getDo(self, doId):

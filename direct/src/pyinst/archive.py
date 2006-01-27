@@ -85,7 +85,7 @@ class Archive:
       return None
     ispkg, code = rslt
     if ispkg:
-      return ispkg, code, {'__path__' : []}
+      return ispkg, code, {'__path__': []}
     return rslt
 
   ####### Core method - Override as needed  #########
