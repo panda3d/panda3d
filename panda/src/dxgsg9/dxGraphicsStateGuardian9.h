@@ -35,9 +35,11 @@
 
 #include "lru.h"
 
-typedef D3DVERTEXELEMENT9 DIRECT_3D_VERTEX_ELEMENT;
 typedef LPDIRECT3DDEVICE9 DIRECT_3D_DEVICE;
+typedef D3DVERTEXELEMENT9 DIRECT_3D_VERTEX_ELEMENT;
 typedef LPDIRECT3DVERTEXDECLARATION9 DIRECT_3D_VERTEX_DECLARATION;
+typedef LPDIRECT3DVERTEXSHADER9 DIRECT_3D_VERTEX_SHADER;
+typedef LPDIRECT3DPIXELSHADER9 DIRECT_3D_PIXEL_SHADER;
 
 #include "vertexElementArray.h"
 #include "dxShaderContext9.h"
@@ -49,6 +51,7 @@ typedef LPDIRECT3DVERTEXDECLARATION9 DIRECT_3D_VERTEX_DECLARATION;
 #define DBG_SH3 if (false && DEBUG_ENABLE) {
 #define DBG_SH4 if (false && DEBUG_ENABLE) {
 #define DBG_SH5 if (false && DEBUG_ENABLE) {
+#define DBG_HLSL if (!false && DEBUG_ENABLE) {
 #define DBG_VEA if (false && DEBUG_ENABLE) {
 #define DBG_S if (false && DEBUG_ENABLE) {
 #define DBG_E }
@@ -336,6 +339,10 @@ protected:
   int _vertex_shader_version_minor;
   int _pixel_shader_version_major;
   int _pixel_shader_version_minor;
+
+  char *_vertex_shader_profile;
+  char *_pixel_shader_profile;
+
   int _vertex_shader_maximum_constants;
 
   bool _supports_stream_offset;
