@@ -43,7 +43,7 @@ class DirectCheckButton(DirectButton):
                                               image_scale = self['boxImageScale'],
                                               image_color = self['boxImageColor'],
                                               state = 'disabled',
-                                              text = ('X' , 'X'),
+                                              text = ('X', 'X'),
                                               relief = self['boxRelief'],
                                               )
        

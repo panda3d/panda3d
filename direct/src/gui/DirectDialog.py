@@ -98,7 +98,7 @@ class DirectDialog(DirectFrame):
             ('button_borderWidth',(.01,.01),     None),
             ('button_pad',        (.01,.01),     None),
             ('button_relief',     RAISED,        None),
-            ('button_text_scale'  , 0.06,        None),
+            ('button_text_scale', 0.06,        None),
             ('buttonSize',        None,          INITOPT),
             ('topPad',            0.06,          INITOPT),
             ('midPad',            0.12,          INITOPT),

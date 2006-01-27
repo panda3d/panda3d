@@ -47,7 +47,7 @@ class Actor(DirectObject, NodePath):
                 # part dictionary
                 {"head":"char/dogMM/dogMM_Shorts-head-mod", \
                  "torso":"char/dogMM/dogMM_Shorts-torso-mod", \
-                 "legs":"char/dogMM/dogMM_Shorts-legs-mod"} , \
+                 "legs":"char/dogMM/dogMM_Shorts-legs-mod"}, \
 
                 # dictionary of anim dictionaries
                 {"head":{"walk":"char/dogMM/dogMM_Shorts-head-walk", \
@@ -1275,7 +1275,7 @@ class Actor(DirectObject, NodePath):
         """
         assert partName not in self.__subpartDict
 
-        Actor.notify.debug("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
+        Actor.notify.debug("in loadModel: %s, part: %s, lod: %s, copy: %s" % \
             (modelPath, partName, lodName, copy))
 
         if isinstance(modelPath, NodePath):

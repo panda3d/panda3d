@@ -25,8 +25,8 @@ SUNKEN = PGFrameStyle.TBevelIn
 GROOVE = PGFrameStyle.TGroove
 RIDGE = PGFrameStyle.TRidge
 
-FrameStyleDict = {'flat' : FLAT, 'raised' : RAISED, 'sunken': SUNKEN,
-                  'groove' : GROOVE, 'ridge' : RIDGE 
+FrameStyleDict = {'flat': FLAT, 'raised': RAISED, 'sunken': SUNKEN,
+                  'groove': GROOVE, 'ridge': RIDGE
                   }
 
 # Orientation of DirectSlider and DirectScrollBar

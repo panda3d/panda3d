@@ -2833,7 +2833,7 @@ class LevelEditor(NodePath, DirectObject):
         # Draw a line from start to end
         edgeLine = LineNodePath(parent)
         edgeLine.lineNode.setName('suitEdge')
-        edgeLine.setColor(VBase4(0.0, 0.0, 0.5 ,1))
+        edgeLine.setColor(VBase4(0.0, 0.0, 0.5,1))
         edgeLine.setThickness(1)
         edgeLine.reset()
         # We need to draw the arrow relative to the parent, but the
@@ -3388,7 +3388,7 @@ class LevelEditor(NodePath, DirectObject):
         return newGroup
 
     def makeNewBuildingGroup(self, sequenceNum, side, curveName):
-        print "-------------------------- new building group %s  curveName=%s------------------------" % (sequenceNum , curveName)
+        print "-------------------------- new building group %s  curveName=%s------------------------" % (sequenceNum, curveName)
         # Now create a new group with just the buildings
         self.addGroup(self.NPToplevel)
         newGroup = self.NPParent

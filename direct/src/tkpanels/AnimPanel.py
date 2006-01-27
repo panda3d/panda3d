@@ -413,7 +413,7 @@ class ActorControl(Pmw.MegaWidget):
         animMenu.pack(side = 'left', padx = 5, expand = 0)
 
         # Combo box to select frame rate
-        playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0' , '10.0']
+        playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0', '10.0']
         playRate = '%0.1f' % self['actor'].getPlayRate(self['active'])
         if playRate not in playRateList:
             def strCmp(a, b):

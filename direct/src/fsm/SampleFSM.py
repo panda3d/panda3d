@@ -10,9 +10,9 @@ class ClassicStyle(FSM.FSM):
         FSM.FSM.__init__(self, name)
 
         self.defaultTransitions = {
-            'Red' : ['Green'],
-            'Yellow' : ['Red'],
-            'Green' : ['Yellow'],
+            'Red': ['Green'],
+            'Yellow': ['Red'],
+            'Green': ['Yellow'],
             }
 
     def enterRed(self):

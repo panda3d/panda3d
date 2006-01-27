@@ -126,7 +126,7 @@ class DirectOptionMenu(DirectButton):
             # So entire extent of item's slot on popup is reactive to mouse
             item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
             # Move it to its correct position on the popup
-            item.setPos(-self.minX, 0 , -self.maxZ - i * self.maxHeight)
+            item.setPos(-self.minX, 0, -self.maxZ - i * self.maxHeight)
             item.bind(B1RELEASE, self.hidePopupMenu)
             # Highlight background when mouse is in item
             item.bind(WITHIN,

@@ -1838,7 +1838,7 @@ class MopathRecorder(AppShell, DirectObject):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.ColorEntry, (parent,) ,kw)
+        widget = apply(VectorWidgets.ColorEntry, (parent,),kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)

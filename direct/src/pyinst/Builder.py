@@ -409,8 +409,8 @@ dispatch = {
                 'CARCHIVE': ArchiveTarget,
                 'COLLECT': CollectTarget,
                 'STANDALONE': ExeTarget,
-                'INSTALL' : InstallTarget,
-                'FULLEXE' : FullExeTarget,
+                'INSTALL': InstallTarget,
+                'FULLEXE': FullExeTarget,
 }
 
         
@@ -428,13 +428,13 @@ optdefaults = { 'type':'PYZ',
                 'directories':'',       # PYZ
                 'excludes':'',          # PYZ, INSTALL, COLLECT
                 'expatterns': '',
-                'exstdlib' : '0',
-                'extypes' : '',
+                'exstdlib': '0',
+                'extypes': '',
                 'includes':'',          # PYZ 
                 'packages':'',          # PYZ
                 'destdir':'',           # COLLECT
-                'pathprefix' : '',
-                'trees' : '',
+                'pathprefix': '',
+                'trees': '',
                 'debug' : '0',
                 'support' : '1', # include python20.dll & exceptons.pyc at a minimum
                 'icon': '',
