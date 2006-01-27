@@ -19,7 +19,317 @@
 #include "dxGraphicsStateGuardian9.h"
 #include "dxShaderContext9.h"
 
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+
 TypeHandle CLP(ShaderContext)::_type_handle;
+
+
+#define DISASSEMBLE_SHADER true
+#define dx_verify(result) __dx_verify ((result), __FILE__, __LINE__)
+
+static char *hlsl_vertex_shader_function_name = "vshader";
+static char *hlsl_pixel_shader_function_name = "fshader";
+
+void print_string (char *string)
+{
+  dxgsg9_cat.error() << string;
+}
+void print_return (void)
+{
+  dxgsg9_cat.error() << "\n";
+}
+
+int __dx_verify (HRESULT result, char *file, int line)
+{
+  int state;
+
+  state = TRUE;
+  if (result != D3D_OK)
+  {
+    char *string;
+
+    string = (char *) DXGetErrorString9 (result);
+    print_string (string);
+
+    state = FALSE;
+  }
+
+  return state;
+}
+
+void disassemble_shader (LPD3DXBUFFER shader)
+{
+  if (shader)
+  {
+    LPD3DXBUFFER disassembly;
+
+    if (dx_verify (D3DXDisassembleShader
+    (
+      (DWORD *) shader -> GetBufferPointer ( ),
+      FALSE,
+      0,
+      &disassembly
+    )))
+    {
+      int size;
+      char *message;
+
+      size = disassembly -> GetBufferSize ( );
+
+      message = (char *) (disassembly -> GetBufferPointer ( ));
+      if (message)
+      {
+        print_string (message);
+        print_return ( );
+      }
+
+      disassembly -> Release ( );
+    }
+  }
+}
+
+void free_vertex_shader (DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader)
+{
+  if (direct_3d_vertex_shader)
+  {
+    direct_3d_vertex_shader -> Release ( );
+  }
+}
+
+void free_pixel_shader (DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader)
+{
+  if (direct_3d_pixel_shader)
+  {
+    direct_3d_pixel_shader -> Release ( );
+  }
+}
+
+DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profile, char *function_name, char *file_path, char *program, DIRECT_3D_DEVICE direct_3d_device)
+{
+  int shader_state;
+  DIRECT_3D_SHADER direct_3d_shader;
+  DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader;
+  DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader;
+
+  int flags;
+  D3DXMACRO *defines;
+  LPD3DXINCLUDE include;
+  LPD3DXBUFFER shader;
+  LPD3DXBUFFER error_messages;
+  LPD3DXCONSTANTTABLE constant_table;
+
+  memset (&direct_3d_shader, 0, sizeof (DIRECT_3D_SHADER));
+
+  flags = D3DXSHADER_DEBUG;
+  defines = 0;
+  include = 0;
+  shader = 0;
+  error_messages = 0;
+
+  direct_3d_vertex_shader = 0;
+  direct_3d_pixel_shader = 0;
+  constant_table = 0;
+
+  shader_state = FALSE;
+  if (hlsl)
+  {
+    if (program)
+    {
+      if (dx_verify (
+        D3DXCompileShader
+        (
+          program,
+          strlen (program),
+          defines,
+          include,
+          function_name,
+          shader_profile,
+          flags,
+          &shader,
+          &error_messages,
+          &constant_table
+        )))
+      {
+        shader_state = TRUE;
+      }
+    }
+    else
+    {
+      if (dx_verify (
+        D3DXCompileShaderFromFile
+        (
+          file_path,
+          defines,
+          include,
+          function_name,
+          shader_profile,
+          flags,
+          &shader,
+          &error_messages,
+          &constant_table
+        )))
+      {
+        shader_state = TRUE;
+      }
+    }
+
+    if (DISASSEMBLE_SHADER && shader)
+    {
+      disassemble_shader (shader);
+    }
+  }
+  else
+  {
+    if (dx_verify (D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages)))
+    {
+      shader_state = TRUE;
+    }
+  }
+
+  if (shader_state)
+  {
+    shader_state = FALSE;
+    if (vertex_shader)
+    {
+      DWORD *buffer;
+      buffer = (DWORD *) shader -> GetBufferPointer ( );
+
+      if (dx_verify (direct_3d_device -> CreateVertexShader (buffer, &direct_3d_vertex_shader)))
+      {
+        UINT count;
+        D3DXSEMANTIC *semantic_array;
+
+        count = 0;
+        semantic_array = 0;
+        if (dx_verify (D3DXGetShaderInputSemantics (buffer, NULL, &count)))
+        {
+          semantic_array = new D3DXSEMANTIC [count];
+          if (dx_verify (D3DXGetShaderInputSemantics (buffer, semantic_array, &count)))
+          {
+            direct_3d_shader.total_semantics = count;
+            direct_3d_shader.semantic_array = semantic_array;
+            shader_state = TRUE;
+          }
+          else
+          {
+            delete semantic_array;
+          }
+        }
+      }
+    }
+    else
+    {
+      if (dx_verify (direct_3d_device -> CreatePixelShader ((DWORD *) shader -> GetBufferPointer ( ), &direct_3d_pixel_shader)))
+      {
+        shader_state = TRUE;
+      }
+    }
+  }
+  else
+  {
+    if (error_messages)
+    {
+      char *error_message;
+
+      error_message = (char *) (error_messages -> GetBufferPointer ( ));
+      if (error_message)
+      {
+        print_string (error_message);
+        print_return ( );
+      }
+    }
+  }
+
+  if (shader)
+  {
+    shader -> Release ( );
+  }
+  if (error_messages)
+  {
+    error_messages -> Release ( );
+  }
+
+  direct_3d_shader.state = shader_state;
+  if (vertex_shader)
+  {
+    direct_3d_shader.direct_3d_vertex_shader = direct_3d_vertex_shader;
+  }
+  else
+  {
+    direct_3d_shader.direct_3d_pixel_shader = direct_3d_pixel_shader;
+  }
+  direct_3d_shader.constant_table = constant_table;
+
+  if (constant_table)
+  {
+    if (dx_verify (constant_table -> GetDesc (&direct_3d_shader.constant_table_description)))
+    {
+
+    }
+  }
+
+  return direct_3d_shader;
+}
+
+void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *data, DIRECT_3D_DEVICE direct_3d_device)
+{
+  if (dx_parameter)
+  {
+    int index;
+
+    for (index = 0; index < dx_parameter -> total_constant_descriptions; index++)
+    {
+      D3DXCONSTANT_DESC *constant_description;
+
+      constant_description = &dx_parameter -> constant_description_array [index];
+
+      if (dx_parameter -> vertex_shader)
+      {
+        if (constant_description -> Columns == 4)
+        {
+          direct_3d_device -> SetVertexShaderConstantF (constant_description -> RegisterIndex, data, constant_description -> Rows);
+        }
+        else
+        {
+          int offset;
+          UINT row;
+
+          offset = 0;
+          for (row = 0; row < constant_description -> Rows; row++)
+          {
+            direct_3d_device -> SetVertexShaderConstantF (constant_description -> RegisterIndex + row, data + offset, 1);
+            offset += constant_description -> Columns;
+          }
+        }
+      }
+      else
+      {
+        if (constant_description -> Columns == 4)
+        {
+          direct_3d_device -> SetPixelShaderConstantF (constant_description -> RegisterIndex, data, constant_description -> Rows);
+        }
+        else
+        {
+          int offset;
+          UINT row;
+
+          offset = 0;
+          for (row = 0; row < constant_description -> Rows; row++)
+          {
+            direct_3d_device -> SetPixelShaderConstantF (constant_description -> RegisterIndex + row, data + offset, 1);
+            offset += constant_description -> Columns;
+          }
+        }
+      }
+    }
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -35,9 +345,10 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 
 #ifdef HAVE_CGDX9
 
-  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n"; DBG_E
+  DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n"; DBG_E
 
   _state = false;
+  _cg_shader = false;
 
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
@@ -46,6 +357,12 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 
   _vertex_size = 0;
   _vertex_element_array = 0;
+
+  memset (&_direct_3d_vertex_shader, 0, sizeof (DIRECT_3D_SHADER));
+  memset (&_direct_3d_pixel_shader, 0, sizeof (DIRECT_3D_SHADER));
+
+  _total_dx_parameters = 0;
+  _dx_parameter_array = 0;
 
   _name = s->get_name ( );
 
@@ -90,14 +407,316 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     }
 
     // Compile the program.
+    _cg_shader = true;
     try_cg_compile(s, gsg);
     cerr << _cg_errors;
     return;
   }
+
+  int hlsl;
+  bool direct_x_program;
+
+  direct_x_program = false;
   if (header == "//hlsl") {
+    direct_x_program = true;
+    hlsl = true;
+  }
+  if (header == "//asm") {
+    direct_x_program = true;
+    hlsl = false;
+  }
+  if (direct_x_program) {
 
-      s -> _text.c_str ( );
+#define MAXIMUM_CONSTANT_DESCRIPTIONS 16
+static char *parameter_type_names_array [ ] =
+{
+    "D3DXPT_VOID",
+    "D3DXPT_BOOL",
+    "D3DXPT_INT",
+    "D3DXPT_FLOAT",
+    "D3DXPT_STRING",
+    "D3DXPT_TEXTURE",
+    "D3DXPT_TEXTURE1D",
+    "D3DXPT_TEXTURE2D",
+    "D3DXPT_TEXTURE3D",
+    "D3DXPT_TEXTURECUBE",
+    "D3DXPT_SAMPLER",
+    "D3DXPT_SAMPLER1D",
+    "D3DXPT_SAMPLER2D",
+    "D3DXPT_SAMPLER3D",
+    "D3DXPT_SAMPLERCUBE",
+    "D3DXPT_PIXELSHADER",
+    "D3DXPT_VERTEXSHADER",
+    "D3DXPT_PIXELFRAGMENT",
+    "D3DXPT_VERTEXFRAGMENT",
+};
+      char *function_name;
 
+      function_name = "vshader";
+      _direct_3d_vertex_shader = compile_shader (hlsl, TRUE, gsg -> _vertex_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
+
+      function_name = "fshader";
+      _direct_3d_pixel_shader = compile_shader (hlsl, FALSE, gsg -> _pixel_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
+
+      if (_direct_3d_vertex_shader.state && _direct_3d_pixel_shader.state) {
+
+int dx_parameter_index;
+DX_PARAMETER *dx_parameter;
+
+dx_parameter_index = 0;
+_total_dx_parameters = _direct_3d_vertex_shader.constant_table_description.Constants + _direct_3d_pixel_shader.constant_table_description.Constants;
+_dx_parameter_array = new DX_PARAMETER [_total_dx_parameters];
+memset (_dx_parameter_array, 0, _total_dx_parameters * sizeof (DX_PARAMETER));
+
+if (_direct_3d_vertex_shader.constant_table)
+{
+  UINT index;
+
+  for (index = 0; index < _direct_3d_vertex_shader.constant_table_description.Constants; index++)
+  {
+    D3DXHANDLE handle;
+
+    handle = _direct_3d_vertex_shader.constant_table -> GetConstant (NULL, index);
+    if (handle)
+    {
+      UINT count;
+      D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
+
+      count = MAXIMUM_CONSTANT_DESCRIPTIONS;
+      if (dx_verify (_direct_3d_vertex_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count)))
+      {
+        UINT constant_description_index;
+        D3DXCONSTANT_DESC *constant_description;
+
+        dx_parameter = &_dx_parameter_array [dx_parameter_index];
+        dx_parameter_index++;
+        dx_parameter -> total_constant_descriptions = count;
+        dx_parameter -> vertex_shader = TRUE;
+        dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
+
+        for (constant_description_index = 0; constant_description_index < count; constant_description_index++)
+        {
+          constant_description = &constant_description_array [constant_description_index];
+          dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
+
+          DBG_HLSL
+            char string [512];
+            sprintf (string, "  VS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
+              index,
+              constant_description_index,
+              constant_description -> Name,
+              constant_description -> RegisterSet,
+              constant_description -> RegisterIndex,
+              parameter_type_names_array [constant_description -> Type],
+              constant_description -> Elements,
+              constant_description -> Rows,
+              constant_description -> Columns);
+            print_string (string);
+          DBG_E
+
+          switch (constant_description -> Type)
+          {
+            case D3DXPT_VOID:
+              break;
+            case D3DXPT_BOOL:
+              break;
+            case D3DXPT_INT:
+              break;
+            case D3DXPT_FLOAT:
+              break;
+            case D3DXPT_STRING:
+              break;
+            case D3DXPT_TEXTURE:
+              break;
+            case D3DXPT_TEXTURE1D:
+              break;
+            case D3DXPT_TEXTURE2D:
+              break;
+            case D3DXPT_TEXTURE3D:
+              break;
+            case D3DXPT_TEXTURECUBE:
+              break;
+            case D3DXPT_SAMPLER:
+              break;
+            case D3DXPT_SAMPLER1D:
+              break;
+            case D3DXPT_SAMPLER2D:
+              break;
+            case D3DXPT_SAMPLER3D:
+              break;
+            case D3DXPT_SAMPLERCUBE:
+              break;
+            case D3DXPT_PIXELSHADER:
+              break;
+            case D3DXPT_VERTEXSHADER:
+              break;
+            case D3DXPT_PIXELFRAGMENT:
+              break;
+            case D3DXPT_VERTEXFRAGMENT:
+              break;
+            default:
+              break;
+          }
+
+          switch (constant_description -> RegisterSet)
+          {
+            case D3DXRS_BOOL:
+              break;
+            case D3DXRS_INT4:
+              break;
+            case D3DXRS_FLOAT4:
+              break;
+            case D3DXRS_SAMPLER:
+              break;
+            default:
+              break;
+          }
+        }
+
+        compile_cg_parameter (0, dx_parameter);
+      }
+    }
+  }
+}
+if (_direct_3d_pixel_shader.constant_table)
+{
+  UINT index;
+
+  for (index = 0; index < _direct_3d_pixel_shader.constant_table_description.Constants; index++)
+  {
+    D3DXHANDLE handle;
+
+    handle = _direct_3d_pixel_shader.constant_table -> GetConstant (NULL, index);
+    if (handle)
+    {
+      UINT count;
+      D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
+
+      count = MAXIMUM_CONSTANT_DESCRIPTIONS;
+      if (dx_verify (_direct_3d_pixel_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count)))
+      {
+        UINT constant_description_index;
+        D3DXCONSTANT_DESC *constant_description;
+
+        dx_parameter = &_dx_parameter_array [dx_parameter_index];
+        dx_parameter_index++;
+        dx_parameter -> total_constant_descriptions = count;
+        dx_parameter -> vertex_shader = FALSE;
+        dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
+
+        for (constant_description_index = 0; constant_description_index < count; constant_description_index++)
+        {
+          constant_description = &constant_description_array [constant_description_index];
+          dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
+
+          DBG_HLSL
+            char string [512];
+            sprintf (string, "  PS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
+              index,
+              constant_description_index,
+              constant_description -> Name,
+              constant_description -> RegisterSet,
+              constant_description -> RegisterIndex,
+              parameter_type_names_array [constant_description -> Type],
+              constant_description -> Elements,
+              constant_description -> Rows,
+              constant_description -> Columns);
+            print_string (string);
+          DBG_E
+
+        }
+
+        compile_cg_parameter (0, dx_parameter);
+      }
+    }
+  }
+}
+
+  if (_direct_3d_vertex_shader.semantic_array) {
+    int index;
+
+    DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: semantic_array = " << _direct_3d_vertex_shader.total_semantics <<  "\n"; DBG_E
+
+    int stream_index;
+    VertexElementArray *vertex_element_array;
+
+// SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
+    stream_index = 0;
+    vertex_element_array = new VertexElementArray (_direct_3d_vertex_shader.total_semantics + 16);
+
+    for (index = 0; index < _direct_3d_vertex_shader.total_semantics; index++)
+    {
+      D3DXSEMANTIC *semantic;
+
+      semantic = &_direct_3d_vertex_shader.semantic_array [index];
+      switch (semantic -> Usage)
+      {
+        case D3DDECLUSAGE_POSITION:
+          vertex_element_array -> add_position_xyz_vertex_element (stream_index);
+// vertex_element_array -> add_position_xyzw_vertex_element (stream_index);
+          break;
+        case D3DDECLUSAGE_BLENDWEIGHT:
+          break;
+        case D3DDECLUSAGE_BLENDINDICES:
+          break;
+        case D3DDECLUSAGE_NORMAL:
+          vertex_element_array -> add_normal_vertex_element (stream_index);
+          break;
+        case D3DDECLUSAGE_PSIZE:
+          break;
+        case D3DDECLUSAGE_TEXCOORD:
+
+//          vertex_element_array -> add_u_vertex_element (stream_index);
+          vertex_element_array -> add_uv_vertex_element (stream_index);
+//          vertex_element_array -> add_uvw_vertex_element (stream_index);
+
+          break;
+        case D3DDECLUSAGE_TANGENT:
+          vertex_element_array -> add_tangent_vertex_element (stream_index);
+          break;
+        case D3DDECLUSAGE_BINORMAL:
+          vertex_element_array -> add_binormal_vertex_element (stream_index);
+          break;
+        case D3DDECLUSAGE_TESSFACTOR:
+          break;
+        case D3DDECLUSAGE_POSITIONT:
+          break;
+        case D3DDECLUSAGE_COLOR:
+          if (semantic -> UsageIndex == 0) {
+            vertex_element_array -> add_diffuse_color_vertex_element (stream_index);
+          }
+          else {
+            vertex_element_array -> add_specular_color_vertex_element (stream_index);
+          }
+          break;
+        case D3DDECLUSAGE_FOG:
+          break;
+        case D3DDECLUSAGE_DEPTH:
+          break;
+        case D3DDECLUSAGE_SAMPLE:
+          break;
+        default:
+          break;
+      }
+    }
+
+    int state;
+
+    state = vertex_element_array -> add_end_vertex_element ( );
+    if (state) {
+      _vertex_size = vertex_element_array -> offset;
+
+      DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
+
+      _vertex_element_array = vertex_element_array;
+    }
+  }
+
+
+        _state = true;
+      }
+
+    return;
   }
 
 #endif
@@ -116,6 +735,37 @@ CLP(ShaderContext)::
   if (_vertex_element_array) {
     delete _vertex_element_array;
     _vertex_element_array = 0;
+  }
+
+  if (_direct_3d_vertex_shader.semantic_array) {
+    delete _direct_3d_vertex_shader.semantic_array;
+  }
+
+  if (_direct_3d_vertex_shader.state) {
+    free_vertex_shader (_direct_3d_vertex_shader.direct_3d_vertex_shader);
+  }
+  if (_direct_3d_pixel_shader.state) {
+    free_pixel_shader (_direct_3d_pixel_shader.direct_3d_pixel_shader);
+  }
+
+  if (_dx_parameter_array)
+  {
+    int index;
+
+    for (index = 0; index < _total_dx_parameters; index++)
+    {
+      DX_PARAMETER *dx_parameter;
+
+      dx_parameter = &_dx_parameter_array [index];
+      if (dx_parameter -> constant_description_array)
+      {
+        delete dx_parameter -> constant_description_array;
+        dx_parameter -> constant_description_array = 0;
+      }
+    }
+
+    delete _dx_parameter_array;
+    _dx_parameter_array = 0;
   }
 }
 
@@ -189,6 +839,23 @@ parse_cg_profile(const string &id, bool vertex)
 }
 #endif  // HAVE_CGDX9
 
+int save_file (int size, void *data, char *file_path)
+{
+  int state;
+  int file_handle;
+
+  state = false;
+  file_handle = _open (file_path, _O_CREAT | _O_RDWR | _O_TRUNC, _S_IREAD | _S_IWRITE);
+  if (file_handle != -1) {
+    if (_write (file_handle, data, size) == size) {
+      state = true;
+    }
+    _close (file_handle);
+  }
+
+  return state;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXShaderContext9::try_cg_compile
 //       Access: Private
@@ -217,12 +884,37 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     return false;
   }
 
-  // DEBUG: output the generated program
-  DBG_SH3
-    const char *program;
-    program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
+  const char *vertex_program;
+  const char *pixel_program;
+  vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
+  pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
 
-    dxgsg9_cat.debug ( ) << program << "\n";
+  DBG_SH3
+    // DEBUG: output the generated program
+    dxgsg9_cat.debug ( ) << vertex_program << "\n";
+    dxgsg9_cat.debug ( ) << pixel_program << "\n";
+  DBG_E
+
+  DBG_SH1
+    // DEBUG: save the generated program to a file
+    int size;
+    char file_path [512];
+
+    char drive[_MAX_DRIVE];
+    char dir[_MAX_DIR];
+    char fname[_MAX_FNAME];
+    char ext[_MAX_EXT];
+
+    _splitpath (_name.c_str ( ), drive, dir, fname, ext);
+
+    size = strlen (vertex_program);
+    sprintf (file_path, "%s.vasm", fname);
+    save_file (size, (void *) vertex_program, file_path);
+
+    size = strlen (pixel_program);
+    sprintf (file_path, "%s.pasm", fname);
+    save_file (size, (void *) pixel_program, file_path);
+
   DBG_E
 
   // The following code is present to work around a bug in the Cg compiler.
@@ -306,7 +998,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
          parameter != 0;
          parameter = cgGetNextLeafParameter(parameter)) {
-      success &= compile_cg_parameter(parameter);
+      success &= compile_cg_parameter(parameter, 0);
     }
   }
   if (!success) {
@@ -327,7 +1019,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     + cgGetProfileString(_cg_profile[SHADER_type_vert]) + " "
     + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
 
-  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n"; DBG_E
+  DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: try_cg_compile \n"; DBG_E
 
   _state = true;
 
@@ -363,7 +1055,7 @@ release_resources() {
 void CLP(ShaderContext)::
 bind(GSG *gsg) {
 #ifdef HAVE_CGDX9
-  if (gsg -> _cg_context != 0) {
+  if (_state && gsg -> _cg_context != 0) {
 
     DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: bind \n";  DBG_E
 
@@ -375,18 +1067,34 @@ bind(GSG *gsg) {
 
     HRESULT hr;
 
-    // Bind the shaders.
-    hr = cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
-    if (FAILED (hr)) {
-      dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed\n";
+    if (_cg_shader) {
+      // Bind the shaders.
+      hr = cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed\n";
+      }
+      hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed\n";
+      }
     }
-    hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
-    if (FAILED (hr)) {
-      dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed\n";
+    else {
+      hr = gsg -> _d3d_device -> SetVertexShader (_direct_3d_vertex_shader.direct_3d_vertex_shader);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "SetVertexShader ( ) failed "
+          << D3DERRORSTRING(hr);
+      }
+      hr = gsg -> _d3d_device -> SetPixelShader (_direct_3d_pixel_shader.direct_3d_pixel_shader);
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "SetPixelShader ( ) failed "
+          << D3DERRORSTRING(hr);
+      }
     }
 
     // DEBUG
-    DBG_SH1
+    DBG_SH2
 
       IDirect3DVertexShader9 *vertex_shader;
       IDirect3DPixelShader9 *pixel_shader;
@@ -431,7 +1139,7 @@ void CLP(ShaderContext)::
 unbind(GSG *gsg)
 {
 #ifdef HAVE_CGDX9
-  if (gsg -> _cg_context != 0) {
+  if (_state && gsg -> _cg_context != 0) {
 
     DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: unbind \n"; DBG_E
 
@@ -465,10 +1173,11 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
   LMatrix4f temp_matrix;
 
   CGparameter p = bind.parameter;
+  DX_PARAMETER *dx_parameter = bind.dx_parameter;
 
   HRESULT hr;
 
-  DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: issue_cg_auto_bind " << bind.value << "\n"; DBG_E
+  DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: issue_cg_auto_bind " << bind.value << "\n"; DBG_E
 
   switch(bind.value) {
   case SIC_mat_modelview:
@@ -641,13 +1350,14 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
         break;
     }
 
-    hr = cgD3D9SetUniform (p, p_matrix -> get_data ( ));
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "cgD3D9SetUniform "
-        << bind.value << " failed "
-        << " size " << cgD3D9TypeToSize(cgGetParameterType(p))
-        << D3DERRORSTRING(hr);
+    if (_cg_shader) {
+      hr = cgD3D9SetUniform (p, p_matrix -> get_data ( ));
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "cgD3D9SetUniform "
+          << bind.value << " failed "
+          << " size " << cgD3D9TypeToSize(cgGetParameterType(p))
+          << D3DERRORSTRING(hr);
 
         switch (hr) {
           case CGD3D9ERR_INVALIDPARAM:
@@ -669,6 +1379,10 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
             dxgsg9_cat.error() << "CGD3D9ERR_OUTOFRANGE\n";
             break;
         }
+      }
+    }
+    else {
+      set_dx_shader_parameter_float (dx_parameter, p_matrix -> get_data ( ), gsg -> _d3d_device);
     }
     return;
   case SIC_sys_windowsize:
@@ -676,11 +1390,16 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
     t[1] = gsg->get_current_display_region ( )->get_pixel_height();
     t[2] = 1;
     t[3] = 1;
-    hr = cgD3D9SetUniform (p, t.get_data());
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "cgD3D9SetUniform " << bind.value << " failed "
-        << D3DERRORSTRING(hr);
+    if (_cg_shader) {
+      hr = cgD3D9SetUniform (p, t.get_data());
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "cgD3D9SetUniform " << bind.value << " failed "
+          << D3DERRORSTRING(hr);
+      }
+    }
+    else {
+      set_dx_shader_parameter_float (dx_parameter, t.get_data ( ), gsg -> _d3d_device);
     }
     return;
   case SIC_sys_pixelsize:
@@ -688,11 +1407,16 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
     t[1] = 1.0 / gsg->get_current_display_region ( )->get_pixel_height();
     t[2] = 1;
     t[3] = 1;
-    hr = cgD3D9SetUniform (p, t.get_data());
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "cgD3D9SetUniform " << bind.value << " failed "
-        << D3DERRORSTRING(hr);
+    if (_cg_shader) {
+      hr = cgD3D9SetUniform (p, t.get_data());
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "cgD3D9SetUniform " << bind.value << " failed "
+          << D3DERRORSTRING(hr);
+      }
+    }
+    else {
+      set_dx_shader_parameter_float (dx_parameter, t.get_data ( ), gsg -> _d3d_device);
     }
     return;
   case SIC_sys_cardcenter:
@@ -704,11 +1428,16 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
     t[1] = yhi*0.5;
     t[2] = 1;
     t[3] = 1;
-    hr = cgD3D9SetUniform (p, t.get_data());
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "cgD3D9SetUniform " << bind.value << " failed "
-        << D3DERRORSTRING(hr);
+    if (_cg_shader) {
+      hr = cgD3D9SetUniform (p, t.get_data());
+      if (FAILED (hr)) {
+        dxgsg9_cat.error()
+          << "cgD3D9SetUniform " << bind.value << " failed "
+          << D3DERRORSTRING(hr);
+      }
+    }
+    else {
+      set_dx_shader_parameter_float (dx_parameter, t.get_data ( ), gsg -> _d3d_device);
     }
     return;
   }
@@ -760,12 +1489,16 @@ issue_parameters(GSG *gsg)
 
       DBG_E
 
+      if (_cg_shader) {
+        HRESULT hr;
 
-      HRESULT hr;
-
-      hr = cgD3D9SetUniform (_cg_fbind[i].parameter, data);
-      if (FAILED (hr)) {
-        dxgsg9_cat.error() << "cgD3D9SetUniform failed " << D3DERRORSTRING(hr);
+        hr = cgD3D9SetUniform (_cg_fbind[i].parameter, data);
+        if (FAILED (hr)) {
+          dxgsg9_cat.error() << "cgD3D9SetUniform failed " << D3DERRORSTRING(hr);
+        }
+      }
+      else {
+        set_dx_shader_parameter_float (_cg_fbind[i].dx_parameter, data, gsg -> _d3d_device);
       }
 
       DBG_SH3
@@ -797,7 +1530,12 @@ issue_parameters(GSG *gsg)
 
         DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind " << id -> get_name ( ) << "\n"; DBG_E
 
-        cgD3D9SetUniform (_cg_npbind[i].parameter, dat);
+        if (_cg_shader) {
+          cgD3D9SetUniform (_cg_npbind[i].parameter, dat);
+        }
+        else {
+          set_dx_shader_parameter_float (_cg_npbind[i].dx_parameter, dat, gsg -> _d3d_device);
+        }
 
       } else {
         dat = input->get_nodepath().node()->get_transform()->get_mat().get_data();
@@ -823,7 +1561,12 @@ issue_parameters(GSG *gsg)
 
         DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: issue_parameters, _cg_npbind 2 \n"; DBG_E
 
-        cgD3D9SetUniform (_cg_npbind[i].parameter, matrix);
+        if (_cg_shader) {
+          cgD3D9SetUniform (_cg_npbind[i].parameter, matrix);
+        }
+        else {
+          set_dx_shader_parameter_float (_cg_npbind[i].dx_parameter, matrix, gsg -> _d3d_device);
+        }
       }
     }
 
@@ -923,12 +1666,14 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
     // be properly mapped.
     if (_vertex_element_array == 0) {
 
+if (_cg_shader)
+{
       const GeomVertexArrayData *array_data;
       Geom::NumericType numeric_type;
       int start, stride, num_values;
       int nvarying = _cg_varying.size();
 
-      DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying = " << nvarying <<  "\n"; DBG_E
+      DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays: nvarying = " << nvarying <<  "\n"; DBG_E
 
       int stream_index;
       VertexElementArray *vertex_element_array;
@@ -1074,8 +1819,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             dxgsg9_cat.error ( ) << "VE ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
           }
 
-          DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
-          DBG_SH1  dxgsg9_cat.debug ( )
+          DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
+          DBG_SH2  dxgsg9_cat.debug ( )
             << "\n  name " << name -> get_name ( )
             << "  num_values " << num_values
             << "  numeric_type " << numeric_type
@@ -1093,19 +1838,24 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
       state = vertex_element_array -> add_end_vertex_element ( );
       if (state) {
-        if (cgD3D9ValidateVertexDeclaration (_cg_program [SHADER_type_vert],
-              vertex_element_array -> vertex_element_array) == CG_TRUE) {
-          dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
+        if (_cg_shader) {
+          if (cgD3D9ValidateVertexDeclaration (_cg_program [SHADER_type_vert],
+                vertex_element_array -> vertex_element_array) == CG_TRUE) {
+            dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
+          }
+          else {
+            dxgsg9_cat.error() << "********************************************\n";
+            dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
+            dxgsg9_cat.error() << "********************************************\n";
+          }
         }
         else {
-          dxgsg9_cat.error() << "********************************************\n";
-          dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
-          dxgsg9_cat.error() << "********************************************\n";
+
         }
 
         _vertex_size = vertex_element_array -> offset;
 
-        DBG_SH1  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
+        DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
 
         _vertex_element_array = vertex_element_array;
       }
@@ -1113,6 +1863,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         dxgsg9_cat.error ( ) << "VertexElementArray creation failed\n";
         delete vertex_element_array;
       }
+}
     }
   }
 #endif // HAVE_CGDX9
@@ -1129,7 +1880,14 @@ disable_shader_texture_bindings(GSG *gsg)
 #ifdef HAVE_CGDX9
   if (gsg -> _cg_context) {
     for (int i=0; i<(int)_cg_texbind.size(); i++) {
-      int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      int texunit;
+
+      if (_cg_shader) {
+        texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      }
+      else {
+        texunit = _cg_texbind[i].dx_parameter -> constant_description_array [0].RegisterIndex;
+      }
 
 /*
       gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
@@ -1205,7 +1963,13 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       if (tc == (TextureContext*)NULL) {
         continue;
       }
-      int texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      int texunit;
+      if (_cg_shader) {
+        texunit = cgGetParameterResourceIndex(_cg_texbind[i].parameter);
+      }
+      else {
+        texunit = _cg_texbind[i].dx_parameter -> constant_description_array [0].RegisterIndex;
+      }
 
 // ?????
 /*
@@ -1329,7 +2093,12 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
     float matrix [16];
 
     case SHADER_data_matrix:
-      cgD3D9SetUniform (stb.parameter, data);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, data);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, data, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_transpose:
       matrix [0] = data[0];
@@ -1348,47 +2117,92 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
       matrix [13] = data[7];
       matrix [14] = data[11];
       matrix [15] = data[15];
-      cgD3D9SetUniform (stb.parameter, matrix);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, matrix);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, matrix, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_row0:
-      cgD3D9SetUniform (stb.parameter, data);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, data);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, data, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_row1:
-      cgD3D9SetUniform (stb.parameter, data + 4);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, data + 4);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, data + 4, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_row2:
-      cgD3D9SetUniform (stb.parameter, data + 8);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, data + 8);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, data + 8, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_row3:
-      cgD3D9SetUniform (stb.parameter, data + 12);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, data + 12);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, data + 12, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_col0:
       vector [0] = data[0];
       vector [1] = data[4];
       vector [2] = data[8];
       vector [3] = data[12];
-      cgD3D9SetUniform (stb.parameter, vector);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, vector);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_col1:
       vector [0] = data[1];
       vector [1] = data[5];
       vector [2] = data[9];
       vector [3] = data[13];
-      cgD3D9SetUniform (stb.parameter, vector);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, vector);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_col2:
       vector [0] = data[2];
       vector [1] = data[6];
       vector [2] = data[10];
       vector [3] = data[14];
-      cgD3D9SetUniform (stb.parameter, vector);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, vector);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
+      }
       break;
     case SHADER_data_col3:
       vector [0] = data[3];
       vector [1] = data[7];
       vector [2] = data[11];
       vector [3] = data[15];
-      cgD3D9SetUniform (stb.parameter, vector);
+      if (_cg_shader) {
+        cgD3D9SetUniform (stb.parameter, vector);
+      }
+      else {
+        set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
+      }
       break;
   }
 }
@@ -1403,11 +2217,14 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_words(CGparameter p, int len)
 {
-  vector_string words;
-  tokenize(cgGetParameterName(p), words, "_");
-  if (words.size() != len) {
-    errchk_cg_output(p, "parameter name has wrong number of words");
-    return false;
+  if (p) {
+    vector_string words;
+
+    tokenize(cgGetParameterName(p), words, "_");
+    if (words.size() != len) {
+      errchk_cg_output(p, "parameter name has wrong number of words");
+      return false;
+    }
   }
   return true;
 }
@@ -1422,11 +2239,13 @@ errchk_cg_parameter_words(CGparameter p, int len)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_direction(CGparameter p, CGenum dir)
 {
-  if (cgGetParameterDirection(p) != dir) {
-    if (dir == CG_IN)    errchk_cg_output(p, "parameter should be declared 'in'");
-    if (dir == CG_OUT)   errchk_cg_output(p, "parameter should be declared 'out'");
-    if (dir == CG_INOUT) errchk_cg_output(p, "parameter should be declared 'inout'");
-    return false;
+  if (p) {
+    if (cgGetParameterDirection(p) != dir) {
+      if (dir == CG_IN)    errchk_cg_output(p, "parameter should be declared 'in'");
+      if (dir == CG_OUT)   errchk_cg_output(p, "parameter should be declared 'out'");
+      if (dir == CG_INOUT) errchk_cg_output(p, "parameter should be declared 'inout'");
+      return false;
+    }
   }
   return true;
 }
@@ -1441,14 +2260,16 @@ errchk_cg_parameter_direction(CGparameter p, CGenum dir)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_variance(CGparameter p, CGenum var)
 {
-  if (cgGetParameterVariability(p) != var) {
-    if (var == CG_UNIFORM)
-      errchk_cg_output(p, "parameter should be declared 'uniform'");
-    if (var == CG_VARYING)
-      errchk_cg_output(p, "parameter should be declared 'varying'");
-    if (var == CG_CONSTANT)
-      errchk_cg_output(p, "parameter should be declared 'const'");
-    return false;
+  if (p) {
+    if (cgGetParameterVariability(p) != var) {
+      if (var == CG_UNIFORM)
+        errchk_cg_output(p, "parameter should be declared 'uniform'");
+      if (var == CG_VARYING)
+        errchk_cg_output(p, "parameter should be declared 'varying'");
+      if (var == CG_CONSTANT)
+        errchk_cg_output(p, "parameter should be declared 'const'");
+      return false;
+    }
   }
   return true;
 }
@@ -1463,10 +2284,12 @@ errchk_cg_parameter_variance(CGparameter p, CGenum var)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_prog(CGparameter p, CGprogram prog, const string &msg)
 {
-  if (cgGetParameterProgram(p) != prog) {
-    string fmsg = "parameter can only be used in a ";
-    errchk_cg_output(p, fmsg+msg+" program");
-    return false;
+  if (p) {
+    if (cgGetParameterProgram(p) != prog) {
+      string fmsg = "parameter can only be used in a ";
+      errchk_cg_output(p, fmsg+msg+" program");
+      return false;
+    }
   }
   return true;
 }
@@ -1481,10 +2304,12 @@ errchk_cg_parameter_prog(CGparameter p, CGprogram prog, const string &msg)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_type(CGparameter p, CGtype dt)
 {
-  if (cgGetParameterType(p) != dt) {
-    string msg = "parameter should be of type ";
-    errchk_cg_output(p, msg + cgGetTypeString(dt));
-    return false;
+  if (p) {
+    if (cgGetParameterType(p) != dt) {
+      string msg = "parameter should be of type ";
+      errchk_cg_output(p, msg + cgGetTypeString(dt));
+      return false;
+    }
   }
   return true;
 }
@@ -1499,10 +2324,12 @@ errchk_cg_parameter_type(CGparameter p, CGtype dt)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_float(CGparameter p)
 {
-  CGtype t = cgGetParameterType(p);
-  if ((t != CG_FLOAT1)&&(t != CG_FLOAT2)&&(t != CG_FLOAT3)&&(t != CG_FLOAT4)) {
-    errchk_cg_output(p, "parameter should have a float type");
-    return false;
+  if (p) {
+    CGtype t = cgGetParameterType(p);
+    if ((t != CG_FLOAT1)&&(t != CG_FLOAT2)&&(t != CG_FLOAT3)&&(t != CG_FLOAT4)) {
+      errchk_cg_output(p, "parameter should have a float type");
+      return false;
+    }
   }
   return true;
 }
@@ -1517,13 +2344,15 @@ errchk_cg_parameter_float(CGparameter p)
 bool CLP(ShaderContext)::
 errchk_cg_parameter_sampler(CGparameter p)
 {
-  CGtype t = cgGetParameterType(p);
-  if ((t!=CG_SAMPLER1D)&&
-      (t!=CG_SAMPLER2D)&&
-      (t!=CG_SAMPLER3D)&&
-      (t!=CG_SAMPLERCUBE)) {
-    errchk_cg_output(p, "parameter should have a 'sampler' type");
-    return false;
+  if (p) {
+    CGtype t = cgGetParameterType(p);
+    if ((t!=CG_SAMPLER1D)&&
+        (t!=CG_SAMPLER2D)&&
+        (t!=CG_SAMPLER3D)&&
+        (t!=CG_SAMPLERCUBE)) {
+      errchk_cg_output(p, "parameter should have a 'sampler' type");
+      return false;
+    }
   }
   return true;
 }
@@ -1537,24 +2366,26 @@ errchk_cg_parameter_sampler(CGparameter p)
 void CLP(ShaderContext)::
 errchk_cg_output(CGparameter p, const string &msg)
 {
-  string vstr;
-  CGenum v = cgGetParameterVariability(p);
-  if (v == CG_UNIFORM)  vstr = "uniform ";
-  if (v == CG_VARYING)  vstr = "varying ";
-  if (v == CG_CONSTANT) vstr = "const ";
+  if (p) {
+    string vstr;
+    CGenum v = cgGetParameterVariability(p);
+    if (v == CG_UNIFORM)  vstr = "uniform ";
+    if (v == CG_VARYING)  vstr = "varying ";
+    if (v == CG_CONSTANT) vstr = "const ";
 
-  string dstr;
-  CGenum d = cgGetParameterDirection(p);
-  if (d == CG_IN)    dstr = "in ";
-  if (d == CG_OUT)   dstr = "out ";
-  if (d == CG_INOUT) dstr = "inout ";
+    string dstr;
+    CGenum d = cgGetParameterDirection(p);
+    if (d == CG_IN)    dstr = "in ";
+    if (d == CG_OUT)   dstr = "out ";
+    if (d == CG_INOUT) dstr = "inout ";
 
-  const char *ts = cgGetTypeString(cgGetParameterType(p));
+    const char *ts = cgGetTypeString(cgGetParameterType(p));
 
-  string err;
-  string fn = _shader_expansion->get_name();
-  err = fn + ": " + msg + " (" + vstr + dstr + ts + " " + cgGetParameterName(p) + ")\n";
-  _cg_errors = _cg_errors + err + "\n";
+    string err;
+    string fn = _shader_expansion->get_name();
+    err = fn + ": " + msg + " (" + vstr + dstr + ts + " " + cgGetParameterName(p) + ")\n";
+    _cg_errors = _cg_errors + err + "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1595,9 +2426,23 @@ print_cg_compile_errors(const string &file, CGcontext ctx)
 //               arrays to cause the binding to occur.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
-compile_cg_parameter(CGparameter p)
+compile_cg_parameter(CGparameter p, DX_PARAMETER *dx_parameter)
 {
-  string pname = cgGetParameterName(p);
+  string pname;
+
+  pname = "";
+  if (p) {
+    pname = cgGetParameterName(p);
+  }
+  if (dx_parameter) {
+    if (dx_parameter -> constant_description_array [0].Name[0] == '$') {
+      pname = &dx_parameter -> constant_description_array [0].Name[1];
+    }
+    else {
+      pname = dx_parameter -> constant_description_array [0].Name;
+    }
+  }
+
   if (pname.size() == 0) return true;
   if (pname[0] == '$') return true;
   vector_string pieces;
@@ -1616,6 +2461,7 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderVarying bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
     if (pieces.size() == 2) {
       if (pieces[1]=="position") {
         bind.name = InternalName::get_vertex();
@@ -1670,6 +2516,7 @@ compile_cg_parameter(CGparameter p)
     }
     ShaderTransBind bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
 
     if      (pieces[0]=="trans") bind.trans_piece = SHADER_data_matrix;
     else if (pieces[0]=="tpose") bind.trans_piece = SHADER_data_transpose;
@@ -1711,6 +2558,7 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderTransBind bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
 
     if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="vstrans") { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_matrix; }
@@ -1747,6 +2595,7 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderAutoBind bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
     bind.value = 0;
     if      (pieces[1] == "modelview")  bind.value += 0;
     else if (pieces[1] == "projection") bind.value += 4;
@@ -1772,6 +2621,7 @@ compile_cg_parameter(CGparameter p)
     }
     ShaderAutoBind bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
     if (pieces[1] == "pixelsize") {
       if (!errchk_cg_parameter_type(p, CG_FLOAT2)) {
         return false;
@@ -1811,16 +2661,29 @@ compile_cg_parameter(CGparameter p)
     }
     ShaderTexBind bind;
     bind.parameter = p;
+    bind.dx_parameter = dx_parameter;
     bind.name = 0;
     bind.stage = atoi(pieces[1].c_str());
-    switch (cgGetParameterType(p)) {
-    case CG_SAMPLER1D:   bind.desiredtype = Texture::TT_1d_texture; break;
-    case CG_SAMPLER2D:   bind.desiredtype = Texture::TT_2d_texture; break;
-    case CG_SAMPLER3D:   bind.desiredtype = Texture::TT_3d_texture; break;
-    case CG_SAMPLERCUBE: bind.desiredtype = Texture::TT_cube_map; break;
-    default:
-      errchk_cg_output(p, "Invalid type for a tex-parameter");
-      return false;
+    if (p) {
+      switch (cgGetParameterType(p)) {
+      case CG_SAMPLER1D:   bind.desiredtype = Texture::TT_1d_texture; break;
+      case CG_SAMPLER2D:   bind.desiredtype = Texture::TT_2d_texture; break;
+      case CG_SAMPLER3D:   bind.desiredtype = Texture::TT_3d_texture; break;
+      case CG_SAMPLERCUBE: bind.desiredtype = Texture::TT_cube_map; break;
+      default:
+        errchk_cg_output(p, "Invalid type for a tex-parameter");
+        return false;
+      }
+    }
+    else {
+      switch (dx_parameter -> constant_description_array [0].Type) {
+      case D3DXPT_SAMPLER1D:   bind.desiredtype = Texture::TT_1d_texture; break;
+      case D3DXPT_SAMPLER2D:   bind.desiredtype = Texture::TT_2d_texture; break;
+      case D3DXPT_SAMPLER3D:   bind.desiredtype = Texture::TT_3d_texture; break;
+      case D3DXPT_SAMPLERCUBE: bind.desiredtype = Texture::TT_cube_map; break;
+      default:
+        return false;
+      }
     }
     if (pieces.size()==3) {
       bind.suffix = InternalName::make(((string)"-") + pieces[2]);
@@ -1834,56 +2697,125 @@ compile_cg_parameter(CGparameter p)
         (!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_UNIFORM)))
       return false;
-    switch (cgGetParameterType(p)) {
-    case CG_FLOAT4: {
-      ShaderArgBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      _cg_fbind.push_back(bind);
-      break;
+    if (p) {
+      switch (cgGetParameterType(p)) {
+        case CG_FLOAT4: {
+          ShaderArgBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          _cg_fbind.push_back(bind);
+          break;
+        }
+        case CG_FLOAT4x4: {
+          ShaderArgBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          _cg_npbind.push_back(bind);
+          break;
+        }
+        case CG_SAMPLER1D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_1d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case CG_SAMPLER2D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_2d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case CG_SAMPLER3D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_3d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case CG_SAMPLERCUBE: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype = Texture::TT_cube_map;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        default:
+          errchk_cg_output(p, "Invalid type for a k-parameter");
+          return false;
+      }
     }
-    case CG_FLOAT4x4: {
-      ShaderArgBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      _cg_npbind.push_back(bind);
-      break;
-    }
-    case CG_SAMPLER1D: {
-      ShaderTexBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      bind.desiredtype=Texture::TT_1d_texture;
-      _cg_texbind.push_back(bind);
-      break;
-    }
-    case CG_SAMPLER2D: {
-      ShaderTexBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      bind.desiredtype=Texture::TT_2d_texture;
-      _cg_texbind.push_back(bind);
-      break;
-    }
-    case CG_SAMPLER3D: {
-      ShaderTexBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      bind.desiredtype=Texture::TT_3d_texture;
-      _cg_texbind.push_back(bind);
-      break;
-    }
-    case CG_SAMPLERCUBE: {
-      ShaderTexBind bind;
-      bind.parameter = p;
-      bind.name = InternalName::make(pieces[1]);
-      bind.desiredtype = Texture::TT_cube_map;
-      _cg_texbind.push_back(bind);
-      break;
-    }
-    default:
-      errchk_cg_output(p, "Invalid type for a k-parameter");
-      return false;
+    else {
+      switch (dx_parameter -> constant_description_array [0].Type) {
+        case D3DXPT_FLOAT:
+          // CG_FLOAT4
+          if (dx_parameter -> constant_description_array [0].Rows == 1)
+          {
+            ShaderArgBind bind;
+            bind.parameter = p;
+            bind.dx_parameter = dx_parameter;
+            bind.name = InternalName::make(pieces[1]);
+            _cg_fbind.push_back(bind);
+          }
+          // CG_FLOAT4x4:
+          if (dx_parameter -> constant_description_array [0].Rows == 4)
+          {
+            ShaderArgBind bind;
+            bind.parameter = p;
+            bind.dx_parameter = dx_parameter;
+            bind.name = InternalName::make(pieces[1]);
+            _cg_npbind.push_back(bind);
+          }
+          break;
+
+        case D3DXPT_SAMPLER1D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_1d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case D3DXPT_SAMPLER2D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_2d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case D3DXPT_SAMPLER3D: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype=Texture::TT_3d_texture;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+        case D3DXPT_SAMPLERCUBE: {
+          ShaderTexBind bind;
+          bind.parameter = p;
+          bind.dx_parameter = dx_parameter;
+          bind.name = InternalName::make(pieces[1]);
+          bind.desiredtype = Texture::TT_cube_map;
+          _cg_texbind.push_back(bind);
+          break;
+        }
+      }
     }
     return true;
   }
@@ -1902,3 +2834,7 @@ compile_cg_parameter(CGparameter p)
   return false;
 }
 #endif
+
+
+
+// D3DXGetShaderInputSemantics

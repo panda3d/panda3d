@@ -39,6 +39,29 @@
 class VertexElementArray;
 class CLP(GraphicsStateGuardian);
 
+typedef struct
+{
+  int vertex_shader;
+  int total_constant_descriptions;
+  D3DXCONSTANT_DESC *constant_description_array;
+}
+DX_PARAMETER;
+
+typedef struct
+{
+  int state;
+  union
+  {
+    DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader;
+    DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader;
+  };
+  LPD3DXCONSTANTTABLE constant_table;
+  D3DXCONSTANTTABLE_DESC constant_table_description;
+
+  int total_semantics;
+  D3DXSEMANTIC *semantic_array;
+}
+DIRECT_3D_SHADER;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXShaderContext9
@@ -70,6 +93,7 @@ public:
   string _name;
 
   bool _state;
+  bool _cg_shader;
 
 private:
 
@@ -101,10 +125,12 @@ private:
   struct ShaderAutoBind {
     CGparameter parameter;
     int value;
+    DX_PARAMETER *dx_parameter;
   };
   struct ShaderArgBind {
     CGparameter parameter;
     PT(InternalName) name;
+    DX_PARAMETER *dx_parameter;
   };
   struct ShaderTexBind {
     CGparameter parameter;
@@ -112,17 +138,20 @@ private:
     int stage;
     int desiredtype;
     PT(InternalName) suffix;
+    DX_PARAMETER *dx_parameter;
   };
   struct ShaderTransBind {
     CGparameter parameter;
     PT(InternalName) src_name;
     PT(InternalName) rel_name;
     int trans_piece;
+    DX_PARAMETER *dx_parameter;
   };
   struct ShaderVarying {
     CGparameter parameter;
     PT(InternalName) name;
     int append_uv;
+    DX_PARAMETER *dx_parameter;
   };
 
 //  CGcontext _cg_context;
@@ -147,7 +176,7 @@ private:
   void suggest_cg_profile(const string &vpro, const string &fpro);
   CGprofile parse_cg_profile(const string &id, bool vertex);
   void issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg);
-  bool compile_cg_parameter(CGparameter p);
+  bool compile_cg_parameter(CGparameter p, DX_PARAMETER *dx_parameter);
   bool errchk_cg_parameter_words(CGparameter p, int len);
   bool errchk_cg_parameter_direction(CGparameter p, CGenum dir);
   bool errchk_cg_parameter_variance(CGparameter p, CGenum var);
@@ -158,6 +187,15 @@ private:
   void errchk_cg_output(CGparameter p, const string &msg);
   void print_cg_compile_errors(const string &file, CGcontext ctx);
 #endif
+
+public:
+
+  DIRECT_3D_SHADER _direct_3d_vertex_shader;
+  DIRECT_3D_SHADER _direct_3d_pixel_shader;
+  int _total_dx_parameters;
+  DX_PARAMETER *_dx_parameter_array;
+
+private:
 
   void release_resources(void);
 
