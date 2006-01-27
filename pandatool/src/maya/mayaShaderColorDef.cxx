@@ -60,7 +60,9 @@ MayaShaderColorDef() {
   _wrap_v = true;
 
   _has_alpha_channel = false;
+  _keep_color = false; // classic mode overwrites color: new mode retains color with a 3rd layer
   _keep_alpha = false;
+  _interpolate = false;
 
   _blend_type = BT_unspecified;
 
@@ -103,7 +105,9 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
 
   _blend_type = copy._blend_type;
   _has_alpha_channel = copy._has_alpha_channel;
+  _keep_color = copy._keep_color;
   _keep_alpha = copy._keep_alpha;
+  _interpolate = copy._interpolate;
 
   _repeat_uv = copy._repeat_uv;
   _offset = copy._offset;
@@ -374,6 +378,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         switch (blendValue) {
         case 1:
           bt = BT_decal;
+          get_bool_attribute(color, "interpolate", _interpolate);
+          maya_cat.info() << "interpolate: " << _interpolate << endl;
+          _keep_color = true;
           break;
         case 6:
           bt = BT_modulate;

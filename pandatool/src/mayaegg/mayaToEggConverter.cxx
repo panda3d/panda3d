@@ -2319,21 +2319,31 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   // determine if the base texture or any of the top texture need to be rgb only
   MayaShaderColorDef *color_def = NULL;
   bool is_rgb = false;
+  bool is_decal = false;
+  bool is_interpolate = false;
   int i;
-  for (i=0; i<(int)shader._color.size(); ++i) {
+  // last shader is the base so lets skip it 
+  for (i=0; i<(int)shader._color.size()-1; ++i) {
     color_def = shader.get_color_def(i);
-    if (color_def->_has_texture && i != (int)shader._color.size()-1) {
-      if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_modulate) {
-        // read the _has_alpha_cahnnel to figure out rgb or rgba
-        //if (!color_def->_has_alpha_channel) {
+    if (color_def->_has_texture) {
+      if ((EggTexture::EnvType)color_def->_interpolate) {
+        is_interpolate = true;
+      }
+      else if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_modulate) {
         // Maya's multiply is slightly different than panda's. Unless, _keep_alpha is set, 
         // we are dropping the alpha.
         if (!color_def->_keep_alpha)
           is_rgb = true; // modulate forces the alpha to be ignored
-        //}
+      }
+      else if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_decal) {
+        is_decal = true;
       }
     }
   }
+  
+  // new decal mode needs an extra dummy layers of textureStage
+  EggTexture *dummy_tex = (EggTexture *)NULL;
+  string dummy_uvset_name;
 
   // In Maya, a polygon is either textured or colored.  The texture,
   // if present, replaces the color. Also now there could be multiple textures
@@ -2415,19 +2425,76 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           // last shader on the list is the base one, which should always pick up the alpha
           // from the texture file. But the top textures may have to strip the alpha
           if (i!=shader._color.size()-1) {
-            tex.set_env_type((EggTexture::EnvType)color_def->_blend_type);
-            if (tex.get_env_type() == EggTexture::ET_modulate) {
-              if (color_def->_has_alpha_channel) {
-                // lets caution the artist that they should not be using a alpha channel on
-                // this texture. 
-                maya_cat.spam() 
-                  << color_def->_texture_name 
-                  << " should not have alpha channel in multiply mode: ignoring\n";
+            if (!i && is_interpolate) {
+              // this is the grass path mode where alpha on this texture determines
+              // whether to show layer1 or layer2. Since by now other layers are set
+              // lets change those to get this effect
+              tex.set_combine_mode(EggTexture::CC_rgb, EggTexture::CM_interpolate);
+              tex.set_combine_source(EggTexture::CC_rgb, 0, EggTexture::CS_previous);
+              tex.set_combine_operand(EggTexture::CC_rgb, 0, EggTexture::CO_src_color);
+              tex.set_combine_source(EggTexture::CC_rgb, 1, EggTexture::CS_last_saved_result);
+              tex.set_combine_operand(EggTexture::CC_rgb, 1, EggTexture::CO_src_color);
+              tex.set_combine_source(EggTexture::CC_rgb, 2, EggTexture::CS_texture);
+              tex.set_combine_operand(EggTexture::CC_rgb, 2, EggTexture::CO_src_alpha);
+
+              tex.set_combine_mode(EggTexture::CC_alpha, EggTexture::CM_interpolate);
+              tex.set_combine_source(EggTexture::CC_alpha, 0, EggTexture::CS_previous);
+              tex.set_combine_operand(EggTexture::CC_alpha, 0, EggTexture::CO_src_alpha);
+              tex.set_combine_source(EggTexture::CC_alpha, 1, EggTexture::CS_last_saved_result);
+              tex.set_combine_operand(EggTexture::CC_alpha, 1, EggTexture::CO_src_alpha);
+              tex.set_combine_source(EggTexture::CC_alpha, 2, EggTexture::CS_texture);
+              tex.set_combine_operand(EggTexture::CC_alpha, 2, EggTexture::CO_src_alpha);
+            }
+            else {
+              if (is_interpolate) {
+                tex.set_combine_mode(EggTexture::CC_rgb, EggTexture::CM_modulate);
+                tex.set_combine_source(EggTexture::CC_rgb, 0, EggTexture::CS_primary_color);
+                tex.set_combine_operand(EggTexture::CC_rgb, 0, EggTexture::CO_src_color);
+                tex.set_combine_source(EggTexture::CC_rgb, 1, EggTexture::CS_texture);
+                tex.set_combine_operand(EggTexture::CC_rgb, 1, EggTexture::CO_src_color);
               }
-              if (is_rgb) {
-                //tex.set_alpha_mode(EggRenderMode::AM_off);  // force alpha off
-                tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
+              else {
+                tex.set_env_type((EggTexture::EnvType)color_def->_blend_type);
+                if (tex.get_env_type() == EggTexture::ET_modulate) {
+                  if (color_def->_has_alpha_channel) {
+                    // lets caution the artist that they should not be using a alpha channel on
+                    // this texture. 
+                    maya_cat.spam() 
+                      << color_def->_texture_name 
+                      << " should not have alpha channel in multiply mode: ignoring\n";
+                  }
+                  if (is_rgb) {
+                    //tex.set_alpha_mode(EggRenderMode::AM_off);  // force alpha off
+                    tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
+                  }
+                }
               }
+            }
+          }
+          else {
+            if (is_interpolate) {
+              // base shader need to save result
+              tex.set_saved_result(true);
+            }
+            else if (is_decal) {
+              // decal in classic time, always overwrote the base color. That causes problem
+              // when the polygon wants to be lit or wants to retain vertex/polygon color
+              // In the new decal mode, we achieve this with a third dummy layer
+              // copy this layer to a new dummy layer
+              EggTexture texDummy(shader.get_name()+".dummy", "");
+              mayaegg_cat.debug() << "creating dummy shader: " << texDummy.get_name() << endl;
+              texDummy.set_filename(outpath);
+              texDummy.set_fullpath(fullpath);
+              apply_texture_properties(texDummy, *color_def);
+              texDummy.set_combine_mode(EggTexture::CC_rgb, EggTexture::CM_modulate);
+              texDummy.set_combine_source(EggTexture::CC_rgb, 0, EggTexture::CS_primary_color);
+              texDummy.set_combine_operand(EggTexture::CC_rgb, 0, EggTexture::CO_src_color);
+              texDummy.set_combine_source(EggTexture::CC_rgb, 1, EggTexture::CS_previous);
+              texDummy.set_combine_operand(EggTexture::CC_rgb, 1, EggTexture::CO_src_color);
+              dummy_tex = _textures.create_unique_texture(texDummy, ~0);
+
+              // make this layer ET_replace
+              tex.set_env_type(EggTexture::ET_replace);
             }
           }
         }
@@ -2460,12 +2527,19 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           else
             color_def->_uvset_name.assign(uvset_name.c_str());
           new_tex->set_uv_name(color_def->_uvset_name);
+          if (i == (int)shader._color.size()-1 && is_decal) {
+            dummy_uvset_name.assign(color_def->_uvset_name);
+          } 
         }
       } else {
         primitive.add_texture(new_tex);
         new_tex->set_uv_name(color_def->_uvset_name);
       }
     }
+  }
+  if (dummy_tex != (EggTexture *)NULL) {
+    primitive.add_texture(dummy_tex);
+    dummy_tex->set_uv_name(dummy_uvset_name);
   }
   // Also apply an overall color to the primitive.
   Colorf rgba = shader.get_rgba();
