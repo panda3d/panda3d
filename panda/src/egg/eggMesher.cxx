@@ -193,32 +193,38 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool EggMesher::
 add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
-  if (egg_poly->size() != 3) {
+  CPT(EggPolygon) this_poly = egg_poly;
+  if (this_poly->size() != 3) {
     // If we have a higher-order or concave polygon, triangulate it
     // automatically.
 
     // We'll keep quads, unless they're concave.
-    bool convex_also = (egg_poly->size() != 4);
+    bool convex_also = (this_poly->size() != 4);
 
     PT(EggGroupNode) temp_group = new EggGroupNode;
-    bool result = egg_poly->triangulate_into(temp_group, convex_also);
+    bool result = this_poly->triangulate_into(temp_group, convex_also);
+    EggGroupNode::iterator ci;
     if (temp_group->size() != 1) {
-      EggGroupNode::iterator ci;
       for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
         add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
       }
       return result;
     }
+
+    // Convert just the one polygon we got out of the group.  Don't
+    // recurse, since it might be the same polygon we sent in.
+    ci = temp_group->begin();
+    this_poly = DCAST(EggPolygon, *ci);
   }
 
   if (_vertex_pool == NULL) {
-    _vertex_pool = egg_poly->get_pool();
+    _vertex_pool = this_poly->get_pool();
   } else {
-    nassertr(_vertex_pool == egg_poly->get_pool(), false);
+    nassertr(_vertex_pool == this_poly->get_pool(), false);
   }
 
   // Define an initial strip (probably of length 1) for the prim.
-  EggMesherStrip temp_strip(egg_poly, _strip_index++, _vertex_pool, 
+  EggMesherStrip temp_strip(this_poly, _strip_index++, _vertex_pool, 
                             _flat_shaded);
   Strips &list = choose_strip_list(temp_strip);
   list.push_back(temp_strip);
@@ -226,14 +232,14 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   strip._origin = origin;
 
   int i;
-  int num_verts = egg_poly->size();
+  int num_verts = this_poly->size();
 
   int *vptrs = (int *)alloca(num_verts * sizeof(int));
   EdgePtrs **eptrs = (EdgePtrs **)alloca(num_verts * sizeof(EdgePtrs *));
 
   // Get the common vertex pointers for the primitive's vertices.
   for (i = 0; i < num_verts; i++) {
-    Verts::value_type v(egg_poly->get_vertex(i)->get_index(), EdgePtrs());
+    Verts::value_type v(this_poly->get_vertex(i)->get_index(), EdgePtrs());
     Verts::iterator n = _verts.insert(v).first;
 
     vptrs[i] = (*n).first;
