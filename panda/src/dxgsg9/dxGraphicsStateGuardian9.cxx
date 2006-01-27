@@ -135,7 +135,11 @@ DXGraphicsStateGuardian9(const FrameBufferProperties &properties) :
   _pixel_shader_version_major = 0;
   _pixel_shader_version_minor = 0;
 
+  _vertex_shader_profile = 0;
+  _pixel_shader_profile = 0;
+
   _vertex_shader_maximum_constants = 0;
+
   _supports_stream_offset = false;
 
 #ifdef HAVE_CGDX9
@@ -2236,7 +2240,12 @@ reset() {
   _vertex_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.VertexShaderVersion);
   _pixel_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion);
   _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
+
+  _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
+  _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
+
   _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
+
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
 
   if (dxgsg9_cat.is_debug()) {
