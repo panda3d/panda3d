@@ -483,7 +483,7 @@ for (ver,key) in MAYAVERSIONINFO:
     print "Checking for "+ver
     if (OMIT.count(ver)==0):
         if (sys.platform == "win32"):
-	    if (MAYASDK.has_key(ver)==0):
+            if (MAYASDK.has_key(ver)==0):
                 MAYASDK[ver]=GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
                 if (MAYASDK[ver] == 0):
                     WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
@@ -491,7 +491,7 @@ for (ver,key) in MAYAVERSIONINFO:
                     OMIT.append(ver)
                 else:
                     MAYASDK[ver] = MAYASDK[ver].replace("\\", "/").rstrip("/")
-	else:
+        else:
             WARNINGS.append(ver+" not yet supported under linux")
             WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
             OMIT.append(ver)
@@ -510,7 +510,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "instal
 for version,key1,key2,subdir in MAXVERSIONINFO:
     if (OMIT.count(version)==0):
         if (sys.platform == "win32"):
-	    if (MAXSDK.has_key(version)==0):
+            if (MAXSDK.has_key(version)==0):
                 top = GetRegistryKey(key1,key2)
                 if (top == 0):
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)

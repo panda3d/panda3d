@@ -128,7 +128,7 @@ class ForceGroup(DirectObject):
                     file.write(i2+fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
             elif isinstance(f, AngularForce):
                 if isinstance(f, AngularVectorForce):
-                    vec = f.getLocalVector()
-                    file.write(i2+fname + ' = AngularVectorForce(Vec3(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2]))
+                    vec = f.getQuat()
+                    file.write(i2+fname + ' = AngularVectorForce(Quat(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2], vec[3]))
             file.write(i2+fname + '.setActive(%d)\n' % f.getActive())
             file.write(i2+targ + '.addForce(%s)\n' % fname)
