@@ -37,10 +37,14 @@ static char *hlsl_vertex_shader_function_name = "vshader";
 static char *hlsl_pixel_shader_function_name = "fshader";
 
 void print_string (char *string) {
-  dxgsg9_cat.error() << string;
+  DBG_HLSL
+    dxgsg9_cat.debug() << string;
+  DBG_E
 }
 void print_return (void) {
-  dxgsg9_cat.error() << "\n";
+  DBG_HLSL
+    dxgsg9_cat.debug() << "\n";
+  DBG_E
 }
 
 int __dx_verify (HRESULT result, char *file, int line) {
@@ -149,8 +153,7 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
         shader_state = TRUE;
       }
     }
-    else
-    {
+    else {
       if (dx_verify (
         D3DXCompileShaderFromFile
         (
@@ -169,20 +172,17 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
       }
     }
 
-    if (DISASSEMBLE_SHADER && shader)
-    {
+    if (DISASSEMBLE_SHADER && shader) {
       disassemble_shader (shader);
     }
   }
-  else
-  {
+  else {
     if (dx_verify (D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages))) {
       shader_state = TRUE;
     }
   }
 
-  if (shader_state)
-  {
+  if (shader_state) {
     shader_state = FALSE;
     if (vertex_shader) {
       DWORD *buffer;
@@ -207,8 +207,7 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
         }
       }
     }
-    else
-    {
+    else {
       if (dx_verify (direct_3d_device -> CreatePixelShader ((DWORD *) shader -> GetBufferPointer ( ), &direct_3d_pixel_shader))) {
         shader_state = TRUE;
       }
@@ -257,8 +256,7 @@ void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *dat
   if (dx_parameter) {
     int index;
 
-    for (index = 0; index < dx_parameter -> total_constant_descriptions; index++)
-    {
+    for (index = 0; index < dx_parameter -> total_constant_descriptions; index++) {
       D3DXCONSTANT_DESC *constant_description;
 
       constant_description = &dx_parameter -> constant_description_array [index];
@@ -1565,10 +1563,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
     // This can be done since a vertex shader has a well defined input.
     // Later when the vertex buffer is applied the offsets will
     // be properly mapped.
-    if (_vertex_element_array == 0) {
-
-if (_cg_shader)
-{
+    if (_vertex_element_array == 0 && _cg_shader) {
       const GeomVertexArrayData *array_data;
       Geom::NumericType numeric_type;
       int start, stride, num_values;
@@ -1764,7 +1759,6 @@ if (_cg_shader)
         dxgsg9_cat.error ( ) << "VertexElementArray creation failed\n";
         delete vertex_element_array;
       }
-}
     }
   }
 #endif // HAVE_CGDX9
