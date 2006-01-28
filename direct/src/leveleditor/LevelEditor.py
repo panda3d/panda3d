@@ -802,7 +802,7 @@ class LevelEditor(NodePath, DirectObject):
             self.traversalOn()
 
     def configureDriveModeCollisionData(self):
-        """initializeCollisions(self)
+        """
         Set up the local avatar for collisions
         """
         # Set up the collision sphere
