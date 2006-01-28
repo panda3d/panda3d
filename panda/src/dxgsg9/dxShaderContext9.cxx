@@ -36,22 +36,18 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 static char *hlsl_vertex_shader_function_name = "vshader";
 static char *hlsl_pixel_shader_function_name = "fshader";
 
-void print_string (char *string)
-{
+void print_string (char *string) {
   dxgsg9_cat.error() << string;
 }
-void print_return (void)
-{
+void print_return (void) {
   dxgsg9_cat.error() << "\n";
 }
 
-int __dx_verify (HRESULT result, char *file, int line)
-{
+int __dx_verify (HRESULT result, char *file, int line) {
   int state;
 
   state = TRUE;
-  if (result != D3D_OK)
-  {
+  if (result != D3D_OK) {
     char *string;
 
     string = (char *) DXGetErrorString9 (result);
@@ -65,8 +61,7 @@ int __dx_verify (HRESULT result, char *file, int line)
 
 void disassemble_shader (LPD3DXBUFFER shader)
 {
-  if (shader)
-  {
+  if (shader) {
     LPD3DXBUFFER disassembly;
 
     if (dx_verify (D3DXDisassembleShader
@@ -83,8 +78,7 @@ void disassemble_shader (LPD3DXBUFFER shader)
       size = disassembly -> GetBufferSize ( );
 
       message = (char *) (disassembly -> GetBufferPointer ( ));
-      if (message)
-      {
+      if (message) {
         print_string (message);
         print_return ( );
       }
@@ -96,16 +90,14 @@ void disassemble_shader (LPD3DXBUFFER shader)
 
 void free_vertex_shader (DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader)
 {
-  if (direct_3d_vertex_shader)
-  {
+  if (direct_3d_vertex_shader) {
     direct_3d_vertex_shader -> Release ( );
   }
 }
 
 void free_pixel_shader (DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader)
 {
-  if (direct_3d_pixel_shader)
-  {
+  if (direct_3d_pixel_shader) {
     direct_3d_pixel_shader -> Release ( );
   }
 }
@@ -137,10 +129,8 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
   constant_table = 0;
 
   shader_state = FALSE;
-  if (hlsl)
-  {
-    if (program)
-    {
+  if (hlsl) {
+    if (program) {
       if (dx_verify (
         D3DXCompileShader
         (
@@ -186,8 +176,7 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
   }
   else
   {
-    if (dx_verify (D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages)))
-    {
+    if (dx_verify (D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages))) {
       shader_state = TRUE;
     }
   }
@@ -195,29 +184,24 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
   if (shader_state)
   {
     shader_state = FALSE;
-    if (vertex_shader)
-    {
+    if (vertex_shader) {
       DWORD *buffer;
       buffer = (DWORD *) shader -> GetBufferPointer ( );
 
-      if (dx_verify (direct_3d_device -> CreateVertexShader (buffer, &direct_3d_vertex_shader)))
-      {
+      if (dx_verify (direct_3d_device -> CreateVertexShader (buffer, &direct_3d_vertex_shader))) {
         UINT count;
         D3DXSEMANTIC *semantic_array;
 
         count = 0;
         semantic_array = 0;
-        if (dx_verify (D3DXGetShaderInputSemantics (buffer, NULL, &count)))
-        {
+        if (dx_verify (D3DXGetShaderInputSemantics (buffer, NULL, &count))) {
           semantic_array = new D3DXSEMANTIC [count];
-          if (dx_verify (D3DXGetShaderInputSemantics (buffer, semantic_array, &count)))
-          {
+          if (dx_verify (D3DXGetShaderInputSemantics (buffer, semantic_array, &count))) {
             direct_3d_shader.total_semantics = count;
             direct_3d_shader.semantic_array = semantic_array;
             shader_state = TRUE;
           }
-          else
-          {
+          else {
             delete semantic_array;
           }
         }
@@ -225,51 +209,42 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
     }
     else
     {
-      if (dx_verify (direct_3d_device -> CreatePixelShader ((DWORD *) shader -> GetBufferPointer ( ), &direct_3d_pixel_shader)))
-      {
+      if (dx_verify (direct_3d_device -> CreatePixelShader ((DWORD *) shader -> GetBufferPointer ( ), &direct_3d_pixel_shader))) {
         shader_state = TRUE;
       }
     }
   }
   else
   {
-    if (error_messages)
-    {
+    if (error_messages) {
       char *error_message;
 
       error_message = (char *) (error_messages -> GetBufferPointer ( ));
-      if (error_message)
-      {
+      if (error_message) {
         print_string (error_message);
         print_return ( );
       }
     }
   }
 
-  if (shader)
-  {
+  if (shader) {
     shader -> Release ( );
   }
-  if (error_messages)
-  {
+  if (error_messages) {
     error_messages -> Release ( );
   }
 
   direct_3d_shader.state = shader_state;
-  if (vertex_shader)
-  {
+  if (vertex_shader) {
     direct_3d_shader.direct_3d_vertex_shader = direct_3d_vertex_shader;
   }
-  else
-  {
+  else {
     direct_3d_shader.direct_3d_pixel_shader = direct_3d_pixel_shader;
   }
   direct_3d_shader.constant_table = constant_table;
 
-  if (constant_table)
-  {
-    if (dx_verify (constant_table -> GetDesc (&direct_3d_shader.constant_table_description)))
-    {
+  if (constant_table) {
+    if (dx_verify (constant_table -> GetDesc (&direct_3d_shader.constant_table_description))) {
 
     }
   }
@@ -279,8 +254,7 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
 
 void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *data, DIRECT_3D_DEVICE direct_3d_device)
 {
-  if (dx_parameter)
-  {
+  if (dx_parameter) {
     int index;
 
     for (index = 0; index < dx_parameter -> total_constant_descriptions; index++)
@@ -288,21 +262,16 @@ void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *dat
       D3DXCONSTANT_DESC *constant_description;
 
       constant_description = &dx_parameter -> constant_description_array [index];
-
-      if (dx_parameter -> vertex_shader)
-      {
-        if (constant_description -> Columns == 4)
-        {
+      if (dx_parameter -> vertex_shader) {
+        if (constant_description -> Columns == 4) {
           direct_3d_device -> SetVertexShaderConstantF (constant_description -> RegisterIndex, data, constant_description -> Rows);
         }
-        else
-        {
+        else {
           int offset;
           UINT row;
 
           offset = 0;
-          for (row = 0; row < constant_description -> Rows; row++)
-          {
+          for (row = 0; row < constant_description -> Rows; row++) {
             direct_3d_device -> SetVertexShaderConstantF (constant_description -> RegisterIndex + row, data + offset, 1);
             offset += constant_description -> Columns;
           }
@@ -310,18 +279,15 @@ void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *dat
       }
       else
       {
-        if (constant_description -> Columns == 4)
-        {
+        if (constant_description -> Columns == 4) {
           direct_3d_device -> SetPixelShaderConstantF (constant_description -> RegisterIndex, data, constant_description -> Rows);
         }
-        else
-        {
+        else {
           int offset;
           UINT row;
 
           offset = 0;
-          for (row = 0; row < constant_description -> Rows; row++)
-          {
+          for (row = 0; row < constant_description -> Rows; row++) {
             direct_3d_device -> SetPixelShaderConstantF (constant_description -> RegisterIndex + row, data + offset, 1);
             offset += constant_description -> Columns;
           }
@@ -364,9 +330,13 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   _total_dx_parameters = 0;
   _dx_parameter_array = 0;
 
+  _transpose_matrix = false;
+
   _name = s->get_name ( );
 
   if (header == "//Cg") {
+
+    _transpose_matrix = true;
 
     // CGcontext is created once during Reset ( )
     if (gsg -> _cg_context == 0) {
@@ -376,8 +346,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     }
 
     // IGNORE THIS FOR NOW, SEEMS TO BE LOADING IN GL SPECIFIC PROFILES
-    if (false)
-    {
+    if (false) {
       // Parse any directives in the source.
       string directive;
       while (!s->parse_eof()) {
@@ -427,294 +396,228 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   }
   if (direct_x_program) {
 
-#define MAXIMUM_CONSTANT_DESCRIPTIONS 16
-static char *parameter_type_names_array [ ] =
-{
-    "D3DXPT_VOID",
-    "D3DXPT_BOOL",
-    "D3DXPT_INT",
-    "D3DXPT_FLOAT",
-    "D3DXPT_STRING",
-    "D3DXPT_TEXTURE",
-    "D3DXPT_TEXTURE1D",
-    "D3DXPT_TEXTURE2D",
-    "D3DXPT_TEXTURE3D",
-    "D3DXPT_TEXTURECUBE",
-    "D3DXPT_SAMPLER",
-    "D3DXPT_SAMPLER1D",
-    "D3DXPT_SAMPLER2D",
-    "D3DXPT_SAMPLER3D",
-    "D3DXPT_SAMPLERCUBE",
-    "D3DXPT_PIXELSHADER",
-    "D3DXPT_VERTEXSHADER",
-    "D3DXPT_PIXELFRAGMENT",
-    "D3DXPT_VERTEXFRAGMENT",
-};
-      char *function_name;
-
-      function_name = "vshader";
-      _direct_3d_vertex_shader = compile_shader (hlsl, TRUE, gsg -> _vertex_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
-
-      function_name = "fshader";
-      _direct_3d_pixel_shader = compile_shader (hlsl, FALSE, gsg -> _pixel_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
-
-      if (_direct_3d_vertex_shader.state && _direct_3d_pixel_shader.state) {
-
-int dx_parameter_index;
-DX_PARAMETER *dx_parameter;
-
-dx_parameter_index = 0;
-_total_dx_parameters = _direct_3d_vertex_shader.constant_table_description.Constants + _direct_3d_pixel_shader.constant_table_description.Constants;
-_dx_parameter_array = new DX_PARAMETER [_total_dx_parameters];
-memset (_dx_parameter_array, 0, _total_dx_parameters * sizeof (DX_PARAMETER));
-
-if (_direct_3d_vertex_shader.constant_table)
-{
-  UINT index;
-
-  for (index = 0; index < _direct_3d_vertex_shader.constant_table_description.Constants; index++)
-  {
-    D3DXHANDLE handle;
-
-    handle = _direct_3d_vertex_shader.constant_table -> GetConstant (NULL, index);
-    if (handle)
+    #define MAXIMUM_CONSTANT_DESCRIPTIONS 16
+    static char *parameter_type_names_array [ ] =
     {
-      UINT count;
-      D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
+      "D3DXPT_VOID",
+      "D3DXPT_BOOL",
+      "D3DXPT_INT",
+      "D3DXPT_FLOAT",
+      "D3DXPT_STRING",
+      "D3DXPT_TEXTURE",
+      "D3DXPT_TEXTURE1D",
+      "D3DXPT_TEXTURE2D",
+      "D3DXPT_TEXTURE3D",
+      "D3DXPT_TEXTURECUBE",
+      "D3DXPT_SAMPLER",
+      "D3DXPT_SAMPLER1D",
+      "D3DXPT_SAMPLER2D",
+      "D3DXPT_SAMPLER3D",
+      "D3DXPT_SAMPLERCUBE",
+      "D3DXPT_PIXELSHADER",
+      "D3DXPT_VERTEXSHADER",
+      "D3DXPT_PIXELFRAGMENT",
+      "D3DXPT_VERTEXFRAGMENT",
+    };
+    char *function_name;
 
-      count = MAXIMUM_CONSTANT_DESCRIPTIONS;
-      if (dx_verify (_direct_3d_vertex_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count)))
-      {
-        UINT constant_description_index;
-        D3DXCONSTANT_DESC *constant_description;
+    function_name = "vshader";
+    _direct_3d_vertex_shader = compile_shader (hlsl, TRUE, gsg -> _vertex_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
 
-        dx_parameter = &_dx_parameter_array [dx_parameter_index];
-        dx_parameter_index++;
-        dx_parameter -> total_constant_descriptions = count;
-        dx_parameter -> vertex_shader = TRUE;
-        dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
+    function_name = "fshader";
+    _direct_3d_pixel_shader = compile_shader (hlsl, FALSE, gsg -> _pixel_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
 
-        for (constant_description_index = 0; constant_description_index < count; constant_description_index++)
-        {
-          constant_description = &constant_description_array [constant_description_index];
-          dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
+    if (_direct_3d_vertex_shader.state && _direct_3d_pixel_shader.state) {
 
-          DBG_HLSL
-            char string [512];
-            sprintf (string, "  VS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
-              index,
-              constant_description_index,
-              constant_description -> Name,
-              constant_description -> RegisterSet,
-              constant_description -> RegisterIndex,
-              parameter_type_names_array [constant_description -> Type],
-              constant_description -> Elements,
-              constant_description -> Rows,
-              constant_description -> Columns);
-            print_string (string);
-          DBG_E
+      int dx_parameter_index;
+      DX_PARAMETER *dx_parameter;
 
-          switch (constant_description -> Type)
-          {
-            case D3DXPT_VOID:
-              break;
-            case D3DXPT_BOOL:
-              break;
-            case D3DXPT_INT:
-              break;
-            case D3DXPT_FLOAT:
-              break;
-            case D3DXPT_STRING:
-              break;
-            case D3DXPT_TEXTURE:
-              break;
-            case D3DXPT_TEXTURE1D:
-              break;
-            case D3DXPT_TEXTURE2D:
-              break;
-            case D3DXPT_TEXTURE3D:
-              break;
-            case D3DXPT_TEXTURECUBE:
-              break;
-            case D3DXPT_SAMPLER:
-              break;
-            case D3DXPT_SAMPLER1D:
-              break;
-            case D3DXPT_SAMPLER2D:
-              break;
-            case D3DXPT_SAMPLER3D:
-              break;
-            case D3DXPT_SAMPLERCUBE:
-              break;
-            case D3DXPT_PIXELSHADER:
-              break;
-            case D3DXPT_VERTEXSHADER:
-              break;
-            case D3DXPT_PIXELFRAGMENT:
-              break;
-            case D3DXPT_VERTEXFRAGMENT:
-              break;
-            default:
-              break;
-          }
+      dx_parameter_index = 0;
+      _total_dx_parameters = _direct_3d_vertex_shader.constant_table_description.Constants + _direct_3d_pixel_shader.constant_table_description.Constants;
+      _dx_parameter_array = new DX_PARAMETER [_total_dx_parameters];
+      memset (_dx_parameter_array, 0, _total_dx_parameters * sizeof (DX_PARAMETER));
 
-          switch (constant_description -> RegisterSet)
-          {
-            case D3DXRS_BOOL:
-              break;
-            case D3DXRS_INT4:
-              break;
-            case D3DXRS_FLOAT4:
-              break;
-            case D3DXRS_SAMPLER:
-              break;
-            default:
-              break;
+      if (_direct_3d_vertex_shader.constant_table) {
+        UINT index;
+
+        for (index = 0; index < _direct_3d_vertex_shader.constant_table_description.Constants; index++) {
+          D3DXHANDLE handle;
+
+          handle = _direct_3d_vertex_shader.constant_table -> GetConstant (NULL, index);
+          if (handle) {
+            UINT count;
+            D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
+
+            count = MAXIMUM_CONSTANT_DESCRIPTIONS;
+            if (dx_verify (_direct_3d_vertex_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count))) {
+              UINT constant_description_index;
+              D3DXCONSTANT_DESC *constant_description;
+
+              dx_parameter = &_dx_parameter_array [dx_parameter_index];
+              dx_parameter_index++;
+              dx_parameter -> total_constant_descriptions = count;
+              dx_parameter -> vertex_shader = TRUE;
+              dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
+
+              for (constant_description_index = 0; constant_description_index < count; constant_description_index++) {
+                constant_description = &constant_description_array [constant_description_index];
+                dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
+
+                DBG_HLSL
+                  char string [512];
+                  sprintf (string, "  VS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
+                    index,
+                    constant_description_index,
+                    constant_description -> Name,
+                    constant_description -> RegisterSet,
+                    constant_description -> RegisterIndex,
+                    parameter_type_names_array [constant_description -> Type],
+                    constant_description -> Elements,
+                    constant_description -> Rows,
+                    constant_description -> Columns);
+                  print_string (string);
+                DBG_E
+              }
+
+              compile_cg_parameter (0, dx_parameter);
+            }
           }
         }
-
-        compile_cg_parameter (0, dx_parameter);
       }
-    }
-  }
-}
-if (_direct_3d_pixel_shader.constant_table)
-{
-  UINT index;
+      if (_direct_3d_pixel_shader.constant_table) {
+        UINT index;
 
-  for (index = 0; index < _direct_3d_pixel_shader.constant_table_description.Constants; index++)
-  {
-    D3DXHANDLE handle;
+        for (index = 0; index < _direct_3d_pixel_shader.constant_table_description.Constants; index++) {
+          D3DXHANDLE handle;
 
-    handle = _direct_3d_pixel_shader.constant_table -> GetConstant (NULL, index);
-    if (handle)
-    {
-      UINT count;
-      D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
+          handle = _direct_3d_pixel_shader.constant_table -> GetConstant (NULL, index);
+          if (handle) {
+            UINT count;
+            D3DXCONSTANT_DESC constant_description_array [MAXIMUM_CONSTANT_DESCRIPTIONS];
 
-      count = MAXIMUM_CONSTANT_DESCRIPTIONS;
-      if (dx_verify (_direct_3d_pixel_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count)))
-      {
-        UINT constant_description_index;
-        D3DXCONSTANT_DESC *constant_description;
+            count = MAXIMUM_CONSTANT_DESCRIPTIONS;
+            if (dx_verify (_direct_3d_pixel_shader.constant_table -> GetConstantDesc (handle, constant_description_array, &count))) {
+              UINT constant_description_index;
+              D3DXCONSTANT_DESC *constant_description;
 
-        dx_parameter = &_dx_parameter_array [dx_parameter_index];
-        dx_parameter_index++;
-        dx_parameter -> total_constant_descriptions = count;
-        dx_parameter -> vertex_shader = FALSE;
-        dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
+              dx_parameter = &_dx_parameter_array [dx_parameter_index];
+              dx_parameter_index++;
+              dx_parameter -> total_constant_descriptions = count;
+              dx_parameter -> vertex_shader = FALSE;
+              dx_parameter -> constant_description_array = new D3DXCONSTANT_DESC [count];
 
-        for (constant_description_index = 0; constant_description_index < count; constant_description_index++)
-        {
-          constant_description = &constant_description_array [constant_description_index];
-          dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
+              for (constant_description_index = 0; constant_description_index < count; constant_description_index++) {
+                constant_description = &constant_description_array [constant_description_index];
+                dx_parameter -> constant_description_array [constant_description_index] = *constant_description;
 
-          DBG_HLSL
-            char string [512];
-            sprintf (string, "  PS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
-              index,
-              constant_description_index,
-              constant_description -> Name,
-              constant_description -> RegisterSet,
-              constant_description -> RegisterIndex,
-              parameter_type_names_array [constant_description -> Type],
-              constant_description -> Elements,
-              constant_description -> Rows,
-              constant_description -> Columns);
-            print_string (string);
-          DBG_E
+                DBG_HLSL
+                  char string [512];
+                  sprintf (string, "  PS CONSTANT %d,%d  NAME %s  REG_SET %d  INDEX %d  TYPE: %s  ELEMENTS: %d  ROWS: %d  COLS: %d\n",
+                    index,
+                    constant_description_index,
+                    constant_description -> Name,
+                    constant_description -> RegisterSet,
+                    constant_description -> RegisterIndex,
+                    parameter_type_names_array [constant_description -> Type],
+                    constant_description -> Elements,
+                    constant_description -> Rows,
+                    constant_description -> Columns);
+                  print_string (string);
+                DBG_E
 
+              }
+
+              compile_cg_parameter (0, dx_parameter);
+            }
+          }
         }
-
-        compile_cg_parameter (0, dx_parameter);
       }
-    }
-  }
-}
 
-  if (_direct_3d_vertex_shader.semantic_array) {
-    int index;
+      if (_direct_3d_vertex_shader.semantic_array) {
+        int index;
 
-    DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: semantic_array = " << _direct_3d_vertex_shader.total_semantics <<  "\n"; DBG_E
+        DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: semantic_array = " << _direct_3d_vertex_shader.total_semantics <<  "\n"; DBG_E
 
-    int stream_index;
-    VertexElementArray *vertex_element_array;
+        int stream_index;
+        VertexElementArray *vertex_element_array;
 
 // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
-    stream_index = 0;
-    vertex_element_array = new VertexElementArray (_direct_3d_vertex_shader.total_semantics + 16);
+        stream_index = 0;
+        vertex_element_array = new VertexElementArray (_direct_3d_vertex_shader.total_semantics + 16);
 
-    for (index = 0; index < _direct_3d_vertex_shader.total_semantics; index++)
-    {
-      D3DXSEMANTIC *semantic;
+        for (index = 0; index < _direct_3d_vertex_shader.total_semantics; index++) {
+          D3DXSEMANTIC *semantic;
 
-      semantic = &_direct_3d_vertex_shader.semantic_array [index];
-      switch (semantic -> Usage)
-      {
-        case D3DDECLUSAGE_POSITION:
-          vertex_element_array -> add_position_xyz_vertex_element (stream_index);
+          semantic = &_direct_3d_vertex_shader.semantic_array [index];
+          switch (semantic -> Usage)
+          {
+            case D3DDECLUSAGE_POSITION:
+              vertex_element_array -> add_position_xyz_vertex_element (stream_index);
+
 // vertex_element_array -> add_position_xyzw_vertex_element (stream_index);
-          break;
-        case D3DDECLUSAGE_BLENDWEIGHT:
-          break;
-        case D3DDECLUSAGE_BLENDINDICES:
-          break;
-        case D3DDECLUSAGE_NORMAL:
-          vertex_element_array -> add_normal_vertex_element (stream_index);
-          break;
-        case D3DDECLUSAGE_PSIZE:
-          break;
-        case D3DDECLUSAGE_TEXCOORD:
+
+              break;
+            case D3DDECLUSAGE_BLENDWEIGHT:
+              break;
+            case D3DDECLUSAGE_BLENDINDICES:
+              break;
+            case D3DDECLUSAGE_NORMAL:
+              vertex_element_array -> add_normal_vertex_element (stream_index);
+              break;
+            case D3DDECLUSAGE_PSIZE:
+              break;
+            case D3DDECLUSAGE_TEXCOORD:
+
+              vertex_element_array -> add_uv_vertex_element (stream_index);
+
 
 //          vertex_element_array -> add_u_vertex_element (stream_index);
-          vertex_element_array -> add_uv_vertex_element (stream_index);
 //          vertex_element_array -> add_uvw_vertex_element (stream_index);
 
-          break;
-        case D3DDECLUSAGE_TANGENT:
-          vertex_element_array -> add_tangent_vertex_element (stream_index);
-          break;
-        case D3DDECLUSAGE_BINORMAL:
-          vertex_element_array -> add_binormal_vertex_element (stream_index);
-          break;
-        case D3DDECLUSAGE_TESSFACTOR:
-          break;
-        case D3DDECLUSAGE_POSITIONT:
-          break;
-        case D3DDECLUSAGE_COLOR:
-          if (semantic -> UsageIndex == 0) {
-            vertex_element_array -> add_diffuse_color_vertex_element (stream_index);
+              break;
+            case D3DDECLUSAGE_TANGENT:
+              vertex_element_array -> add_tangent_vertex_element (stream_index);
+              break;
+            case D3DDECLUSAGE_BINORMAL:
+              vertex_element_array -> add_binormal_vertex_element (stream_index);
+              break;
+            case D3DDECLUSAGE_TESSFACTOR:
+              break;
+            case D3DDECLUSAGE_POSITIONT:
+              break;
+            case D3DDECLUSAGE_COLOR:
+              if (semantic -> UsageIndex == 0) {
+                vertex_element_array -> add_diffuse_color_vertex_element (stream_index);
+              }
+              else {
+                vertex_element_array -> add_specular_color_vertex_element (stream_index);
+              }
+              break;
+            case D3DDECLUSAGE_FOG:
+              break;
+            case D3DDECLUSAGE_DEPTH:
+              break;
+            case D3DDECLUSAGE_SAMPLE:
+              break;
+            default:
+              break;
           }
-          else {
-            vertex_element_array -> add_specular_color_vertex_element (stream_index);
-          }
-          break;
-        case D3DDECLUSAGE_FOG:
-          break;
-        case D3DDECLUSAGE_DEPTH:
-          break;
-        case D3DDECLUSAGE_SAMPLE:
-          break;
-        default:
-          break;
+        }
+
+        int state;
+
+        state = vertex_element_array -> add_end_vertex_element ( );
+        if (state) {
+          _vertex_size = vertex_element_array -> offset;
+
+          DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
+
+          _vertex_element_array = vertex_element_array;
+        }
       }
+
+      _state = true;
     }
-
-    int state;
-
-    state = vertex_element_array -> add_end_vertex_element ( );
-    if (state) {
-      _vertex_size = vertex_element_array -> offset;
-
-      DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
-
-      _vertex_element_array = vertex_element_array;
-    }
-  }
-
-
-        _state = true;
-      }
 
     return;
   }
@@ -748,17 +651,14 @@ CLP(ShaderContext)::
     free_pixel_shader (_direct_3d_pixel_shader.direct_3d_pixel_shader);
   }
 
-  if (_dx_parameter_array)
-  {
+  if (_dx_parameter_array) {
     int index;
 
-    for (index = 0; index < _total_dx_parameters; index++)
-    {
+    for (index = 0; index < _total_dx_parameters; index++) {
       DX_PARAMETER *dx_parameter;
 
       dx_parameter = &_dx_parameter_array [index];
-      if (dx_parameter -> constant_description_array)
-      {
+      if (dx_parameter -> constant_description_array) {
         delete dx_parameter -> constant_description_array;
         dx_parameter -> constant_description_array = 0;
       }
@@ -1054,9 +954,9 @@ release_resources() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 bind(GSG *gsg) {
+
 #ifdef HAVE_CGDX9
   if (_state && gsg -> _cg_context != 0) {
-
     DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: bind \n";  DBG_E
 
     // clear the last cached FVF to make sure the next SetFVF call goes through
@@ -1211,21 +1111,21 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
 
 // SHADER ISSUE: which matrix ?????
 //p_matrix = &(gsg -> _external_transform -> get_mat ( ));
-p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
+        p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
 
-// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
-        temp_matrix.transpose_from (*p_matrix);
-        p_matrix = &temp_matrix;
-
+        if (_transpose_matrix) {
+          temp_matrix.transpose_from (*p_matrix);
+          p_matrix = &temp_matrix;
+        }
         break;
       case CG_GL_PROJECTION_MATRIX:
 
         p_matrix = &gsg->_projection_mat;
 
-// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
-        temp_matrix.transpose_from (*p_matrix);
-        p_matrix = &temp_matrix;
-
+        if (_transpose_matrix) {
+          temp_matrix.transpose_from (*p_matrix);
+          p_matrix = &temp_matrix;
+        }
         break;
       case CG_GL_TEXTURE_MATRIX:
 
@@ -1236,10 +1136,10 @@ p_matrix = &(gsg -> _internal_transform -> get_mat ( ));
 // SHADER ISSUE: using default ????? GL texture matrix = which DX texture matrix ?????
         p_matrix = &(tex_matrix_attrib -> get_mat ( ));
 
-// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
-        temp_matrix.transpose_from (*p_matrix);
-        p_matrix = &temp_matrix;
-
+        if (_transpose_matrix) {
+          temp_matrix.transpose_from (*p_matrix);
+          p_matrix = &temp_matrix;
+        }
         break;
       case CG_GL_MODELVIEW_PROJECTION_MATRIX:
 
@@ -1324,8 +1224,9 @@ gsg -> _d3d_device -> GetTransform (D3DTS_WORLDMATRIX(2), &d3d_matrix);
       data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
 */
 
-// SHADER ISSUE: ***** DX_TRANSPOSE REQUIRED FOR COMPATIBILITY
-        temp_matrix.transpose_in_place ( );
+        if (_transpose_matrix) {
+          temp_matrix.transpose_in_place ( );
+        }
         p_matrix = &temp_matrix;
         break;
     }
@@ -2835,6 +2736,3 @@ compile_cg_parameter(CGparameter p, DX_PARAMETER *dx_parameter)
 }
 #endif
 
-
-
-// D3DXGetShaderInputSemantics

@@ -94,6 +94,7 @@ public:
 
   bool _state;
   bool _cg_shader;
+  bool _transpose_matrix;
 
 private:
 
