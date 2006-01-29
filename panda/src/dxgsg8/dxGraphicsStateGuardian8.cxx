@@ -60,8 +60,8 @@
 #include "dxIndexBufferContext8.h"
 #include "pStatTimer.h"
 #include "pStatCollector.h"
+#include "dxgsg8base.h"
 
-#include <d3dx8.h>
 #include <mmsystem.h>
 
 TypeHandle DXGraphicsStateGuardian8::_type_handle;

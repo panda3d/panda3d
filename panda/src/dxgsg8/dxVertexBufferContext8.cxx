@@ -23,7 +23,7 @@
 #include "pStatTimer.h"
 #include "internalName.h"
 #include "config_dxgsg8.h"
-#include <d3dx8.h>
+#include "dxgsg8base.h"
 
 TypeHandle DXVertexBufferContext8::_type_handle;
 

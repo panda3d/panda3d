@@ -20,7 +20,8 @@
 #include "config_dxgsg8.h"
 #include "dxGraphicsStateGuardian8.h"
 #include "pStatTimer.h"
-#include <d3dx8tex.h>
+#include "dxgsg8base.h"
+
 #include <assert.h>
 #include <time.h>
 

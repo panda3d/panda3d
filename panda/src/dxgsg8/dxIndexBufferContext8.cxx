@@ -21,7 +21,7 @@
 #include "config_dxgsg8.h"
 #include "graphicsStateGuardian.h"
 #include "pStatTimer.h"
-#include <d3dx8.h>
+#include "dxgsg8base.h"
 
 TypeHandle DXIndexBufferContext8::_type_handle;
 

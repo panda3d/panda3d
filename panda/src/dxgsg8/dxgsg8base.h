@@ -29,25 +29,13 @@
 #define STRICT
 #endif
 
+#define DIRECT3D_VERSION 0x0800
 #include <windows.h>
-
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d8.h>
 #include <d3dx8.h>
 #include <dxerr8.h>
+#include <d3dx8tex.h>
 #undef WIN32_LEAN_AND_MEAN
-
-#if D3D_SDK_VERSION != 220
-#error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
-#endif
-
-#if DIRECT3D_VERSION != 0x0800
-#error DX8.1 headers not available, you need to install newer MS Platform SDK!
-#endif
-
-#ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
-#error you have pre-release DX8.1 headers, you need to install final DX 8.1 SDK!
-#endif
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
