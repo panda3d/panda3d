@@ -501,6 +501,7 @@ set_card_decal(bool card_decal) {
   } else {
     _flags &= ~F_card_decal;
   }
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////

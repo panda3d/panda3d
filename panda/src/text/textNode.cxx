@@ -315,10 +315,11 @@ generate() {
 
   if (has_card()) {
     PT(PandaNode) card_root;
-    if (has_card_border())
+    if (has_card_border()) {
       card_root = make_card_with_border();
-    else
+    } else {
       card_root = make_card();
+    }
     card_root->set_transform(transform);
     card_root->set_attrib(ColorAttrib::make_flat(get_card_color()));
     if (get_card_color()[3] != 1.0f) {
