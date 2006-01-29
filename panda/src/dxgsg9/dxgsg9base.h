@@ -38,19 +38,9 @@
 #include <dxerr9.h>
 #undef WIN32_LEAN_AND_MEAN
 
-/* ***** DX9
-#if D3D_SDK_VERSION != 220
-#error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
+#if (D3D_SDK_VERSION & 0xffff) < 32
+#error You need to install the latest DirectX9 SDK.
 #endif
-
-#if DIRECT3D_VERSION != 0x0900
-#error DX8.1 headers not available, you need to install newer MS Platform SDK!
-#endif
-
-#ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
-#error you have pre-release DX8.1 headers, you need to install final DX 8.1 SDK!
-#endif
-*/
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
