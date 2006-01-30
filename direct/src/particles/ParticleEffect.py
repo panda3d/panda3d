@@ -194,6 +194,7 @@ class ParticleEffect(NodePath):
 
     def loadConfig(self, filename):
         data = vfs.readFile(filename, 1)
+        data = data.replace('\r', '')
         try:
             exec data
         except:
